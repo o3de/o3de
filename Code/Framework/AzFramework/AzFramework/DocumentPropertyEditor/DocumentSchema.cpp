@@ -36,7 +36,7 @@ namespace AZ::DocumentPropertyEditor
         return {};
     }
 
-    AZStd::shared_ptr<AZ::Attribute> TypeIdAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value) const
+    AZStd::shared_ptr<AZ::Attribute> TypeIdAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool) const
     {
         AZ::Uuid uuidValue = DomToValue(value).value_or(AZ::Uuid::CreateNull());
         return AZStd::make_shared<AZ::AttributeData<AZ::Uuid>>(AZStd::move(uuidValue));
@@ -67,7 +67,7 @@ namespace AZ::DocumentPropertyEditor
         return {};
     }
 
-    AZStd::shared_ptr<AZ::Attribute> NamedCrcAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value) const
+    AZStd::shared_ptr<AZ::Attribute> NamedCrcAttributeDefinition::DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool) const
     {
         AZ::Crc32 crc = 0;
         if (value.IsString())

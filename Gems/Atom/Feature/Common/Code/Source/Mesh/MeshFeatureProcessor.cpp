@@ -6,20 +6,23 @@
  *
  */
 
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
-#include <Atom/Feature/RenderCommon.h>
+#include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
+#include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
+#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIUtils.h>
+#include <Atom/RPI.Public/AssetQuality.h>
+#include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/RPIUtils.h>
-#include <Atom/RPI.Public/AssetQuality.h>
+#include <Atom/RPI.Public/Scene.h>
+
+#include <Material/ConvertEmissiveUnitFunctor.h>
 
 #include <Atom/Utils/StableDynamicArray.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
@@ -30,6 +33,7 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
@@ -39,8 +43,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Name/NameDictionary.h>
+
 
 #include <algorithm>
 
@@ -64,6 +67,7 @@ namespace AZ
         static AZ::Name s_emissive_color_Name = AZ::Name::FromStringLiteral("emissive.color", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_emissive_intensity_Name =
             AZ::Name::FromStringLiteral("emissive.intensity", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_unit_Name = AZ::Name::FromStringLiteral("emissive.unit", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_baseColor_textureMap_Name =
             AZ::Name::FromStringLiteral("baseColor.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_normal_textureMap_Name =
@@ -89,8 +93,7 @@ namespace AZ
             AZ::Name::FromStringLiteral("m_rootConstantInstanceDataOffset", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_o_meshInstancingIsEnabled_Name =
             AZ::Name::FromStringLiteral("o_meshInstancingIsEnabled", AZ::Interface<AZ::NameDictionary>::Get());
-        static AZ::Name s_transparent_Name =
-            AZ::Name::FromStringLiteral("transparent", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_transparent_Name = AZ::Name::FromStringLiteral("transparent", AZ::Interface<AZ::NameDictionary>::Get());
 
         static void CacheRootConstantInterval(MeshInstanceGroupData& meshInstanceGroupData)
         {
@@ -115,9 +118,7 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext
-                    ->Class<MeshFeatureProcessor, FeatureProcessor>()
-                    ->Version(1);
+                serializeContext->Class<MeshFeatureProcessor, FeatureProcessor>()->Version(1);
             }
         }
 
@@ -844,6 +845,12 @@ namespace AZ
                 // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
                 for (auto& modelHandle : m_modelData)
                 {
+                    // skip if the model need to be initialized
+                    if (modelHandle.m_flags.m_needsInit)
+                    {
+                        continue;
+                    }
+                    
                     for (RPI::MeshDrawPacketList& drawPacketList : modelHandle.m_drawPacketListsByLod)
                     {
                         for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
@@ -877,6 +884,11 @@ namespace AZ
                 {
                     if (modelHandle.m_cullable.m_prevShaderOptionFlags != modelHandle.m_cullable.m_shaderOptionFlags)
                     {
+                        // skip if the model need to be initialized
+                        if (modelHandle.m_flags.m_needsInit)
+                        {
+                            continue;
+                        }
                         // Per mesh shader option flags have changed, so rebuild the draw packet with the new shader options.
                         for (RPI::MeshDrawPacketList& drawPacketList : modelHandle.m_drawPacketListsByLod)
                         {
@@ -1500,6 +1512,9 @@ namespace AZ
         {
             Data::Asset<RPI::ModelAsset> modelAsset = asset;
 
+            // Update our model asset reference to contain the latest loaded version.
+            m_modelAsset = asset;
+
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
             m_parent->m_originalModelAsset = asset;
 
@@ -1590,29 +1605,27 @@ namespace AZ
             AzFramework::AssetSystemRequestBus::Broadcast(
                 &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_modelAsset.GetId().m_guid);
         }
+
+        void ModelDataInstance::MeshLoader::OnCatalogAssetRemoved(
+            const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
+        {
+            OnCatalogAssetChanged(assetId);
+        }
         
+        void ModelDataInstance::MeshLoader::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+        {
+            // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
+            OnCatalogAssetChanged(assetId);
+        }
+
         void ModelDataInstance::MeshLoader::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
         {
             if (assetId == m_modelAsset.GetId())
             {
                 Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
 
-                // If the asset was modified, reload it
-                AZ::SystemTickBus::QueueFunction(
-                    [=]() mutable
-                    {
-                        ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
-                    });
-            }
-        }
-
-        void ModelDataInstance::MeshLoader::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
-        {
-            if (assetId == m_modelAsset.GetId())
-            {
-                Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
-                
-                // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
+                // If the asset was modified, reload it. This will also cause a model to change back to the default missing
+                // asset if it was removed, and it will replace the default missing asset with the real asset if it was added.
                 AZ::SystemTickBus::QueueFunction(
                     [=]() mutable
                     {
@@ -1835,7 +1848,8 @@ namespace AZ
             
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
-                const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[meshIndex];
+                const auto meshes = modelLod.GetMeshes();
+                const RPI::ModelLod::Mesh& mesh = meshes[meshIndex];
 
                 // Determine if there is a custom material specified for this submission
                 const CustomMaterialId customMaterialId(aznumeric_cast<AZ::u64>(modelLodIndex), mesh.m_materialSlotStableId);
@@ -2094,7 +2108,8 @@ namespace AZ
             RayTracingFeatureProcessor::SubMeshVector subMeshes;
             for (uint32_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
-                const RPI::ModelLod::Mesh& mesh = modelLod->GetMeshes()[meshIndex];
+                const auto meshes = modelLod->GetMeshes();
+                const RPI::ModelLod::Mesh& mesh = meshes[meshIndex];
 
                 // retrieve the material
                 const CustomMaterialId customMaterialId(rayTracingLod, mesh.m_materialSlotStableId);
@@ -2118,6 +2133,15 @@ namespace AZ
                     customMaterialInfo.m_uvMapping,
                     material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
                 AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
+
+                // The code below expects streams for positions, normals, tangents, bitangents, and uvs.
+                constexpr size_t NumExpectedStreams = 5;
+                if (streamBufferViews.size() < NumExpectedStreams)
+                {
+                    AZ_Warning("MeshFeatureProcessor", false, "Model is missing one or more expected streams "
+                        "(positions, normals, tangents, bitangents, uvs), skipping the raytracing data generation.");
+                    continue;
+                }
 
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
@@ -2227,10 +2251,45 @@ namespace AZ
                                 subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                             }
 
+                            // When we have an emissive intensity, the unit of the intensity is defined in the material settings.
+                            // For non-raytracing materials, the intensity is converted, and set in the shader, by a Functor.
+                            // This (and the other) Functors are normally called in the Compile function of the Material
+                            // We can't use the Compile function here, because the raytracing material behaves bit differently
+                            // Therefor we need to look for the right Functor to convert the intensity here
                             propertyIndex = material->FindPropertyIndex(s_emissive_intensity_Name);
                             if (propertyIndex.IsValid())
                             {
-                                subMesh.m_emissiveColor *= material->GetPropertyValue<float>(propertyIndex);
+                                auto unitPropertyIndex = material->FindPropertyIndex(s_emissive_unit_Name);
+                                AZ_WarningOnce(
+                                    "MeshFeatureProcessor",
+                                    propertyIndex.IsValid(),
+                                    "Emissive intensity property missing in material %s. Materials with an emissive intensity need a unit for the intensity.",
+                                    material->GetAsset()->GetId().ToFixedString().c_str());
+                                if (unitPropertyIndex.IsValid())
+                                {
+                                    auto intensity = material->GetPropertyValue<float>(propertyIndex);
+                                    auto unit = material->GetPropertyValue<uint32_t>(unitPropertyIndex);
+                                    bool foundEmissiveUnitFunctor = false;
+                                    for (const auto& functor : material->GetAsset()->GetMaterialFunctors())
+                                    {
+                                        auto emissiveFunctor = azdynamic_cast<ConvertEmissiveUnitFunctor*>(functor);
+                                        if (emissiveFunctor != nullptr)
+                                        {
+                                            intensity = emissiveFunctor->GetProcessedValue(intensity, unit);
+                                            foundEmissiveUnitFunctor = true;
+                                            break;
+                                        }
+                                    }
+                                    AZ_WarningOnce(
+                                        "MeshFeatureProcessor",
+                                        foundEmissiveUnitFunctor,
+                                        "Could not find ConvertEmissiveUnitFunctor for material %s",
+                                        material->GetAsset()->GetId().ToFixedString().c_str());
+                                    if (foundEmissiveUnitFunctor)
+                                    {
+                                        subMesh.m_emissiveColor *= intensity;
+                                    }
+                                }
                             }
                         }
                     }

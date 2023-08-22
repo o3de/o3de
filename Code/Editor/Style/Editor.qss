@@ -17,6 +17,12 @@ AzAssetBrowserWindow #previewWidgetWrapper
     border: 0 none;
 }
 
+AzAssetBrowserWindow #searchButtonContainer
+{
+    background-color: #141414;
+    border: 0 none;
+}
+
 AzAssetBrowserWindow #m_separator
 {
     background-color: #222222;

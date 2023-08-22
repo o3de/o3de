@@ -214,8 +214,12 @@ namespace AZ
                 return lodAssignment;
             }
 
+            // GCC is incorrectly flagging the const reference returned from GetMaterialAssignmentFromMap
+            // as a dangling reference, despite the function returning a const reference.
+        AZ_PUSH_DISABLE_WARNING_GCC("-Wdangling-reference")
             const MaterialAssignment& assetAssignment =
                 GetMaterialAssignmentFromMap(materials, MaterialAssignmentId::CreateFromStableIdOnly(id.m_materialSlotStableId));
+        AZ_POP_DISABLE_WARNING_GCC
             if (assetAssignment.m_materialInstance.get())
             {
                 return assetAssignment;

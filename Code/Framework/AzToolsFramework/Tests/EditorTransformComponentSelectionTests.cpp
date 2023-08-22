@@ -312,14 +312,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // R - reset entity and manipulator orientation when in Rotation Mode
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            QTest::keyPress(m_defaultMainWindow, Qt::Key_R);
-        }
-        else
-        {
-            QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_R);
-        }
+        QTest::keyPress(m_defaultMainWindow, Qt::Key_R);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -368,14 +361,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // Ctrl+R - reset only manipulator orientation when in Rotation Mode
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            QTest::keyPress(m_defaultMainWindow, Qt::Key_R, Qt::ControlModifier);
-        }
-        else
-        {
-            QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_R, Qt::ControlModifier);
-        }
+        QTest::keyPress(m_defaultMainWindow, Qt::Key_R, Qt::ControlModifier);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -501,14 +487,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // 'Invert Selection' shortcut
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            QTest::keyPress(m_defaultMainWindow, Qt::Key_I, Qt::ControlModifier | Qt::ShiftModifier);
-        }
-        else
-        {
-            QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_I, Qt::ControlModifier | Qt::ShiftModifier);
-        }
+        QTest::keyPress(m_defaultMainWindow, Qt::Key_I, Qt::ControlModifier | Qt::ShiftModifier);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -538,14 +517,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // 'Select All' shortcut
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            QTest::keyPress(m_defaultMainWindow, Qt::Key_A, Qt::ControlModifier);
-        }
-        else
-        {
-            QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_A, Qt::ControlModifier);
-        }
+        QTest::keyPress(m_defaultMainWindow, Qt::Key_A, Qt::ControlModifier);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////

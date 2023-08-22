@@ -606,7 +606,7 @@ namespace AzToolsFramework
                 "ON ScanFolders.ScanFolderID = Sources.ScanFolderPK  WHERE "
                 "Products.SubID = :productsubid AND "
                 "(Sources.SourceGuid = :sourceguid OR "
-                "Products.LegacyGuid = :soruceguid) AND "
+                "Products.LegacyGuid = :sourceguid) AND "
                 "Jobs.Platform = :platform;";
 
             static const auto s_queryCombinedBySourceguidProductsubidPlatform = MakeSqlQuery(QUERY_COMBINED_BY_SOURCEGUID_PRODUCTSUBID_PLATFORM, QUERY_COMBINED_BY_SOURCEGUID_PRODUCTSUBID_PLATFORM_STATEMENT, LOG_NAME,

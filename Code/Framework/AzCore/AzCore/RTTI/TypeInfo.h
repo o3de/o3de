@@ -263,7 +263,7 @@ namespace AZ
         extern template struct AggregateTypes<Crc32>;
 
         template<typename T>
-        constexpr const char* GetTypeName()
+        constexpr AZStd::string_view GetTypeName()
         {
             return AZ::AzTypeInfo<T>::Name();
         }
@@ -300,9 +300,9 @@ namespace AZ
 
         // Supports any non-type template argument which supports conversion to a size_t
         template<auto N>
-        constexpr const char* GetTypeName()
+        constexpr AZStd::string_view GetTypeName()
         {
-            return IntTypeName<static_cast<AZStd::size_t>(N)>.c_str();
+            return IntTypeName<static_cast<AZStd::size_t>(N)>;
         }
 
         template<typename T>

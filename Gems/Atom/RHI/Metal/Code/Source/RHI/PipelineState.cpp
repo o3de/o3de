@@ -168,7 +168,12 @@ namespace AZ
                 [depthStencilDesc release];
                 depthStencilDesc = nil;
             }
+#if defined(__IPHONE_16_0) || defined(__MAC_13_0)
+            m_renderPipelineDesc.rasterSampleCount = descriptor.m_renderStates.m_multisampleState.m_samples;
+#else
             m_renderPipelineDesc.sampleCount = descriptor.m_renderStates.m_multisampleState.m_samples;
+#endif
+            
             m_renderPipelineDesc.alphaToCoverageEnabled = descriptor.m_renderStates.m_blendState.m_alphaToCoverageEnable;
             
             PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);

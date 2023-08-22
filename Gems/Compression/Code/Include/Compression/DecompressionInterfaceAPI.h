@@ -76,6 +76,8 @@ namespace Compression
 
         //! Retrieves the 32-bit compression algorithm ID associated with this interface
         virtual CompressionAlgorithmId GetCompressionAlgorithmId() const = 0;
+        //! Human readable name associated with the compression algorithm
+        virtual AZStd::string_view GetCompressionAlgorithmName() const = 0;
 
         //! Decompresses the input compressed data into the uncompressed buffer
         //! Both parameters are specified as spans which encapsulates the contiguous buffer and it's size.
@@ -132,6 +134,14 @@ namespace Compression
         //! @param compressionAlgorithmId unique Id of decompression interface to query
         //! @return pointer to the decompression interface or nullptr if not found
         [[nodiscard]] virtual IDecompressionInterface* FindDecompressionInterface(CompressionAlgorithmId compressionAlgorithmId) const = 0;
+        //! Queries the decompression interface using the name of the compression algorithm
+        //! This is slower than the using the compression algorithm ID.
+        //! Furthermore the algorithm name doesn't have to be unique,
+        //! so this will return the first compression interface associated with the algorithm name
+        //! @param algorithmName Name of the compression algorithm.
+        //! NOTE: The compression algorithm name is not checked for uniqueness, unlike the algorithm id
+        //! @return pointer to the decompression interface or nullptr if not found
+        [[nodiscard]] virtual IDecompressionInterface* FindDecompressionInterface(AZStd::string_view algorithmName) const = 0;
 
 
         //! Return true if there is an decompression interface registered with the specified id

@@ -589,6 +589,9 @@ namespace LegacyLevelSystem
 
         // Delete level entities and remove them from the game entity context
         AzFramework::RootSpawnableInterface::Get()->ReleaseRootSpawnable();
+        
+        // Process the queued deactivate calls for the unloaded entities
+        AzFramework::RootSpawnableInterface::Get()->ProcessSpawnableQueueUntilEmpty();
 
         m_lastLevelName.clear();
 

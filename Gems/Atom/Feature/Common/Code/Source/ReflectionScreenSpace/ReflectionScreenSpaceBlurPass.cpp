@@ -23,7 +23,6 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
-#include <SpecularReflections/SpecularReflectionsFeatureProcessor.h>
 
 namespace AZ
 {
@@ -157,6 +156,8 @@ namespace AZ
                 // mipN transient output
                 RPI::PassAttachmentBinding& outputAttachmentBinding = verticalBlurChildPass->GetOutputBinding(0);
                 outputAttachmentBinding.SetAttachment(transientPassAttachments[attachmentIndex]);
+
+                verticalBlurChildPass->UpdateConnectedBindings();
 
                 attachmentIndex++;
             }

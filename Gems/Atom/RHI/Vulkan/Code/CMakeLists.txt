@@ -34,12 +34,10 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
-                Include/Atom/RHI.Loader/Glad
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
                 Gem::Atom_RHI.Reflect
-                3rdParty::glad_vulkan
     )
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -51,13 +49,11 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
                 ${pal_source_dir}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
                 ${pal_include_dir}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
                 atom_rhi_vulkan_reflect_common_files.cmake
-                atom_rhi_vulkan_glad_files.cmake
                 atom_rhi_vulkan_builders_common_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Include
                     ${pal_include_dir}
-                    Include/Atom/RHI.Loader/Glad
                     Source
                     ${pal_source_dir}
 
@@ -67,7 +63,7 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
                     AZ::AssetBuilderSDK
                     Gem::Atom_RHI.Edit
                     Gem::Atom_RHI.Reflect
-                    3rdParty::glad_vulkan
+                    Gem::Atom_RHI_Vulkan.Glad.Static
 
         )
     endif()
@@ -119,6 +115,7 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI_Vulkan.Reflect
             Gem::Atom_RHI_Vulkan.Glad.Static
+            3rdParty::amd_vma
             ${AFTERMATH_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 
         PRIVATE

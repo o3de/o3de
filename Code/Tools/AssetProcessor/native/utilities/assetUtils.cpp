@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
 
+#include <native/assetprocessor.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <native/utilities/StatsCapture.h>
 #include <native/AssetManager/FileStateCache.h>
@@ -709,7 +710,7 @@ namespace AssetUtilities
             return true;
         }
 
-        int retries = 0;
+        [[maybe_unused]] int retries = 0;
         QElapsedTimer timer;
         timer.start();
         do

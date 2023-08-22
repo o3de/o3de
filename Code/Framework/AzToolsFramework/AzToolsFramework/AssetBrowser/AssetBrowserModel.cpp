@@ -220,7 +220,6 @@ namespace AzToolsFramework
         Qt::ItemFlags AssetBrowserModel::flags(const QModelIndex& index) const
         {
             Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
-
             if (index.isValid())
             {
                 // We can only drop items onto folders so set flags accordingly
@@ -229,7 +228,7 @@ namespace AzToolsFramework
                 {
                     if (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) || item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()))
                     {
-                        return Qt::ItemIsDragEnabled | defaultFlags;
+                        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
                     }
                     if (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
                     {
@@ -246,7 +245,27 @@ namespace AzToolsFramework
             return list;
         }
 
-        bool AssetBrowserModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+        bool AssetBrowserModel::canDropMimeData(
+            const QMimeData* data,
+            [[maybe_unused]] Qt::DropAction action,
+            [[maybe_unused]] int row,
+            [[maybe_unused]] int column,
+            [[maybe_unused]] const QModelIndex& parent) const
+        {
+            if (data->hasFormat(SourceAssetBrowserEntry::GetMimeType()) || data->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        bool AssetBrowserModel::dropMimeData(
+            const QMimeData* data,
+            [[maybe_unused]] Qt::DropAction action,
+            [[maybe_unused]] int row,
+            [[maybe_unused]] int column,
+            const QModelIndex& parent)
         {
             if (action == Qt::IgnoreAction)
                 return true;
@@ -280,6 +299,13 @@ namespace AzToolsFramework
                     {
                         return false;
                     }
+
+                    Qt::DropAction selectedAction = AssetBrowserViewUtils::SelectDropActionForEntries(entries);
+                    if (selectedAction == Qt::IgnoreAction)
+                    {
+                        return false;
+                    }
+
                     AZStd::string folderPath = item->GetFullPath();
                     bool connectedToAssetProcessor = false;
                     AzFramework::AssetSystemRequestBus::BroadcastResult(
@@ -321,7 +347,15 @@ namespace AzToolsFramework
                                 toPath = folderPath;
                                 toPath /= filename;
                             }
-                            AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+
+                            if (selectedAction == Qt::MoveAction)
+                            {
+                                AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                            }
+                            else
+                            {
+                                AssetBrowserViewUtils::CopyEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                            }
                         }
                         return true;
                     }

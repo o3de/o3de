@@ -27,11 +27,16 @@ namespace AZ::DocumentPropertyEditor
         void ClearAdapters();
 
         /*! determines whether to generate "values differ" rows at all
-        *   if not, just generates rows based on the first adapter */
+         *   if not, just generates rows based on the first adapter */
         void SetGenerateDiffRows(bool generateDiffRows)
         {
             m_generateDiffRows = generateDiffRows;
         }
+
+        ExpanderSettings* CreateExpanderSettings(
+            DocumentAdapter* referenceAdapter,
+            const AZStd::string& settingsRegistryKey = AZStd::string(),
+            const AZStd::string& propertyEditorName = AZStd::string()) override;
 
     protected:
         struct AggregateNode
@@ -39,7 +44,16 @@ namespace AZ::DocumentPropertyEditor
             bool HasEntryForAdapter(size_t adapterIndex);
             Dom::Path GetPathForAdapter(size_t adapterIndex);
             void AddEntry(size_t adapterIndex, size_t pathEntryIndex, bool matchesOtherEntries);
-            size_t EntryCount();
+
+            //! get the index of the adapter that this node will use for comparisons and creating the aggregate row to display
+            size_t GetComparisonAdapterIndex(size_t omitAdapterIndex = AggregateNode::InvalidEntry);
+
+            /*! removes entry for adapter at adapterIndex for this node, and destroys the node if
+             * it was subsequently empty. Returns true if destroyed */
+            bool RemoveEntry(size_t adapterIndex);
+
+            size_t EntryCount() const;
+            void ShiftChildIndices(size_t adapterIndex, size_t startIndex, int delta);
 
             static constexpr size_t InvalidEntry = size_t(-1);
             AZStd::vector<size_t> m_pathEntries; // per-adapter DOM index represented by AggregateNode
@@ -81,8 +95,17 @@ namespace AZ::DocumentPropertyEditor
         Dom::Value GenerateContents() override;
         Dom::Value HandleMessage(const AdapterMessage& message) override;
 
+        //! indicates whether this node has entries for all adapters and is therefore shown in the DOM
+        bool NodeIsComplete(const AggregateNode* node) const
+        {
+            return (node->EntryCount() == m_adapters.size());
+        }
+
+        void EvaluateAllEntriesMatch(AggregateNode* node);
+
         size_t GetIndexForAdapter(const DocumentAdapterPtr& adapter);
-        AggregateNode* GetNodeAtAdapterPath(size_t adapterIndex, const Dom::Path& path);
+
+        AggregateNode* GetNodeAtAdapterPath(size_t adapterIndex, const Dom::Path& path, Dom::Path& leftoverPath);
 
         //! get a Dom Value representing the given node by asking the first valid adapter that isn't at omitAdapterIndex
         Dom::Value GetComparisonRow(AggregateNode* aggregateNode, size_t omitAdapterIndex = AggregateNode::InvalidEntry);
@@ -98,8 +121,26 @@ namespace AZ::DocumentPropertyEditor
         Dom::Path GetPathForNode(AggregateNode* node); //!< returns the resultant path for this node if it exists, otherwise an empty path
 
         void PopulateNodesForAdapter(size_t adapterIndex);
-        AggregateNode* AddChildRow(size_t adapterIndex, AggregateNode* parentNode, const Dom::Value& childValue, size_t childIndex);
+
+        //! adds a child row given the adapter index, parentNode, new value, and new index.
+        //! \param outgoingPatch If generating a patch operation for this add is desirable, specify a non-null outgoingPatch
+        AggregateNode* AddChildRow(
+            size_t adapterIndex, AggregateNode* parentNode, const Dom::Value& childValue, size_t childIndex, Dom::Patch* outgoingPatch);
+
         void PopulateChildren(size_t adapterIndex, const Dom::Value& parentValue, AggregateNode* parentNode);
+
+        //! removes the entry for adapterIndex in this node
+        //! \param outgoingPatch when outgoingPatch is not null, this will add a remove patch operation to it, if appropriate
+        void ProcessRemoval(AggregateNode* rowNode, size_t adapterIndex, Dom::Patch* outgoingPatch);
+
+        void UpdateAndPatchNode(
+            AggregateNode* rowNode,
+            size_t adapterIndex,
+            const Dom::PatchOperation& patchOperation,
+            const Dom::Path& pathPastNode,
+            Dom::Patch& outgoingPatch);
+
+        static void RemoveChildRows(Dom::Value& rowValue);
 
         struct AdapterInfo
         {

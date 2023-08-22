@@ -148,7 +148,7 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetDirection().");
 
             AZStd::array<float, 3>& direction = m_lightData.GetData(handle.GetIndex()).m_direction;
-            lightDirection.StoreToFloat3(direction.data());
+            lightDirection.GetNormalized().StoreToFloat3(direction.data());
             m_deviceBufferNeedsUpdate = true;
         }
 

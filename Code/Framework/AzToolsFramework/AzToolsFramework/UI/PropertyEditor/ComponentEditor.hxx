@@ -126,6 +126,7 @@ namespace AzToolsFramework
 
     Q_SIGNALS:
         void OnExpansionContractionDone();
+        void OnSizeUpdateRequested();
         void OnDisplayComponentEditorMenu(const QPoint& position);
         void OnRequestRemoveComponents(const AZStd::vector<AZ::Component*>& components);
         void OnRequestDisableComponents(const AZStd::vector<AZ::Component*>& components);
@@ -136,7 +137,6 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
         void OnRequestSelectionChange(const QPoint& position);
         void OnComponentIconClicked(const QPoint& position);
-
     private:
         /// Set up header for this component type.
         void SetComponentType(const AZ::Component& componentInstance);

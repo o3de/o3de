@@ -30,19 +30,10 @@ execute_process (COMMAND snapcraft --verbose
 )
 
 set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap")
-set(assertion_file "${CPACK_TEMPORARY_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap.assert")
-execute_process(
-    COMMAND snapcraft sign-build ${snap_file}
-    OUTPUT_FILE ${assertion_file}
-)
 
 # Manually copy the files, the CPACK_EXTERNAL_BUILT_PACKAGES process runs after our packaging post build script
 # which is too late to be uploaded.
 file(COPY_FILE
                 ${snap_file}
                 "${CPACK_TOPLEVEL_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap"
-            )
-file(COPY_FILE
-                ${assertion_file}
-                "${CPACK_TOPLEVEL_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap.assert"
             )

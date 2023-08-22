@@ -41,6 +41,9 @@ namespace AZ
                 case RHI::IndirectCommandType::Dispatch:
                     m_stride += sizeof(VkDispatchIndirectCommand);
                     break;
+                case RHI::IndirectCommandType::DispatchRays:
+                    m_stride += sizeof(VkTraceRaysIndirectCommandKHR);
+                    break;
                 default:
                     // Unsupported command types.
                     AZ_Assert(false, "Unsupported indirect command type (%d)", command.m_type);

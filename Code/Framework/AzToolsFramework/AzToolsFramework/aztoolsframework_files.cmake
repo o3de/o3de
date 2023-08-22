@@ -407,8 +407,6 @@ set(FILES
     UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
     UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
     UI/DocumentPropertyEditor/DocumentPropertyEditor.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui
@@ -423,8 +421,6 @@ set(FILES
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
     UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
-    UI/DocumentPropertyEditor/SettingsRegistrar.cpp
-    UI/DocumentPropertyEditor/SettingsRegistrar.h
     UI/DocumentPropertyEditor/ValueStringFilter.cpp
     UI/DocumentPropertyEditor/ValueStringFilter.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
@@ -704,14 +700,14 @@ set(FILES
     AssetBrowser/AssetBrowserEntry.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
-    AssetBrowser/AssetBrowserTableFilterModel.cpp
-    AssetBrowser/AssetBrowserTableFilterModel.h
     AssetBrowser/AssetBrowserFilterModel.cpp
     AssetBrowser/AssetBrowserFilterModel.h
     AssetBrowser/AssetBrowserListModel.cpp
     AssetBrowser/AssetBrowserListModel.h
     AssetBrowser/AssetBrowserTableViewProxyModel.cpp
     AssetBrowser/AssetBrowserTableViewProxyModel.h
+    AssetBrowser/AssetBrowserTreeToTableProxyModel.cpp
+    AssetBrowser/AssetBrowserTreeToTableProxyModel.h
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
     AssetBrowser/AssetBrowserModel.cpp
@@ -787,6 +783,20 @@ set(FILES
     AssetBrowser/Previewer/PreviewerFactory.h
     AssetBrowser/Previewer/PreviewerFrame.cpp
     AssetBrowser/Previewer/PreviewerFrame.h
+    AssetBrowser/Favorites/AssetBrowserFavoritesView.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoritesView.h
+    AssetBrowser/Favorites/AssetBrowserFavoritesManager.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoritesManager.h
+    AssetBrowser/Favorites/AssetBrowserFavoritesModel.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoritesModel.h
+    AssetBrowser/Favorites/AssetBrowserFavoriteItem.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoriteItem.h
+    AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.cpp
+    AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.h
+    AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.cpp
+    AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h
+    AssetBrowser/Favorites/FavoritesEntryDelegate.cpp
+    AssetBrowser/Favorites/FavoritesEntryDelegate.h
     Archive/ArchiveComponent.h
     Archive/ArchiveComponent.cpp
     Archive/ArchiveAPI.h

@@ -86,6 +86,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Scope
+            void InitInternal() override;
             void DeactivateInternal() override;
             void CompileInternal(RHI::Device& device) override;
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
@@ -138,7 +139,8 @@ namespace AZ
             /// Track all the heaps that will need too be made resident for this scope
             AZStd::set<id<MTLHeap>> m_residentHeaps;
 
-            
+            /// Cache marker name which will be used for labelling.
+            Name m_markerName;
         };
     }
 }

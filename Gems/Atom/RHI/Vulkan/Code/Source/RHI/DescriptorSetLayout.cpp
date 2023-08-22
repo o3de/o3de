@@ -470,7 +470,8 @@ namespace AZ
 
         bool DescriptorSetLayout::IsBindlessSRGLayout()
         {
-            return m_shaderResourceGroupLayout->GetBindingSlot() == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId;
+            auto& device = static_cast<Device&>(GetDevice());
+            return m_shaderResourceGroupLayout->GetBindingSlot() == device.GetBindlessDescriptorPool().GetBindlessSrgBindingSlot();
         }
     }
 }

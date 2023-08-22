@@ -1692,6 +1692,21 @@ namespace AzToolsFramework
         return ReadValuesIntoGUIInternal(index, GUI, instance, node);
     }
 
+    AZ::Data::Asset<AZ::Data::AssetData>* AssetPropertyHandlerDefault::CastToInternal(void* instance, const InstanceDataNode* node)
+    {
+        if (node->GetElementMetadata()->m_genericClassInfo && node->GetElementMetadata()->m_genericClassInfo->GetGenericTypeId() == AZ::GetAssetClassId())
+        {
+            return static_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(instance);
+        }
+
+        return nullptr;
+    }
+
+    AZ::Data::Asset<AZ::Data::AssetData>* AssetPropertyHandlerDefault::CastTo(void* instance, const InstanceDataNode* node, [[maybe_unused]] const AZ::Uuid& fromId, [[maybe_unused]] const AZ::Uuid& toId) const
+    {
+        return CastToInternal(instance, node);
+    }
+
     QWidget* AssetIdPropertyHandlerDefault::CreateGUI(QWidget* pParent)
     {
         PropertyAssetCtrl* newCtrl = aznew PropertyAssetCtrl(pParent);
@@ -1745,7 +1760,7 @@ namespace AzToolsFramework
         ConsumeAttributeForPropertyAssetCtrl(GUI, attrib, attrValue, debugName);
     }
 
-    void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
@@ -1757,7 +1772,12 @@ namespace AzToolsFramework
         instance.SetAssetPath(assetPath.c_str());
     }
 
-    bool SimpleAssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
+    {
+        WriteGUIValuesIntoPropertyInternal(index, GUI, instance, node);
+    }
+
+    bool SimpleAssetPropertyHandlerDefault::ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         (void)index;
         (void)node;
@@ -1778,6 +1798,11 @@ namespace AzToolsFramework
 
         GUI->blockSignals(false);
         return false;
+    }
+
+    bool SimpleAssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
+    {
+        return ReadValuesIntoGUIInternal(index, GUI, instance, node);
     }
 
     void RegisterAssetPropertyHandler()

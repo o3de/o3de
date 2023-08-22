@@ -54,6 +54,11 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
+        {
+            return m_bindlessArgumentBuffer.Init(this, bindlessSrgDesc);
+        }
+    
         RHI::ResultCode Device::InitializeLimits()
         {
             {
@@ -90,7 +95,6 @@ namespace AZ
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
 
-            m_bindlessArgumentBuffer.Init(this);
             return RHI::ResultCode::Success;
         }
     
@@ -379,7 +383,9 @@ namespace AZ
             m_features.m_occlusionQueryPrecise = true;
             
             m_features.m_unboundedArrays = m_metalDevice.argumentBuffersSupport == MTLArgumentBuffersTier2;
-            
+            m_features.m_unboundedArrays = false; //Remove this when unbounded array support is added to spirv-cross
+            m_features.m_simulateBindlessUA = true; // Simulate unbounded arrays for Bindless srg
+
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
             m_limits.m_maxImageDimension1D = 8192;
             m_limits.m_maxImageDimension2D = 8192;
@@ -389,8 +395,8 @@ namespace AZ
             m_limits.m_minConstantBufferViewOffset = Alignment::Constant;
             m_limits.m_maxConstantBufferSize = m_metalDevice.maxBufferLength;
             m_limits.m_maxBufferSize = m_metalDevice.maxBufferLength;
-            
-            AZ_Assert(m_metalDevice.argumentBuffersSupport, "Atom needs Argument buffer support to run");
+ 
+            AZ_Assert(m_metalDevice.argumentBuffersSupport >= MTLArgumentBuffersTier1, "Atom needs Argument buffer support to run");
         }
 
         CommandList* Device::AcquireCommandList(RHI::HardwareQueueClass hardwareQueueClass)

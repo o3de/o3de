@@ -31,6 +31,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
@@ -660,23 +661,17 @@ namespace AzToolsFramework
             GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
 
-        if (IsNewActionManagerEnabled())
-        {
-            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
 
-            // Assign this widget to the Editor Entity Property Editor Action Context.
-            AssignWidgetToActionContextHelper(
-                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
-        }
+        // Assign this widget to the Editor Entity Property Editor Action Context.
+        AssignWidgetToActionContextHelper(
+                EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
     }
 
     EntityPropertyEditor::~EntityPropertyEditor()
     {
-        if (IsNewActionManagerEnabled())
-        {
-            RemoveWidgetFromActionContextHelper(
-                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
-        }
+        RemoveWidgetFromActionContextHelper(
+                EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
 
         qApp->removeEventFilter(this);
 
@@ -1352,6 +1347,7 @@ namespace AzToolsFramework
                 BuildSharedComponentUI(sharedComponentArray);
             }
 
+
             UpdateEntityIcon();
             UpdateEntityDisplay();
         }
@@ -1929,6 +1925,11 @@ namespace AzToolsFramework
                     layout()->activate();
                     setUpdatesEnabled(true);
                 });
+
+            // force Card resize when expansion state changes or when explicitly requested by OnSizeUpdateRequested
+            AzQtComponents::StyleHelpers::repolishWhenPropertyChanges(componentEditor, &ComponentEditor::OnExpansionContractionDone);
+            AzQtComponents::StyleHelpers::repolishWhenPropertyChanges(componentEditor, &ComponentEditor::OnSizeUpdateRequested);
+
             connect(componentEditor, &ComponentEditor::OnDisplayComponentEditorMenu, this, &EntityPropertyEditor::OnDisplayComponentEditorMenu);
             connect(componentEditor, &ComponentEditor::OnRequestRequiredComponents, this, &EntityPropertyEditor::OnRequestRequiredComponents);
             connect(componentEditor, &ComponentEditor::OnRequestRemoveComponents, this, [this](const AZ::Entity::ComponentArrayType& components) {DeleteComponents(components); });
@@ -3474,10 +3475,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::CreateActions()
     {
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        }
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
 
         m_actionToAddComponents = new QAction(tr("Add component"), this);
         m_actionToAddComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);

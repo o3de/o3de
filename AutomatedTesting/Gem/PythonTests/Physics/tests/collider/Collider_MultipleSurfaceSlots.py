@@ -59,8 +59,8 @@ def Collider_MultipleSurfaceSlots():
     SURFACE_TAG_COUNT = 4  # Number of surface tags included in used asset
 
     # Asset paths
-    STATIC_MESH = os.path.join("assets", "Physics", "Collider_MultipleSurfaceSlots", "test.azmodel")
-    PHYSX_MESH = os.path.join("assets", "Physics","Collider_MultipleSurfaceSlots", "test.pxmesh")
+    STATIC_MESH = os.path.join("assets", "Physics", "Collider_MultipleSurfaceSlots", "test.fbx.azmodel")
+    PHYSX_MESH = os.path.join("assets", "Physics","Collider_MultipleSurfaceSlots", "test.fbx.pxmesh")
 
     # 1) Load the empty level
     hydra.open_base_level()

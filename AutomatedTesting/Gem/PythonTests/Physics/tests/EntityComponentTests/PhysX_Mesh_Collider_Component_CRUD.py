@@ -44,7 +44,7 @@ def PhysX_Mesh_Collider_Component_CRUD():
     from consts.physics import PHYSX_MESH_COLLIDER
 
     # 0) Pre-conditions
-    physx_mesh = os.path.join("objects", "_primitives", "_box_1x1.pxmesh")
+    physx_mesh = os.path.join("objects", "_primitives", "_box_1x1.fbx.pxmesh")
     physx_material = os.path.join("physx", "glass.physxmaterial")
 
     TestHelper.init_idle()

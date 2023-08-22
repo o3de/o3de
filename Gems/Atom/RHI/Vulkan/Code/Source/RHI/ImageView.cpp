@@ -6,6 +6,7 @@
  *
  */
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/ImageViewDescriptor.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
@@ -61,6 +62,12 @@ namespace AZ
             const auto& image = static_cast<const Image&>(resourceBase);
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
 
+            ImageComponentMapping componentMapping{};
+            if (const auto* descriptor = azrtti_cast<const ImageViewDescriptor*>(&viewDescriptor))
+            {
+                componentMapping = descriptor->m_componentMapping;
+            }
+
             // this can happen when image has been invalidated/released right before re-compiling the image
             if (image.GetNativeImage() == VK_NULL_HANDLE)
             {
@@ -101,7 +108,7 @@ namespace AZ
             createInfo.image = image.GetNativeImage();
             createInfo.viewType = imageViewType;
             createInfo.format = ConvertFormat(m_format);
-            createInfo.components = VkComponentMapping{}; // identity mapping
+            createInfo.components = ConvertComponentMapping(componentMapping);
             createInfo.subresourceRange = vkRange;
 
             const VkResult result =
@@ -118,7 +125,7 @@ namespace AZ
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
 
-            if (!viewDescriptor.m_isArray && !isDSRendertarget)
+            if (device.GetBindlessDescriptorPool().IsInitialized() && !viewDescriptor.m_isArray && !isDSRendertarget)
             {
                 if (!viewDescriptor.m_isCubemap)
                 {
@@ -171,19 +178,21 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
-
-            if (m_readIndex != InvalidBindlessIndex)
+            if (device.GetBindlessDescriptorPool().IsInitialized())
             {
-                if (!viewDescriptor.m_isCubemap)
+                if (m_readIndex != InvalidBindlessIndex)
                 {
-                    device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
-                }
-                else
-                {
-                    device.GetBindlessDescriptorPool().DetachReadCubeMapImage(m_readIndex);
-                }
+                    if (!viewDescriptor.m_isCubemap)
+                    {
+                        device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                    }
+                    else
+                    {
+                        device.GetBindlessDescriptorPool().DetachReadCubeMapImage(m_readIndex);
+                    }
 
-                m_readIndex = InvalidBindlessIndex;
+                    m_readIndex = InvalidBindlessIndex;
+                }
             }
 
             if (m_readWriteIndex != InvalidBindlessIndex)

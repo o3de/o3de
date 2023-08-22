@@ -1,6 +1,6 @@
 {
     "ENV": {
-        "NODE_LABEL": "windows-8fe4037c",
+        "NODE_LABEL": "windows-latest",
         "LY_3RDPARTY_PATH": "D:/workspace/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "D:/workspace",

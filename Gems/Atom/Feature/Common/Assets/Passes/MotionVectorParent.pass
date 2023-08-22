@@ -71,7 +71,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "motion",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 }
             ]

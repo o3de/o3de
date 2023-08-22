@@ -55,7 +55,8 @@ namespace UnitTest
             Device();
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal([[maybe_unused]] AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternalBindlessSrg([[maybe_unused]] const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc) override { return AZ::RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
             AZ::RHI::ResultCode BeginFrameInternal() override { return AZ::RHI::ResultCode::Success;}
             void EndFrameInternal() override {}

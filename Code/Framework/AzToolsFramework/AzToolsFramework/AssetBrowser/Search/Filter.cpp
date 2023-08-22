@@ -415,41 +415,6 @@ namespace AzToolsFramework
         }
 
         //////////////////////////////////////////////////////////////////////////
-        // EngineFilter
-        //////////////////////////////////////////////////////////////////////////
-        EngineFilter::EngineFilter()
-            : m_enginePath("")
-            , m_projectPath("")
-        {
-        }
-
-        void EngineFilter::SetEngineAndProject(AZ::IO::Path enginePath, AZ::IO::Path projectPath)
-        {
-            m_enginePath = enginePath.LexicallyNormal();
-            m_projectPath = projectPath.LexicallyNormal();
-        }
-
-        QString EngineFilter::GetNameInternal() const
-        {
-            return QString::fromUtf8(m_enginePath.c_str(), static_cast<int32_t>(m_enginePath.Native().size()));
-        }
-
-        bool EngineFilter::MatchInternal(const AssetBrowserEntry* entry) const
-        {
-            if (m_enginePath.empty() || m_projectPath.empty())
-            {
-                return true;
-            }
-
-            AZ::IO::Path absolutePath =
-                (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product && entry->GetParent()
-                    ? entry->GetParent()->GetFullPath()
-                    : entry->GetFullPath());
-
-            return (absolutePath.IsRelativeTo(m_projectPath) ? true : !absolutePath.IsRelativeTo(m_enginePath));
-        }
-
-        //////////////////////////////////////////////////////////////////////////
         // CompositeFilter
         //////////////////////////////////////////////////////////////////////////
         CompositeFilter::CompositeFilter(LogicOperatorType logicOperator)

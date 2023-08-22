@@ -224,7 +224,7 @@ namespace AZ
             Data::AssetId assetId,
             AZStd::string_view materialSourceFilePath,
             bool elevateWarnings,
-            AZStd::unordered_set<AZStd::string>* sourceDependencies) const
+            MaterialUtils::ImportedJsonFiles* sourceDependencies) const
         {
             if (m_materialType.empty())
             {

@@ -21,6 +21,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
@@ -180,7 +181,7 @@ namespace AzToolsFramework
 
     // Wrapper type that takes a PropertyHandleBase from the ReflectedPropertyEditor and
     // provides a PropertyHandlerWidgetInterface for the DocumentPropertyEditor.
-    // Doesn't use the normal static ShouldHandleNode and GetHandlerName implementations,
+    // Doesn't use the normal static ShouldHandleType and GetHandlerName implementations,
     // so must be custom registered to the PropertyEditorToolsSystemInterface.
     template<typename WrappedType>
     class RpePropertyHandlerWrapper
@@ -235,21 +236,9 @@ namespace AzToolsFramework
             {
                 const AZ::Name& name = attributeIt->first;
 
-                if (name == PropertyEditor::Type.GetName() || name == PropertyEditor::Value.GetName())
+                if (name == PropertyEditor::Type.GetName() || name == PropertyEditor::Value.GetName() ||
+                    name == PropertyEditor::ValueType.GetName())
                 {
-                    continue;
-                }
-                else if (name == PropertyEditor::ValueType.GetName())
-                {
-                    // Type id from the node could be a specialized type different from the type id set up in the constructor.
-                    m_proxyClassData.m_typeId = AZ::Dom::Utils::DomValueToTypeId(attributeIt->second);
-
-                    if (m_proxyClassData.m_typeId.IsNull())
-                    {
-                        AZ::Dom::Value theValue = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
-                        m_proxyClassData.m_typeId = AZ::Dom::Utils::GetValueTypeId(theValue);
-                    }
-
                     continue;
                 }
                 else if (name == PropertyEditor::ParentValue.GetName())
@@ -267,6 +256,19 @@ namespace AzToolsFramework
                     }
                     continue;
                 }
+                // Use the SerializedPath as the proxy class element name, which prior to this was always an empty string
+                // since it isn't used by the property handler. This helps when debugging the ConsumeAttribute method
+                // in the property handlers because the class element name gets passed as the debugName, so its easier
+                // to tell which property is currently processing the attributes.
+                else if (name == AZ::Reflection::DescriptorAttributes::SerializedPath)
+                {
+                    auto elementName = AZ::Dom::Utils::ValueToType<AZStd::string_view>(attributeIt->second);
+                    if (elementName.has_value())
+                    {
+                        m_proxyClassElement.m_name = elementName.value().data();
+                    }
+                    continue;
+                }
 
                 AZ::Crc32 attributeId = AZ::Crc32(name.GetStringView());
 
@@ -274,19 +276,72 @@ namespace AzToolsFramework
                 // Attribute definitions may be templated and will thus support multiple types.
                 // Therefore we must try all registered definitions for a particular attribute
                 // in an effort to find one that can successfully extract the attribute data.
-                propertyEditorSystem->EnumerateRegisteredAttributes(
-                    name,
-                    [&](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+
+                bool fallback = false;
+                auto getAttributeFromValue = [&](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                {
+                    if (marshalledAttribute == nullptr)
                     {
-                        if (marshalledAttribute == nullptr)
-                        {
-                            marshalledAttribute = attributeReader.DomValueToLegacyAttribute(attributeIt->second);
-                        }
-                    });
+                        marshalledAttribute = attributeReader.DomValueToLegacyAttribute(attributeIt->second, fallback);
+                    }
+                };
+
+                // try the conversion once without type fallback
+                propertyEditorSystem->EnumerateRegisteredAttributes(name, getAttributeFromValue);
+
+                if (marshalledAttribute == nullptr)
+                {
+                    // still null, try it again allowing type fallback
+                    fallback = true;
+                    propertyEditorSystem->EnumerateRegisteredAttributes(name, getAttributeFromValue);
+                }
 
                 if (!marshalledAttribute)
                 {
                     marshalledAttribute = AZ::Reflection::WriteDomValueToGenericAttribute(attributeIt->second);
+
+                    // If we didn't find the attribute in the registered definitions, then it's one we don't have explicitly
+                    // registered, so instead of the `name` being the non-hashed string (e.g. "ChangeNotify"), it will
+                    // be already be the hashed version (e.g. "123456789"), so we don't need to hash it again, but rather
+                    // need to use the hash directly for the attribute id.
+                    if (AZ::StringFunc::LooksLikeInt(name.GetCStr()))
+                    {
+                        AZStd::string attributeIdString(name.GetStringView());
+                        AZ::u32 attributeIdHash = static_cast<AZ::u32>(AZStd::stoul(attributeIdString));
+                        attributeId = AZ::Crc32(attributeIdHash);
+
+                        // If we failed to marshal the attribute in the above AZ::Reflection::WriteDomValueToGenericAttribute,
+                        // then its either an opaque value or an Attribute object (from being a callback), so we need
+                        // to handle these cases separately to marshal them into an attribute to be passed onto the
+                        // handlers that will actually consume them.
+                        if (!marshalledAttribute)
+                        {
+                            if (attributeIt->second.IsOpaqueValue() && attributeIt->second.GetOpaqueValue().is<AZ::Attribute*>())
+                            {
+                                AZ::Attribute* attribute = AZStd::any_cast<AZ::Attribute*>(attributeIt->second.GetOpaqueValue());
+                                marshalledAttribute = AZStd::shared_ptr<AZ::Attribute>(
+                                    attribute,
+                                    [](AZ::Attribute*)
+                                    {
+                                    });
+                            }
+                            else if (attributeIt->second.IsObject())
+                            {
+                                auto typeField = attributeIt->second.FindMember(AZ::Attribute::GetTypeField());
+                                if (typeField != attributeIt->second.MemberEnd() && typeField->second.IsString() &&
+                                    typeField->second.GetString() == AZ::Attribute::GetTypeName())
+                                {
+                                    AZ::Attribute* attribute =
+                                        AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(attributeIt->second[AZ::Attribute::GetAttributeField()]);
+                                    marshalledAttribute = AZStd::shared_ptr<AZ::Attribute>(
+                                        attribute,
+                                        [](AZ::Attribute*)
+                                        {
+                                        });
+                                }
+                            }
+                        }
+                    }
                 }
 
                 if (marshalledAttribute)
@@ -339,13 +394,25 @@ namespace AzToolsFramework
                 }
             }
 
-            AZ::SerializeContext* sc = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+            AZ_Assert(serializeContext, "Serialization context not available");
 
-            if (sc)
+            // Set the m_genericClassInfo (if any) for our type in case the property handler needs to access it
+            // when downcasting to the generic type (e.g. for asset property downcasting to the generic AZ::Data::Asset<AZ::Data::AssetData>)
+            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
+            AZ::TypeId typeId = AZ::TypeId::CreateNull();
+            if (typeIdAttribute != node.MemberEnd())
             {
-                // Set up the generic class info. Property handlers like asset property handlers would need this.
-                m_proxyClassElement.m_genericClassInfo = sc->FindGenericClassInfo(m_proxyClassData.m_typeId);
+                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+            }
+            else if (value.has_value())
+            {
+                typeId = AZ::Dom::Utils::GetValueTypeId(value.value());
+            }
+            if (!typeId.IsNull())
+            {
+                m_proxyClassElement.m_genericClassInfo = serializeContext->FindGenericClassInfo(typeId);
             }
 
             if (m_widget)
@@ -375,42 +442,9 @@ namespace AzToolsFramework
             return m_rpeHandler.GetLastInTabOrder_Internal(GetWidget());
         }
 
-        static bool ShouldHandleNode(PropertyHandlerBase& rpeHandler, const AZ::Dom::Value& node)
+        static bool ShouldHandleType(PropertyHandlerBase& rpeHandler, const AZ::TypeId& typeId)
         {
-            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
-            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
-            AZ::TypeId typeId = AZ::TypeId::CreateNull();
-            if (typeIdAttribute != node.MemberEnd())
-            {
-                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
-            }
-            else
-            {
-                AZ::Dom::Value value = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
-                typeId = AZ::Dom::Utils::GetValueTypeId(value);
-            }
-
-            bool handled = rpeHandler.HandlesType(typeId);
-
-            if (!handled)
-            {
-                AZ::SerializeContext* sc = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-                // Some instance type ids stored in the node are specialized type ids.
-                // So we need to check the generic type id to see if it matches the handler's type id.
-                // Example: Asset<ScriptAsset> is a specialized type and its generic type is Asset.
-                if (const auto* genericInfo = sc->FindGenericClassInfo(typeId))
-                {
-                    if (genericInfo->GetGenericTypeId() != typeId)
-                    {
-                        auto genericTypeId = genericInfo->GetGenericTypeId();
-                        handled = rpeHandler.HandlesType(genericTypeId);
-                    }
-                }
-            }
-
-            return handled;
+            return rpeHandler.HandlesType(typeId);
         }
 
         static const AZStd::string_view GetHandlerName(PropertyHandlerBase& rpeHandler)
@@ -431,7 +465,32 @@ namespace AzToolsFramework
             using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
 
             m_rpeHandler.WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
-            const AZ::Dom::Value newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+
+            auto typeIdAttribute = m_domNode.FindMember(PropertyEditor::ValueType.GetName());
+            AZ::TypeId typeId = AZ::TypeId::CreateNull();
+            if (typeIdAttribute != m_domNode.MemberEnd())
+            {
+                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+            }
+
+            // If the expected TypeId differs from m_proxyClassData.m_typeId (WrappedType),
+            // then it means this handler was written for a base-class/m_proxyClassElement.m_genericClassInfo
+            //      e.g. AZ::Data::Asset<AZ::Data::AssetData> when the actual type is for a specific asset data such as
+            //           AZ::Data::Asset<RPI::ModelAsset>
+            // So we need to marshal it with a typed pointer, which is how the data gets read in as well
+            // NOTE: The exception to this is for enum types, which might have a specialized type vs. an underlying type (e.g. short, int,
+            // etc...) in which case, the proxy value still comes as a primitive instead of a pointer, so we still need to use ValueFromType
+            // for that case. For everything else, we can just use ValueFromType which can imply the type from the value itself.
+            AZ::Dom::Value newValue;
+            if (!typeId.IsNull() && (typeId != m_proxyClassData.m_typeId) && !m_domNode.HasMember(PropertyEditor::EnumType.GetName()))
+            {
+                newValue = AZ::Dom::Utils::MarshalTypedPointerToValue(&m_proxyValue, typeId);
+            }
+            else
+            {
+                newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+            }
+
             PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
             OnRequestPropertyNotify();
         }
@@ -574,9 +633,9 @@ namespace AzToolsFramework
                 using HandlerType = RpePropertyHandlerWrapper<PropertyType>;
                 PropertyEditorToolsSystemInterface::HandlerData registrationInfo;
                 registrationInfo.m_name = HandlerType::GetHandlerName(*this);
-                registrationInfo.m_shouldHandleNode = [this](const AZ::Dom::Value& node)
+                registrationInfo.m_shouldHandleType = [this](const AZ::TypeId& typeId)
                 {
-                    return HandlerType::ShouldHandleNode(*this, node);
+                    return HandlerType::ShouldHandleType(*this, typeId);
                 };
                 registrationInfo.m_factory = [this]()
                 {

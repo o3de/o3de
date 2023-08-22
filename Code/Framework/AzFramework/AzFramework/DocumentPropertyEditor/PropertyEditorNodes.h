@@ -21,7 +21,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     //! Be sure to update this if you change this file.
     void Reflect(PropertyEditorSystemInterface* system);
 
-    //! PropertyVisibility: Provided for compatability with the RPE, determines whether an entry
+    //! PropertyVisibility: Provided for compatibility with the RPE, determines whether an entry
     //! and/or its children should be visible.
     enum class PropertyVisibility : AZ::u32
     {
@@ -36,6 +36,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         static constexpr AZStd::string_view Name = "NodeWithVisiblityControl";
         static constexpr auto Visibility = AttributeDefinition<PropertyVisibility>("Visibility");
+        static constexpr auto ReadOnly = AttributeDefinition<bool>("ReadOnly");
+        static constexpr auto NameLabelOverride = AttributeDefinition<AZStd::string_view>("NameLabelOverride");
+        static constexpr auto SetTrueLabel = AttributeDefinition<AZStd::string_view>("SetTrueLabel");
+        static constexpr auto SetFalseLabel = AttributeDefinition<AZStd::string_view>("SetFalseLabel");
 
         static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
         //! In some cases, a node may need to know that it is descended from a disabled ancestor. For example, disabled
@@ -111,6 +115,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
         static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t index)>("RemoveNotify");
         static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
+        static constexpr auto ContainerCanBeModified = AttributeDefinition<bool>("ContainerCanBeModified");
+        static constexpr auto PromptOnContainerClear = AttributeDefinition<bool>("PromptOnContainerClear");
     };
 
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
@@ -168,6 +174,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
     };
 
     template<typename T = Dom::Value>
+    struct NumericEditor;
+
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME(NumericEditor, "NumericEditor", "{C891BF19-B60C-45E2-BFD0-027D15DDC939}", AZ_TYPE_INFO_CLASS);
+
+    template<typename T>
     struct NumericEditor : PropertyEditorDefinition
     {
         static_assert(
@@ -176,9 +187,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
         using StorageType = AZStd::conditional_t<
             AZStd::is_same_v<T, Dom::Value>,
             Dom::Value,
-            AZStd::conditional_t<AZStd::is_floating_point_v<T>, double, AZStd::conditional_t<AZStd::is_signed_v<T>, int64_t, uint64_t>>>;
+            AZStd::conditional_t<AZStd::is_floating_point_v<T>, double, AZStd::conditional_t<AZStd::is_signed_v<T>, AZ::s64, AZ::u64>>>;
 
-        static constexpr AZStd::string_view Name = "NumericEditor";
+        inline static const AZStd::string_view Name = AzTypeInfo<NumericEditor>::Name();
         static constexpr auto Min = AttributeDefinition<StorageType>("Min");
         static constexpr auto Max = AttributeDefinition<StorageType>("Max");
         static constexpr auto Step = AttributeDefinition<StorageType>("Step");
@@ -252,11 +263,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct LineEdit : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "LineEdit";
+        static constexpr auto PlaceholderText = AttributeDefinition<AZStd::string_view>("PlaceholderText");
     };
 
     struct MultiLineEdit : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "MultiLineEdit";
+        static constexpr auto PlaceholderText = AttributeDefinition<AZStd::string_view>("PlaceholderText");
     };
 
     struct Quaternion : PropertyEditorDefinition

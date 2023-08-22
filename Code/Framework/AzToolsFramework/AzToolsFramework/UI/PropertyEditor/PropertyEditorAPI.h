@@ -191,9 +191,9 @@ namespace AzToolsFramework
             using HandlerType = RpePropertyHandlerWrapper<void*>;
             PropertyEditorToolsSystemInterface::HandlerData registrationInfo;
             registrationInfo.m_name = HandlerType::GetHandlerName(*this);
-            registrationInfo.m_shouldHandleNode = [this](const AZ::Dom::Value& node)
+            registrationInfo.m_shouldHandleType = [this](const AZ::TypeId& typeId)
             {
-                return HandlerType::ShouldHandleNode(*this, node);
+                return HandlerType::ShouldHandleType(*this, typeId);
             };
             registrationInfo.m_factory = [this]()
             {

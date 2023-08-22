@@ -11,10 +11,7 @@
 #include <Atom/RHI/TagRegistry.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        using DrawFilterTagRegistry = TagRegistry<DrawFilterTag::IndexType, Limits::Pipeline::DrawFilterTagCountMax>;
-    }
+    using DrawFilterTagRegistry = TagRegistry<DrawFilterTag::IndexType, Limits::Pipeline::DrawFilterTagCountMax>;
 }

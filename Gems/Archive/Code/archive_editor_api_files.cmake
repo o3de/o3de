@@ -6,4 +6,6 @@
 
 
 set(FILES
+    Include/Archive/Tools/ArchiveWriterAPI.h
+    Include/Archive/Tools/ArchiveWriterAPI.inl
 )

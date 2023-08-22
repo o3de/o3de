@@ -31,4 +31,9 @@ namespace AZ::Platform
     void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
     {
     }
+
+    AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView&)
+    {
+        return {};
+    }
 } // namespace AZ::Platform

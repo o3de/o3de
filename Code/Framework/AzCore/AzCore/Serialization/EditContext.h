@@ -263,7 +263,7 @@ namespace AZ
              * \param memberVariable - reference to the member variable so we can bind to serialization data.
              */
             template<class T>
-            ClassBuilder* GroupElementToggle(const char* description, T memberVariable);
+            ClassBuilder* GroupElementToggle(const char* description, bool(T::*memberVariable));
 
 
             /**
@@ -583,7 +583,7 @@ namespace AZ
     // ClassElement
     //=========================================================================
     template<class T>
-    inline EditContext::ClassBuilder* EditContext::ClassBuilder::GroupElementToggle(const char* name, T memberVariable)
+    inline EditContext::ClassBuilder* EditContext::ClassBuilder::GroupElementToggle(const char* name, bool(T::*memberVariable))
     {
         return DataElement(AZ::Edit::ClassElements::Group, memberVariable, name, name, "");
     }

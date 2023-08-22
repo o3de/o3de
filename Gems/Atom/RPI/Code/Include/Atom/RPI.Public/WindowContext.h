@@ -70,10 +70,15 @@ namespace AZ
 
             //! Get the number of active swapchains
             uint32_t GetSwapChainsSize() const;
+
+            //! Get swapchain scaling mode
+            RHI::Scaling GetSwapChainScalingMode() const;
+
         private:
 
             // WindowNotificationBus::Handler overrides ...
             void OnWindowResized(uint32_t width, uint32_t height) override;
+            void OnResolutionChanged(uint32_t width, uint32_t height) override;
             void OnWindowClosed() override;
             void OnVsyncIntervalChanged(uint32_t interval) override;
 
@@ -84,6 +89,14 @@ namespace AZ
 
             // Creates the underlying RHI level SwapChain for the given Window plus XR swapchains.
             void CreateSwapChains(RHI::Device& device);
+
+            // Figure out swapchain's size based on window's client area size, render resolution and
+            // device's swapchain scaling support
+            AzFramework::WindowSize ResolveSwapchainSize();
+
+            // Resize the swapchain if it's needed when window size or render resolution changed.
+            // Return true if swapchain is resized. 
+            bool CheckResizeSwapChain();
 
             // Destroys the underlying default SwapChain
             void DestroyDefaultSwapChain();
@@ -116,6 +129,10 @@ namespace AZ
             };
             // Data structure to hold SwapChain for Default and XR SwapChains.
             AZStd::vector<SwapChainData> m_swapChainsData;
+
+            // The scaling mode used by the device swapchain.
+            // If it supports stretch, the SwapChainPass in the render pipeline shouldn't need to do extra scaling
+            RHI::Scaling m_swapChainScalingMode; 
 
             // Non-owning reference to associated ViewportContexts (if any)
             AZStd::vector<AZStd::weak_ptr<ViewportContext>> m_viewportContexts;
