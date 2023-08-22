@@ -88,7 +88,7 @@ namespace EMotionFX
             SceneContainers::SceneGraph::NodeIndex rootBoneNodeIndex = graph.Find(rootBoneName);
             if (!rootBoneNodeIndex.IsValid())
             {
-                AZ_TracePrintf(SceneUtil::ErrorWindow, "Root bone cannot be found.\n");
+                AZ_Trace(SceneUtil::ErrorWindow, "Root bone cannot be found.\n");
                 return SceneEvents::ProcessingResult::Failure;
             }
 
@@ -231,7 +231,7 @@ namespace EMotionFX
                         EMotionFX::Node* emfxNode = actorSkeleton->FindNodeByName(nodeName.GetName());
                         if (!emfxNode)
                         {
-                            AZ_TracePrintf(
+                            AZ_Trace(
                                 SceneUtil::WarningWindow,
                                 "Critical bone %s is not in the actor skeleton hierarchy. Skipping it.",
                                 nodeName.GetName());
@@ -278,7 +278,7 @@ namespace EMotionFX
                         SceneContainers::SceneGraph::NodeIndex nodeIndex = graph.Find(criticalBonePath);
                         if (!nodeIndex.IsValid())
                         {
-                            AZ_TracePrintf(
+                            AZ_Trace(
                                 SceneUtil::WarningWindow,
                                 "Critical bone '%s' is not stored in the scene. Skipping it.",
                                 criticalBonePath.c_str());
