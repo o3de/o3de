@@ -30,7 +30,7 @@ namespace AZ
                     void(const AZStd::string & name));
                 void AddSelectedNode(AZStd::string&& name)
                 {
-                    AddSelectedNode(name);
+                    AddSelectedNode(AZStd::move(name));
                 }
                 MOCK_METHOD1(RemoveSelectedNode,
                     void(const AZStd::string & name));
