@@ -169,6 +169,17 @@ public:
         m_pSerialize->Value(szName, value);
     }
 
+    // carbonated begin (akostin/mp344): IGame partially reverted for the sake of GridMate
+    // Serialization policy was used to allow compressing the value.
+#if defined(CARBONATED)
+    template<typename T_Value>
+    ILINE void Value(const char* szName, T_Value& value, int /* policy */)
+    {
+        m_pSerialize->Value(szName, value);
+    }
+#endif
+    // carbonated end
+
     void Value(const char* szName, AZStd::string& value)
     {
         if (IsWriting())

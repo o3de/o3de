@@ -883,6 +883,12 @@ inline const char* ValidatorModuleToString(EValidatorModule module)
         return "System";
     case VALIDATOR_MODULE_AUDIO:
         return "Audio";
+        // carbonated begin (akostin/mp344): IGame partially reverted for the sake of GridMate
+#if defined(CARBONATED)
+    case VALIDATOR_MODULE_GAME:
+        return "Game";
+#endif
+        // carbonated end
     case VALIDATOR_MODULE_MOVIE:
         return "Movie";
     case VALIDATOR_MODULE_EDITOR:
