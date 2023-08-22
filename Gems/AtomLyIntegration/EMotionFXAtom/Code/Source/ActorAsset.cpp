@@ -104,7 +104,7 @@ namespace AZ
                     }
                 }
 
-                //Pad the blend weigth and index buffers in order for it to respect alignment of RPI::SkinnedMeshBufferAlignment
+                //Pad the blend weight and index buffers in order for it to respect alignment of RPI::SkinnedMeshBufferAlignment
                 //as that is the expected behavior of the source asset
                 RPI::ModelAssetHelpers::AlignStreamBuffer<float>(
                     blendWeightBufferData, blendWeightBufferData.size(), RPI::SkinWeightFormat, RPI::SkinnedMeshBufferAlignment);

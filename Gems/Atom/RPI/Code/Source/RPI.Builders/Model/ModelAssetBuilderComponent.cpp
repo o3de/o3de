@@ -1509,7 +1509,7 @@ namespace AZ
                 uint32_t meshVertexCount = meshPositionsFloatCount / PositionFloatsPerVert;
                 if (hasSkinData)
                 {
-                    // Skinned buffers are padded so true vertex count is cached a part of the mesh and used here.
+                    // Skinned buffers are padded so true vertex count is cached as part of the mesh and used here.
                     meshVertexCount = aznumeric_cast<uint32_t>(mesh.m_vertexCount);
                 }
 
@@ -1602,7 +1602,7 @@ namespace AZ
                     const size_t totalVertexInfluences = mesh.m_influencesPerVertex * mesh.m_vertexCount;
                     AZ_Assert(
                         mesh.m_skinJointIndices.size() >= totalVertexInfluences && mesh.m_skinWeights.size() >= totalVertexInfluences,
-                        "Number of allocated skin influence joint indices (%d) and the number of weights (%d) should be above (%d)  .",
+                        "Number of allocated skin influence joint indices (%zu) and the number of weights (%zu) should be above (%zu)  .",
                         mesh.m_skinJointIndices.size(),
                         mesh.m_skinWeights.size(),
                         totalVertexInfluences);

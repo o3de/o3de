@@ -16,34 +16,34 @@ namespace AZ
     {
         namespace 
         {
-            const uint32_t PositionFloatsPerVert = 3;
-            const uint32_t NormalFloatsPerVert = 3;
-            const uint32_t UVFloatsPerVert = 2;
-            const uint32_t ColorFloatsPerVert = 4;
-            const uint32_t TangentFloatsPerVert = 4; // The 4th channel is used to indicate handedness of the bitangent, either 1 or -1.
-            const uint32_t BitangentFloatsPerVert = 3;
+            static constexpr uint32_t PositionFloatsPerVert = 3;
+            static constexpr uint32_t NormalFloatsPerVert = 3;
+            static constexpr uint32_t UVFloatsPerVert = 2;
+            static constexpr uint32_t ColorFloatsPerVert = 4;
+            static constexpr uint32_t TangentFloatsPerVert = 4; // The 4th channel is used to indicate handedness of the bitangent, either 1 or -1.
+            static constexpr uint32_t BitangentFloatsPerVert = 3;
 
-            const AZ::RHI::Format IndicesFormat = AZ::RHI::Format::R32_UINT;
-            const AZ::RHI::Format PositionFormat = AZ::RHI::Format::R32G32B32_FLOAT;
-            const AZ::RHI::Format NormalFormat = AZ::RHI::Format::R32G32B32_FLOAT;
-            const AZ::RHI::Format UVFormat = AZ::RHI::Format::R32G32_FLOAT;
-            const AZ::RHI::Format ColorFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
-            const AZ::RHI::Format BitangentFormat = AZ::RHI::Format::R32G32B32_FLOAT;
+            static constexpr AZ::RHI::Format IndicesFormat = AZ::RHI::Format::R32_UINT;
+            static constexpr AZ::RHI::Format PositionFormat = AZ::RHI::Format::R32G32B32_FLOAT;
+            static constexpr AZ::RHI::Format NormalFormat = AZ::RHI::Format::R32G32B32_FLOAT;
+            static constexpr AZ::RHI::Format UVFormat = AZ::RHI::Format::R32G32_FLOAT;
+            static constexpr AZ::RHI::Format ColorFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
+            static constexpr AZ::RHI::Format BitangentFormat = AZ::RHI::Format::R32G32B32_FLOAT;
             // The 4th channel is used to indicate handedness of the bitangent, either 1 or -1.
-            const AZ::RHI::Format TangentFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
-            const AZ::RHI::Format SkinIndicesFormat = AZ::RHI::Format::R16_UINT; // Single-component, 16-bit int per weight
-            const AZ::RHI::Format SkinWeightFormat = AZ::RHI::Format::R32_FLOAT; // Single-component, 32-bit floating point per weight
+            static constexpr AZ::RHI::Format TangentFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
+            static constexpr AZ::RHI::Format SkinIndicesFormat = AZ::RHI::Format::R16_UINT; // Single-component, 16-bit int per weight
+            static constexpr AZ::RHI::Format SkinWeightFormat = AZ::RHI::Format::R32_FLOAT; // Single-component, 32-bit floating point per weight
 
-            const char* ShaderSemanticName_SkinJointIndices = "SKIN_JOINTINDICES";
-            const char* ShaderSemanticName_SkinWeights = "SKIN_WEIGHTS";
+            static const char* ShaderSemanticName_SkinJointIndices = "SKIN_JOINTINDICES";
+            static const char* ShaderSemanticName_SkinWeights = "SKIN_WEIGHTS";
 
             // Morph targets
-            const char* ShaderSemanticName_MorphTargetDeltas = "MORPHTARGET_VERTEXDELTAS";
+            static const char* ShaderSemanticName_MorphTargetDeltas = "MORPHTARGET_VERTEXDELTAS";
 
             // Cloth data
-            const char* const ShaderSemanticName_ClothData = "CLOTH_DATA";
-            const uint32_t ClothDataFloatsPerVert = 4;
-            const AZ::RHI::Format ClothDataFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
+            static const char* ShaderSemanticName_ClothData = "CLOTH_DATA";
+            static constexpr uint32_t ClothDataFloatsPerVert = 4;
+            static const AZ::RHI::Format ClothDataFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
 
             // We align all the skinned mesh related stream buffers to 192 bytes for various reasons.
             // Metal has a restriction where each typed buffer needs to start at 64 byte boundary.
@@ -52,7 +52,7 @@ namespace AZ
             // views to R32 is also an option but it will break vertex shaders where they expect RGB views for IA buffers (for example t-pose for
             // skinned mesh). In order to satisfy 64/16/12 byte alignment we align all buffers to 192. This way we can meet metal's
             // restriction as well as maintain RGB/RGBA stream buffer views.
-            const uint32_t SkinnedMeshBufferAlignment = 192;
+            static constexpr uint32_t SkinnedMeshBufferAlignment = 192;
         }
 
         //! ModelAssetHelpers is a collection of helper methods for generating or manipulating model assets.
@@ -69,13 +69,31 @@ namespace AZ
             //! @param modelAsset An empty modelAsset that will get filled in with unit X data.
             static void CreateUnitX(ModelAsset* modelAsset);
 
-
+            //! Given the initial vertex count (vertexCount), format used per vertex (vertexFormat) and the type of each element
+            //! in the stream container (T) this function will return an aligned padded value whereby the returnedValue*sizeOf(T) 
+            //! is aligned to alignmentInBytes. This will allow the higher level user to pad their container holding vertex data so that it
+            //! ends at alignmentInBytes byte boundary. For example if you have a buffer with 2 vertices using format RGB32 stored in
+            //! a float container and we want to align it to 36 byte boundary this method will return 9 elements as 9 elements end at
+            //! 36 byte boundary and at the same time 9 means padding of exactly one extra vertex as each vertex needs 3 floats.
+            //! In the scenario above the function assumes that 36 will be a multiple of 12 (size of RGB32) as well as 4(size of float). 
+            //! 
+            //! @param vertexCount Number of vertices that need to be aligned
+            //! @param vertexFormat Format associated with each vertex
+            //! @param alignmentInBytes Alignment value in bytes
+            //! @param T The type associated with container holding vertex data. For example it could be float, uint32_t or uin16_t.
             template<typename T>
-            static size_t GetAlignedCount(size_t vertexCount, AZ::RHI::Format bufferFormat, uint32_t alignment);
+            static size_t GetAlignedCount(size_t vertexCount, AZ::RHI::Format vertexFormat, uint32_t alignmentInBytes);
 
+            //! This function will pad the vertex stream buffer (vertexStreamBuffer) with 0s in order to ensure that the total size
+            //! of the buffer ends at the alignmentInBytes byte boundary.
+            //! @param vertexStreamBuffer Vertex stream buffer that require padding
+            //! @param vertexCount Number of vertices that need to be aligned
+            //! @param vertexFormat Format associated with each vertex
+            //! @param alignmentInBytes Alignment value in bytes
+            //! @param T The type associated with container holding vertex stream data. For example it could be float, uint32_t or uin16_t.
             template<typename T>
             static void AlignStreamBuffer(
-                AZStd::vector<T>& streamBuffer, size_t vertexCount, AZ::RHI::Format bufferFormat, uint32_t alignment);
+                AZStd::vector<T>& vertexStreamBuffer, size_t vertexCount, AZ::RHI::Format vertexFormat, uint32_t alignmentInBytes);
 
         private:
             //! Create a BufferAsset from the given data buffer.
@@ -106,17 +124,27 @@ namespace AZ
         };
 
         template<typename T>
-        size_t ModelAssetHelpers::GetAlignedCount(size_t vertexCount, AZ::RHI::Format bufferFormat, uint32_t alignment)
+        size_t ModelAssetHelpers::GetAlignedCount(size_t vertexCount, AZ::RHI::Format vertexFormat, uint32_t alignmentInBytes)
         {
+            //Size in bytes used by one vertex
+            uint32_t vertexFormatSizeInBytes = RHI::GetFormatSize(vertexFormat);
+
+            //Size in bytes used by an element within the container holding vertex stream buffer.
+            uint32_t vertexContainerElementSizeInBytes = sizeof(T);
+
+            AZ_Assert(alignmentInBytes % vertexFormatSizeInBytes == 0, "alignmentInBytes needs to be a multiple of bytes used per vertex");
+            AZ_Assert(alignmentInBytes % vertexContainerElementSizeInBytes == 0,
+                "alignmentInBytes needs to be a multiple of bytes used by an element within the vertex stream buffer container");
+
             //Calculate vertex data in bytes
-            size_t vertexDataInBytes = vertexCount * RHI::GetFormatSize(bufferFormat);
+            size_t vertexDataInBytes = vertexCount * vertexFormatSizeInBytes;
 
             //Align up the appropriate alignment. Alignment can be non-power of two.
-            size_t alignedVertexDataInBytes = RHI::AlignUpNPOT(vertexDataInBytes, alignment);
+            size_t alignedVertexDataInBytes = RHI::AlignUpNPOT(vertexDataInBytes, alignmentInBytes);
 
             //Calculate the aligned element count
-            size_t alignedVertexCount = alignedVertexDataInBytes / sizeof(T);
-            return alignedVertexCount;
+            size_t alignedCount = alignedVertexDataInBytes / vertexContainerElementSizeInBytes;
+            return alignedCount;
         }
 
         template<typename T>
@@ -134,8 +162,12 @@ namespace AZ
             // Pad the buffer in order to respect the alignment
             if (alignmentCountDelta > 0)
             {
-                AZStd::vector<T> extraIds(alignmentCountDelta, 0);
-                streamBuffer.insert(streamBuffer.end(), extraIds.begin(), extraIds.end());
+                //AZStd::vector<T> extraIds(alignmentCountDelta, 0);
+                //streamBuffer.insert(streamBuffer.end(), extraIds.begin(), extraIds.end());
+                for (int i = 0; i < alignmentCountDelta; i++)
+                {
+                    streamBuffer.emplace_back(static_cast<T>(0));
+                }
             }
         }
     } //namespace RPI
