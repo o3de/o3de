@@ -37,7 +37,7 @@ namespace AZ
             {
             }
 
-            PatternMatcher::PatternMatcher(AZStd::span<AZStd::string_view> patterns, MatchApproach matcher)
+            PatternMatcher::PatternMatcher(const AZStd::span<const AZStd::string_view> patterns, MatchApproach matcher)
                 : m_matcher(matcher)
             {
                 m_patterns.reserve(patterns.size());

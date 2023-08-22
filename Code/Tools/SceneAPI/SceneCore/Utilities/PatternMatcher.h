@@ -45,7 +45,7 @@ namespace AZ
                 SCENE_CORE_API PatternMatcher(const char* pattern, MatchApproach matcher);
                 SCENE_CORE_API PatternMatcher(const AZStd::string& pattern, MatchApproach matcher);
                 SCENE_CORE_API PatternMatcher(AZStd::string&& pattern, MatchApproach matcher);
-                SCENE_CORE_API PatternMatcher(AZStd::span<AZStd::string_view> patterns, MatchApproach matcher);
+                SCENE_CORE_API PatternMatcher(const AZStd::span<const AZStd::string_view> patterns, MatchApproach matcher);
                 SCENE_CORE_API PatternMatcher(const PatternMatcher& rhs);
                 SCENE_CORE_API PatternMatcher(PatternMatcher&& rhs);
 
