@@ -6,11 +6,17 @@
  *
  */
 
+
+
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
-
 #include <GameController/GameController.h>
-
 #include <AzCore/Debug/Trace.h>
+
+#if defined(AZ_PLATFORM_MAC)
+#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
+#elif defined(AZ_PLATFORM_IOS)
+#include <AzFramework/Components/NativeUISystemComponentFactories_iOS.h>
+#endif // AZ_PLATFORM_MAC
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -112,10 +118,28 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::u32 InputDeviceGamepad::GetMaxSupportedGamepads()
+#if defined(AZ_PLATFORM_MAC)
+    AZStd::unique_ptr<InputDeviceGamepad::Implementation> MacDeviceGamepadImplFactory::Create(InputDeviceGamepad& inputDevice) override;
+    {
+        return AZStd::make_unique<InputDeviceGamepadApple>(inputDevice);
+    }
+
+    AZ::u32 MacDeviceGamepadImplFactory::GetMaxSupportedGamepads() override
     {
         return GCControllerPlayerIndex4 + 1;
     }
+#elif defined(AZ_PLATFORM_IOS)
+    AZStd::unique_ptr<InputDeviceGamepad::Implementation> IosDeviceGamepadImplFactory::Create(InputDeviceGamepad& inputDevice) override;
+    {
+        return AZStd::make_unique<InputDeviceGamepadApple>(inputDevice);
+    }
+
+    AZ::u32 IosDeviceGamepadImplFactory::GetMaxSupportedGamepads() override
+    {
+        return GCControllerPlayerIndex4 + 1;
+    }
+
+#endif // AZ_PLATFORM_MAC
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceGamepad::Implementation* InputDeviceGamepad::Implementation::Create(

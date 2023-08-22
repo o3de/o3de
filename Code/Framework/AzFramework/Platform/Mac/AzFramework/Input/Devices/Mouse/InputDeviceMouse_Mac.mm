@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
@@ -206,11 +207,11 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::Implementation* InputDeviceMouse::Implementation::Create(InputDeviceMouse& inputDevice)
+    AZStd::unique_ptr<InputDeviceMouse::Implementation> MacDeviceMouseImplFactory::Create(InputDeviceMouse& inputDevice) override
     {
-        return aznew InputDeviceMouseMac(inputDevice);
+        return AZStd::make_unique<InputDeviceMouseWindows>(inputDevice);
     }
-
+    
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouseMac::InputDeviceMouseMac(InputDeviceMouse& inputDevice)
         : InputDeviceMouse::Implementation(inputDevice)

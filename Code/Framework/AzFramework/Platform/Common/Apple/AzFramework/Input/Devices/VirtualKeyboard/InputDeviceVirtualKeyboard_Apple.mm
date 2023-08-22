@@ -11,6 +11,10 @@
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
+#if defined(AZ_PLATFORM_IOS)
+#include <AzFramework/Components/NativeUISystemComponentFactories_iOS.h>
+#endif // AZ_PLATFORM_IOS
+
 #include <UIKit/UIKit.h>
 
 
@@ -179,11 +183,12 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceVirtualKeyboard::Implementation* InputDeviceVirtualKeyboard::Implementation::Create(
-        InputDeviceVirtualKeyboard& inputDevice)
+    #if defined(AZ_PLATFORM_IOS)
+    AZStd::unique_ptr<InputDeviceGamepad::Implementation> IosDeviceVirtualKeyboardImplFactory::Create(InputDeviceGamepad& inputDevice) override;
     {
-        return aznew InputDeviceVirtualKeyboardApple(inputDevice);
+        return AZStd::make_unique<InputDeviceVirtualKeyboardApple>(inputDevice);
     }
+    #endif // AZ_PLATFORM_IOS
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceVirtualKeyboardApple::InputDeviceVirtualKeyboardApple(

@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Input/Devices/Motion/InputDeviceMotion.h>
+#include <AzFramework/Components/NativeUISystemComponentFactories_iOS.h>
 
 #include <CoreMotion/CoreMotion.h>
 
@@ -109,10 +110,9 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMotion::Implementation* InputDeviceMotion::Implementation::Create(
-        InputDeviceMotion& inputDevice)
+    AZStd::unique_ptr<InputDeviceMotion::Implementation> IosDeviceMotionImplFactory::Create(InputDeviceMotion& inputDevice) override
     {
-        return aznew InputDeviceMotionIos(inputDevice);
+        return AZStd::make_unique<InputDeviceMotionIos>(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -8,6 +8,7 @@
 
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
 #include <AppKit/NSApplication.h>
@@ -113,9 +114,9 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    Application::Implementation* Application::Implementation::Create()
+    AZStd::unique_ptr<Application::Implementation> MacApplicationImplFactory::Create()
     {
-        return aznew ApplicationMac();
+        return AZStd::make_unique<ApplicationMac>();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

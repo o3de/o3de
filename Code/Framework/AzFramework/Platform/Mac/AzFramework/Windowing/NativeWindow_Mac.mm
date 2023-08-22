@@ -8,6 +8,7 @@
  */
 
 #include <AzFramework/Windowing/NativeWindow.h>
+#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
 
 #include <AppKit/AppKit.h>
 
@@ -45,9 +46,10 @@ namespace AzFramework
         uint32_t m_mainDisplayRefreshRate = 0;
     };
 
-    NativeWindow::Implementation* NativeWindow::Implementation::Create()
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    AZStd::unique_ptr<InputDeviceKeyboard::Implementation> MacNativeWindowFactory::Create() override
     {
-        return aznew NativeWindowImpl_Darwin();
+        return AZStd::make_unique<NativeWindowImpl_Darwin>();
     }
 
     NativeWindowImpl_Darwin::~NativeWindowImpl_Darwin()

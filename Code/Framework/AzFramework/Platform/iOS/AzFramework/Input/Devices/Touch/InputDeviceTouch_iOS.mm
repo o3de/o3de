@@ -8,6 +8,7 @@
 
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
+#include <AzFramework/Components/NativeUISystemComponentFactories_iOS.h>
 
 #include <UIKit/UIKit.h>
 
@@ -62,9 +63,9 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceTouch::Implementation* InputDeviceTouch::Implementation::Create(InputDeviceTouch& inputDevice)
+    AZStd::unique_ptr<InputDeviceTouch::Implementation> IosDeviceTouchImplFactory::Create(InputDeviceTouch& inputDevice) override;
     {
-        return aznew InputDeviceTouchIos(inputDevice);
+        return AZStd::make_unique<InputDeviceTouchIos>(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

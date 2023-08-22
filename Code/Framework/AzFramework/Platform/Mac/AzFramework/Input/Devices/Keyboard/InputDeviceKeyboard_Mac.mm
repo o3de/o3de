@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -495,9 +496,9 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceKeyboard::Implementation* InputDeviceKeyboard::Implementation::Create(InputDeviceKeyboard& inputDevice)
+    AZStd::unique_ptr<InputDeviceKeyboard::Implementation> MacDeviceKeyboardImplFactory::Create(InputDeviceKeyboard& inputDevice) override;
     {
-        return aznew InputDeviceKeyboardMac(inputDevice);
+        return AZStd::make_unique<InputDeviceKeyboardMac>(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

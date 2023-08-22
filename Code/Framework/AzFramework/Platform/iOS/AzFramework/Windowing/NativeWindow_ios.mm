@@ -8,6 +8,7 @@
  */
 
 #include <AzFramework/Windowing/NativeWindow.h>
+#include <AzFramework/Components/NativeUISystemComponentFactories_iOS.h>
 
 #include <UIKit/UIKit.h>
 @class NSWindow;
@@ -34,11 +35,12 @@ namespace AzFramework
         uint32_t m_mainDisplayRefreshRate = 0;
     };
     
-    NativeWindow::Implementation* NativeWindow::Implementation::Create()
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    AZStd::unique_ptr<NativeWindow::Implementation> IosNativeWindowFactory::Create() override
     {
-        return aznew NativeWindowImpl_Ios();
+        return AZStd::make_unique<NativeWindowImpl_Ios>();
     }
-    
+
     NativeWindowImpl_Ios::~NativeWindowImpl_Ios()
     {
         if (m_nativeWindow)
