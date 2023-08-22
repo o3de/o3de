@@ -157,16 +157,7 @@ namespace AZ
                 "Aligned count should be equal or greater as we are aligning up. Aligned value %i BufferSize %i",
                 alignedCount,
                 streamBuffer.size());
-            size_t alignmentCountDelta = alignedCount - streamBuffer.size();
-
-            // Pad the buffer in order to respect the alignment
-            if (alignmentCountDelta > 0)
-            {
-                for (int i = 0; i < alignmentCountDelta; i++)
-                {
-                    streamBuffer.emplace_back(static_cast<T>(0));
-                }
-            }
+            streamBuffer.resize(alignedCount, static_cast<T>(0));
         }
     } //namespace RPI
 } // namespace AZ
