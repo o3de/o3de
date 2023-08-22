@@ -27,7 +27,7 @@ namespace AZ
             {
                 if (auto extractedNodeHandle = m_unselectedNodes.extract(name); extractedNodeHandle)
                 {
-                    m_selectedNodes.insert(extractedNodeHandle);
+                    m_selectedNodes.insert(AZStd::move(extractedNodeHandle.value()));
                 }
                 else
                 {
