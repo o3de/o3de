@@ -162,8 +162,6 @@ namespace AZ
             // Pad the buffer in order to respect the alignment
             if (alignmentCountDelta > 0)
             {
-                //AZStd::vector<T> extraIds(alignmentCountDelta, 0);
-                //streamBuffer.insert(streamBuffer.end(), extraIds.begin(), extraIds.end());
                 for (int i = 0; i < alignmentCountDelta; i++)
                 {
                     streamBuffer.emplace_back(static_cast<T>(0));
