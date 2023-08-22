@@ -33,6 +33,11 @@ enum EValidatorModule : int
     VALIDATOR_MODULE_ASSETS,
     VALIDATOR_MODULE_SYSTEM,
     VALIDATOR_MODULE_AUDIO,
+    // carbonated begin (akostin/mp344): IGame partially reverted for the sake of GridMate
+#if defined(CARBONATED)
+    VALIDATOR_MODULE_GAME,
+#endif
+    // carbonated end
     VALIDATOR_MODULE_MOVIE,
     VALIDATOR_MODULE_EDITOR,
     VALIDATOR_MODULE_NETWORK,

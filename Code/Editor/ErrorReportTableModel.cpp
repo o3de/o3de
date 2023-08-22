@@ -175,6 +175,12 @@ QVariant CErrorReportTableModel::data(const CErrorRecord& record, int column, in
                 return tr("System");
             case VALIDATOR_MODULE_AUDIO:
                 return tr("Audio");
+                // carbonated begin (akostin/mp344): IGame partially reverted for the sake of GridMate
+#if defined(CARBONATED)
+            case VALIDATOR_MODULE_GAME:
+                return tr("Game");
+#endif
+                // carbonated end
             case VALIDATOR_MODULE_MOVIE:
                 return tr("Movie");
             case VALIDATOR_MODULE_EDITOR:
