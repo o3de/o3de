@@ -44,13 +44,13 @@ namespace AzFramework
     void NativeUISystemComponent::InitializeDeviceTouchImplentationFactory()
     {
         m_deviceTouchImplFactory = AZStd::make_unique<IosDeviceTouchImplFactory>();
-        AZ::Interface<InputDeviceTouch::ImplementationFactory>::Register(m_deviceTouchImplFactory);
+        AZ::Interface<InputDeviceTouch::ImplementationFactory>::Register(m_deviceTouchImplFactory.get());
     }
 
     void NativeUISystemComponent::InitializeDeviceVirtualKeyboardImplentationFactory()
     {
-        m_deviceVirtualKeyboardImplFactory = AZStd::make_unique<IosDeviceKeyboardImplFactory>();
-        AZStd::Interface<InputDeviceVirtualKeyboard::ImplementationFactory>::Register(m_deviceVirtualKeyboardImplFactory);
+        m_deviceVirtualKeyboardImplFactory = AZStd::make_unique<IosDeviceVirtualKeyboardImplFactory>();
+        AZ::Interface<InputDeviceVirtualKeyboard::ImplementationFactory>::Register(m_deviceVirtualKeyboardImplFactory.get());
     }
 
     void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()

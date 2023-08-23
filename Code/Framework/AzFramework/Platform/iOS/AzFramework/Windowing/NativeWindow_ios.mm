@@ -36,7 +36,7 @@ namespace AzFramework
     };
     
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<NativeWindow::Implementation> IosNativeWindowFactory::Create() override
+    AZStd::unique_ptr<NativeWindow::Implementation> IosNativeWindowFactory::Create()
     {
         return AZStd::make_unique<NativeWindowImpl_Ios>();
     }

@@ -45,7 +45,7 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<Application::Implementation> IosApplicationImplFactory::Create() override
+    AZStd::unique_ptr<Application::Implementation> IosApplicationImplFactory::Create()
     {
         return AZStd::make_unique<ApplicationIos>();
     }

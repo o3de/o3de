@@ -63,7 +63,7 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceTouch::Implementation> IosDeviceTouchImplFactory::Create(InputDeviceTouch& inputDevice) override;
+    AZStd::unique_ptr<InputDeviceTouch::Implementation> IosDeviceTouchImplFactory::Create(InputDeviceTouch& inputDevice)
     {
         return AZStd::make_unique<InputDeviceTouchIos>(inputDevice);
     }

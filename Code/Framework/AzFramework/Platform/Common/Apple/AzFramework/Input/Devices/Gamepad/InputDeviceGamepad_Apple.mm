@@ -129,12 +129,12 @@ namespace AzFramework
         return GCControllerPlayerIndex4 + 1;
     }
 #elif defined(AZ_PLATFORM_IOS)
-    AZStd::unique_ptr<InputDeviceGamepad::Implementation> IosDeviceGamepadImplFactory::Create(InputDeviceGamepad& inputDevice) override;
+    AZStd::unique_ptr<InputDeviceGamepad::Implementation> IosDeviceGamepadImplFactory::Create(InputDeviceGamepad& inputDevice)
     {
         return AZStd::make_unique<InputDeviceGamepadApple>(inputDevice);
     }
 
-    AZ::u32 IosDeviceGamepadImplFactory::GetMaxSupportedGamepads() override
+    AZ::u32 IosDeviceGamepadImplFactory::GetMaxSupportedGamepads()
     {
         return GCControllerPlayerIndex4 + 1;
     }

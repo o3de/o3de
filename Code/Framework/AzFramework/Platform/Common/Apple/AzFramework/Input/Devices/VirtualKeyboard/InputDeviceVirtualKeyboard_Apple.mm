@@ -184,7 +184,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     #if defined(AZ_PLATFORM_IOS)
-    AZStd::unique_ptr<InputDeviceGamepad::Implementation> IosDeviceVirtualKeyboardImplFactory::Create(InputDeviceGamepad& inputDevice) override;
+    AZStd::unique_ptr<InputDeviceVirtualKeyboard::Implementation> IosDeviceVirtualKeyboardImplFactory::Create(InputDeviceVirtualKeyboard& inputDevice)
     {
         return AZStd::make_unique<InputDeviceVirtualKeyboardApple>(inputDevice);
     }

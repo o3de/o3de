@@ -110,7 +110,7 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceMotion::Implementation> IosDeviceMotionImplFactory::Create(InputDeviceMotion& inputDevice) override
+    AZStd::unique_ptr<InputDeviceMotion::Implementation> IosDeviceMotionImplFactory::Create(InputDeviceMotion& inputDevice)
     {
         return AZStd::make_unique<InputDeviceMotionIos>(inputDevice);
     }
