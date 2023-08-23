@@ -24,7 +24,9 @@ from enum import IntEnum
 LOCAL_ENGINE_PATH  = pathlib.Path(__file__).parent.parent.parent.parent
 
 # Account for some windows-specific attributes
-if platform.system().lower() == 'windows':
+CURRENT_PLATFORM = platform.system().lower()
+
+if CURRENT_PLATFORM == 'windows':
     EXECUTABLE_EXTENSION = '.exe'
     O3DE_SCRIPT_NAME = 'o3de.bat'
     GENERATOR = None
@@ -32,7 +34,27 @@ if platform.system().lower() == 'windows':
     CMAKE_MULTI_CONFIGURATION_GENERATOR = True
     ADDITIONAL_PLATFORM_IGNORE_FILES = ['*.pdb', '*.lock']
 
-else:
+elif CURRENT_PLATFORM == 'darwin':
+    # Test if Ninja is available from the command line to determine the generator and multi-config capability
+    test_xcode_result = None
+    try:
+        test_xcode_result = subprocess.run(['xcodebuild', '--version'])
+    except FileNotFoundError:
+        pass
+
+    if test_xcode_result and test_xcode_result.returncode == 0:
+        GENERATOR = "Xcode"
+        CMAKE_MULTI_CONFIGURATION_GENERATOR = True
+    else:
+        GENERATOR = "Unix Makefiles"
+        CMAKE_MULTI_CONFIGURATION_GENERATOR = False
+
+    EXECUTABLE_EXTENSION = ""
+    O3DE_SCRIPT_NAME = 'o3de.sh'
+    CMAKE_GENERATOR_OPTIONS = ['-DLY_DISABLE_TEST_MODULES=ON']
+    ADDITIONAL_PLATFORM_IGNORE_FILES = ['*.dbg', '*.lock']
+
+elif CURRENT_PLATFORM == 'linux':
     # Test if Ninja is available from the command line to determine the generator and multi-config capability
     test_ninja_result = None
     try:
@@ -51,6 +73,11 @@ else:
     O3DE_SCRIPT_NAME = 'o3de.sh'
     CMAKE_GENERATOR_OPTIONS = ['-DLY_DISABLE_TEST_MODULES=ON', '-DLY_STRIP_DEBUG_SYMBOLS=ON']
     ADDITIONAL_PLATFORM_IGNORE_FILES = ['*.dbg', '*.lock']
+
+else:
+    # Not a recognized or supported platform
+    print(f"Unsupported platform: {CURRENT_PLATFORM}")
+    exit(1)
 
 CUSTOM_SCRIPT_HELP_ARGUMENT = '--script-help'
 
@@ -93,7 +120,6 @@ class O3DEScriptExportContext(object):
         assert project_name, f"Invalid project configuration file '{project_path}/project.json'. 'project_name' not found in the settings"
 
         self._project_name = project_name
-        self._is_engine_centric = project_path.is_relative_to(engine_path)
 
         
     @property
@@ -125,11 +151,6 @@ class O3DEScriptExportContext(object):
     def project_name(self) -> str:
         """The name of the project at the project path"""
         return self._project_name
-
-    @property
-    def is_engine_centric(self) -> bool:
-        """Flag indicating if the project at project path is an engine-centric project"""
-        return self._is_engine_centric
 
 
 class ExportLayoutConfig(object):
@@ -287,10 +308,10 @@ def add_args(subparsers) -> None:
 def get_asset_processor_batch_path(tools_build_path: pathlib.Path,
                                    required: bool = False) -> pathlib.Path:
     """
-    Get the expected path to the asset bundler tool
+    Get the expected path to the asset processor tool
 
     @param tools_build_path:    The tools (cmake) build path to locate AssetProcessorBatch
-    @param required:            If true, check if the asset bundler actually exists on file at the expected location, and raise an error if not
+    @param required:            If true, check if the asset processor actually exists on file at the expected location, and raise an error if not
     @return: Path to the asset processor tool
     """
     asset_processor_batch_path = tools_build_path / f'bin/profile/AssetProcessorBatch{EXECUTABLE_EXTENSION}'
@@ -317,8 +338,9 @@ def get_asset_bundler_batch_path(tools_build_path: pathlib.Path,
 
 def build_assets(ctx: O3DEScriptExportContext,
                  tools_build_path: pathlib.Path,
+                 engine_centric: bool,
                  fail_on_ap_errors: bool,
-                 logger: logging.Logger = None) -> None:
+                 logger: logging.Logger = None) -> int:
     """
     Build the assets for the project
     @param ctx:                 Export Context
@@ -339,7 +361,7 @@ def build_assets(ctx: O3DEScriptExportContext,
 
     cmake_build_assets_command = [asset_processor_batch_path, "--project-path", ctx.project_path]
     ret = process_command(cmake_build_assets_command,
-                          cwd=ctx.engine_path if ctx.is_engine_centric else ctx.project_path)
+                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
         if fail_on_ap_errors:
             raise ExportProjectError(f"Error building assets for project {ctx.project_name}.")
@@ -348,10 +370,12 @@ def build_assets(ctx: O3DEScriptExportContext,
                 logger.warning("Some assets failed to processed.")
     if logger:
         logger.info(f"Completed processing assets for {ctx.project_name}!")
+    return ret
 
 
 def build_export_toolchain(ctx: O3DEScriptExportContext,
                            tools_build_path: pathlib.Path,
+                           engine_centric: bool,
                            logger: logging.Logger = None) -> None:
     """
     Build (or rebuild) the export tool chain (AssetProcessorBatch and AssetBundlerBatch)
@@ -365,7 +389,7 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
     # Generate the project for export toolchain
     cmake_configure_command = ["cmake", "-B", tools_build_path]
 
-    if ctx.is_engine_centric:
+    if engine_centric:
         cmake_configure_command.extend(["-S", ctx.engine_path])
     else:
         cmake_configure_command.extend(["-S", ctx.project_path])
@@ -377,8 +401,8 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
     if not CMAKE_MULTI_CONFIGURATION_GENERATOR:
         cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
-    if ctx.is_engine_centric:
-        cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path.name}'])
+    if engine_centric:
+        cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path}'])
     if logger:
         logger.info(f"Generating tool chain files for project {ctx.project_name}.")
     ret = process_command(cmake_configure_command)
@@ -422,6 +446,7 @@ def validate_export_toolchain(tools_build_path: pathlib.Path):
 def build_game_targets(ctx: O3DEScriptExportContext,
                        build_config: str,
                        game_build_path: pathlib.Path,
+                       engine_centric: bool,
                        launcher_types: int,
                        allow_registry_overrides: bool,
                        logger: logging.Logger = None) -> None:
@@ -448,7 +473,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
         return
 
     cmake_configure_command = ["cmake", "-B", game_build_path]
-    if ctx.is_engine_centric:
+    if engine_centric:
         cmake_configure_command.extend(["-S", ctx.engine_path])
     else:
         cmake_configure_command.extend(["-S", ctx.project_path])
@@ -459,8 +484,8 @@ def build_game_targets(ctx: O3DEScriptExportContext,
         cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
     if CMAKE_GENERATOR_OPTIONS:
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
-    if ctx.is_engine_centric:
-        cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path.name}'])
+    if engine_centric:
+        cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path}'])
 
     cmake_configure_command.extend(["-DLY_MONOLITHIC_GAME=1",
                                     f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"])
@@ -500,7 +525,8 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                   selected_platform: str,
                   seedlist_paths: List[pathlib.Path],
                   tools_build_path: pathlib.Path,
-                  custom_asset_list_path: pathlib.Path|None = None,
+                  engine_centric: bool,
+                  asset_bundling_path: pathlib.Path | None = None,
                   max_bundle_size: int = 2048) -> pathlib.Path:
     """
     Execute the 'bundle assets' phase of the export
@@ -509,17 +535,17 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     @param selected_platform:        The desired asset platform
     @param seedlist_paths:           The list of seedlist files
     @param tools_build_path:         The path to the tools cmake build project
-    @param custom_asset_list_path:   Optional custom asset list path, otherwise use the expectged 'AssetBundling/AssetLists'path in the project folder
+    @param asset_bundling_path:      The path to use to write all the intermediate and final artifacts from the bundling process
     @param max_bundle_size:          The size limit to put on the bundle
     @return: The path to the bundle
     """
 
     asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, required=True)
-    asset_list_path = (ctx.project_path / 'AssetBundling/AssetLists') if not custom_asset_list_path else custom_asset_list_path
+    asset_list_path = asset_bundling_path / 'AssetLists'
 
     game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
     engine_asset_list_path = asset_list_path / f'engine_{selected_platform}.assetlist'
-    bundles_path = ctx.project_path / 'AssetBundling/Bundles'
+    bundles_path = asset_bundling_path / 'Bundles'
 
     # Generate the asset lists for the project
     gen_game_asset_list_command = [asset_bundler_batch_path, 'assetLists',
@@ -531,7 +557,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
         gen_game_asset_list_command.append("--seedListFile")
         gen_game_asset_list_command.append(str(seed))
     ret = process_command(gen_game_asset_list_command,
-                          cwd=ctx.engine_path if ctx.is_engine_centric else ctx.project_path)
+                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
         raise RuntimeError(f"Error generating game assets lists for {game_asset_list_path}")
 
@@ -542,7 +568,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                                                                "--allowOverwrites",
                                                                "--addDefaultSeedListFiles"]
     ret = process_command(gen_engine_asset_list_command,
-                          cwd=ctx.engine_path if ctx.is_engine_centric else ctx.project_path)
+                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
         raise RuntimeError(f"Error generating engine assets lists for {engine_asset_list_path}")
 
@@ -555,7 +581,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                                                          "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
                                                          "--assetListFile", game_asset_list_path]
     ret = process_command(gen_game_bundle_command,
-                          cwd=ctx.engine_path if ctx.is_engine_centric else ctx.project_path)
+                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
         raise RuntimeError(f"Error generating game bundle for {bundles_path / f'game_{selected_platform}.pak'}")
 
@@ -567,7 +593,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                                                            "--outputBundlePath", bundles_path / f"engine_{selected_platform}.pak",
                                                            "--assetListFile", engine_asset_list_path]
     ret = process_command(gen_engine_bundle_command,
-                          cwd=ctx.engine_path if ctx.is_engine_centric else ctx.project_path)
+                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
         raise RuntimeError(f"Error generating engine bundle for {bundles_path / f'game_{selected_platform}.pak'}")
 
@@ -598,7 +624,7 @@ def kill_existing_processes(project_name: str):
 
 def setup_launcher_layout_directory(project_path: pathlib.Path,
                                     asset_platform: str,
-                                    game_build_path: pathlib.Path,
+                                    launcher_build_path: pathlib.Path,
                                     build_config: str,
                                     bundles_to_copy: List[pathlib.Path],
                                     export_layout: ExportLayoutConfig,
@@ -610,7 +636,7 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
 
     @param project_path:            The base project path
     @param asset_platform:          The desired asset platform
-    @param game_build_path:         The path where the launcher executables cmake build project was created
+    @param launcher_build_path:     The path where the launcher executables cmake build project was created
     @param build_config:            The build configuration to locate the launcher executables in the cmake build project
     @param bundles_to_copy:         List of bundles to copy to the layout
     @param export_layout:           The export layout information to build the layout directory
@@ -630,7 +656,7 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
     for bundle in bundles_to_copy:
         shutil.copy(bundle, output_cache_path)
 
-    for file in glob.glob(str(game_build_path / f'bin/{build_config}/*')):
+    for file in glob.glob(str(launcher_build_path / f'bin/{build_config}/*')):
         file_path = pathlib.Path(file)
 
         # Make sure the individual file path is not in any ignore patterns before copying

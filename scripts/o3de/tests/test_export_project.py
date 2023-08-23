@@ -174,12 +174,12 @@ def test_build_assets(tmp_path, engine_centric, fail_on_ap_errors):
             mock_ctx = create_autospec(O3DEScriptExportContext)
             mock_ctx.project_path = test_project_path
             mock_ctx.engine_path = test_engine_path
-            mock_ctx.is_engine_centric = engine_centric
             mock_ctx.project_name = test_project_name
 
             try:
                 build_assets(ctx=mock_ctx,
                              tools_build_path=test_tools_build_path,
+                             engine_centric=engine_centric,
                              fail_on_ap_errors=fail_on_ap_errors)
             except ExportProjectError:
                 ap_error_raised = True
@@ -233,7 +233,8 @@ def test_build_export_toolchain(tmp_path, engine_centric, additional_build_args)
         mock_ctx.project_name = test_project_name
 
         build_export_toolchain(ctx=mock_ctx,
-                               tools_build_path=test_tools_build_path)
+                               tools_build_path=test_tools_build_path,
+                               engine_centric=engine_centric)
 
         # Validate the cmake project generation calls
         mock_generate_process_input = mock_process_command.call_args_list[0][0][0]
@@ -249,7 +250,7 @@ def test_build_export_toolchain(tmp_path, engine_centric, additional_build_args)
         expected_generate_args.extend(test_generator_options)
         if engine_centric:
             expected_generate_args.extend([
-                f'-DLY_PROJECTS={test_project_path.name}'
+                f'-DLY_PROJECTS={test_project_path}'
             ])
         assert mock_generate_process_input == expected_generate_args
 
@@ -311,6 +312,7 @@ def test_build_game_targets(tmp_path, build_config, build_game_launcher, build_s
         build_game_targets(ctx=mock_ctx,
                            build_config=build_config,
                            game_build_path=test_game_build_path,
+                           engine_centric=engine_centric,
                            launcher_types=launcher_types,
                            allow_registry_overrides=allow_registry_overrides)
 
@@ -332,7 +334,7 @@ def test_build_game_targets(tmp_path, build_config, build_game_launcher, build_s
             expected_generate_args.extend(test_generator_options)
             if engine_centric:
                 expected_generate_args.extend([
-                    f'-DLY_PROJECTS={test_project_path.name}'
+                    f'-DLY_PROJECTS={test_project_path}'
                 ])
             expected_generate_args.extend(
                 [
@@ -375,7 +377,7 @@ def test_bundle_assets(tmp_path, asset_platform):
     test_seedlist_path = test_seedlist_base_path / test_seedlist_file
     test_seedlist_path.write_text("seedlist file")
 
-    test_custom_asset_base_path = test_project_path / "AssetList" / "Assets"
+    test_custom_asset_base_path = tmp_path / 'build' / "assets_custom"
     test_custom_asset_base_path.mkdir(parents=True)
 
     test_build_tool_path = tmp_path / "tools"
@@ -393,7 +395,8 @@ def test_bundle_assets(tmp_path, asset_platform):
                                selected_platform=asset_platform,
                                seedlist_paths=[test_seedlist_path],
                                tools_build_path=test_build_tool_path,
-                               custom_asset_list_path=test_custom_asset_base_path,
+                               engine_centric=False,
+                               asset_bundling_path=test_custom_asset_base_path,
                                max_bundle_size=test_max_bundle_size)
 
         assert len(mock_process_command.call_args_list) == 4
@@ -403,7 +406,7 @@ def test_bundle_assets(tmp_path, asset_platform):
             mock_process_input = mock_process_command.call_args_list[arg_index][0]
             mock_process_input_arglist = mock_process_input[0]
 
-            expected_assetlist_path = test_custom_asset_base_path / f'{assetlist_type}_{asset_platform}.assetlist'
+            expected_assetlist_path = test_custom_asset_base_path / 'AssetLists' / f'{assetlist_type}_{asset_platform}.assetlist'
 
             expected_values = [
                 test_build_tool_asset_bundler_path, # Test path to the fake AssetBundler
@@ -430,8 +433,8 @@ def test_bundle_assets(tmp_path, asset_platform):
             mock_process_input = mock_process_command.call_args_list[arg_index][0]
             mock_process_input_arglist = mock_process_input[0]
 
-            expected_assetlist_path = test_custom_asset_base_path / f'{assetlist_type}_{asset_platform}.assetlist'
-            expected_output_bundle_path = test_project_path / 'AssetBundling' / 'Bundles' / f'{assetlist_type}_{asset_platform}.pak'
+            expected_assetlist_path = test_custom_asset_base_path / 'AssetLists' / f'{assetlist_type}_{asset_platform}.assetlist'
+            expected_output_bundle_path = test_custom_asset_base_path / 'Bundles' / f'{assetlist_type}_{asset_platform}.pak'
 
             expected_values = [
                 test_build_tool_asset_bundler_path, # Test path to the fake AssetBundler
@@ -499,7 +502,7 @@ def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform,
 
     setup_launcher_layout_directory(project_path=test_project_path,
                                     asset_platform=test_asset_platform,
-                                    game_build_path=test_mono_build_path,
+                                    launcher_build_path=test_mono_build_path,
                                     build_config=test_build_config,
                                     bundles_to_copy=[test_bundle_file],
                                     export_layout=export_layout,

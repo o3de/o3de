@@ -25,7 +25,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               game_project_file_patterns_to_copy: List[str] = [],
                               server_project_file_patterns_to_copy: List[str] = [],
                               project_file_patterns_to_copy: List[str] = [],
-                              preferred_asset_list_path: pathlib.Path|None = None,
+                              asset_bundling_path: pathlib.Path|None = None,
                               max_bundle_size: int = 2048,
                               should_build_all_assets: bool = True,
                               should_build_game_launcher: bool = True,
@@ -33,9 +33,10 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               should_build_unified_launcher: bool = True,
                               allow_registry_overrides: bool = False,
                               tools_build_path: pathlib.Path | None =None,
-                              game_build_path: pathlib.Path | None =None,
+                              launcher_build_path: pathlib.Path | None =None,
                               archive_output_format: str = "none",
                               fail_on_asset_errors: bool = False,
+                              engine_centric: bool = False,
                               logger: logging.Logger|None = None) -> None:
     """
     This function serves as the generic, general workflow for project exports. The steps in this code will generate
@@ -51,7 +52,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param game_project_file_patterns_to_copy:      List of game (or unified) launcher specific files to include in the game/unified package
     :param server_project_file_patterns_to_copy:    List of server (or unified) launcher specific files to include in the server/unified package
     :param project_file_patterns_to_copy:           List of general file patterns to include in all packages
-    :param preferred_asset_list_path:               Desired location of the generated asset list files
+    :param asset_bundling_path:                     Optional path to write the artifacts from the asset bundling process
     :param max_bundle_size:                         Maximum size to set for the archived bundle files
     :param should_build_all_assets:                 Option to build/process all the assets for the game
     :param should_build_game_launcher:              Option to build the game launcher package
@@ -59,9 +60,10 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param should_build_unified_launcher:           Option to build the unified launcher package
     :param allow_registry_overrides:                Option to allow registry overrides in the build process
     :param tools_build_path:                        Optional build path to build the tools. (Will default to build/tools if not supplied)
-    :param game_build_path:                         Optional build path to build the game launcher(s). (Will default to build/game if not supplied)
+    :param launcher_build_path:                     Optional build path to build the game launcher(s). (Will default to build/launcher if not supplied)
     :param archive_output_format:                   Optional archive format to use for archiving the final package(s)
     :param fail_on_asset_errors:                    Option to fail the process on any asset processing error
+    :param engine_centric:                          Option to use an engine-centric workflow or not
     :param logger:                                  Optional logger to use to log the process and errors
     """
 
@@ -71,11 +73,13 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
         logger.setLevel(logging.ERROR)
 
     # Calculate the tools and game build paths
-    default_base_build_path = ctx.engine_path / 'build' if ctx.is_engine_centric else ctx.project_path / 'build'
+    default_base_build_path = ctx.engine_path / 'build' if engine_centric else ctx.project_path / 'build'
     if not tools_build_path:
         tools_build_path = default_base_build_path / 'tools'
-    if not game_build_path:
-        game_build_path = default_base_build_path / 'game'
+    if not launcher_build_path:
+        launcher_build_path = default_base_build_path / 'launcher'
+    if not asset_bundling_path:
+        asset_bundling_path = default_base_build_path / 'asset_bundling'
 
     # Resolve (if possible) and validate any provided seedlist files
     validated_seedslist_paths = exp.validate_project_artifact_paths(project_path=ctx.project_path,
@@ -88,9 +92,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     if should_build_tools:
         exp.build_export_toolchain(ctx=ctx,
                                    tools_build_path=tools_build_path,
+                                   engine_centric=engine_centric,
                                    logger=logger)
-    else:
-        exp.validate_export_toolchain(tools_build_path=tools_build_path)
 
     # Build the requested game launcher types (if any)
     launcher_type = 0
@@ -104,24 +107,33 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     if launcher_type != 0:
         exp.build_game_targets(ctx=ctx,
                                build_config=build_config,
-                               game_build_path=game_build_path,
+                               game_build_path=launcher_build_path,
+                               engine_centric=engine_centric,
                                launcher_types=launcher_type,
                                allow_registry_overrides=allow_registry_overrides,
                                logger=logger)
 
     # Optionally build the assets
     if should_build_all_assets:
+        asset_processor_path = exp.get_asset_processor_batch_path(tools_build_path=tools_build_path,
+                                                                  required=True)
+        logger.info(f"Using '{asset_processor_path}' to process the assets.")
         exp.build_assets(ctx=ctx,
                          tools_build_path=tools_build_path,
+                         engine_centric=engine_centric,
                          fail_on_ap_errors=fail_on_asset_errors,
                          logger=logger)
 
     # Generate the bundle
+    asset_bundler_path = exp.get_asset_bundler_batch_path(tools_build_path=tools_build_path,
+                                                          required=True)
+    logger.info(f"Using '{asset_bundler_path}' to bundle the assets.")
     expected_bundles_path = exp.bundle_assets(ctx=ctx,
                                               selected_platform=selected_platform,
                                               seedlist_paths=validated_seedslist_paths,
                                               tools_build_path=tools_build_path,
-                                              custom_asset_list_path=preferred_asset_list_path,
+                                              engine_centric=engine_centric,
+                                              asset_bundling_path=asset_bundling_path,
                                               max_bundle_size=max_bundle_size)
 
     # Prepare the different layouts based on the desired launcher types
@@ -145,7 +157,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     for export_layout in export_layouts:
         exp.setup_launcher_layout_directory(project_path=ctx.project_path,
                                             asset_platform=selected_platform,
-                                            game_build_path=game_build_path,
+                                            launcher_build_path=launcher_build_path,
                                             build_config=build_config,
                                             bundles_to_copy=[expected_bundles_path / f'game_{selected_platform}.pak',
                                                              expected_bundles_path / f'engine_{selected_platform}.pak'],
@@ -179,10 +191,8 @@ if "o3de_context" in globals():
                             help="Option to create a compressed archive the output. "
                                  "Specify the format of archive to create from the output directory. If 'none' specified, no archiving will occur.",
                             choices=["none", "zip", "gzip", "bz2", "xz"], default="none")
-        parser.add_argument('-code', '--should-build-code', default=False,action='store_true',
-                            help='Toggles building all code for the project by launcher type (game, server, unified).')
         parser.add_argument('-assets', '--should-build-assets', default=False, action='store_true',
-                            help='Toggles building all assets for the project by launcher type (game, server, unified).')
+                            help='Toggles building all assets for the bundle.')
         parser.add_argument('-foa', '--fail-on-asset-errors', default=False, action='store_true',
                             help='Option to fail the project export process on any failed asset during asset building (applicable if --should-build-assets is true)')
         parser.add_argument('-sl', '--seedlist', type=pathlib.Path, dest='seedlist_paths', action='append',
@@ -196,21 +206,20 @@ if "o3de_context" in globals():
         parser.add_argument('-bt', '--build-tools', default=True, action='store_true',
                             help="Specifies whether to build O3DE toolchain executables. This will build AssetBundlerBatch, AssetProcessorBatch.")
         parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=None,
-                            help='Designates where O3DE toolchain executables go. If not specified, default is <o3de_project_path>/build/tools.')
-        parser.add_argument('-gbp', '--game-build-path', type=pathlib.Path, default=None,
-                            help="Designates where project executables (like Game/Server Launcher) go."
-                            " If not specified, default is <o3de_project_path>/build/game.")
+                            help='Designates where the build files for the O3DE toolchain are generated. If not specified, default is <o3de_project_path>/build/tools.')
+        parser.add_argument('-lbp', '--launcher-build-path', type=pathlib.Path, default=None,
+                            help="Designates where the launcher build files (Game/Server/Unified) are generated. If not specified, default is <o3de_project_path>/build/launcher.")
         parser.add_argument('-regovr', '--allow-registry-overrides', default=False, type = bool,
                             help="When configuring cmake builds, this determines if the script allows for overriding registry settings from external sources.")
-        parser.add_argument('-assetlistpath', '--preferred-asset-list-path', type=pathlib.Path, default=None,
-                            help="Specify a custom location to place asset list files during the bundling process.")
+        parser.add_argument('-abp', '--asset-bundling-path', type=pathlib.Path, default=None,
+                            help="Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, default is <o3de_project_path>/build/asset_bundling.")
         parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=2048, help='Specify the maximum size of a given asset bundle.')
         parser.add_argument('-nogame', '--no-game-launcher', action='store_true', help='This flag skips building the Game Launcher on a platform if not needed.')
         parser.add_argument('-noserver', '--no-server-launcher', action='store_true', help='This flag skips building the Server Launcher on a platform if not needed.')
         parser.add_argument('-nounified', '--no-unified-launcher', action='store_true', help='This flag skips building the Unified Launcher on a platform if not needed.')
         parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
+        parser.add_argument('-ec', '--engine-centric', action='store_true', default=False, help='Option use the engine-centric work flow to export the project.')
         parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
-
         if o3de_context is None:
             parser.print_help()
             exit(0)
@@ -235,16 +244,17 @@ if "o3de_context" in globals():
                                   game_project_file_patterns_to_copy=[] if not args.game_project_file_patterns_to_copy else args.game_project_file_patterns_to_copy,
                                   server_project_file_patterns_to_copy=[] if not args.server_project_file_patterns_to_copy else args.server_project_file_patterns_to_copy,
                                   project_file_patterns_to_copy=[] if not args.project_file_patterns_to_copy else args.project_file_patterns_to_copy,
-                                  preferred_asset_list_path=args.preferred_asset_list_path,
+                                  asset_bundling_path=args.asset_bundling_path,
                                   max_bundle_size=args.max_bundle_size,
                                   should_build_all_assets=args.should_build_assets,
                                   fail_on_asset_errors=args.fail_on_asset_errors,
                                   should_build_game_launcher=not args.no_game_launcher,
                                   should_build_server_launcher=not args.no_server_launcher,
                                   should_build_unified_launcher=not args.no_unified_launcher,
+                                  engine_centric=args.engine_centric,
                                   allow_registry_overrides=args.allow_registry_overrides,
                                   tools_build_path=args.tools_build_path,
-                                  game_build_path=args.game_build_path,
+                                  launcher_build_path=args.launcher_build_path,
                                   archive_output_format=args.archive_output,
                                   logger=o3de_logger)
     except exp.ExportProjectError as err:
