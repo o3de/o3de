@@ -104,6 +104,50 @@ namespace AZ
                 }
             }
 
+            bool SceneNodeSelectionListVersionConverter(
+                AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& classElement)
+            {
+                // Already at latest version, nothing to upgrade.
+                if (classElement.GetVersion() >= 3)
+                {
+                    return true;
+                }
+
+                // Convert a serialized field from vector<string> to unordered_set<string>
+                auto convertVectorToUnorderedSet = [&serializeContext, &classElement](AZ::Crc32 element) -> bool
+                {
+                    int nodesIndex = classElement.FindElement(element);
+
+                    if (nodesIndex < 0)
+                    {
+                        return false;
+                    }
+
+                    AZ::SerializeContext::DataElementNode& nodes = classElement.GetSubElement(nodesIndex);
+                    AZStd::vector<AZStd::string> nodesVector;
+                    AZStd::unordered_set<AZStd::string> nodesSet;
+                    if (!nodes.GetData<AZStd::vector<AZStd::string>>(nodesVector))
+                    {
+                        return false;
+                    }
+                    nodesSet.insert(nodesVector.begin(), nodesVector.end());
+                    nodes.Convert<AZStd::unordered_set<AZStd::string>>(serializeContext);
+                    if (!nodes.SetData<AZStd::unordered_set<AZStd::string>>(serializeContext, nodesSet))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                };
+
+                // Convert selectedNodes and unselectedNodes from a vector to an unordered_set
+                bool result = convertVectorToUnorderedSet(AZ_CRC_CE("selectedNodes"));
+                result = result && convertVectorToUnorderedSet(AZ_CRC_CE("unselectedNodes"));
+
+                return result;
+            }
+
+
             void SceneNodeSelectionList::Reflect(AZ::ReflectContext* context)
             {
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -112,7 +156,8 @@ namespace AZ
                     return;
                 }
 
-                serializeContext->Class<SceneNodeSelectionList, DataTypes::ISceneNodeSelectionList>()->Version(2)
+                serializeContext->Class<SceneNodeSelectionList, DataTypes::ISceneNodeSelectionList>()
+                    ->Version(3, &SceneNodeSelectionListVersionConverter)
                     ->Field("selectedNodes", &SceneNodeSelectionList::m_selectedNodes)
                     ->Field("unselectedNodes", &SceneNodeSelectionList::m_unselectedNodes);
             }
