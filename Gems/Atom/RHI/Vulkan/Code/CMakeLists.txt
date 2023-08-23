@@ -109,20 +109,8 @@ endif()
 
 if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
 
-    # Create stub modules. Once we support gem loading configuration, we can remove this stubbed targets
-    ly_add_target(
-        NAME Atom_RHI_Vulkan.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            atom_rhi_vulkan_stub_module.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Source
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-                Gem::Atom_RHI.Reflect
-    )
+    # Create alias for Atom RHI Vulkan private Gem Module
+    ly_create_alias(NAME Atom_RHI_Vulkan.Private NAMESPACE Gem)
 
     return() # Do not create the rest of the targets
 
