@@ -220,8 +220,11 @@ namespace AZ::Render
             viewportContext->GetViewportSize().m_height,
             multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA"
         ));
-                
-        DrawLine(AZStd::string::format("Render pipeline: %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
+
+        if(viewportContext->GetCurrentPipeline())   // avoid VR crash on nullptr
+        {
+            DrawLine(AZStd::string::format("Render pipeline: %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
+        }
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawCameraInfo()
