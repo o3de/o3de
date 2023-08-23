@@ -10,9 +10,8 @@
 
 
 #include <AzCore/JSON/document.h>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
 #include <SceneAPI/SceneData/SceneDataConfiguration.h>
 

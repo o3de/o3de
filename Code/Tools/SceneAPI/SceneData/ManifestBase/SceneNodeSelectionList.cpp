@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/containers/vector.h>
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
 
 namespace AZ
