@@ -47,10 +47,11 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceKeyboard::Implementation> MacNativeWindowFactory::Create() override
+    AZStd::unique_ptr<NativeWindow::Implementation> MacNativeWindowFactory::Create()
     {
         return AZStd::make_unique<NativeWindowImpl_Darwin>();
     }
+
 
     NativeWindowImpl_Darwin::~NativeWindowImpl_Darwin()
     {

@@ -207,9 +207,9 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceMouse::Implementation> MacDeviceMouseImplFactory::Create(InputDeviceMouse& inputDevice) override
+    AZStd::unique_ptr<InputDeviceMouse::Implementation> MacDeviceMouseImplFactory::Create(InputDeviceMouse& inputDevice)
     {
-        return AZStd::make_unique<InputDeviceMouseWindows>(inputDevice);
+        return AZStd::make_unique<InputDeviceMouseMac>(inputDevice);
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -119,12 +119,12 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(AZ_PLATFORM_MAC)
-    AZStd::unique_ptr<InputDeviceGamepad::Implementation> MacDeviceGamepadImplFactory::Create(InputDeviceGamepad& inputDevice) override;
+    AZStd::unique_ptr<InputDeviceGamepad::Implementation> MacDeviceGamepadImplFactory::Create(InputDeviceGamepad& inputDevice)
     {
         return AZStd::make_unique<InputDeviceGamepadApple>(inputDevice);
     }
 
-    AZ::u32 MacDeviceGamepadImplFactory::GetMaxSupportedGamepads() override
+    AZ::u32 MacDeviceGamepadImplFactory::GetMaxSupportedGamepads()
     {
         return GCControllerPlayerIndex4 + 1;
     }
@@ -155,9 +155,9 @@ namespace AzFramework
         , m_controller(nullptr)
         , m_wasPausedHandlerCalled(false)
     {
-        AZ_Assert(inputDevice.GetInputDeviceId().GetIndex() < InputDeviceGamepad::GetMaxSupportedGamepads(),
+        AZ_Assert(inputDevice.GetInputDeviceId().GetIndex() <= GCControllerPlayerIndex4,
                   "Creating InputDeviceGamepadApple with index %d that is greater than the max supported by the game controller framework: %d",
-                  inputDevice.GetInputDeviceId().GetIndex(), InputDeviceGamepad::GetMaxSupportedGamepads());
+                  inputDevice.GetInputDeviceId().GetIndex(), (GCControllerPlayerIndex4+1));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

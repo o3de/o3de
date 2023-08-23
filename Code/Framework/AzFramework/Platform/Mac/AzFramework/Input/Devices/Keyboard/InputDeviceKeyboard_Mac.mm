@@ -496,7 +496,7 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceKeyboard::Implementation> MacDeviceKeyboardImplFactory::Create(InputDeviceKeyboard& inputDevice) override;
+    AZStd::unique_ptr<InputDeviceKeyboard::Implementation> MacDeviceKeyboardImplFactory::Create(InputDeviceKeyboard& inputDevice)
     {
         return AZStd::make_unique<InputDeviceKeyboardMac>(inputDevice);
     }
