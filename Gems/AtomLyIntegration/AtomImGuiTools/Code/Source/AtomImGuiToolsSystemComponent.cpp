@@ -61,6 +61,14 @@ namespace AtomImGuiTools
 #if defined(IMGUI_ENABLED)
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
         AtomImGuiToolsRequestBus::Handler::BusConnect();
+
+        // load switchable render pipeline paths from setting registry
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        const char* settingName = "/O3DE/Viewport/SwitchableRenderPipelines";
+        if (settingsRegistry)
+        {
+            settingsRegistry->GetObject<AZStd::set<AZStd::string>>(m_switchableRenderPipelines, settingName);
+        }           
 #endif
         CrySystemEventBus::Handler::BusConnect();
     }
@@ -122,6 +130,21 @@ namespace AtomImGuiTools
                 }
             }
             ImGui::EndMenu();
+        }
+
+        if (m_switchableRenderPipelines.size() > 0)
+        {
+            if (ImGui::BeginMenu("Render Pipelines"))
+            {
+                for (const auto& renderPipelinePath : m_switchableRenderPipelines)
+                {
+                    if (ImGui::MenuItem(renderPipelinePath.c_str()))
+                    {
+                        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("r_renderPipelinePath", { renderPipelinePath });
+                    }
+                }
+                ImGui::EndMenu();
+            }
         }
     }
     
