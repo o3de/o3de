@@ -73,7 +73,7 @@ namespace ScriptEventsEditor
 
         if (loadedData == AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {
-            ScriptEvents::ScriptEventsAsset* assetData = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
+            auto* assetData = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
 
             if (assetData)
             {
@@ -133,7 +133,7 @@ namespace ScriptEventsEditor
             return false;
         }
 
-        ScriptEvents::ScriptEventsAsset* assetData = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
+        auto* assetData = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
         AZ_Assert(assetData, "Asset is of the wrong type.");
         if (assetData && m_serializeContext)
         {
@@ -148,7 +148,7 @@ namespace ScriptEventsEditor
 
     AZ::Outcome<bool, AZStd::string> ScriptEventAssetHandler::IsAssetDataValid(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
     {
-        ScriptEvents::ScriptEventsAsset* assetData = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
+        auto* assetData = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
         if (!assetData)
         {
             return AZ::Failure(AZStd::string::format("Unable to validate asset with id: %s it has not been registered with the Script Event system component.", asset.GetId().ToString<AZStd::string>().c_str()));
@@ -162,11 +162,11 @@ namespace ScriptEventsEditor
 
     void ScriptEventAssetHandler::PreAssetSave(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        ScriptEvents::ScriptEventsAsset* scriptEventAsset = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
+        auto* scriptEventAsset = asset.GetAs<ScriptEvents::ScriptEventsAsset>();
         scriptEventAsset->m_definition.IncreaseVersion();
     }
 
-    void ScriptEventAssetHandler::BeforePropertyEdit(AzToolsFramework::InstanceDataNode* node, AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void ScriptEventAssetHandler::BeforePropertyEdit(AzToolsFramework::InstanceDataNode* node, AZ::Data::Asset<AZ::Data::AssetData> /*asset*/)
     {
         ScriptEventData::VersionedProperty* property = nullptr;
         AzToolsFramework::InstanceDataNode* parent = node;
@@ -188,7 +188,7 @@ namespace ScriptEventsEditor
 
     void ScriptEventEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<ScriptEventEditorSystemComponent, AZ::Component>()
                 ->Version(3)

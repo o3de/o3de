@@ -141,7 +141,7 @@ const char* IDebugCallStack::TranslateExceptionCode(DWORD dwExcept)
     }
 }
 
-void IDebugCallStack::PutVersion(char* str, size_t length)
+void IDebugCallStack::PutVersion(char* str, [[maybe_unused]] size_t length)
 {
 AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
 
@@ -158,7 +158,7 @@ AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
 
 
     //! Get time.
-    time_t ltime;
+    time_t ltime = 0;
     time(&ltime);
     tm* today = localtime(&ltime);
 

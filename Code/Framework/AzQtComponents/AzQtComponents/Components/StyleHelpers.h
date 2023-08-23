@@ -41,7 +41,7 @@ namespace AzQtComponents
          * See Example::Widget in StyleSheetPage.h and ExampleWidget.qss for a working example.
          */
         template <typename T, typename ...Args>
-        void repolishWhenPropertyChanges(T* widget, void (T::*signal)(Args...))
+        void repolishWhenPropertyChanges([[maybe_unused]] T* widget, [[maybe_unused]] void (T::*signal)(Args...))
         {
 #if !defined(AZ_PLATFORM_LINUX)
 

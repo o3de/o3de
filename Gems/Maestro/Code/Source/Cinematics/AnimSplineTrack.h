@@ -52,7 +52,8 @@ public:
         m_node = nullptr;
         m_trackMultiplier = 1.0f;
     }
-    ~TAnimSplineTrack()
+
+    ~TAnimSplineTrack() override
     {
         m_spline.reset();
     }
@@ -185,29 +186,29 @@ public:
     EAnimCurveType GetCurveType() override { assert(0); return eAnimCurveType_Unknown; }
     AnimValueType GetValueType() override { assert(0); return static_cast<AnimValueType>(0xFFFFFFFF); }
 
-    void GetValue(float time, float& value, bool applyMultiplier = false) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec3& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec4& value, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Quat& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Maestro::AssetBlends<AZ::Data::AssetData>& value) override { assert(0); }
+    void GetValue(float /*time*/, float& /*value*/, bool /*applyMultiplier*/ = false) override { assert(0); } 
+    void GetValue(float /*time*/, Vec3& /*value*/, bool /*applyMultiplier*/ = false) override { assert(0); }
+    void GetValue(float /*time*/, Vec4& /*value*/, bool /*applyMultiplier*/ = false) override { assert(0); }
+    void GetValue(float /*time*/, Quat& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, bool& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, Maestro::AssetBlends<AZ::Data::AssetData>& /*value*/) override { assert(0); }
 
-    void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec3& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec4& value, [[maybe_unused]] bool bDefault = false, [[maybe_unused]] bool applyMultiplier = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Quat& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Maestro::AssetBlends<AZ::Data::AssetData>& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
+    void SetValue(float /*time*/, const float& /*value*/, bool /*bDefault*/ = false, bool /*applyMultiplier*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const Vec3& /*value*/, bool /*bDefault*/ = false, bool /*applyMultiplier*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const Vec4& /*value*/, bool /*bDefault*/ = false, bool /*applyMultiplier*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const Quat& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const bool& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const Maestro::AssetBlends<AZ::Data::AssetData>& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
 
-    void OffsetKeyPosition([[maybe_unused]] const Vec3& value) override { assert(0); };
-    void UpdateKeyDataAfterParentChanged([[maybe_unused]] const AZ::Transform& oldParentWorldTM, [[maybe_unused]] const AZ::Transform& newParentWorldTM) override { assert(0); };
+    void OffsetKeyPosition(const Vec3& /*value*/) override { assert(0); };
+    void UpdateKeyDataAfterParentChanged(const AZ::Transform& /*oldParentWorldTM*/, const AZ::Transform& /*newParentWorldTM*/) override { assert(0); };
 
     bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
     bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset) override;
 
-    void GetKeyInfo(int key, const char*& description, float& duration) override
+    void GetKeyInfo(int /*key*/, const char*& description, float& duration) override
     {
-        description = 0;
+        description = nullptr;
         duration = 0;
     }
 

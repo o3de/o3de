@@ -122,7 +122,7 @@ namespace AzFramework
         return m_hasTextEntryStarted;
     }
 
-    void XcbInputDeviceKeyboard::TextEntryStart(const InputDeviceKeyboard::VirtualKeyboardOptions& options)
+    void XcbInputDeviceKeyboard::TextEntryStart(const InputDeviceKeyboard::VirtualKeyboardOptions& /*options*/)
     {
         m_hasTextEntryStarted = true;
     }

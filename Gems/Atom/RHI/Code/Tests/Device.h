@@ -54,9 +54,9 @@ namespace UnitTest
 
         void UpdateCpuTimingStatisticsInternal() const override {}
 
-        AZStd::chrono::microseconds GpuTimestampToMicroseconds([[maybe_unused]] uint64_t gpuTimestamp, [[maybe_unused]] AZ::RHI::HardwareQueueClass queueClass) const override
+        AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t /*gpuTimestamp*/, AZ::RHI::HardwareQueueClass /*queueClass*/) const override
         {
-            return AZStd::chrono::microseconds();
+            return {};
         }
 
         void FillFormatsCapabilitiesInternal([[maybe_unused]] FormatCapabilitiesList& formatsCapabilities) override {}
@@ -69,7 +69,7 @@ namespace UnitTest
 
         AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
 
-        void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
+        void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction /*notifyFunction*/) override {}
 
         AZ::RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] AZ::RHI::ShadingRate rate) const override
         {

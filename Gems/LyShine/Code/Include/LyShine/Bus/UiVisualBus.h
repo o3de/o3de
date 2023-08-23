@@ -21,7 +21,7 @@ class UiVisualInterface
 {
 public: // member functions
 
-    virtual ~UiVisualInterface() {}
+     ~UiVisualInterface() override = default;
 
     //! Reset the overrides, used when setting interactable states
     virtual void ResetOverrides() = 0;
@@ -39,7 +39,7 @@ public: // member functions
 
     //! Set the override font, if this visual component uses a font this will override it
     //! \param font   If null the font on the visual component will not be overridden
-    virtual void SetOverrideFont(FontFamilyPtr fontFamily) {};
+    virtual void SetOverrideFont(FontFamilyPtr /*fontFamily*/) {};
 
     //! Set the override font effect, if this visual component uses a font this will override it
     virtual void SetOverrideFontEffect([[maybe_unused]] unsigned int fontEffectIndex) {};
@@ -50,4 +50,4 @@ public: // static member data
     static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 };
 
-typedef AZ::EBus<UiVisualInterface> UiVisualBus;
+using UiVisualBus = AZ::EBus<UiVisualInterface>;

@@ -51,7 +51,7 @@ namespace AZ
             //! @deprecated use OnRenderPipelineChanged(RenderPipeline*, RenderPipelineChangeType::Added)
             //! Notifies when a render pipeline is added to this scene. 
             //! @param pipeline The render pipeline which was added
-            virtual void OnRenderPipelineAdded(RenderPipelinePtr pipeline) {};
+            virtual void OnRenderPipelineAdded(RenderPipelinePtr /*pipeline*/) {};
                         
             //! O3DE_DEPRECATION_NOTICE(GHI-12687)
             //! @deprecated use OnRenderPipelineChanged(RenderPipeline*, RenderPipelineChangeType::PassChanged)
@@ -76,7 +76,7 @@ namespace AZ
             //! @param viewTag The viewTag in this render pipeline which the new view was set to
             //! @param newView The view which was set to the render pipeline's view tag
             //! @param previousView The previous view associates to render pipeline's view tag before the new view was set
-            virtual void OnRenderPipelinePersistentViewChanged([[maybe_unused]] RenderPipeline* renderPipeline, PipelineViewTag viewTag, ViewPtr newView, ViewPtr previousView) {}
+            virtual void OnRenderPipelinePersistentViewChanged([[maybe_unused]] RenderPipeline* /*renderPipeline*/, PipelineViewTag /*viewTag*/, ViewPtr /*newView*/, ViewPtr /*previousView*/) {}
 
             //! Notifies when the PrepareRender phase is beginning
             //! This phase is when data is read from the FeatureProcessors and written to the draw lists.

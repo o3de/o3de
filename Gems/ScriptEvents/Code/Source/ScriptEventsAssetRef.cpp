@@ -99,9 +99,9 @@ namespace ScriptEvents
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
-    void ScriptEventsAssetRef::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void ScriptEventsAssetRef::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/)
     {
-        if (ScriptEventsAsset* scriptEventAsset = m_asset.GetAs<ScriptEventsAsset>())
+        if (auto* scriptEventAsset = m_asset.GetAs<ScriptEventsAsset>())
         {
             scriptEventAsset->m_definition.RegisterInternal();
         }

@@ -564,7 +564,7 @@ namespace EMotionFX
                 if (dependencyAsset && dependencyAsset.GetType() == azrtti_typeid<AZ::RPI::ModelAsset>())
                 {
                     m_modelReloadedEventHandler = AZ::Render::ModelReloadedEvent::Handler(
-                        [this](AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset)
+                        [this](AZ::Data::Asset<AZ::RPI::ModelAsset> /*modelAsset*/)
                         {
                             m_actorAsset.QueueLoad();
                         });

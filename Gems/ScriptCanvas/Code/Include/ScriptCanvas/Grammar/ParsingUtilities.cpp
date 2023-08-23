@@ -138,12 +138,12 @@ namespace ParsingUtilitiesCpp
 #endif
         }
 
-        void EvaluateChildPre(ExecutionTreeConstPtr, const Slot*, size_t, int)
+        void EvaluateChildPre(ExecutionTreeConstPtr, const Slot*, size_t, int) override
         {
             m_result += "\n";
         }
 
-        void EvaluateRoot(ExecutionTreeConstPtr node, const Slot*)
+        void EvaluateRoot(ExecutionTreeConstPtr /*node*/, const Slot*) override
         {
             m_result += "\nRoot:\n";
         }

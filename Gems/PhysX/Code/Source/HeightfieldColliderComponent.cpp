@@ -110,7 +110,7 @@ namespace PhysX
         }
     }
 
-    void HeightfieldColliderComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void HeightfieldColliderComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/)
     {
         InitHeightfieldCollider(HeightfieldCollider::DataSource::GenerateNewHeightfield);
     }

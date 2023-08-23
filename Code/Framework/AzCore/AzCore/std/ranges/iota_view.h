@@ -439,7 +439,7 @@ namespace AZStd::ranges
 
     template<class W, class Bound, class ViewEnable>
     template<bool, class>
-    constexpr iota_view<W, Bound, ViewEnable>::iota_view(iterator first, Bound last)
+    constexpr iota_view<W, Bound, ViewEnable>::iota_view(iterator first, Bound /*last*/)
         : m_value(AZStd::move(first.m_value))
         , m_bound(unreachable_sentinel)
     {}

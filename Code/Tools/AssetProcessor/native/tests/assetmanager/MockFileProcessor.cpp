@@ -10,12 +10,12 @@
 
 namespace UnitTests
 {
-     void MockFileProcessor::AssessAddedFile(QString fileName)
+     void MockFileProcessor::AssessAddedFile(QString /*fileName*/)
     {
         m_events[TestEvents::Added].Signal();
     }
 
-     void MockFileProcessor::AssessDeletedFile(QString fileName)
+     void MockFileProcessor::AssessDeletedFile(QString /*fileName*/)
     {
         m_events[TestEvents::Deleted].Signal();
     }

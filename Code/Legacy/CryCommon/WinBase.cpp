@@ -69,7 +69,7 @@ typedef int FS_ERRNO_TYPE;
 
 #endif
 
-bool IsBadReadPtr(void* ptr, unsigned int size)
+bool IsBadReadPtr(void* ptr, unsigned int /*size*/)
 {
     //too complicated to really support it
     return ptr ? false : true;

@@ -164,34 +164,34 @@ public:
     EUiAnimCurveType GetCurveType() override { assert(0); return eUiAnimCurveType_Unknown; }
     EUiAnimValue GetValueType() override { assert(0); return eUiAnimValue_Unknown; }
 
-    void GetValue(float time, float& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec3& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec4& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Quat& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector2& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector4& value) override { assert(0); }
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Color& value) override { assert(0); }
+    void GetValue(float /*time*/, float& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, Vec3& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, Vec4& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, Quat& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, bool& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, AZ::Vector2& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, AZ::Vector3& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, AZ::Vector4& /*value*/) override { assert(0); }
+    void GetValue(float /*time*/, AZ::Color& /*value*/) override { assert(0); }
 
-    void SetValue(float time, const float& value, bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec3& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec4& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Quat& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector2& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector4& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Color& value, [[maybe_unused]] bool bDefault = false) override { assert(0); }
+    void SetValue(float /*time*/, const float& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const Vec3& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const Vec4& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const Quat& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const bool& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const AZ::Vector2& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const AZ::Vector3& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const AZ::Vector4& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
+    void SetValue(float /*time*/, const AZ::Color& /*value*/, bool /*bDefault*/ = false) override { assert(0); }
 
-    void OffsetKeyPosition([[maybe_unused]] const Vec3& value) override { assert(0); };
+    void OffsetKeyPosition(const Vec3& /*value*/) override { assert(0); };
 
     bool Serialize(IUiAnimationSystem* uiAnimationSystem, XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
     bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset) override;
 
-    void GetKeyInfo(int key, const char*& description, float& duration) override
+    void GetKeyInfo(int /*key*/, const char*& description, float& duration) override
     {
-        description = 0;
+        description = nullptr;
         duration = 0;
     }
 
@@ -396,7 +396,7 @@ inline void TUiAnimSplineTrack<T>::release()
 }
 
 template <class T>
-inline bool TUiAnimSplineTrack<T>::Serialize(IUiAnimationSystem* uiAnimationSystem, XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks)
+inline bool TUiAnimSplineTrack<T>::Serialize(IUiAnimationSystem* /*uiAnimationSystem*/, XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks)
 {
     if (bLoading)
     {

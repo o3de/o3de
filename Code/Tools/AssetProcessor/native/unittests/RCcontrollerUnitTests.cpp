@@ -14,6 +14,7 @@
 #include <native/unittests/UnitTestUtils.h>
 
 #include <QCoreApplication>
+#include <utility>
 
 #if defined(AZ_PLATFORM_LINUX)
 #include <sys/stat.h>
@@ -202,19 +203,19 @@ void RCcontrollerUnitTests::ConnectCompileGroupSignalsAndSlots(bool& gotCreated,
 
 void RCcontrollerUnitTests::ConnectJobSignalsAndSlots(bool& allJobsCompleted, JobEntry& completedJob)
 {
-    QObject::connect(m_rcController.get(), &RCController::FileCompiled, this, [&](JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
+    QObject::connect(m_rcController.get(), &RCController::FileCompiled, this, [&](JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
         {
-            completedJob = entry;
+            completedJob = AZStd::move(entry);
         });
 
     QObject::connect(m_rcController.get(), &RCController::FileCancelled, this, [&](JobEntry entry)
         {
-            completedJob = entry;
+            completedJob = AZStd::move(entry);
         });
 
     QObject::connect(m_rcController.get(), &RCController::FileFailed, this, [&](JobEntry entry)
         {
-            completedJob = entry;
+            completedJob = AZStd::move(entry);
         });
     QObject::connect(m_rcController.get(), &RCController::ActiveJobsCountChanged, this, [&](unsigned int /*count*/)
         {

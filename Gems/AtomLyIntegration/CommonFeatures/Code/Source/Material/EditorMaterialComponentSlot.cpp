@@ -449,7 +449,7 @@ namespace AZ
             }
         }
 
-        void EditorMaterialComponentSlot::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        void EditorMaterialComponentSlot::OnAssetReloaded(Data::Asset<Data::AssetData> /*asset*/)
         {
             UpdatePreview();
         }

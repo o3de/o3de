@@ -47,7 +47,7 @@ namespace AZ::RHI
     public:
         struct Descriptor {};
 
-        void Init(const Descriptor& descriptor) {}
+        void Init(const Descriptor& /*descriptor*/) {}
 
         void Shutdown() {}
 

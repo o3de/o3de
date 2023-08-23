@@ -151,7 +151,7 @@ namespace UnitTests
         QObject::connect(
             m_rc.get(),
             &AssetProcessor::RCController::FileFailed,
-            [this](auto entryIn)
+            [this](auto /*entryIn*/)
             {
                 m_fileFailed = true;
             });
@@ -218,7 +218,7 @@ namespace UnitTests
         QObject::connect(
             m_assetProcessorManager.get(),
             &AssetProcessor::AssetProcessorManager::ProcessingDelayed,
-            [&delayed](QString filePath)
+            [&delayed](QString /*filePath*/)
             {
                 delayed = true;
             });
@@ -226,7 +226,7 @@ namespace UnitTests
         QObject::connect(
             m_assetProcessorManager.get(),
             &AssetProcessor::AssetProcessorManager::ProcessingResumed,
-            [&delayed](QString filePath)
+            [&delayed](QString /*filePath*/)
             {
                 delayed = false;
             });
@@ -410,7 +410,7 @@ namespace UnitTests
         QObject::connect(
             m_rc.get(),
             &AssetProcessor::RCController::FileCompiled,
-            [this](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse response)
+            [this](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
             {
                 QMetaObject::invokeMethod(m_rc.get(), "OnAddedToCatalog", Qt::QueuedConnection, Q_ARG(AssetProcessor::JobEntry, entry));
             });

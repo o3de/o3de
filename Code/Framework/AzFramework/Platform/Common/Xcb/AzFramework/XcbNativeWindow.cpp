@@ -272,7 +272,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void XcbNativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
+    void XcbNativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& /*options*/)
     {
         const uint32_t values[] = { clientAreaSize.m_width, clientAreaSize.m_height };
         

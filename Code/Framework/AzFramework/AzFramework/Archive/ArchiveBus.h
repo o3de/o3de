@@ -26,8 +26,17 @@ namespace AZ::IO
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        virtual void BundleOpened([[maybe_unused]] const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, [[maybe_unused]] const char* nextBundle, AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog) {}
-        virtual void BundleClosed([[maybe_unused]] const char* bundleName) {}
+        virtual void BundleOpened(
+            const char* /*bundleName*/,
+            AZStd::shared_ptr<AzFramework::AssetBundleManifest> /*bundleManifest*/,
+            const char* /*nextBundle*/,
+            AZStd::shared_ptr<AzFramework::AssetRegistry> /*bundleCatalog*/)
+        {
+        }
+
+        virtual void BundleClosed([[maybe_unused]] const char* bundleName)
+        {
+        }
 
         // Sent when a file is accessed through Archive
         virtual void FileAccess([[maybe_unused]] const char* filePath) {}

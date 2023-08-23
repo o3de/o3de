@@ -300,7 +300,7 @@ namespace AZStd
         {
             return allocate(alloc, size, alignof(value_type));
         }
-        static pointer allocate(allocator_type& alloc, size_type size, const_void_pointer hint)
+        static pointer allocate(allocator_type& alloc, size_type size, const_void_pointer /*hint*/)
         {
             return allocate(alloc, size, alignof(value_type));
         }

@@ -24,11 +24,9 @@ namespace AzQtComponents
     {
     }
 
-    ScreenGrabber::~ScreenGrabber()
-    {
-    }
+    ScreenGrabber::~ScreenGrabber() = default;
 
-    QImage ScreenGrabber::grab(const QPoint& point) const
+    QImage ScreenGrabber::grab(const QPoint& /*point*/) const
     {
         QImage empty;
         QImage result = QImage();

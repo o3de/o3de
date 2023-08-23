@@ -30,7 +30,7 @@ namespace ScriptCanvasEditor
 
     void FunctionNodeDescriptorComponent::Reflect(AZ::ReflectContext* reflectContext)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+        auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
 
         if (serializeContext)
         {
@@ -68,17 +68,17 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetBus::Handler::BusDisconnect();
     }
 
-    void FunctionNodeDescriptorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void FunctionNodeDescriptorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/)
     {
         TriggerUpdate();
     }
 
-    void FunctionNodeDescriptorComponent::OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void FunctionNodeDescriptorComponent::OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/)
     {
         TriggerUpdate();
     }
 
-    void FunctionNodeDescriptorComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void FunctionNodeDescriptorComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/)
     {
         TriggerUpdate();
     }

@@ -406,13 +406,14 @@ namespace AzFramework
         return pWatcher;
     }
 
-    void ProcessWatcher::InitProcessData(bool stdProcessData)
+    void ProcessWatcher::InitProcessData(bool /*stdProcessData*/)
     {
         /** Nothing to do for this on macOS */
     }
 
     ProcessWatcher::ProcessWatcher()
         : m_pCommunicator(nullptr)
+        , m_pChildCommunicator(nullptr)
     {
         m_pWatcherData = AZStd::make_unique<ProcessData>();
     }
@@ -467,7 +468,7 @@ namespace AzFramework
         return isProcessDone;
     }
 
-    void ProcessWatcher::TerminateProcess(AZ::u32 exitCode)
+    void ProcessWatcher::TerminateProcess(AZ::u32 /*exitCode*/)
     {
         AZ_Assert(m_pWatcherData, "No watcher data");
         if (!m_pWatcherData)

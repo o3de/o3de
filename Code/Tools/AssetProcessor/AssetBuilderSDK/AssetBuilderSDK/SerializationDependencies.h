@@ -61,12 +61,12 @@ namespace AssetBuilderSDK
 
     template<class T>
     bool GatherProductDependencies(
-        AZ::SerializeContext& serializeContext,
-        const AZ::Data::Asset<T>* obj,
-        AZ::TypeId typeId,
-        AZStd::vector<ProductDependency>& productDependencies,
-        ProductPathDependencySet& productPathDependencySet,
-        const DependencyHandler& handler = &UpdateDependenciesFromClassData)
+        AZ::SerializeContext& /*serializeContext*/,
+        const AZ::Data::Asset<T>* /*obj*/,
+        AZ::TypeId /*typeId*/,
+        AZStd::vector<ProductDependency>& /*productDependencies*/,
+        ProductPathDependencySet& /*productPathDependencySet*/,
+        const DependencyHandler& /*handler*/ = &UpdateDependenciesFromClassData)
     {
         AZ_Error("AssetBuilderSDK", false, "Can't output dependencies for AZ::Data::Asset<T>* - Use T* or another underlying type");
         return false;
@@ -94,8 +94,8 @@ namespace AssetBuilderSDK
     }
 
     template<class T>
-    bool OutputObject(const AZ::Data::Asset<T>* obj, AZStd::string_view outputPath, AZ::Data::AssetType assetType, AZ::u32 subId, JobProduct& jobProduct, AZ::SerializeContext* serializeContext = nullptr,
-        const DependencyHandler& handler = &UpdateDependenciesFromClassData)
+    bool OutputObject(const AZ::Data::Asset<T>* /*obj*/, AZStd::string_view /*outputPath*/, AZ::Data::AssetType /*assetType*/, AZ::u32 /*subId*/, JobProduct& /*jobProduct*/, AZ::SerializeContext* /*serializeContext*/ = nullptr,
+        const DependencyHandler& /*handler*/ = &UpdateDependenciesFromClassData)
     {
         AZ_Error("AssetBuilderSDK", false, "Can't output dependencies for AZ::Data::Asset<T>* - Use T* or another underlying type");
         return false;

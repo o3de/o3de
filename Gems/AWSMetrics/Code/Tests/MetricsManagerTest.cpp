@@ -79,7 +79,7 @@ namespace AWSMetrics
         : public MetricsManager
     {
     private:
-        AZ::Outcome<void, AZStd::string> SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> metricsQueue) override
+        AZ::Outcome<void, AZStd::string> SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> /*metricsQueue*/) override
         {
             if (AZ::IO::FileIOBase::GetInstance())
             {

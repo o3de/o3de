@@ -21,7 +21,7 @@
 
 namespace 
 {
-    void SignalHandler(int sig, siginfo_t* info, void* secret)
+    void SignalHandler(int /*sig*/, siginfo_t* /*info*/, void* /*secret*/)
     {
         FILE* ftrace = fopen("backtrace.log", "w");
         if (!ftrace)
@@ -54,9 +54,9 @@ namespace
         sa.sa_sigaction = SignalHandler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = SA_RESTART | SA_SIGINFO;
-        sigaction(SIGSEGV, &sa, 0);
-        sigaction(SIGBUS, &sa, 0);
-        sigaction(SIGILL, &sa, 0);
+        sigaction(SIGSEGV, &sa, nullptr);
+        sigaction(SIGBUS, &sa, nullptr);
+        sigaction(SIGILL, &sa, nullptr);
         prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
     }
 }

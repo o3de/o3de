@@ -138,7 +138,7 @@ namespace AZ::IO::Platform
         return true;
     }
 
-    bool Rename(const char* sourceFileName, const char* targetFileName, bool overwrite)
+    bool Rename(const char* sourceFileName, const char* targetFileName, bool /*overwrite*/)
     {
         int result = rename(sourceFileName, targetFileName);
         if (result)
