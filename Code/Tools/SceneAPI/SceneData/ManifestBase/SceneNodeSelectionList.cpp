@@ -107,44 +107,44 @@ namespace AZ
             bool SceneNodeSelectionListVersionConverter(
                 AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& classElement)
             {
-                // Already at latest version, nothing to upgrade.
-                if (classElement.GetVersion() >= 3)
+                // Version 3 - changed selectedNodes/unselectedNodes from vector to unordered_set.
+                if (classElement.GetVersion() < 3)
                 {
-                    return true;
+                    // Convert a serialized field from vector<string> to unordered_set<string>
+                    auto convertVectorToUnorderedSet = [&serializeContext, &classElement](AZ::Crc32 element) -> bool
+                    {
+                        int nodesIndex = classElement.FindElement(element);
+
+                        if (nodesIndex < 0)
+                        {
+                            return false;
+                        }
+
+                        AZ::SerializeContext::DataElementNode& nodes = classElement.GetSubElement(nodesIndex);
+                        AZStd::vector<AZStd::string> nodesVector;
+                        AZStd::unordered_set<AZStd::string> nodesSet;
+                        if (!nodes.GetData<AZStd::vector<AZStd::string>>(nodesVector))
+                        {
+                            return false;
+                        }
+                        nodesSet.insert(nodesVector.begin(), nodesVector.end());
+                        nodes.Convert<AZStd::unordered_set<AZStd::string>>(serializeContext);
+                        if (!nodes.SetData<AZStd::unordered_set<AZStd::string>>(serializeContext, nodesSet))
+                        {
+                            return false;
+                        }
+
+                        return true;
+                    };
+
+                    // Convert selectedNodes and unselectedNodes from a vector to an unordered_set
+                    bool result = convertVectorToUnorderedSet(AZ_CRC_CE("selectedNodes"));
+                    result = result && convertVectorToUnorderedSet(AZ_CRC_CE("unselectedNodes"));
+
+                    return result;
                 }
 
-                // Convert a serialized field from vector<string> to unordered_set<string>
-                auto convertVectorToUnorderedSet = [&serializeContext, &classElement](AZ::Crc32 element) -> bool
-                {
-                    int nodesIndex = classElement.FindElement(element);
-
-                    if (nodesIndex < 0)
-                    {
-                        return false;
-                    }
-
-                    AZ::SerializeContext::DataElementNode& nodes = classElement.GetSubElement(nodesIndex);
-                    AZStd::vector<AZStd::string> nodesVector;
-                    AZStd::unordered_set<AZStd::string> nodesSet;
-                    if (!nodes.GetData<AZStd::vector<AZStd::string>>(nodesVector))
-                    {
-                        return false;
-                    }
-                    nodesSet.insert(nodesVector.begin(), nodesVector.end());
-                    nodes.Convert<AZStd::unordered_set<AZStd::string>>(serializeContext);
-                    if (!nodes.SetData<AZStd::unordered_set<AZStd::string>>(serializeContext, nodesSet))
-                    {
-                        return false;
-                    }
-
-                    return true;
-                };
-
-                // Convert selectedNodes and unselectedNodes from a vector to an unordered_set
-                bool result = convertVectorToUnorderedSet(AZ_CRC_CE("selectedNodes"));
-                result = result && convertVectorToUnorderedSet(AZ_CRC_CE("unselectedNodes"));
-
-                return result;
+                return true;
             }
 
 
@@ -160,6 +160,12 @@ namespace AZ
                     ->Version(3, &SceneNodeSelectionListVersionConverter)
                     ->Field("selectedNodes", &SceneNodeSelectionList::m_selectedNodes)
                     ->Field("unselectedNodes", &SceneNodeSelectionList::m_unselectedNodes);
+
+                // Explicitly register the AZStd::vector<AZStd::string> type. The version converter needs it to be able to read
+                // in the old data, and the type itself only gets registered automatically on-demand through the serializeContext
+                // fields. Since the serializeContext no longer contains this type, there's no guarantee it would be created.
+                // By explicitly registering it here, we can ensure that it exists.
+                serializeContext->RegisterGenericType<AZStd::vector<AZStd::string>>();
             }
         } // SceneData
     } // SceneAPI
