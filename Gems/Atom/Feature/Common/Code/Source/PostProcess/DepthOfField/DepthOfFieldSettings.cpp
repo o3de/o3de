@@ -286,7 +286,7 @@ namespace AZ
 
         void DepthOfFieldSettings::SetQualityLevel(uint32_t qualityLevel)
         {
-            // Clampe quality level to be less than the size of the QualitySet array
+            // Clamp quality level to be less than the size of the QualitySet array
             m_qualityLevel = AZStd::max(qualityLevel, static_cast<uint32_t>(AZStd::size(DepthOfField::QualitySet) - 1));
             m_sampleRadialDivision2 = DepthOfField::QualitySet[m_qualityLevel].sampleRadialDivision2;
             m_sampleRadialDivision4 = DepthOfField::QualitySet[m_qualityLevel].sampleRadialDivision4;
