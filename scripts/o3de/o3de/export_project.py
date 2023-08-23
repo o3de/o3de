@@ -376,13 +376,16 @@ def build_assets(ctx: O3DEScriptExportContext,
 def build_export_toolchain(ctx: O3DEScriptExportContext,
                            tools_build_path: pathlib.Path,
                            engine_centric: bool,
+                           additional_cmake_configure_options:List[str],
                            logger: logging.Logger = None) -> None:
     """
     Build (or rebuild) the export tool chain (AssetProcessorBatch and AssetBundlerBatch)
 
-    @param ctx:                 Export Context
-    @param tools_build_path:    The tools (cmake) build path to create the build project for the tools
-    @param logger:              Optional Logger
+    @param ctx:                                 Export Context
+    @param tools_build_path:                    The tools (cmake) build path to create the build project for the tools
+    @param engine_centric:                      Option to generate/build an engine-centric workflow
+    @param additional_cmake_configure_options:  List of additional configurate (cache variable) updates when generating the project
+    @param logger:                              Optional Logger
     @return: None
     """
 
@@ -403,6 +406,8 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
         cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
     if engine_centric:
         cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path}'])
+    if additional_cmake_configure_options:
+        cmake_configure_command.extend([f'-D{option}' for option in additional_cmake_configure_options])
     if logger:
         logger.info(f"Generating tool chain files for project {ctx.project_name}.")
     ret = process_command(cmake_configure_command)
@@ -447,6 +452,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        build_config: str,
                        game_build_path: pathlib.Path,
                        engine_centric: bool,
+                       additional_cmake_configure_options: List[str],
                        launcher_types: int,
                        allow_registry_overrides: bool,
                        logger: logging.Logger = None) -> None:
@@ -456,6 +462,8 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     @param ctx:                         Export Context
     @param build_config:                The build config to build (profile or release)
     @param game_build_path:             The cmake build folder target
+    @engine_centric:                    Option to generate/build an engine-centric workflow
+    @additional_cmake_configure_options:List of additional configurate (cache variable) updates when generating the project
     @param launcher_types:              The launcher type options (bit mask from the LauncherType enum) to specify which launcher types to build
     @param allow_registry_overrides:    Custom Flag argument for 'DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES' to pass down to the project generation
     @param logger:                      Optional Logger
@@ -486,6 +494,8 @@ def build_game_targets(ctx: O3DEScriptExportContext,
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
     if engine_centric:
         cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path}'])
+    if additional_cmake_configure_options:
+        cmake_configure_command.extend([f'-D{option}' for option in additional_cmake_configure_options])
 
     cmake_configure_command.extend(["-DLY_MONOLITHIC_GAME=1",
                                     f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"])

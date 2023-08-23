@@ -204,12 +204,12 @@ def test_build_assets(tmp_path, engine_centric, fail_on_ap_errors):
                 assert not ap_error_raised
 
 
-@pytest.mark.parametrize("engine_centric, additional_build_args", [
-    pytest.param(False, []),
-    pytest.param(True, []),
-    pytest.param(False, ['-j', '24']),
+@pytest.mark.parametrize("engine_centric, additional_cmake_configure_options, additional_build_args", [
+    pytest.param(False, [], []),
+    pytest.param(True, [], []),
+    pytest.param(False, ['FOO=BAR'], ['-j', '24']),
 ])
-def test_build_export_toolchain(tmp_path, engine_centric, additional_build_args):
+def test_build_export_toolchain(tmp_path, engine_centric, additional_cmake_configure_options, additional_build_args):
 
     test_project_name = "TestProject"
     test_project_path = tmp_path / "project"
@@ -234,6 +234,7 @@ def test_build_export_toolchain(tmp_path, engine_centric, additional_build_args)
 
         build_export_toolchain(ctx=mock_ctx,
                                tools_build_path=test_tools_build_path,
+                               additional_cmake_configure_options=additional_cmake_configure_options,
                                engine_centric=engine_centric)
 
         # Validate the cmake project generation calls
@@ -252,6 +253,8 @@ def test_build_export_toolchain(tmp_path, engine_centric, additional_build_args)
             expected_generate_args.extend([
                 f'-DLY_PROJECTS={test_project_path}'
             ])
+        if additional_cmake_configure_options:
+            expected_generate_args.extend([f'-D{option}' for option in additional_cmake_configure_options])
         assert mock_generate_process_input == expected_generate_args
 
         # Validate the cmake project build calls
@@ -313,6 +316,7 @@ def test_build_game_targets(tmp_path, build_config, build_game_launcher, build_s
                            build_config=build_config,
                            game_build_path=test_game_build_path,
                            engine_centric=engine_centric,
+                           additional_cmake_configure_options=[],
                            launcher_types=launcher_types,
                            allow_registry_overrides=allow_registry_overrides)
 

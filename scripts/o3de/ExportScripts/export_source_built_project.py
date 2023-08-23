@@ -37,6 +37,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               archive_output_format: str = "none",
                               fail_on_asset_errors: bool = False,
                               engine_centric: bool = False,
+                              additional_cmake_configure_options: List[str] = [],
                               logger: logging.Logger|None = None) -> None:
     """
     This function serves as the generic, general workflow for project exports. The steps in this code will generate
@@ -64,6 +65,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param archive_output_format:                   Optional archive format to use for archiving the final package(s)
     :param fail_on_asset_errors:                    Option to fail the process on any asset processing error
     :param engine_centric:                          Option to use an engine-centric workflow or not
+    :param additional_cmake_configure_options:      Optional list of additional cmake `-D<VAR>=<VALUE>` options to pass to the `cmake --configure` command. (i.e. `EXPORT_COMPILE_COMMANDS=ON` -> '-DEXPORT_COMPILE_COMMANDS=ON`)
     :param logger:                                  Optional logger to use to log the process and errors
     """
 
@@ -93,6 +95,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
         exp.build_export_toolchain(ctx=ctx,
                                    tools_build_path=tools_build_path,
                                    engine_centric=engine_centric,
+                                   additional_cmake_configure_options=additional_cmake_configure_options,
                                    logger=logger)
 
     # Build the requested game launcher types (if any)
@@ -109,6 +112,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                build_config=build_config,
                                game_build_path=launcher_build_path,
                                engine_centric=engine_centric,
+                               additional_cmake_configure_options=additional_cmake_configure_options,
                                launcher_types=launcher_type,
                                allow_registry_overrides=allow_registry_overrides,
                                logger=logger)
@@ -219,6 +223,8 @@ if "o3de_context" in globals():
         parser.add_argument('-nounified', '--no-unified-launcher', action='store_true', help='This flag skips building the Unified Launcher on a platform if not needed.')
         parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
         parser.add_argument('-ec', '--engine-centric', action='store_true', default=False, help='Option use the engine-centric work flow to export the project.')
+        parser.add_argument('-cco', '--cmake-cache-entry', type=str, dest='cmake_configure_options', action='append',
+                            help='Optional CMake Additional cache entry values to set during the project generation for the tools and the launcher.')
         parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
         if o3de_context is None:
             parser.print_help()
@@ -256,6 +262,7 @@ if "o3de_context" in globals():
                                   tools_build_path=args.tools_build_path,
                                   launcher_build_path=args.launcher_build_path,
                                   archive_output_format=args.archive_output,
+                                  additional_cmake_configure_options=args.cmake_configure_options,
                                   logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
