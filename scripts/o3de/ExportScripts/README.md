@@ -70,7 +70,6 @@ the following:
 |`args`|  A list of the CLI arguments that were unparsed, and passed through for further processing, if necessary.|
 |`cmake_additional_build_args`|A list additional CLI arguments that were unparsed, and passed through for further processing, if necessary.|
 |`project_name`|The name of the project at the project path|
-|`is_engine_centric`|Flag indicating if the project at project path is an engine-centric project or not|
 
 
 The custom script is provided the export-script specific arguments through the `args` property of the `o3de_context`, and the script is expected parse
