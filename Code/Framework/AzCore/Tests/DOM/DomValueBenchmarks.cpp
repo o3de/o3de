@@ -66,11 +66,11 @@ namespace AZ::Dom::Benchmark
                     {
                         return Type::Null;
                     }
-                    else if constexpr (AZStd::is_same_v<CurrentType, int64_t>)
+                    else if constexpr (AZStd::is_same_v<CurrentType, AZ::s64>)
                     {
                         return Type::Int64;
                     }
-                    else if constexpr (AZStd::is_same_v<CurrentType, uint64_t>)
+                    else if constexpr (AZStd::is_same_v<CurrentType, AZ::u64>)
                     {
                         return Type::Uint64;
                     }
