@@ -69,7 +69,7 @@ namespace AZ
         {
             using namespace SceneAPI::Events;
 
-            AZStd::unordered_set<Crc32> virtualTypes;
+            GraphMetaInfo::VirtualTypesSet virtualTypes;
             GraphMetaInfoBus::Broadcast(&GraphMetaInfoBus::Events::GetAllVirtualTypes, virtualTypes);
 
             AZStd::vector<AZStd::string> result;

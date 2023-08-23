@@ -59,7 +59,7 @@ namespace AZ
             }
         }
 
-        void SoftNameBehavior::GetAllVirtualTypes(AZStd::unordered_set<Crc32>& types)
+        void SoftNameBehavior::GetAllVirtualTypes(SceneAPI::Events::GraphMetaInfo::VirtualTypesSet& types)
         {
             // Add types that aren't handled by one specific behavior and have a more global utility.
             if (types.find(AZ_CRC("Ignore", 0x0d88d6e2)) == types.end())
