@@ -229,7 +229,7 @@ namespace AZ
 
                 if (!m_filterVirtualTypes.empty())
                 {
-                    AZStd::set<Crc32> virtualTypes;
+                    Events::GraphMetaInfo::VirtualTypesSet virtualTypes;
                     EBUS_EVENT(Events::GraphMetaInfoBus, GetVirtualTypes, virtualTypes, m_scene, index);
 
                     for (Crc32 name : virtualTypes)
