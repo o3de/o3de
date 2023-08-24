@@ -89,7 +89,7 @@ namespace AzFramework
         SpawnableInstanceAddress GetOwningSpawnable(const AZ::EntityId& entityId) override;
         AZ::EntityId GetStaticEntityId(const SpawnableInstanceAddress& spawnableInfo, const AZ::EntityId& currentEntityId);
 #endif
-        // Gruber patch end. // LVB. // Support unique instances
+// Gruber patch end. // LVB. // Support unique instances
 
         //
         // The following function is thread safe but intended to be run from the main thread.
