@@ -37,11 +37,6 @@ $O3DE_PATH/scripts/o3de.sh export-project -es ExportScripts/export_source_built_
 ```
 
 <br/>
-
-> Note: You can pass through build specific arguments to the underlying cmake build process with a trailing `/` argument. </br> 
-> For example, you can pass Visual Studio specific arguments by adding `/ -- /m` to the argument list above to request </br>
-> Parallel build tasks.
-
 For a list of all options, use the `--script-help` argument for the export script
 
 **Windows**
