@@ -49,13 +49,11 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
                 ${pal_source_dir}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
                 ${pal_include_dir}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
                 atom_rhi_vulkan_reflect_common_files.cmake
-                atom_rhi_vulkan_glad_files.cmake
                 atom_rhi_vulkan_builders_common_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Include
                     ${pal_include_dir}
-                    Include/Atom/RHI.Loader/Glad
                     Source
                     ${pal_source_dir}
 
@@ -65,7 +63,7 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
                     AZ::AssetBuilderSDK
                     Gem::Atom_RHI.Edit
                     Gem::Atom_RHI.Reflect
-                    3rdParty::glad_vulkan
+                    Gem::Atom_RHI_Vulkan.Glad.Static
 
         )
     endif()

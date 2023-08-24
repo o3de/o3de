@@ -77,11 +77,13 @@ namespace AZ::Render
     {
         RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.m_image.m_size;
         Vector2 rcpInputSize = Vector2(1.0f / inputSize.m_width, 1.0f / inputSize.m_height);
-
-        RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
-        m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
-        Offset offset = m_subPixelOffsets.at(m_offsetIndex);
-        view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
+        RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
+        if (view)
+        {
+            m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
+            Offset offset = m_subPixelOffsets.at(m_offsetIndex);
+            view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
+        }
 
         if (!ShouldCopyHistoryBuffer)
         {

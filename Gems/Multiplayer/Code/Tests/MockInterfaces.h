@@ -25,6 +25,7 @@ namespace UnitTest
         MOCK_METHOD2(StartHosting, bool(uint16_t, bool));
         MOCK_METHOD2(Connect, bool(const AZStd::string&, uint16_t));
         MOCK_METHOD1(Terminate, void(AzNetworking::DisconnectReason));
+        MOCK_METHOD1(AddNetworkInitHandler, void(AZ::Event<INetworkInterface*>::Handler&));
         MOCK_METHOD1(AddClientMigrationStartEventHandler, void(Multiplayer::ClientMigrationStartEvent::Handler&));
         MOCK_METHOD1(AddClientMigrationEndEventHandler, void(Multiplayer::ClientMigrationEndEvent::Handler&));
         MOCK_METHOD1(AddEndpointDisconnectedHandler, void(Multiplayer::EndpointDisconnectedEvent::Handler&));

@@ -97,7 +97,6 @@ namespace AzToolsFramework
 
     public:
         explicit DPERowWidget();
-        void Init(int depth, DPERowWidget* parentRow);
         void Clear(); //!< destroy all layout contents and clear DOM children
         ~DPERowWidget();
 
@@ -123,6 +122,7 @@ namespace AzToolsFramework
 
         void SetExpanded(bool expanded, bool recurseToChildRows = false);
         bool IsExpanded() const;
+        void ApplyExpansionState(const AZ::Dom::Path& rowPath, DocumentPropertyEditor* rowDPE);
 
         bool HasChildRows() const;
         int GetLevel() const;
@@ -143,7 +143,7 @@ namespace AzToolsFramework
         static bool ValueHasChildRows(const AZ::Dom::Value& rowValue);
 
         DPERowWidget* m_parentRow = nullptr;
-        int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
+        int m_depth = -1; //!< number of levels deep in the tree. Used for indentation
         DPELayout* m_columnLayout = nullptr;
 
         //! widget children in DOM specified order; mix of row and column widgets
@@ -206,6 +206,7 @@ namespace AzToolsFramework
         bool HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
         bool ShouldEraseExpanderStateWhenRowRemoved() const;
         void RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath);
+        void ApplyExpansionStates();
         void ExpandAll();
         void CollapseAll();
 
@@ -264,6 +265,7 @@ namespace AzToolsFramework
 
     signals:
         void ExpanderChangedByUser();
+        void RequestSizeUpdate(); //!< needed to inform the ComponentEditor Card that the DPE's sizehint needs to be re-evaluated
 
     public slots:
         //! set the DOM adapter for this DPE to inspect

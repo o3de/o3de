@@ -23,7 +23,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/SkyBox/MultiViewSkyBox.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

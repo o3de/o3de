@@ -26,7 +26,7 @@ from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
 from o3de import github_utils, git_utils, validation as valid
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, STDOUT
 from typing import List, Tuple
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
@@ -112,20 +112,19 @@ class CLICommand(object):
             line = process.stdout.readline()
             if not line: break
 
-            log_line = line.decode('utf-8', 'ignore')
+            log_line = line.decode('utf-8', 'ignore').rstrip()
             self._stdout_lines.append(log_line)
             self.logger.info(log_line)
     
-    def _cleanup_process(self, process) -> str:
+    def _cleanup_process(self, process) -> None:
         # flush remaining log lines
         log_lines = process.stdout.read().decode('utf-8', 'ignore')
         self._stdout_lines += log_lines.split('\n')
         self.logger.info(log_lines)
-        stderr = process.stderr.read()
 
         safe_kill_processes(process, process_logger = self.logger)
 
-        return stderr
+
     
     def run(self) -> int:
         """
@@ -135,25 +134,20 @@ class CLICommand(object):
         """
         ret = 1
         try:
-            with Popen(self.args, cwd=self.cwd, env=self.env, stdout=PIPE, stderr=PIPE) as process:
+            with Popen(self.args, cwd=self.cwd, env=self.env, stdout=PIPE, stderr=STDOUT) as process:
                 self.logger.info(f"Running process '{self.args[0]}' with PID({process.pid}): {self.args}")
                 
                 self._poll_process(process)
-                stderr = self._cleanup_process(process)
+
+                self._cleanup_process(process)
 
                 ret = process.returncode
 
-                # print out errors if there are any      
-                if stderr:
-                    # bool(ret) --> if the process returns a FAILURE code (>0)
-                    logger_func = self.logger.error if bool(ret) else self.logger.warning
-                    err_txt = stderr.decode('utf-8', 'ignore')
-                    logger_func(err_txt)
-                    self._stderr_lines = err_txt.split("\n")
+                return ret
+
         except Exception as err:
             self.logger.error(err)
             raise err
-        return ret
 
 
 # Per Python documentation, only strings should be inserted into sys.path
@@ -432,8 +426,17 @@ def download_file(parsed_uri: ParseResult, download_path: pathlib.Path, force_ov
             logger.error(f'URL Error {e.reason} opening {parsed_uri.geturl()}')
             return 1
     else:
-        origin_file = pathlib.Path(parsed_uri.geturl()).resolve()
+        parsed_uri_path = urllib.parse.unquote(parsed_uri.path)
+        if isinstance(download_path, pathlib.PureWindowsPath):
+            # On Windows we want to remove the initial slash in front of the drive letter
+            if parsed_uri_path.startswith('/'):
+                parsed_uri_path = parsed_uri_path[1:]
+            else:
+                logger.warning(f"The provided path URI '{parsed_uri_path}' may be missing a '/', "
+                               "file URIs typically have 3 slashes when they have an empty authority (RFC 8089) e.g. file:///")
+        origin_file = pathlib.Path(parsed_uri_path).resolve()
         if not origin_file.is_file():
+            logger.error(f"Failed to find local file '{origin_file}' based on URI '{parsed_uri}'")
             return 1
         shutil.copy(origin_file, download_path)
 

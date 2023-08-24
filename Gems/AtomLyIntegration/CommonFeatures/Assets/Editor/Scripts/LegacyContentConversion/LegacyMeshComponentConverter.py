@@ -55,8 +55,8 @@ class Mesh_Component_Converter(Component_Converter):
                         
                         # Legacy assetId looks like this "id={BCD2BB63-338F-53BE-98E1-BF847138B78E}:3250cdc0,type={C2869E3B-DDA0-4E01-8FE3-6770D788866B},hint={objects/airship/airship_pod_outerwalls.cgf}
                         # atomAssetId looks like this "{BCD2BB63-338F-53BE-98E1-BF847138B78E}:########,
-                        # newAssetId should look like "id={BCD2BB63-338F-53BE-98E1-BF847138B78E}:########,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/airship/airship_pod_outerwalls.azmodel}"
-                                                #value"id={E01FB8B5-D2B3-52D8-BC36-644FC0E3B5F4}:268435463,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/props/barrel_01.azmodel}"
+                        # newAssetId should look like "id={BCD2BB63-338F-53BE-98E1-BF847138B78E}:########,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/airship/airship_pod_outerwalls.fbx.azmodel}"
+                                                #value"id={E01FB8B5-D2B3-52D8-BC36-644FC0E3B5F4}:268435463,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/props/barrel_01.fbx.azmodel}"
                         # get the relative path to the mesh
                         meshPathStartIndex = assetId.find("hint={")
                         meshPathStartIndex += len("hint={")
@@ -64,7 +64,7 @@ class Mesh_Component_Converter(Component_Converter):
                         self.oldFbxRelativePathWithoutExtension = assetId[meshPathStartIndex: meshPathEndIndex]
                         
                         # swap the sub-id for the atom model sub-id
-                        atomModelRelativePath = "{0}.azmodel".format(self.oldFbxRelativePathWithoutExtension)
+                        atomModelRelativePath = "{0}.fbx.azmodel".format(self.oldFbxRelativePathWithoutExtension)
                         if atomModelRelativePath in self.assetCatalogHelper.relativePathToAssetIdDict:
                             atomAssetId = self.assetCatalogHelper.relativePathToAssetIdDict[atomModelRelativePath]
                             atomSubId = atomAssetId[atomAssetId.find(":") + 1:]
@@ -111,7 +111,7 @@ class Mesh_Component_Converter(Component_Converter):
         #            </Class>
         #            <Class name="AZ::Render::MeshComponentController" field="Controller" type="{D0F35FAC-4194-4C89-9487-D000DDB8B272}">
         #                <Class name="AZ::Render::MeshComponentConfig" field="Configuration" type="{63737345-51B1-472B-9355-98F99993909B}">
-        #                    <Class name="Asset" field="ModelAsset" value="id={509D78D3-2196-50C2-808C-FEDC3C31380D}:10000007,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/suzanne.azmodel}" version="1" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+        #                    <Class name="Asset" field="ModelAsset" value="id={509D78D3-2196-50C2-808C-FEDC3C31380D}:10000007,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/suzanne.fbx.azmodel}" version="1" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
         #                    <Class name="bool" field="ExcludeFromReflectionCubeMaps" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
         #                </Class>
         #            </Class>
@@ -128,7 +128,7 @@ class Mesh_Component_Converter(Component_Converter):
         #            </Class>
         #            <Class name="AZ::Render::MeshComponentController" field="Controller" type="{D0F35FAC-4194-4C89-9487-D000DDB8B272}">
         #                <Class name="AZ::Render::MeshComponentConfig" field="Configuration" type="{63737345-51B1-472B-9355-98F99993909B}">
-        #                    <Class name="Asset" field="ModelAsset" value="id={509D78D3-2196-50C2-808C-FEDC3C31380D}:10000007,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/suzanne.azmodel}" version="1" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+        #                    <Class name="Asset" field="ModelAsset" value="id={509D78D3-2196-50C2-808C-FEDC3C31380D}:10000007,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/suzanne.fbx.azmodel}" version="1" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
         #                    <Class name="bool" field="ExcludeFromReflectionCubeMaps" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
         #                </Class>
         #            </Class>

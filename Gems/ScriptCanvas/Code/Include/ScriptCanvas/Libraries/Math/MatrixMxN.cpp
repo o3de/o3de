@@ -45,12 +45,30 @@ namespace ScriptCanvas
             return source.GetTranspose();
         }
 
-        Data::VectorNType MultiplyByVector(const Data::MatrixMxNType& lhs, const Data::VectorNType& rhs)
+        Data::MatrixMxNType OuterProduct(const Data::VectorNType& lhs, const Data::VectorNType& rhs)
+        {
+            Data::MatrixMxNType result(lhs.GetDimensionality(), rhs.GetDimensionality());
+            AZ::OuterProduct(lhs, rhs, result);
+            return result;
+        }
+
+        Data::VectorNType RightMultiplyByVector(const Data::MatrixMxNType& lhs, const Data::VectorNType& rhs)
         {
             if (rhs.GetDimensionality() == lhs.GetColumnCount())
             {
                 Data::VectorNType result(lhs.GetRowCount());
                 AZ::VectorMatrixMultiply(lhs, rhs, result);
+                return result;
+            }
+            return Data::VectorNType(0);
+        }
+
+        Data::VectorNType LeftMultiplyByVector(const Data::VectorNType& lhs, const Data::MatrixMxNType& rhs)
+        {
+            if (lhs.GetDimensionality() == rhs.GetRowCount())
+            {
+                Data::VectorNType result(rhs.GetColumnCount());
+                AZ::VectorMatrixMultiplyLeft(lhs, rhs, result);
                 return result;
             }
             return Data::VectorNType(0);

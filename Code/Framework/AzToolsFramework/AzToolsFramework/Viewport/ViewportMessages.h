@@ -150,10 +150,9 @@ namespace AzToolsFramework
         public:
             //! Returns the current camera state for this viewport.
             virtual AzFramework::CameraState GetCameraState() = 0;
-            //! Transforms a point in world space to screen space coordinates in Qt Widget space.
-            //! Multiply by DeviceScalingFactor to get the position in viewport pixel space.
+            //! Transforms a point in world space to screen space coordinates in viewport pixel space
             virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
-            //! Transforms a point from Qt widget screen space to world space based on the given clip space depth.
+            //! Transforms a point in viewport pixel space to world space based on the given clip space depth.
             //! Returns the world space position if successful.
             virtual AZ::Vector3 ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition) = 0;
             //! Casts a point in screen space to a ray in world space originating from the viewport camera frustum's near plane.
