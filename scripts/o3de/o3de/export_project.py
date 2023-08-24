@@ -81,6 +81,13 @@ else:
 
 CUSTOM_SCRIPT_HELP_ARGUMENT = '--script-help'
 
+CUSTOM_CMAKE_ARG_HELP_EPILOGUE = "\n\nNote: You can pass in custom arguments to cmake to customize the project generation and build steps with the following:\n\n" \
+                                 "  -cca, --cmake-configure-arg  Custom arguments to pass during the 'cmake --configure ...' command used by this process\n" \
+                                 "  -cba, --cmake-build-arg      Custom arguments to pass during the 'cmake --build ...' command used by this process\n\n" \
+                                 "When these arguments are used, it is expected that the arguments to pass to cmake follows immediately afterwards.\n" \
+                                 "To mark the end of the argument list, use '/' to signal the termination of the current cmake custom argument. \n"\
+                                 "For example: \n\n" \
+                                 "   export-project <script> -pp $PROJECT -out $OUT_DIR -cca -DSTRIP_DEBUG_SYMBOLS=ON / -cba -j 12\n"
 
 # Regardless of the output package configuration, the tools used for the export process must be built with
 # the profile configuration
@@ -105,12 +112,15 @@ class O3DEScriptExportContext(object):
                  project_path: pathlib.Path,
                  engine_path: pathlib.Path,
                  args: list = [],
+                 cmake_additional_configure_args: list = [],
                  cmake_additional_build_args: list = []) -> None:
 
         self._export_script_path = export_script_path
         self._project_path = project_path
         self._engine_path = engine_path
         self._args = args
+
+        self._cmake_additional_configure_args = cmake_additional_configure_args
         self._cmake_additional_build_args = cmake_additional_build_args
 
         project_json_data = manifest.get_project_json_data(project_path=project_path)
@@ -120,6 +130,7 @@ class O3DEScriptExportContext(object):
         assert project_name, f"Invalid project configuration file '{project_path}/project.json'. 'project_name' not found in the settings"
 
         self._project_name = project_name
+
 
         
     @property
@@ -144,8 +155,13 @@ class O3DEScriptExportContext(object):
 
     @property
     def cmake_additional_build_args(self) -> list:
-        """A list additional CLI arguments that were unparsed, and passed through for further processing, if necessary."""
+        """A list additional CLI arguments to use for the cmake build commands that are generated during this process"""
         return self._cmake_additional_build_args
+
+    @property
+    def cmake_additional_configure_args(self) -> list:
+        """A list additional CLI arguments to use for the cmake configure commands that are generated during this process"""
+        return self._cmake_additional_configure_args
 
     @property
     def project_name(self) -> str:
@@ -211,6 +227,61 @@ def execute_python_script(target_script_path: pathlib.Path or str, o3de_context:
     return utils.load_and_execute_script(target_script_path, o3de_context = o3de_context, o3de_logger=logging.getLogger())
 
 
+
+def extract_cmake_custom_args(arg_list: List[str])->tuple:
+    """
+    Given an argument list, strip out any custom cmake configure/build args into there own lists and return:
+     - List of args that are not custom cmake (configure/build) arguments
+     - List of custom cmake configure arguments
+     - List of custom cmake build arguments
+     - Arg Parse epilogue string to display the custom arguments and how to use them
+
+     refer to CUSTOM_CMAKE_ARG_HELP_EPILOGUE for the help description for the arg options
+
+    :param arg_list: The original argument list to extract the arguments from
+    :return     Tuple of arguments and the epilogue string as described in the description
+    """
+
+    export_process_args = []
+    cmake_configure_args = []
+    cmake_build_args = []
+    in_cca = False
+    in_cba = False
+
+    for arg in arg_list:
+        if not in_cca and not in_cba:
+            if arg in ('-cca', '--cmake-configure-arg'):
+                in_cca = True
+                in_cba = False
+            elif arg in ('-cba', '--cmake-build-arg'):
+                in_cba = True
+                in_cca = False
+            elif arg == '/':
+                raise ExportProjectError("Invalid argument '/'. This argument marks terminator for the '-cca'  or '-cba' argument, but is not part of that argument")
+            else:
+                export_process_args.append(arg)
+        elif in_cca:
+            if arg == '/':
+                in_cca = False
+            elif arg in ('-cba', '--cmake-build-arg'):
+                in_cca = False
+                in_cca = True
+            elif arg not in ('-cca', '--cmake-configure-arg'):
+                cmake_configure_args.append(arg)
+        elif in_cba:
+            if arg == '/':
+                in_cba = False
+            elif arg in ('-cca', '--cmake-configure-arg'):
+                in_cca = True
+                in_cba = False
+            elif arg not in ('-cba', '--cmake-build-arg'):
+                cmake_build_args.append(arg)
+        else:
+            export_process_args.append(arg)
+
+    return export_process_args, cmake_configure_args, cmake_build_args
+
+
 def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path, passthru_args: list) -> int:
 
     if export_script_path.suffix != '.py':
@@ -259,23 +330,14 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
             logging.error(f"Unable to find project folder associated with file '{validated_export_script_path}'. Please specify using --project-path, or ensure the file is inside a project folder.")
         return 1
 
-    try:
-        custom_cmake_argument_marker_index = passthru_args.index('/')
-    except ValueError:
-        custom_cmake_argument_marker_index = -1
-
-    if custom_cmake_argument_marker_index >= 0:
-        export_process_args = passthru_args[:custom_cmake_argument_marker_index]
-        cmake_custom_build_args = passthru_args[custom_cmake_argument_marker_index+1:]
-    else:
-        export_process_args = passthru_args
-        cmake_custom_build_args = []
+    export_process_args, cmake_configure_args, cmake_build_args= extract_cmake_custom_args(passthru_args)
 
     o3de_context = O3DEScriptExportContext(export_script_path=validated_export_script_path,
                                            project_path=computed_project_path,
                                            engine_path=manifest.get_project_engine_path(computed_project_path),
                                            args=export_process_args,
-                                           cmake_additional_build_args=cmake_custom_build_args)
+                                           cmake_additional_configure_args=cmake_configure_args,
+                                           cmake_additional_build_args=cmake_build_args)
 
     return execute_python_script(validated_export_script_path, o3de_context)
 
@@ -376,7 +438,6 @@ def build_assets(ctx: O3DEScriptExportContext,
 def build_export_toolchain(ctx: O3DEScriptExportContext,
                            tools_build_path: pathlib.Path,
                            engine_centric: bool,
-                           additional_cmake_configure_options:List[str],
                            logger: logging.Logger = None) -> None:
     """
     Build (or rebuild) the export tool chain (AssetProcessorBatch and AssetBundlerBatch)
@@ -384,7 +445,6 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
     @param ctx:                                 Export Context
     @param tools_build_path:                    The tools (cmake) build path to create the build project for the tools
     @param engine_centric:                      Option to generate/build an engine-centric workflow
-    @param additional_cmake_configure_options:  List of additional configurate (cache variable) updates when generating the project
     @param logger:                              Optional Logger
     @return: None
     """
@@ -406,8 +466,8 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
         cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
     if engine_centric:
         cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path}'])
-    if additional_cmake_configure_options:
-        cmake_configure_command.extend([f'-D{option}' for option in additional_cmake_configure_options])
+    if ctx.cmake_additional_configure_args:
+        cmake_configure_command.extend(ctx.cmake_additional_configure_args)
     if logger:
         logger.info(f"Generating tool chain files for project {ctx.project_name}.")
     ret = process_command(cmake_configure_command)
@@ -452,7 +512,6 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        build_config: str,
                        game_build_path: pathlib.Path,
                        engine_centric: bool,
-                       additional_cmake_configure_options: List[str],
                        launcher_types: int,
                        allow_registry_overrides: bool,
                        logger: logging.Logger = None) -> None:
@@ -463,7 +522,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     @param build_config:                The build config to build (profile or release)
     @param game_build_path:             The cmake build folder target
     @engine_centric:                    Option to generate/build an engine-centric workflow
-    @additional_cmake_configure_options:List of additional configurate (cache variable) updates when generating the project
+    @additional_cmake_configure_options:List of additional configure arguments to pass to cmake during the cmake project generation process
     @param launcher_types:              The launcher type options (bit mask from the LauncherType enum) to specify which launcher types to build
     @param allow_registry_overrides:    Custom Flag argument for 'DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES' to pass down to the project generation
     @param logger:                      Optional Logger
@@ -494,8 +553,8 @@ def build_game_targets(ctx: O3DEScriptExportContext,
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
     if engine_centric:
         cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path}'])
-    if additional_cmake_configure_options:
-        cmake_configure_command.extend([f'-D{option}' for option in additional_cmake_configure_options])
+    if ctx.cmake_additional_configure_args:
+        cmake_configure_command.extend(ctx.cmake_additional_configure_args)
 
     cmake_configure_command.extend(["-DLY_MONOLITHIC_GAME=1",
                                     f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"])

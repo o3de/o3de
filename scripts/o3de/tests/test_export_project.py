@@ -13,7 +13,7 @@ from unittest.mock import patch, create_autospec
 from o3de.export_project import _export_script, process_command, setup_launcher_layout_directory, \
                                  O3DEScriptExportContext, ExportLayoutConfig, build_assets, ExportProjectError, \
                                  bundle_assets, build_export_toolchain, build_game_targets, \
-                                 validate_project_artifact_paths, LauncherType
+                                 validate_project_artifact_paths, LauncherType, extract_cmake_custom_args
 
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
@@ -207,7 +207,7 @@ def test_build_assets(tmp_path, engine_centric, fail_on_ap_errors):
 @pytest.mark.parametrize("engine_centric, additional_cmake_configure_options, additional_build_args", [
     pytest.param(False, [], []),
     pytest.param(True, [], []),
-    pytest.param(False, ['FOO=BAR'], ['-j', '24']),
+    pytest.param(False, ['-DFOO=BAR', '--preset FOO'], ['-j', '24']),
 ])
 def test_build_export_toolchain(tmp_path, engine_centric, additional_cmake_configure_options, additional_build_args):
 
@@ -228,13 +228,13 @@ def test_build_export_toolchain(tmp_path, engine_centric, additional_cmake_confi
         mock_ctx = create_autospec(O3DEScriptExportContext)
         mock_ctx.project_path = test_project_path
         mock_ctx.engine_path = test_engine_path
+        mock_ctx.cmake_additional_configure_args = additional_cmake_configure_options
         mock_ctx.cmake_additional_build_args = test_additional_args
         mock_ctx.is_engine_centric = engine_centric
         mock_ctx.project_name = test_project_name
 
         build_export_toolchain(ctx=mock_ctx,
                                tools_build_path=test_tools_build_path,
-                               additional_cmake_configure_options=additional_cmake_configure_options,
                                engine_centric=engine_centric)
 
         # Validate the cmake project generation calls
@@ -254,7 +254,7 @@ def test_build_export_toolchain(tmp_path, engine_centric, additional_cmake_confi
                 f'-DLY_PROJECTS={test_project_path}'
             ])
         if additional_cmake_configure_options:
-            expected_generate_args.extend([f'-D{option}' for option in additional_cmake_configure_options])
+            expected_generate_args.extend(additional_cmake_configure_options)
         assert mock_generate_process_input == expected_generate_args
 
         # Validate the cmake project build calls
@@ -316,7 +316,6 @@ def test_build_game_targets(tmp_path, build_config, build_game_launcher, build_s
                            build_config=build_config,
                            game_build_path=test_game_build_path,
                            engine_centric=engine_centric,
-                           additional_cmake_configure_options=[],
                            launcher_types=launcher_types,
                            allow_registry_overrides=allow_registry_overrides)
 
@@ -568,7 +567,54 @@ def test_validate_project_artifact_paths(tmp_path, project_path, create_files, c
                 original = test_project_path / original
             assert original == validated
 
-
-
+@pytest.mark.parametrize("input_args, expected_export_args, expected_cca, expected_cba" ,[
+    pytest.param(['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO', '-cca', '-DLY_STRIP_DEBUG_SYMBOLS=ON', '/', '-cba', '--', '/m:20'],
+                 ['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO'],
+                 ['-DLY_STRIP_DEBUG_SYMBOLS=ON'],
+                 ['--', '/m:20'], id='case 1'),
+    pytest.param(['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO', '--cmake-configure-arg', '-DLY_STRIP_DEBUG_SYMBOLS=ON', '/', '--cmake-build-arg', '--', '/m:20'],
+                 ['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO'],
+                 ['-DLY_STRIP_DEBUG_SYMBOLS=ON'],
+                 ['--', '/m:20'], id='case 2'),
+    pytest.param(['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-cca',
+                  '-DLY_STRIP_DEBUG_SYMBOLS=ON', '/', '-nounified', '-gl', '-assets', '-ll', 'INFO', '-cba', '--', '/m:20'],
+                 ['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO'],
+                 ['-DLY_STRIP_DEBUG_SYMBOLS=ON'],
+                 ['--', '/m:20'], id='case 3'),
+    pytest.param(['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-cba',
+                  '--', '/m:20', '-cca', '-DLY_STRIP_DEBUG_SYMBOLS=ON', '/', '-nounified', '-gl', '-assets', '-ll', 'INFO'],
+                 ['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO'],
+                 ['-DLY_STRIP_DEBUG_SYMBOLS=ON'],
+                 ['--', '/m:20'], id='case 4'),
+    pytest.param(['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO', '-cca', '-DLY_STRIP_DEBUG_SYMBOLS=ON', '/'],
+                 ['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO'],
+                 ['-DLY_STRIP_DEBUG_SYMBOLS=ON'],
+                 [], id='case 5'),
+    pytest.param(['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO', '-cba', '--', '/m:20'],
+                 ['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO'],
+                 [],
+                 ['--', '/m:20'], id='case 6'),
+    pytest.param(['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO', '-cca', '-cba'],
+                 ['-pp', 'o3de', '-es', 'export_mps.py', '-out', 'export', '-cfg', 'profile', '-a', 'zip', '-nounified', '-gl',
+                  '-assets', '-ll', 'INFO'],
+                 [],
+                 [], id='case 7')
+  ])
+def test_extract_cmake_custom_args(input_args, expected_export_args, expected_cca, expected_cba):
+    result_export_args, result_cca_args, result_cba_args = extract_cmake_custom_args(input_args)
+    assert result_export_args == expected_export_args
+    assert result_cca_args == expected_cca
+    assert result_cba_args == expected_cba
 
 
