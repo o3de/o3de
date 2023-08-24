@@ -86,7 +86,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(36);  // Pad Skinning mesh buffers to respect appropriate alignment
+                    ->Version(38);  // Pad Skinning mesh buffers to respect appropriate alignment
             }
         }
 
@@ -1284,7 +1284,7 @@ namespace AZ
             size_t expectedVertexCount,
             const AZStd::vector<T>& bufferData,
             AZ::RHI::Format format,
-            const char* streamName,
+            [[maybe_unused]] const char* streamName,
             bool isAligned /*= false*/) const
         {
             size_t actualVertexCount = (bufferData.size() * sizeof(T)) / RHI::GetFormatSize(format);
@@ -1599,7 +1599,7 @@ namespace AZ
                             mesh.m_name.GetCStr());
                     }
 
-                    const size_t totalVertexInfluences = mesh.m_influencesPerVertex * mesh.m_vertexCount;
+                    [[maybe_unused]] const size_t totalVertexInfluences = mesh.m_influencesPerVertex * mesh.m_vertexCount;
                     AZ_Assert(
                         mesh.m_skinJointIndices.size() >= totalVertexInfluences && mesh.m_skinWeights.size() >= totalVertexInfluences,
                         "Number of allocated skin influence joint indices (%zu) and the number of weights (%zu) should be above (%zu)  .",
