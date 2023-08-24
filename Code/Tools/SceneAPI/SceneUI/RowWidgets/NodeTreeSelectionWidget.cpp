@@ -245,7 +245,7 @@ namespace AZ
                         }
 
                         // Check if the object is one of the registered virtual types.
-                        AZStd::set<Crc32> virtualTypes;
+                        Events::GraphMetaInfo::VirtualTypesSet virtualTypes;
                         Events::GraphMetaInfoBus::Broadcast(
                             &Events::GraphMetaInfo::GetVirtualTypes, virtualTypes, *root->GetScene(), index);
                         for (Crc32 name : virtualTypes)
@@ -316,7 +316,7 @@ namespace AZ
                         }
                         
                         // Check if the object is one of the registered virtual types.
-                        AZStd::set<Crc32> virtualTypes;
+                        Events::GraphMetaInfo::VirtualTypesSet virtualTypes;
                         Events::GraphMetaInfoBus::Broadcast(&Events::GraphMetaInfo::GetVirtualTypes, virtualTypes, *root->GetScene(), index);
                         for (Crc32 name : virtualTypes)
                         {
