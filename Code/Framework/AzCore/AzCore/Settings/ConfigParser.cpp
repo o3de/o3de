@@ -196,7 +196,7 @@ namespace AZ::Settings
                 memmove(configBuffer.begin(), frontIter, readOffset);
             }
 
-            if (remainingFileLength==0)
+            if (remainingFileLength == 0)
             {
                 // There are no more bytes to read, no need to attempt to read from the stream
                 break;
