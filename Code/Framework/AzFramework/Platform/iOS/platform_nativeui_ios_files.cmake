@@ -11,8 +11,8 @@ set(FILES
     AzFramework/Components/NativeUISystemComponentFactories_iOS.h
     AzFramework/Application/Application_iOS.mm
     AzFramework/Windowing/NativeWindow_ios.mm
-    ../Common/Apple/AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Apple.mm
+    AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_iOS.mm
     AzFramework/Input/Devices/Motion/InputDeviceMotion_iOS.mm
     AzFramework/Input/Devices/Touch/InputDeviceTouch_iOS.mm
-    ../Common/Apple/AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Apple.mm
+    AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_iOS.mm
 )

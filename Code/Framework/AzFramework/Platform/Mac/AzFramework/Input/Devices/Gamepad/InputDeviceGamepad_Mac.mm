@@ -9,14 +9,9 @@
 
 
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
+#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
 #include <GameController/GameController.h>
 #include <AzCore/Debug/Trace.h>
-
-#if defined(AZ_PLATFORM_MAC)
-#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
-#elif defined(AZ_PLATFORM_IOS)
-#include <AzFramework/Components/NativeUISystemComponentFactories_iOS.h>
-#endif // AZ_PLATFORM_MAC
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -75,22 +70,22 @@ namespace
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! Platform specific implementation for apple game-pad input devices
-    class InputDeviceGamepadApple : public InputDeviceGamepad::Implementation
+    //! Platform specific implementation for Mac game-pad input devices
+    class InputDeviceGamepadMac : public InputDeviceGamepad::Implementation
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceGamepadApple, AZ::SystemAllocator);
+        AZ_CLASS_ALLOCATOR(InputDeviceGamepadMac, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDevice Reference to the input device being implemented
-        InputDeviceGamepadApple(InputDeviceGamepad& inputDevice);
+        InputDeviceGamepadMac(InputDeviceGamepad& inputDevice);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Destructor
-        ~InputDeviceGamepadApple() override;
+        ~InputDeviceGamepadMac() override;
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,68 +113,55 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(AZ_PLATFORM_MAC)
     AZStd::unique_ptr<InputDeviceGamepad::Implementation> MacDeviceGamepadImplFactory::Create(InputDeviceGamepad& inputDevice)
     {
-        return AZStd::make_unique<InputDeviceGamepadApple>(inputDevice);
+        return AZStd::make_unique<InputDeviceGamepadMac>(inputDevice);
     }
 
     AZ::u32 MacDeviceGamepadImplFactory::GetMaxSupportedGamepads() const
     {
         return GCControllerPlayerIndex4 + 1;
     }
-#elif defined(AZ_PLATFORM_IOS)
-    AZStd::unique_ptr<InputDeviceGamepad::Implementation> IosDeviceGamepadImplFactory::Create(InputDeviceGamepad& inputDevice)
-    {
-        return AZStd::make_unique<InputDeviceGamepadApple>(inputDevice);
-    }
-
-    AZ::u32 IosDeviceGamepadImplFactory::GetMaxSupportedGamepads() const
-    {
-        return GCControllerPlayerIndex4 + 1;
-    }
-
-#endif // AZ_PLATFORM_MAC
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceGamepad::Implementation* InputDeviceGamepad::Implementation::Create(
         InputDeviceGamepad& inputDevice)
     {
-        return aznew InputDeviceGamepadApple(inputDevice);
+        return aznew InputDeviceGamepadMac(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceGamepadApple::InputDeviceGamepadApple(InputDeviceGamepad& inputDevice)
+    InputDeviceGamepadMac::InputDeviceGamepadMac(InputDeviceGamepad& inputDevice)
         : InputDeviceGamepad::Implementation(inputDevice)
         , m_rawGamepadState(GetDigitalButtonIdByBitMaskMap())
         , m_controller(nullptr)
         , m_wasPausedHandlerCalled(false)
     {
         AZ_Assert(inputDevice.GetInputDeviceId().GetIndex() <= GCControllerPlayerIndex4,
-                  "Creating InputDeviceGamepadApple with index %d that is greater than the max supported by the game controller framework: %d",
+                  "Creating InputDeviceGamepadMac with index %d that is greater than the max supported by the game controller framework: %d",
                   inputDevice.GetInputDeviceId().GetIndex(), (GCControllerPlayerIndex4+1));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceGamepadApple::~InputDeviceGamepadApple()
+    InputDeviceGamepadMac::~InputDeviceGamepadMac()
     {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceGamepadApple::IsConnected() const
+    bool InputDeviceGamepadMac::IsConnected() const
     {
         return m_controller != nullptr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceGamepadApple::SetVibration(float leftMotorSpeedNormalized,
+    void InputDeviceGamepadMac::SetVibration(float leftMotorSpeedNormalized,
                                                float rightMotorSpeedNormalized)
     {
         // The apple game controller framework does not (yet?) support force-feedback
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceGamepadApple::GetPhysicalKeyOrButtonText(const InputChannelId& inputChannelId,
+    bool InputDeviceGamepadMac::GetPhysicalKeyOrButtonText(const InputChannelId& inputChannelId,
                                                              AZStd::string& o_keyOrButtonText) const
     {
         if (inputChannelId == InputDeviceGamepad::Button::Start)
@@ -264,7 +246,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceGamepadApple::TickInputDevice()
+    void InputDeviceGamepadMac::TickInputDevice()
     {
         if (m_controller == nil)
         {
@@ -295,7 +277,7 @@ namespace AzFramework
             return;
         }
 
-        AZ_Assert(m_controller != nil, "Logic error in InputDeviceGamepadApple::TickInputDevice");
+        AZ_Assert(m_controller != nil, "Logic error in InputDeviceGamepadMac::TickInputDevice");
 
         // Always update the input channels while the game-pad is connected
         m_rawGamepadState.m_digitalButtonStates = 0;
@@ -338,7 +320,7 @@ namespace AzFramework
         }
         else
         {
-            AZ_WarningOnce("InputDeviceGamepadApple", false, "Unknown game-pad profile");
+            AZ_WarningOnce("InputDeviceGamepadMac", false, "Unknown game-pad profile");
         }
 
         if (m_wasPausedHandlerCalled)

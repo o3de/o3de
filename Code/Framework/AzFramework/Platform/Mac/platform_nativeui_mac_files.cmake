@@ -13,5 +13,5 @@ set(FILES
     AzFramework/Windowing/NativeWindow_Mac.mm
     AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Mac.mm
     AzFramework/Input/Devices/Mouse/InputDeviceMouse_Mac.mm
-    ../Common/Apple/AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Apple.mm
+    AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Mac.mm
 )
