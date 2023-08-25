@@ -43,6 +43,7 @@ namespace EMotionFX
         void TearDown() override
         {
             QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+            m_actorAsset.Reset();
             UIFixture::TearDown();
         }
 
