@@ -56,7 +56,6 @@ set(FILES
     Include/Atom/RHI/ValidationLayer.h
     Source/RHI/Device.cpp
     Source/RHI/DeviceObject.cpp
-    Source/RHI/MultiDeviceObject.cpp
     Source/RHI/CommandQueue.cpp
     Source/RHI/ValidationLayer.cpp
     Include/Atom/RHI/Factory.h
@@ -149,13 +148,11 @@ set(FILES
     Include/Atom/RHI/ResourceInvalidateBus.h
     Include/Atom/RHI/ResourceView.h
     Source/RHI/Resource.cpp
-    Source/RHI/MultiDeviceResource.cpp
     Source/RHI/ResourceView.cpp
     Include/Atom/RHI/ResourcePool.h
     Include/Atom/RHI/MultiDeviceResourcePool.h
     Include/Atom/RHI/ResourcePoolDatabase.h
     Source/RHI/ResourcePool.cpp
-    Source/RHI/MultiDeviceResourcePool.cpp
     Source/RHI/ResourcePoolDatabase.cpp
     Include/Atom/RHI/MemoryAllocation.h
     Include/Atom/RHI/MemorySubAllocator.h

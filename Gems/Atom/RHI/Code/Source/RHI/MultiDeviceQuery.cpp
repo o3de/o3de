@@ -22,7 +22,7 @@ namespace AZ::RHI
 
     void MultiDeviceQuery::Shutdown()
     {
-        for (auto& [_, deviceQuery] : m_deviceQueries)
+        for (auto& [_, deviceQuery] : m_deviceObjects)
         {
             deviceQuery->Shutdown();
         }
@@ -32,7 +32,7 @@ namespace AZ::RHI
 
     void MultiDeviceQuery::InvalidateViews()
     {
-        for (auto& [_, deviceQuery] : m_deviceQueries)
+        for (auto& [_, deviceQuery] : m_deviceObjects)
         {
             deviceQuery->InvalidateViews();
         }

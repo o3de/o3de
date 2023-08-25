@@ -17,27 +17,16 @@ namespace AZ::RHI
 
     //! MultiDeviceQuery resource for recording gpu data like occlusion, timestamp or pipeline statistics.
     //! Queries belong to a MultiDeviceQueryPool and their types are determined by the pool.
-    class MultiDeviceQuery : public MultiDeviceResource
+    class MultiDeviceQuery : public MultiDeviceResource<Query, QueryPool>
     {
         friend class MultiDeviceQueryPool;
 
     public:
+        using BaseClassType = MultiDeviceResource<Query,QueryPool>;
         AZ_CLASS_ALLOCATOR(MultiDeviceQuery, AZ::SystemAllocator, 0);
-        AZ_RTTI(MultiDeviceQuery, "{F72033E8-7A91-40BF-80E2-7262223362DB}", MultiDeviceResource);
+        AZ_RTTI(MultiDeviceQuery, "{F72033E8-7A91-40BF-80E2-7262223362DB}", BaseClassType);
         MultiDeviceQuery() = default;
         virtual ~MultiDeviceQuery() override = default;
-
-        //! Returns the device-specific Query for the given index
-        inline Ptr<Query> GetDeviceQuery(int deviceIndex) const
-        {
-            AZ_Error(
-                "MultiDeviceQuery",
-                m_deviceQueries.find(deviceIndex) != m_deviceQueries.end(),
-                "No DeviceQuery found for device index %d\n",
-                deviceIndex);
-
-            return m_deviceQueries.at(deviceIndex);
-        }
 
         //! Returns the query pool that this query belongs to.
         const MultiDeviceQueryPool* GetQueryPool() const;
@@ -48,8 +37,8 @@ namespace AZ::RHI
         QueryHandle GetHandle(int deviceIndex)
         {
             AZ_Assert(
-                m_deviceQueries.find(deviceIndex) != m_deviceQueries.end(), "No DeviceQuery found for device index %d\n", deviceIndex);
-            return m_deviceQueries.at(deviceIndex)->GetHandle();
+                m_deviceObjects.find(deviceIndex) != m_deviceObjects.end(), "No DeviceQuery found for device index %d\n", deviceIndex);
+            return m_deviceObjects.at(deviceIndex)->GetHandle();
         }
 
         //! Shuts down the device-specific resources by detaching them from their parent pool.
@@ -57,9 +46,5 @@ namespace AZ::RHI
 
         //! Invalidates all views by setting off events on all device-specific ResourceInvalidateBusses
         void InvalidateViews() override final;
-
-    private:
-        //! A map of all device-specific Queries, indexed by the device index
-        AZStd::unordered_map<int, Ptr<Query>> m_deviceQueries;
     };
 } // namespace AZ::RHI

@@ -245,7 +245,7 @@ namespace UnitTest
 
         for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
         {
-            auto* testQueryPool = static_cast<UnitTest::QueryPool*>(queryPool->GetDeviceQueryPool(deviceIndex).get());
+            auto* testQueryPool = static_cast<UnitTest::QueryPool*>(queryPool->GetDeviceObject(deviceIndex).get());
             auto& testQueryPoolIntervals = testQueryPool->m_calledIntervals;
             testQueryPoolIntervals.clear();
 
@@ -315,8 +315,8 @@ namespace UnitTest
             EXPECT_EQ(occlusionQueryPool->InitQuery(query.get()), RHI::ResultCode::Success);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                EXPECT_EQ(query->GetDeviceQuery(deviceIndex)->Begin(dummyCommandList), RHI::ResultCode::Success);
-                EXPECT_EQ(query->GetDeviceQuery(deviceIndex)->End(dummyCommandList), RHI::ResultCode::Success);
+                EXPECT_EQ(query->GetDeviceObject(deviceIndex)->Begin(dummyCommandList), RHI::ResultCode::Success);
+                EXPECT_EQ(query->GetDeviceObject(deviceIndex)->End(dummyCommandList), RHI::ResultCode::Success);
             }
         }
 
@@ -326,9 +326,9 @@ namespace UnitTest
             occlusionQueryPool->InitQuery(query.get());
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                query->GetDeviceQuery(deviceIndex)->Begin(dummyCommandList);
+                query->GetDeviceObject(deviceIndex)->Begin(dummyCommandList);
                 AZ_TEST_START_ASSERTTEST;
-                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceQuery(deviceIndex)->Begin(dummyCommandList));
+                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceObject(deviceIndex)->Begin(dummyCommandList));
                 AZ_TEST_STOP_ASSERTTEST(1);
             }
         }
@@ -339,7 +339,7 @@ namespace UnitTest
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 AZ_TEST_START_ASSERTTEST;
-                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceQuery(deviceIndex)->End(dummyCommandList));
+                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceObject(deviceIndex)->End(dummyCommandList));
                 AZ_TEST_STOP_ASSERTTEST(1);
             }
         }
@@ -351,9 +351,9 @@ namespace UnitTest
             RHI::CommandList& anotherDummyCmdList = reinterpret_cast<RHI::CommandList&>(anotherData);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                EXPECT_EQ(RHI::ResultCode::Success, query->GetDeviceQuery(deviceIndex)->Begin(dummyCommandList));
+                EXPECT_EQ(RHI::ResultCode::Success, query->GetDeviceObject(deviceIndex)->Begin(dummyCommandList));
                 AZ_TEST_START_ASSERTTEST;
-                EXPECT_EQ(RHI::ResultCode::InvalidArgument, query->GetDeviceQuery(deviceIndex)->End(anotherDummyCmdList));
+                EXPECT_EQ(RHI::ResultCode::InvalidArgument, query->GetDeviceObject(deviceIndex)->End(anotherDummyCmdList));
                 AZ_TEST_STOP_ASSERTTEST(1);
             }
         }
@@ -366,7 +366,7 @@ namespace UnitTest
                 AZ_TEST_START_ASSERTTEST;
                 EXPECT_EQ(
                     RHI::ResultCode::InvalidArgument,
-                    query->GetDeviceQuery(deviceIndex)->Begin(dummyCommandList, RHI::QueryControlFlags::PreciseOcclusion));
+                    query->GetDeviceObject(deviceIndex)->Begin(dummyCommandList, RHI::QueryControlFlags::PreciseOcclusion));
                 AZ_TEST_STOP_ASSERTTEST(1);
             }
         }
@@ -377,7 +377,7 @@ namespace UnitTest
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 AZ_TEST_START_ASSERTTEST;
-                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceQuery(deviceIndex)->Begin(dummyCommandList));
+                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceObject(deviceIndex)->Begin(dummyCommandList));
                 AZ_TEST_STOP_ASSERTTEST(1);
             }
         }
@@ -388,7 +388,7 @@ namespace UnitTest
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 AZ_TEST_START_ASSERTTEST;
-                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceQuery(deviceIndex)->End(dummyCommandList));
+                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceObject(deviceIndex)->End(dummyCommandList));
                 AZ_TEST_STOP_ASSERTTEST(1);
             }
         }
@@ -399,7 +399,7 @@ namespace UnitTest
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 AZ_TEST_START_ASSERTTEST;
-                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceQuery(deviceIndex)->WriteTimestamp(dummyCommandList));
+                EXPECT_EQ(RHI::ResultCode::Fail, query->GetDeviceObject(deviceIndex)->WriteTimestamp(dummyCommandList));
                 AZ_TEST_STOP_ASSERTTEST(1);
             }
         }
@@ -409,7 +409,7 @@ namespace UnitTest
             timestampQueryPool->InitQuery(query.get());
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
-                EXPECT_EQ(RHI::ResultCode::Success, query->GetDeviceQuery(deviceIndex)->WriteTimestamp(dummyCommandList));
+                EXPECT_EQ(RHI::ResultCode::Success, query->GetDeviceObject(deviceIndex)->WriteTimestamp(dummyCommandList));
             }
         }
     }

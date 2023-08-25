@@ -24,27 +24,16 @@ namespace AZ::RHI
     //! MultiDeviceQueryPool manages a map of device-specific QueryPools, which provide backing storage and context for query instances. The
     //! QueryPoolDescriptor contains properties defining memory characteristics of query pools. All queries created on a pool share the same
     //! backing and type.
-    class MultiDeviceQueryPool : public MultiDeviceResourcePool
+    class MultiDeviceQueryPool : public MultiDeviceResourcePool<Query, QueryPool>
     {
         using Base = MultiDeviceResourcePool;
 
     public:
+        using BaseClassType = MultiDeviceResourcePool<Query, QueryPool>;
         AZ_CLASS_ALLOCATOR(MultiDeviceQueryPool, AZ::SystemAllocator, 0);
-        AZ_RTTI(MultiDeviceQueryPool, "{F46A756D-99F1-4A2A-AE4C-A2A8BE6845CC}", MultiDeviceResourcePool)
+        AZ_RTTI(MultiDeviceQueryPool, "{F46A756D-99F1-4A2A-AE4C-A2A8BE6845CC}", BaseClassType)
         MultiDeviceQueryPool() = default;
         virtual ~MultiDeviceQueryPool() override = default;
-
-        //! Returns the device-specific QueryPool for the given index
-        inline Ptr<QueryPool> GetDeviceQueryPool(int deviceIndex) const
-        {
-            AZ_Error(
-                "MultiDeviceQueryPool",
-                m_deviceQueryPools.find(deviceIndex) != m_deviceQueryPools.end(),
-                "No DeviceQueryPool found for device index %d\n",
-                deviceIndex);
-
-            return m_deviceQueryPools.at(deviceIndex);
-        }
 
         //!  Initialize the MultiDeviceQueryPool by initializing all device-specific QueryPools for each device mentioned in the deviceMask.
         ResultCode Init(MultiDevice::DeviceMask deviceMask, const QueryPoolDescriptor& descriptor);
@@ -107,7 +96,5 @@ namespace AZ::RHI
         ResultCode ValidateQueries(MultiDeviceQuery** queries, uint32_t queryCount);
 
         QueryPoolDescriptor m_descriptor;
-        //! A map of all device-specific QueryPools, indexed by the device index
-        AZStd::unordered_map<int, Ptr<QueryPool>> m_deviceQueryPools;
     };
 } // namespace AZ::RHI

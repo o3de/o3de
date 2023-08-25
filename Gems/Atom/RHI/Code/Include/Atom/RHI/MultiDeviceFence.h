@@ -14,11 +14,12 @@ namespace AZ::RHI
 {
     //! A multi-device synchronization primitive, holding device-specific Fences, than can be used to insert
     //! dependencies between a queue and a host
-    class MultiDeviceFence : public MultiDeviceObject
+    class MultiDeviceFence : public MultiDeviceObject<Fence>
     {
     public:
+        using BaseClassType = MultiDeviceObject<Fence>;
         AZ_CLASS_ALLOCATOR(MultiDeviceFence, AZ::SystemAllocator, 0);
-        AZ_RTTI(MultiDeviceFence, "{5FF150A4-2C1E-4EC6-AE36-8EBD1CE22C31}", MultiDeviceObject);
+        AZ_RTTI(MultiDeviceFence, "{5FF150A4-2C1E-4EC6-AE36-8EBD1CE22C31}", BaseClassType);
 
         MultiDeviceFence() = default;
         virtual ~MultiDeviceFence() = default;
@@ -46,24 +47,10 @@ namespace AZ::RHI
         //! is invoked when the fences complete.
         ResultCode WaitOnCpuAsync(SignalCallback callback);
 
-        //! Returns the device-specific Fence for the given index
-        const Ptr<Fence>& GetDeviceFence(int deviceIndex)
-        {
-            AZ_Error(
-                "MultiDeviceFence",
-                m_deviceFences.find(deviceIndex) != m_deviceFences.end(),
-                "No Fence found for device index %d\n",
-                deviceIndex);
-            return m_deviceFences.at(deviceIndex);
-        }
-
     protected:
         bool ValidateIsInitialized() const;
 
         //! This can be used to asynchronously wait on all fences by calling WaitOnCpuAsync
         AZStd::thread m_waitThread;
-
-        //! A map of all device-specific Fences, indexed by the device index
-        AZStd::unordered_map<int, Ptr<Fence>> m_deviceFences;
     };
 } // namespace AZ::RHI

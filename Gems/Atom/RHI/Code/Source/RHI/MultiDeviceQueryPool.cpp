@@ -56,8 +56,8 @@ namespace AZ::RHI
                     {
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                        m_deviceQueryPools[deviceIndex] = Factory::Get().CreateQueryPool();
-                        resultCode = m_deviceQueryPools[deviceIndex]->Init(*device, descriptor);
+                        m_deviceObjects[deviceIndex] = Factory::Get().CreateQueryPool();
+                        resultCode = m_deviceObjects[deviceIndex]->Init(*device, descriptor);
                         return resultCode == ResultCode::Success;
                     });
 
@@ -67,7 +67,7 @@ namespace AZ::RHI
         if (resultCode != ResultCode::Success)
         {
             // Reset already initialized device-specific QueryPools and set deviceMask to 0
-            m_deviceQueryPools.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
@@ -84,7 +84,7 @@ namespace AZ::RHI
         AZ_Assert(queries, "Null queries");
         auto resultCode{ ResultCode::Success };
 
-        for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
+        for (auto& [deviceIndex, deviceQueryPool] : m_deviceObjects)
         {
             AZStd::vector<RHI::Ptr<Query>> deviceQueries(queryCount);
             AZStd::vector<Query*> rawDeviceQueries(queryCount);
@@ -98,7 +98,7 @@ namespace AZ::RHI
 
             for (auto index{ 0u }; index < queryCount; ++index)
             {
-                queries[index]->m_deviceQueries[deviceIndex] = deviceQueries[index];
+                queries[index]->m_deviceObjects[deviceIndex] = deviceQueries[index];
             }
 
             if (resultCode != ResultCode::Success)
@@ -173,9 +173,9 @@ namespace AZ::RHI
 
         auto perDeviceResultCount{CalculatePerDeviceResultsCount(1)};
 
-        for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
+        for (auto& [deviceIndex, deviceQueryPool] : m_deviceObjects)
         {
-            auto deviceQuery{ query->m_deviceQueries[deviceIndex].get() };
+            auto deviceQuery{ query->m_deviceObjects[deviceIndex].get() };
             auto deviceResult{ result + (deviceIndex * perDeviceResultCount) };
 
             resultCode = deviceQueryPool->GetResults(&deviceQuery, 1, deviceResult, perDeviceResultCount, flags);
@@ -215,12 +215,12 @@ namespace AZ::RHI
 
         auto perDeviceResultCount{CalculatePerDeviceResultsCount(queryCount)};
 
-        for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
+        for (auto& [deviceIndex, deviceQueryPool] : m_deviceObjects)
         {
             AZStd::vector<Query*> deviceQueries(queryCount);
             for (auto index{ 0u }; index < queryCount; ++index)
             {
-                deviceQueries[index] = queries[index]->m_deviceQueries[deviceIndex].get();
+                deviceQueries[index] = queries[index]->m_deviceObjects[deviceIndex].get();
             }
 
             auto deviceResults{ results + (deviceIndex * perDeviceResultCount) };
@@ -252,7 +252,7 @@ namespace AZ::RHI
 
         auto perDeviceResultCount{CalculatePerDeviceResultsCount(0)};
 
-        for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
+        for (auto& [deviceIndex, deviceQueryPool] : m_deviceObjects)
         {
             auto deviceResults{ results + (deviceIndex * perDeviceResultCount) };
             resultCode = deviceQueryPool->GetResults(deviceResults, perDeviceResultCount, flags);
@@ -273,7 +273,7 @@ namespace AZ::RHI
 
     void MultiDeviceQueryPool::Shutdown()
     {
-        for (auto [_, pool] : m_deviceQueryPools)
+        for (auto [_, pool] : m_deviceObjects)
         {
             pool->Shutdown();
         }

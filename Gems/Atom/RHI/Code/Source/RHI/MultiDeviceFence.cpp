@@ -49,8 +49,8 @@ namespace AZ::RHI
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                m_deviceFences[deviceIndex] = Factory::Get().CreateFence();
-                resultCode = m_deviceFences[deviceIndex]->Init(*device, initialState);
+                m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
+                resultCode = m_deviceObjects[deviceIndex]->Init(*device, initialState);
 
                 return resultCode == ResultCode::Success;
             });
@@ -58,7 +58,7 @@ namespace AZ::RHI
         if (resultCode != ResultCode::Success)
         {
             // Reset already initialized device-specific Fences and set deviceMask to 0
-            m_deviceFences.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
@@ -74,7 +74,7 @@ namespace AZ::RHI
                 m_waitThread.join();
             }
 
-            for (auto& [deviceIndex, deviceFence] : m_deviceFences)
+            for (auto& [deviceIndex, deviceFence] : m_deviceObjects)
             {
                 deviceFence->Shutdown();
             }
@@ -92,7 +92,7 @@ namespace AZ::RHI
 
         ResultCode resultCode;
 
-        for (auto& [deviceIndex, deviceFence] : m_deviceFences)
+        for (auto& [deviceIndex, deviceFence] : m_deviceObjects)
         {
             resultCode = deviceFence->SignalOnCpu();
 
@@ -114,7 +114,7 @@ namespace AZ::RHI
 
         ResultCode resultCode;
 
-        for (auto& [deviceIndex, deviceFence] : m_deviceFences)
+        for (auto& [deviceIndex, deviceFence] : m_deviceObjects)
         {
             resultCode = deviceFence->WaitOnCpu();
 
@@ -171,7 +171,7 @@ namespace AZ::RHI
 
         ResultCode resultCode;
 
-        for (auto& [deviceIndex, deviceFence] : m_deviceFences)
+        for (auto& [deviceIndex, deviceFence] : m_deviceObjects)
         {
             resultCode = deviceFence->Reset();
 

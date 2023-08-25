@@ -50,27 +50,16 @@ namespace AZ::RHI
     //! for each bit set and stores them in a map.
     //! The API then forwards all calls to the all device-specific PipelineLibrary objects by iterating over them
     //! and forwarding the call.
-    //! A device-specific PipelineLibrary can be accessed by calling GetDevicePipelineLibrary
-    //! with the corresponding device index
-    class MultiDevicePipelineLibrary : public MultiDeviceObject
+    //! A device-specific PipelineLibrary can be accessed by calling GetDeviceObject with the corresponding device
+    //! index
+    class MultiDevicePipelineLibrary : public MultiDeviceObject<PipelineLibrary>
     {
     public:
+        using BaseClassType = MultiDeviceObject<PipelineLibrary>;
         AZ_CLASS_ALLOCATOR(MultiDevicePipelineLibrary, AZ::SystemAllocator, 0);
-        AZ_RTTI(MultiDevicePipelineLibrary, "{B48B6A46-5976-4D7D-AA14-2179D871C567}");
+        AZ_RTTI(MultiDevicePipelineLibrary, "{B48B6A46-5976-4D7D-AA14-2179D871C567}", BaseClassType);
         MultiDevicePipelineLibrary() = default;
         virtual ~MultiDevicePipelineLibrary() = default;
-
-        //! Returns the device-specific PipelineLibrary for the given index
-        inline Ptr<PipelineLibrary> GetDevicePipelineLibrary(int deviceIndex) const
-        {
-            AZ_Error(
-                "MultiDevicePipelineLibrary",
-                m_devicePipelineLibraries.find(deviceIndex) != m_devicePipelineLibraries.end(),
-                "No DevicePipelineLibrary found for device index %d\n",
-                deviceIndex);
-
-            return m_devicePipelineLibraries.at(deviceIndex);
-        }
 
         //! For all devices selected via the deviceMask, a PipelineLibrary is initialized and stored internally
         //! in a map (mapping from device index to a device-specific PipelineLibrary).
@@ -90,8 +79,8 @@ namespace AZ::RHI
         //! @param deviceIndex Denotes from which device the serialized data should be retrieved
         ConstPtr<PipelineLibraryData> GetSerializedData(int deviceIndex = RHI::MultiDevice::DefaultDeviceIndex) const
         {
-            if (m_devicePipelineLibraries.contains(deviceIndex))
-                return m_devicePipelineLibraries.at(deviceIndex)->GetSerializedData();
+            if (m_deviceObjects.contains(deviceIndex))
+                return m_deviceObjects.at(deviceIndex)->GetSerializedData();
             else
             {
                 AZ_Error(
@@ -111,8 +100,5 @@ namespace AZ::RHI
 
         //! Explicit shutdown is not allowed for this type.
         void Shutdown() override final;
-
-        //! A map of all device-specific PipelineLibrary, indexed by the device index
-        AZStd::unordered_map<int, Ptr<PipelineLibrary>> m_devicePipelineLibraries;
     };
 } // namespace AZ::RHI

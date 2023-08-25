@@ -31,6 +31,7 @@ namespace AZ::RHI
         : public DeviceObject
     {
     public:
+        AZ_RTTI(PipelineState, "{30D33131-44EB-4F9B-9AB4-29AC3966AD21}");
         virtual ~PipelineState() = default;
 
         //! Initializes a graphics pipeline state, associated with the provided device, using the

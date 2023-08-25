@@ -6,11 +6,12 @@
  *
  */
 
+#include <Atom/RHI/MultiDevicePipelineState.h>
+
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/MultiDevicePipelineLibrary.h>
-#include <Atom/RHI/MultiDevicePipelineState.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
@@ -51,15 +52,15 @@ namespace AZ::RHI
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                m_devicePipelineStates[deviceIndex] = Factory::Get().CreatePipelineState();
+                m_deviceObjects[deviceIndex] = Factory::Get().CreatePipelineState();
                 switch (descriptor.GetType())
                 {
                 case PipelineStateType::Draw:
                     {
-                        resultCode = m_devicePipelineStates[deviceIndex]->Init(
+                        resultCode = m_deviceObjects[deviceIndex]->Init(
                             *device,
                             static_cast<const PipelineStateDescriptorForDraw&>(descriptor),
-                            pipelineLibrary ? pipelineLibrary->GetDevicePipelineLibrary(deviceIndex).get() : nullptr);
+                            pipelineLibrary ? pipelineLibrary->GetDeviceObject(deviceIndex).get() : nullptr);
 
                         if (resultCode == ResultCode::Success)
                         {
@@ -69,10 +70,10 @@ namespace AZ::RHI
                     }
                 case PipelineStateType::Dispatch:
                     {
-                        resultCode = m_devicePipelineStates[deviceIndex]->Init(
+                        resultCode = m_deviceObjects[deviceIndex]->Init(
                             *device,
                             static_cast<const PipelineStateDescriptorForDispatch&>(descriptor),
-                            pipelineLibrary ? pipelineLibrary->GetDevicePipelineLibrary(deviceIndex).get() : nullptr);
+                            pipelineLibrary ? pipelineLibrary->GetDeviceObject(deviceIndex).get() : nullptr);
 
                         if (resultCode == ResultCode::Success)
                         {
@@ -81,10 +82,10 @@ namespace AZ::RHI
                     }
                 case PipelineStateType::RayTracing:
                     {
-                        resultCode = m_devicePipelineStates[deviceIndex]->Init(
+                        resultCode = m_deviceObjects[deviceIndex]->Init(
                             *device,
                             static_cast<const PipelineStateDescriptorForRayTracing&>(descriptor),
-                            pipelineLibrary ? pipelineLibrary->GetDevicePipelineLibrary(deviceIndex).get() : nullptr);
+                            pipelineLibrary ? pipelineLibrary->GetDeviceObject(deviceIndex).get() : nullptr);
 
                         if (resultCode == ResultCode::Success)
                         {
@@ -105,7 +106,7 @@ namespace AZ::RHI
         if (resultCode != ResultCode::Success)
         {
             // Reset already initialized device-specific PipelineStates and set deviceMask to 0
-            m_devicePipelineStates.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
@@ -116,7 +117,7 @@ namespace AZ::RHI
     {
         if (IsInitialized())
         {
-            m_devicePipelineStates.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Shutdown();
         }
     }

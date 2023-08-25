@@ -53,9 +53,9 @@ namespace AZ::RHI
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                m_devicePipelineLibraries[deviceIndex] = Factory::Get().CreatePipelineLibrary();
+                m_deviceObjects[deviceIndex] = Factory::Get().CreatePipelineLibrary();
                 resultCode =
-                    m_devicePipelineLibraries[deviceIndex]->Init(*device, descriptor.GetDevicePipelineLibraryDescriptor(deviceIndex));
+                    m_deviceObjects[deviceIndex]->Init(*device, descriptor.GetDevicePipelineLibraryDescriptor(deviceIndex));
 
                 return resultCode == ResultCode::Success;
             });
@@ -63,7 +63,7 @@ namespace AZ::RHI
         if(resultCode != ResultCode::Success)
         {
             // Reset already initialized device-specific PipelineLibraries and set deviceMask to 0
-            m_devicePipelineLibraries.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
@@ -80,15 +80,15 @@ namespace AZ::RHI
 
         ResultCode result = ResultCode::Success;
 
-        for (auto& [deviceIndex, devicePipelineLibrary] : m_devicePipelineLibraries)
+        for (auto& [deviceIndex, devicePipelineLibrary] : m_deviceObjects)
         {
             AZStd::vector<const PipelineLibrary*> deviceLibrariesToMerge;
 
             for (int i = 0; i < librariesToMerge.size(); ++i)
             {
-                auto it = librariesToMerge[i]->m_devicePipelineLibraries.find(deviceIndex);
+                auto it = librariesToMerge[i]->m_deviceObjects.find(deviceIndex);
 
-                if (it != librariesToMerge[i]->m_devicePipelineLibraries.end())
+                if (it != librariesToMerge[i]->m_deviceObjects.end())
                 {
                     deviceLibrariesToMerge.emplace_back(it->second.get());
                 }
@@ -112,7 +112,7 @@ namespace AZ::RHI
     {
         if (IsInitialized())
         {
-            m_devicePipelineLibraries.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Shutdown();
         }
     }
@@ -121,7 +121,7 @@ namespace AZ::RHI
     {
         bool result = false;
 
-        for (auto& [deviceIndex, devicePipelineLibrary] : m_devicePipelineLibraries)
+        for (auto& [deviceIndex, devicePipelineLibrary] : m_deviceObjects)
         {
             result |= devicePipelineLibrary->IsMergeRequired();
         }
