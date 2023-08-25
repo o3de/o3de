@@ -121,6 +121,12 @@ namespace AZ
             return m_aabb;
         }
         
+        const BufferAssetView* ModelLodAsset::GetSemanticBufferAssetView(const AZ::Name& semantic, uint32_t meshIndex) const
+        {
+            AZ_Assert(meshIndex < m_meshes.size(), "Mesh index out of range");
+            return m_meshes[meshIndex].GetSemanticBufferAssetView(semantic);
+        }
+        
         const BufferAssetView* ModelLodAsset::Mesh::GetSemanticBufferAssetView(const AZ::Name& semantic) const
         {
             const AZStd::span<const ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = GetStreamBufferInfoList();
