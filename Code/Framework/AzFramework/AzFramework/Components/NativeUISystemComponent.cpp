@@ -16,6 +16,7 @@ namespace AzFramework
     NativeUISystemComponent::NativeUISystemComponent()
     {
         // Initialize any supported native control / window implementation factories for this platform
+    
         InitializeApplicationImplementationFactory();
 
         InitializeDeviceGamepadImplentationFactory();

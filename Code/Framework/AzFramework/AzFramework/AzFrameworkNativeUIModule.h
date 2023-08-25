@@ -15,13 +15,12 @@ namespace AzFramework
         : public AZ::Module
     {
     public:
-        AZ_RTTI(AzFrameworkNativeUIModule, "{FC9FEAC4-ADF5-426B-B26D-96A3413F3AF2}", AZ::Module);
+        AZ_RTTI(AzFrameworkNativeUIModule, "{49E437E9-36D8-4FBC-829E-CBFE760B71C2}", AZ::Module);
         AZ_CLASS_ALLOCATOR(AzFrameworkNativeUIModule, AZ::OSAllocator);
 
         AzFrameworkNativeUIModule();
         ~AzFrameworkNativeUIModule() override = default;
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
-
     };
 }

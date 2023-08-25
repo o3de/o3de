@@ -28,7 +28,7 @@ namespace AzFramework
     {
     public:
         AZStd::unique_ptr<InputDeviceGamepad::Implementation> Create(InputDeviceGamepad& inputDevice) override;
-        AZ::u32 GetMaxSupportedGamepads() override;
+        AZ::u32 GetMaxSupportedGamepads() const override;
     };
 
     class MacDeviceKeyboardImplFactory

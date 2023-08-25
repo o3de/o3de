@@ -50,7 +50,7 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::u32 InputDeviceGamepad::GetMaxSupportedGamepads()
+    AZ::u32 InputDeviceGamepad::GetMaxSupportedGamepads() const
     {
         // ToDo: Return the maximum number of supported gamepads
         return 0;

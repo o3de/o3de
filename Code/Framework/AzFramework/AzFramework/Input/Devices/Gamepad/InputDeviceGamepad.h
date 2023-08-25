@@ -178,13 +178,15 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // Foward declare the internal Implementation class so it can be passed into the constructor
+        // Foward declare the internal Implementation class so its unique ptr can be referenced from 
+        // the ImplementationFactory
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The factory class to create a custom implementation for this input device
-        struct ImplementationFactory
+        class ImplementationFactory
         {
+        public:
             AZ_TYPE_INFO(ImplementationFactory, "{415C76AD-3397-4CA8-80EA-B5FACD6EDFFB}");
             virtual ~ImplementationFactory() = default;
             virtual AZStd::unique_ptr<Implementation> Create(InputDeviceGamepad& InputDeviceGamepad) = 0;
@@ -192,7 +194,7 @@ namespace AzFramework
             ////////////////////////////////////////////////////////////////////////////////////////////
             //! Get the maximum number of gamepads that are supported on the current platform
             //! \return The maximum number of gamepads that are supported on the current platform
-            virtual AZ::u32 GetMaxSupportedGamepads() = 0;
+            virtual AZ::u32 GetMaxSupportedGamepads() const = 0;
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

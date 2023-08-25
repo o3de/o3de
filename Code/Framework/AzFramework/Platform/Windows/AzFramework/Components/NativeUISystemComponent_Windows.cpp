@@ -69,7 +69,7 @@ namespace AzFramework
 
             return AZStd::make_unique<InputDeviceGamepadWindows>(inputDevice, xinputModuleHandle);
         }
-        AZ::u32 GetMaxSupportedGamepads() override
+        AZ::u32 GetMaxSupportedGamepads() const override
         {
             return XUSER_MAX_COUNT;
         }

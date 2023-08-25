@@ -203,8 +203,9 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The factory class to create a custom implementation for this native window
-        struct ImplementationFactory
+        class ImplementationFactory
         {
+        public:
             AZ_TYPE_INFO(ImplementationFactory, "{6C2B94E1-388E-4E17-A125-94E5BAE9655C}");
             virtual ~ImplementationFactory() = default;
             virtual AZStd::unique_ptr<Implementation> Create() = 0;

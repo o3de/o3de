@@ -123,13 +123,15 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // Foward declare the internal Implementation class so it can be passed into the constructor
+        // Foward declare the internal Implementation class so its unique ptr can be referenced from 
+        // the ImplementationFactory
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The factory class to create a custom implementation for this input device
-        struct ImplementationFactory
+        class ImplementationFactory
         {
+        public:
             AZ_TYPE_INFO(ImplementationFactory, "{1A44CE87-088A-4A43-9EDA-350F3E4F21FF}");
             virtual ~ImplementationFactory() = default;
             virtual AZStd::unique_ptr<Implementation> Create(InputDeviceMouse& inputDevice) = 0;

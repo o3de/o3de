@@ -124,7 +124,7 @@ namespace AzFramework
         return AZStd::make_unique<InputDeviceGamepadApple>(inputDevice);
     }
 
-    AZ::u32 MacDeviceGamepadImplFactory::GetMaxSupportedGamepads()
+    AZ::u32 MacDeviceGamepadImplFactory::GetMaxSupportedGamepads() const
     {
         return GCControllerPlayerIndex4 + 1;
     }
@@ -134,7 +134,7 @@ namespace AzFramework
         return AZStd::make_unique<InputDeviceGamepadApple>(inputDevice);
     }
 
-    AZ::u32 IosDeviceGamepadImplFactory::GetMaxSupportedGamepads()
+    AZ::u32 IosDeviceGamepadImplFactory::GetMaxSupportedGamepads() const
     {
         return GCControllerPlayerIndex4 + 1;
     }

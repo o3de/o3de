@@ -57,8 +57,9 @@ namespace AzFramework
             virtual void TerminateOnError(int errorCode) { exit(errorCode); }
         };
 
-        struct ImplementationFactory
+        class ImplementationFactory
         {
+        public:
             AZ_TYPE_INFO(ImplementationFactory, "{D840FD45-97BC-40D6-A92B-C83B607EA9D5}");
             virtual ~ImplementationFactory() = default;
             virtual AZStd::unique_ptr<Implementation> Create() = 0;
