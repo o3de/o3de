@@ -96,14 +96,7 @@ namespace AzFramework
 
     bool NativeWindow::IsActive() const
     {
-        if (m_pimpl != nullptr)
-        {
-            return m_pimpl->IsActive();
-        }
-        else
-        {
-            return false;
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->IsActive() : false;
     }
 
     void NativeWindow::SetWindowTitle(const AZStd::string& title)
@@ -116,26 +109,12 @@ namespace AzFramework
 
     WindowSize NativeWindow::GetClientAreaSize() const
     {
-        if (m_pimpl != nullptr)
-        {
-            return m_pimpl->GetClientAreaSize();
-        }
-        else
-        {
-            return WindowSize();
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->GetClientAreaSize() : WindowSize{};
     }
 
     WindowSize NativeWindow::GetMaximumClientAreaSize() const
     {
-        if (m_pimpl != nullptr)
-        {
-            return m_pimpl->GetMaximumClientAreaSize();
-        }
-        else
-        {
-            return WindowSize();
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->GetMaximumClientAreaSize() : WindowSize{};
     }
 
     void NativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
@@ -148,14 +127,7 @@ namespace AzFramework
 
     bool NativeWindow::SupportsClientAreaResize() const
     {
-        if (m_pimpl != nullptr)
-        {
-            return m_pimpl->SupportsClientAreaResize();
-        }
-        else
-        {
-            return false;
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->SupportsClientAreaResize() : false;
     }
 
     void NativeWindow::SetEnableCustomizedResolution(bool enable)
@@ -168,26 +140,12 @@ namespace AzFramework
 
     bool NativeWindow::IsCustomizedResolutionEnabled() const
     {
-        if (m_pimpl != nullptr)
-        {
-            return m_pimpl->IsCustomizedResolutionEnabled();
-        }
-        else
-        {
-            return false;
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->IsCustomizedResolutionEnabled() : false;
     }
 
     WindowSize NativeWindow::GetRenderResolution() const
     {
-        if (m_pimpl != nullptr)
-        {
-            return m_pimpl->GetRenderResolution();
-        }
-        else
-        {
-            return WindowSize();
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->GetRenderResolution() : WindowSize{};
     }
 
     void NativeWindow::SetRenderResolution(WindowSize resolution)
@@ -200,19 +158,12 @@ namespace AzFramework
 
     bool NativeWindow::GetFullScreenState() const
     {
-        if (m_pimpl)
-        {
-            return m_pimpl->GetFullScreenState();
-        }
-        else
-        {
-            return false;
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->GetFullScreenState() : false;
     }
 
     void NativeWindow::SetFullScreenState(bool fullScreenState)
     {
-        if (m_pimpl)
+        if (m_pimpl != nullptr)
         {
             m_pimpl->SetFullScreenState(fullScreenState);
         }        
@@ -220,19 +171,12 @@ namespace AzFramework
 
     bool NativeWindow::CanToggleFullScreenState() const
     {
-        if (m_pimpl)
-        {
-            return m_pimpl->CanToggleFullScreenState();
-        }
-        else
-        {
-            return false;
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->CanToggleFullScreenState() : false;
     }
 
     void NativeWindow::ToggleFullScreenState()
     {
-        if (m_pimpl)
+        if (m_pimpl != nullptr)
         {
             SetFullScreenState(!GetFullScreenState());
         }
@@ -240,26 +184,12 @@ namespace AzFramework
 
     float NativeWindow::GetDpiScaleFactor() const
     {
-        if (m_pimpl)
-        {
-            return m_pimpl->GetDpiScaleFactor();
-        }
-        else
-        {
-            return 1.0f;
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->GetDpiScaleFactor() : 1.0f;
     }
 
     uint32_t NativeWindow::GetDisplayRefreshRate() const
     {
-        if (m_pimpl)
-        {
-            return m_pimpl->GetDisplayRefreshRate();
-        }
-        else    
-        {
-            return 0;
-        }
+        return (m_pimpl != nullptr) ? m_pimpl->GetDisplayRefreshRate() : 0;
     }
 
     uint32_t NativeWindow::GetSyncInterval() const
