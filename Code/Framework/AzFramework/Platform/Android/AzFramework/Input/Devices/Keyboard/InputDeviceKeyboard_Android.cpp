@@ -6,11 +6,11 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponentFactories_Android.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
 #include <AzCore/Android/Utils.h>
-
 #include <android/input.h>
 
 
@@ -435,9 +435,8 @@ namespace AzFramework
         ProcessRawEventQueues();
     }
 
-
-    InputDeviceKeyboard::Implementation* InputDeviceKeyboard::Implementation::Create(InputDeviceKeyboard& inputDevice)
+    AZStd::unique_ptr<InputDeviceKeyboard::Implementation> AndroidDeviceKeyboardImplFactory::Create(InputDeviceKeyboard& inputDevice)
     {
-        return aznew InputDeviceKeyboardAndroid(inputDevice);
+        return AZStd::make_unique<InputDeviceKeyboardAndroid>(inputDevice);
     }
 } // namespace AzFramework

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponentFactories_Android.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -106,10 +107,9 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceVirtualKeyboard::Implementation* InputDeviceVirtualKeyboard::Implementation::Create(
-        InputDeviceVirtualKeyboard& inputDevice)
+    AZStd::unique_ptr<InputDeviceVirtualKeyboard::Implementation> AndroidDeviceVirtualKeyboardImplFactory::Create(InputDeviceVirtualKeyboard& inputDevice)
     {
-        return aznew InputDeviceVirtualKeyboardAndroid(inputDevice);
+        return AZStd::make_unique<InputDeviceVirtualKeyboardAndroid>(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponentFactories_Android.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -72,7 +73,7 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceTouch::Implementation> InputDeviceTouch::Implementation::Create(InputDeviceTouch& inputDevice)
+    AZStd::unique_ptr<InputDeviceTouch::Implementation> AndroidDeviceTouchImplFactory::Create(InputDeviceTouch& inputDevice)
     {
         return AZStd::make_unique<InputDeviceTouchAndroid>(inputDevice);
     }

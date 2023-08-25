@@ -8,6 +8,7 @@
 
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Components/NativeUISystemComponentFactories_Android.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #include <AzFramework/Thermal/ThermalInfo_Android.h>
 
@@ -104,9 +105,9 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    Application::Implementation* Application::Implementation::Create()
+    AZStd::unique_ptr<Application::Implementation> AndroidApplicationImplFactory::Create()
     {
-        return aznew ApplicationAndroid();
+        return AZStd::make_unique<ApplicationAndroid>();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

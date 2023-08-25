@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponentFactories_Android.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -358,9 +359,10 @@ namespace AzFramework
         }
     }
 
-
-    InputDeviceMouse::Implementation* InputDeviceMouse::Implementation::Create(InputDeviceMouse& inputDevice)
+    AZStd::unique_ptr<InputDeviceMouse::Implementation> AndroidDeviceMouseImplFactory::Create(InputDeviceMouse& inputDevice)
     {
-        return aznew InputDeviceMouseAndroid(inputDevice);
+        return AZStd::make_unique<InputDeviceMouseAndroid>(inputDevice);
     }
+
+
 } // namespace AzFramework

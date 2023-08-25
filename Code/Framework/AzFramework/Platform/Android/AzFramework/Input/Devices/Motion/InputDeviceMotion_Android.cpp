@@ -147,10 +147,9 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMotion::Implementation* InputDeviceMotion::Implementation::Create(
-        InputDeviceMotion& inputDevice)
+    AZStd::unique_ptr<InputDeviceMotion::Implementation> AndroidDeviceMotionImplFactory::Create(InputDeviceMotion& inputDevice)
     {
-        return aznew InputDeviceMotionAndroid(inputDevice);
+        return AZStd::make_unique<InputDeviceMotionAndroid>(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

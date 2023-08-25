@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponentFactories_Android.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <AzCore/Android/Utils.h>
 #include <android/native_window.h>
@@ -30,9 +31,9 @@ namespace AzFramework
         ANativeWindow* m_nativeWindow = nullptr;
     };
 
-    NativeWindow::Implementation* NativeWindow::Implementation::Create()
+    AZStd::unique_ptr<NativeWindow::Implementation> AndroidNativeWindowFactory::Create()
     {
-        return aznew NativeWindowImpl_Android();
+        return AZStd::make_unique<NativeWindowImpl_Android>();
     }
 
     void NativeWindowImpl_Android::InitWindow([[maybe_unused]]const AZStd::string& title,
