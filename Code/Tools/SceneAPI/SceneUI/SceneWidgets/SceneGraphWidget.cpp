@@ -450,15 +450,7 @@ namespace AZ
 
             bool SceneGraphWidget::IsSelectedInSelectionList(const Containers::SceneGraph::Name& name, const DataTypes::ISceneNodeSelectionList& targetList) const
             {
-                size_t count = targetList.GetSelectedNodeCount();
-                for (size_t selectedNodeIndex = 0; selectedNodeIndex < count; ++selectedNodeIndex)
-                {
-                    if (targetList.GetSelectedNode(selectedNodeIndex) == name.GetPath())
-                    {
-                        return true;
-                    }
-                }
-                return false;
+                return targetList.IsSelectedNode(name.GetPath());
             }
 
             bool SceneGraphWidget::AddSelection(const QStandardItem* item)
