@@ -63,7 +63,9 @@ set(FILES
     Source/RHI/Factory.cpp
     Include/Atom/RHI/FactoryManagerBus.h
     Include/Atom/RHI/Fence.h
+    Include/Atom/RHI/MultiDeviceFence.h
     Source/RHI/Fence.cpp
+    Source/RHI/MultiDeviceFence.cpp
     Include/Atom/RHI/BufferFrameAttachment.h
     Include/Atom/RHI/FrameAttachment.h
     Include/Atom/RHI/ImageFrameAttachment.h
@@ -133,10 +135,14 @@ set(FILES
     Source/RHI/PipelineStateCache.cpp
     Source/RHI/PipelineStateDescriptor.cpp
     Include/Atom/RHI/Query.h
+    Include/Atom/RHI/MultiDeviceQuery.h
     Source/RHI/Query.cpp
+    Source/RHI/MultiDeviceQuery.cpp
     Include/Atom/RHI/QueryPool.h
+    Include/Atom/RHI/MultiDeviceQueryPool.h
     Include/Atom/RHI/QueryPoolSubAllocator.h
     Source/RHI/QueryPool.cpp
+    Source/RHI/MultiDeviceQueryPool.cpp
     Source/RHI/QueryPoolSubAllocator.cpp
     Include/Atom/RHI/Resource.h
     Include/Atom/RHI/MultiDeviceResource.h

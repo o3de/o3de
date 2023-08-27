@@ -271,7 +271,7 @@ namespace PhysX
 
     void setInboundJointDriveParams(
         physx::PxArticulationJointReducedCoordinate* inboundJoint,
-        physx::PxArticulationAxis articulationAxis,
+        [[maybe_unused]] physx::PxArticulationAxis articulationAxis,
         const ArticulationJointMotorProperties& motorProperties)
     {
         physx::PxArticulationDrive drive;

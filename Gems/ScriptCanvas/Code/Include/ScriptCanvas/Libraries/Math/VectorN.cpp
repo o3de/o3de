@@ -78,12 +78,12 @@ namespace ScriptCanvas
 
         Data::NumberType LengthSquared(const Data::VectorNType& source)
         {
-            return source.GetLengthSq();
+            return source.Dot(source);
         }
 
         Data::NumberType Length(const Data::VectorNType& source)
         {
-            return source.GetLength();
+            return source.L2Norm();
         }
 
         Data::VectorNType& Normalize(Data::VectorNType& source)
