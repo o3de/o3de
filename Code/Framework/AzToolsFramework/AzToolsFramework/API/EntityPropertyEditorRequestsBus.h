@@ -13,6 +13,8 @@
 
 namespace AzToolsFramework
 {
+    class ComponentEditor;
+
     //! Requests to be made of all EntityPropertyEditorRequests
     //! Beware, there may be more than one EntityPropertyEditor that can respond
     //! Broadcast should be used for accessing these functions
