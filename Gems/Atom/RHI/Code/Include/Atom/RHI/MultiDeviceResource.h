@@ -25,7 +25,8 @@ namespace AZ::RHI
     //! MultiDeviceResource is a base class for pooled, multi-device RHI resources (MultiDeviceImage / MultiDeviceBuffer /
     //! MultiDeviceShaderResourceGroup, etc). It provides some common lifecycle management semantics. MultiDeviceResource creation is
     //! separate from initialization. Resources are created separate from any pool, but its backing platform data is associated at
-    //! initialization time on a specific pool.
+    //! initialization time on a specific pool. The classes for the device specific Resource and ResourcePool are provided via
+    //! template arguments which are forwarded to the corresponding MultiDeviceObject base and MultiDeviceResourcePool class.
     template <class DeviceResource, class DeviceResourcePool>
     class MultiDeviceResource : public MultiDeviceObject<DeviceResource>
     {

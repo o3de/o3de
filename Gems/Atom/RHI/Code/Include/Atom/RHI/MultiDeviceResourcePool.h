@@ -23,8 +23,9 @@ namespace AZ::RHI
     class MultiDeviceResource;
     class MemoryStatisticsBuilder;
 
-    //! A base class for multi-device resource pools. This class facilitates registration of multi-device resources
-    //! into the pool, and allows iterating child resource instances.
+    //! A base class for multi-device resource pools. This class facilitates registration of multi-device resources into the pool,
+    //! and allows iterating child resource instances. The classes for the device specific Resource and ResourcePool are provided
+    //! via template arguments which are forwarded to the corresponding MultiDeviceObject base and MultiDeviceResource class.
     template <class DeviceResource, class DeviceResourcePool>
     class MultiDeviceResourcePool : public MultiDeviceObject<DeviceResourcePool>
     {

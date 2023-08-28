@@ -12,15 +12,15 @@
 
 namespace AZ::RHI
 {
-    //! A variant of Object associated with a DeviceMask.
+    //! A variant of Object associated with a DeviceMask storing corresponding DeviceObjects (templated).
     //! In contrast to DeviceObject, which is device-specific and holds a strong reference to a specific device, 
     //! MultiDeviceObject only specifies on which device an object resides/operates, specified by a
-    //! DeviceMask (1 bit per device).
-    template <class DeviceObject>
+    //! DeviceMask (1 bit per device) and stores a DeviceObject for each available device and set bit.
+    template <class DeviceObjectClass>
     class MultiDeviceObject : public Object
     {
     public:
-        AZ_RTTI((MultiDeviceObject, "{17D34F71-944C-4AF5-9823-627474C4C0A6}", DeviceObject), Object);
+        AZ_RTTI((MultiDeviceObject, "{17D34F71-944C-4AF5-9823-627474C4C0A6}", DeviceObjectClass), Object);
         virtual ~MultiDeviceObject() = default;
 
         //! Returns whether the device object is initialized.
@@ -37,12 +37,12 @@ namespace AZ::RHI
         }
 
         //! Returns the device-specific object for the given index
-        const Ptr<DeviceObject>& GetDeviceObject(int deviceIndex)
+        const Ptr<DeviceObjectClass>& GetDeviceObject(int deviceIndex)
         {
             AZ_Error(
                 "MultiDeviceObject",
                 m_deviceObjects.find(deviceIndex) != m_deviceObjects.end(),
-                "No Fence found for device index %d\n",
+                "No DeviceObject found for device index %d\n",
                 deviceIndex);
             return m_deviceObjects.at(deviceIndex);
         }
@@ -94,6 +94,6 @@ namespace AZ::RHI
 
     protected:
         //! A map of all device-specific objects, indexed by the device index
-        AZStd::unordered_map<int, Ptr<DeviceObject>> m_deviceObjects;
+        AZStd::unordered_map<int, Ptr<DeviceObjectClass>> m_deviceObjects;
     };
 } // namespace AZ::RHI

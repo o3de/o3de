@@ -80,7 +80,9 @@ namespace AZ::RHI
         ConstPtr<PipelineLibraryData> GetSerializedData(int deviceIndex = RHI::MultiDevice::DefaultDeviceIndex) const
         {
             if (m_deviceObjects.contains(deviceIndex))
+            {
                 return m_deviceObjects.at(deviceIndex)->GetSerializedData();
+            }
             else
             {
                 AZ_Error(
