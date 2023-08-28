@@ -1923,6 +1923,7 @@ namespace ScriptCanvasEditor
         connect(ui->action_AlignLeft, &QAction::triggered, this, &MainWindow::OnAlignLeft);
         connect(ui->action_AlignRight, &QAction::triggered, this, &MainWindow::OnAlignRight);
 
+        // Avoids QAction::eventFilter: Ambiguous shortcut overload
         ui->action_AlignTop->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         ui->action_AlignBottom->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         ui->action_AlignLeft->setShortcutContext(Qt::WidgetWithChildrenShortcut);
