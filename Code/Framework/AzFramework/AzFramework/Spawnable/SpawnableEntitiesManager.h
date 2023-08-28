@@ -87,7 +87,7 @@ namespace AzFramework
 // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
         SpawnableInstanceAddress GetOwningSpawnable(const AZ::EntityId& entityId) override;
-        AZ::EntityId GetStaticEntityId(const SpawnableInstanceAddress& spawnableInfo, const AZ::EntityId& currentEntityId);
+        AZ::EntityId GetStaticEntityId(const SpawnableInstanceAddress& spawnableInfo, const AZ::EntityId& currentEntityId) override;
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 
