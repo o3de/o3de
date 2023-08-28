@@ -473,7 +473,8 @@ namespace AZ::Reflection
 
             void HandleNodeUiElementsCreation(const AZStd::string_view path)
             {
-                AZ_Assert(!m_stack.empty()); // this should never happen
+                // this should never happen
+                AZ_Assert(!m_stack.empty(), "stack should not be empty during UI element creation!");
                 if (m_stack.empty())
                 {
                     return;
