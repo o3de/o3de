@@ -54,6 +54,7 @@
 #include <AzToolsFramework/UI/Slice/SlicePushWidget.hxx>
 #include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/Slice/SliceTransaction.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
