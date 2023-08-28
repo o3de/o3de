@@ -164,52 +164,52 @@ namespace AZ::Dom
     }
 
     Value::Value(int8_t value)
-        : m_value(static_cast<int64_t>(value))
+        : m_value(static_cast<AZ::s64>(value))
     {
     }
 
     Value::Value(uint8_t value)
-        : m_value(static_cast<uint64_t>(value))
+        : m_value(static_cast<AZ::u64>(value))
     {
     }
 
     Value::Value(int16_t value)
-        : m_value(static_cast<int64_t>(value))
+        : m_value(static_cast<AZ::s64>(value))
     {
     }
 
     Value::Value(uint16_t value)
-        : m_value(static_cast<uint64_t>(value))
+        : m_value(static_cast<AZ::u64>(value))
     {
     }
 
     Value::Value(int32_t value)
-        : m_value(static_cast<int64_t>(value))
+        : m_value(static_cast<AZ::s64>(value))
     {
     }
 
     Value::Value(uint32_t value)
-        : m_value(static_cast<uint64_t>(value))
+        : m_value(static_cast<AZ::u64>(value))
     {
     }
 
     Value::Value(long value)
-        : m_value(static_cast<int64_t>(value))
+        : m_value(static_cast<AZ::s64>(value))
     {
     }
 
     Value::Value(unsigned long value)
-        : m_value(static_cast<uint64_t>(value))
+        : m_value(static_cast<AZ::u64>(value))
     {
     }
 
     Value::Value(long long value)
-        : m_value(static_cast<int64_t>(value))
+        : m_value(static_cast<AZ::s64>(value))
     {
     }
 
     Value::Value(unsigned long long value)
-        : m_value(static_cast<uint64_t>(value))
+        : m_value(static_cast<AZ::u64>(value))
     {
     }
 
@@ -248,10 +248,10 @@ namespace AZ::Dom
             SetString("");
             break;
         case Type::Int64:
-            m_value = int64_t{};
+            m_value = AZ::s64{};
             break;
         case Type::Uint64:
-            m_value = uint64_t{};
+            m_value = AZ::u64{};
             break;
         case Type::Double:
             m_value = double{};
@@ -310,9 +310,9 @@ namespace AZ::Dom
         {
         case GetTypeIndex<AZStd::monostate>():
             return Type::Null;
-        case GetTypeIndex<int64_t>():
+        case GetTypeIndex<AZ::s64>():
             return Type::Int64;
-        case GetTypeIndex<uint64_t>():
+        case GetTypeIndex<AZ::u64>():
             return Type::Uint64;
         case GetTypeIndex<double>():
             return Type::Double;
@@ -383,11 +383,11 @@ namespace AZ::Dom
             [](auto&& value) -> bool
             {
                 using CurrentType = AZStd::decay_t<decltype(value)>;
-                if constexpr (AZStd::is_same_v<CurrentType, int64_t>)
+                if constexpr (AZStd::is_same_v<CurrentType, AZ::s64>)
                 {
                     return true;
                 }
-                else if constexpr (AZStd::is_same_v<CurrentType, uint64_t>)
+                else if constexpr (AZStd::is_same_v<CurrentType, AZ::u64>)
                 {
                     return true;
                 }
@@ -405,12 +405,12 @@ namespace AZ::Dom
 
     bool Value::IsInt() const
     {
-        return AZStd::holds_alternative<int64_t>(m_value);
+        return AZStd::holds_alternative<AZ::s64>(m_value);
     }
 
     bool Value::IsUint() const
     {
-        return AZStd::holds_alternative<uint64_t>(m_value);
+        return AZStd::holds_alternative<AZ::u64>(m_value);
     }
 
     bool Value::IsDouble() const
@@ -926,42 +926,42 @@ namespace AZ::Dom
         return GetNodeInternal();
     }
 
-    int64_t Value::GetInt64() const
+    AZ::s64 Value::GetInt64() const
     {
         switch (m_value.index())
         {
-        case GetTypeIndex<int64_t>():
-            return AZStd::get<int64_t>(m_value);
-        case GetTypeIndex<uint64_t>():
-            return static_cast<int64_t>(AZStd::get<uint64_t>(m_value));
+        case GetTypeIndex<AZ::s64>():
+            return AZStd::get<AZ::s64>(m_value);
+        case GetTypeIndex<AZ::u64>():
+            return static_cast<AZ::s64>(AZStd::get<AZ::u64>(m_value));
         case GetTypeIndex<double>():
-            return static_cast<int64_t>(AZStd::get<double>(m_value));
+            return static_cast<AZ::s64>(AZStd::get<double>(m_value));
         }
         AZ_Assert(false, "AZ::Dom::Value: Called GetInt on a non-numeric type");
         return {};
     }
 
-    void Value::SetInt64(int64_t value)
+    void Value::SetInt64(AZ::s64 value)
     {
         m_value = value;
     }
 
-    uint64_t Value::GetUint64() const
+    AZ::u64 Value::GetUint64() const
     {
         switch (m_value.index())
         {
-        case GetTypeIndex<int64_t>():
-            return static_cast<uint64_t>(AZStd::get<int64_t>(m_value));
-        case GetTypeIndex<uint64_t>():
-            return AZStd::get<uint64_t>(m_value);
+        case GetTypeIndex<AZ::s64>():
+            return static_cast<AZ::u64>(AZStd::get<AZ::s64>(m_value));
+        case GetTypeIndex<AZ::u64>():
+            return AZStd::get<AZ::u64>(m_value);
         case GetTypeIndex<double>():
-            return static_cast<uint64_t>(AZStd::get<double>(m_value));
+            return static_cast<AZ::u64>(AZStd::get<double>(m_value));
         }
         AZ_Assert(false, "AZ::Dom::Value: Called GetInt on a non-numeric type");
         return {};
     }
 
-    void Value::SetUint64(uint64_t value)
+    void Value::SetUint64(AZ::u64 value)
     {
         m_value = value;
     }
@@ -985,10 +985,10 @@ namespace AZ::Dom
     {
         switch (m_value.index())
         {
-        case GetTypeIndex<int64_t>():
-            return static_cast<double>(AZStd::get<int64_t>(m_value));
-        case GetTypeIndex<uint64_t>():
-            return static_cast<double>(AZStd::get<uint64_t>(m_value));
+        case GetTypeIndex<AZ::s64>():
+            return static_cast<double>(AZStd::get<AZ::s64>(m_value));
+        case GetTypeIndex<AZ::u64>():
+            return static_cast<double>(AZStd::get<AZ::u64>(m_value));
         case GetTypeIndex<double>():
             return AZStd::get<double>(m_value);
         }
@@ -1081,11 +1081,11 @@ namespace AZ::Dom
                 {
                     result = visitor.Null();
                 }
-                else if constexpr (AZStd::is_same_v<Alternative, int64_t>)
+                else if constexpr (AZStd::is_same_v<Alternative, AZ::s64>)
                 {
                     result = visitor.Int64(arg);
                 }
-                else if constexpr (AZStd::is_same_v<Alternative, uint64_t>)
+                else if constexpr (AZStd::is_same_v<Alternative, AZ::u64>)
                 {
                     result = visitor.Uint64(arg);
                 }

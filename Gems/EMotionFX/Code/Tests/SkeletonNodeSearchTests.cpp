@@ -33,6 +33,12 @@ namespace EMotionFX
             m_skeleton = m_actor->GetSkeleton();
         }
 
+        void TearDown() override
+        {
+            m_actor.reset();
+            SystemComponentFixture::TearDown();
+        }
+
     public:
         AZStd::unique_ptr<SimpleJointChainActor> m_actor = nullptr;
         Skeleton* m_skeleton = nullptr;

@@ -156,14 +156,7 @@ namespace NvCloth
                 if (!meshNodeName.empty())
                 {
                     const auto& selectedNodesList = group.GetSceneNodeSelectionList();
-                    for (size_t i = 0; i < selectedNodesList.GetSelectedNodeCount(); ++i)
-                    {
-                        if (meshNodeName == selectedNodesList.GetSelectedNode(i))
-                        {
-                            foundMeshNode = true;
-                            break;
-                        }
-                    }
+                    foundMeshNode = selectedNodesList.IsSelectedNode(meshNodeName);
                 }
 
                 // Mesh node selected in the cloth rule is not part of the list of selected nodes anymore, set the default value.
