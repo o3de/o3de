@@ -143,6 +143,8 @@ namespace AZ
 
             m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
 
+            OnShaderReloadedInternal();
+
             ShaderReloadNotificationBus::Handler::BusDisconnect();
             ShaderReloadNotificationBus::Handler::BusConnect(passData->m_shaderReference.m_assetId);
         }
@@ -240,6 +242,19 @@ namespace AZ
         void ComputePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
             LoadShader();
+        }
+
+        void ComputePass::SetComputeShaderReloadedCallback(ComputeShaderReloadedCallback callback)
+        {
+            m_shaderReloadedCallback = callback;
+        }
+
+        void ComputePass::OnShaderReloadedInternal()
+        {
+            if (m_shaderReloadedCallback)
+            {
+                m_shaderReloadedCallback(this);
+            }
         }
 
     }   // namespace RPI

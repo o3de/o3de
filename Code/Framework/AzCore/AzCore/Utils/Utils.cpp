@@ -7,6 +7,8 @@
  */
 
 #include <AzCore/Utils/Utils.h>
+
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/FileReader.h>
@@ -16,6 +18,57 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
+
+namespace AZ::Utils::ConsoleCommands
+{
+    // Register Console Command that can query the OS environment variables
+    constexpr const char* GetEnvCommandName = "os_GetEnv";
+    void GetEnv(const AZ::ConsoleCommandContainer& commandArgs)
+    {
+        if (commandArgs.empty())
+        {
+            AZ_Error(
+                "os_GetEnv",
+                false,
+                "No environment variable name has been supplied.");
+            return;
+        }
+
+        for (AZStd::string_view commandArg : commandArgs)
+        {
+            auto QueryOSEnvironmentVariable = [commandArg](char* buffer, size_t size)
+            {
+                // 1024 is an arbitrary power of 2 size that we already have
+                // a template instantiation of(so therefore the symbol size of the library will not increase).
+                // It should be more than enough to store any reasonable environment variable name that the caller
+                // would want to query
+                constexpr size_t EnvKeyMaxSize = 1024;
+                AZStd::fixed_string<EnvKeyMaxSize> envKey{ commandArg };
+                auto getEnvOutcome = AZ::Utils::GetEnv(AZStd::span(buffer, size), envKey.c_str());
+                return getEnvOutcome ? getEnvOutcome.GetValue().size() : 0;
+            };
+
+            // There is actually no limit to environment variable sizes on Unix platforms, but there is a limit
+            // of 8191 on Windows: See doc page at
+            // https://learn.microsoft.com/en-US/troubleshoot/windows-client/shell-experience/command-line-string-limitation#examples
+            // However 8192 is being used as the limit as that should cover 100% of Windows use cases
+            // and 99.99 % of the use cases of querying an environment varaible on Unix platforms
+            // Also the string made of combining the environment varaible name with an <equal-sign> and the environment variable value
+            // will be truncated to fit within 8192 characters
+            constexpr size_t EnvKeyPlusValueMaxSize = 8192;
+            AZStd::fixed_string<EnvKeyPlusValueMaxSize> envValue;
+            envValue.resize_and_overwrite(envValue.capacity(), QueryOSEnvironmentVariable);
+            auto formattedEnvOutput = AZStd::fixed_string<EnvKeyPlusValueMaxSize>::format("%.*s=%s\n", AZ_STRING_ARG(commandArg), envValue.c_str());
+            AZ::Debug::Trace::Instance().Output(GetEnvCommandName, formattedEnvOutput.c_str());
+        }
+    }
+    AZ_CONSOLEFREEFUNC("os_GetEnv", GetEnv, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Queries the OS for an environment variable with the specified name(s).\n"
+        "Each argument is the name of the environment variable to query.\n"
+        "Multiple arguments can be specified and each of their values are output on separate lines.\n"
+        "Usage: os_GetEnv PATH\n"
+        "Usage: os_GetEnv LD_LIBRARY_PATH HOME\n");
+}
 
 namespace AZ::Utils
 {
