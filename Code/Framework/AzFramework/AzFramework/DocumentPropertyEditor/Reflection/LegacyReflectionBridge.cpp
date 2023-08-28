@@ -601,14 +601,28 @@ namespace AZ::Reflection
             bool BeginNode(
                 void* instance, const AZ::SerializeContext::ClassData* classData, const AZ::SerializeContext::ClassElement* classElement)
             {
-                // Ensure our instance pointer is resolved and safe to bind to member attributes.
-                if (classElement)
-                {
-                    instance = AZ::Utils::ResolvePointer(instance, *classElement, *m_serializeContext);
-                }
-
                 // Prepare the node references for the handlers.
                 StackEntry& parentData = m_stack.back();
+
+                if (classElement)
+                {
+                    // Ensure our instance pointer is resolved and safe to bind to member attributes.
+                    instance = AZ::Utils::ResolvePointer(instance, *classElement, *m_serializeContext);
+
+                    // Since we iterate over the SerializeContext, we end up processing all elements even if they
+                    // weren't exposed to the EditContext, so we need to skip any nodes that are missing m_editData.
+                    // There are caveats:
+                    //   - We still need to process FLG_BASE_CLASS nodes because there could be sub-classes that are exposed to the
+                    //   EditContext.
+                    //   - Elements in a container will have empty m_editData, so we need to still include nodes who are members of
+                    //   containers.
+                    if (!classElement->m_editData && ((classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_BASE_CLASS) == 0) &&
+                        !(parentData.m_classData && parentData.m_classData->m_container))
+                    {
+                        m_nodeWasSkipped = true;
+                        return false;
+                    }
+                }
 
                 // search up the stack for the "true parent", which is the last entry created by the serialize enumerate itself
                 void* instanceToInvoke = instance;
@@ -948,6 +962,12 @@ namespace AZ::Reflection
                             {
                                 bool isVisible = visibilityBoolValue.value();
                                 visibility = isVisible ? PropertyVisibility::Show : PropertyVisibility::Hide;
+                                return;
+                            }
+                            else if (auto genericVisibility = ReadGenericAttributeToDomValue(instance, it->second))
+                            {
+                                // Fallback to generic read if LegacyAttributeToDomValue fails
+                                visibility = PropertyEditor::Visibility.DomToValue(genericVisibility.value()).value();
                                 return;
                             }
                         }

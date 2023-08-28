@@ -49,7 +49,7 @@ namespace AZ
                     RequestingApplication requester) override;
 
                 SCENE_DATA_API void GetVirtualTypeName(AZStd::string& name, Crc32 type) override;
-                SCENE_DATA_API void GetAllVirtualTypes(AZStd::set<Crc32>& types) override;
+                SCENE_DATA_API void GetAllVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types) override;
                 SCENE_DATA_API void GetPolicyName(AZStd::string& result) const override
                 {
                     result = "LodRuleBehavior";

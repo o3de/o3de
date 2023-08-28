@@ -328,10 +328,12 @@ namespace AZ::SceneGenerationComponents
 
             const auto addSelectionListToMap = [&selectedNodes](const IMeshGroup& meshGroup, const SceneAPI::DataTypes::ISceneNodeSelectionList& selectionList)
             {
-                for (size_t selectedNodeIndex = 0; selectedNodeIndex < selectionList.GetSelectedNodeCount(); ++selectedNodeIndex)
-                {
-                    selectedNodes[&meshGroup].emplace_back(selectionList.GetSelectedNode(selectedNodeIndex));
-                }
+                selectionList.EnumerateSelectedNodes(
+                    [&selectedNodes, &meshGroup](const AZStd::string& name)
+                    {
+                        selectedNodes[&meshGroup].emplace_back(name);
+                        return true;
+                    });
             };
 
             for (const IMeshGroup& meshGroup : meshGroups)
