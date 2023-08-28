@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/XRRenderingInterface.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
 
 namespace AZ::Vulkan
 {
@@ -47,26 +48,6 @@ namespace AZ::Vulkan
         XRDeviceDescriptor() = default;
         ~XRDeviceDescriptor() = default;
 
-        // Provided by the RHI::Vulkan backend
-        struct
-        {
-            VkDevice m_xrVkDevice = VK_NULL_HANDLE;
-            VkPhysicalDevice m_xrVkPhysicalDevice = VK_NULL_HANDLE;
-        } m_inputData;
-    };
-
-
-    class XRSessionDescriptor final : public RHI::XRSessionDescriptor
-    {
-        using Base = RHI::XRSessionDescriptor;
-
-    public:
-        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator);
-        AZ_RTTI(XRSessionDescriptor, "{2859EB21-D013-496B-B922-7C903BC377CF}", Base);
-
-        XRSessionDescriptor() = default;
-        ~XRSessionDescriptor() = default;
-
         struct GraphicsBinding
         {
             uint32_t m_queueFamilyIndex = 0;
@@ -76,10 +57,11 @@ namespace AZ::Vulkan
         // Provided by the RHI::Vulkan backend
         struct
         {
-            GraphicsBinding m_graphicsBinding; 
+            VkDevice m_xrVkDevice = VK_NULL_HANDLE;
+            VkPhysicalDevice m_xrVkPhysicalDevice = VK_NULL_HANDLE;
+            AZStd::array<GraphicsBinding, RHI::HardwareQueueClassCount> m_xrQueueBinding;
         } m_inputData;
     };
-
 
     class XRSwapChainDescriptor final
         : public RHI::XRSwapChainDescriptor
