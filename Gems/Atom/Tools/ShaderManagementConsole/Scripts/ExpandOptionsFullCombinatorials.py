@@ -14,6 +14,7 @@ import azlmbr.bus
 import azlmbr.shadermanagementconsole
 import azlmbr.shader
 import azlmbr.math
+import azlmbr.rhi
 import GenerateShaderVariantListUtil
 from PySide2 import QtWidgets
 from PySide2 import QtCore
@@ -52,6 +53,15 @@ def sumCost(descriptors):
 @functools.cache   # memoize
 def totalCost():
     return sumCost(optionsByNames.values())
+
+def toInt(digit):
+    '''extract the python integer from a boxed option description'''
+    return digit.GetIndex() + 0
+
+def createOptionValue(intVal):
+    return azlmbr.shadermanagementconsole.ShaderManagementConsoleRequestBus(
+        azlmbr.bus.Broadcast, 'MakeShaderOptionValueFromInt',
+        intVal)
 
 class DoubleList(QtCore.QObject):
     left = QListWidget()
@@ -121,13 +131,16 @@ class DoubleList(QtCore.QObject):
         self.rightSubLbl.setText(str(self.right.count()) + " elements")
 
 class Dialog(QDialog):
-    def __init__(self, options):
+    def __init__(self, options, lastStableId):
         super().__init__()
         self.optionDescriptors = options
+        self.lastStableId = lastStableId
         self.initUI()
+        self.participantNames = []
+        self.listOfDigitArrays = []
 
     def initUI(self):
-        self.setWindowTitle("Full variant expansion for select options")
+        self.setWindowTitle("Full variant combinatorics enumeration for select options")
 
         # Create the layout for the dialog box
         mainvl = QVBoxLayout(self)
@@ -185,6 +198,7 @@ class Dialog(QDialog):
         self.makeCostLabel()
 
         genListBtn = QPushButton("Generate variant list", self)
+        genListBtn.clicked.connect(self.generateVariants)
         genBoxVL.addWidget(genListBtn)
 
         actionPaneLayout.addWidget(genBox)
@@ -214,13 +228,13 @@ class Dialog(QDialog):
         '''triggered after a change in participants'''
         participants = self.getParticipantOptionDescs()
         # calculate the count of variants that will result from enumerating participant options
-        total = 0
+        count = 0
         for p in participants:
-            if total == 0:
-                total = p.GetValuesCount()  # initial value
+            if count == 0:
+                count = p.GetValuesCount()  # initial value
             else:
-                total = total * p.GetValuesCount()
-        self.estimate.setText(str(total))
+                count = count * p.GetValuesCount()
+        self.estimate.setText(str(count))
         self.makeCostLabel()
 
     def makeCostLabel(self):
@@ -242,6 +256,49 @@ class Dialog(QDialog):
                 itemWidget.setSelected(True)
                 expandCount = newCount
         self.optionsSelector.addClick()
+
+    # requirement len(digitArray) == len(descriptorArray)
+    # digits are integers (ShaderOptionValue). descriptors are RPI::ShaderOptionDescriptor
+    @staticmethod
+    def allMaxedOut(digitArray, descriptorArray):
+        '''verify if an array of option-values, has all values corresponding to the described max-value, for their respective option'''
+        zipped = zip(digitArray, descriptorArray)
+        return all((digit == toInt(desc.GetMaxValue()) for digit, desc in zipped))
+
+    @staticmethod
+    def increment(digit, descriptor):
+        '''increment one digit in its own base-space. return pair or new digit and carry bit'''
+        carry = False
+        digit = digit + 1
+        if digit > toInt(descriptor.GetMaxValue()):
+            digit = toInt(descriptor.GetMinValue())
+            carry = True
+        return (digit, carry)
+
+    @staticmethod
+    def incrementArray(digitArray, descriptorArray):
+        '''+1 operation in the digitArray'''
+        carry = True  # we consider that the LSB is always to increment
+        for i in reversed(range(0, len(digitArray))):
+            if carry:
+                digitArray[i], carry = Dialog.increment(digitArray[i], descriptorArray[i])
+    
+    @staticmethod
+    def toNames(digitArray, descriptorArray):
+        return [desc.GetValueName(createOptionValue(digit)) for digit, desc in zip(digitArray, descriptorArray)]
+
+    def generateVariants(self):
+        '''make a list of azlmbr.shader.ShaderVariantInfo that fully enumerate the combinatorics of the selected options space'''
+        genOptDescs = list(self.getParticipantOptionDescs())
+        self.participantNames = [x.GetName() for x in genOptDescs]
+        self.listOfDigitArrays = []
+        digits = [toInt(x.GetMinValue()) for x in genOptDescs]
+        if len(digits) > 0:
+            while(True):
+                self.listOfDigitArrays.extend(self.toNames(digits, genOptDescs))  # flat list
+                if Dialog.allMaxedOut(digits, genOptDescs):
+                    break # we are done enumerating the "digit" space
+                Dialog.incrementArray(digits, genOptDescs)  # go to next, doing digit cascade
 
 def main():
     print("==== Begin shader variant expand option combinatorials script ====")
@@ -279,21 +336,38 @@ def main():
     for optDesc in optionDescriptors:
         optionsByNames[str(optDesc.GetName())] = optDesc
 
-    dialog = Dialog(optionDescriptors)
+    # Get current variant list to append our expansion after it
+    variantList = azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
+        azlmbr.bus.Event,
+        'GetShaderVariantListSourceData',
+        documentId
+    )
+
+    lastStableId = 0 if len(variantList.shaderVariants) == 0 else variantList.shaderVariants[-1].stableId
+
+    dialog = Dialog(optionDescriptors, lastStableId)
     try:
         dialog.exec()
     except:
         return
 
-    # Update shader variant list
-    # azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
-    #     azlmbr.bus.Event,
-    #     'SetShaderVariantListSourceData',
-    #     documentId,
-    #     shaderVariantList
-    # )
+    numVal = len(dialog.listOfDigitArrays)
+    if numVal == 0:
+        return
 
-    print("==== End shader variant script ====")
+    print(f"adding {numVal} values. ({numVal/len(dialog.participantNames)} variants)")
+
+    # passing the result
+    azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
+        azlmbr.bus.Event,
+        'AppendSparseVariantSet',
+        documentId,
+        dialog.participantNames,
+        dialog.listOfDigitArrays
+    )
+
 
 #if __name__ == "__main__":
 main()
+
+print("==== End shader variant script ====")

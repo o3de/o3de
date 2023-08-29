@@ -44,6 +44,7 @@ namespace ShaderManagementConsole
                 ->Event("GetShaderVariantListSourceData", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData)
                 ->Event("GetShaderOptionDescriptorCount", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptorCount)
                 ->Event("GetShaderOptionDescriptor", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptor)
+                ->Event("AppendSparseVariantSet", &ShaderManagementConsoleDocumentRequestBus::Events::AppendSparseVariantSet)
                 ;
         }
     }
@@ -66,6 +67,7 @@ namespace ShaderManagementConsole
             AZ::RPI::AssetUtils::LoadAsset<AZ::RPI::ShaderAsset>(m_absolutePath,
                                                                  m_shaderVariantListSourceData.m_shaderFilePath);
         if (shaderAssetResult)
+
         {
             BeginEdit();
             AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderAssetResult.GetValue();
@@ -88,6 +90,55 @@ namespace ShaderManagementConsole
             return variantInfo.m_stableId;
         }
         return {};
+    }
+
+    void ShaderManagementConsoleDocument::AppendSparseVariantSet(
+        AZStd::vector<AZ::Name> optionHeaders,
+        AZStd::vector<AZ::Name> matrixOfValues)
+    {
+        // Make a lookup table to "reverse" the vector given to us in argument
+        AZStd::unordered_map<AZ::Name, int> nameToHeaderIndex;
+        for (int i = 0; i < optionHeaders.size(); ++i)
+        {
+            nameToHeaderIndex[optionHeaders[i]] = i;
+        }
+        // Prepare a whole new source data
+        AZ::RPI::ShaderVariantListSourceData newSourceData{ std::move(m_shaderVariantListSourceData) };
+        AZ::u32 stableId = newSourceData.m_shaderVariants.empty() ? 1 : newSourceData.m_shaderVariants.back().m_stableId + 1;
+        if (matrixOfValues.size() % optionHeaders.size() != 0)
+        {
+            AZ_Error("ShaderManagementConsoleDocument", false,
+                "AppendSpareseVariantSet: matrixOfValues size must be multiple of header count");
+            return;
+        }
+        // add "line by line"
+        int numLines = matrixOfValues.size() / optionHeaders.size();
+        for (int line = 0; line < numLines; ++line)
+        {
+            AZ::RPI::ShaderOptionValuesSourceData mapOfOptionNameToValues;
+            size_t count = GetShaderOptionDescriptorCount();
+            // we need to fill-in the gaps by adding empty values for unset options, so we loop on all descriptors
+            for (int column = 0; column < count; ++column)
+            {
+                auto& descriptor = GetShaderOptionDescriptor(column);
+                auto& optionName = descriptor.GetName();
+                auto indexIt = nameToHeaderIndex.find(optionName);
+                if (indexIt == nameToHeaderIndex.end())
+                {
+                    mapOfOptionNameToValues[optionName] = ""; // unset
+                }
+                else
+                {
+                    int index = line * optionHeaders.size() + indexIt->second;
+                    mapOfOptionNameToValues[optionName] = matrixOfValues[index];
+                }
+            }
+            AZ::RPI::ShaderVariantListSourceData::VariantInfo newLine{ stableId++, mapOfOptionNameToValues };
+            newSourceData.m_shaderVariants.emplace_back(std::move(newLine));
+        }
+        BeginEdit();
+        SetShaderVariantListSourceData(newSourceData);
+        EndEdit();
     }
 
     void ShaderManagementConsoleDocument::SetShaderVariantListSourceData(

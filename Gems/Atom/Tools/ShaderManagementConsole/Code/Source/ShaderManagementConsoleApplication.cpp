@@ -74,7 +74,9 @@ namespace ShaderManagementConsole
                 ->Event("GetMaterialInstanceShaderItems", &ShaderManagementConsoleRequestBus::Events::GetMaterialInstanceShaderItems)
                 ->Event("GetAllMaterialAssetIds", &ShaderManagementConsoleRequestBus::Events::GetAllMaterialAssetIds)
                 ->Event("GetFullSourcePathFromRelativeProductPath", &ShaderManagementConsoleRequestBus::Events::GetFullSourcePathFromRelativeProductPath)
-                ->Event("GenerateRelativeSourcePath", &ShaderManagementConsoleRequestBus::Events::GenerateRelativeSourcePath);
+                ->Event("GenerateRelativeSourcePath", &ShaderManagementConsoleRequestBus::Events::GenerateRelativeSourcePath)
+                ->Event("MakeShaderOptionValueFromInt", &ShaderManagementConsoleRequestBus::Events::MakeShaderOptionValueFromInt)
+                ;
         }
     }
 
@@ -324,6 +326,11 @@ namespace ShaderManagementConsole
             AZ_Error("GenerateRelativeSourcePath", false, "Can not find a relative path from the shader: '%s'.", fullShaderPath.c_str());
             return "";
         }
+    }
+
+    AZ::RPI::ShaderOptionValue ShaderManagementConsoleApplication::MakeShaderOptionValueFromInt(int value)
+    {
+        return AZ::RPI::ShaderOptionValue(value);
     }
 
     void ShaderManagementConsoleApplication::CreateNewVariantListRequested(const char* fromShaderSourcePath)
