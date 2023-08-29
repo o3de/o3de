@@ -71,7 +71,7 @@
                 // ---- The number of worker jobs, 0 means use the number of Logical Cores
                 "Jobs": {
                     "minJobs": 1,
-                    "maxJobs": 8
+                    "maxJobs": 0
                 },
                 // cacheServerAddress is the location of the asset server cache.
                 // Currently for a network share server this would be the absolute file path to the network share folder.
