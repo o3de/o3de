@@ -165,7 +165,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
 
     if should_build_headless_server_launcher:
         export_layouts.append(exp.ExportLayoutConfig(output_path=output_path / f'{ctx.project_name}HeadlessServerPackage',
-                                                     project_file_patterns=project_file_patterns_to_copy + game_project_file_patterns_to_copy + server_project_file_patterns_to_copy,
+                                                     project_file_patterns=project_file_patterns_to_copy + server_project_file_patterns_to_copy,
                                                      ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}',
                                                                            f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}',
                                                                            f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}']))
