@@ -106,6 +106,9 @@ namespace AZ
             case RHI::ShaderStage::Vertex:
                 stageBits = VK_SHADER_STAGE_VERTEX_BIT;
                 break;
+            case RHI::ShaderStage::Geometry:
+                stageBits = VK_SHADER_STAGE_GEOMETRY_BIT;
+                break;
             case RHI::ShaderStage::Tessellation:
                 switch (subStageIndex)
                 {

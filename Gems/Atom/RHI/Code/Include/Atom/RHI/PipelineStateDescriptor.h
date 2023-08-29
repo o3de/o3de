@@ -99,6 +99,9 @@ namespace AZ::RHI
         ConstPtr<ShaderStageFunction> m_vertexFunction;
 
         /// [Optional] The tessellation function to compile.
+        ConstPtr<ShaderStageFunction> m_geometryFunction;
+        
+        /// [Optional] The tessellation function to compile.
         ConstPtr<ShaderStageFunction> m_tessellationFunction;
 
         /// [Required] The fragment function used to compile.

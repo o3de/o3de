@@ -1193,6 +1193,8 @@ namespace AZ
                 return D3D12_SHADER_VISIBILITY_ALL;
             case RHI::ShaderStageMask::Vertex:
                 return D3D12_SHADER_VISIBILITY_VERTEX;
+            case RHI::ShaderStageMask::Geometry:
+                return D3D12_SHADER_VISIBILITY_GEOMETRY;
             case RHI::ShaderStageMask::Tessellation:
                 return D3D12_SHADER_VISIBILITY_ALL;
             case RHI::ShaderStageMask::Fragment:

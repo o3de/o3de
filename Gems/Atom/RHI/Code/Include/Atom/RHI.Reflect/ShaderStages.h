@@ -47,6 +47,10 @@ namespace AZ::RHI
 
         // This virtual stage represents ray tracing shaders.  On DXIL platforms this is implemented with a DXIL Library.
         RayTracing,
+        
+        //! This virtual stage contains shader stages that expand an input assembly stream and manipulate
+        //! a vertex.
+        Geometry,
 
         Count,
         GraphicsCount = Compute,
@@ -70,7 +74,8 @@ namespace AZ::RHI
         Fragment = AZ_BIT(static_cast<uint32_t>(ShaderStage::Fragment)),
         Compute = AZ_BIT(static_cast<uint32_t>(ShaderStage::Compute)),
         RayTracing = AZ_BIT(static_cast<uint32_t>(ShaderStage::RayTracing)),
-        All = Vertex | Tessellation | Fragment | Compute | RayTracing
+        Geometry = AZ_BIT(static_cast<uint32_t>(ShaderStage::Geometry)),
+        All = Vertex | Tessellation | Fragment | Compute | RayTracing | Geometry
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ShaderStageMask)

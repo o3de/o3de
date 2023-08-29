@@ -413,8 +413,7 @@ namespace AZ::RHI
         case ShaderHardwareStage::Fragment:
             return RHI::ShaderStage::Fragment;
         case ShaderHardwareStage::Geometry:
-            AZ_Assert(false, "RHI currently does not support geometry shaders");
-            return RHI::ShaderStage::Unknown;
+            return RHI::ShaderStage::Geometry;
         case ShaderHardwareStage::TessellationControl:
         case ShaderHardwareStage::TessellationEvaluation:
             return RHI::ShaderStage::Tessellation;

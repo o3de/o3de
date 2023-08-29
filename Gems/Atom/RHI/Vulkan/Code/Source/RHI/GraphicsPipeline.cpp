@@ -136,6 +136,17 @@ namespace AZ
                 }
             }
 
+            if (GetDevice().GetFeatures().m_geometryShader)
+            {
+                func = static_cast<ShaderStageFunction const*>(descriptor.m_geometryFunction.get());
+                if (func)
+                {
+                    m_pipelineShaderStageCreateInfos.emplace_back();
+                    FillPipelineShaderStageCreateInfo(
+                        *func, RHI::ShaderStage::Geometry, ShaderSubStage::Default, *m_pipelineShaderStageCreateInfos.rbegin());
+                }
+            }
+
             func = static_cast<ShaderStageFunction const*>(descriptor.m_fragmentFunction.get());
             if (func)
             {
