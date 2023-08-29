@@ -137,6 +137,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzFramework
+                    AZ::AzFramework.NativeUI
                     AZ::AzTest
                     AZ::AzTestShared
                     AZ::AzFrameworkTestShared
