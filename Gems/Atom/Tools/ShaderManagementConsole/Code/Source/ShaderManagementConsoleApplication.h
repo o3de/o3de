@@ -51,6 +51,7 @@ namespace ShaderManagementConsole
         AZStd::vector<AZ::Data::AssetId> GetAllMaterialAssetIds() override;
         AZStd::string GetFullSourcePathFromRelativeProductPath(const AZStd::string& relativeProductPath) override;
         AZStd::string GenerateRelativeSourcePath(const AZStd::string& fullShaderPath) override;
+        AZ::RPI::ShaderOptionValue MakeShaderOptionValueFromInt(int value) override;
 
         // AssetBrowserInteractionNotificationBus overrides...
         void CreateNewVariantListRequested(const char* /*fromShaderSourcePath*/) override;

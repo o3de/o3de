@@ -8,6 +8,7 @@
 
 #pragma once
 
+//#include <AzCore/Name/Name.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
@@ -24,6 +25,17 @@ namespace ShaderManagementConsole
 
         //! Returns the stable id
         virtual AZ::u32 AddOneVariantRow() = 0;
+
+        //! Add a batch of variants
+        //! The variants don't have to be fully enumerated, only some options may participate
+        //! `optionHeaders` are like a csv file first line, they name the columns.
+        //! example:      o_fog  |  o_shadow  |  o_brdfModel
+        //!              --------|------------|--------------
+        //!                 0    |     1      |
+        //!                 1    |     0      |
+        //! In that case optionHeaders is ["o_fog", "o_shadow"]
+        //! and         matrixOfValues is [ 0,1, 1,0 ]    # flattened values-subrect matrix
+        virtual void AppendSparseVariantSet(AZStd::vector<AZ::Name> optionHeaders, AZStd::vector<AZ::Name> matrixOfValues) = 0;
 
         //! Set the shader variant list source data on the document.
         //! This function can be used to edit and update the data contained within the document.
