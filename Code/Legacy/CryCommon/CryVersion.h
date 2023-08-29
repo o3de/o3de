@@ -148,7 +148,7 @@ struct SFileVersion
 
     void ToShortString(char* s, size_t bufferSize) const
     {
-        sprintf_s(s, bufferSize, "%d.%d.%d", v[2], v[1], v[0]);
+        snprintf(s, bufferSize, "%d.%d.%d", v[2], v[1], v[0]); // gruber patch
     }
 
     template <size_t size>
@@ -159,7 +159,7 @@ struct SFileVersion
 
     void ToString(char* s, size_t bufferSize) const
     {
-        sprintf_s(s, bufferSize, "%d.%d.%d.%d", v[3], v[2], v[1], v[0]);
+        snprintf(s, bufferSize, "%d.%d.%d.%d", v[3], v[2], v[1], v[0]); // gruber patch
     }
 };
 

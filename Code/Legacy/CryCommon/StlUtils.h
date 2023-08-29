@@ -352,7 +352,7 @@ namespace stl
     public:
         bool operator()(const Key& key1, const Key& key2) const
         {
-            return _stricmp(constchar_cast(key1), constchar_cast(key2)) == 0;
+            return strcmp(constchar_cast(key1), constchar_cast(key2)) == 0; // gruber patch
         }
     };
 
