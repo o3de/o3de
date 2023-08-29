@@ -20,8 +20,8 @@
 
 namespace AzFramework
 {
-    //! This system will take care of reflecting physics material classes and
-    //! registering the physics material asset.
+    //! This component manages the lifecycle of the UI-related factories and interfaces and initializes the ones that are 
+    //! supported by the current platform.
     class NativeUISystemComponent
         : public AZ::Component
     {
