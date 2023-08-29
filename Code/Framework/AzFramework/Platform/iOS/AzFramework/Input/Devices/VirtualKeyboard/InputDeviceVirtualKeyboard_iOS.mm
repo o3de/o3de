@@ -181,12 +181,10 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    #if defined(AZ_PLATFORM_IOS)
     AZStd::unique_ptr<InputDeviceVirtualKeyboard::Implementation> IosDeviceVirtualKeyboardImplFactory::Create(InputDeviceVirtualKeyboard& inputDevice)
     {
         return AZStd::make_unique<InputDeviceVirtualKeyboardiOS>(inputDevice);
     }
-    #endif // AZ_PLATFORM_IOS
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceVirtualKeyboardiOS::InputDeviceVirtualKeyboardiOS(
