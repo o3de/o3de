@@ -330,7 +330,7 @@ namespace AZ::DocumentPropertyEditor
             attributes.ListAttributes(
                 [this](AZ::Name group, AZ::Name name, const Dom::Value& value)
                 {
-                    AZ_Warning("dpe", !name.IsEmpty(), "DPE: Received empty name in ListAttributes");
+                    AZ_Warning("ReflectionAdapter", !name.IsEmpty(), "Received empty name in ListAttributes");
                     // Skip non-default groups, we don't presently source any attributes from outside of the default group.
                     if (!group.IsEmpty())
                     {
@@ -477,7 +477,7 @@ namespace AZ::DocumentPropertyEditor
                 [&value](const Dom::Value& newValue)
                 {
                     AZStd::optional<T> extractedValue = Dom::Utils::ValueToType<T>(newValue);
-                    AZ_Warning("DPE", extractedValue.has_value(), "OnChanged failed, unable to extract value from DOM");
+                    AZ_Warning("ReflectionAdapter", extractedValue.has_value(), "OnChanged failed, unable to extract value from DOM");
                     if (extractedValue.has_value())
                     {
                         value = AZStd::move(extractedValue.value());
@@ -795,11 +795,30 @@ namespace AZ::DocumentPropertyEditor
 
                         // serialize the new value to Json, using the original valuePointer as a reference object to generate a minimal
                         // diff
-                        JsonSerialization::Store(
+                        AZ::JsonSerializationResult::ResultCode resultCode = JsonSerialization::Store(
                             buffer, buffer.GetAllocator(), marshalledPointer, valuePointer, valueType, serializeSettings);
 
+                        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                        {
+                            AZ_Error(
+                                "ReflectionAdapter",
+                                false,
+                                "Storing new property editor value to JSON for copying to instance has failed with error %s",
+                                resultCode.ToString("").c_str());
+                            return newValue;
+                        }
+
                         // now deserialize that value into the original location
-                        JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+                        resultCode = JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+                        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                        {
+                            AZ_Error(
+                                "ReflectionAdapter",
+                                false,
+                                "Loading JSON value containing new property editor into instance has failed with error %s",
+                                resultCode.ToString("").c_str());
+                            return newValue;
+                        }
 
                         // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by
                         // pointer, it will not actually detect a changed dom value. Since we are already writing directly to the DOM
