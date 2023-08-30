@@ -8,55 +8,35 @@
 
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Components/NativeUISystemComponent.h>
-#include <AzFramework/Components/NativeUISystemComponentFactories_Android.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
-    void NativeUISystemComponent::InitializeApplicationImplementationFactory()
-    {
-        m_applicationImplFactory = AZStd::make_unique<AndroidApplicationImplFactory>();
-        AZ::Interface<Application::ImplementationFactory>::Register(m_applicationImplFactory.get());
-    }
 
     void NativeUISystemComponent::InitializeDeviceGamepadImplentationFactory()
     {
         // Gamepad input not supported on Android
     }
 
-    void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
-    {
-        m_deviceKeyboardImplFactory = AZStd::make_unique<AndroidDeviceKeyboardImplFactory>();
-        AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeApplicationImplementationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Android/AzFramework/Application/Application_Android.cpp)
 
-    void NativeUISystemComponent::InitializeDeviceMotionImplentationFactory()
-    {
-        m_deviceMotionImplFactory = AZStd::make_unique<AndroidDeviceMotionImplFactory>();
-        AZ::Interface<InputDeviceMotion::ImplementationFactory>::Register(m_deviceMotionImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Android/AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Android.cpp)
 
-    void NativeUISystemComponent::InitializeDeviceMouseImplentationFactory()
-    {
-        m_deviceMouseImplFactory = AZStd::make_unique<AndroidDeviceMouseImplFactory>();
-        AZ::Interface<InputDeviceMouse::ImplementationFactory>::Register(m_deviceMouseImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeDeviceMotionImplentationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Android/AzFramework/Input/Devices/Motion/InputDeviceMotion_Android.cpp)
 
-    void NativeUISystemComponent::InitializeDeviceTouchImplentationFactory()
-    {
-        m_deviceTouchImplFactory = AZStd::make_unique<AndroidDeviceTouchImplFactory>();
-        AZ::Interface<InputDeviceTouch::ImplementationFactory>::Register(m_deviceTouchImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeDeviceMouseImplentationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Android/AzFramework/Input/Devices/Mouse/InputDeviceMouse_Android.cpp)
 
-    void NativeUISystemComponent::InitializeDeviceVirtualKeyboardImplentationFactory()
-    {
-        m_deviceVirtualKeyboardImplFactory = AZStd::make_unique<AndroidDeviceVirtualKeyboardImplFactory>();
-        AZ::Interface<InputDeviceVirtualKeyboard::ImplementationFactory>::Register(m_deviceVirtualKeyboardImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeDeviceTouchImplentationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Android/AzFramework/Input/Devices/Touch/InputDeviceTouch_Android.cpp)
 
-    void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()
-    {
-        m_nativeWindowImplFactory = AZStd::make_unique<AndroidNativeWindowFactory>();
-        AZ::Interface<NativeWindow::ImplementationFactory>::Register(m_nativeWindowImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeDeviceVirtualKeyboardImplentationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Android/AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Android.cpp)
+
+    // void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Android/AzFramework/Windowing/NativeWindow_Android.cpp)
+
 } // namespace AzFramework

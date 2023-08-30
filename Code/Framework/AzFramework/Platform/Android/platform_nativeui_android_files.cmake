@@ -8,7 +8,6 @@
 
 set(FILES
     AzFramework/Components/NativeUISystemComponent_Android.cpp
-    AzFramework/Components/NativeUISystemComponentFactories_Android.h
     AzFramework/Application/Application_Android.cpp
     AzFramework/Windowing/NativeWindow_Android.cpp
     AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Android.cpp

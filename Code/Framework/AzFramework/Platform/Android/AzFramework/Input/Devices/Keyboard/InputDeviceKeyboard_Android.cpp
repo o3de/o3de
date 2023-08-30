@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzFramework/Components/NativeUISystemComponentFactories_Android.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -312,6 +312,7 @@ namespace
 
 namespace AzFramework
 {
+
     //! Platform specific implementation for Android physical keyboard input devices.  This
     //! includes devices connected through USB or Bluetooth.  This input device is responsible
     //! for sending key events only, the virtual keyboard is the one responsible for sending
@@ -435,8 +436,21 @@ namespace AzFramework
         ProcessRawEventQueues();
     }
 
-    AZStd::unique_ptr<InputDeviceKeyboard::Implementation> AndroidDeviceKeyboardImplFactory::Create(InputDeviceKeyboard& inputDevice)
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class AndroidDeviceKeyboardImplFactory
+        : public InputDeviceKeyboard::ImplementationFactory
     {
-        return AZStd::make_unique<InputDeviceKeyboardAndroid>(inputDevice);
+    public:
+        AZStd::unique_ptr<InputDeviceKeyboard::Implementation> Create(InputDeviceKeyboard& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceKeyboardAndroid>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
+    {
+        m_deviceKeyboardImplFactory = AZStd::make_unique<AndroidDeviceKeyboardImplFactory>();
+        AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory.get());
     }
 } // namespace AzFramework

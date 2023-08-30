@@ -6,12 +6,11 @@
  *
  */
 
-#include <AzFramework/Components/NativeUISystemComponentFactories_Android.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
 #include <AzCore/Android/Utils.h>
-
 #include <AzCore/std/parallel/mutex.h>
 
 #include <android/input.h>
@@ -71,12 +70,6 @@ namespace AzFramework
         AZStd::mutex                 m_threadAwareRawTouchEventsMutex;
         ///@}
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceTouch::Implementation> AndroidDeviceTouchImplFactory::Create(InputDeviceTouch& inputDevice)
-    {
-        return AZStd::make_unique<InputDeviceTouchAndroid>(inputDevice);
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceTouchAndroid::InputDeviceTouchAndroid(InputDeviceTouch& inputDevice)
@@ -224,5 +217,23 @@ namespace AzFramework
                                           rawTouchState);
         AZStd::lock_guard<AZStd::mutex> lock(m_threadAwareRawTouchEventsMutex);
         m_threadAwareRawTouchEvents.push_back(rawTouchEvent);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class AndroidDeviceTouchImplFactory
+        : public InputDeviceTouch::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceTouch::Implementation> Create(InputDeviceTouch& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceTouchAndroid>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceTouchImplentationFactory()
+    {
+        m_deviceTouchImplFactory = AZStd::make_unique<AndroidDeviceTouchImplFactory>();
+        AZ::Interface<InputDeviceTouch::ImplementationFactory>::Register(m_deviceTouchImplFactory.get());
     }
 }
