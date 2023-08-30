@@ -141,15 +141,15 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceGamepadMac::SetVibration(float leftMotorSpeedNormalized,
-                                               float rightMotorSpeedNormalized)
+    void InputDeviceGamepadMac::SetVibration(float leftMotorSpeedNormalized, 
+                                             float rightMotorSpeedNormalized)
     {
         // The apple game controller framework does not (yet?) support force-feedback
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceGamepadMac::GetPhysicalKeyOrButtonText(const InputChannelId& inputChannelId,
-                                                             AZStd::string& o_keyOrButtonText) const
+                                                           AZStd::string& o_keyOrButtonText) const
     {
         if (inputChannelId == InputDeviceGamepad::Button::Start)
         {

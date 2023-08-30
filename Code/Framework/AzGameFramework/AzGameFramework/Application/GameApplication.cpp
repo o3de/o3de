@@ -66,13 +66,13 @@ namespace AzGameFramework
     {
         AZ::ComponentTypeList components = AzFramework::Application::GetRequiredSystemComponents();
 
-        #if !O3DE_HEADLESS_SERVER
+#if !O3DE_HEADLESS_SERVER
         components.insert(
             components.end(),
             {
                 azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
-        #endif // O3DE_HEADLESS_SERVER
+#endif // O3DE_HEADLESS_SERVER
 
         return components;
     }
