@@ -55,13 +55,13 @@ namespace AzFramework
         void InitializeDeviceVirtualKeyboardImplentationFactory();
         void InitializeNativeWindowImplementationFactory();
 
-        AZStd::unique_ptr<Application::ImplementationFactory> m_applicationImplFactory {};
-        AZStd::unique_ptr<InputDeviceGamepad::ImplementationFactory> m_deviceGamepadImplFactory {};
-        AZStd::unique_ptr<InputDeviceKeyboard::ImplementationFactory> m_deviceKeyboardImplFactory {};
-        AZStd::unique_ptr<InputDeviceMotion::ImplementationFactory> m_deviceMotionImplFactory {};
-        AZStd::unique_ptr<InputDeviceMouse::ImplementationFactory> m_deviceMouseImplFactory {};
-        AZStd::unique_ptr<InputDeviceTouch::ImplementationFactory> m_deviceTouchImplFactory {};
-        AZStd::unique_ptr<InputDeviceVirtualKeyboard::ImplementationFactory> m_deviceVirtualKeyboardImplFactory {};
-        AZStd::unique_ptr<NativeWindow::ImplementationFactory> m_nativeWindowImplFactory {};
+        AZStd::unique_ptr<Application::ImplementationFactory> m_applicationImplFactory;
+        AZStd::unique_ptr<InputDeviceGamepad::ImplementationFactory> m_deviceGamepadImplFactory;
+        AZStd::unique_ptr<InputDeviceKeyboard::ImplementationFactory> m_deviceKeyboardImplFactory;
+        AZStd::unique_ptr<InputDeviceMotion::ImplementationFactory> m_deviceMotionImplFactory;
+        AZStd::unique_ptr<InputDeviceMouse::ImplementationFactory> m_deviceMouseImplFactory;
+        AZStd::unique_ptr<InputDeviceTouch::ImplementationFactory> m_deviceTouchImplFactory;
+        AZStd::unique_ptr<InputDeviceVirtualKeyboard::ImplementationFactory> m_deviceVirtualKeyboardImplFactory;
+        AZStd::unique_ptr<NativeWindow::ImplementationFactory> m_nativeWindowImplFactory;
     };
 } // namespace AzFramework

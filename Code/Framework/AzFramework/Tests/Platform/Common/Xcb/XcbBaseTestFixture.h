@@ -35,6 +35,6 @@ namespace AzFramework
     protected:
         testing::NiceMock<MockXcbInterface> m_interface;
         xcb_connection_t m_connection{};
-        AZStd::unique_ptr<AzFramework::NativeUISystemComponent> m_nativeUiComponent {};
+        AZStd::unique_ptr<AzFramework::NativeUISystemComponent> m_nativeUiComponent;
     };
 } // namespace AzFramework
