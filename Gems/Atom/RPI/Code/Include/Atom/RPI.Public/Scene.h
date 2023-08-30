@@ -165,9 +165,9 @@ namespace AZ
 
             bool HasOutputForPipelineState(RHI::DrawListTag drawListTag) const;
 
-            AzFramework::IVisibilityScene* GetVisibilityScene() const { return m_visibilityScene; }
+            AzFramework::IVisibilityScene* GetVisibilityScene() const;
 
-            AZ::RPI::CullingScene* GetCullingScene() const { return m_cullingScene; }
+            AZ::RPI::CullingScene* GetCullingScene() const;
 
             RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle, ViewType viewType = ViewType::Default);
 
@@ -186,15 +186,9 @@ namespace AZ
 
             RHI::TagBitRegistry<uint32_t>& GetViewTagBitRegistry();
             
-            RHI::Ptr<RHI::DrawFilterTagRegistry> GetDrawFilterTagRegistry() const
-            {
-                return m_drawFilterTagRegistry;
-            }
+            RHI::Ptr<RHI::DrawFilterTagRegistry> GetDrawFilterTagRegistry() const;
 
-            uint16_t GetActiveRenderPipelines() const
-            {
-                return m_numActiveRenderPipelines;
-            }
+            uint16_t GetActiveRenderPipelines() const;
 
         protected:
             // SceneRequestBus::Handler overrides...

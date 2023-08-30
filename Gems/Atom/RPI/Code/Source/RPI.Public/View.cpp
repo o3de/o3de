@@ -594,6 +594,21 @@ namespace AZ
             return  -0.25f * cotHalfFovYSq * AZ::Constants::Pi * radiusSq * sqrt(fabsf((distanceSq - radiusSq)/radiusSqSubDepthSq))/radiusSqSubDepthSq;
         }
 
+        const AZ::Name& View::GetName() const
+        {
+            return m_name;
+        }
+
+        const View::UsageFlags View::GetUsageFlags()
+        {
+            return m_usageFlags;
+        }
+
+        void View::SetPassesByDrawList(PassesByDrawList* passes)
+        {
+            m_passesByDrawList = passes;
+        }
+
         void View::UpdateSrg()
         {
             if (m_shaderResourceGroup)

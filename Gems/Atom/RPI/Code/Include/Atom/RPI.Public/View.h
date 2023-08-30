@@ -158,10 +158,10 @@ namespace AZ
             //! Value returned is 1.0f when an area equal to the viewport height squared is covered. Useful for accurate LOD decisions.
             float CalculateSphereAreaInClipSpace(const AZ::Vector3& sphereWorldPosition, float sphereRadius) const;
 
-            const AZ::Name& GetName() const { return m_name; }
-            const UsageFlags GetUsageFlags() { return m_usageFlags; }
+            const AZ::Name& GetName() const;
+            const UsageFlags GetUsageFlags();
 
-            void SetPassesByDrawList(PassesByDrawList* passes) { m_passesByDrawList = passes; }
+            void SetPassesByDrawList(PassesByDrawList* passes);
 
             //! Update View's SRG values and compile. This should only be called once per frame before execute command lists.
             void UpdateSrg();

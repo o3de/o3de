@@ -66,7 +66,7 @@ namespace UnitTest
 
         void Cull(TestCameraList& views)
         {
-            m_cullingScene->BeginCulling(views);
+            m_cullingScene->BeginCulling(*m_testScene, views);
 
             // Create and submit work to the culling scene in a similar style as RPI::Scene::PrepareRender
             static const TaskDescriptor processCullablesDescriptor{ "RPI::Scene::ProcessCullables", "Graphics" };
@@ -90,7 +90,7 @@ namespace UnitTest
 
             processCullablesTG.Submit(&processCullablesTGEvent);
             processCullablesTGEvent.Wait();
-            m_cullingScene->EndCulling();
+            m_cullingScene->EndCulling(*m_testScene);
 
             for (ViewPtr& viewPtr : views)
             {
