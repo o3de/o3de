@@ -61,9 +61,18 @@ namespace AzNetworking
     }
 
     template <typename BASE_TYPE>
-    bool TrackChangedSerializer<BASE_TYPE>::Serialize(int64_t& value, const char* name, int64_t minValue, int64_t maxValue)
+    bool TrackChangedSerializer<BASE_TYPE>::Serialize(long& value, const char* name, long minValue, long maxValue)
     {
-        const int64_t cached = value;
+        const long cached = value;
+        const bool result = BASE_TYPE::Serialize(value, name, minValue, maxValue);
+        m_hasChanged |= (cached != value);
+        return result;
+    }
+
+    template <typename BASE_TYPE>
+    bool TrackChangedSerializer<BASE_TYPE>::Serialize(AZ::s64& value, const char* name, AZ::s64 minValue, AZ::s64 maxValue)
+    {
+        const AZ::s64 cached = value;
         const bool result = BASE_TYPE::Serialize(value, name, minValue, maxValue);
         m_hasChanged |= (cached != value);
         return result;
@@ -97,9 +106,18 @@ namespace AzNetworking
     }
 
     template <typename BASE_TYPE>
-    bool TrackChangedSerializer<BASE_TYPE>::Serialize(uint64_t& value, const char* name, uint64_t minValue, uint64_t maxValue)
+    bool TrackChangedSerializer<BASE_TYPE>::Serialize(unsigned long& value, const char* name, unsigned long minValue, unsigned long maxValue)
     {
-        const uint64_t cached = value;
+        const unsigned long cached = value;
+        const bool result = BASE_TYPE::Serialize(value, name, minValue, maxValue);
+        m_hasChanged |= (cached != value);
+        return result;
+    }
+
+    template <typename BASE_TYPE>
+    bool TrackChangedSerializer<BASE_TYPE>::Serialize(AZ::u64& value, const char* name, AZ::u64 minValue, AZ::u64 maxValue)
+    {
+        const AZ::u64 cached = value;
         const bool result = BASE_TYPE::Serialize(value, name, minValue, maxValue);
         m_hasChanged |= (cached != value);
         return result;
