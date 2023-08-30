@@ -6,9 +6,9 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/Input/Events/InputChannelEventSink.h>
-#include <AzFramework/Components/NativeUISystemComponentFactories_iOS.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -181,12 +181,6 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceVirtualKeyboard::Implementation> IosDeviceVirtualKeyboardImplFactory::Create(InputDeviceVirtualKeyboard& inputDevice)
-    {
-        return AZStd::make_unique<InputDeviceVirtualKeyboardiOS>(inputDevice);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceVirtualKeyboardiOS::InputDeviceVirtualKeyboardiOS(
         InputDeviceVirtualKeyboard& inputDevice)
         : InputDeviceVirtualKeyboard::Implementation(inputDevice)
@@ -294,5 +288,23 @@ namespace AzFramework
         // The ios event loop has just been pumped in InputSystemComponentIos::PreTickInputDevices,
         // so we now just need to process any raw events that have been queued since the last frame
         ProcessRawEventQueues();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class IosDeviceVirtualKeyboardImplFactory
+        : public InputDeviceVirtualKeyboard::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceVirtualKeyboard::Implementation> Create(InputDeviceVirtualKeyboard& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceVirtualKeyboardiOS>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceVirtualKeyboardImplentationFactory()
+    {
+        m_deviceVirtualKeyboardImplFactory = AZStd::make_unique<IosDeviceVirtualKeyboardImplFactory>();
+        AZ::Interface<InputDeviceVirtualKeyboard::ImplementationFactory>::Register(m_deviceVirtualKeyboardImplFactory.get());
     }
 } // namespace AzFramework

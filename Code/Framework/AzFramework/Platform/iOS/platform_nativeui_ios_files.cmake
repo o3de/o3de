@@ -8,7 +8,6 @@
 
 set(FILES
     AzFramework/Components/NativeUISystemComponent_iOS.cpp
-    AzFramework/Components/NativeUISystemComponentFactories_iOS.h
     AzFramework/Application/Application_iOS.mm
     AzFramework/Windowing/NativeWindow_ios.mm
     AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_iOS.mm

@@ -7,9 +7,8 @@
  */
 
 
-
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
-#include <AzFramework/Components/NativeUISystemComponentFactories_iOS.h>
 #include <GameController/GameController.h>
 #include <AzCore/Debug/Trace.h>
 
@@ -112,19 +111,6 @@ namespace AzFramework
         GCController*   m_controller;             //!< The currently assigned controller
         bool            m_wasPausedHandlerCalled; //!< Was the controller paused handler called?
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::u32 IosDeviceGamepadImplFactory::GetMaxSupportedGamepads() const
-    {
-        return GCControllerPlayerIndex4 + 1;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceGamepad::Implementation* InputDeviceGamepad::Implementation::Create(
-        InputDeviceGamepad& inputDevice)
-    {
-        return aznew InputDeviceGamepadiOS(inputDevice);
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceGamepadiOS::InputDeviceGamepadiOS(InputDeviceGamepad& inputDevice)
@@ -326,5 +312,27 @@ namespace AzFramework
         }
 
         ProcessRawGamepadState(m_rawGamepadState);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class IosDeviceGamepadImplFactory
+        : public InputDeviceGamepad::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceGamepad::Implementation> Create(InputDeviceGamepad& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceGamepadiOS>(inputDevice);
+        }
+        AZ::u32 GetMaxSupportedGamepads() const override
+        {
+            return GCControllerPlayerIndex4 + 1;    
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceGamepadImplentationFactory()
+    {
+        m_deviceGamepadImplFactory = AZStd::make_unique<IosDeviceGamepadImplFactory>();
+        AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Register(m_deviceGamepadImplFactory.get());
     }
 } // namespace AzFramework
