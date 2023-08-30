@@ -127,7 +127,7 @@ namespace AzFramework
 
     bool NativeWindow::SupportsClientAreaResize() const
     {
-        return (m_pimpl != nullptr) ? m_pimpl->SupportsClientAreaResize() : false;
+        return (m_pimpl != nullptr) && m_pimpl->SupportsClientAreaResize();
     }
 
     void NativeWindow::SetEnableCustomizedResolution(bool enable)
