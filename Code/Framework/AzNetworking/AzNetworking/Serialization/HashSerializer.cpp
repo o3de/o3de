@@ -63,7 +63,13 @@ namespace AzNetworking
         return true;
     }
 
-    bool HashSerializer::Serialize(int64_t& value, [[maybe_unused]] const char* name, [[maybe_unused]] int64_t minValue, [[maybe_unused]] int64_t maxValue)
+    bool HashSerializer::Serialize(long& value, [[maybe_unused]] const char* name, [[maybe_unused]] long minValue, [[maybe_unused]] long maxValue)
+    {
+        m_hash = AZ::TypeHash64(value, m_hash);
+        return true;
+    }
+
+    bool HashSerializer::Serialize(AZ::s64& value, [[maybe_unused]] const char* name, [[maybe_unused]] AZ::s64 minValue, [[maybe_unused]] AZ::s64 maxValue)
     {
         m_hash = AZ::TypeHash64(value, m_hash);
         return true;
@@ -87,7 +93,13 @@ namespace AzNetworking
         return true;
     }
 
-    bool HashSerializer::Serialize(uint64_t& value, [[maybe_unused]] const char* name, [[maybe_unused]] uint64_t minValue, [[maybe_unused]] uint64_t maxValue)
+    bool HashSerializer::Serialize(unsigned long& value, [[maybe_unused]] const char* name, [[maybe_unused]] unsigned long minValue, [[maybe_unused]] unsigned long maxValue)
+    {
+        m_hash = AZ::TypeHash64(value, m_hash);
+        return true;
+    }
+
+    bool HashSerializer::Serialize(AZ::u64& value, [[maybe_unused]] const char* name, [[maybe_unused]] AZ::u64 minValue, [[maybe_unused]] AZ::u64 maxValue)
     {
         m_hash = AZ::TypeHash64(value, m_hash);
         return true;
