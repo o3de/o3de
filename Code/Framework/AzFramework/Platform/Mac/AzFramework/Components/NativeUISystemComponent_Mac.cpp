@@ -8,7 +8,6 @@
 
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Components/NativeUISystemComponent.h>
-#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
