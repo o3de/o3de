@@ -8,7 +8,6 @@
 
 set(FILES
     AzFramework/Components/NativeUISystemComponent_Mac.cpp
-    AzFramework/Components/NativeUISystemComponentFactories_Mac.h
     AzFramework/Application/Application_Mac.mm
     AzFramework/Windowing/NativeWindow_Mac.mm
     AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Mac.mm

@@ -312,7 +312,6 @@ namespace
 
 namespace AzFramework
 {
-
     //! Platform specific implementation for Android physical keyboard input devices.  This
     //! includes devices connected through USB or Bluetooth.  This input device is responsible
     //! for sending key events only, the virtual keyboard is the one responsible for sending
