@@ -158,7 +158,7 @@ namespace AzFramework
 
     bool NativeWindow::GetFullScreenState() const
     {
-        return (m_pimpl != nullptr) ? m_pimpl->GetFullScreenState() : false;
+        return (m_pimpl != nullptr) && m_pimpl->GetFullScreenState();
     }
 
     void NativeWindow::SetFullScreenState(bool fullScreenState)
