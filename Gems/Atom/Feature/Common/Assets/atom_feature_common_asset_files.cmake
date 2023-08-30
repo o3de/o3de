@@ -160,6 +160,12 @@ set(FILES
     Passes/MultiViewSkyBox.pass
     Passes/MultiViewTransparent.pass
     Passes/MultiViewTransparentParent.pass
+    Passes/Mobile/Forward.pass
+    Passes/Mobile/Pipeline.pass
+    Passes/Mobile/ShadowParent.pass
+    Passes/Mobile/SkyBox.pass
+    Passes/Mobile/Transparent.pass
+    Passes/Mobile/TransparentParent.pass
     Passes/NewDepthOfField.pass
     Passes/NewDepthOfFieldComposite.pass
     Passes/NewDepthOfFieldDownsample.pass

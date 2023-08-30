@@ -326,8 +326,12 @@ namespace AZ
                     }
 
                     m_shadowBufferHandlers.at(view.get()).UpdateSrg(viewSrg);
-                    m_esmParameterBufferHandlers.at(view.get()).UpdateBuffer(m_esmParameterData.at(view.get()).GetDataVector());
-                    m_esmParameterBufferHandlers.at(view.get()).UpdateSrg(viewSrg);
+                    auto itr = m_esmParameterBufferHandlers.find(view.get());
+                    if (itr != m_esmParameterBufferHandlers.end())
+                    {
+                        itr->second.UpdateBuffer(m_esmParameterData.at(view.get()).GetDataVector());
+                        itr->second.UpdateSrg(viewSrg);
+                    }
                     viewSrg->SetConstant(m_shadowIndexDirectionalLightIndex, rawShadowIndex);
                 }
             }
@@ -1262,7 +1266,11 @@ namespace AZ
 
             // Update ESM parameter buffer which is attached to
             // both of Forward Pass and ESM Shadowmaps Pass.
-            m_esmParameterBufferHandlers.at(cameraView).UpdateBuffer(m_esmParameterData.at(cameraView).GetDataVector());
+            auto itr = m_esmParameterBufferHandlers.find(cameraView);
+            if (itr != m_esmParameterBufferHandlers.end())
+            {
+                itr->second.UpdateBuffer(m_esmParameterData.at(cameraView).GetDataVector());
+            }
 
             // Create index table buffer.
             const RPI::RenderPipelineId cameraPipelineId = m_renderPipelineIdsForPersistentView.at(cameraView).front();
@@ -1495,8 +1503,12 @@ namespace AZ
 
             // Set parameter to convert to emphasize from minYSegment to maxYSegment
             // to mitigate Peter-Panning.
-            m_esmParameterData.at(cameraView).GetData(cascadeIndex).m_lightDistanceOfCameraViewFrustum =
-                (minYSegment - minY) / (maxYSegment - minY);
+            auto itr = m_esmParameterData.find(cameraView);
+            if (itr != m_esmParameterData.end())
+            {
+                itr->second.GetData(cascadeIndex).m_lightDistanceOfCameraViewFrustum =
+                    (minYSegment - minY) / (maxYSegment - minY);
+            }
 
             // Set coefficient of slope bias to remove shadow acne.
             // Slope bias is shadowmapTexelDiameter * tan(theta) / depthRange
