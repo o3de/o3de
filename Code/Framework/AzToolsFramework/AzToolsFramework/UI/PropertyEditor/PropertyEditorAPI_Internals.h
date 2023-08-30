@@ -249,7 +249,12 @@ namespace AzToolsFramework
                         auto parentValuePtr = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(parentValue.value());
                         AZ_Assert(parentValuePtr, "Parent instance was nullptr when attempting to add to instance list.");
 
-                        m_proxyParentNode.m_instances.push_back(parentValuePtr);
+                        // Only add parent instance if it has not been added previously
+                        if (auto foundParentIt = AZStd::find(m_proxyParentNode.m_instances.begin(), m_proxyParentNode.m_instances.end(), parentValuePtr);
+                            foundParentIt == m_proxyParentNode.m_instances.end())
+                        {
+                            m_proxyParentNode.m_instances.push_back(parentValuePtr);
+                        }
 
                         // Set up the reference to parent node only if a parent value is available.
                         m_proxyNode.m_parent = &m_proxyParentNode;
@@ -262,11 +267,6 @@ namespace AzToolsFramework
                 // to tell which property is currently processing the attributes.
                 else if (name == AZ::Reflection::DescriptorAttributes::SerializedPath)
                 {
-                    auto elementName = AZ::Dom::Utils::ValueToType<AZStd::string_view>(attributeIt->second);
-                    if (elementName.has_value())
-                    {
-                        m_proxyClassElement.m_name = elementName.value().data();
-                    }
                     continue;
                 }
 
@@ -481,18 +481,73 @@ namespace AzToolsFramework
             // NOTE: The exception to this is for enum types, which might have a specialized type vs. an underlying type (e.g. short, int,
             // etc...) in which case, the proxy value still comes as a primitive instead of a pointer, so we still need to use ValueFromType
             // for that case. For everything else, we can just use ValueFromType which can imply the type from the value itself.
-            AZ::Dom::Value newValue;
-            if (!typeId.IsNull() && (typeId != m_proxyClassData.m_typeId) && !m_domNode.HasMember(PropertyEditor::EnumType.GetName()))
+
+            // Use the serialize context to lookup the AZStd any action handler
+            AZ::SerializeContext* serializeContext{};
+            if (auto componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+                componentApplicationRequests != nullptr)
             {
-                newValue = AZ::Dom::Utils::MarshalTypedPointerToValue(&m_proxyValue, typeId);
+                serializeContext = componentApplicationRequests->GetSerializeContext();
+            }
+
+            AZ::Dom::Value newValue;
+            bool newValueSet{};
+            if (const AZ::SerializeContext::ClassData* classData = serializeContext != nullptr ? serializeContext->FindClassData(typeId) : nullptr;
+                classData != nullptr && !typeId.IsNull() && (typeId != m_proxyClassData.m_typeId) && !m_domNode.HasMember(PropertyEditor::EnumType.GetName()))
+            {
+                // Cast the proxy value to typeId type if is a pointer
+                void* proxyAddress{};
+                if constexpr(AZStd::is_pointer_v<WrappedType>)
+                {
+                    if (auto proxyRtti = m_proxyClassData.m_azRtti; proxyRtti != nullptr)
+                    {
+                        proxyAddress = proxyRtti->Cast(m_proxyValue, typeId);
+                    }
+                }
+                else if (classData->CanConvertFromType(m_proxyClassData.m_typeId, *serializeContext))
+                {
+                    // Otherwise attempt to check if the proxy value is convertible to the TypeId type
+                    // such as for the case of an AZ::Data::Asset<T> from an AZ::Data::Asset<AZ::Data::AssetData>
+                    void* sourceAddress{};
+                    if constexpr (AZStd::is_pointer_v<WrappedType>)
+                    {
+                        sourceAddress = m_proxyValue;
+                    }
+                    else
+                    {
+                        sourceAddress = &m_proxyValue;
+                    }
+                    classData->ConvertFromType(proxyAddress, m_proxyClassData.m_typeId, sourceAddress, *serializeContext);
+                }
+
+                if (proxyAddress != nullptr)
+                {
+                    AZ::Dom::Utils::MarshalTypeTraits marshalTypeTraits;
+                    marshalTypeTraits.m_typeId = typeId;
+                    marshalTypeTraits.m_isPointer = AZStd::is_pointer_v<WrappedType>;
+                    marshalTypeTraits.m_isReference = AZStd::is_reference_v<WrappedType>;
+                    marshalTypeTraits.m_isCopyConstructible = AZStd::is_copy_constructible_v<WrappedType>;
+                    marshalTypeTraits.m_typeSize = classData->m_azRtti!= nullptr ? classData->m_azRtti->GetTypeSize() : sizeof(WrappedType);
+
+                    if (classData->m_createAzStdAnyActionHandler)
+                    {
+                        auto anyActionHandler = classData->m_createAzStdAnyActionHandler(serializeContext);
+                        newValue = AZ::Dom::Utils::ValueFromType(proxyAddress, marshalTypeTraits, AZStd::move(anyActionHandler));
+                        newValueSet = true;
+                    }
+                }
             }
             else
             {
                 newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+                newValueSet = true;
             }
 
-            PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
-            OnRequestPropertyNotify();
+            if (newValueSet)
+            {
+                PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
+                OnRequestPropertyNotify();
+            }
         }
 
         void OnRequestPropertyNotify() override
