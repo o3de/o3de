@@ -171,7 +171,7 @@ namespace AzFramework
 
     bool NativeWindow::CanToggleFullScreenState() const
     {
-        return (m_pimpl != nullptr) ? m_pimpl->CanToggleFullScreenState() : false;
+        return (m_pimpl != nullptr) && m_pimpl->CanToggleFullScreenState();
     }
 
     void NativeWindow::ToggleFullScreenState()
