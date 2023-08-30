@@ -31,8 +31,8 @@ namespace AzFramework
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        typedef AzFramework::EntityContextId BusIdType;
-        using MutexType = AZStd::mutex;
+        using BusIdType = AzFramework::EntityContextId;
+        using MutexType = AZStd::recursive_mutex;
 
         static void Reflect(AZ::ReflectContext* context);
 

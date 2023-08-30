@@ -180,7 +180,7 @@ namespace AZ
                         if (entityContext)
                         {
                             const AzFramework::EntityContextId contextId = (*entityContext)->GetContextId();
-                            if (AzFramework::OcclusionRequestBus::FindFirstHandler(contextId))
+                            if (AzFramework::OcclusionRequestBus::HasHandlers(contextId))
                             {
                                 resultId = contextId;
                                 return false; // Result found, returning
@@ -258,7 +258,8 @@ namespace AZ
             AZStd::vector<AzFramework::VisibilityEntry*> m_entries;
         };
 
-        static bool TestOcclusionCulling(const AZStd::shared_ptr<WorklistData>& worklistData, AzFramework::VisibilityEntry* visibleEntry);
+        static bool TestOcclusionCulling(
+            const AZStd::shared_ptr<WorklistData>& worklistData, const AzFramework::VisibilityEntry* visibleEntry);
 
         static void ProcessEntrylist(
             const AZStd::shared_ptr<WorklistData>& worklistData,
@@ -456,7 +457,8 @@ namespace AZ
             }
         }
 
-        static bool TestOcclusionCulling(const AZStd::shared_ptr<WorklistData>& worklistData, AzFramework::VisibilityEntry* visibleEntry)
+        static bool TestOcclusionCulling(
+            const AZStd::shared_ptr<WorklistData>& worklistData, const AzFramework::VisibilityEntry* visibleEntry)
         {
 #ifdef AZ_CULL_PROFILE_VERBOSE
             AZ_PROFILE_SCOPE(RPI, "TestOcclusionCulling");
@@ -469,7 +471,6 @@ namespace AZ
             }
 
             // Perform occlusion tests using OcclusionRequestBus if it is connected to the entity context ID for this scene.
-            // TODO MaskedOcclusionCulling needs to be migrated to a gem and adapted to use OcclusionRequestBus
             if (!worklistData->m_sceneEntityContextId.IsNull())
             {
                 bool result = true;
@@ -970,7 +971,7 @@ namespace AZ
             m_visScene = nullptr;
         }
 
-        void CullingScene::BeginCullingTaskGraph(const Scene& scene, const AZStd::vector<ViewPtr>& views)
+        void CullingScene::BeginCullingTaskGraph(const Scene& scene, AZStd::span<const ViewPtr> views)
         {
             AZ::TaskGraph taskGraph{ "RPI::Culling" };
             AZ::TaskDescriptor beginCullingDescriptor{ "RPI_CullingScene_BeginCullingView", "Graphics" };
@@ -997,7 +998,7 @@ namespace AZ
             }
         }
 
-        void CullingScene::BeginCullingJobs(const Scene& scene, const AZStd::vector<ViewPtr>& views)
+        void CullingScene::BeginCullingJobs(const Scene& scene, AZStd::span<const ViewPtr> views)
         {
             AZ::JobCompletion beginCullingCompletion;
 
@@ -1020,7 +1021,7 @@ namespace AZ
             beginCullingCompletion.StartAndWaitForCompletion();
         }
 
-        void CullingScene::BeginCulling(const Scene& scene, const AZStd::vector<ViewPtr>& views)
+        void CullingScene::BeginCulling(const Scene& scene, AZStd::span<const ViewPtr> views)
         {
             AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCulling");
             m_cullDataConcurrencyCheck.soft_lock();
@@ -1086,7 +1087,7 @@ namespace AZ
 #endif
         }
 
-        void CullingScene::EndCulling(const Scene& scene, const AZStd::vector<ViewPtr>& views)
+        void CullingScene::EndCulling(const Scene& scene, AZStd::span<const ViewPtr> views)
         {
             m_cullDataConcurrencyCheck.soft_unlock();
 

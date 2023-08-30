@@ -156,12 +156,12 @@ namespace AZ
             ClearFlags(0xFFFFFFFF);
         }
 
-        uint32_t View::GetAndFlags()
+        uint32_t View::GetAndFlags() const
         {
             return m_andFlags;
         }
 
-        uint32_t View::GetOrFlags()
+        uint32_t View::GetOrFlags() const
         {
             return m_orFlags;
         }
@@ -599,7 +599,7 @@ namespace AZ
             return m_name;
         }
 
-        const View::UsageFlags View::GetUsageFlags()
+        View::UsageFlags View::GetUsageFlags() const
         {
             return m_usageFlags;
         }

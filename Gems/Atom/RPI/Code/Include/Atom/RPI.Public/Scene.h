@@ -55,8 +55,7 @@ namespace AZ
         // Callback function to modify values of a ShaderResourceGroup
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;
 
-        class Scene final
-            : public SceneRequestBus::Handler
+        class Scene final : public SceneRequestBus::Handler
         {
             friend class FeatureProcessorFactory;
             friend class RPISystem;

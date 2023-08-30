@@ -99,10 +99,10 @@ namespace AZ
             void ClearAllFlags();
 
             //! Returns the boolean & combination of all flags provided with ApplyFlags() since the last frame.
-            uint32_t GetAndFlags();
+            uint32_t GetAndFlags() const;
 
             //! Returns the boolean | combination of all flags provided with ApplyFlags() since the last frame.
-            uint32_t GetOrFlags();
+            uint32_t GetOrFlags() const;
 
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);
@@ -159,7 +159,7 @@ namespace AZ
             float CalculateSphereAreaInClipSpace(const AZ::Vector3& sphereWorldPosition, float sphereRadius) const;
 
             const AZ::Name& GetName() const;
-            const UsageFlags GetUsageFlags();
+            UsageFlags GetUsageFlags() const;
 
             void SetPassesByDrawList(PassesByDrawList* passes);
 

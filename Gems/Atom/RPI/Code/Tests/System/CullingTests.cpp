@@ -90,7 +90,7 @@ namespace UnitTest
 
             processCullablesTG.Submit(&processCullablesTGEvent);
             processCullablesTGEvent.Wait();
-            m_cullingScene->EndCulling(*m_testScene);
+            m_cullingScene->EndCulling(*m_testScene, views);
 
             for (ViewPtr& viewPtr : views)
             {

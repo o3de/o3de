@@ -257,10 +257,10 @@ namespace AZ
             void SetOcclusionPlanes(const OcclusionPlaneVector& occlusionPlanes) { m_occlusionPlanes = occlusionPlanes; }
 
             //! Notifies the CullingScene that culling will begin for this frame.
-            void BeginCulling(const Scene& scene, const AZStd::vector<ViewPtr>& views);
+            void BeginCulling(const Scene& scene, AZStd::span<const ViewPtr> views);
 
             //! Notifies the CullingScene that the culling is done for this frame.
-            void EndCulling(const Scene& scene, const AZStd::vector<ViewPtr>& views);
+            void EndCulling(const Scene& scene, AZStd::span<const ViewPtr> views);
 
             //! Performs render culling and lod selection for a View, then adds the visible renderpackets to that View.
             //! Must be called between BeginCulling() and EndCulling(), once for each active scene/view pair.
@@ -299,8 +299,8 @@ namespace AZ
             size_t CountObjectsInScene();
 
         private:
-            void BeginCullingTaskGraph(const Scene& scene, const AZStd::vector<ViewPtr>& views);
-            void BeginCullingJobs(const Scene& scene, const AZStd::vector<ViewPtr>& views);
+            void BeginCullingTaskGraph(const Scene& scene, AZStd::span<const ViewPtr> views);
+            void BeginCullingJobs(const Scene& scene, AZStd::span<const ViewPtr> views);
             void ProcessCullablesCommon(const Scene& scene, View& view, AZ::Frustum& frustum);
 
             const Scene* m_parentScene = nullptr;
