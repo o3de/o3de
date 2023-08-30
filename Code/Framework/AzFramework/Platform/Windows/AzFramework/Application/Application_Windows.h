@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzFramework\Application\Application.h>
-#include <AzFramework\API\ApplicationAPI_Windows.h>
-#include <AzCore\Memory\SystemAllocator.h>
+#include <AzFramework/Application/Application.h>
+#include <AzFramework/API/ApplicationAPI_Windows.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
