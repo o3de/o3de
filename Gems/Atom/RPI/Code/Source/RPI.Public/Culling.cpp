@@ -528,9 +528,13 @@ namespace AZ
             }
 
             // test against the occlusion buffer, which contains only the manually placed occlusion planes
-            return maskedOcclusionCulling->TestRect(ndcMinX, ndcMinY, ndcMaxX, ndcMaxY, minDepth) ==
-                MaskedOcclusionCulling::CullingResult::VISIBLE;
+            if (maskedOcclusionCulling->TestRect(ndcMinX, ndcMinY, ndcMaxX, ndcMaxY, minDepth) ==
+                MaskedOcclusionCulling::CullingResult::VISIBLE)
+            {
+                return true;
+            }
 #endif
+            return false;
         }
 
         void CullingScene::ProcessCullablesCommon(
