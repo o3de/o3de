@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 #include <xcb/xcb.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 
 #include "MockXcbInterface.h"
 
