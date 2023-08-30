@@ -96,7 +96,7 @@ namespace AzFramework
 
     bool NativeWindow::IsActive() const
     {
-        return (m_pimpl != nullptr) ? m_pimpl->IsActive() : false;
+        return (m_pimpl != nullptr) && m_pimpl->IsActive();
     }
 
     void NativeWindow::SetWindowTitle(const AZStd::string& title)
