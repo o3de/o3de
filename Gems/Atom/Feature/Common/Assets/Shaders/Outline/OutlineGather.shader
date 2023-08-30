@@ -1,5 +1,5 @@
 {
-    "Source" : "Outline.azsl",
+    "Source" : "OutlineGather.azsl",
     "DepthStencilState" : {
         "Depth": 
         {
@@ -7,12 +7,8 @@
             "CompareFunc" : "Always"
         }
     },
-    "GlobalTargetBlendState": {
-        "Enable": true,
-        "BlendSource": "One",
-        "BlendDest": "One",
-        "BlendOp": "Add"
-    },
+    "DrawList": "outline",
+    "RasterState": { "CullMode": "None" },
     "ProgramSettings": {
         "EntryPoints": [
         {

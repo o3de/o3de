@@ -1,0 +1,22 @@
+{
+    "description": "Material type with properties used for drawing outlines and silhouettes",
+    "version": 0,
+    "versionUpdates": [],
+    "propertyLayout": {
+        "propertyGroups": [
+            { 
+                "$import": "MaterialInputs/OutlinePropertyGroup.json"
+            }
+        ]
+    },
+    "functors": [],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    },
+    "shaders": [
+        {
+            "file": "../../Shaders/Outline/OutlineGather.shader"
+        }
+    ]
+}

@@ -66,17 +66,26 @@ namespace AZ::Render
 
     void OutlineFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
     {
-        const auto templateName = Name("OutlinePassTemplate");
-
         // Early return if pass is already found in render pipeline or if the pipeline is not the default one.
-        auto passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(templateName, renderPipeline);
-        auto foundPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
-        if (foundPass || renderPipeline->GetViewType() != RPI::ViewType::Default)
+        if (renderPipeline->GetViewType() != RPI::ViewType::Default)
         {
             return;
         }
 
-        // check if the reference pass of insert position exist
+        const auto mergeTemplateName = Name("OutlinePassTemplate");
+        auto mergePassFilter = AZ::RPI::PassFilter::CreateWithTemplateName(mergeTemplateName, renderPipeline);
+        if(auto foundPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(mergePassFilter); foundPass)
+        {
+            return;
+        }
+
+        const auto gatherTemplateName = Name("OutlineGatherPassTemplate");
+        auto gatherPassFilter = AZ::RPI::PassFilter::CreateWithTemplateName(gatherTemplateName, renderPipeline);
+        if(auto foundPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(gatherPassFilter); foundPass)
+        {
+            return;
+        }
+
         Name postProcessPassName = Name("PostProcessPass");
         if (renderPipeline->FindFirstPass(postProcessPassName) == nullptr)
         {
@@ -85,17 +94,48 @@ namespace AZ::Render
             return;
         }
 
-        RPI::PassRequest passRequest;
-        passRequest.m_passName = Name("OutlinePass");
-        passRequest.m_templateName = templateName;
-        passRequest.AddInputConnection( RPI::PassConnection{
+        Name forwardProcessPassName = Name("Forward");
+        if (renderPipeline->FindFirstPass(forwardProcessPassName) == nullptr)
+        {
+            AZ_Warning("OutlineFeatureProcessor", false,
+                "Can't find %s in the render pipeline.", forwardProcessPassName.GetCStr());
+            return;
+        }
+
+        // Gather
+        RPI::PassRequest gatherPassRequest;
+        gatherPassRequest.m_passName = Name("OutlineGatherPass");
+        gatherPassRequest.m_templateName = gatherTemplateName;
+        gatherPassRequest.AddInputConnection( RPI::PassConnection{
+            Name("Input"),
+            RPI::PassAttachmentRef{
+                forwardProcessPassName, Name("DiffuseOutput")
+            }
+        });
+        gatherPassRequest.AddInputConnection( RPI::PassConnection{
+            Name("DepthStencilInputOutput"),
+            RPI::PassAttachmentRef{
+                forwardProcessPassName, Name("DepthStencilInputOutput")
+            }
+        });
+
+        if (auto pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(&gatherPassRequest); pass != nullptr)
+        {
+            renderPipeline->AddPassAfter(pass, forwardProcessPassName);
+        }
+
+        // Merge
+        RPI::PassRequest mergePassRequest;
+        mergePassRequest.m_passName = Name("OutlinePass");
+        mergePassRequest.m_templateName = mergeTemplateName;
+        mergePassRequest.AddInputConnection( RPI::PassConnection{
             Name("InputOutput"),
             RPI::PassAttachmentRef{
                 postProcessPassName, Name("Output")
             }
         });
 
-        if (auto pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(&passRequest); pass != nullptr)
+        if (auto pass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(&mergePassRequest); pass != nullptr)
         {
             renderPipeline->AddPassAfter(pass, postProcessPassName);
         }

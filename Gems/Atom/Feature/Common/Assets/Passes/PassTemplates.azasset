@@ -489,6 +489,10 @@
                 "Path": "Passes/Outline.pass"
             },
             {
+                "Name": "OutlineGatherPassTemplate",
+                "Path": "Passes/OutlineGather.pass"
+            },
+            {
                 "Name": "ToolsPipeline",
                 "Path": "Passes/ToolsPipeline.pass"
             },
