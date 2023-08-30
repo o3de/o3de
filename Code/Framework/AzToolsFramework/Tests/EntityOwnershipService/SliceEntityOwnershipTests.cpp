@@ -293,8 +293,10 @@ namespace UnitTest
         sliceComponent->AddEntity(aznew AZ::Entity());
 
         // Set the asset id to null to invalidate it.
+        AZ_TEST_START_TRACE_SUPPRESSION;
         AZ::Data::Asset<AZ::SliceAsset> sliceAssetHolder = AZ::Data::AssetManager::Instance().
-            CreateAsset<AZ::SliceAsset>(AZ::Data::AssetId(AZ::Uuid::CreateNull()));
+            CreateAsset<AZ::SliceAsset>(AZ::Data::AssetId{});
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         sliceAssetHolder.Get()->SetData(sliceEntity, sliceComponent);
 
         AzFramework::SliceInstantiationTicket sliceInstantiationTicket;
