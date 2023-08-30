@@ -5,7 +5,8 @@
                 "MaterialPipelineFiles": [
                     "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/MainPipeline.materialpipeline",
                     "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/LowEndPipeline/LowEndPipeline.materialpipeline",
-                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MultiView/MultiViewPipeline.materialpipeline"
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MultiView/MultiViewPipeline.materialpipeline",
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/Mobile/MobilePipeline.materialpipeline"
                 ]
             }
         }
