@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
@@ -496,12 +496,6 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceKeyboard::Implementation> MacDeviceKeyboardImplFactory::Create(InputDeviceKeyboard& inputDevice)
-    {
-        return AZStd::make_unique<InputDeviceKeyboardMac>(inputDevice);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     int InputDeviceKeyboardMac::s_instanceCount = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -790,5 +784,23 @@ namespace AzFramework
             }
             break;
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class MacDeviceKeyboardImplFactory
+        : public InputDeviceKeyboard::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceKeyboard::Implementation> Create(InputDeviceKeyboard& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceKeyboardMac>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
+    {
+        m_deviceKeyboardImplFactory = AZStd::make_unique<MacDeviceKeyboardImplFactory>();
+        AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory.get());
     }
 } // namespace AzFramework

@@ -8,7 +8,7 @@
 
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
-#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
 #include <AppKit/NSApplication.h>
@@ -112,12 +112,6 @@ namespace AzFramework
         //! The Objective-C class name
         static const char* s_className;
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<Application::Implementation> MacApplicationImplFactory::Create()
-    {
-        return AZStd::make_unique<ApplicationMac>();
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ApplicationMac::ApplicationMac()
@@ -383,5 +377,23 @@ namespace AzFramework
     void ApplicationNotificationObserver::OnWillTerminate(id, SEL, NSNotification*)
     {
         DarwinLifecycleEvents::Bus::Broadcast(&DarwinLifecycleEvents::OnWillTerminate);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class MacApplicationImplFactory 
+        : public Application::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<Application::Implementation> Create() override
+        {
+            return AZStd::make_unique<ApplicationMac>();
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeApplicationImplementationFactory()
+    {
+        m_applicationImplFactory = AZStd::make_unique<MacApplicationImplFactory>();
+        AZ::Interface<Application::ImplementationFactory>::Register(m_applicationImplFactory.get());
     }
 } // namespace AzFramework

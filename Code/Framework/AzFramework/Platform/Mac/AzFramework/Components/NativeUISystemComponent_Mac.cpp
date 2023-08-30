@@ -13,34 +13,22 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
-    void NativeUISystemComponent::InitializeApplicationImplementationFactory()
-    {
-        m_applicationImplFactory = AZStd::make_unique<MacApplicationImplFactory>();
-        AZ::Interface<Application::ImplementationFactory>::Register(m_applicationImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeApplicationImplementationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Mac/AzFramework/Application/Application_Mac.mm)
 
-    void NativeUISystemComponent::InitializeDeviceGamepadImplentationFactory()
-    {
-        m_deviceGamepadImplFactory = AZStd::make_unique<MacDeviceGamepadImplFactory>();
-        AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Register(m_deviceGamepadImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeDeviceGamepadImplentationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Mac/AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Mac.mm)
 
-    void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
-    {
-        m_deviceKeyboardImplFactory = AZStd::make_unique<MacDeviceKeyboardImplFactory>();
-        AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Mac/AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_Mac.mm)
 
     void NativeUISystemComponent::InitializeDeviceMotionImplentationFactory()
     {
         // Motion Input not supported on Mac
     }
 
-    void NativeUISystemComponent::InitializeDeviceMouseImplentationFactory()
-    {
-        m_deviceMouseImplFactory = AZStd::make_unique<MacDeviceMouseImplFactory>();
-        AZ::Interface<InputDeviceMouse::ImplementationFactory>::Register(m_deviceMouseImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeDeviceMouseImplentationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Mac/AzFramework/Input/Devices/Mouse/InputDeviceMouse_Mac.mm)
 
     void NativeUISystemComponent::InitializeDeviceTouchImplentationFactory()
     {
@@ -52,9 +40,6 @@ namespace AzFramework
         // Virtual Keyboard not supported on Mac
     }
 
-    void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()
-    {
-        m_nativeWindowImplFactory = AZStd::make_unique<MacNativeWindowFactory>();
-        AZ::Interface<NativeWindow::ImplementationFactory>::Register(m_nativeWindowImplFactory.get());
-    }
+    // void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()
+    // (implemented in Code/Framework/AzFramework/Platform/Mac/AzFramework/Windowing/NativeWindow_Mac.mm)
 } // namespace AzFramework

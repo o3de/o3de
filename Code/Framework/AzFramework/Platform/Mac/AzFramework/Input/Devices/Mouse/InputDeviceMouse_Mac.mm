@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzFramework/Components/NativeUISystemComponentFactories_Mac.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
@@ -206,12 +206,6 @@ namespace AzFramework
         bool               m_hasFocus;                          //!< Does application have focus?
     };
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZStd::unique_ptr<InputDeviceMouse::Implementation> MacDeviceMouseImplFactory::Create(InputDeviceMouse& inputDevice)
-    {
-        return AZStd::make_unique<InputDeviceMouseMac>(inputDevice);
-    }
-    
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouseMac::InputDeviceMouseMac(InputDeviceMouse& inputDevice)
         : InputDeviceMouse::Implementation(inputDevice)
@@ -660,5 +654,23 @@ namespace AzFramework
         // Destroy the event tap
         CFRelease(m_disabledSystemCursorEventTap);
         m_disabledSystemCursorEventTap = nullptr;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class MacDeviceMouseImplFactory
+        : public InputDeviceMouse::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceMouse::Implementation> Create(InputDeviceMouse& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceMouseMac>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceMouseImplentationFactory()
+    {
+        m_deviceMouseImplFactory = AZStd::make_unique<MacDeviceMouseImplFactory>();
+        AZ::Interface<InputDeviceMouse::ImplementationFactory>::Register(m_deviceMouseImplFactory.get());
     }
 } // namespace AzFramework
