@@ -140,7 +140,7 @@ namespace AzFramework
 
     bool NativeWindow::IsCustomizedResolutionEnabled() const
     {
-        return (m_pimpl != nullptr) ? m_pimpl->IsCustomizedResolutionEnabled() : false;
+        return (m_pimpl != nullptr) && m_pimpl->IsCustomizedResolutionEnabled();
     }
 
     WindowSize NativeWindow::GetRenderResolution() const
