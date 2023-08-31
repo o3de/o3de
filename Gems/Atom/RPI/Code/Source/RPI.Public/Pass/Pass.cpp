@@ -605,7 +605,7 @@ namespace AZ
             PassAttachmentBinding* inputBinding = FindAttachmentBinding(connection.m_inputSlotName);
             PassAttachmentBinding* outputBinding = FindAttachmentBinding(connection.m_outputSlotName);
 
-            auto prefix = [&]() -> AZStd::string
+            [[maybe_unused]] auto prefix = [&]() -> AZStd::string
             {
                 return AZStd::string::format(
                     "Pass::ProcessFallbackConnection: %s, %s -> %s",
