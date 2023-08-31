@@ -9,6 +9,33 @@
 
 #include <Atom/RHI/Device.h>
 
+#define AZ_RHI_MULTI_DEVICE_OBJECT_MAP(Type) private: \
+    AZStd::unordered_map<int, Ptr<Type>> m_device##Type##s; \
+    public: \
+    AZ_FORCE_INLINE Ptr<Type> GetDevice##Type(int deviceIndex) const \
+    { \
+        AZ_Error( \
+            "MultiDevice" #Type, \
+            m_device##Type##s.find(deviceIndex) != m_device##Type##s.end(), \
+            "No Device" #Type " found for device index %d\n", \
+            deviceIndex); \
+        return m_device##Type##s.at(deviceIndex); \
+    }
+
+#define AZ_RHI_MULTI_DEVICE_OBJECT_MAP_PLURAL(Type, PluralType) private: \
+    AZStd::unordered_map<int, Ptr<Type>> m_device##PluralType; \
+    public: \
+    AZ_FORCE_INLINE Ptr<Type> GetDevice##Type(int deviceIndex) const \
+    { \
+        AZ_Error( \
+                  "MultiDevice" #Type, \
+                                       m_device##PluralType.find(deviceIndex) != m_device##PluralType.end(), \
+                  "No Device" #Type " found for device index %d\n", \
+                  deviceIndex); \
+        return m_device##PluralType.at(deviceIndex); \
+    }
+
+
 namespace AZ::RHI
 {
     //! A variant of Object associated with a DeviceMask.
