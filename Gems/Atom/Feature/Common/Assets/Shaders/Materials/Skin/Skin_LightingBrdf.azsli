@@ -32,17 +32,7 @@
 // Then define the Diffuse and Specular lighting functions
 real3 GetDiffuseLighting_Skin(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
-    real3 diffuse;
-    if(o_enableSubsurfaceScattering)
-    {
-        // Use diffuse brdf containing double Fresnel (enter/exit surface) terms if subsurface scattering is enabled
-        diffuse = NormalizedDisneyDiffuse(surface.albedo, surface.normal, lightingData.dirToCamera, dirToLight, surface.roughnessLinear);
-    }
-    else
-    {
-        diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight, lightingData.diffuseResponse);
-    }
-    
+    real3 diffuse = NormalizedDisneyDiffuse(surface.albedo, surface.normal, lightingData.dirToCamera, dirToLight, surface.roughnessLinear);
     diffuse *= lightIntensity;
     return diffuse;
 }
