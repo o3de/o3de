@@ -22,19 +22,23 @@ namespace AZ::RHI
 
     void MultiDeviceQuery::Shutdown()
     {
-        for (auto& [_, deviceQuery] : m_deviceQueries)
+        IterateObjects<Query>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
         {
             deviceQuery->Shutdown();
-        }
+
+            return ResultCode::Success;
+        });
 
         MultiDeviceResource::Shutdown();
     }
 
     void MultiDeviceQuery::InvalidateViews()
     {
-        for (auto& [_, deviceQuery] : m_deviceQueries)
+        IterateObjects<Query>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
         {
             deviceQuery->InvalidateViews();
-        }
+
+            return ResultCode::Success;
+        });
     }
 } // namespace AZ::RHI

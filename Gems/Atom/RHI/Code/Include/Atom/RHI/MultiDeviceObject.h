@@ -8,6 +8,12 @@
 #pragma once
 
 #include <Atom/RHI/Device.h>
+#include <Atom/RHI/DeviceObject.h>
+
+#define AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Type) AZ_FORCE_INLINE Ptr<Type> GetDevice##Type(int deviceIndex) const \
+{ \
+    return GetDeviceObject<Type>(deviceIndex); \
+}
 
 namespace AZ::RHI
 {
@@ -39,7 +45,7 @@ namespace AZ::RHI
 
         //! Helper method that will iterate over all selected devices and call the provided callback
         template<typename T>
-        void IterateDevices(T callback)
+        AZ_FORCE_INLINE void IterateDevices(T callback)
         {
             AZ_Error(
                 "RPI::MultiDeviceObject", AZStd::to_underlying(m_deviceMask) != 0u, "Device mask is not initialized with a valid value.");
@@ -57,6 +63,55 @@ namespace AZ::RHI
                 }
             }
         }
+
+        //! Helper method that will iterate over all device objects and call the provided callback with a
+        //! device index and the object expecting ResultCode::Success in order to continue the iteration
+        template<typename T, typename U>
+        AZ_FORCE_INLINE ResultCode IterateObjects(U callback)
+        {
+            auto resultCode{ ResultCode::Success };
+
+            for (auto& [deviceIndex, deviceObject] : m_deviceObjects)
+            {
+                if ((resultCode = callback(deviceIndex, static_cast<T*>(deviceObject.get()))) != ResultCode::Success)
+                {
+                    break;
+                }
+            }
+
+            return resultCode;
+        }
+
+        template<typename T, typename U>
+        AZ_FORCE_INLINE ResultCode IterateObjects(U callback) const
+        {
+            auto resultCode{ ResultCode::Success };
+
+            for (auto& [deviceIndex, deviceObject] : m_deviceObjects)
+            {
+                if ((resultCode = callback(deviceIndex, static_cast<const T*>(deviceObject.get()))) != ResultCode::Success)
+                {
+                    break;
+                }
+            }
+
+            return resultCode;
+        }
+
+        template<typename T>
+        AZ_FORCE_INLINE Ptr<T> GetDeviceObject(int deviceIndex) const
+        {
+            AZ_Error(
+                "MultiDeviceObject",
+                m_deviceObjects.find(deviceIndex) != m_deviceObjects.end(),
+                "No DeviceObject found for device index %d\n",
+                deviceIndex);
+
+            return AZStd::static_pointer_cast<T>(m_deviceObjects.at(deviceIndex));
+        }
+
+        //! A map of all device-specific objects, indexed by the device index
+        AZStd::unordered_map<int, Ptr<DeviceObject>> m_deviceObjects;
 
     private:
         //! Returns the number of initialized devices
