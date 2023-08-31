@@ -49,7 +49,7 @@ namespace AZ::RPI
         {
             const Containers::SceneGraph::NodeIndex blendShapeNodeIndex = sceneGraph.ConvertToNodeIndex(it.GetBaseIterator().GetBaseIterator().GetHierarchyIterator());
 
-            AZStd::set<AZ::Crc32> types;
+            Events::GraphMetaInfo::VirtualTypesSet types;
             Events::GraphMetaInfoBus::Broadcast(&Events::GraphMetaInfo::GetVirtualTypes, types, scene, blendShapeNodeIndex);
             if (!types.contains(Events::GraphMetaInfo::GetIgnoreVirtualType()))
             {

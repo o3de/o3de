@@ -114,12 +114,16 @@ namespace AZ
 
                 UpdateAddButtonStatus();
 
-                QTimer::singleShot(0, this,
-                    [this]()
-                    {
-                        ScrollToBottom();
-                    }
-                );
+                // Guard against adding lots of ScrollToBottom calls in the case where we're performing bulk adds in a single frame.
+                if (!m_scrollToBottomQueued)
+                {
+                    m_scrollToBottomQueued = true;
+                    QTimer::singleShot(0, this,
+                        [this]()
+                        {
+                            ScrollToBottom();
+                        });
+                }
 
                 return true;
             }
@@ -251,6 +255,8 @@ namespace AZ
 
             void ManifestWidgetPage::ScrollToBottom()
             {
+                m_scrollToBottomQueued = false;
+
                 QScrollArea* propertyGridScrollArea = m_propertyEditor->findChild<QScrollArea*>();
                 if (propertyGridScrollArea)
                 {

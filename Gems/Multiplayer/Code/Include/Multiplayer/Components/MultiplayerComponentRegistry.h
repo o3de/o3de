@@ -28,6 +28,7 @@ namespace Multiplayer
             PropertyNameLookupFunction m_componentPropertyNameLookupFunction;
             RpcNameLookupFunction m_componentRpcNameLookupFunction;
             AllocComponentInputFunction m_allocComponentInputFunction;
+            bool m_includeInVersionCheck = true;
         };
 
         //! Registers a multiplayer component with the multiplayer system.

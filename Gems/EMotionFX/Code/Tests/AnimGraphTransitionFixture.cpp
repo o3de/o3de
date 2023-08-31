@@ -99,6 +99,8 @@ namespace EMotionFX
         {
             m_actorInstance->Destroy();
         }
+        m_actor.reset();
+        m_animGraph.reset();
         SystemComponentFixture::TearDown();
     }
 } // namespace EMotionFX

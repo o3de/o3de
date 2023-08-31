@@ -182,15 +182,18 @@ namespace AZ::DocumentPropertyEditor
         {
             subPath.Push(pathComponent);
             auto rowValue = fullContents[subPath];
+
+            AZStd::string_view subString{"<nolabel>"};
             for (auto arrayIter = rowValue.ArrayBegin(), endIter = rowValue.ArrayEnd(); arrayIter != endIter; ++arrayIter)
             {
                 auto& currChild = *arrayIter;
                 if (currChild.GetNodeName() == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
                 {
-                    newPath.Append(AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(currChild).value_or(""));
+                    subString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(currChild).value_or("");
                     break;
                 }
             }
+            newPath.Append(subString);
         }
         return newPath;
     }
