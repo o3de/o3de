@@ -163,22 +163,32 @@ namespace AZ
             return m_visScene;
         }
 
+        // Search for and return the entity context ID associated with the scene and connected to OcclusionRequestBus. If there is no
+        // matching scene, return a null ID.
         static AzFramework::EntityContextId GetEntityContextIdForOcclusion(const AZ::RPI::Scene* scene)
         {
+            // Active RPI scenes are registered with the AzFramework::SceneSystem using unique names.
             auto sceneSystem = AzFramework::SceneSystemInterface::Get();
             AZ_Assert(sceneSystem, "Attempting to retrieve the entity context ID for a scene before the scene system interface is ready.");
 
             AzFramework::EntityContextId resultId = AzFramework::EntityContextId::CreateNull();
+
+            // Enumerate all scenes registered with the AzFramework::SceneSystem
             sceneSystem->IterateActiveScenes(
                 [&](const AZStd::shared_ptr<AzFramework::Scene>& azScene)
                 {
+                    // AzFramework::Scene uses “subsystems” bind arbitrary data. This is generally used to maintain an association between
+                    // AzFramework::Scene and AZ::RPI::Scene. We search for the AzFramework::Scene scene with a subsystem matching the input
+                    // scene pointer.
                     AZ::RPI::ScenePtr* rpiScene = azScene->FindSubsystemInScene<AZ::RPI::ScenePtr>();
                     if (rpiScene && (*rpiScene).get() == scene)
                     {
+                        // Each scene should only be bound to one entity context for entities that will appear in the scene.
                         AzFramework::EntityContext** entityContext =
                             azScene->FindSubsystemInScene<AzFramework::EntityContext::SceneStorageType>();
                         if (entityContext)
                         {
+                            // Return if the entity context is valid and connected to OcclusionRequestBus
                             const AzFramework::EntityContextId contextId = (*entityContext)->GetContextId();
                             if (AzFramework::OcclusionRequestBus::HasHandlers(contextId))
                             {
@@ -480,6 +490,8 @@ namespace AZ
                     &AzFramework::OcclusionRequestBus::Events::IsAabbVisibleInOcclusionView,
                     worklistData->m_view->GetName(),
                     visibleEntry->m_boundingVolume);
+
+                // Return immediately to bypass MaskedOcclusionCulling
                 return result;
             }
 
@@ -580,6 +592,9 @@ namespace AZ
                     view.GetName(),
                     view.GetCameraTransform().GetTranslation(),
                     view.GetWorldToClipMatrix());
+
+                // Return immediately to bypass MaskedOcclusionCulling
+                return;
             }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -1095,7 +1110,7 @@ namespace AZ
         {
             m_cullDataConcurrencyCheck.soft_unlock();
 
-            // When culling has completed, destroyed all of the occlusion views.
+            // When culling has completed, destroy all of the occlusion views.
             if (const auto& entityContextId = GetEntityContextIdForOcclusion(&scene); !entityContextId.IsNull())
             {
                 for (auto& view : views)
