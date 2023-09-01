@@ -19,6 +19,7 @@
 #include <native/utilities/AssetBuilderInfo.h>
 #include <native/utilities/BuilderManager.h>
 #include <native/utilities/UuidManager.h>
+#include <QtGui/qwindowdefs.h>
 #endif
 
 namespace AzToolsFramework

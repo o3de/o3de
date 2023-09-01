@@ -102,6 +102,10 @@ namespace EMotionFX
             m_motionSet = nullptr;
         }
 
+        m_blendTreeAnimGraph.reset();
+        m_animGraph.reset();
+        m_actor.reset();
+
         SystemComponentFixture::TearDown();
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     }

@@ -104,6 +104,12 @@ namespace EMotionFX
             m_animGraphComponent->OnAssetReady(motionSetAsset);
         }
 
+        void TearDown() override
+        {
+            m_entity.reset();
+            EntityComponentFixture::TearDown();
+        }
+
         void ActivateEntity()
         {
             // Set the actor asset and create the actor instance.

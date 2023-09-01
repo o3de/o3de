@@ -122,7 +122,7 @@ namespace AZ
                 auto filteredView = Containers::Views::MakeFilterView(keyValueView, Containers::DerivedTypeFilter<DataTypes::IMeshData>());
                 for (auto it = filteredView.begin(); it != filteredView.end(); ++it)
                 {
-                    AZStd::set<Crc32> types;
+                    Events::GraphMetaInfo::VirtualTypesSet types;
                     auto keyValueIterator = it.GetBaseIterator();
                     Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(keyValueIterator.GetFirstIterator());
                     EBUS_EVENT(Events::GraphMetaInfoBus, GetVirtualTypes, types, scene, index);
@@ -207,7 +207,7 @@ namespace AZ
                 else if (type == AZ_CRC("LODMesh5", 0xcc875c95)) { name = "LODMesh5"; }
             }
 
-            void LodRuleBehavior::GetAllVirtualTypes(AZStd::set<Crc32>& types)
+            void LodRuleBehavior::GetAllVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types)
             {
                 AZStd::copy(s_lodVirtualTypeKeys.begin(), s_lodVirtualTypeKeys.end(), AZStd::inserter(types, types.begin()));
             }

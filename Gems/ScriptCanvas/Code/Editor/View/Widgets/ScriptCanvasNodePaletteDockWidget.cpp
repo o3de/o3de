@@ -569,8 +569,8 @@ namespace ScriptCanvasEditor
 
             if (graphInterface.IsUserNodeable())
             {
-                auto name = functionCategory->GetName().toUtf8().constData();
-                parent = parent->CreateChildNode<FunctionPaletteTreeItem>(AZStd::string::format("%s Node", name).c_str(), ScriptCanvas::Grammar::MakeFunctionSourceIdNodeable(), asset);
+                AZStd::string name = functionCategory->GetName().toUtf8().constData();
+                parent = parent->CreateChildNode<FunctionPaletteTreeItem>(name.c_str(), ScriptCanvas::Grammar::MakeFunctionSourceIdNodeable(), asset);
                 parent->SetEnabled(true);
             }
 

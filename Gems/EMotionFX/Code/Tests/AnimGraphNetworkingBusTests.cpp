@@ -40,6 +40,7 @@ namespace EMotionFX
         void TearDown() override
         {
             m_entity->Deactivate();
+            m_entity.reset();
             EntityComponentFixture::TearDown();
         }
 

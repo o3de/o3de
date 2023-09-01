@@ -998,6 +998,7 @@ namespace AZ::DocumentPropertyEditor
     {
         return { Nodes::PropertyEditor::OnChanged.GetName(),
                  Nodes::PropertyEditor::ChangeNotify.GetName(),
+                 Nodes::PropertyEditor::ChangeValidate.GetName(),
                  Nodes::PropertyEditor::RequestTreeUpdate.GetName(),
                  Nodes::GenericButton::OnActivate.GetName() };
     }

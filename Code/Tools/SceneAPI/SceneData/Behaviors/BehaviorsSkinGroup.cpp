@@ -103,7 +103,7 @@ namespace AZ
                 }
             }
 
-            void SkinGroup::GetVirtualTypes(AZStd::set<Crc32>& types, const Containers::Scene& scene,
+            void SkinGroup::GetVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types, const Containers::Scene& scene,
                 Containers::SceneGraph::NodeIndex node)
             {
                 if (types.find(s_skinVirtualType) != types.end())
@@ -129,7 +129,7 @@ namespace AZ
                 }
             }
 
-            void SkinGroup::GetAllVirtualTypes(AZStd::set<Crc32>& types)
+            void SkinGroup::GetAllVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types)
             {
                 if (types.find(s_skinVirtualType) == types.end())
                 {
