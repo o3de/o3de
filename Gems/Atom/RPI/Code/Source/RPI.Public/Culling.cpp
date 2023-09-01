@@ -177,7 +177,7 @@ namespace AZ
             sceneSystem->IterateActiveScenes(
                 [&](const AZStd::shared_ptr<AzFramework::Scene>& azScene)
                 {
-                    // AzFramework::Scene uses “subsystems” bind arbitrary data. This is generally used to maintain an association between
+                    // AzFramework::Scene uses "subsystems" bind arbitrary data. This is generally used to maintain an association between
                     // AzFramework::Scene and AZ::RPI::Scene. We search for the AzFramework::Scene scene with a subsystem matching the input
                     // scene pointer.
                     AZ::RPI::ScenePtr* rpiScene = azScene->FindSubsystemInScene<AZ::RPI::ScenePtr>();
