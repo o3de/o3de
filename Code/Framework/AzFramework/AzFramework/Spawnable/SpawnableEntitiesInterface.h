@@ -456,6 +456,7 @@ namespace AzFramework
          * @return SpawnableInstanceAddress
          */
         virtual SpawnableInstanceAddress GetOwningSpawnable(const AZ::EntityId& entityId) = 0;
+        virtual AZ::EntityId GetStaticEntityId(const SpawnableInstanceAddress& spawnableInfo, const AZ::EntityId& currentEntityId) = 0;
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 

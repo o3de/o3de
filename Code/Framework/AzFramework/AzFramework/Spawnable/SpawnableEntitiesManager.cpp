@@ -298,6 +298,17 @@ namespace AzFramework
         }
         return SpawnableInstanceAddress();
     }
+
+    AZ::EntityId SpawnableEntitiesManager::GetStaticEntityId(const SpawnableInstanceAddress& spawnableInfo, const AZ::EntityId& currentEntityId)
+    {
+        auto instanceEntityIt = m_spawnableInstanceEntityIdMap.find(spawnableInfo.m_spawnableInstanceId);
+        if (instanceEntityIt != m_spawnableInstanceEntityIdMap.end())
+        {
+            return instanceEntityIt->second;
+        }
+        m_spawnableInstanceEntityIdMap[spawnableInfo.m_spawnableInstanceId] = currentEntityId;
+        return currentEntityId;
+    }
 #endif
     // Gruber patch end. // LVB. // Support unique instances
 
