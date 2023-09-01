@@ -18,7 +18,7 @@
 namespace AZ::RHI
 {
     //! A variant of Object associated with a DeviceMask.
-    //! In contrast to DeviceObject, which is device-specific and holds a strong reference to a specific device, 
+    //! In contrast to DeviceObject, which is device-specific and holds a strong reference to a specific device,
     //! MultiDeviceObject only specifies on which device an object resides/operates, specified by a
     //! DeviceMask (1 bit per device).
     class MultiDeviceObject : public Object
@@ -67,35 +67,69 @@ namespace AZ::RHI
         //! Helper method that will iterate over all device objects and call the provided callback with a
         //! device index and the object expecting ResultCode::Success in order to continue the iteration
         template<typename T, typename U>
-        AZ_FORCE_INLINE ResultCode IterateObjects(U callback)
+        AZ_FORCE_INLINE decltype(auto) IterateObjects(U callback)
         {
-            auto resultCode{ ResultCode::Success };
-
-            for (auto& [deviceIndex, deviceObject] : m_deviceObjects)
+            if constexpr (AZStd::is_same_v<AZStd::invoke_result_t<U, int, Ptr<T>>, ResultCode>)
             {
-                if ((resultCode = callback(deviceIndex, static_cast<T*>(deviceObject.get()))) != ResultCode::Success)
+                auto resultCode{ ResultCode::Success };
+
+                for (auto& [deviceIndex, deviceObject] : m_deviceObjects)
                 {
-                    break;
+                    if ((resultCode = callback(deviceIndex, AZStd::static_pointer_cast<T>(deviceObject))) != ResultCode::Success)
+                    {
+                        break;
+                    }
+                }
+
+                return resultCode;
+            }
+            else if constexpr (AZStd::is_same_v<AZStd::invoke_result_t<U, int, Ptr<T>>, void>)
+            {
+                for (auto& [deviceIndex, deviceObject] : m_deviceObjects)
+                {
+                    callback(deviceIndex, AZStd::static_pointer_cast<T>(deviceObject));
                 }
             }
-
-            return resultCode;
+            else
+            {
+                AZ_Error(
+                    "MultiDeviceObject",
+                    false,
+                    "Return type of callback not supported\n");
+            }
         }
 
         template<typename T, typename U>
-        AZ_FORCE_INLINE ResultCode IterateObjects(U callback) const
+        AZ_FORCE_INLINE decltype(auto) IterateObjects(U callback) const
         {
-            auto resultCode{ ResultCode::Success };
-
-            for (auto& [deviceIndex, deviceObject] : m_deviceObjects)
+            if constexpr (AZStd::is_same_v<AZStd::invoke_result_t<U, int, Ptr<T>>, ResultCode>)
             {
-                if ((resultCode = callback(deviceIndex, static_cast<const T*>(deviceObject.get()))) != ResultCode::Success)
+                auto resultCode{ ResultCode::Success };
+
+                for (auto& [deviceIndex, deviceObject] : m_deviceObjects)
                 {
-                    break;
+                    if ((resultCode = callback(deviceIndex, AZStd::static_pointer_cast<T>(deviceObject))) != ResultCode::Success)
+                    {
+                        break;
+                    }
+                }
+
+                return resultCode;
+            }
+            else if constexpr (AZStd::is_same_v<AZStd::invoke_result_t<U, int, Ptr<T>>, void>)
+            {
+                for (auto& [deviceIndex, deviceObject] : m_deviceObjects)
+                {
+                    callback(deviceIndex, AZStd::static_pointer_cast<T>(deviceObject));
                 }
             }
-
-            return resultCode;
+            else
+            {
+                AZ_Error(
+                    "MultiDeviceObject",
+                    false,
+                    "Return type of callback not supported\n");
+            }
         }
 
         template<typename T>

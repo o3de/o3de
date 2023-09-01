@@ -250,8 +250,6 @@ namespace AZ::RHI
         IterateObjects<QueryPool>([]([[maybe_unused]] auto deviceIndex, auto deviceQueryPool)
         {
             deviceQueryPool->Shutdown();
-
-            return ResultCode::Success;
         });
 
         MultiDeviceResourcePool::Shutdown();

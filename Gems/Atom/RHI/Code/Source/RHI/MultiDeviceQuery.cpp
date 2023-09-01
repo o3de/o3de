@@ -25,8 +25,6 @@ namespace AZ::RHI
         IterateObjects<Query>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
         {
             deviceQuery->Shutdown();
-
-            return ResultCode::Success;
         });
 
         MultiDeviceResource::Shutdown();
@@ -37,8 +35,6 @@ namespace AZ::RHI
         IterateObjects<Query>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
         {
             deviceQuery->InvalidateViews();
-
-            return ResultCode::Success;
         });
     }
 } // namespace AZ::RHI

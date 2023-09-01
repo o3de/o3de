@@ -79,7 +79,16 @@ namespace AZ::RHI
         //! @param deviceIndex Denotes from which device the serialized data should be retrieved
         ConstPtr<PipelineLibraryData> GetSerializedData(int deviceIndex = RHI::MultiDevice::DefaultDeviceIndex) const
         {
-            return GetDevicePipelineLibrary(deviceIndex)->GetSerializedData();
+            if (m_deviceObjects.contains(deviceIndex))
+                return GetDevicePipelineLibrary(deviceIndex)->GetSerializedData();
+            else
+            {
+                AZ_Error(
+                    "MultiDevicePipelineLibrary",
+                    false,
+                    "MultiDevicePipelineLibrary is not initialized. This operation is only permitted on an initialized library.");
+                return nullptr;
+            }
         }
 
         //! Returns whether the current library need to be merged

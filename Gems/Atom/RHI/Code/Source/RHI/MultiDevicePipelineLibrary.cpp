@@ -113,11 +113,9 @@ namespace AZ::RHI
     {
         bool result = false;
 
-        IterateObjects<PipelineLibrary>([&]([[maybe_unused]]auto deviceIndex, auto devicePipelineLibrary)
+        IterateObjects<PipelineLibrary>([&result]([[maybe_unused]]auto deviceIndex, auto devicePipelineLibrary)
         {
             result |= devicePipelineLibrary->IsMergeRequired();
-
-            return ResultCode::Success;
         });
 
         return result;

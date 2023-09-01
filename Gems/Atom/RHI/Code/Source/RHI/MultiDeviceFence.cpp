@@ -77,8 +77,6 @@ namespace AZ::RHI
             IterateObjects<Fence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
             {
                 deviceFence->Shutdown();
-
-                return ResultCode::Success;
             });
 
             MultiDeviceObject::Shutdown();
