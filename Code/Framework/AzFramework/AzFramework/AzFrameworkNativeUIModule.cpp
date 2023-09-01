@@ -27,13 +27,11 @@ namespace AzFramework
     {
         AZ::ComponentTypeList components{};
 
-        #if !O3DE_HEADLESS_SERVER
         components.insert(
             components.end(),
             {
                 azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
-        #endif // O3DE_HEADLESS_SERVER
 
         return components;
     }
