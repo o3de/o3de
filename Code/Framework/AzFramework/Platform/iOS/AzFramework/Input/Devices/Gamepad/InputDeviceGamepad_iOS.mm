@@ -12,8 +12,6 @@
 #include <GameController/GameController.h>
 #include <AzCore/Debug/Trace.h>
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
 {
     using namespace AzFramework;
@@ -69,6 +67,11 @@ namespace
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
+    static constexpr int GetMaxIosSupportedGamepads()
+    {
+        return static_cast<int>(GCControllerPlayerIndex4) + 1;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Platform specific implementation for apple game-pad input devices
     class InputDeviceGamepadiOS : public InputDeviceGamepad::Implementation
@@ -119,9 +122,10 @@ namespace AzFramework
         , m_controller(nullptr)
         , m_wasPausedHandlerCalled(false)
     {
-        AZ_Assert(inputDevice.GetInputDeviceId().GetIndex() <= GCControllerPlayerIndex4,
+        [[maybe_unused]] constexpr int maxIosGamepads = GetMaxIosSupportedGamepads();
+        AZ_Assert(inputDevice.GetInputDeviceId().GetIndex() < maxIosGamepads,
                   "Creating InputDeviceGamepadiOS with index %d that is greater than the max supported by the game controller framework: %d",
-                  inputDevice.GetInputDeviceId().GetIndex(), (GCControllerPlayerIndex4+1));
+                  inputDevice.GetInputDeviceId().GetIndex(), maxIosGamepads);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -325,7 +329,7 @@ namespace AzFramework
         }
         AZ::u32 GetMaxSupportedGamepads() const override
         {
-            return GCControllerPlayerIndex4 + 1;    
+            return GetMaxIosSupportedGamepads();
         }
     };
 
