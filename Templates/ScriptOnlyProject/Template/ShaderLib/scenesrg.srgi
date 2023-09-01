@@ -1,0 +1,26 @@
+// {BEGIN_LICENSE}
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+// {END_LICENSE}
+
+#pragma once
+
+// Please read README.md for an explanation on why scenesrg.srgi and viewsrg.srgi are
+// located in this folder (And how you can optionally customize your own scenesrg.srgi
+// and viewsrg.srgi in your game project).
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+partial ShaderResourceGroup SceneSrg : SRG_PerScene
+{
+/* Intentionally Empty. Helps define the SrgSemantic for SceneSrg once.*/
+};
+
+#define AZ_COLLECTING_PARTIAL_SRGS
+#include <Atom/Feature/Common/Assets/ShaderResourceGroups/SceneSrgAll.azsli>
+#undef AZ_COLLECTING_PARTIAL_SRGS
