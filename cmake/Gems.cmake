@@ -369,7 +369,7 @@ function(ly_add_gem_dependencies_to_project_variants)
         # Construct the gem target name to determine if the target exists
         set(gem_target ${gem_name}.${ly_add_gem_dependencies_VARIANT})
 
-        # Also construct a fall if the target doesnt exist for the given variant, then check if the variant has a fallback
+        # Also construct a fallback target if the target doesn't exist for the given variant, then check if the variant has a fallback
         set(fallback_gem_target ${gem_name}.${GEM_VARIANT_DEFAULT_${ly_add_gem_dependencies_VARIANT}})
 
         if (TARGET ${gem_target})
