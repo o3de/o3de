@@ -95,9 +95,6 @@ ly_add_target(
         Gem::AtomViewportDisplayInfo
 )
 
-if (PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-
-endif()
 # Any 'runtime-like' applications should use Gem::Atom_AtomBridge:
 ly_create_alias(NAME Atom_AtomBridge.Clients NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
 ly_create_alias(NAME Atom_AtomBridge.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
