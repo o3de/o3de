@@ -240,7 +240,8 @@ namespace AZ
         {
             partialLengths += m_values[i].GetAbs();
         }
-        return partialLengths.Dot(AZ::Vector4::CreateOne());
+        // We introduce a clamp to account for any precision loss during the norm calculation
+        return AZ::GetClamp(partialLengths.Dot(AZ::Vector4::CreateOne()), 0.0f, 1.0f);
     }
 
     AZ_MATH_INLINE float VectorN::L2Norm() const
