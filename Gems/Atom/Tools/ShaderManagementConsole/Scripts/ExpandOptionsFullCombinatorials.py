@@ -8,18 +8,23 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import sys
 import functools
 
-sys.path.append("D:/o3de/Gems/Atom/Tools/ShaderManagementConsole/Scripts") # TODO remove
-
 import azlmbr.bus
 import azlmbr.shadermanagementconsole
 import azlmbr.shader
 import azlmbr.math
 import azlmbr.rhi
+import azlmbr.atom
+import azlmbr.atomtools
 import GenerateShaderVariantListUtil
+
 from PySide2 import QtWidgets
 from PySide2 import QtCore
 from PySide2 import QtGui
 from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QPushButton, QMessageBox, QLabel, QGroupBox, QComboBox, QSplitter, QWidget, QLineEdit, QSpinBox
+
+def isDocumentOpen(document_id: azlmbr.math.Uuid) -> bool:
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        azlmbr.bus.Broadcast, "IsDocumentOpen", document_id)
 
 def transferSelection(qlistSrc, qlistDst):
     '''intended to work with 2 QListWidget'''
@@ -224,23 +229,27 @@ class Dialog(QDialog):
         '''access option descriptors selected in the right bucket (in the form of a generator)'''
         return (optionsByNames[x.text()] for x in listItems(self.optionsSelector.right))
 
-    def refreshSelection(self):
-        '''triggered after a change in participants'''
+    def calculateCombinationCountInducedByCurrentParticipants(self):
+        '''calculate the count of variants that will result from enumerating participant options'''
         participants = self.getParticipantOptionDescs()
-        # calculate the count of variants that will result from enumerating participant options
         count = 0
         for p in participants:
             if count == 0:
                 count = p.GetValuesCount()  # initial value
             else:
                 count = count * p.GetValuesCount()
+        return count
+
+    def refreshSelection(self):
+        '''triggered after a change in participants'''
+        count = self.calculateCombinationCountInducedByCurrentParticipants()
         self.estimate.setText(str(count))
         self.makeCostLabel()
 
     def makeCostLabel(self):
         curSum = sumCost(self.getParticipantOptionDescs())
         total = totalCost()
-        percent = curSum * 100 // total
+        percent = 0 if total == 0 else curSum * 100 // total
         self.coveredLbl.setText(f"Cost covered by current selection: {curSum}/{total} ({percent}%)")
 
     def autogenSelectionBucket(self):
@@ -289,27 +298,43 @@ class Dialog(QDialog):
 
     def generateVariants(self):
         '''make a list of azlmbr.shader.ShaderVariantInfo that fully enumerate the combinatorics of the selected options space'''
+        steps = self.calculateCombinationCountInducedByCurrentParticipants()
+        progressDialog = QtWidgets.QProgressDialog("Enumerating", "Cancel", 0, steps)
+        progressDialog.setMaximumWidth(400)
+        progressDialog.setMaximumHeight(100)
+        progressDialog.setModal(True)
+        progressDialog.setWindowTitle("Generate variant values")
+
         genOptDescs = list(self.getParticipantOptionDescs())
         self.participantNames = [x.GetName() for x in genOptDescs]
         self.listOfDigitArrays = []
         digits = [toInt(x.GetMinValue()) for x in genOptDescs]
+        c = 0
         if len(digits) > 0:
             while(True):
                 self.listOfDigitArrays.extend(self.toNames(digits, genOptDescs))  # flat list
                 if Dialog.allMaxedOut(digits, genOptDescs):
                     break # we are done enumerating the "digit" space
                 Dialog.incrementArray(digits, genOptDescs)  # go to next, doing digit cascade
+                progressDialog.setValue(c)
+                c = c + 1
+                if progressDialog.wasCanceled():
+                    self.listOfDigitArrays = []
+                    return
+        progressDialog.close()
 
 def main():
     print("==== Begin shader variant expand option combinatorials script ====")
-
-    if externalArgv: sys.argv.append(externalArgv)
 
     if len(sys.argv) < 2:
         print(f"argv count is {len(sys.argv)}. The script requires a documentID as input argument.")
         return
 
     documentId = azlmbr.math.Uuid_CreateString(sys.argv[1])
+
+    if not isDocumentOpen(documentId):
+        print(f"document ID {documentId} not opened")
+        return
 
     print(f"getting options for uuid {documentId}")
 
