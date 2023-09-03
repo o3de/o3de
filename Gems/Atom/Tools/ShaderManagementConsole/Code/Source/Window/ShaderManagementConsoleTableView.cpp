@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Name/Name.h>
 #include <AzQtComponents/Components/StyledSpinBox.h>
 #include <Window/ShaderManagementConsoleTableView.h>
@@ -86,6 +87,10 @@ namespace ShaderManagementConsole
                     &ShaderManagementConsoleDocumentRequestBus::Events::AddOneVariantRow);
             });
         contextMenu.addAction(action);
+
+        QMenu* scriptsMenu = contextMenu.addMenu(QObject::tr("Python Scripts"));
+        const AZStd::vector<AZStd::string> arguments{ m_documentId.ToString<AZStd::string>(false, true) };
+        AtomToolsFramework::AddRegisteredScriptToMenu(scriptsMenu, "/O3DE/ShaderManagementConsole/DocumentTableView/ContextMenuScripts", arguments);
 
         contextMenu.exec(mapToGlobal(pos));
     }
@@ -239,7 +244,7 @@ namespace ShaderManagementConsole
                 setItem(row, column, newItem);
             }
             auto* deleterButton = new QPushButton;
-            deleterButton->setText(u8"\u274C"); // ❌
+            deleterButton->setText(u8"\u274C");  // cross sign
             deleterButton->setToolTip(tr("delete row"));
             connect(deleterButton, &QPushButton::clicked, this, [this, row](){
                 auto& vec = m_shaderVariantListSourceData.m_shaderVariants;

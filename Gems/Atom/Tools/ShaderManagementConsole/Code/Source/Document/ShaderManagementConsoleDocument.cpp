@@ -103,7 +103,7 @@ namespace ShaderManagementConsole
             nameToHeaderIndex[optionHeaders[i]] = i;
         }
         // Prepare a whole new source data
-        AZ::RPI::ShaderVariantListSourceData newSourceData{ std::move(m_shaderVariantListSourceData) };
+        AZ::RPI::ShaderVariantListSourceData newSourceData{ m_shaderVariantListSourceData };
         AZ::u32 stableId = newSourceData.m_shaderVariants.empty() ? 1 : newSourceData.m_shaderVariants.back().m_stableId + 1;
         if (matrixOfValues.size() % optionHeaders.size() != 0)
         {
@@ -278,6 +278,7 @@ namespace ShaderManagementConsole
             const auto& shaderOptionDescriptors = layout->GetShaderOptions();
             return shaderOptionDescriptors.at(index);
         }
+        AZ_Error("ShaderManagementConsoleDocument", false, "GetShaderOptionDescriptor no asset ready");
         return m_invalidDescriptor;
     }
 
