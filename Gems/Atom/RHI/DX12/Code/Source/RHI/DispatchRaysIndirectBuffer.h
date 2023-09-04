@@ -36,17 +36,7 @@ namespace AZ
 
             void Init(RHI::BufferPool* bufferPool) override;
             void Build(RHI::RayTracingShaderTable* shaderTable) override;
-            const RHI::Buffer* GetBuffer() const
-            {
-                return m_buffer.get();
-            }
 
-            void CopyData(
-                const RHI::IndirectBufferView& originalIndirectBufferView,
-                uint64_t originalBufferByteOffset,
-                ID3D12GraphicsCommandList* commandList);
-
-        private:
             RHI::Ptr<RHI::Buffer> m_buffer;
             MemoryView m_shaderTableStagingMemory;
             bool m_shaderTableNeedsCopy = false;
