@@ -51,8 +51,9 @@ namespace AZ::Render
         const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
         const AZ::Data::Asset<EMotionFX::Integration::ActorAsset>& asset,
         [[maybe_unused]] const AZ::Transform& worldTransform,
-        EMotionFX::Integration::SkinningMethod skinningMethod)
-        : RenderActorInstance(asset, actorInstance.get(), entityId)
+        EMotionFX::Integration::SkinningMethod skinningMethod,
+        bool rayTracingEnabled)
+        : m_rayTracingEnabled(rayTracingEnabled), RenderActorInstance(asset, actorInstance.get(), entityId)
     {
         RenderActorInstance::SetSkinningMethod(skinningMethod);
         if (m_entityId.IsValid())
@@ -371,7 +372,8 @@ namespace AZ::Render
     {
         if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
         {
-            m_meshFeatureProcessor->SetRayTracingEnabled(*m_meshHandle, enabled);
+            m_rayTracingEnabled = enabled;
+            m_meshFeatureProcessor->SetRayTracingEnabled(*m_meshHandle, m_rayTracingEnabled);
         }
     }
 
@@ -381,7 +383,6 @@ namespace AZ::Render
         {
             return m_meshFeatureProcessor->GetRayTracingEnabled(*m_meshHandle);
         }
-
         return false;
     }
 
@@ -673,10 +674,10 @@ namespace AZ::Render
             MeshHandleDescriptor meshDescriptor;
             meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
 
-            // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
-            meshDescriptor.m_isRayTracingEnabled = false;
+            meshDescriptor.m_isRayTracingEnabled = m_rayTracingEnabled;
             meshDescriptor.m_isAlwaysDynamic = true;
             meshDescriptor.m_excludeFromReflectionCubeMaps = true;
+            meshDescriptor.m_isSkinnedMesh = true;
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
                 m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials)));

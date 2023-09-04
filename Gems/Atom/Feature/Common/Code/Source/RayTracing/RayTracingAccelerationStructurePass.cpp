@@ -6,16 +6,18 @@
  *
  */
 
-#include <Atom/RHI/FrameScheduler.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
+#include <Atom/RHI/BufferFrameAttachment.h>
+#include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/CommandList.h>
+#include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -57,7 +59,8 @@ namespace AZ
 
             if (rayTracingFeatureProcessor)
             {
-                if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision)
+                if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision ||
+                    rayTracingFeatureProcessor->GetSkinnedMeshCount() != 0)
                 {
                     RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
                     RayTracingFeatureProcessor::SubMeshVector& subMeshes = rayTracingFeatureProcessor->GetSubMeshes();
@@ -72,6 +75,7 @@ namespace AZ
                     {
                         tlasDescriptorBuild->Instance()
                             ->InstanceID(instanceIndex)
+                            ->InstanceMask(subMesh.m_mesh->m_instanceMask)
                             ->HitGroupIndex(0)
                             ->Blas(subMesh.m_blas)
                             ->Transform(subMesh.m_mesh->m_transform)
@@ -107,6 +111,31 @@ namespace AZ
 
                         frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
                     }
+
+                    RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
+                    for (auto& blasInstance : blasInstances)
+                    {
+                        if (blasInstance.second.m_isSkinnedMesh)
+                        {
+                            for (auto& blasInstanceSubMesh : blasInstance.second.m_subMeshes)
+                            {
+                                for (auto& geometry : blasInstanceSubMesh.m_blas->GetGeometries())
+                                {
+                                    auto* frameAttachment = geometry.m_vertexBuffer.GetBuffer()->GetFrameAttachment();
+                                    if (frameAttachment)
+                                    {
+                                        auto* scopeAttachment = frameAttachment->GetFirstScopeAttachment();
+                                        if (scopeAttachment)
+                                        {
+                                            RHI::BufferScopeAttachmentDescriptor desc = scopeAttachment->GetDescriptor();
+                                            frameGraph.UseAttachment(
+                                                desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // update and compile the RayTracingSceneSrg and RayTracingMaterialSrg
@@ -132,7 +161,7 @@ namespace AZ
                 return;
             }
 
-            if (rayTracingFeatureProcessor->GetRevision() == m_rayTracingRevision)
+            if (rayTracingFeatureProcessor->GetRevision() == m_rayTracingRevision && rayTracingFeatureProcessor->GetSkinnedMeshCount() == 0)
             {
                 // TLAS is up to date
                 return;
@@ -147,15 +176,38 @@ namespace AZ
                 return;
             }
 
-            // build newly added BLAS objects
+            // build newly added or skinned BLAS objects
             RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
             for (auto& blasInstance : blasInstances)
             {
-                if (blasInstance.second.m_blasBuilt == false)
+                const bool isSkinnedMesh = blasInstance.second.m_isSkinnedMesh;
+                if (blasInstance.second.m_blasBuilt == false || isSkinnedMesh)
                 {
-                    for (auto& blasInstanceSubMesh : blasInstance.second.m_subMeshes)
+                    for (auto submeshIndex = 0; submeshIndex < blasInstance.second.m_subMeshes.size(); ++submeshIndex)
                     {
-                        context.GetCommandList()->BuildBottomLevelAccelerationStructure(*blasInstanceSubMesh.m_blas);
+                        auto& submeshBlasInstance = blasInstance.second.m_subMeshes[submeshIndex];
+                        if (blasInstance.second.m_blasBuilt == false)
+                        {
+                            // Always build the BLAS, if it has not previously been built
+                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
+                            continue;
+                        }
+
+                        // Determine if a skinned mesh BLAS needs to be updated or completely rebuilt. For now, we want to rebuild a BLAS every
+                        // SKINNED_BLAS_REBUILD_FRAME_INTERVAL frames, while updating it all other frames. This is based on the assumption that
+                        // by adding together the asset ID hash, submesh index, and frame count, we get a value that allows us to uniformly
+                        // distribute rebuilding all skinned mesh BLASs over all frames.
+                        auto assetGuid = blasInstance.first.m_guid.GetHash();
+                        if (isSkinnedMesh && (assetGuid + submeshIndex + m_frameCount) % SKINNED_BLAS_REBUILD_FRAME_INTERVAL != 0)
+                        {
+                            // Skinned mesh that simply needs an update
+                            context.GetCommandList()->UpdateBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
+                        }
+                        else
+                        {
+                            // Fall back to building the BLAS in any case
+                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
+                        }
                     }
 
                     blasInstance.second.m_blasBuilt = true;
@@ -164,6 +216,24 @@ namespace AZ
 
             // build the TLAS object
             context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas());
+
+            ++m_frameCount;
+        }
+
+        AZ::RHI::RayTracingAccelerationStructureBuildFlags RayTracingAccelerationStructurePass::CreateRayTracingAccelerationStructureBuildFlags(bool isSkinnedMesh)
+        {
+            AZ::RHI::RayTracingAccelerationStructureBuildFlags buildFlags;
+            if (isSkinnedMesh)
+            {
+                // If we have a skinned mesh, we would like to indicate to the API that we want to enable the following options for faster AS updates
+                buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_UPDATE | AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_BUILD;
+            }
+            else
+            {
+                buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
+            }
+
+            return buildFlags;
         }
     }   // namespace RPI
 }   // namespace AZ

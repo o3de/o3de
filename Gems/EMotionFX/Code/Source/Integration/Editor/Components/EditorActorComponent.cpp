@@ -59,6 +59,7 @@ namespace EMotionFX
                     ->Field("LodLevel", &EditorActorComponent::m_lodLevel)
                     ->Field("BBoxConfig", &EditorActorComponent::m_bboxConfig)
                     ->Field("ExcludeFromReflectionCubeMaps", &EditorActorComponent::m_excludeFromReflectionCubeMaps)
+                    ->Field("RayTracingEnabled", &EditorActorComponent::m_rayTracingEnabled)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -128,6 +129,9 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(0, &EditorActorComponent::m_renderBounds, "Draw bounds", "Draw the World Space AABBs. <br>Teal: Static. <br>Red: Bone position-based. <br>Blue: Mesh vertex-based.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
+                        ->DataElement(0, &EditorActorComponent::m_rayTracingEnabled,
+                            "Enable Raytracing", "Toggles adding this actor to the raytracing acceleration structure.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnEnableRaytracingChanged)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorActorComponent::m_skinningMethod,
                             "Skinning method", "Choose the skinning method this actor is using")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnSkinningMethodChanged)
@@ -186,6 +190,7 @@ namespace EMotionFX
             , m_lodLevel(0)
             , m_actorAsset(AZ::Data::AssetLoadBehavior::NoLoad)
             , m_excludeFromReflectionCubeMaps(true)
+            , m_rayTracingEnabled(true)
         {
         }
 
@@ -205,6 +210,7 @@ namespace EMotionFX
             AzToolsFramework::Components::EditorComponentBase::Activate();
 
             OnRenderFlagChanged();
+            OnEnableRaytracingChanged();
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
@@ -366,6 +372,15 @@ namespace EMotionFX
             if (m_renderActorInstance)
             {
                 m_renderActorInstance->SetIsVisible(m_entityVisible && m_renderCharacter);
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        void EditorActorComponent::OnEnableRaytracingChanged()
+        {
+            if (m_renderActorInstance)
+            {
+                m_renderActorInstance->SetRayTracingEnabled(m_rayTracingEnabled);
             }
         }
 
@@ -593,6 +608,14 @@ namespace EMotionFX
             }
         }
 
+        void EditorActorComponent::SetRayTracingEnabled(bool enabled)
+        {
+            if (m_renderActorInstance)
+            {
+                m_renderActorInstance->SetRayTracingEnabled(enabled);
+            }
+        }
+
         void EditorActorComponent::UpdateRenderFlags()
         {
             m_renderFlags = ActorRenderFlags::None;
@@ -697,6 +720,7 @@ namespace EMotionFX
             cfg.m_forceUpdateJointsOOV = m_forceUpdateJointsOOV;
             cfg.m_renderFlags = m_renderFlags;
             cfg.m_excludeFromReflectionCubeMaps = m_excludeFromReflectionCubeMaps;
+            cfg.m_rayTracingEnabled = m_rayTracingEnabled;
 
             gameEntity->AddComponent(aznew ActorComponent(&cfg));
         }
@@ -976,7 +1000,8 @@ namespace EMotionFX
                     m_actorInstance,
                     m_actorAsset,
                     m_skinningMethod,
-                    transform));
+                    transform,
+                    m_rayTracingEnabled));
 
                 if (m_renderActorInstance)
                 {

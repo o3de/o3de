@@ -18,6 +18,19 @@ namespace AZ::RHI
 {
     class RayTracingBufferPools;
 
+    //! RayTracingAccelerationStructureBuildFlags
+    //!
+    //! These build flags can be used to signal to the API what kind of Ray Tracing Acceleration Structure build it should prefer.
+    //! For example, if skinned meshes are present in the scene, it might be best to enable a mode where the AS is
+    //! periodically updated and not completely rebuilt every frame. These options can be set on both BLAS and TLAS objects.
+    enum class RayTracingAccelerationStructureBuildFlags : uint32_t
+    {
+        FAST_TRACE = AZ_BIT(1),
+        FAST_BUILD = AZ_BIT(2),
+        ENABLE_UPDATE = AZ_BIT(3),
+    };
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::RayTracingAccelerationStructureBuildFlags);
+
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Bottom Level Acceleration Structure (BLAS)
 
@@ -56,16 +69,20 @@ namespace AZ::RHI
         const RayTracingGeometryVector& GetGeometries() const { return m_geometries; }
         RayTracingGeometryVector& GetGeometries() { return m_geometries; }
 
+        [[nodiscard]] const RayTracingAccelerationStructureBuildFlags& GetBuildFlags() const { return m_buildFlags; }
+
         // build operations
         RayTracingBlasDescriptor* Build();
         RayTracingBlasDescriptor* Geometry();
         RayTracingBlasDescriptor* VertexBuffer(const RHI::StreamBufferView& vertexBuffer);
         RayTracingBlasDescriptor* VertexFormat(RHI::Format vertexFormat);
         RayTracingBlasDescriptor* IndexBuffer(const RHI::IndexBufferView& indexBuffer);
+        RayTracingBlasDescriptor* BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags);
 
     private:
         RayTracingGeometryVector m_geometries;
         RayTracingGeometry* m_buildContext = nullptr;
+        RayTracingAccelerationStructureBuildFlags m_buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
     };
 
     //! RayTracingBlas
@@ -86,9 +103,16 @@ namespace AZ::RHI
         //! Returns true if the RayTracingBlas has been initialized
         virtual bool IsValid() const = 0;
 
+        RayTracingGeometryVector& GetGeometries()
+        {
+            return m_geometries;
+        }
+
     private:
         // Platform API
         virtual RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools) = 0;
+
+        RayTracingGeometryVector m_geometries;
     };
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -104,13 +128,14 @@ namespace AZ::RHI
     {
         uint32_t m_instanceID = 0;
         uint32_t m_hitGroupIndex = 0;
+        uint32_t m_instanceMask = 0x1; // Setting this to 1 to be backwards-compatible
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
         bool m_transparent = false;
         RHI::Ptr<RHI::RayTracingBlas> m_blas;
     };
     using RayTracingTlasInstanceVector = AZStd::vector<RayTracingTlasInstance>;
-        
+
     //! RayTracingTlasDescriptor
     //!
     //! The Build() operation in the descriptor allows the TLAS to be initialized
@@ -134,7 +159,7 @@ namespace AZ::RHI
     public:
         RayTracingTlasDescriptor() = default;
         ~RayTracingTlasDescriptor() = default;
-        
+
         // accessors
         const RayTracingTlasInstanceVector& GetInstances() const { return m_instances; }
         RayTracingTlasInstanceVector& GetInstances() { return m_instances; }
@@ -148,6 +173,7 @@ namespace AZ::RHI
         RayTracingTlasDescriptor* Build();
         RayTracingTlasDescriptor* Instance();
         RayTracingTlasDescriptor* InstanceID(uint32_t instanceID);
+        RayTracingTlasDescriptor* InstanceMask(uint32_t instanceMask);
         RayTracingTlasDescriptor* HitGroupIndex(uint32_t hitGroupIndex);
         RayTracingTlasDescriptor* Transform(const AZ::Transform& transform);
         RayTracingTlasDescriptor* NonUniformScale(const AZ::Vector3& nonUniformScale);
