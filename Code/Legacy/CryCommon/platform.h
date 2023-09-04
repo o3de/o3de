@@ -342,7 +342,7 @@ threadID CryGetCurrentThreadId();
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_13
     #include AZ_RESTRICTED_FILE(platform_h)
-#elif !defined(LINUX) && !defined(APPLE)
+#elif !defined(LINUX) && !defined(APPLE) && !defined(MAC) //gruber patch 
     typedef int socklen_t;
 #endif
 

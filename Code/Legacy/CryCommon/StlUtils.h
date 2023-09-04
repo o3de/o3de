@@ -352,7 +352,11 @@ namespace stl
     public:
         bool operator()(const Key& key1, const Key& key2) const
         {
+#ifdef APPLE// gruber patch
+            return strcasecmp(constchar_cast(key1), constchar_cast(key2)) == 0;
+#else
             return _stricmp(constchar_cast(key1), constchar_cast(key2)) == 0;
+#endif
         }
     };
 
