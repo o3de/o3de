@@ -91,7 +91,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(bufferView->IsInitialized());
                 ASSERT_FALSE(bufferView->IsStale());
                 AZ_TEST_ASSERT(bufferView->IsFullView());
-                AZ_TEST_ASSERT(bufferA->GetDeviceBuffer(deviceIndex)->use_count() == 2);
+                AZ_TEST_ASSERT(bufferA->GetDeviceBuffer(deviceIndex)->use_count() == 3);
             }
 
             // MDBuffer still only used once

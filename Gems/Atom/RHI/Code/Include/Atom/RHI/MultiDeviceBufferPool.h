@@ -16,40 +16,6 @@ namespace AZ::RHI
 {
     class MultiDeviceFence;
 
-    //! A structure used as an argument to MultiDeviceBufferPool::InitBuffer.
-    struct MultiDeviceBufferInitRequest
-    {
-        MultiDeviceBufferInitRequest() = default;
-
-        MultiDeviceBufferInitRequest(MultiDeviceBuffer& buffer, const BufferDescriptor& descriptor, const void* initialData = nullptr);
-
-        //! The buffer to initialize. The buffer must be in an uninitialized state.
-        MultiDeviceBuffer* m_buffer = nullptr;
-
-        //! The descriptor used to initialize the buffer.
-        BufferDescriptor m_descriptor;
-
-        //! [Optional] Initial data used to initialize the buffer.
-        const void* m_initialData = nullptr;
-    };
-
-    //! A structure used as an argument to MultiDeviceBufferPool::MapBuffer.
-    struct MultiDeviceBufferMapRequest
-    {
-        MultiDeviceBufferMapRequest() = default;
-
-        MultiDeviceBufferMapRequest(MultiDeviceBuffer& buffer, size_t byteOffset, size_t byteCount);
-
-        //! The buffer instance to map for CPU access.
-        MultiDeviceBuffer* m_buffer = nullptr;
-
-        //! The number of bytes offset from the base of the buffer to map for access.
-        size_t m_byteOffset = 0;
-
-        //! The number of bytes beginning from the offset to map for access.
-        size_t m_byteCount = 0;
-    };
-
     //! A structure used as an argument to MultiDeviceBufferPool::MapBuffer.
     struct MultiDeviceBufferMapResponse
     {
@@ -57,26 +23,9 @@ namespace AZ::RHI
         AZStd::vector<void*> m_data;
     };
 
-    //! A structure used as an argument to MultiDeviceBufferPool::StreamBuffer.
-    struct MultiDeviceBufferStreamRequest
-    {
-        //! A fence to signal on completion of the upload operation.
-        MultiDeviceFence* m_fenceToSignal = nullptr;
-
-        //! The buffer instance to stream up to.
-        MultiDeviceBuffer* m_buffer = nullptr;
-
-        //! The number of bytes offset from the base of the buffer to start the upload.
-        size_t m_byteOffset = 0;
-
-        //! The number of bytes to upload beginning from m_byteOffset.
-        size_t m_byteCount = 0;
-
-        //! A pointer to the source data to upload. The source data must remain valid
-        //! for the duration of the upload operation (i.e. until m_callbackFunction
-        //! is invoked).
-        const void* m_sourceData = nullptr;
-    };
+    using MultiDeviceBufferInitRequest = BufferInitRequestTemplate<MultiDeviceBuffer>;
+    using MultiDeviceBufferMapRequest = BufferMapRequestTemplate<MultiDeviceBuffer>;
+    using MultiDeviceBufferStreamRequest = BufferStreamRequestTemplate<MultiDeviceBuffer, MultiDeviceFence>;
 
     //! Buffer pool provides backing storage and context for buffer instances. The BufferPoolDescriptor
     //! contains properties defining memory characteristics of buffer pools. All buffers created on a pool
@@ -180,8 +129,5 @@ namespace AZ::RHI
         bool ValidateMapRequest(const MultiDeviceBufferMapRequest& request) const;
 
         BufferPoolDescriptor m_descriptor;
-
-        //! A map of all device-specific BufferPools, indexed by the device index
-        AZStd::unordered_map<int, Ptr<BufferPool>> m_deviceBufferPools;
     };
 } // namespace AZ::RHI

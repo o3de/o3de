@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 
 namespace AZ::RHI

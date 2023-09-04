@@ -13,21 +13,6 @@
 
 namespace AZ::RHI
 {
-    MultiDeviceBufferInitRequest::MultiDeviceBufferInitRequest(
-        MultiDeviceBuffer& buffer, const BufferDescriptor& descriptor, const void* initialData)
-        : m_buffer{ &buffer }
-        , m_descriptor{ descriptor }
-        , m_initialData{ initialData }
-    {
-    }
-
-    MultiDeviceBufferMapRequest::MultiDeviceBufferMapRequest(MultiDeviceBuffer& buffer, size_t byteOffset, size_t byteCount)
-        : m_buffer{ &buffer }
-        , m_byteOffset{ byteOffset }
-        , m_byteCount{ byteCount }
-    {
-    }
-
     bool MultiDeviceBufferPool::ValidatePoolDescriptor(const BufferPoolDescriptor& descriptor) const
     {
         if (Validation::IsEnabled())
@@ -138,8 +123,8 @@ namespace AZ::RHI
                     {
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                        m_deviceBufferPools[deviceIndex] = Factory::Get().CreateBufferPool();
-                        result = m_deviceBufferPools[deviceIndex]->Init(*device, descriptor);
+                        m_deviceObjects[deviceIndex] = Factory::Get().CreateBufferPool();
+                        result = GetDeviceBufferPool(deviceIndex)->Init(*device, descriptor);
 
                         return result == ResultCode::Success;
                     });
@@ -147,7 +132,7 @@ namespace AZ::RHI
                 if (result != ResultCode::Success)
                 {
                     // Reset already initialized device-specific BufferPools and set deviceMask to 0
-                    m_deviceBufferPools.clear();
+                    m_deviceObjects.clear();
                     MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
                 }
 
@@ -181,29 +166,6 @@ namespace AZ::RHI
                     return deviceBufferPool->InitBuffer(bufferInitRequest);
                 });
             });
-
-        if (resultCode == ResultCode::Success && initRequest.m_initialData)
-        {
-            MultiDeviceBufferMapRequest mapRequest;
-            mapRequest.m_buffer = initRequest.m_buffer;
-            mapRequest.m_byteCount = initRequest.m_descriptor.m_byteCount;
-            mapRequest.m_byteOffset = 0;
-
-            MultiDeviceBufferMapResponse mapResponse;
-            resultCode = MapBuffer(mapRequest, mapResponse);
-            if (resultCode == ResultCode::Success)
-            {
-                for (auto data : mapResponse.m_data)
-                {
-                    if (data)
-                    {
-                        memcpy(data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
-                    }
-                }
-
-                UnmapBuffer(*initRequest.m_buffer);
-            }
-        }
 
         return resultCode;
     }
@@ -340,7 +302,7 @@ namespace AZ::RHI
 
     void MultiDeviceBufferPool::Shutdown()
     {
-        IterateObjects<BufferPool>([](auto deviceIndex, auto deviceBufferPool)
+        IterateObjects<BufferPool>([]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
         {
             deviceBufferPool->Shutdown();
         });
