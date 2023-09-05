@@ -833,6 +833,7 @@ namespace AZ::DocumentPropertyEditor
                             ProcessRemoval(rowNode, adapterIndex, &outgoingPatch);
                             auto adapterRow = adapter->GetContents()[rowPath];
                             AddChildRow(adapterIndex, parentNode, adapterRow, rowPath.Back().GetIndex(), &outgoingPatch);
+                            matchingSiblingFound = true;
                         }
                     }
                 }
