@@ -1,0 +1,86 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobileShadowParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input"
+                },
+                // Outputs...
+                {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "ProjectedShadowmap",
+                    "SlotType": "Output"
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DirectionalShadowmap",
+                    "AttachmentRef": {
+                        "Pass": "Cascades",
+                        "Attachment": "Shadowmap"
+                    }
+                },
+                {
+                    "LocalSlot": "ProjectedShadowmap",
+                    "AttachmentRef": {
+                        "Pass": "Projected",
+                        "Attachment": "Shadowmap"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "Cascades",
+                    "TemplateName": "CascadedShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "shadow",
+                        "PipelineViewTag": "DirectionalLightView"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkinnedMeshes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Projected",
+                    "TemplateName": "ProjectedShadowmapsTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "shadow",
+                        "PipelineViewTag": "ProjectedShadowView"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkinnedMeshes"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
