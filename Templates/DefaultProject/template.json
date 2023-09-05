@@ -143,6 +143,10 @@
             "isTemplated": true
         },
         {
+            "file": "Levels/ExampleLevel/ExampleLevel.prefab",
+            "isTemplated": false
+        },
+        {
             "file": "Platform/Android/android_project.cmake",
             "isTemplated": false
         },
@@ -427,6 +431,12 @@
         },
         {
             "dir": "Gem/Source"
+        },
+        {
+            "dir": "Levels"
+        },
+        {
+            "dir": "Levels/ExampleLevel"
         },
         {
             "dir": "Platform"
