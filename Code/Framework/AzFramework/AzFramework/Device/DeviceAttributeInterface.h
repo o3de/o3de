@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/any.h>
@@ -43,16 +43,19 @@ namespace AzFramework
         AZ_RTTI(DeviceAttributeRegistrarInterface, "{D6B65DF8-8275-42F8-B84D-4F9ACBECC7C2}");
         virtual ~DeviceAttributeRegistrarInterface() = default;
 
-        //! Register a device attribute interface, deviceAttribute must be unique, returns true on success
-        virtual bool RegisterDeviceAttribute(AZStd::unique_ptr<DeviceAttribute> deviceAttributeInterface) = 0;
+        //! Find a device attribute by name
+        virtual DeviceAttribute* FindDeviceAttribute(AZStd::string_view deviceAttribute) const = 0;
+
+        //! Register a device attribute interface, deviceAttribute must have a unique name, returns true on success
+        virtual bool RegisterDeviceAttribute(AZStd::shared_ptr<DeviceAttribute> deviceAttributeInterface) = 0;
+
+        //! Unregister an existing device attribute, returns true on success, false if not found
+        virtual bool UnregisterDeviceAttribute(AZStd::string_view deviceAttribute) = 0;
 
         using VisitInterfaceCallback = AZStd::function<bool(DeviceAttribute&)>;
 
         //! Visit device attribute interfaces with a callback function
         virtual void VisitDeviceAttributes(const VisitInterfaceCallback&) const = 0;
-
-        //! Find a device attribute by name
-        virtual DeviceAttribute* FindDeviceAttribute(AZStd::string_view deviceAttribute) const = 0;
     };
     using DeviceAttributeRegistrar = AZ::Interface<DeviceAttributeRegistrarInterface>;
 

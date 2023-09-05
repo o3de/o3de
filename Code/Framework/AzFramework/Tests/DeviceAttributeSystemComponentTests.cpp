@@ -8,10 +8,12 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/any.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Device/DeviceAttributesSystemComponent.h>
 
 namespace UnitTest
@@ -105,14 +107,14 @@ namespace UnitTest
             // simple string comparison evaluator
             return rule == "True";
         };
-        auto deviceAttribute = AZStd::make_unique<TestDeviceAttribute>(name, description, value, eval);
+        auto deviceAttribute = AZStd::make_shared<TestDeviceAttribute>(name, description, value, eval);
 
         // when the device attribute registrar exists
         auto registrar = AzFramework::DeviceAttributeRegistrar::Get();
         ASSERT_NE(registrar, nullptr);
 
         // expect a device attribute can be registered
-        EXPECT_TRUE(registrar->RegisterDeviceAttribute(AZStd::move(deviceAttribute)));
+        EXPECT_TRUE(registrar->RegisterDeviceAttribute(deviceAttribute));
 
         // expect the registered attribute can be found
         auto foundAttribute = registrar->FindDeviceAttribute(name);
@@ -126,10 +128,22 @@ namespace UnitTest
         EXPECT_FALSE(foundAttribute->Evaluate("Not true"));
 
         // when another device attribute with the same attribute name is registered
-        auto deviceAttributeDuplicate = AZStd::make_unique<TestDeviceAttribute>(name, description, value, eval);
+        auto deviceAttributeDuplicate = AZStd::make_shared<TestDeviceAttribute>(name, description, value, eval);
 
         // expect failure because attribute names must be unique
-        EXPECT_FALSE(registrar->RegisterDeviceAttribute(AZStd::move(deviceAttributeDuplicate)));
+        EXPECT_FALSE(registrar->RegisterDeviceAttribute(deviceAttributeDuplicate));
+
+        // expect device attribute can be removed
+        EXPECT_TRUE(registrar->UnregisterDeviceAttribute(deviceAttribute->GetName()));
+
+        // expect the alternate device attribute can be registered now
+        EXPECT_TRUE(registrar->RegisterDeviceAttribute(deviceAttributeDuplicate));
+
+        // expect alternate device attribute can be removed
+        EXPECT_TRUE(registrar->UnregisterDeviceAttribute(deviceAttributeDuplicate->GetName()));
+
+        // expect alternate attribute is not found after removal
+        EXPECT_EQ(registrar->FindDeviceAttribute(deviceAttributeDuplicate->GetName()), nullptr);
     }
 
     TEST_F(DeviceAttributesSystemComponentTestFixture, DeviceAttributesSystem_Registers_Common_Device_Attributes)
@@ -144,14 +158,14 @@ namespace UnitTest
         auto deviceModel = registrar->FindDeviceAttribute("DeviceModel");
         EXPECT_NE(deviceModel, nullptr);
         auto deviceModelValue = deviceModel->GetValue();
-        EXPECT_EQ(deviceModelValue.type(), azrtti_typeid<AZStd::string>());
+        ASSERT_TRUE(deviceModelValue.is<AZStd::string>());
+        EXPECT_FALSE(AZStd::any_cast<AZStd::string>(deviceModelValue).empty());
 
         auto ram = registrar->FindDeviceAttribute("RAM");
         EXPECT_NE(ram, nullptr);
         auto ramValue = ram->GetValue();
-        EXPECT_EQ(ramValue.type(), azrtti_typeid<float>());
-        float ramValueFloat = AZStd::any_cast<float>(ramValue);
-        EXPECT_GT(ramValueFloat, 0);
+        ASSERT_TRUE(ramValue.is<float>());
+        EXPECT_GT(AZStd::any_cast<float>(ramValue), 0);
     }
 
 } // namespace UnitTest
