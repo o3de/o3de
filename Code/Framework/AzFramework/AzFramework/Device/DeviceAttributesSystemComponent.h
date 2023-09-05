@@ -31,9 +31,10 @@ namespace AzFramework
         void Deactivate() override;
 
         // AzFramework::DeviceAttributeRegistrarInterface
-        bool RegisterDeviceAttribute(AZStd::unique_ptr<DeviceAttribute> deviceAttribute) override;
-        void VisitDeviceAttributes(const VisitInterfaceCallback&) const override;
         DeviceAttribute* FindDeviceAttribute(AZStd::string_view deviceAttribute) const override;
+        bool RegisterDeviceAttribute(AZStd::shared_ptr<DeviceAttribute> deviceAttribute) override;
+        bool UnregisterDeviceAttribute(AZStd::string_view deviceAttribute) override;
+        void VisitDeviceAttributes(const VisitInterfaceCallback&) const override;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -44,7 +45,7 @@ namespace AzFramework
     private:
         AZ_DISABLE_COPY(DeviceAttributesSystemComponent);
 
-        AZStd::unordered_map<AZStd::string, AZStd::unique_ptr<DeviceAttribute>> m_deviceAttributes;
+        AZStd::unordered_map<AZStd::string, AZStd::shared_ptr<DeviceAttribute>> m_deviceAttributes;
     };
 } // AzFramework
 

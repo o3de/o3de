@@ -7,13 +7,13 @@
  */
 
 #include <sys/utsname.h>
-#include <AzFramework/Device/DeviceAttributes.h>
+#include <AzFramework/Device/DeviceAttributeDeviceModel.h>
+#include <AzFramework/Device/DeviceAttributeRAM.h>
 
 namespace AzFramework
 {
     DeviceAttributeDeviceModel::DeviceAttributeDeviceModel()
     {
-        m_value = 0;
         utsname systemInfo;
         if (uname(&systemInfo) != -1)
         {
@@ -23,21 +23,21 @@ namespace AzFramework
 
     DeviceAttributeRAM::DeviceAttributeRAM()
     {
-        m_value = 0;
-
         FILE* f;
         azfopen(&f, "/proc/meminfo", "r");
         if (f)
         {
             char buffer[256] = { 0 };
-            int total = 0;
+            AZ::u64 memTotalKiB = 0;
             while (fgets(buffer, sizeof(buffer), f))
             {
-                if (azsscanf(buffer, "MemTotal: %d", &total))
+                if (azsscanf(buffer, "MemTotal: %d", &memTotalKiB) && memTotalKiB > 0)
                 {
-                    // meminfo displays memory in kB
-                    constexpr float div = 1024.f * 1024.f;
-                    m_value = aznumeric_cast<float>(total) / div;
+                    // meminfo displays memory in KiB (kilobytes, base 1024) 
+                    // convert to GiB
+                    constexpr double KiBtoGiB = 1024.f * 1024.f;
+                    m_value = aznumeric_cast<float>(static_cast<double>(memTotalKiB) / KiBtoGiB);
+                    break;
                 }
             }
             fclose(f);

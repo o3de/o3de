@@ -7,10 +7,12 @@
  */
 
 #include <AzFramework/Device/DeviceAttributesSystemComponent.h>
-#include <AzFramework/Device/DeviceAttributes.h>
+#include <AzFramework/Device/DeviceAttributeDeviceModel.h>
+#include <AzFramework/Device/DeviceAttributeRAM.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 namespace AzFramework
 {
@@ -42,8 +44,8 @@ namespace AzFramework
         }
 
         // register default attributes
-        RegisterDeviceAttribute(AZStd::make_unique<DeviceAttributeDeviceModel>());
-        RegisterDeviceAttribute(AZStd::make_unique<DeviceAttributeRAM>());
+        RegisterDeviceAttribute(AZStd::make_shared<DeviceAttributeDeviceModel>());
+        RegisterDeviceAttribute(AZStd::make_shared<DeviceAttributeRAM>());
     }
 
     void DeviceAttributesSystemComponent::Deactivate()
@@ -56,7 +58,13 @@ namespace AzFramework
         m_deviceAttributes.clear();
     }
 
-    bool DeviceAttributesSystemComponent::RegisterDeviceAttribute(AZStd::unique_ptr<DeviceAttribute> deviceAttribute)
+    DeviceAttribute* DeviceAttributesSystemComponent::FindDeviceAttribute(AZStd::string_view deviceAttribute) const
+    {
+        auto itr = m_deviceAttributes.find(deviceAttribute);
+        return itr != m_deviceAttributes.end() ? itr->second.get() : nullptr;
+    }
+
+    bool DeviceAttributesSystemComponent::RegisterDeviceAttribute(AZStd::shared_ptr<DeviceAttribute> deviceAttribute)
     {
         auto name = deviceAttribute->GetName();
         if (m_deviceAttributes.contains(name))
@@ -68,13 +76,18 @@ namespace AzFramework
             return false;
         }
 
-        m_deviceAttributes.emplace(name, AZStd::move(deviceAttribute) );
+        m_deviceAttributes.emplace(name, deviceAttribute);
         return true;
+    }
+
+    bool DeviceAttributesSystemComponent::UnregisterDeviceAttribute(AZStd::string_view deviceAttribute)
+    {
+        return m_deviceAttributes.erase(deviceAttribute) > 0;
     }
 
     void DeviceAttributesSystemComponent::VisitDeviceAttributes(const VisitInterfaceCallback& callback) const
     {
-        for (const auto& [deviceAttribue, deviceAttributeInterface] : m_deviceAttributes)
+        for ([[maybe_unused]] const auto& [deviceAttribute, deviceAttributeInterface] : m_deviceAttributes)
         {
             if (!deviceAttributeInterface)
             {
@@ -86,12 +99,6 @@ namespace AzFramework
                 return;
             }
         }
-    }
-
-    DeviceAttribute* DeviceAttributesSystemComponent::FindDeviceAttribute(AZStd::string_view deviceAttribute) const
-    {
-        auto itr = m_deviceAttributes.find(deviceAttribute);
-        return itr != m_deviceAttributes.end() ? itr->second.get() : nullptr;
     }
 
     void DeviceAttributesSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
