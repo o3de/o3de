@@ -66,7 +66,7 @@ namespace AzFramework
 
     bool DeviceAttributesSystemComponent::RegisterDeviceAttribute(AZStd::shared_ptr<DeviceAttribute> deviceAttribute)
     {
-        auto name = deviceAttribute->GetName();
+        const auto name = deviceAttribute->GetName();
         if (m_deviceAttributes.contains(name))
         {
             AZ_Warning(
@@ -76,7 +76,7 @@ namespace AzFramework
             return false;
         }
 
-        m_deviceAttributes.emplace(name, deviceAttribute);
+        m_deviceAttributes.insert({ name, deviceAttribute });
         return true;
     }
 
