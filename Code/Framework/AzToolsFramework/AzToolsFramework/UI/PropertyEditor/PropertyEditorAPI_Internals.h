@@ -585,7 +585,12 @@ namespace AzToolsFramework
             if (newValueSet)
             {
                 PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
-                OnRequestPropertyNotify();
+
+                // Only trigger the ChangeNotify in response to PropertyEditorGUIMessages::RequestWrite
+                if (changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
+                {
+                    OnRequestPropertyNotify();
+                }
             }
         }
 
