@@ -120,7 +120,7 @@ other_components = [
 postfx_components = [
     "Bloom",
     "Chromatic Aberration",
-    "DepthOfField",
+    "Depth Of Field",
     "Display Mapper",
     "Exposure Control",
     "HDR Color Grading",
