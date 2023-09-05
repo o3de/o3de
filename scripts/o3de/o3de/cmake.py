@@ -13,12 +13,14 @@ import argparse
 import enum
 import json
 import logging
+import os
 import pathlib
 import string
 import sys
-from typing import Tuple
 
+sys.path.insert(0, os.path.dirname(pathlib.Path(__file__).parent))
 from o3de import manifest, utils, compatibility
+sys.path.pop()
 
 logger = logging.getLogger('o3de.cmake')
 logging.basicConfig(format=utils.LOG_FORMAT)

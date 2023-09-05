@@ -25,6 +25,7 @@
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
 #include <Atom/RPI.Reflect/Model/SkinJointIdPadding.h>
 #include <Atom/RPI.Reflect/Model/SkinMetaAssetCreator.h>
+#include <Atom/RPI.Reflect/Model/ModelAssetHelpers.h>
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
@@ -61,36 +62,6 @@ static constexpr AZStd::string_view MismatchedVertexLayoutsAreErrorsKey{ "/O3DE/
   */
 #define AZ_RPI_MESHES_SHARE_COMMON_BUFFERS
 
-namespace
-{
-    const AZ::RHI::Format IndicesFormat = AZ::RHI::Format::R32_UINT;
-
-    const uint32_t PositionFloatsPerVert = 3;
-    const uint32_t NormalFloatsPerVert   = 3;
-    const uint32_t UVFloatsPerVert       = 2;
-    const uint32_t ColorFloatsPerVert    = 4;
-    const uint32_t TangentFloatsPerVert  = 4; // The 4th channel is used to indicate handedness of the bitangent, either 1 or -1.
-    const uint32_t BitangentFloatsPerVert = 3; 
-    
-    const AZ::RHI::Format PositionFormat = AZ::RHI::Format::R32G32B32_FLOAT;
-    const AZ::RHI::Format NormalFormat   = AZ::RHI::Format::R32G32B32_FLOAT;
-    const AZ::RHI::Format UVFormat       = AZ::RHI::Format::R32G32_FLOAT;
-    const AZ::RHI::Format ColorFormat    = AZ::RHI::Format::R32G32B32A32_FLOAT;
-    const AZ::RHI::Format TangentFormat = AZ::RHI::Format::R32G32B32A32_FLOAT; // The 4th channel is used to indicate handedness of the bitangent, either 1 or -1.
-    const AZ::RHI::Format BitangentFormat = AZ::RHI::Format::R32G32B32_FLOAT;
-
-    const char* ShaderSemanticName_SkinJointIndices = "SKIN_JOINTINDICES";
-    const char* ShaderSemanticName_SkinWeights = "SKIN_WEIGHTS";
-    const AZ::RHI::Format SkinWeightFormat = AZ::RHI::Format::R32_FLOAT; // Single-component, 32-bit floating point per weight
-
-    // Morph targets
-    const char* ShaderSemanticName_MorphTargetDeltas = "MORPHTARGET_VERTEXDELTAS";
-
-    // Cloth data
-    const char* const ShaderSemanticName_ClothData = "CLOTH_DATA";
-    const uint32_t ClothDataFloatsPerVert = 4;
-    const AZ::RHI::Format ClothDataFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
-}
 
 namespace AZ
 {
@@ -115,7 +86,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(35);  // Fix vertex welding
+                    ->Version(38);  // Pad Skinning mesh buffers to respect appropriate alignment
             }
         }
 
@@ -171,8 +142,6 @@ namespace AZ
                 }
                 m_systemInputAssemblyBufferPoolId = assetIdOutcome.GetValue();
             }
-
-            m_createdSubId.clear();
 
             m_modelName = context.m_group.GetName();
 
@@ -385,7 +354,7 @@ namespace AZ
             
             ModelAssetCreator modelAssetCreator;
             modelAssetCreator.Begin(modelAssetId);
-
+            modelAssetCreator.SetName(modelAssetName);
             AZStd::shared_ptr<const SceneAPI::DataTypes::ITagRule> tagRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ITagRule>();
             if (tagRule)
             {
@@ -492,7 +461,7 @@ namespace AZ
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
 
-                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, lodAssetCreator, context.m_materialsByUid))
+                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, modelAssetCreator, lodAssetCreator, context.m_materialsByUid))
                         {
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
@@ -762,7 +731,12 @@ namespace AZ
                     AZStd::vector<AZ::Name>& colorNames = productMesh.m_colorCustomNames;
                     AZStd::vector<float>& clothData = productMesh.m_clothData;
 
+                    AZStd::vector<uint16_t>& skinJointIndices = productMesh.m_skinJointIndices;
+                    AZStd::vector<float>& skinWeights = productMesh.m_skinWeights;
+
                     const size_t vertexCount = oldToNewIndices.size();
+                    productMesh.m_vertexCount = vertexCount;
+
                     positions.reserve(vertexCount * PositionFloatsPerVert);
                     normals.reserve(vertexCount * NormalFloatsPerVert);
 
@@ -851,7 +825,7 @@ namespace AZ
                             sourceMesh, oldToNewIndices, warnedExcessOfSkinInfluences);
 
                         const uint32_t totalInfluences = productMesh.m_influencesPerVertex * aznumeric_cast<uint32_t>(vertexCount);
-                        productMesh.m_skinJointIndices.reserve(totalInfluences + CalculateJointIdPaddingCount(totalInfluences));
+                        productMesh.m_skinJointIndices.reserve(totalInfluences);
                         productMesh.m_skinWeights.reserve(totalInfluences);
                     }
 
@@ -959,6 +933,23 @@ namespace AZ
                         }
                     }// for each vertex in old to new indices
 
+                    // Align all the stream buffers to ensure they all padded to SkinnedMeshBufferAlignment byte boundary.
+                    // This is done to ensure that we can respect Metal's requirement of having typed buffers aligned to 64.
+                    // We also need to align to 16 and 12 byte boundary in order to respect RGB32 and RGBA32 buffer views.
+                    if (hasSkinData)
+                    {
+                        RPI::ModelAssetHelpers::AlignStreamBuffer(positions, vertexCount, PositionFormat, SkinnedMeshBufferAlignment);
+                        RPI::ModelAssetHelpers::AlignStreamBuffer(normals, vertexCount, NormalFormat, SkinnedMeshBufferAlignment);
+                        RPI::ModelAssetHelpers::AlignStreamBuffer(tangents, vertexCount, TangentFormat, SkinnedMeshBufferAlignment);
+                        RPI::ModelAssetHelpers::AlignStreamBuffer(bitangents, vertexCount, BitangentFormat, SkinnedMeshBufferAlignment);
+                        
+                        const size_t totalVertexInfluences = productMesh.m_influencesPerVertex * vertexCount;
+                        RPI::ModelAssetHelpers::AlignStreamBuffer(
+                            skinJointIndices, totalVertexInfluences, SkinIndicesFormat, SkinnedMeshBufferAlignment);
+                        RPI::ModelAssetHelpers::AlignStreamBuffer(
+                            skinWeights, totalVertexInfluences, SkinWeightFormat, SkinnedMeshBufferAlignment);
+                    }
+
                     // A morph target that only influenced one source mesh might be split over multiple product meshes
                     // if the source mesh had multiple materials and was split up.
                     // So here, we need to know the start and end indices of the current product mesh within the original source
@@ -992,12 +983,16 @@ namespace AZ
                     // of total elements. Pad buffers with missing data to make them align with positions and normals
                     if (productMesh.m_tangents.empty())
                     {
-                        productMesh.m_tangents.resize(vertexCount * TangentFloatsPerVert, 1.0f);
+                        size_t alignedVertexCount =
+                            RPI::ModelAssetHelpers::GetAlignedCount<float>(vertexCount, TangentFormat, SkinnedMeshBufferAlignment);
+                        productMesh.m_tangents.resize(alignedVertexCount, 1.0f);
                         AZ_Warning(s_builderName, false, "Mesh '%s' is missing tangents and no defaults were generated. Skinned meshes require tangents. Dummy tangents will be inserted, which may result in rendering artifacts.", productMesh.m_name.GetCStr());
                     }
                     if (productMesh.m_bitangents.empty())
                     {
-                        productMesh.m_bitangents.resize(vertexCount * BitangentFloatsPerVert, 1.0f);
+                        size_t alignedVertexCount =
+                            RPI::ModelAssetHelpers::GetAlignedCount<float>(vertexCount, BitangentFormat, SkinnedMeshBufferAlignment);
+                        productMesh.m_bitangents.resize(alignedVertexCount, 1.0f);
                         AZ_Warning(s_builderName, false, "Mesh '%s' is missing bitangents and no defaults were generated. Skinned meshes require bitangents. Dummy bitangents will be inserted, which may result in rendering artifacts.", productMesh.m_name.GetCStr());
                     }
                 }
@@ -1283,12 +1278,28 @@ namespace AZ
         }
 
         template<typename T>
-        bool ModelAssetBuilderComponent::ValidateStreamSize([[maybe_unused]] size_t expectedVertexCount, [[maybe_unused]] const AZStd::vector<T>& bufferData, [[maybe_unused]] AZ::RHI::Format format, [[maybe_unused]] const char* streamName) const
+        bool ModelAssetBuilderComponent::ValidateStreamSize(
+            size_t expectedVertexCount,
+            const AZStd::vector<T>& bufferData,
+            AZ::RHI::Format format,
+            [[maybe_unused]] const char* streamName,
+            bool isAligned /*= false*/) const
         {
             size_t actualVertexCount = (bufferData.size() * sizeof(T)) / RHI::GetFormatSize(format);
             bool vertexCountMatchesExpected = expectedVertexCount == actualVertexCount;
+
+            //If the buffer is aligned it will have padded data so need to account for that. 
+            if (isAligned)
+            {
+                size_t expectedPaddedVertexCountInT =
+                    RPI::ModelAssetHelpers::GetAlignedCount<T>(expectedVertexCount, format, SkinnedMeshBufferAlignment);
+                size_t expectedPaddedVertexCount = expectedPaddedVertexCountInT / RHI::GetFormatComponentCount(format);
+                vertexCountMatchesExpected = expectedPaddedVertexCount == actualVertexCount;
+            }
+
             AZ_Error(
-                s_builderName, vertexCountMatchesExpected,
+                s_builderName,
+                vertexCountMatchesExpected,
                 "VertexStream '%s' does not match the expected vertex count. This typically means multiple sub-meshes have mis-matched "
                 "vertex stream layouts (such as one having more uv sets than the other) but are assigned the same material in the dcc tool "
                 "so they were merged.",
@@ -1299,41 +1310,54 @@ namespace AZ
         bool ModelAssetBuilderComponent::ValidateStreamAlignment(const ProductMeshContent& mesh) const
         {
             bool success = true;
-            size_t expectedVertexCount = mesh.m_positions.size() * sizeof(mesh.m_positions[0]) / RHI::GetFormatSize(PositionFormat);
+            const bool hasSkinData = !mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty();
+            if (!mesh.m_positions.empty())
+            {
+                success &= ValidateStreamSize(mesh.m_vertexCount, mesh.m_positions, PositionFormat, "POSITION", hasSkinData);
+            }
             if (!mesh.m_normals.empty())
             {
-                success &= ValidateStreamSize(expectedVertexCount, mesh.m_normals, NormalFormat, "NORMAL");
+                success &= ValidateStreamSize(mesh.m_vertexCount, mesh.m_normals, NormalFormat, "NORMAL", hasSkinData);
             }
             if (!mesh.m_tangents.empty())
             {
-                success &= ValidateStreamSize(expectedVertexCount, mesh.m_tangents, TangentFormat, "TANGENT");
+                success &= ValidateStreamSize(mesh.m_vertexCount, mesh.m_tangents, TangentFormat, "TANGENT", hasSkinData);
             }
             if (!mesh.m_bitangents.empty())
             {
-                success &= ValidateStreamSize(expectedVertexCount, mesh.m_bitangents, BitangentFormat, "BITANGENT");
+                success &= ValidateStreamSize(mesh.m_vertexCount, mesh.m_bitangents, BitangentFormat, "BITANGENT", hasSkinData);
             }
+
             for (size_t i = 0; i < mesh.m_uvSets.size(); ++i)
             {
-                success &= ValidateStreamSize(expectedVertexCount, mesh.m_uvSets[i], UVFormat, mesh.m_uvCustomNames[i].GetCStr());
+                success &= ValidateStreamSize(mesh.m_vertexCount, mesh.m_uvSets[i], UVFormat, mesh.m_uvCustomNames[i].GetCStr());
             }
             for (size_t i = 0; i < mesh.m_colorSets.size(); ++i)
             {
-                success &= ValidateStreamSize(expectedVertexCount, mesh.m_colorSets[i], ColorFormat, mesh.m_colorCustomNames[i].GetCStr());
+                success &=
+                    ValidateStreamSize(mesh.m_vertexCount, mesh.m_colorSets[i], ColorFormat, mesh.m_colorCustomNames[i].GetCStr());
             }
             if (!mesh.m_clothData.empty())
             {
-                success &= ValidateStreamSize(expectedVertexCount, mesh.m_clothData, ClothDataFormat, ShaderSemanticName_ClothData);
+                success &= ValidateStreamSize(mesh.m_vertexCount, mesh.m_clothData, ClothDataFormat, ShaderSemanticName_ClothData);
             }
             if (!mesh.m_skinJointIndices.empty())
             {
                 success &= ValidateStreamSize(
-                    expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinJointIndices, AZ::RHI::Format::R16_UINT,
-                    ShaderSemanticName_SkinJointIndices);
+                    mesh.m_vertexCount * mesh.m_influencesPerVertex,
+                    mesh.m_skinJointIndices,
+                    AZ::RHI::Format::R16_UINT,
+                    ShaderSemanticName_SkinJointIndices,
+                    hasSkinData);  
             }
             if (!mesh.m_skinWeights.empty())
             {
                 success &= ValidateStreamSize(
-                    expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinWeights, SkinWeightFormat, ShaderSemanticName_SkinWeights);
+                    mesh.m_vertexCount * mesh.m_influencesPerVertex,
+                    mesh.m_skinWeights,
+                    SkinWeightFormat,
+                    ShaderSemanticName_SkinWeights,
+                    hasSkinData);
             }
 
             return success;
@@ -1350,6 +1374,13 @@ namespace AZ
 
             auto meshPositionCount = meshPositionsFloatCount / PositionFloatsPerVert;
             auto meshNormalsCount = meshNormalsFloatCount / NormalFloatsPerVert;
+            const bool hasSkinData = !mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty();
+            if (hasSkinData)
+            {
+                // Skinned buffers are padded so true vertex count is cached a part of the mesh and used here.
+                meshPositionCount = aznumeric_cast<uint32_t>(mesh.m_vertexCount);
+                meshNormalsCount = aznumeric_cast<uint32_t>(mesh.m_vertexCount);
+            }
 
             meshView.m_indexView = RHI::BufferViewDescriptor::CreateTyped(0, meshIndexCount, IndicesFormat);
             meshView.m_positionView = RHI::BufferViewDescriptor::CreateTyped(0, meshPositionCount, PositionFormat);
@@ -1397,11 +1428,10 @@ namespace AZ
 
             if (!mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty())
             {
-                const size_t numSkinInfluences = mesh.m_skinWeights.size();
-
-                uint32_t jointIndicesSizeInBytes = static_cast<uint32_t>(numSkinInfluences * sizeof(uint16_t));
+                const size_t numSkinInfluences = meshPositionCount * mesh.m_influencesPerVertex;
+                const uint32_t jointIndicesSizeInBytes = static_cast<uint32_t>(numSkinInfluences * sizeof(uint16_t));
                 meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(0, jointIndicesSizeInBytes);
-                meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(0, static_cast<uint32_t>(numSkinInfluences), SkinWeightFormat);
+                meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(0, aznumeric_cast<uint32_t>(numSkinInfluences),SkinWeightFormat);
             }
 
             if (!mesh.m_morphTargetVertexData.empty())
@@ -1473,7 +1503,13 @@ namespace AZ
                 meshView.m_indexView = RHI::BufferViewDescriptor::CreateTyped(static_cast<uint32_t>(lodBufferInfo.m_indexCount), meshIndexCount, IndicesFormat);
                 lodBufferInfo.m_indexCount += meshIndexCount;
 
-                const uint32_t meshVertexCount = meshPositionsFloatCount / PositionFloatsPerVert;
+                const bool hasSkinData = !mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty();
+                uint32_t meshVertexCount = meshPositionsFloatCount / PositionFloatsPerVert;
+                if (hasSkinData)
+                {
+                    // Skinned buffers are padded so true vertex count is cached as part of the mesh and used here.
+                    meshVertexCount = aznumeric_cast<uint32_t>(mesh.m_vertexCount);
+                }
 
                 if (!mesh.m_positions.empty())
                 {
@@ -1560,24 +1596,21 @@ namespace AZ
                             "name %s is skinned, but previous meshes were not skinned.",
                             mesh.m_name.GetCStr());
                     }
-                    AZ_Assert(mesh.m_skinJointIndices.size() == mesh.m_skinWeights.size(),
-                        "Number of skin influence joint indices (%d) should match the number of weights (%d).",
-                        mesh.m_skinJointIndices.size(), mesh.m_skinWeights.size());
+
+                    [[maybe_unused]] const size_t totalVertexInfluences = mesh.m_influencesPerVertex * mesh.m_vertexCount;
+                    AZ_Assert(
+                        mesh.m_skinJointIndices.size() >= totalVertexInfluences && mesh.m_skinWeights.size() >= totalVertexInfluences,
+                        "Number of allocated skin influence joint indices (%zu) and the number of weights (%zu) should be above (%zu)  .",
+                        mesh.m_skinJointIndices.size(),
+                        mesh.m_skinWeights.size(),
+                        totalVertexInfluences);
 
                     AZ_Assert(mesh.m_skinWeights.size() % mesh.m_influencesPerVertex == 0,
                         "The number of skin influences per vertex (%d) is not a multiple of the total number of skinning weights (%d). This means that not every vertex has exactly (%d) skinning weights and invalidates the data.",
                         mesh.m_skinWeights.size(), mesh.m_influencesPerVertex, mesh.m_influencesPerVertex);
 
                     uint32_t prevJointIdCount = aznumeric_cast<uint32_t>(lodBufferInfo.m_jointIdsCount);
-                    uint32_t newJointIdCount = aznumeric_cast<uint32_t>(mesh.m_skinJointIndices.size());
-
-                    // Pad the joint id buffer if it ends too soon, so the next view can start aligned
-                    uint32_t extraIdCount = CalculateJointIdPaddingCount(newJointIdCount);
-
-                    // Pad the buffer
-                    AZStd::vector<uint16_t> extraIds(extraIdCount, 0);
-                    mesh.m_skinJointIndices.insert(
-                        mesh.m_skinJointIndices.end(), extraIds.begin(), extraIds.end());
+                    uint32_t newJointIdCount = aznumeric_cast<uint32_t>(mesh.m_vertexCount * mesh.m_influencesPerVertex);
 
                     AZ_Assert(prevJointIdCount * sizeof(uint16_t) % 16 == 0, "Failed to align the joint id offset along a 16-byte boundary");
 
@@ -1586,14 +1619,12 @@ namespace AZ
                         /*byteOffset=*/prevJointIdCount * sizeof(uint16_t),
                         /*byteCount*/ newJointIdCount * sizeof(uint16_t));
 
-                    // For the purpose of tracking the size of the buffer, include the padding
-                    lodBufferInfo.m_jointIdsCount += (newJointIdCount + extraIdCount);
-
+                    lodBufferInfo.m_jointIdsCount += aznumeric_cast<uint32_t>(mesh.m_skinJointIndices.size());
                     // Weights are more straightforward, just add any new weights
                     const uint32_t prevJointWeightCount = aznumeric_cast<uint32_t>(lodBufferInfo.m_jointWeightsCount);
-                    const uint32_t newJointWeightCount = aznumeric_cast<uint32_t>(mesh.m_skinWeights.size());
-                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/prevJointWeightCount, newJointWeightCount, SkinWeightFormat);
-                    lodBufferInfo.m_jointWeightsCount += newJointWeightCount;
+                    const uint32_t newJointWeightCount = aznumeric_cast<uint32_t>(mesh.m_vertexCount * mesh.m_influencesPerVertex);
+                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(prevJointWeightCount, newJointWeightCount, SkinWeightFormat);
+                    lodBufferInfo.m_jointWeightsCount += aznumeric_cast<uint32_t>(mesh.m_skinWeights.size());
                 }
                 else if (lodBufferInfo.m_jointIdsCount > 0)
                 {
@@ -1664,6 +1695,7 @@ namespace AZ
                     {
                         colorSetCounts[i] += mesh.m_colorSets[i].size();
                     }
+                    mergedMesh.m_vertexCount += mesh.m_vertexCount;
                 }
 
                 mergedMesh.m_indices.reserve(indexCount);

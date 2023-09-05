@@ -170,6 +170,7 @@ namespace EMotionFX
             m_motionInstance->Destroy();
             m_motion->Destroy();
             m_actorInstance->Destroy();
+            m_actor.reset();
             SystemComponentFixture::TearDown();
         }
 

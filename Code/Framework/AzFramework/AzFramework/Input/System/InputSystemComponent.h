@@ -53,6 +53,15 @@ namespace AzFramework
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AZ::ComponentDescriptor::GetDependentServices
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! \ref AZ::ComponentDescriptor::GetRequiredServices
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         InputSystemComponent();
 

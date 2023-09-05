@@ -12,34 +12,6 @@
 
 namespace AZ::Vulkan
 {
-    //! This class is used as a container for transferring instance
-    //! data between RHI::Vulkan and XR::Vulkan
-    class XRInstanceDescriptor final
-        : public RHI::XRInstanceDescriptor
-    {
-        using Base = RHI::XRInstanceDescriptor;
-    public:
-        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator);
-        AZ_RTTI(XRInstanceDescriptor, "{93DF070E-1423-4BBF-A9F3-136F9E543594}", Base);
-
-        XRInstanceDescriptor() = default;
-        ~XRInstanceDescriptor() = default;
-
-        // Provided by the RHI::Vulkan backend
-        struct 
-        { 
-            VkInstanceCreateInfo* m_createInfo = nullptr;
-        } m_inputData;
-
-        // Provided by the XR::Vulkan backend
-        struct 
-        {
-            VkInstance m_xrVkInstance = VK_NULL_HANDLE;
-            GladVulkanContext m_context;
-        } m_outputData;
-
-    };
-
     //! This class is used as a container for transferring physical
     //! data between RHI::Vulkan and XR::Vulkan
     class XRPhysicalDeviceDescriptor final
@@ -78,15 +50,9 @@ namespace AZ::Vulkan
         // Provided by the RHI::Vulkan backend
         struct
         {
-            VkDeviceCreateInfo* m_deviceCreateInfo = nullptr;
-        } m_inputData;
-
-        // Provided by the XR::Vulkan backend
-        struct
-        {
             VkDevice m_xrVkDevice = VK_NULL_HANDLE;
-            GladVulkanContext m_context;
-        } m_outputData;
+            VkPhysicalDevice m_xrVkPhysicalDevice = VK_NULL_HANDLE;
+        } m_inputData;
     };
 
 

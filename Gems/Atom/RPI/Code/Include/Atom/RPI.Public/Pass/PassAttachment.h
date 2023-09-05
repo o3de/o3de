@@ -112,9 +112,19 @@ namespace AZ
                     u8 m_getSizeFromPipeline : 1;
                     u8 m_getFormatFromPipeline : 1;
                     u8 m_getMultisampleStateFromPipeline : 1;
+                    u8 m_updatingImageFormat : 1;
+                    u8 m_updatingMultisampleState : 1;
+                    u8 m_updatingSize : 1;
+                    u8 m_updatingArraySize : 1;
                 };
                 u8 m_allFlags = 0;
             };
+
+        protected:
+            void UpdateImageFormat();
+            void UpdateImageMultisampleState();
+            void UpdateImageSize();
+            void UpdateImageArraySize();
         };
 
         //! An attachment binding points to a PassAttachment and specifies how the pass uses that attachment.

@@ -6,8 +6,9 @@
  *
  */
 
-#include <Atom/RHI.Loader/FunctionLoader.h>
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
+#include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -48,15 +49,19 @@ namespace AZ
             return aznew Device();
         }
 
-        RawStringList Device::GetRequiredLayers()
+        StringList Device::GetRequiredLayers()
         {
             // No required layers for now
-            return RawStringList();
+            return StringList();
         }
 
-        RawStringList Device::GetRequiredExtensions()
+        StringList Device::GetRequiredExtensions()
         {
-            return RawStringList{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+            StringList requiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+            AZStd::vector<AZStd::string> collectedExtensions;
+            DeviceRequirementBus::Broadcast(&DeviceRequirementBus::Events::CollectAdditionalRequiredDeviceExtensions, collectedExtensions);
+            requiredExtensions.insert(requiredExtensions.end(), collectedExtensions.begin(), collectedExtensions.end());
+            return requiredExtensions;
         }
 
         void Device::SetNameInternal(const AZStd::string_view& name)
@@ -69,16 +74,24 @@ namespace AZ
 
         RHI::ResultCode Device::InitInternal(RHI::PhysicalDevice& physicalDeviceBase)
         {
+            m_loaderContext = LoaderContext::Create();
+            if (!m_loaderContext)
+            {
+                return RHI::ResultCode::Fail;
+            }
+
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
-            RawStringList requiredLayers = GetRequiredLayers();
-            RawStringList requiredExtensions = GetRequiredExtensions();
+            StringList requiredLayerStrings = GetRequiredLayers();
+            StringList requiredExtensionStrings = GetRequiredExtensions();
+            RawStringList requiredLayers, requiredExtensions;
+            ToRawStringList(requiredLayerStrings, requiredLayers);
+            ToRawStringList(requiredExtensionStrings, requiredExtensions);
 
             RawStringList optionalExtensions = physicalDevice.FilterSupportedOptionalExtensions();
             requiredExtensions.insert(requiredExtensions.end(), optionalExtensions.begin(), optionalExtensions.end());
 
-            //We now need to find the queues that the physical device has available and make sure 
-            //it has what we need. We're just expecting a Graphics queue for now.
-
+            // We now need to find the queues that the physical device has available and make sure
+            // it has what we need. We're just expecting a Graphics queue for now.
             BuildDeviceQueueInfo(physicalDevice);
 
             m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
@@ -106,6 +119,7 @@ namespace AZ
             m_enabledDeviceFeatures.sparseResidencyImage3D = deviceFeatures.sparseResidencyImage3D;
             m_enabledDeviceFeatures.sparseResidencyAliased = deviceFeatures.sparseResidencyAliased;
             m_enabledDeviceFeatures.independentBlend = deviceFeatures.independentBlend;
+            m_enabledDeviceFeatures.shaderStorageImageMultisample = deviceFeatures.shaderStorageImageMultisample;
 
             if (deviceFeatures.geometryShader)
             {
@@ -123,16 +137,6 @@ namespace AZ
             else
             {
                 m_supportedPipelineStageFlagsMask &= ~(VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT | VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT);
-            }
-
-            if (!physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
-            {
-                m_supportedPipelineStageFlagsMask &= ~VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
-            }
-
-            if (!physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentDensityMap))
-            {
-                m_supportedPipelineStageFlagsMask &= ~VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT;
             }
 
             AZStd::vector<VkDeviceQueueCreateInfo> queueCreationInfo;
@@ -195,11 +199,24 @@ namespace AZ
             bufferDeviceAddressFeatures.pNext = &depthClipEnabled;
 
             auto fragmenDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
-            fragmenDensityMapFeatures.fragmentDensityMapDynamic = false;
             depthClipEnabled.pNext = &fragmenDensityMapFeatures;
 
             auto fragmenShadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
             fragmenDensityMapFeatures.pNext = &fragmenShadingRateFeatures;
+
+            if (fragmenShadingRateFeatures.attachmentFragmentShadingRate)
+            {
+                // Must disable the "fragmentDensityMap" usage if "attachmentFragmentShadingRate" is enabled.
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentDensityMap);
+                fragmenDensityMapFeatures.fragmentDensityMap = false;
+            }
+            else if (fragmenDensityMapFeatures.fragmentDensityMap)
+            {
+                // Must disable the "pipelineFragmentShadingRate" and "primitiveFragmentShadingRate" usage if "fragmentDensityMap" is enabled.
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentShadingRate);
+                fragmenShadingRateFeatures.pipelineFragmentShadingRate = false;
+                fragmenShadingRateFeatures.primitiveFragmentShadingRate = false;
+            }
 
             VkPhysicalDeviceRobustness2FeaturesEXT robustness2 = {};
             robustness2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -220,9 +237,9 @@ namespace AZ
             VkDeviceCreateInfo deviceInfo = {};
             deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
-            // If the instance extension "VK_KHR_get_physical_device_properties2" is present, then we must use VkPhysicalDeviceVulkan12Features instead
+            // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
             // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
-            if (VK_INSTANCE_EXTENSION_SUPPORTED(Instance::GetInstance().GetContext(), KHR_get_physical_device_properties2))
+            if (majorVersion >= 1 && minorVersion >= 2)
             {
                 vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
                 vulkan12Features.drawIndirectCount = physicalDevice.GetPhysicalDeviceVulkan12Features().drawIndirectCount;
@@ -308,33 +325,37 @@ namespace AZ
             deviceInfo.ppEnabledExtensionNames = requiredExtensions.data();
             deviceInfo.pEnabledFeatures = &m_enabledDeviceFeatures;
 
-            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
             Instance& instance = Instance::GetInstance();
+            const VkResult vkResult = instance.GetContext().CreateDevice(
+                physicalDevice.GetNativePhysicalDevice(),
+                &deviceInfo,
+                VkSystemAllocator::Get(),
+                &m_nativeDevice);
+            AssertSuccess(vkResult);
+            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
+
+            LoaderContext::Descriptor loaderDescriptor;
+            loaderDescriptor.m_instance = instance.GetNativeInstance();
+            loaderDescriptor.m_physicalDevice = physicalDevice.GetNativePhysicalDevice();
+            loaderDescriptor.m_device = m_nativeDevice;
+            loaderDescriptor.m_loadedExtensions = instance.GetLoadedExtensions();
+            loaderDescriptor.m_loadedLayers = instance.GetLoadedLayers();
+            if (!m_loaderContext->Init(loaderDescriptor))
+            {
+                AZ_Warning("Vulkan", false, "Could not initialize function loader.");
+                return RHI::ResultCode::Fail;
+            }
+
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
             if (xrSystem)
             {
-                //If a XR system is registered with RHI try to get the xr compatible Vk device from XR::Vulkan module
-                XRDeviceDescriptor xrDevicDescriptor;
-                xrDevicDescriptor.m_inputData.m_deviceCreateInfo = &deviceInfo;
-                AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDevicDescriptor);
+                // Pass the native device to the XR system.
+                XRDeviceDescriptor xrDeviceDescriptor;
+                xrDeviceDescriptor.m_inputData.m_xrVkDevice = m_nativeDevice;
+                xrDeviceDescriptor.m_inputData.m_xrVkPhysicalDevice = physicalDevice.GetNativePhysicalDevice();
+                AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDeviceDescriptor);
                 AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
-                m_nativeDevice = xrDevicDescriptor.m_outputData.m_xrVkDevice;
-                m_context = xrDevicDescriptor.m_outputData.m_context;
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
-                m_isXrNativeDevice = true;
-            }
-            else
-            {
-                const VkResult vkResult = instance.GetContext().CreateDevice(
-                    physicalDevice.GetNativePhysicalDevice(), &deviceInfo, VkSystemAllocator::Get(), &m_nativeDevice);
-                AssertSuccess(vkResult);
-                RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-
-                if (!instance.GetFunctionLoader().LoadProcAddresses(
-                        &m_context, instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
-                {
-                    AZ_Warning("Vulkan", false, "Could not initialize function loader.");
-                    return RHI::ResultCode::Fail;
-                }
             }
 
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
@@ -343,7 +364,17 @@ namespace AZ
             }
 
             //Load device features now that we have loaded all extension info
-            physicalDevice.LoadSupportedFeatures(m_context);
+            physicalDevice.LoadSupportedFeatures(GetContext());
+
+            if (!physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
+            {
+                m_supportedPipelineStageFlagsMask &= ~VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+            }
+
+            if (!physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentDensityMap))
+            {
+                m_supportedPipelineStageFlagsMask &= ~VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT;
+            }
 
             RHI::ResultCode resultCode = InitVmaAllocator(physicalDeviceBase);
             RHI::RHISystemNotificationBus::Handler::BusConnect();
@@ -369,7 +400,7 @@ namespace AZ
             ReleaseQueue::Descriptor releaseQueueDescriptor;
             releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
             m_releaseQueue.Init(releaseQueueDescriptor);
-       
+
 
             // Set the cache sizes.
             m_renderPassCache.first.SetCapacity(RenderPassCacheCapacity);
@@ -442,7 +473,7 @@ namespace AZ
 
         const GladVulkanContext& Device::GetContext() const
         {
-            return m_context;
+            return m_loaderContext->GetContext();
         }
 
         uint32_t Device::FindMemoryTypeIndex(VkMemoryPropertyFlags memoryPropertyFlags, uint32_t memoryTypeBits) const
@@ -477,13 +508,13 @@ namespace AZ
                 // This will not allocate or bind memory.
                 ImageCreateInfo createInfo = BuildImageCreateInfo(descriptor);
                 VkImage vkImage = VK_NULL_HANDLE;
-                VkResult vkResult = m_context.CreateImage(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkImage);
+                VkResult vkResult = GetContext().CreateImage(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkImage);
                 AssertSuccess(vkResult);
 
                 VkMemoryRequirements memoryRequirements = {};
-                m_context.GetImageMemoryRequirements(GetNativeDevice(), vkImage, &memoryRequirements);
+                GetContext().GetImageMemoryRequirements(GetNativeDevice(), vkImage, &memoryRequirements);
                 auto it2 = cache.insert(hash, memoryRequirements);
-                m_context.DestroyImage(GetNativeDevice(), vkImage, VkSystemAllocator::Get());
+                GetContext().DestroyImage(GetNativeDevice(), vkImage, VkSystemAllocator::Get());
                 return it2.first->second;
             }
         }
@@ -504,13 +535,13 @@ namespace AZ
                 // This will not allocate or bind memory.
                 BufferCreateInfo createInfo = BuildBufferCreateInfo(descriptor);
                 VkBuffer vkBuffer = VK_NULL_HANDLE;
-                VkResult vkResult = m_context.CreateBuffer(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkBuffer);
+                VkResult vkResult = GetContext().CreateBuffer(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkBuffer);
                 AssertSuccess(vkResult);
 
                 VkMemoryRequirements memoryRequirements = {};
-                m_context.GetBufferMemoryRequirements(GetNativeDevice(), vkBuffer, &memoryRequirements);
+                GetContext().GetBufferMemoryRequirements(GetNativeDevice(), vkBuffer, &memoryRequirements);
                 auto it2 = cache.insert(hash, memoryRequirements);
-                m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, VkSystemAllocator::Get());
+                GetContext().DestroyBuffer(GetNativeDevice(), vkBuffer, VkSystemAllocator::Get());
                 return it2.first->second;
             }
         }
@@ -540,7 +571,7 @@ namespace AZ
 
             return imageUsageFlags;
         }
-        
+
         CommandQueueContext& Device::GetCommandQueueContext()
         {
             return m_commandQueueContext;
@@ -572,7 +603,7 @@ namespace AZ
             }
 
             return *m_asyncUploadQueue;
-        }        
+        }
 
         BindlessDescriptorPool& Device::GetBindlessDescriptorPool()
         {
@@ -637,7 +668,7 @@ namespace AZ
         {
             return m_commandListAllocator.Allocate(m_commandQueueContext.GetQueueFamilyIndex(queueClass), level);
         }
-        
+
         uint32_t Device::GetCurrentFrameIndex() const
         {
             return m_commandQueueContext.GetCurrentFrameIndex();
@@ -678,18 +709,20 @@ namespace AZ
 
             ShutdownVmaAllocator();
 
-            // Only destroy VkDevice if created locally and not passed in by a XR module
-            if (!m_isXrNativeDevice)
+            if (m_nativeDevice != VK_NULL_HANDLE)
             {
-                if (m_nativeDevice != VK_NULL_HANDLE)
-                {
-                    m_context.DestroyDevice(m_nativeDevice, VkSystemAllocator::Get());
-                    m_nativeDevice = VK_NULL_HANDLE;
-                }
+                GetContext().DestroyDevice(m_nativeDevice, VkSystemAllocator::Get());
+                m_nativeDevice = VK_NULL_HANDLE;
+            }
+
+            if (m_loaderContext)
+            {
+                m_loaderContext->Shutdown();
+                m_loaderContext = nullptr;
             }
         }
 
-        RHI::ResultCode Device::BeginFrameInternal() 
+        RHI::ResultCode Device::BeginFrameInternal()
         {
             // We call to collect on the release queue on the begin frame because some objects (like resource pools)
             // cannot be shutdown during the frame scheduler execution. At this point the frame has not yet started.
@@ -712,8 +745,8 @@ namespace AZ
             }
             return RHI::ResultCode::Success;
         }
-        
-        void Device::EndFrameInternal() 
+
+        void Device::EndFrameInternal()
         {
             RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
             if (xrSystem)
@@ -738,13 +771,13 @@ namespace AZ
             m_bindlessDescriptorPool.GarbageCollect();
         }
 
-        void Device::WaitForIdleInternal() 
+        void Device::WaitForIdleInternal()
         {
             m_commandQueueContext.WaitForIdle();
             m_releaseQueue.Collect(true);
         }
 
-        void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) 
+        void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder)
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             const auto& memProps = physicalDevice.GetMemoryProperties();
@@ -802,7 +835,7 @@ namespace AZ
             }
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             uint32_t surfaceFormatCount = 0;
-            AssertSuccess(m_context.GetPhysicalDeviceSurfaceFormatsKHR(
+            AssertSuccess(GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
                 physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
             if (surfaceFormatCount == 0)
             {
@@ -811,7 +844,7 @@ namespace AZ
             }
 
             AZStd::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-            AssertSuccess(m_context.GetPhysicalDeviceSurfaceFormatsKHR(
+            AssertSuccess(GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
                 physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
 
             AZStd::set<RHI::Format> formats;
@@ -852,7 +885,7 @@ namespace AZ
                 {
                     flags |= RHI::FormatCapabilities::DepthStencil;
                 }
-                
+
                 if (RHI::CheckBitsAll(properties.optimalTilingFeatures, static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT)))
                 {
                     flags |= RHI::FormatCapabilities::Blend;
@@ -886,7 +919,7 @@ namespace AZ
                     flags |= RHI::FormatCapabilities::ShadingRate;
                 }
 
-                if (RHI::CheckBitsAll( 
+                if (RHI::CheckBitsAll(
                         properties.optimalTilingFeatures,
                         static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_FRAGMENT_DENSITY_MAP_BIT_EXT)))
                 {
@@ -937,7 +970,7 @@ namespace AZ
                 case RHI::ShadingRate::Rate1x2:
                     encoded_rate_w = 0;
                     encoded_rate_h = 1;
-                    break;         
+                    break;
                 case RHI::ShadingRate::Rate2x1:
                     encoded_rate_w = 1;
                     encoded_rate_h = 0;
@@ -1022,7 +1055,7 @@ namespace AZ
             }
             AZ_Error("Vulkan", false, "Shading Rate Image is not supported on this platform");
             return RHI::ShadingRateImageValue{};
-        } 
+        }
 
         void Device::InitFeaturesAndLimits(const PhysicalDevice& physicalDevice)
         {
@@ -1103,6 +1136,7 @@ namespace AZ
                     m_imageShadingRateMode = ShadingRateImageMode::ImageAttachment;
                     m_features.m_dynamicShadingRateImage = true;
                 }
+
                 if (shadingRateFeatures.primitiveFragmentShadingRate)
                 {
                     m_features.m_shadingRateTypeMask |= RHI::ShadingRateTypeFlags::PerPrimitive;
@@ -1191,7 +1225,7 @@ namespace AZ
             instance.GetContext().GetPhysicalDeviceQueueFamilyProperties(
                 nativePhysicalDevice, &queueFamilyCount, m_queueFamilyProperties.data());
         }
-        
+
         NullDescriptorManager& Device::GetNullDescriptorManager()
         {
             AZ_Assert(m_nullDescriptorManager, "NullDescriptorManager was not created. Check device capabilities.");
@@ -1224,33 +1258,36 @@ namespace AZ
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
             const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
 
+            auto& context = GetContext();
             // We pass the function pointers from the Glad context since we already loaded them.
             VmaVulkanFunctions vulkanFunctions =
             {
-                m_context.GetInstanceProcAddr,
-                m_context.GetDeviceProcAddr,
-                m_context.GetPhysicalDeviceProperties,
-                m_context.GetPhysicalDeviceMemoryProperties,
-                m_context.AllocateMemory,
-                m_context.FreeMemory,
-                m_context.MapMemory,
-                m_context.UnmapMemory,
-                m_context.FlushMappedMemoryRanges,
-                m_context.InvalidateMappedMemoryRanges,
-                m_context.BindBufferMemory,
-                m_context.BindImageMemory,
-                m_context.GetBufferMemoryRequirements,
-                m_context.GetImageMemoryRequirements,
-                m_context.CreateBuffer,
-                m_context.DestroyBuffer,
-                m_context.CreateImage,
-                m_context.DestroyImage,
-                m_context.CmdCopyBuffer,
-                m_context.GetBufferMemoryRequirements2,
-                m_context.GetImageMemoryRequirements2,
-                m_context.BindBufferMemory2,
-                m_context.BindImageMemory2,
-                m_context.GetPhysicalDeviceMemoryProperties2,
+                context.GetInstanceProcAddr,
+                context.GetDeviceProcAddr,
+                context.GetPhysicalDeviceProperties,
+                context.GetPhysicalDeviceMemoryProperties,
+                context.AllocateMemory,
+                context.FreeMemory,
+                context.MapMemory,
+                context.UnmapMemory,
+                context.FlushMappedMemoryRanges,
+                context.InvalidateMappedMemoryRanges,
+                context.BindBufferMemory,
+                context.BindImageMemory,
+                context.GetBufferMemoryRequirements,
+                context.GetImageMemoryRequirements,
+                context.CreateBuffer,
+                context.DestroyBuffer,
+                context.CreateImage,
+                context.DestroyImage,
+                context.CmdCopyBuffer,
+                context.GetBufferMemoryRequirements2,
+                context.GetImageMemoryRequirements2,
+                context.BindBufferMemory2,
+                context.BindImageMemory2,
+                context.GetPhysicalDeviceMemoryProperties2,
+                context.GetDeviceBufferMemoryRequirements,
+                context.GetDeviceImageMemoryRequirements
             };
 
             auto& instance = Instance::GetInstance();
@@ -1259,17 +1296,17 @@ namespace AZ
             allocatorInfo.physicalDevice = physicalDevice.GetNativePhysicalDevice();
             allocatorInfo.device = m_nativeDevice;
             allocatorInfo.instance = instance.GetNativeInstance();
-            // 1.2 is our current version for glad function pointers. Update this value when updating GLAD
-            allocatorInfo.vulkanApiVersion = AZStd::min(physicalProperties.apiVersion, VK_API_VERSION_1_2);
+            // Current version for glad function pointers. Update this value when updating GLAD.
+            allocatorInfo.vulkanApiVersion = AZStd::min(physicalProperties.apiVersion, VK_API_VERSION_1_3);
             allocatorInfo.pVulkanFunctions = &vulkanFunctions;
             allocatorInfo.pAllocationCallbacks = VkSystemAllocator::Get();
 
-            if (m_context.GetBufferMemoryRequirements2 && m_context.GetImageMemoryRequirements2)
+            if (GetContext().GetBufferMemoryRequirements2 && GetContext().GetImageMemoryRequirements2)
             {
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
             }
 
-            if (m_context.BindBufferMemory2 && m_context.BindImageMemory2)
+            if (GetContext().BindBufferMemory2 && GetContext().BindImageMemory2)
             {
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
             }
@@ -1350,7 +1387,7 @@ namespace AZ
                 }
             }
 
-            // add transfer src usage for all images since we may want them to be copyied for preview or readback
+            // add transfer src usage for all images since we may want them to be copied for preview or readback
             usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
             const VkImageUsageFlags usageMask = GetImageUsageFromFormat(descriptor.m_format);

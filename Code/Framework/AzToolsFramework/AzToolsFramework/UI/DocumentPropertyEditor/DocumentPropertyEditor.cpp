@@ -491,21 +491,12 @@ namespace AzToolsFramework
 
     DPERowWidget::DPERowWidget()
         : QFrame(nullptr) // parent will be set when the row is added to its layout
-        , m_parentRow(nullptr)
-        , m_depth(-1)
         , m_columnLayout(new DPELayout(this))
     {
         m_columnLayout->Init(-1, this);
         // allow horizontal stretching, but use the vertical size hint exactly
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QObject::connect(m_columnLayout, &DPELayout::expanderChanged, this, &DPERowWidget::onExpanderChanged);
-    }
-
-    void DPERowWidget::Init(int depth, DPERowWidget* parentRow)
-    {
-        m_parentRow = parentRow;
-        m_depth = depth;
-        m_columnLayout->Init(depth, parentRow);
     }
 
     void DPERowWidget::Clear()
@@ -537,6 +528,11 @@ namespace AzToolsFramework
         ClearCachedAttributes();
         m_domOrderedChildren.clear();
         m_columnLayout->Clear();
+
+        m_parentRow = nullptr;
+        m_depth = -1;
+        m_forceAutoExpand.reset();
+        m_expandByDefault.reset();
     }
 
     DPERowWidget::~DPERowWidget()
@@ -597,7 +593,6 @@ namespace AzToolsFramework
             {
                 // create and add the row child to m_domOrderedChildren
                 auto newRow = DocumentPropertyEditor::GetRowPool()->GetInstance();
-                newRow->Init(m_depth + 1, this);
                 AddRowChild(newRow, domIndex);
 
                 // if it's a row, recursively populate the children from the DOM array in the passed value
@@ -700,8 +695,6 @@ namespace AzToolsFramework
 
     void DPERowWidget::SetValueFromDom(const AZ::Dom::Value& domArray)
     {
-        Clear();
-
         auto domPath = BuildDomPath();
         SetAttributesFromDom(domArray);
 
@@ -1092,6 +1085,13 @@ namespace AzToolsFramework
 
     void DPERowWidget::AddRowChild(DPERowWidget* rowWidget, size_t domIndex)
     {
+        if (rowWidget)
+        {
+            rowWidget->m_parentRow = this;
+            rowWidget->m_depth = m_depth + 1;
+            rowWidget->m_columnLayout->Init(rowWidget->m_depth, this);
+        }
+
         m_columnLayout->SetExpanderShown(true);
         AddDomChildWidget(domIndex, rowWidget);
 
@@ -1358,6 +1358,7 @@ namespace AzToolsFramework
         m_spawnDebugView = AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled();
 
         setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         // register as a co-owner of the recycled widgets lists if they exist; create if not
         auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
@@ -1435,7 +1436,11 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::SetAllowVerticalScroll(bool allowVerticalScroll)
     {
         m_allowVerticalScroll = allowVerticalScroll;
-        setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+
+        /* as a temporary work-around to https://github.com/o3de/o3de/issues/14863 , never prevent vertical scrollbars
+           setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+         */
+
         auto existingPolicy = sizePolicy();
         setSizePolicy(existingPolicy.horizontalPolicy(), (allowVerticalScroll ? existingPolicy.verticalPolicy() : QSizePolicy::Fixed));
     }
@@ -1445,7 +1450,8 @@ namespace AzToolsFramework
         auto hint = QScrollArea::sizeHint();
         if (!m_allowVerticalScroll)
         {
-            hint.setHeight(m_layout->sizeHint().height());
+            auto margins = QWidget::contentsMargins();
+            hint.setHeight(m_layout->sizeHint().height() + margins.top() + margins.bottom());
         }
         return hint;
     }
@@ -1540,13 +1546,14 @@ namespace AzToolsFramework
             [](DPERowWidget* currRow, AZ::Dom::Path rowPath, DocumentPropertyEditor* theDPE, auto&& applyExpansionRecursively) -> void
         {
             // apply the saved expansion state to the current row and then each of its row children
-            currRow->ApplyExpansionState(rowPath, theDPE);
             for (size_t childIndex = 0, numChildren = currRow->m_domOrderedChildren.size(); childIndex < numChildren; ++childIndex)
             {
                 auto rowChild = qobject_cast<DPERowWidget*>(currRow->m_domOrderedChildren[childIndex]);
+                auto childPath = rowPath / childIndex;
                 if (rowChild)
                 {
-                    applyExpansionRecursively(rowChild, rowPath / childIndex, theDPE, applyExpansionRecursively);
+                    rowChild->ApplyExpansionState(childPath, theDPE);
+                    applyExpansionRecursively(rowChild, childPath, theDPE, applyExpansionRecursively);
                 }
             }
         };
@@ -1677,7 +1684,6 @@ namespace AzToolsFramework
 
         // invisible root node has a "depth" of -1; its children are all at indent 0
         m_rootNode = m_rowPool->GetInstance();
-        m_rootNode->Init(-1, nullptr);
         m_rootNode->setParent(this);
         m_rootNode->hide();
 

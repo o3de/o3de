@@ -670,7 +670,8 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
                     project_path = project_path.replace("\\", "/")
                     workspace_path = "${workspace}"
                     workspace_path = workspace_path.replace("\\", "/")
-                    project_path = project_path.replace("${workspace}", "..")
+                    project_path = project_path.replace("${workspace}", "..") // Set the relative path to the project from the engine path
+                    project_path = (project_path =~ /\.\.\/[\/a-zA-Z0-9-_]+/)[0] // Ensure only the path is assigned to the variable
                     env.CMAKE_LY_PROJECTS = project_path
                     echo "env.CMAKE_LY_PROJECTS = ${env.CMAKE_LY_PROJECTS}"
                 }

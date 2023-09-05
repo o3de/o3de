@@ -64,13 +64,11 @@ namespace AZ
                 void OnTextChange(const QString& text);
 
             protected:
-                using EntrySet = AZStd::unordered_set<AZStd::string>;
-
                 void showEvent(QShowEvent* event) override;
 
                 void BuildList(const Containers::SceneGraph& graph);
                 bool IsCorrectType(const DataTypes::IGraphObject& object) const;
-                void AddEntry(EntrySet& entries, const Containers::SceneGraph::Name& name);
+                void AddEntry(QStringList& comboListEntries, const Containers::SceneGraph::Name& name);
                 void SetSelection();
                 void AddDisabledOption();
 

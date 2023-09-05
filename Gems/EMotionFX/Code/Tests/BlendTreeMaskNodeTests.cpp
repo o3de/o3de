@@ -203,7 +203,6 @@ namespace EMotionFX
         }
 
     public:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         BlendTreeMaskNode* m_maskNode = nullptr;
         BlendTreeTestInputNode* m_basePoseNode = nullptr;
         const size_t m_basePosePosValue = 100; // Special identification value for the base pose to easily distinguish it from the mask indices.
