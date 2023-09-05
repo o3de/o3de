@@ -359,6 +359,14 @@
             "isTemplated": false
         },
         {
+            "file": "package.bat",
+            "isTemplated": true
+        },
+        {
+            "file": "AssetBundling/SeedLists/Example.seed",
+            "isTemplated": false
+        },
+        {
             "file": "game.cfg",
             "isTemplated": false
         },
@@ -372,6 +380,12 @@
         }
     ],
     "createDirectories": [
+        {
+            "dir": "AssetBundling"
+        },
+        {
+            "dir": "AssetBundling/SeedLists"
+        },
         {
             "dir": "Assets"
         },
