@@ -8,100 +8,38 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferPoolDescriptor.h>
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/MultiDeviceBuffer.h>
+#include <Atom/RHI/MultiDeviceBufferPoolBase.h>
 
 namespace AZ::RHI
 {
-    class Fence;
+    class MultiDeviceFence;
 
-    //! A structure used as an argument to BufferPool::InitBuffer.
-    template <typename BufferClass>
-    struct BufferInitRequestTemplate
+    //! A structure used as an argument to MultiDeviceBufferPool::MapBuffer.
+    struct MultiDeviceBufferMapResponse
     {
-        BufferInitRequestTemplate() = default;
-
-        BufferInitRequestTemplate(
-            BufferClass& buffer,
-            const BufferDescriptor& descriptor,
-            const void* initialData = nullptr)
-            : m_buffer{&buffer}
-            , m_descriptor{descriptor}
-            , m_initialData{initialData}
-            {}
-
-        /// The buffer to initialize. The buffer must be in an uninitialized state.
-        BufferClass* m_buffer = nullptr;
-
-        /// The descriptor used to initialize the buffer.
-        BufferDescriptor m_descriptor;
-
-        /// [Optional] Initial data used to initialize the buffer.
-        const void* m_initialData = nullptr;
+        //! Will hold the mapped data for each device selected in the MultiDeviceBuffer
+        AZStd::vector<void*> m_data;
     };
 
-    //! A structure used as an argument to BufferPool::MapBuffer.
-    template <typename BufferClass>
-    struct BufferMapRequestTemplate
-    {
-        BufferMapRequestTemplate() = default;
-
-        BufferMapRequestTemplate(BufferClass& buffer, size_t byteOffset, size_t byteCount)
-            : m_buffer{&buffer}
-            , m_byteOffset{byteOffset}
-            , m_byteCount{byteCount}
-            {}
-
-        /// The buffer instance to map for CPU access.
-        BufferClass* m_buffer = nullptr;
-
-        /// The number of bytes offset from the base of the buffer to map for access.
-        size_t m_byteOffset = 0;
-
-        /// The number of bytes beginning from the offset to map for access.
-        size_t m_byteCount = 0;
-    };
-
-    //! A structure used as an argument to BufferPool::MapBuffer.
-    struct BufferMapResponse
-    {
-        void* m_data = nullptr;
-    };
-
-    //! A structure used as an argument to BufferPool::StreamBuffer.
-    template <typename BufferClass, typename FenceClass>
-    struct BufferStreamRequestTemplate
-    {
-        /// A fence to signal on completion of the upload operation.
-        FenceClass* m_fenceToSignal = nullptr;
-
-        /// The buffer instance to stream up to.
-        BufferClass* m_buffer = nullptr;
-
-        /// The number of bytes offset from the base of the buffer to start the upload.
-        size_t m_byteOffset = 0;
-
-        /// The number of bytes to upload beginning from m_byteOffset.
-        size_t m_byteCount = 0;
-
-        /// A pointer to the source data to upload. The source data must remain valid
-        /// for the duration of the upload operation (i.e. until m_callbackFunction
-        /// is invoked).
-        const void* m_sourceData = nullptr;
-    };
-
-    using BufferInitRequest = BufferInitRequestTemplate<Buffer>;
-    using BufferMapRequest = BufferMapRequestTemplate<Buffer>;
-    using BufferStreamRequest = BufferStreamRequestTemplate<Buffer, Fence>;
+    using MultiDeviceBufferInitRequest = BufferInitRequestTemplate<MultiDeviceBuffer>;
+    using MultiDeviceBufferMapRequest = BufferMapRequestTemplate<MultiDeviceBuffer>;
+    using MultiDeviceBufferStreamRequest = BufferStreamRequestTemplate<MultiDeviceBuffer, MultiDeviceFence>;
 
     //! Buffer pool provides backing storage and context for buffer instances. The BufferPoolDescriptor
     //! contains properties defining memory characteristics of buffer pools. All buffers created on a pool
     //! share the same backing heap and buffer bind flags.
-    class BufferPool
-        : public BufferPoolBase
+    class MultiDeviceBufferPool : public MultiDeviceBufferPoolBase
     {
+        friend class MultiDeviceRayTracingBufferPools;
+
     public:
-        AZ_RTTI(BufferPool, "{6C7A657E-3940-465D-BC15-569741D9BBDF}", BufferPoolBase)
-        virtual ~BufferPool() override = default;
+        AZ_CLASS_ALLOCATOR(MultiDeviceBufferPool, AZ::SystemAllocator, 0);
+        AZ_RTTI(MultiDeviceBufferPool, "{547F1577-0AA3-4F0D-9656-8905DE5E9E8A}", MultiDeviceBufferPoolBase)
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(BufferPool);
+        MultiDeviceBufferPool() = default;
+        virtual ~MultiDeviceBufferPool() override = default;
 
         //! Initializes the buffer pool with a provided descriptor. The pool must be in an uninitialized
         //! state, or this call will fail. To re-use an existing pool, you must first call Shutdown
@@ -110,8 +48,7 @@ namespace AZ::RHI
         //!  @param descriptor The descriptor containing properties used to initialize the pool.
         //!  @return A result code denoting the status of the call. If successful, the pool is considered
         //!      initialized and is able to service buffer requests. If failure, the pool remains uninitialized.
-        ResultCode Init(Device& device, const BufferPoolDescriptor& descriptor);
-
+        ResultCode Init(MultiDevice::DeviceMask deviceMask, const BufferPoolDescriptor& descriptor);
 
         //! Initializes a buffer instance created from this pool. The buffer must be in an uninitialized
         //! state, or the call will fail. To re-use an existing buffer instance, first call Shutdown
@@ -123,7 +60,7 @@ namespace AZ::RHI
         //!      buffer, it remain in a shutdown state. If the initial data upload fails, the buffer will be
         //!      initialized, but will remain empty and the call will return ResultCode::OutOfMemory. Checking
         //!      this amounts to seeing if buffer.IsInitialized() is true.
-        ResultCode InitBuffer(const BufferInitRequest& request);
+        ResultCode InitBuffer(const MultiDeviceBufferInitRequest& request);
 
         //! NOTE: Only applicable to 'Host' pools. Device pools will fail with ResultCode::InvalidOperation.
         //!
@@ -144,7 +81,7 @@ namespace AZ::RHI
         //!      initialized with this pool.
         //!  @return On success, the buffer is considered to have a new backing allocation. On failure, the existing
         //!      buffer allocation remains intact.
-        ResultCode OrphanBuffer(Buffer& buffer);
+        ResultCode OrphanBuffer(MultiDeviceBuffer& buffer);
 
         //! Maps a buffer region for CPU access. The type of access (read or write) is dictated by the type of
         //! buffer pool. Host pools with host read access may read from the buffer--the contents of which
@@ -158,66 +95,39 @@ namespace AZ::RHI
         //!  @param response The map response structure holding the mapped data pointer (if successful), or null.
         //!  @return Returns a result code specifying whether the call succeeded, or a failure code specifying
         //!      why the call failed.
-        ResultCode MapBuffer(const BufferMapRequest& request, BufferMapResponse& response);
+        ResultCode MapBuffer(const MultiDeviceBufferMapRequest& request, MultiDeviceBufferMapResponse& response);
 
         //! Unmaps a buffer for CPU access. The mapped data pointer is considered invalid after this call and
         //! should not be accessed. This call unmaps the data region and unblocks the GPU for access.
-        void UnmapBuffer(Buffer& buffer);
+        void UnmapBuffer(MultiDeviceBuffer& buffer);
 
         //! Asynchronously streams buffer data up to the GPU. The operation is decoupled from the frame scheduler.
         //! It is not valid to use the buffer while the upload is running. The provided fence is signaled when the
         //! upload completes.
-        ResultCode StreamBuffer(const BufferStreamRequest& request);
+        ResultCode StreamBuffer(const MultiDeviceBufferStreamRequest& request);
 
         //! Returns the buffer descriptor used to initialize the buffer pool. Descriptor contents
         //! are undefined for uninitialized pools.
         const BufferPoolDescriptor& GetDescriptor() const override final;
 
-    protected:
-        BufferPool() = default;
-
-        ///////////////////////////////////////////////////////////////////
-        // FrameEventBus::Handler
-        void OnFrameBegin() override;
-        ///////////////////////////////////////////////////////////////////
-
-        bool ValidateNotProcessingFrame() const;
+        //! Shuts down the pool. This method will shutdown all resources associated with the pool.
+        void Shutdown() override final;
 
     private:
-        using ResourcePool::Init;
-        using BufferPoolBase::InitBuffer;
+        using MultiDeviceBufferPoolBase::InitBuffer;
+        using MultiDeviceResourcePool::Init;
+
+        //! Validates that the map operation succeeded by printing a warning otherwise. Increments
+        //! the map reference counts for the buffer and the pool.
+        void ValidateBufferMap(MultiDeviceBuffer& buffer, bool isDataValid);
+
+        bool ValidateNotDeviceLevel() const;
 
         bool ValidatePoolDescriptor(const BufferPoolDescriptor& descriptor) const;
-        bool ValidateInitRequest(const BufferInitRequest& initRequest) const;
+        bool ValidateInitRequest(const MultiDeviceBufferInitRequest& initRequest) const;
         bool ValidateIsHostHeap() const;
-        bool ValidateMapRequest(const BufferMapRequest& request) const;
-
-        //////////////////////////////////////////////////////////////////////////
-        // Platform API
-
-        /// Called when the pool is being initialized.
-        virtual ResultCode InitInternal(Device& device, const RHI::BufferPoolDescriptor& descriptor) = 0;
-
-        /// Called when a buffer is being initialized onto the pool.
-        virtual ResultCode InitBufferInternal(Buffer& buffer, const BufferDescriptor& descriptor) = 0;
-
-        /// Called when the buffer is being orphaned.
-        virtual ResultCode OrphanBufferInternal(Buffer& buffer) = 0;
-
-        /// Called when a buffer is being mapped.
-        virtual ResultCode MapBufferInternal(const BufferMapRequest& request, BufferMapResponse& response) = 0;
-
-        /// Called when a buffer is being unmapped.
-        virtual void UnmapBufferInternal(Buffer& buffer) = 0;
-
-        /// Called when a buffer is being streamed asynchronously.
-        virtual ResultCode StreamBufferInternal(const BufferStreamRequest& request);
-
-        //Called in order to do a simple mem copy allowing Null rhi to opt out
-        virtual void BufferCopy(void* destination, const void* source, size_t num);
-
-        //////////////////////////////////////////////////////////////////////////
+        bool ValidateMapRequest(const MultiDeviceBufferMapRequest& request) const;
 
         BufferPoolDescriptor m_descriptor;
     };
-}
+} // namespace AZ::RHI
