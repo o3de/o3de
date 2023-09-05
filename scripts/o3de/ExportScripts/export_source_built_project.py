@@ -38,6 +38,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               should_build_game_launcher: bool = True,
                               should_build_server_launcher: bool = True,
                               should_build_unified_launcher: bool = True,
+                              should_build_headless_server_launcher: bool = True,
                               monolithic_build: bool = True,
                               allow_registry_overrides: bool = False,
                               tools_build_path: pathlib.Path | None =None,
@@ -69,7 +70,6 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param should_build_game_launcher:              Option to build the game launcher package
     :param should_build_server_launcher:            Option to build the server launcher package
     :param should_build_unified_launcher:           Option to build the unified launcher package
-    :param monolithic_build:                        Option to build the game binaries monolithically
     :param allow_registry_overrides:                Option to allow registry overrides in the build process
     :param tools_build_path:                        Optional build path to build the tools. (Will default to build/tools if not supplied)
     :param launcher_build_path:                     Optional build path to build the game launcher(s). (Will default to build/launcher if not supplied)
@@ -159,6 +159,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
         launcher_type |= exp.LauncherType.SERVER
     if should_build_unified_launcher:
         launcher_type |= exp.LauncherType.UNIFIED
+    if should_build_headless_server_launcher:
+        launcher_type |= exp.LauncherType.HEADLESS
 
     if launcher_type != 0:
         exp.build_game_targets(ctx=ctx,
@@ -208,17 +210,30 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     if should_build_game_launcher:
         export_layouts.append(exp.ExportLayoutConfig(output_path=output_path / f'{ctx.project_name}GamePackage',
                                                      project_file_patterns=project_file_patterns_to_copy + game_project_file_patterns_to_copy,
-                                                     ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}', f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}']))
+                                                     ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}',
+                                                                           f'*.HeadlessServerLauncher{exp.EXECUTABLE_EXTENSION}',
+                                                                           f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}']))
 
     if should_build_server_launcher:
         export_layouts.append(exp.ExportLayoutConfig(output_path=output_path / f'{ctx.project_name}ServerPackage',
                                                      project_file_patterns=project_file_patterns_to_copy + server_project_file_patterns_to_copy,
-                                                     ignore_file_patterns=[f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}', f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}']))
+                                                     ignore_file_patterns=[f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}',
+                                                                           f'*.HeadlessServerLauncher{exp.EXECUTABLE_EXTENSION}',
+                                                                           f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}']))
 
     if should_build_unified_launcher:
         export_layouts.append(exp.ExportLayoutConfig(output_path=output_path / f'{ctx.project_name}UnifiedPackage',
                                                      project_file_patterns=project_file_patterns_to_copy + game_project_file_patterns_to_copy + server_project_file_patterns_to_copy,
-                                                     ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}', f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}']))
+                                                     ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}',
+                                                                           f'*.HeadlessServerLauncher{exp.EXECUTABLE_EXTENSION}',
+                                                                           f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}']))
+
+    if should_build_headless_server_launcher:
+        export_layouts.append(exp.ExportLayoutConfig(output_path=output_path / f'{ctx.project_name}HeadlessServerPackage',
+                                                     project_file_patterns=project_file_patterns_to_copy + server_project_file_patterns_to_copy,
+                                                     ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}',
+                                                                           f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}',
+                                                                           f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}']))
 
     # Generate the layouts and archive the packages based on the desired launcher types
     for export_layout in export_layouts:
@@ -357,7 +372,6 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
         parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=int(default_max_size),
                             help=f"Specify the maximum size of a given asset bundle.. If not specified, default is {default_max_size}.")
 
-        export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_BUILD_GAME_LAUNCHER.key,
                                            enable_override_arg=['-game', '--game-launcher'],
                                            enable_override_desc="Enable the building and inclusion of the Game Launcher.",
@@ -480,6 +494,7 @@ def export_standalone_run_command(o3de_context, args, export_config: command_uti
                                   should_build_game_launcher=option_build_game_launcher,
                                   should_build_server_launcher=option_build_server_launcher,
                                   should_build_unified_launcher=option_build_unified_launcher,
+                                  should_build_headless_server_launcher=not args.no_headless_server_launcher,
                                   engine_centric=option_build_engine_centric,
                                   allow_registry_overrides=option_allow_registry_overrrides,
                                   tools_build_path=args.tools_build_path,

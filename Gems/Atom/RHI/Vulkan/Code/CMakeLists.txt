@@ -138,6 +138,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzFramework.NativeUI
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI_Vulkan.Reflect
             Gem::Atom_RHI_Vulkan.Glad.Static

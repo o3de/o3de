@@ -231,7 +231,8 @@ namespace AzFramework
 
     void Application::StartCommon(AZ::Entity* systemEntity)
     {
-        m_pimpl.reset(Implementation::Create());
+        auto implementationFactory = AZ::Interface<Application::ImplementationFactory>::Get();
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create() : nullptr;
 
         systemEntity->Init();
         systemEntity->Activate();

@@ -6,10 +6,12 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/Input/Events/InputChannelEventSink.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+
 
 #include <UIKit/UIKit.h>
 
@@ -134,21 +136,21 @@ namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Platform specific implementation for ios virtual keyboard input devices
-    class InputDeviceVirtualKeyboardApple : public InputDeviceVirtualKeyboard::Implementation
+    class InputDeviceVirtualKeyboardiOS : public InputDeviceVirtualKeyboard::Implementation
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceVirtualKeyboardApple, AZ::SystemAllocator);
+        AZ_CLASS_ALLOCATOR(InputDeviceVirtualKeyboardiOS, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDevice Reference to the input device being implemented
-        InputDeviceVirtualKeyboardApple(InputDeviceVirtualKeyboard& inputDevice);
+        InputDeviceVirtualKeyboardiOS(InputDeviceVirtualKeyboard& inputDevice);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Destructor
-        ~InputDeviceVirtualKeyboardApple() override;
+        ~InputDeviceVirtualKeyboardiOS() override;
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -179,14 +181,7 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceVirtualKeyboard::Implementation* InputDeviceVirtualKeyboard::Implementation::Create(
-        InputDeviceVirtualKeyboard& inputDevice)
-    {
-        return aznew InputDeviceVirtualKeyboardApple(inputDevice);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceVirtualKeyboardApple::InputDeviceVirtualKeyboardApple(
+    InputDeviceVirtualKeyboardiOS::InputDeviceVirtualKeyboardiOS(
         InputDeviceVirtualKeyboard& inputDevice)
         : InputDeviceVirtualKeyboard::Implementation(inputDevice)
         , m_textField(nullptr)
@@ -211,7 +206,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceVirtualKeyboardApple::~InputDeviceVirtualKeyboardApple()
+    InputDeviceVirtualKeyboardiOS::~InputDeviceVirtualKeyboardiOS()
     {
         if (m_textField)
         {
@@ -226,20 +221,20 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceVirtualKeyboardApple::IsConnected() const
+    bool InputDeviceVirtualKeyboardiOS::IsConnected() const
     {
         // Virtual keyboard input is always available
         return true;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceVirtualKeyboardApple::HasTextEntryStarted() const
+    bool InputDeviceVirtualKeyboardiOS::HasTextEntryStarted() const
     {
         return m_textField ? m_textField.isFirstResponder : false;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceVirtualKeyboardApple::TextEntryStart(const InputTextEntryRequests::VirtualKeyboardOptions& options)
+    void InputDeviceVirtualKeyboardiOS::TextEntryStart(const InputTextEntryRequests::VirtualKeyboardOptions& options)
     {
         UIWindow* foundWindow = nil;        
 #if defined(__IPHONE_13_0) || defined(__TVOS_13_0)
@@ -277,7 +272,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceVirtualKeyboardApple::TextEntryStop()
+    void InputDeviceVirtualKeyboardiOS::TextEntryStop()
     {
         // On iOS we must set m_activeTextFieldNormalizedBottomY before hiding the virtual keyboard
         // by calling resignFirstResponder, which then sends a UIKeyboardWillChangeFrameNotification.
@@ -288,10 +283,28 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceVirtualKeyboardApple::TickInputDevice()
+    void InputDeviceVirtualKeyboardiOS::TickInputDevice()
     {
         // The ios event loop has just been pumped in InputSystemComponentIos::PreTickInputDevices,
         // so we now just need to process any raw events that have been queued since the last frame
         ProcessRawEventQueues();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class IosDeviceVirtualKeyboardImplFactory
+        : public InputDeviceVirtualKeyboard::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceVirtualKeyboard::Implementation> Create(InputDeviceVirtualKeyboard& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceVirtualKeyboardiOS>(inputDevice);
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceVirtualKeyboardImplentationFactory()
+    {
+        m_deviceVirtualKeyboardImplFactory = AZStd::make_unique<IosDeviceVirtualKeyboardImplFactory>();
+        AZ::Interface<InputDeviceVirtualKeyboard::ImplementationFactory>::Register(m_deviceVirtualKeyboardImplFactory.get());
     }
 } // namespace AzFramework

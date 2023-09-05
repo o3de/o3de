@@ -91,6 +91,30 @@ ly_add_target(
             Gem::Atom_Feature_Common.Public
 )
 
+ly_add_target(
+    NAME Atom_Feature_Common.Headless ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        atom_feature_common_shared_files.cmake
+        ../Assets/atom_feature_common_asset_files.cmake
+        ../Editor/atom_feature_common_editor_script_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+            ${pal_source_dir}
+        PUBLIC
+            Include
+    COMPILE_DEFINITIONS
+        PRIVATE
+            O3DE_HEADLESS_SERVER=1
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Feature_Common.Public
+)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     set(runtime_dependencies_tools ${pal_source_dir}/runtime_dependencies_tools.cmake)
