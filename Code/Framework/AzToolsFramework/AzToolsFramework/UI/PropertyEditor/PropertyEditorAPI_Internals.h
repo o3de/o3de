@@ -23,11 +23,15 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
+
+#include <QMessageBox>
 
 class QWidget;
 class QColor;
@@ -464,14 +468,49 @@ namespace AzToolsFramework
         {
             using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
 
-            m_rpeHandler.WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
-
             auto typeIdAttribute = m_domNode.FindMember(PropertyEditor::ValueType.GetName());
             AZ::TypeId typeId = AZ::TypeId::CreateNull();
             if (typeIdAttribute != m_domNode.MemberEnd())
             {
                 typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
             }
+
+            // If a ChangeValidate method was specified, verify the new value with it before continuing.
+            if (m_domNode.FindMember(PropertyEditor::ChangeValidate.GetName()) != m_domNode.MemberEnd())
+            {
+                AZ::SerializeContext* serializeContext = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+                AZ_Assert(serializeContext, "Serialization context not available");
+
+                AZStd::any tempValue = serializeContext->CreateAny(typeId);
+                void* tempValueRef = AZStd::any_cast<void>(&tempValue);
+
+                m_rpeHandler.WriteGUIValuesIntoTempProperty_Internal(GetWidget(), tempValueRef, typeId, serializeContext);
+
+                auto validateOutcome = PropertyEditor::ChangeValidate.InvokeOnDomNode(m_domNode, tempValueRef, typeId);
+                if (validateOutcome.IsSuccess())
+                {
+                    // If the outcome is a failure, the change was rejected, so show an error message popup
+                    // with the outcome error and don't continue processing the OnValueChanged.
+                    AZ::Outcome<void, AZStd::string> outcome = validateOutcome.GetValue();
+                    if (!outcome.IsSuccess())
+                    {
+                        if (changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
+                        {
+                            QMessageBox::warning(AzToolsFramework::GetActiveWindow(), "Invalid Assignment", outcome.GetError().c_str(), QMessageBox::Ok);
+
+                            // Force the values to update so that they are correct since something just declined changes and
+                            // we want the UI to display the current values and not the invalid ones
+                            ToolsApplicationNotificationBus::Broadcast(
+                                &ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+                        }
+
+                        return;
+                    }
+                }
+            }
+
+            m_rpeHandler.WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
 
             // If the expected TypeId differs from m_proxyClassData.m_typeId (WrappedType),
             // then it means this handler was written for a base-class/m_proxyClassElement.m_genericClassInfo

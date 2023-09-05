@@ -16,6 +16,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include "PropertyEditorAPI_Internals.h"
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
+#include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 
 class QWidget;
 class QCheckBox;
@@ -29,17 +30,6 @@ namespace AZ
 namespace AzToolsFramework
 {
     class InstanceDataNode;
-
-    // when a property is modified, we attempt to retrieve the value that comes out in response to the Property Modification function that you may supply
-    // if you return anything other than Refresh_None, the tree may be queued for update:
-    enum PropertyModificationRefreshLevel : int
-    {
-        Refresh_None,
-        Refresh_Values,
-        Refresh_AttributesAndValues,
-        Refresh_EntireTree,
-        Refresh_EntireTree_NewContent,
-    };
 
     // only ONE property handler is ever created for each kind of property.
     // so do not store state for a particular GUI, inside your property handler.  Your one handler may be responsible for translating
