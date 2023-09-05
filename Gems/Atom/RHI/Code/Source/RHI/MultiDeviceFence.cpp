@@ -49,8 +49,8 @@ namespace AZ::RHI
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                m_deviceFences[deviceIndex] = Factory::Get().CreateFence();
-                resultCode = m_deviceFences[deviceIndex]->Init(*device, initialState);
+                m_deviceObjects[deviceIndex] = Factory::Get().CreateFence();
+                resultCode = GetDeviceFence(deviceIndex)->Init(*device, initialState);
 
                 return resultCode == ResultCode::Success;
             });
@@ -58,7 +58,7 @@ namespace AZ::RHI
         if (resultCode != ResultCode::Success)
         {
             // Reset already initialized device-specific Fences and set deviceMask to 0
-            m_deviceFences.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
@@ -74,10 +74,10 @@ namespace AZ::RHI
                 m_waitThread.join();
             }
 
-            for (auto& [deviceIndex, deviceFence] : m_deviceFences)
+            IterateObjects<Fence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
             {
                 deviceFence->Shutdown();
-            }
+            });
 
             MultiDeviceObject::Shutdown();
         }
@@ -90,19 +90,10 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        ResultCode resultCode;
-
-        for (auto& [deviceIndex, deviceFence] : m_deviceFences)
+        return IterateObjects<Fence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
         {
-            resultCode = deviceFence->SignalOnCpu();
-
-            if (resultCode != ResultCode::Success)
-            {
-                return resultCode;
-            }
-        }
-
-        return ResultCode::Success;
+            return deviceFence->SignalOnCpu();
+        });
     }
 
     ResultCode MultiDeviceFence::WaitOnCpu() const
@@ -112,19 +103,10 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        ResultCode resultCode;
-
-        for (auto& [deviceIndex, deviceFence] : m_deviceFences)
+        return IterateObjects<Fence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
         {
-            resultCode = deviceFence->WaitOnCpu();
-
-            if (resultCode != ResultCode::Success)
-            {
-                return resultCode;
-            }
-        }
-
-        return ResultCode::Success;
+            return deviceFence->WaitOnCpu();
+        });
     }
 
     ResultCode MultiDeviceFence::WaitOnCpuAsync(SignalCallback callback)
@@ -169,18 +151,9 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        ResultCode resultCode;
-
-        for (auto& [deviceIndex, deviceFence] : m_deviceFences)
+        return IterateObjects<Fence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
         {
-            resultCode = deviceFence->Reset();
-
-            if (resultCode != ResultCode::Success)
-            {
-                return resultCode;
-            }
-        }
-
-        return ResultCode::Success;
+            return deviceFence->Reset();
+        });
     }
 } // namespace AZ::RHI

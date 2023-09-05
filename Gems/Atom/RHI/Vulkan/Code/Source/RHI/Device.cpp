@@ -199,7 +199,6 @@ namespace AZ
             bufferDeviceAddressFeatures.pNext = &depthClipEnabled;
 
             auto fragmenDensityMapFeatures = physicalDevice.GetPhysicalDeviceFragmentDensityMapFeatures();
-            fragmenDensityMapFeatures.fragmentDensityMapDynamic = false;
             depthClipEnabled.pNext = &fragmenDensityMapFeatures;
 
             auto fragmenShadingRateFeatures = physicalDevice.GetPhysicalDeviceFragmentShadingRateFeatures();
@@ -1388,7 +1387,7 @@ namespace AZ
                 }
             }
 
-            // add transfer src usage for all images since we may want them to be copyied for preview or readback
+            // add transfer src usage for all images since we may want them to be copied for preview or readback
             usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
             const VkImageUsageFlags usageMask = GetImageUsageFromFormat(descriptor.m_format);

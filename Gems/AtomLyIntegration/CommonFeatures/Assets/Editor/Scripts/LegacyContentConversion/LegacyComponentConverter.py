@@ -40,11 +40,7 @@ How do I run this script from a command line?
 1) Check out any .slice, .layer, .ly, and .cry files you want to convert from source control
     - This script will remove the legacy components entirely, so make sure you have your files
       backed up before you run this script in case you want to run it again
-<<<<<<< HEAD
-2) From the dev folder, run LegacyComponentConverter.py project=<ProjectName> --include_gems
-=======
 2) From the Lumberyard root folder, run LegacyComponentConverter.py project=<ProjectName> --include_gems
->>>>>>> main
     - --include_gems is optional
     - if you include Gems, it will run all all Gems, not just the ones enabled by your project
 
