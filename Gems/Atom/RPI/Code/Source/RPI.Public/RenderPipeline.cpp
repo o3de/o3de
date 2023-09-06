@@ -352,8 +352,8 @@ namespace AZ
 
                 pipelineViews.m_views[0]->SetPassesByDrawList(nullptr);
                 m_persistentViewsByViewTag.erase(pipelineViews.m_views[0].get());
-                m_pipelineViewsByTag.erase(viewTag);
-                pipelineViews.m_views.clear();
+                // persistent views always have exactly one view
+                pipelineViews.m_views[0].reset();
 
                 if (m_scene)
                 {
@@ -381,17 +381,27 @@ namespace AZ
             {
                 PipelineViews& pipelineViews = viewItr->second;
 
+                ViewPtr previousView{ nullptr };
+
                 if (pipelineViews.m_type == PipelineViewType::Transient)
                 {
                     AZ_Assert(false, "View [%s] was set as transient view. Use AddTransientView function to add a view for this tag.", viewTag.GetCStr());
                     return;
                 }
-                if (pipelineViews.m_type == PipelineViewType::Unknown)
+                else if (pipelineViews.m_type == PipelineViewType::Unknown) // first time registering a view for this viewTag
                 {
                     pipelineViews.m_type = PipelineViewType::Persistent;
-                    pipelineViews.m_views.resize(1);
+                    pipelineViews.m_views.resize(1, nullptr);
                 }
-                ViewPtr previousView = pipelineViews.m_views[0];
+                else if (pipelineViews.m_type == PipelineViewType::Persistent) // re-registering a view
+                {
+                    if (pipelineViews.m_views.empty()) // the view could have been deleted previously
+                    {
+                        pipelineViews.m_views.resize(1, nullptr);
+                    }
+                    previousView = pipelineViews.m_views[0];
+                }
+
                 if (view)
                 {
                     view->OnAddToRenderPipeline();
