@@ -137,7 +137,7 @@ namespace AZ::RPI
         //! Returns the image that was created and initialized.
         //! If no foveated level is specified, the value will be retrieved from the settings registry.
         virtual AZ::Data::Instance<AZ::RPI::AttachmentImage> InitPassFoveatedAttachment(
-            [[maybe_unused]] PassTemplate& passTemplate, [[maybe_unused]] const RHI::XRFoveatedLevel* level = nullptr) const
+            [[maybe_unused]] const PassTemplate& passTemplate, [[maybe_unused]] const RHI::XRFoveatedLevel* level = nullptr) const
         {
             return nullptr;
         };
