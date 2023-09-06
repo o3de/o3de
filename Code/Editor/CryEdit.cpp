@@ -359,6 +359,7 @@ CCryEditApp::CCryEditApp()
     m_sPreviewFile[0] = 0;
 
     AzFramework::AssetSystemInfoBus::Handler::BusConnect();
+    AzFramework::AssetSystemStatusBus::Handler::BusConnect();
 
     m_disableIdleProcessingCounter = 0;
     EditorIdleProcessingBus::Handler::BusConnect();
@@ -368,6 +369,7 @@ CCryEditApp::CCryEditApp()
 CCryEditApp::~CCryEditApp()
 {
     EditorIdleProcessingBus::Handler::BusDisconnect();
+    AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
     s_currentInstance = nullptr;
 }
@@ -792,6 +794,11 @@ QString FormatRichTextCopyrightNotice()
     QString copyrightString = QObject::tr("Copyright %1 Contributors to the Open 3D Engine Project");
 
     return copyrightString.arg(copyrightHtmlSymbol);
+}
+
+void CCryEditApp::AssetSystemWaiting()
+{
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
 /////////////////////////////////////////////////////////////////////////////

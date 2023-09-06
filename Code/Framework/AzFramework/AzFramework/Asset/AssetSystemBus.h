@@ -325,6 +325,8 @@ namespace AzFramework
             virtual void AssetSystemAvailable() {}
             //! Notifies listeners Asset System turns not available
             virtual void AssetSystemUnavailable() {}
+            //! Notifies listeners Asset System is still waiting
+            virtual void AssetSystemWaiting() {}
         };
 
     } // namespace AssetSystem

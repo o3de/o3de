@@ -713,6 +713,8 @@ namespace AzFramework
             {
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::PumpSystemEventLoopUntilEmpty);
 
+                AssetSystemStatusBus::Broadcast(&AssetSystemStatusBus::Events::AssetSystemWaiting);
+
                 if (!ConnectedWithAssetProcessor())
                 {
                     //If we are here than it means we were connected but have lost connection with AP
