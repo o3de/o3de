@@ -75,7 +75,7 @@ namespace LmbrCentral
         virtual void SetBoxDimensions(const AZ::Vector3& newDimensions) = 0;
 
         /// Returns true if the object type is axis-aligned box shape, otherwise false (regardless of orientation).
-        virtual bool IsTypeAxisAligned() = 0;
+        virtual bool IsTypeAxisAligned() const = 0;
     };
 
     // Bus to service the Box Shape component event group

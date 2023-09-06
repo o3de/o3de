@@ -1111,12 +1111,12 @@ namespace PhysX
         UpdateShapeConfigurationScale();
     }
 
-    AZ::Aabb EditorMeshColliderComponent::GetWorldBounds()
+    AZ::Aabb EditorMeshColliderComponent::GetWorldBounds() const
     {
         return GetAabb();
     }
 
-    AZ::Aabb EditorMeshColliderComponent::GetLocalBounds()
+    AZ::Aabb EditorMeshColliderComponent::GetLocalBounds() const
     {
         AZ::Aabb worldBounds = GetWorldBounds();
         if (worldBounds.IsValid())

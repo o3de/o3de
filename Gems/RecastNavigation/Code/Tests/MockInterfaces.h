@@ -45,7 +45,7 @@ namespace RecastNavigationTests
             LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
         }
 
-        AZ::Aabb GetEncompassingAabb() override
+        AZ::Aabb GetEncompassingAabb() const override
         {
             return AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne() * 10);
         }

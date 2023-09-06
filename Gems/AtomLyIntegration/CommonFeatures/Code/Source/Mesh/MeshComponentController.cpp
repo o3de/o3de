@@ -677,7 +677,7 @@ namespace AZ
             return false;
         }
 
-        Aabb MeshComponentController::GetWorldBounds()
+        Aabb MeshComponentController::GetWorldBounds() const
         {
             if (const AZ::Aabb localBounds = GetLocalBounds(); localBounds.IsValid())
             {
@@ -687,7 +687,7 @@ namespace AZ
             return AZ::Aabb::CreateNull();
         }
 
-        Aabb MeshComponentController::GetLocalBounds()
+        Aabb MeshComponentController::GetLocalBounds() const
         {
             if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
             {

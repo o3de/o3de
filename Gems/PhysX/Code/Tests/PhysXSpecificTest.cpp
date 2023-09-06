@@ -1484,7 +1484,7 @@ namespace PhysX
 
     TEST_P(MassComputeFixture, RigidBody_ComputeMassFlagsCombinationsTwoShapes_MassPropertiesCalculatedAccordingly)
     {
-        const Physics::ShapeType shapeType = GetShapeType();
+        const Physics::ShapeType shapeType = GetShapeType() const;
         const SimulatedShapesMode shapeMode = GetShapesMode();
         const AzPhysics::MassComputeFlags massComputeFlags = GetMassComputeFlags();
         const bool multiShapeTest = IsMultiShapeTest();
@@ -1576,7 +1576,7 @@ namespace PhysX
     };
 
     INSTANTIATE_TEST_CASE_P(PhysX, MassComputeFixture, ::testing::Combine(
-        ::testing::ValuesIn({ Physics::ShapeType::Sphere, Physics::ShapeType::Box, Physics::ShapeType::Capsule }), // Values for GetShapeType()
+        ::testing::ValuesIn({ Physics::ShapeType::Sphere, Physics::ShapeType::Box, Physics::ShapeType::Capsule }), // Values for GetShapeType() const
         ::testing::ValuesIn({ SimulatedShapesMode::NONE, SimulatedShapesMode::MIXED, SimulatedShapesMode::ALL }), // Values for GetShapesMode()
         ::testing::ValuesIn(PossibleMassComputeFlags), // Values for GetMassComputeFlags()
         ::testing::Bool(), // Values for IncludeAllShapes()

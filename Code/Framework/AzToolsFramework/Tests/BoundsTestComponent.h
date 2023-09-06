@@ -40,8 +40,8 @@ namespace UnitTest
         bool SupportsEditorRayIntersect() override;
 
         // BoundsRequestBus overrides ...
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
 
         AZ::Aabb m_localBounds; //!< Local bounds that can be modified for certain tests (defaults to unit cube).
     };

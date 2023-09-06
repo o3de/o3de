@@ -152,7 +152,7 @@ namespace LmbrCentral
         return m_intersectionDataCache.m_quaternion;
     }
 
-    AZ::Aabb QuadShape::GetEncompassingAabb()
+    AZ::Aabb QuadShape::GetEncompassingAabb() const
     {
         AZStd::shared_lock lock(m_mutex);
         AZ::Aabb aabb = AZ::Aabb::CreateNull();
@@ -166,7 +166,7 @@ namespace LmbrCentral
         return aabb;
     }
 
-    void QuadShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void QuadShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         AZStd::shared_lock lock(m_mutex);
         bounds = AZ::Aabb::CreateCenterHalfExtents(
@@ -176,12 +176,12 @@ namespace LmbrCentral
         transform = m_currentTransform;
     }
 
-    bool QuadShape::IsPointInside([[maybe_unused]] const AZ::Vector3& point)
+    bool QuadShape::IsPointInside([[maybe_unused]] const AZ::Vector3& point) const
     {
         return false; // 2D object cannot have points that are strictly inside in 3d space.
     }
 
-    float QuadShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float QuadShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, &m_mutex, m_currentNonUniformScale);
@@ -200,7 +200,7 @@ namespace LmbrCentral
         return xDist * xDist + yDist * yDist + zDist * zDist;
     }
 
-    bool QuadShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool QuadShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         AZStd::shared_lock lock(m_mutex);
         auto corners = m_quadShapeConfig.GetCorners();

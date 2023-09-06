@@ -62,7 +62,7 @@ namespace UnitTest
     {
     public:
         AZ::Entity m_entity;
-        int m_count = 0;
+        mutable int m_count = 0;
 
         MockShape()
         {
@@ -74,14 +74,14 @@ namespace UnitTest
             LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
         }
 
-        AZ::Crc32 GetShapeType() override
+        AZ::Crc32 GetShapeType() const override
         {
             ++m_count;
             return AZ_CRC("TestShape", 0x856ca50c);
         }
 
         AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
-        AZ::Aabb GetEncompassingAabb() override
+        AZ::Aabb GetEncompassingAabb() const override
         {
             ++m_count;
             return m_aabb;
@@ -89,7 +89,7 @@ namespace UnitTest
 
         AZ::Transform m_localTransform = AZ::Transform::CreateIdentity();
         AZ::Aabb m_localBounds = AZ::Aabb::CreateNull();
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override
         {
             ++m_count;
             transform = m_localTransform;
@@ -97,21 +97,21 @@ namespace UnitTest
         }
 
         bool m_pointInside = true;
-        bool IsPointInside([[maybe_unused]] const AZ::Vector3& point) override
+        bool IsPointInside([[maybe_unused]] const AZ::Vector3& point) const override
         {
             ++m_count;
             return m_pointInside;
         }
 
         float m_distanceSquaredFromPoint = 0.0f;
-        float DistanceSquaredFromPoint([[maybe_unused]] const AZ::Vector3& point) override
+        float DistanceSquaredFromPoint([[maybe_unused]] const AZ::Vector3& point) const override
         {
             ++m_count;
             return m_distanceSquaredFromPoint;
         }
 
         AZ::Vector3 m_randomPointInside = AZ::Vector3::CreateZero();
-        AZ::Vector3 GenerateRandomPointInside([[maybe_unused]] AZ::RandomDistributionType randomDistribution) override
+        AZ::Vector3 GenerateRandomPointInside([[maybe_unused]] AZ::RandomDistributionType randomDistribution) const override
         {
             ++m_count;
             return m_randomPointInside;
@@ -119,7 +119,9 @@ namespace UnitTest
 
         bool m_intersectRay = false;
         bool IntersectRay(
-            [[maybe_unused]] const AZ::Vector3& src, [[maybe_unused]] const AZ::Vector3& dir, [[maybe_unused]] float& distance) override
+            [[maybe_unused]] const AZ::Vector3& src,
+            [[maybe_unused]] const AZ::Vector3& dir,
+            [[maybe_unused]] float& distance) const override
         {
             ++m_count;
             return m_intersectRay;

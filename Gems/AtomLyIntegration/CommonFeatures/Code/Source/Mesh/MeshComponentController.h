@@ -134,8 +134,8 @@ namespace AZ
             bool GetExcludeFromReflectionCubeMaps() const override;
 
             // AzFramework::BoundsRequestBus::Handler overrides ...
-            AZ::Aabb GetWorldBounds() override;
-            AZ::Aabb GetLocalBounds() override;
+            AZ::Aabb GetWorldBounds() const override;
+            AZ::Aabb GetLocalBounds() const override;
 
             // AzFramework::VisibleGeometryRequestBus::Handler overrides ...
             void GetVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;

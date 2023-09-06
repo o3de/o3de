@@ -39,12 +39,12 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponentRequestsBus::Handler
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("Sphere", 0x55f96687); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point)  override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC("Sphere", 0x55f96687); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const  override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
         AZ::Vector3 GetTranslationOffset() const override;
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
@@ -81,7 +81,7 @@ namespace LmbrCentral
         };
 
         SphereShapeConfig m_sphereShapeConfig; ///< Underlying sphere configuration.
-        SphereIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
+        mutable SphereIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current world transform.
         AZ::EntityId m_entityId; ///< The Id of the entity the shape is attached to.
         mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety
