@@ -187,7 +187,7 @@ namespace UnitTest
         TestBoundComponent() = default;
 
         // BoundsRequestBus overrides
-        AZ::Aabb GetWorldBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
         AZ::Aabb GetLocalBounds() const override;
 
         void ChangeBounds(const AZ::Aabb& localAabb);
