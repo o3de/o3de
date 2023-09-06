@@ -27,7 +27,9 @@ function MaterialTypeSetup(context)
             Warning("The multi view pipeline does not support the Enhanced lighting model. Will use Standard lighting as a fallback.")
         end
         
+        context:IncludeShader("ShadowmapPass_CustomZ")
         context:IncludeShader("ForwardPass_StandardLighting")
+        context:IncludeShader("ForwardPass_StandardLighting_CustomZ")
         context:IncludeShader("Transparent_StandardLighting")
         context:IncludeShader("TintedTransparent_StandardLighting")
         return true
