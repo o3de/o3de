@@ -133,16 +133,53 @@ namespace AZ::Data
 
             if (result.GetProcessing() == JSR::Processing::Completed)
             {
-                *instance = AssetManager::Instance().FindOrCreateAsset(id, instance->GetType(), instance->GetAutoLoadBehavior());
+                const auto currentLoadBehavior = instance->GetAutoLoadBehavior();
+                AZ::Data::AssetInfo foundAssetInfo;
+                AssetCatalogRequestBus::BroadcastResult(foundAssetInfo, &AssetCatalogRequestBus::Events::GetAssetInfoById, id);
 
-                if (id.IsValid())
+                if (foundAssetInfo.m_assetId.IsValid())
                 {
+                    // The Asset is registered with the catalog, so check if there is an Asset Handler registered for its AssetType
+                    if (AZ::Data::AssetHandler* assetHandler = AssetManager::Instance().GetHandler(foundAssetInfo.m_assetType);
+                        assetHandler != nullptr)
+                    {
+                        // There is a registered handler for the AssetType, so call FindOrCreateAsset which can
+                        // load the Asset using the current auto load behavior
+                        if (Asset<AssetData> foundAsset = AssetManager::Instance().FindOrCreateAsset(
+                                foundAssetInfo.m_assetId, foundAssetInfo.m_assetType, currentLoadBehavior);
+                            foundAsset.GetId().IsValid())
+                        {
+                            // The Asset has been successfully found and the auto load behavior has been used
+                            *instance = AZStd::move(foundAsset);
+                        }
+                        else
+                        {
+                            // The Asset failed to be found, so fall back to constructing a new Asset<AssetData>
+                            // instance using the AssetId and AssetType from the catalog
+                            *instance = Asset<AssetData>(foundAssetInfo.m_assetId, foundAssetInfo.m_assetType);
+                            instance->SetAutoLoadBehavior(currentLoadBehavior);
+                        }
+                    }
+                    else
+                    {
+                        // There is no Asset Handler registered for the Asset Type, so make a new Asset<AssetData>
+                        // but don't use FindOrCreateAsset to use its autoload behavior
+                        *instance = Asset<AssetData>(foundAssetInfo.m_assetId, foundAssetInfo.m_assetType);
+                        instance->SetAutoLoadBehavior(currentLoadBehavior);
+                    }
                     result.Combine(context.Report(result, "Successfully created Asset<T> with id."));
                 }
                 else
                 {
-                    result.Combine(context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed,
-                        "Null Asset<T> created."));
+                    // The Asset ID is not registered with the catalog, so set the instance to the loaded Id, but
+                    // maintain its Asset Type
+                    *instance = Asset<AssetData>(id, instance->GetType());
+                    instance->SetAutoLoadBehavior(currentLoadBehavior);
+
+                    result.Combine(context.Report(
+                        JSR::Tasks::ReadField,
+                        JSR::Outcomes::DefaultsUsed,
+                        "Asset<T> created, however the Asset Info was not found in the Asset Catalog."));
                 }
             }
             else
