@@ -90,7 +90,7 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float SphereShape::GetRadius()
+    float SphereShape::GetRadius() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_sphereShapeConfig.m_radius;

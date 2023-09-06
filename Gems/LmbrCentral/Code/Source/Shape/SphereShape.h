@@ -49,14 +49,13 @@ namespace LmbrCentral
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // SphereShapeComponentRequestsBus::Handler
-        SphereShapeConfig GetSphereConfiguration() override { return m_sphereShapeConfig; }
+        const SphereShapeConfig& GetSphereConfiguration() const override { return m_sphereShapeConfig; }
         void SetRadius(float radius) override;
-        float GetRadius() override;
+        float GetRadius() const override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        const SphereShapeConfig& GetSphereConfiguration() const { return m_sphereShapeConfig; }
         void SetSphereConfiguration(const SphereShapeConfig& sphereShapeConfig) { m_sphereShapeConfig = sphereShapeConfig; }
         const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
 

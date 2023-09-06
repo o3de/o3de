@@ -50,12 +50,12 @@ namespace LmbrCentral
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         //! QuadShapeComponentRequestBus overrides...
-        QuadShapeConfig GetQuadConfiguration() override;
+        const QuadShapeConfig& GetQuadConfiguration() const override;
         void SetQuadWidth(float width) override;
-        float GetQuadWidth() override;
+        float GetQuadWidth() const override;
         void SetQuadHeight(float height) override;
-        float GetQuadHeight() override;
-        const AZ::Quaternion& GetQuadOrientation() override;
+        float GetQuadHeight() const override;
+        const AZ::Quaternion& GetQuadOrientation() const override;
 
         //! AZ::TransformNotificationBus overrides...
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -63,7 +63,6 @@ namespace LmbrCentral
         void OnNonUniformScaleChanged(const AZ::Vector3& scale);
         const AZ::Vector3& GetCurrentNonUniformScale() const { return m_currentNonUniformScale; }
 
-        const QuadShapeConfig& GetQuadConfiguration() const;
         void SetQuadConfiguration(const QuadShapeConfig& quadShapeConfig);
         const AZ::Transform& GetCurrentTransform() const;
 

@@ -105,19 +105,19 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float CapsuleShape::GetHeight()
+    float CapsuleShape::GetHeight() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_capsuleShapeConfig.m_height;
     }
 
-    float CapsuleShape::GetRadius()
+    float CapsuleShape::GetRadius() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_capsuleShapeConfig.m_radius;
     }
 
-    CapsuleInternalEndPoints CapsuleShape::GetCapsulePoints()
+    CapsuleInternalEndPoints CapsuleShape::GetCapsulePoints() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);

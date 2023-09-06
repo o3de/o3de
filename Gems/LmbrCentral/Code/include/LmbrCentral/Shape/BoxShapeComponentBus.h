@@ -64,7 +64,7 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual BoxShapeConfig GetBoxConfiguration() = 0;
+        virtual const BoxShapeConfig& GetBoxConfiguration() const = 0;
 
         /// @brief Gets dimensions for the Box Shape
         /// @return Vector3 indicating dimensions along the x,y & z axis

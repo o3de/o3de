@@ -47,15 +47,14 @@ namespace LmbrCentral
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         // DiskShapeComponentRequestBus
-        DiskShapeConfig GetDiskConfiguration() override;
+        const DiskShapeConfig& GetDiskConfiguration() const override;
         void SetRadius(float radius) override;
-        float GetRadius() override;
-        const AZ::Vector3& GetNormal() override;
+        float GetRadius() const override;
+        const AZ::Vector3& GetNormal() const override;
 
         // AZ::TransformNotificationBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        const DiskShapeConfig& GetDiskConfiguration() const;
         void SetDiskConfiguration(const DiskShapeConfig& diskShapeConfig);
         const AZ::Transform& GetCurrentTransform() const;
 

@@ -102,7 +102,7 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    QuadShapeConfig QuadShape::GetQuadConfiguration()
+    const QuadShapeConfig& QuadShape::GetQuadConfiguration() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_quadShapeConfig;
@@ -120,7 +120,7 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float QuadShape::GetQuadWidth()
+    float QuadShape::GetQuadWidth() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_quadShapeConfig.m_width;
@@ -138,13 +138,13 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float QuadShape::GetQuadHeight()
+    float QuadShape::GetQuadHeight() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_quadShapeConfig.m_height;
     }
 
-    const AZ::Quaternion& QuadShape::GetQuadOrientation()
+    const AZ::Quaternion& QuadShape::GetQuadOrientation() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_quadShapeConfig, &m_mutex, m_currentNonUniformScale);
@@ -224,11 +224,6 @@ namespace LmbrCentral
         m_quaternion = currentTransform.GetRotation();
         m_scaledWidth = configuration.m_width * currentTransform.GetUniformScale() * currentNonUniformScale.GetX();
         m_scaledHeight = configuration.m_height * currentTransform.GetUniformScale() * currentNonUniformScale.GetY();
-    }
-
-    const QuadShapeConfig& QuadShape::GetQuadConfiguration() const
-    {
-        return m_quadShapeConfig;
     }
 
     void QuadShape::SetQuadConfiguration(const QuadShapeConfig& QuadShapeConfig)

@@ -84,13 +84,13 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
     }
 
-    float CylinderShape::GetHeight()
+    float CylinderShape::GetHeight() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_cylinderShapeConfig.m_height;
     }
 
-    float CylinderShape::GetRadius()
+    float CylinderShape::GetRadius() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_cylinderShapeConfig.m_radius;

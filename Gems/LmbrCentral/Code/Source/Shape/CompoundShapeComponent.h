@@ -49,7 +49,7 @@ namespace LmbrCentral
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
         
         // CompoundShapeComponentRequestsBus::Handler implementation
-        CompoundShapeConfiguration GetCompoundShapeConfiguration() override
+        const CompoundShapeConfiguration& GetCompoundShapeConfiguration() const override
         {
             return m_configuration;
         }

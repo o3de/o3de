@@ -29,7 +29,7 @@ namespace UnitTest
             LmbrCentral::BoxShapeComponentRequestsBus::Handler::BusDisconnect();
         }
 
-        MOCK_METHOD0(GetBoxConfiguration, LmbrCentral::BoxShapeConfig());
+        MOCK_CONST_METHOD0(GetBoxConfiguration, const LmbrCentral::BoxShapeConfig&());
         MOCK_CONST_METHOD0(GetBoxDimensions, AZ::Vector3());
         MOCK_METHOD1(SetBoxDimensions, void(const AZ::Vector3& newDimensions));
         MOCK_CONST_METHOD0(IsTypeAxisAligned, bool());

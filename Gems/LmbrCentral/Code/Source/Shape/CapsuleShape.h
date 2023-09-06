@@ -44,17 +44,16 @@ namespace LmbrCentral
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // CapsuleShapeComponentRequestsBus::Handler
-        CapsuleShapeConfig GetCapsuleConfiguration() override { return m_capsuleShapeConfig; }
+        const CapsuleShapeConfig& GetCapsuleConfiguration() const override { return m_capsuleShapeConfig; }
         void SetHeight(float height) override;
         void SetRadius(float radius) override;
-        CapsuleInternalEndPoints GetCapsulePoints() override;
-        float GetHeight() override;
-        float GetRadius() override;
+        CapsuleInternalEndPoints GetCapsulePoints() const override;
+        float GetHeight() const override;
+        float GetRadius() const override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        const CapsuleShapeConfig& GetCapsuleConfiguration() const { return m_capsuleShapeConfig; }
         void SetCapsuleConfiguration(const CapsuleShapeConfig& capsuleShapeConfig) { m_capsuleShapeConfig = capsuleShapeConfig; }
         const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
 

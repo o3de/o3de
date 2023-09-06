@@ -54,7 +54,7 @@ namespace LmbrCentral
         void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // BoxShapeComponentRequestBus::Handler
-        BoxShapeConfig GetBoxConfiguration() override { return m_boxShapeConfig; }
+       const BoxShapeConfig& GetBoxConfiguration() const override { return m_boxShapeConfig; }
         AZ::Vector3 GetBoxDimensions() const override { return m_boxShapeConfig.m_dimensions; }
         void SetBoxDimensions(const AZ::Vector3& dimensions) override;
         bool IsTypeAxisAligned() const override;
@@ -65,7 +65,6 @@ namespace LmbrCentral
         void OnNonUniformScaleChanged(const AZ::Vector3& scale);
         const AZ::Vector3& GetCurrentNonUniformScale() const { return m_currentNonUniformScale; }
 
-        const BoxShapeConfig& GetBoxConfiguration() const { return m_boxShapeConfig; }
         void SetBoxConfiguration(const BoxShapeConfig& boxShapeConfig) { m_boxShapeConfig = boxShapeConfig; }
         const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
 

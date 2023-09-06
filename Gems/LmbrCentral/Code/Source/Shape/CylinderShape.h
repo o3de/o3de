@@ -52,16 +52,15 @@ namespace LmbrCentral
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         // CylinderShapeComponentRequestsBus::Handler
-        CylinderShapeConfig GetCylinderConfiguration() override { return m_cylinderShapeConfig; }
+        const CylinderShapeConfig& GetCylinderConfiguration() const override { return m_cylinderShapeConfig; }
         void SetHeight(float height) override;
         void SetRadius(float radius) override;
-        float GetHeight() override;
-        float GetRadius() override;
+        float GetHeight() const override;
+        float GetRadius() const override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        const CylinderShapeConfig& GetCylinderConfiguration() const { return m_cylinderShapeConfig; }
         void SetCylinderConfiguration(const CylinderShapeConfig& cylinderShapeConfig) { m_cylinderShapeConfig = cylinderShapeConfig; }
         const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
 

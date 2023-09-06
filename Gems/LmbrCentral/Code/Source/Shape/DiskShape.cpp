@@ -79,7 +79,7 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
     }
 
-    DiskShapeConfig DiskShape::GetDiskConfiguration()
+    const DiskShapeConfig& DiskShape::GetDiskConfiguration() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_diskShapeConfig;
@@ -97,13 +97,13 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float DiskShape::GetRadius()
+    float DiskShape::GetRadius() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_diskShapeConfig.m_radius;
     }
 
-    const AZ::Vector3& DiskShape::GetNormal()
+    const AZ::Vector3& DiskShape::GetNormal() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig, &m_mutex);
@@ -178,12 +178,6 @@ namespace LmbrCentral
         m_position = currentTransform.GetTranslation();
         m_normal = currentTransform.GetBasisZ().GetNormalized();
         m_radius = configuration.m_radius * currentTransform.GetUniformScale();
-    }
-
-    const DiskShapeConfig& DiskShape::GetDiskConfiguration() const
-    {
-        AZStd::shared_lock lock(m_mutex);
-        return m_diskShapeConfig;
     }
 
     void DiskShape::SetDiskConfiguration(const DiskShapeConfig& diskShapeConfig)
