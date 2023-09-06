@@ -696,9 +696,10 @@ namespace AZ
             // create the BLAS
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC blasDesc = {};
             blasDesc.Inputs = dx12RayTracingBlas.GetInputs();
-            blasDesc.Inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;
+            blasDesc.Inputs.Flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;
             blasDesc.ScratchAccelerationStructureData = static_cast<Buffer*>(blasBuffers.m_scratchBuffer.get())->GetMemoryView().GetGpuAddress();
             blasDesc.SourceAccelerationStructureData = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
+            blasDesc.DestAccelerationStructureData = blasDesc.SourceAccelerationStructureData;
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
             commandList->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
 
