@@ -64,14 +64,6 @@ namespace AZStd
         using type = tuple<common_reference_t<TQual<TTypes>, UQual<UTypes>>...>;
     };
 
-    template<class... TTypes, class... UTypes>
-    struct common_type<tuple<TTypes...>, tuple<UTypes...>>
-        : enable_if_t<Internal::sfinae_trigger_v<tuple<common_type_t<TTypes, UTypes>...>>,
-        Internal::requirements_fulfilled>
-    {
-        using type = tuple<common_type_t<TTypes, UTypes>...>;
-    };
-
     template<class T1, class T2, class U1, class U2, template<class> class TQual, template<class> class UQual>
     struct basic_common_reference<pair<T1, T2>, pair<U1, U2>, TQual, UQual>
         : enable_if_t<Internal::sfinae_trigger_v<common_reference_t<TQual<T1>, UQual<U1>>, common_reference_t<TQual<T2>, UQual<U2>>>,
@@ -79,12 +71,25 @@ namespace AZStd
     {
         using type = pair<common_reference_t<TQual<T1>, UQual<U1>>, common_reference_t<TQual<T2>, UQual<U2>>>;
     };
+}
 
-    template<class T1, class T2, class U1, class U2>
-    struct common_type<pair<T1, T2>, pair<U1, U2>>
-        : enable_if_t<Internal::sfinae_trigger_v<common_type_t<T1, U1>, common_type_t<T2, U2>>,
-        Internal::requirements_fulfilled>
+//! common_type is from the std namespace.
+//! Its name was brought into the AZStd namespace via a "using" directive.
+//! Therefore it needs to be specialized in its original namespace.
+namespace std
+{
+    template<class... TTypes, class... UTypes>
+    struct common_type<tuple<TTypes...>, tuple<UTypes...>>
+        : AZStd::enable_if_t<AZStd::Internal::sfinae_trigger_v<tuple<common_type_t<TTypes, UTypes>...>>,
+        AZStd::Internal::requirements_fulfilled>
     {
-        using type = pair<common_type_t<T1, U1>, common_type_t<T2, U2>>;
+        using type = tuple<common_type_t<TTypes, UTypes>...>;
+    };
+    template<class T1, class T2, class U1, class U2>
+    struct common_type<AZStd::pair<T1, T2>, AZStd::pair<U1, U2>>
+        : AZStd::enable_if_t<AZStd::Internal::sfinae_trigger_v<common_type_t<T1, U1>, common_type_t<T2, U2>>,
+        AZStd::Internal::requirements_fulfilled>
+    {
+        using type = AZStd::pair<common_type_t<T1, U1>, common_type_t<T2, U2>>;
     };
 }
