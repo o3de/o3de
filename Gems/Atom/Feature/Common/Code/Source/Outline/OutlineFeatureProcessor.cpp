@@ -107,12 +107,6 @@ namespace AZ::Render
         gatherPassRequest.m_passName = Name("OutlineGatherPass");
         gatherPassRequest.m_templateName = gatherTemplateName;
         gatherPassRequest.AddInputConnection( RPI::PassConnection{
-            Name("Input"),
-            RPI::PassAttachmentRef{
-                forwardProcessPassName, Name("DiffuseOutput")
-            }
-        });
-        gatherPassRequest.AddInputConnection( RPI::PassConnection{
             Name("DepthStencilInputOutput"),
             RPI::PassAttachmentRef{
                 forwardProcessPassName, Name("DepthStencilInputOutput")

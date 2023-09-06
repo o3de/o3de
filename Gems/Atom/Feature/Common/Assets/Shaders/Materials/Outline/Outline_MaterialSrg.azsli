@@ -13,4 +13,5 @@
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     float3 m_baseColor;
+    float3x3 m_uvMatrix;
 }
