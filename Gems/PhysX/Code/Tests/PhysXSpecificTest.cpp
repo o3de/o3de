@@ -1484,7 +1484,7 @@ namespace PhysX
 
     TEST_P(MassComputeFixture, RigidBody_ComputeMassFlagsCombinationsTwoShapes_MassPropertiesCalculatedAccordingly)
     {
-        const Physics::ShapeType shapeType = GetShapeType() const;
+        const Physics::ShapeType shapeType = GetShapeType();
         const SimulatedShapesMode shapeMode = GetShapesMode();
         const AzPhysics::MassComputeFlags massComputeFlags = GetMassComputeFlags();
         const bool multiShapeTest = IsMultiShapeTest();
