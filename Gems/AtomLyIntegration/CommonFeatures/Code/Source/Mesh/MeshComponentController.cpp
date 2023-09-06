@@ -702,8 +702,18 @@ namespace AZ
         }
 
         void MeshComponentController::GetVisibleGeometry(
-            [[maybe_unused]] const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
+            const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
         {
+            // Only include data for this entity if it is within bounds. This could possibly be done per sub mesh.
+            if (bounds.IsValid())
+            {
+                const AZ::Aabb worldBounds = GetWorldBounds();
+                if (worldBounds.IsValid() && !worldBounds.Overlaps(bounds))
+                {
+                    return;
+                }
+            }
+
             // Attempt to copy the triangle list geometry data out of the model asset into the visible geometry structure
             const auto& modelAsset = GetModelAsset();
             if (!modelAsset.IsReady() || modelAsset->GetLodAssets().empty())
