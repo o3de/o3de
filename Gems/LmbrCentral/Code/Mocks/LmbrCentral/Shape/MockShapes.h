@@ -32,7 +32,7 @@ namespace UnitTest
         MOCK_METHOD0(GetBoxConfiguration, LmbrCentral::BoxShapeConfig());
         MOCK_CONST_METHOD0(GetBoxDimensions, AZ::Vector3());
         MOCK_METHOD1(SetBoxDimensions, void(const AZ::Vector3& newDimensions));
-        MOCK_METHOD0(IsTypeAxisAligned, bool());
+        MOCK_CONST_METHOD0(IsTypeAxisAligned, bool());
     };
 
     class MockShapeComponentRequests
@@ -49,13 +49,13 @@ namespace UnitTest
             LmbrCentral::ShapeComponentRequestsBus::Handler::BusDisconnect();
         }
 
-        MOCK_METHOD0(GetShapeType, AZ::Crc32());
-        MOCK_METHOD0(GetEncompassingAabb, AZ::Aabb());
-        MOCK_METHOD2(GetTransformAndLocalBounds, void(AZ::Transform& transform, AZ::Aabb& bounds));
-        MOCK_METHOD1(IsPointInside, bool(const AZ::Vector3& point));
-        MOCK_METHOD1(DistanceSquaredFromPoint, float(const AZ::Vector3& point));
-        MOCK_METHOD1(GenerateRandomPointInside, AZ::Vector3(AZ::RandomDistributionType randomDistribution));
-        MOCK_METHOD3(IntersectRay, bool(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance));
+        MOCK_CONST_METHOD0(GetShapeType, AZ::Crc32());
+        MOCK_CONST_METHOD0(GetEncompassingAabb, AZ::Aabb());
+        MOCK_CONST_METHOD2(GetTransformAndLocalBounds, void(AZ::Transform& transform, AZ::Aabb& bounds));
+        MOCK_CONST_METHOD1(IsPointInside, bool(const AZ::Vector3& point));
+        MOCK_CONST_METHOD1(DistanceSquaredFromPoint, float(const AZ::Vector3& point));
+        MOCK_CONST_METHOD1(GenerateRandomPointInside, AZ::Vector3(AZ::RandomDistributionType randomDistribution));
+        MOCK_CONST_METHOD3(IntersectRay, bool(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance));
     };
 
     class MockShape : public LmbrCentral::ShapeComponentRequestsBus::Handler
