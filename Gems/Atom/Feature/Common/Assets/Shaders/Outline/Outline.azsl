@@ -15,22 +15,23 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     // D32_FLOAT_S8X24_UINT (Format:15) depthStencil texture
     Texture2D<float2> m_depthStencil;
-    Sampler PointSampler
+    Sampler LinearSampler
     {
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
         AddressU = Clamp;
         AddressV = Clamp;
         AddressW = Clamp;
     };
+    Texture2D<float4> m_outlines;
 }
 
 PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
 
-    OUT.m_color = float4(1.0, 0.0, 0.0, 1.0);
+    OUT.m_color = PassSrg::m_outlines.Sample(PassSrg::LinearSampler, IN.m_texCoord);
 
     return OUT;
 }

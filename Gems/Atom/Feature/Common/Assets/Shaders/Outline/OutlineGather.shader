@@ -3,12 +3,26 @@
     "DepthStencilState" : {
         "Depth": 
         {
-            "Enable": false,  //required to bind depth buffer SRV
-            "CompareFunc" : "Always"
+            "Enable": true,  //required to bind depth buffer SRV
+            "CompareFunc" : "LessEqual"
         }
     },
     "DrawList": "outline",
-    "RasterState": { "CullMode": "None" },
+    "RasterState": { 
+        "CullMode": "Back",
+        "depthBias" : "0",
+        "depthBiasSlopeScale" : "0"        
+    },
+
+    "GlobalTargetBlendState": {
+        "Enable": true,
+        "BlendSource" : "One",
+        "BlendDest" : "Zero",
+        "BlendOp" : "Maximum",
+        "BlendAlphaSource" : "One",
+        "BlendAlphaDest" : "Zero",
+        "BlendAlphaOp" : "Maximum"
+    },
     "ProgramSettings": {
         "EntryPoints": [
         {

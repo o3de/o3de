@@ -8,6 +8,10 @@
 
 #include <viewsrg.srgi>
 
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/Outline/Outline_MaterialSrg.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/UvSetCount.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
 
@@ -16,6 +20,7 @@ VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
     VsOutput OUT = EvaluateVertexGeometry(IN, SV);
+    OUT.position.z += 0.05; 
     return OUT;
 }
 
@@ -34,11 +39,16 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
 }
 
-PSOutput MainPS(VSOutput IN)
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VsOutput IN)
 {
     PSOutput OUT;
 
-    OUT.m_color = float4(0.0, 1.0, 0.0, 1.0);
+    OUT.m_color = float4(MaterialSrg::m_baseColor, 1.0);
 
     return OUT;
 }

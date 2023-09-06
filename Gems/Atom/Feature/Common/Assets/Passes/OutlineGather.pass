@@ -8,11 +8,6 @@
             "PassClass": "RasterPass",
             "Slots": [
                 {
-                    "Name": "Input",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-                {
                     "Name": "Output",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
@@ -30,7 +25,7 @@
                 },
                 {
                     "Name": "DepthStencilInputOutput",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Input",
                     "ScopeAttachmentUsage": "DepthStencil"
                 }
             ],
@@ -39,13 +34,16 @@
                     "Name": "OutputImageAttachment",
                     "SizeSource": {
                         "Source": {
-                            "Pass": "This",
-                            "Attachment": "Input"
+                            "Pass": "Parent",
+                            "Attachment": "PipelineOutput"
                         }
                     },
-                    "FormatSource": {
-                        "Pass": "This",
-                        "Attachment": "Input"
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "MultisampleState": {
+                            "samples": 1
+                        },
+                        "SharedQueueMask": "Graphics"
                     }
                 }
             ],
@@ -61,7 +59,13 @@
             "PassData": {
                 "$type": "RasterPassData",
                 "DrawListTag": "outline",
-                "BindViewSrg": true
+                "BindViewSrg": true,
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "OutlineGatherBuffer",
+                        "Slot": "Output"
+                    }
+                ]
             }
         }
     }

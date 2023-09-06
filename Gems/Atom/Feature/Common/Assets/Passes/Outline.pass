@@ -15,7 +15,13 @@
                         "LoadAction": "DontCare",
                         "StoreAction": "Store"
                     }
-                }
+                },
+                {
+                    "Name": "Outlines",
+                    "ShaderInputName": "m_outlines",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                }                 
             ],
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
@@ -24,7 +30,16 @@
                 },
                 //"DrawListTag": "outline",
                 "BindViewSrg": true
-            }
+            },
+            "Connections": [
+                {
+                    "LocalSlot": "Outlines",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "OutlineGatherBuffer"
+                    }
+                }
+            ]
         }
     }
 }
