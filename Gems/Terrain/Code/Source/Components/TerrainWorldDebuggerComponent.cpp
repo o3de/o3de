@@ -224,7 +224,7 @@ namespace Terrain
         return false;
     }
 
-    AZ::Aabb TerrainWorldDebuggerComponent::GetWorldBounds()
+    AZ::Aabb TerrainWorldDebuggerComponent::GetWorldBounds() const
     {
         AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -233,7 +233,7 @@ namespace Terrain
         return terrainAabb;
     }
 
-    AZ::Aabb TerrainWorldDebuggerComponent::GetLocalBounds()
+    AZ::Aabb TerrainWorldDebuggerComponent::GetLocalBounds() const
     {
         // This is a level component, so the local bounds will always be the same as the world bounds.
         return GetWorldBounds();
