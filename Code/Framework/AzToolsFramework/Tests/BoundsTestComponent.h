@@ -60,6 +60,6 @@ namespace UnitTest
         void Deactivate() override;
 
         // IntersectionRequestBus overrides ...
-        AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) override;
+        AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) const override;
     };
 } // namespace UnitTest

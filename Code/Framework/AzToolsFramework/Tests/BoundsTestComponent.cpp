@@ -90,7 +90,7 @@ namespace UnitTest
     }
 
     AzFramework::RenderGeometry::RayResult RenderGeometryIntersectionTestComponent::RenderGeometryIntersect(
-        const AzFramework::RenderGeometry::RayRequest& ray)
+        const AzFramework::RenderGeometry::RayRequest& ray) const
     {
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);

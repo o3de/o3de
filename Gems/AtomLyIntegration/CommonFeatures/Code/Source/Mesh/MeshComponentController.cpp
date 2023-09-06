@@ -790,7 +790,7 @@ namespace AZ
         }
 
         AzFramework::RenderGeometry::RayResult MeshComponentController::RenderGeometryIntersect(
-            const AzFramework::RenderGeometry::RayRequest& ray)
+            const AzFramework::RenderGeometry::RayRequest& ray) const
         {
             AzFramework::RenderGeometry::RayResult result;
             if (const Data::Instance<RPI::Model> model = GetModel())
