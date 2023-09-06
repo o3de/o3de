@@ -13,6 +13,11 @@
             "tag": "forward"
         },
         {
+            "shader": "./ForwardPass_StandardLighting_CustomZ.shader.template",
+            "azsli": "./ForwardPass_StandardLighting_CustomZ.azsli",
+            "tag": "forward_customZ"
+        },
+        {
             "shader": "./Transparent_StandardLighting.shader.template",
             "azsli": "./Transparent_StandardLighting.azsli",
             "tag": "transparent"
@@ -21,6 +26,11 @@
             "shader": "../Common/ShadowmapPass.shader.template",
             "azsli": "../Common/DepthPass.azsli",
             "tag": "shadow"
+        },
+        {
+            "shader": "../Common/ShadowmapPass_CustomZ.shader.template",
+            "azsli": "../Common/DepthPass_CustomZ.azsli",
+            "tag": "shadow_customZ"
         },
         // TODO(MaterialPipeline): The TintedTransparent shaders uses the same azsli file as the normal Transparent shaders, they just need
         // a different blend state. This results in a redundant shader compilation. We should find some way to reuse the same compiled bytecode
@@ -59,7 +69,6 @@
                 "type": "Bool",
                 "defaultValue": false
             }
-            // Note we don't include "hasPerPixelDepth" because the VR pipeline will be highly optimized, and unlikely to ever support PDO or similar features.
         ],
         "functors": 
         [
