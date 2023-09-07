@@ -325,7 +325,9 @@ namespace AzFramework
             virtual void AssetSystemAvailable() {}
             //! Notifies listeners Asset System turns not available
             virtual void AssetSystemUnavailable() {}
-            //! Notifies listeners Asset System is still waiting
+            //! Notifies listeners Asset System is still waiting.
+            //! This will get called every N milliseconds during the Asset System startup
+            //! until the Asset System becomes available.
             virtual void AssetSystemWaiting() {}
         };
 
