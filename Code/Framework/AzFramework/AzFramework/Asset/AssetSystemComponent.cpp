@@ -673,6 +673,8 @@ namespace AzFramework
             AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
             while (!ConnectedWithAssetProcessor() && AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start) < timeout)
             {
+                AssetSystemStatusBus::Broadcast(&AssetSystemStatusBus::Events::AssetSystemWaiting);
+
                 if (NegotiationWithAssetProcessorFailed())
                 {
                     AzFramework::AssetSystemConnectionNotificationsBus::Broadcast(

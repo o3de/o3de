@@ -815,8 +815,6 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
     g_splashScreenStateLock.unlock();
 
     splashScreen->show();
-    // Make sure the initial paint of the splash screen occurs so we dont get stuck with a blank window
-    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
     QObject::connect(splashScreen, &QObject::destroyed, splashScreen, [=]
     {
