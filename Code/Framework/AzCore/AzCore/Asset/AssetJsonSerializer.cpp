@@ -151,6 +151,7 @@ namespace AZ::Data
                         {
                             // The Asset has been successfully found and the auto load behavior has been used
                             *instance = AZStd::move(foundAsset);
+                            result.Combine(context.Report(result, "Successfully created and found Asset<T> with id."));
                         }
                         else
                         {
@@ -158,6 +159,8 @@ namespace AZ::Data
                             // instance using the AssetId and AssetType from the catalog
                             *instance = Asset<AssetData>(foundAssetInfo.m_assetId, foundAssetInfo.m_assetType);
                             instance->SetAutoLoadBehavior(currentLoadBehavior);
+                            result.Combine(context.Report(result, "Asset Info was found in the Asset Catalog and Asset Type for the Asset Id"
+                                " has an Asset Handler registered, however the Asset cannot be found in the Asset Manager."));
                         }
                     }
                     else
@@ -166,8 +169,9 @@ namespace AZ::Data
                         // but don't use FindOrCreateAsset to use its autoload behavior
                         *instance = Asset<AssetData>(foundAssetInfo.m_assetId, foundAssetInfo.m_assetType);
                         instance->SetAutoLoadBehavior(currentLoadBehavior);
+                        result.Combine(context.Report(result, "Asset Info was found in the Asset Catalog, but the Asset Type"
+                            " does not have an Asset Handler registered that could load the Asset."));
                     }
-                    result.Combine(context.Report(result, "Successfully created Asset<T> with id."));
                 }
                 else
                 {
@@ -178,8 +182,9 @@ namespace AZ::Data
 
                     result.Combine(context.Report(
                         JSR::Tasks::ReadField,
-                        JSR::Outcomes::DefaultsUsed,
-                        "Asset<T> created, however the Asset Info was not found in the Asset Catalog."));
+                        JSR::Outcomes::PartialDefaults,
+                        "Asset<T> created, however the Asset Info was not found in the Asset Catalog."
+                        " The AssetType from the supplied output instance will be used"));
                 }
             }
             else
