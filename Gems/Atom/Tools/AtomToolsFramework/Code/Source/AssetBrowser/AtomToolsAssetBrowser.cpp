@@ -154,7 +154,7 @@ namespace AtomToolsFramework
             }
 
             const auto& path = entry->GetFullPath();
-            return !AZ::StringFunc::Contains(path, "cache");
+            return !IsPathIgnored(path);
         };
 
         QSharedPointer<CompositeFilter> finalFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
