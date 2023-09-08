@@ -231,4 +231,5 @@ set(FILES
     Include/Atom/RHI/TagBitRegistry.h
     Include/Atom/RHI/TagRegistry.h
     Include/Atom/RHI/XRRenderingInterface.h
+    Include/Atom/RHI/DispatchRaysIndirectBuffer.h
 )

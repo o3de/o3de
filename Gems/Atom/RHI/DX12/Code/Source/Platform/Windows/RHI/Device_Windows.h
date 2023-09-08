@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <RHI/DX12.h>
+
 #include <Atom/RHI/Device.h>
 
 #if defined(USE_NSIGHT_AFTERMATH)

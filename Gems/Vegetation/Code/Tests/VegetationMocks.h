@@ -203,28 +203,28 @@ namespace UnitTest
         {
         }
 
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override
         {
             transform = AZ::Transform::CreateTranslation(m_aabb.GetCenter());
             bounds = m_aabb;
         }
 
-        AZ::Crc32 GetShapeType() override
+        AZ::Crc32 GetShapeType() const override
         {
             return AZ::Crc32();
         }
 
-        AZ::Aabb GetEncompassingAabb() override
+        AZ::Aabb GetEncompassingAabb() const override
         {
             return m_aabb;
         }
 
-        bool IsPointInside(const AZ::Vector3& point) override
+        bool IsPointInside(const AZ::Vector3& point) const override
         {
             return m_aabb.Contains(point);
         }
 
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override
         {
             return m_aabb.GetDistanceSq(point);
         }
@@ -429,13 +429,13 @@ namespace UnitTest
         : public AZ::Render::MeshComponentRequestBus::Handler
     {
         AZ::Aabb m_GetWorldBoundsOutput;
-        AZ::Aabb GetWorldBounds() override
+        AZ::Aabb GetWorldBounds() const override
         {
             return m_GetWorldBoundsOutput;
         }
 
         AZ::Aabb m_GetLocalBoundsOutput;
-        AZ::Aabb GetLocalBounds() override
+        AZ::Aabb GetLocalBounds() const override
         {
             return m_GetLocalBoundsOutput;
         }

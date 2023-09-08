@@ -14,6 +14,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <RHI/SystemComponent.h>
 #include <RHI/Device.h>
+#include <RHI/DispatchRaysIndirectBuffer.h>
 #include <RHI/Instance.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
@@ -270,6 +271,11 @@ namespace AZ
         RHI::Ptr<RHI::RayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
         {
             return RayTracingShaderTable::Create();
+        }
+
+        RHI::Ptr<RHI::DispatchRaysIndirectBuffer> SystemComponent::CreateDispatchRaysIndirectBuffer()
+        {
+            return DispatchRaysIndirectBuffer::Create();
         }
     }
 }

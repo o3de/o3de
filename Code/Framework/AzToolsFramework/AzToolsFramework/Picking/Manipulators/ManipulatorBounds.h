@@ -54,7 +54,7 @@ namespace AzToolsFramework
             {
             }
 
-            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) override;
+            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) const override;
             void SetShapeData(const BoundRequestShapeBase& shapeData) override;
 
             AZ::Vector3 m_center = AZ::Vector3::CreateZero();
@@ -72,7 +72,7 @@ namespace AzToolsFramework
             {
             }
 
-            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) override;
+            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) const override;
             void SetShapeData(const BoundRequestShapeBase& shapeData) override;
 
             AZ::Vector3 m_center = AZ::Vector3::CreateZero();
@@ -93,7 +93,7 @@ namespace AzToolsFramework
             {
             }
 
-            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) override;
+            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) const override;
             void SetShapeData(const BoundRequestShapeBase& shapeData) override;
 
             AZ::Vector3 m_base = AZ::Vector3::CreateZero(); //!< The center of the circle at the base of the cylinder.
@@ -113,7 +113,7 @@ namespace AzToolsFramework
             {
             }
 
-            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) override;
+            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) const override;
             void SetShapeData(const BoundRequestShapeBase& shapeData) override;
 
             AZ::Vector3 m_apexPosition = AZ::Vector3::CreateZero();
@@ -136,7 +136,7 @@ namespace AzToolsFramework
             {
             }
 
-            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) override;
+            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) const override;
             void SetShapeData(const BoundRequestShapeBase& shapeData) override;
 
             AZ::Vector3 m_corner1 = AZ::Vector3::CreateZero();
@@ -156,7 +156,7 @@ namespace AzToolsFramework
             {
             }
 
-            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) override;
+            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) const override;
             void SetShapeData(const BoundRequestShapeBase& shapeData) override;
 
             // Approximate a torus as a thin cylinder. A ray intersects a torus when the ray and the torus'
@@ -179,7 +179,7 @@ namespace AzToolsFramework
             {
             }
 
-            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) override;
+            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) const override;
             void SetShapeData(const BoundRequestShapeBase& shapeData) override;
 
             AZ::Vector3 m_worldStart = AZ::Vector3::CreateZero();
@@ -198,7 +198,7 @@ namespace AzToolsFramework
             {
             }
 
-            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) override;
+            bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) const override;
             void SetShapeData(const BoundRequestShapeBase& shapeData) override;
 
             AZStd::weak_ptr<const AZ::Spline> m_spline;
