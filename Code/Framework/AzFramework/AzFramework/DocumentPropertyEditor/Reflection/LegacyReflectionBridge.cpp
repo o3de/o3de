@@ -188,9 +188,9 @@ namespace AZ::Reflection
                 AZStd::vector<AZStd::pair<AZStd::string, AZStd::optional<StackEntry>>> m_groups;
                 AZStd::map<AZStd::string, AZStd::vector<StackEntry>> m_groupEntries;
                 AZStd::map<AZStd::string, AZStd::string> m_propertyToGroupMap;
+                AZStd::vector<AZStd::pair<AZStd::string, StackEntry>> m_nonSerializedChildren;
             };
             AZStd::deque<StackEntry> m_stack;
-            AZStd::vector<AZStd::pair<AZStd::string, StackEntry>> m_nonSerializedElements;
 
             bool m_nodeWasSkipped = false;
 
@@ -408,7 +408,7 @@ namespace AZ::Reflection
                 }
             }
 
-            void HandleNodeUiElementsRetrieval(const StackEntry& nodeData)
+            void HandleNodeUiElementsRetrieval(StackEntry& nodeData)
             {
                 // Search through classData for UIElements and Editor Data.
                 if (nodeData.m_classData && nodeData.m_classData->m_editData)
@@ -457,7 +457,7 @@ namespace AZ::Reflection
                                 pathString.append(lastValidElementName);
                             }
 
-                            m_nonSerializedElements.push_back(AZStd::make_pair(pathString.c_str(), entry));
+                            nodeData.m_nonSerializedChildren.push_back(AZStd::make_pair(pathString.c_str(), entry));
                         }
                         else
                         {
@@ -473,14 +473,23 @@ namespace AZ::Reflection
 
             void HandleNodeUiElementsCreation(const AZStd::string_view path)
             {
+                // this should never happen
+                AZ_Assert(!m_stack.empty(), "stack should not be empty during UI element creation!");
+                if (m_stack.empty())
+                {
+                    return;
+                }
+
+                auto& currEntry = m_stack.back();
+
                 // Iterate over non serialized elements to see if any of them should be added
-                auto iter = m_nonSerializedElements.begin();
-                while (iter != m_nonSerializedElements.end())
+                auto iter = currEntry.m_nonSerializedChildren.begin();
+                while (iter != currEntry.m_nonSerializedChildren.end())
                 {
                     // If the parent of the element that was just created has the same name as the parent of any non serialized
                     // elements, and the element that was just created is the element immediately before any non serialized element,
                     // create that serialized element
-                    if (path == iter->first && iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
+                    if (path == iter->first)
                     {
                         m_stack.push_back(iter->second);
                         CacheAttributes();
@@ -489,7 +498,7 @@ namespace AZ::Reflection
                         m_visitor->VisitObjectEnd(*this, *this);
                         m_stack.pop_back();
 
-                        iter = m_nonSerializedElements.erase(iter);
+                        iter = currEntry.m_nonSerializedChildren.erase(iter);
                     }
                     else
                     {
@@ -659,7 +668,6 @@ namespace AZ::Reflection
 
                 HandleNodeGroups(nodeData);
                 HandleNodeUiElementsRetrieval(nodeData);
-                HandleNodeUiElementsCreation("");
 
                 if (auto result = HandleNodeAssociativeInterface(parentData, nodeData); result.has_value())
                 {
@@ -671,6 +679,8 @@ namespace AZ::Reflection
                     return result.value();
                 }
 
+                // handle direct descendant UI element creation
+                HandleNodeUiElementsCreation(nodeData.m_path);
                 m_visitor->VisitObjectBegin(*this, *this);
 
                 return true;
@@ -751,12 +761,11 @@ namespace AZ::Reflection
                         nodeData.m_groups.clear();
                     }
 
-                    if (nodeData.m_classElement && strlen(nodeData.m_classElement->m_name) > 0)
-                    {
-                        HandleNodeUiElementsCreation(nodeData.m_path);
-                    }
-
+                    auto nodePath = nodeData.m_path;
                     m_stack.pop_back();
+
+                    // handle creation of an UI elements that were slated to come directly after this element
+                    HandleNodeUiElementsCreation(nodePath);
                 }
 
                 // The back of the stack now holds the parent.
