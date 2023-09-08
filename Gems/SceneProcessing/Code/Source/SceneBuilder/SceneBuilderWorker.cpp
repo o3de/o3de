@@ -463,7 +463,7 @@ namespace SceneBuilder
         {
             AZStd::string productName;
             AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), productName);
-            AzFramework::StringFunc::Path::ReplaceExtension(productName, "dbgsg");
+            productName += ".dbgsg";
             AZ::SceneAPI::Utilities::DebugOutput::BuildDebugSceneGraph(outputFolder.c_str(), productList, scene, productName);
         }
 
