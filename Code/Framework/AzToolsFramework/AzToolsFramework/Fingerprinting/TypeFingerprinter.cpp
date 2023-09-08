@@ -76,7 +76,7 @@ namespace AzToolsFramework
             for (const AZ::SerializeContext::ClassElement& element : classData.m_elements)
             {
                 AZStd::hash_combine(fingerprint, element.m_typeId);
-                AZStd::hash_range(fingerprint, element.m_name, element.m_name + strlen(element.m_name));
+                AZStd::hash_combine(fingerprint, AZStd::string_view(element.m_name));
                 AZStd::hash_combine(fingerprint, element.m_flags);
             }
 
