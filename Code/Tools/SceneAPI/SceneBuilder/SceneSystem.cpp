@@ -49,6 +49,13 @@ namespace AZ
                  * This applies to an FBX format in which the default unit is a centimeter. */
                 m_unitSizeInMeters = m_unitSizeInMeters * .01f;
             }
+            else
+            {
+                // Some file formats (like DAE) embed the scale in the root transformation, so extract that scale from here.
+                auto rootTransform = 
+                    AssImpSDKWrapper::AssImpTypeConverter::ToTransform(assImpScene->GetAssImpScene()->mRootNode->mTransformation);
+                m_unitSizeInMeters = rootTransform.ExtractScale().GetMaxElement();
+            }
 
             AZStd::pair<AssImpSDKWrapper::AssImpSceneWrapper::AxisVector, int32_t> upAxisAndSign = assImpScene->GetUpVectorAndSign();
 
