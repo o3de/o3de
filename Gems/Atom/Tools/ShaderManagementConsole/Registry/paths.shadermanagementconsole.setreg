@@ -1,8 +1,8 @@
 {
     "O3DE": {
-        "Atom": {
-            "Tools": {
-                "IgnoredPathPatterns": []
+        "AtomToolsFramework": {
+            "Application": {
+                "IgnoreCacheFolder": false
             }
         }
     }

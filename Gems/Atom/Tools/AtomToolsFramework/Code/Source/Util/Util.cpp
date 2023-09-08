@@ -761,11 +761,23 @@ namespace AtomToolsFramework
 
     bool IsPathIgnored(const AZStd::string& path)
     {
-        for (const auto& pattern : GetSettingsObject("/O3DE/Atom/Tools/IgnoredPathPatterns", AZStd::vector<AZStd::string>{}))
+        // Ignoring the cache folder is currently the most common case for tools that want to ignore intermediate assets
+        const bool ignoreCacheFolder = GetSettingsValue("/O3DE/AtomToolsFramework/Application/IgnoreCacheFolder", true);
+        if (ignoreCacheFolder && AZ::StringFunc::Contains(path, "cache"))
         {
-            if (AZ::StringFunc::Contains(path, pattern))
+            return true;
+        }
+
+        // For more extensive customization, pattern matching is also supported via IgnoredPathRegexPatterns. This is empty by default.
+        for (const auto& patternStr : GetSettingsObject("/O3DE/AtomToolsFramework/Application/IgnoredPathRegexPatterns", AZStd::vector<AZStd::string>{}))
+        {
+            if (!patternStr.empty())
             {
-                return true;
+                AZStd::regex patternRegex(patternStr, AZStd::regex::flag_type::icase);
+                if (AZStd::regex_match(path, patternRegex))
+                {
+                    return true;
+                }
             }
         }
         return false;
