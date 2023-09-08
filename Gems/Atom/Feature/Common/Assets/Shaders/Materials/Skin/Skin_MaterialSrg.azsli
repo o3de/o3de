@@ -17,6 +17,7 @@
 #include "../MaterialInputs/EmissiveInput.azsli"
 #include "../MaterialInputs/UvSetCount.azsli"
 #include "../MaterialInputs/DetailMapsInput.azsli"
+#include "../MaterialInputs/OutlineInput.azsli"
 
 #include <Atom/Features/SrgSemantics.azsli>
 

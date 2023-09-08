@@ -10,11 +10,7 @@
                 {
                     "Name": "InputOutput",
                     "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "LoadAction": "DontCare",
-                        "StoreAction": "Store"
-                    }
+                    "ScopeAttachmentUsage": "RenderTarget"
                 },
                 {
                     "Name": "Outlines",

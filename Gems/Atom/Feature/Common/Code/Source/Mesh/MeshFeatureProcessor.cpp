@@ -94,6 +94,7 @@ namespace AZ
         static AZ::Name s_o_meshInstancingIsEnabled_Name =
             AZ::Name::FromStringLiteral("o_meshInstancingIsEnabled", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_transparent_Name = AZ::Name::FromStringLiteral("transparent", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_block_outline_Name = AZ::Name::FromStringLiteral("general.blockOutline", AZ::Interface<AZ::NameDictionary>::Get());
 
         static void CacheRootConstantInterval(MeshInstanceGroupData& meshInstanceGroupData)
         {
@@ -1990,6 +1991,11 @@ namespace AZ
                         ? Render::StencilRefs::None
                         : Render::StencilRefs::UseIBLSpecularPass;
                     stencilRef |= Render::StencilRefs::UseDiffuseGIPass;
+
+                    if (auto index = material->FindPropertyIndex(s_block_outline_Name); index.IsValid())
+                    {
+                        stencilRef |= material->GetPropertyValue<bool>(index) ? 0 : 0x4;
+                    }
 
                     drawPacket.SetStencilRef(stencilRef);
                     drawPacket.SetSortKey(m_sortKey);
