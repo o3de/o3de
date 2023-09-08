@@ -425,13 +425,7 @@ namespace AZ::Reflection
                         {
                             // The group name is stored in the description.
                             groupName = iter->m_description;
-
-                            if (groupName.empty())
-                            {
-                                // If the group name is empty, this is the end of the previous group.
-                                // As such, we reset the lastValidElementName.
-                                lastValidElementName = "";
-                            }
+                            lastValidElementName = "";
                         }
                         else if (iter->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
@@ -473,18 +467,24 @@ namespace AZ::Reflection
 
             void HandleNodeUiElementsCreation(const AZStd::string_view path)
             {
-                // this should never happen
-                AZ_Assert(!m_stack.empty(), "stack should not be empty during UI element creation!");
-                if (m_stack.empty())
+                // find the last non-ui element in the stack -- it may hold UI elements to create at this path
+                StackEntry* nonUIAncestor = nullptr;
+                for (auto stackIter = m_stack.rbegin(), endIter = m_stack.rend(); !nonUIAncestor && stackIter != endIter; ++stackIter)
+                {
+                    if (!stackIter->m_classElement ||
+                        !(stackIter->m_classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT))
+                    {
+                        nonUIAncestor = &*stackIter;
+                    }
+                }
+                if (!nonUIAncestor)
                 {
                     return;
                 }
 
-                auto& currEntry = m_stack.back();
-
                 // Iterate over non serialized elements to see if any of them should be added
-                auto iter = currEntry.m_nonSerializedChildren.begin();
-                while (iter != currEntry.m_nonSerializedChildren.end())
+                auto iter = nonUIAncestor->m_nonSerializedChildren.begin();
+                while (iter != nonUIAncestor->m_nonSerializedChildren.end())
                 {
                     // If the parent of the element that was just created has the same name as the parent of any non serialized
                     // elements, and the element that was just created is the element immediately before any non serialized element,
@@ -498,7 +498,7 @@ namespace AZ::Reflection
                         m_visitor->VisitObjectEnd(*this, *this);
                         m_stack.pop_back();
 
-                        iter = currEntry.m_nonSerializedChildren.erase(iter);
+                        iter = nonUIAncestor->m_nonSerializedChildren.erase(iter);
                     }
                     else
                     {
@@ -1262,7 +1262,6 @@ namespace AZ::Reflection
                 nodeData.m_cachedAttributes.push_back(
                     { group, PropertyEditor::Visibility.GetName(), Dom::Utils::ValueFromType(visibility) });
             }
-
 
             void InheritChangeNotify(StackEntry& parentData, StackEntry& nodeData)
             {
