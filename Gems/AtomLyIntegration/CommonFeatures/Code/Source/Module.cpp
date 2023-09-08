@@ -35,6 +35,10 @@
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponent.h>
 #include <PostProcess/GradientWeightModifier/GradientWeightModifierComponent.h>
 #include <PostProcess/ChromaticAberration/ChromaticAberrationComponent.h>
+#include <PostProcess/PaniniProjection/PaniniProjectionComponent.h>
+#include <PostProcess/FilmGrain/FilmGrainComponent.h>
+#include <PostProcess/WhiteBalance/WhiteBalanceComponent.h>
+#include <PostProcess/Vignette/VignetteComponent.h>
 #include <ScreenSpace/DeferredFogComponent.h>
 #include <SkyAtmosphere/SkyAtmosphereComponent.h>
 #include <SkyBox/HDRiSkyboxComponent.h>
@@ -72,6 +76,10 @@
 #include <PostProcess/ShapeWeightModifier/EditorShapeWeightModifierComponent.h>
 #include <PostProcess/GradientWeightModifier/EditorGradientWeightModifierComponent.h>
 #include <PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h>
+#include <PostProcess/PaniniProjection/EditorPaniniProjectionComponent.h>
+#include <PostProcess/FilmGrain/EditorFilmGrainComponent.h>
+#include <PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h>
+#include <PostProcess/Vignette/EditorVignetteComponent.h>
 #include <ScreenSpace/EditorDeferredFogComponent.h>
 #include <SkyAtmosphere/EditorSkyAtmosphereComponent.h>
 #include <SkyBox/EditorHDRiSkyboxComponent.h>
@@ -127,6 +135,10 @@ namespace AZ
                         AttachmentComponent::CreateDescriptor(),
                         OcclusionCullingPlaneComponent::CreateDescriptor(),
                         ChromaticAberrationComponent::CreateDescriptor(),
+                        PaniniProjectionComponent::CreateDescriptor(),
+                        FilmGrainComponent::CreateDescriptor(),
+                        WhiteBalanceComponent::CreateDescriptor(),
+                        VignetteComponent::CreateDescriptor(),
                         CubeMapCaptureComponent::CreateDescriptor(),
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
@@ -164,6 +176,10 @@ namespace AZ
                         EditorAttachmentComponent::CreateDescriptor(),
                         EditorOcclusionCullingPlaneComponent::CreateDescriptor(),
                         EditorChromaticAberrationComponent::CreateDescriptor(),
+                        EditorPaniniProjectionComponent::CreateDescriptor(),
+                        EditorFilmGrainComponent::CreateDescriptor(),
+                        EditorWhiteBalanceComponent::CreateDescriptor(),
+                        EditorVignetteComponent::CreateDescriptor(),
                         EditorCubeMapCaptureComponent::CreateDescriptor(),
 #endif
                     });

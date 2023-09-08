@@ -261,6 +261,12 @@ namespace AZ
         return returnValue;
     }
 
+    AZ_MATH_INLINE void MatrixMxN::SetZero()
+    {
+        AZ::Matrix4x4* data = m_values.data();
+        memset(data, 0, sizeof(AZ::Matrix4x4) * m_values.size());
+    }
+
     AZ_MATH_INLINE MatrixMxN MatrixMxN::operator-() const
     {
         MatrixMxN returnValue(m_rowCount, m_colCount);
@@ -419,8 +425,18 @@ namespace AZ
         m_values[rowGroup * m_numColGroups + colGroup] = subMatrix;
     }
 
+    AZ_MATH_INLINE AZStd::vector<Matrix4x4>& MatrixMxN::GetMatrixElements()
+    {
+        return m_values;
+    }
+
     AZ_MATH_INLINE void MatrixMxN::FixUnusedElements()
     {
+        if (m_values.empty())
+        {
+            return;
+        }
+
         const AZStd::size_t lastRowGroup = m_numRowGroups - 1;
         const AZStd::size_t lastColGroup = m_numColGroups - 1;
         const Simd::Vec4::FloatType zero = Simd::Vec4::ZeroFloat();
@@ -470,14 +486,37 @@ namespace AZ
         }
     }
 
+    AZ_MATH_INLINE void OuterProduct(const AZ::VectorN& lhs, const AZ::VectorN& rhs, AZ::MatrixMxN& output)
+    {
+        output.Resize(lhs.GetDimensionality(), rhs.GetDimensionality());
+        for (AZStd::size_t colIter = 0; colIter < output.GetColumnGroups(); ++colIter)
+        {
+            AZ::Simd::Vec4::FloatType rhsElement = rhs.GetVectorValues()[colIter].GetSimdValue();
+            AZ::Simd::Vec4::FloatType splat0 = AZ::Simd::Vec4::SplatIndex0(rhsElement);
+            AZ::Simd::Vec4::FloatType splat1 = AZ::Simd::Vec4::SplatIndex1(rhsElement);
+            AZ::Simd::Vec4::FloatType splat2 = AZ::Simd::Vec4::SplatIndex2(rhsElement);
+            AZ::Simd::Vec4::FloatType splat3 = AZ::Simd::Vec4::SplatIndex3(rhsElement);
+            for (AZStd::size_t rowIter = 0; rowIter < output.GetRowGroups(); ++rowIter)
+            {
+                AZ::Simd::Vec4::FloatType lhsElement = lhs.GetVectorValues()[rowIter].GetSimdValue();
+                AZ::Matrix4x4& outputElement = output.GetSubmatrix(rowIter, colIter);
+                outputElement.GetSimdValues()[0] = AZ::Simd::Vec4::Madd(lhsElement, splat0, outputElement.GetSimdValues()[0]);
+                outputElement.GetSimdValues()[1] = AZ::Simd::Vec4::Madd(lhsElement, splat1, outputElement.GetSimdValues()[1]);
+                outputElement.GetSimdValues()[2] = AZ::Simd::Vec4::Madd(lhsElement, splat2, outputElement.GetSimdValues()[2]);
+                outputElement.GetSimdValues()[3] = AZ::Simd::Vec4::Madd(lhsElement, splat3, outputElement.GetSimdValues()[3]);
+            }
+        }
+        output.FixUnusedElements();
+    }
+
     AZ_MATH_INLINE void VectorMatrixMultiply(const MatrixMxN& matrix, const VectorN& vector, VectorN& output)
     {
         // Because we've stored our matrix in column major ordering, we can perform a vector matrix product using only multiply-accumulate
         // There is no requirement for horizontal sums
         // Note we don't clear the output vector prior to starting the madd loops, this means the original value of output is included in the final accumulation
         // This works out extremely well for having bias vectors, since if we initialize output to the bias, we include the bias in the final result for free
-        AZ_Assert(matrix.GetRowCount() == output.GetDimensionality(), "Output vector dimensionality must match matrix row count");
         AZ_Assert(matrix.GetColumnCount() == vector.GetDimensionality(), "Input vector dimensionality must match matrix column count");
+        output.Resize(matrix.GetRowCount());
         for (AZStd::size_t colIter = 0; colIter < matrix.GetColumnGroups(); ++colIter)
         {
             Simd::Vec4::FloatType vectorElement = vector.GetVectorValues()[colIter].GetSimdValue();
@@ -501,11 +540,27 @@ namespace AZ
         output.FixLastVectorElement();
     }
 
+    AZ_MATH_INLINE void VectorMatrixMultiplyLeft(const VectorN& vector, const MatrixMxN& matrix, VectorN& output)
+    {
+        AZ_Assert(matrix.GetRowCount() == vector.GetDimensionality(), "Input vector dimensionality must match matrix row count");
+        output.Resize(matrix.GetColumnCount());
+        for (AZStd::size_t colIter = 0; colIter < matrix.GetColumnGroups(); ++colIter)
+        {
+            Vector4& outputElement = output.GetVectorValues()[colIter];
+            for (AZStd::size_t rowIter = 0; rowIter < matrix.GetRowGroups(); ++rowIter)
+            {
+                Simd::Vec4::FloatType vectorElement = vector.GetVectorValues()[rowIter].GetSimdValue();
+                const Matrix4x4& matrixElement = matrix.GetSubmatrix(rowIter, colIter);
+                outputElement.SetSimdValue(Simd::Vec4::Add(outputElement.GetSimdValue(), Simd::Vec4::Mat4x4TransformVector(matrixElement.GetSimdValues(), vectorElement)));
+            }
+        }
+        output.FixLastVectorElement();
+    }
+
     AZ_MATH_INLINE void MatrixMatrixMultiply(const MatrixMxN& lhs, const MatrixMxN& rhs, MatrixMxN& output)
     {
         AZ_Assert(lhs.GetColumnCount() == rhs.GetRowCount(), "Left-hand side column count must match right-hand side row count");
-        AZ_Assert(lhs.GetRowCount() == output.GetRowCount(), "Left-hand side row count must match the output matrix row count");
-        AZ_Assert(rhs.GetColumnCount() == output.GetColumnCount(), "Right-hand side column count must match the output matrix column count");
+        output.Resize(lhs.GetRowCount(), rhs.GetColumnCount());
         for (AZStd::size_t rowIter = 0; rowIter < lhs.GetRowGroups(); ++rowIter)
         {
             for (AZStd::size_t colIter = 0; colIter < rhs.GetColumnGroups(); ++colIter)

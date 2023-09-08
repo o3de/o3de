@@ -44,7 +44,7 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "ChromaticAberrationPass",
+                        "Pass": "VignettePass",
                         "Attachment": "Output"
                     }
                 },
@@ -215,7 +215,59 @@
 			                }
 			            }
 		            ]
-		        }
+		        },
+                {
+                    "Name": "PaniniProjectionPass",
+                    "TemplateName": "PaniniProjectionTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "ChromaticAberrationPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "FilmGrainPass",
+                    "TemplateName": "FilmGrainTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "PaniniProjectionPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "WhiteBalancePass",
+                    "TemplateName": "WhiteBalanceTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+			                "AttachmentRef": {
+                                "Pass": "FilmGrainPass",
+                                "Attachment": "Output"
+			                }
+			            }
+		            ]
+                },
+                {
+                    "Name": "VignettePass",
+                    "TemplateName": "VignetteTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "WhiteBalancePass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                }
             ]
         }
     }

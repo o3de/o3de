@@ -376,10 +376,10 @@ namespace AZ
 
             if (m_requiresViewSrg)
             {
-                const AZStd::vector<RPI::ViewPtr>& views = m_pipeline->GetViews(m_passData->m_pipelineViewTag);
-                if (views.size() > 0)
+                RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
+                if (view)
                 {
-                    shaderResourceGroups.push_back(views[0]->GetRHIShaderResourceGroup());
+                    shaderResourceGroups.push_back(view->GetRHIShaderResourceGroup());
                 }
             }
 

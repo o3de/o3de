@@ -83,7 +83,7 @@ namespace EMotionFX
                 auto filteredView = AZ::SceneAPI::Containers::Views::MakeFilterView(keyValueView, AZ::SceneAPI::Containers::DerivedTypeFilter<AZ::SceneAPI::DataTypes::IBlendShapeData>());
                 for (auto it = filteredView.begin(); it != filteredView.end(); ++it)
                 {
-                    AZStd::set<AZ::Crc32> types;
+                    AZ::SceneAPI::Events::GraphMetaInfo::VirtualTypesSet types;
                     auto keyValueIterator = it.GetBaseIterator();
                     AZ::SceneAPI::Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(keyValueIterator.GetFirstIterator());
                     AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(
@@ -167,7 +167,7 @@ namespace EMotionFX
                 auto filteredView = AZ::SceneAPI::Containers::Views::MakeFilterView(keyValueView, AZ::SceneAPI::Containers::DerivedTypeFilter<AZ::SceneAPI::DataTypes::IBlendShapeData>());
                 for (auto it = filteredView.begin(); it != filteredView.end(); ++it)
                 {
-                    AZStd::set<AZ::Crc32> types;
+                    AZStd::unordered_set<AZ::Crc32> types;
                     auto keyValueIterator = it.GetBaseIterator();
                     AZ::SceneAPI::Containers::SceneGraph::NodeIndex index = graph.ConvertToNodeIndex(keyValueIterator.GetFirstIterator());
                     AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(

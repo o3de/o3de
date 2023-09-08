@@ -69,6 +69,7 @@ namespace EMotionFX
         void TearDown() override
         {
             m_actorInstance->Destroy();
+            m_actor.reset();
             SystemComponentFixture::TearDown();
         }
 

@@ -28,5 +28,7 @@ namespace AzToolsFramework
 
     protected:
         AZ::Dom::Value m_node;
+
+        virtual void OnClicked();
     };
 } // namespace AzToolsFramework

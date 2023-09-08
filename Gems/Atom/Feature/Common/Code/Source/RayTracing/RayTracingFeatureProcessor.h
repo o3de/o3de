@@ -319,7 +319,7 @@ namespace AZ
             uint32_t m_currentMeshInfoFrameIndex = 0;
 
             // structure for data in the m_materialInfoBuffer, shaders that use the buffer must match this type
-            struct MaterialInfo
+            struct alignas(16) MaterialInfo
             {
                 AZStd::array<float, 4> m_baseColor;     // float4
                 AZStd::array<float, 3> m_emissiveColor; // float3
@@ -327,24 +327,21 @@ namespace AZ
                 float m_roughnessFactor = 0.0f;
                 RayTracingSubMeshTextureFlags m_textureFlags = RayTracingSubMeshTextureFlags::None;
                 uint32_t m_textureStartIndex = 0;
-                float m_padding0 = 0.0f;
+                uint32_t m_reflectionProbeCubeMapIndex = InvalidIndex;
 
                 // reflection probe data, must match the structure in ReflectionProbeData.azlsi
-                struct ReflectionProbeData
+                struct alignas(16) ReflectionProbeData
                 {
                     AZStd::array<float, 12> m_modelToWorld;        // float3x4
                     AZStd::array<float, 12> m_modelToWorldInverse; // float3x4
                     AZStd::array<float, 3>  m_outerObbHalfLengths; // float3
-                    float m_padding0 = 0.0f;
+                    float m_exposure = 0.0f;
                     AZStd::array<float, 3>  m_innerObbHalfLengths; // float3
                     uint32_t m_useReflectionProbe = 0;
                     uint32_t m_useParallaxCorrection = 0;
-                    float m_exposure = 0.0f;
+                    AZStd::array<float, 3> m_padding;
                 };
-
                 ReflectionProbeData m_reflectionProbeData;
-                uint32_t m_reflectionProbeCubeMapIndex = InvalidIndex;               
-                float m_padding1 = 0.0f;
             };
 
             // vector of MaterialInfo, transferred to the materialInfoGpuBuffer

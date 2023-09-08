@@ -171,29 +171,27 @@ using std::ptrdiff_t;
 
 namespace AZ
 {
-    typedef int8_t    s8;
-    typedef uint8_t   u8;
-    typedef int16_t   s16;
-    typedef uint16_t  u16;
-    typedef int32_t   s32;
-    typedef uint32_t  u32;
-#   if AZ_TRAIT_COMPILER_INT64_T_IS_LONG // int64_t is long
-    typedef signed long long        s64;
-    typedef unsigned long long      u64;
-#   else
-    typedef int64_t   s64;
-    typedef uint64_t  u64;
-#   endif //
+    using s8 = int8_t;
+    using u8 = uint8_t;
+    using s16 = int16_t;
+    using u16 = uint16_t;
+    using s32 = int32_t;
+    using u32 = uint32_t;
+    // s64 and u64 are always long long and unsigned long long on all platforms
+    // where it is 64-bits
+    // The previous behavior with checking the AZ_TRAIT_COMPILER_INT64_T_IS_LONG define
+    // was exactly the same as it is now.
+    using s64 = signed long long;
+    using u64 = unsigned long long;
 
-
-    typedef struct
+    struct s128
     {
         s64 a, b;
-    } s128;
-    typedef struct
+    };
+    struct u128
     {
         u64 a, b;
-    } u128;
+    };
 
     template<typename T>
     inline T SizeAlignUp(T s, size_t a) { return static_cast<T>((s+(a-1)) & ~(a-1)); }

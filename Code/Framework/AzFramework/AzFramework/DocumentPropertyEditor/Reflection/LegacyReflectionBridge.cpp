@@ -574,52 +574,7 @@ namespace AZ::Reflection
                 CacheAttributes();
 
                 // Inherit the change notify attribute from our parent, if it exists
-                const auto changeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::ChangeNotify.GetName();
-                auto parentValue = Find(Name(), changeNotifyName, parentData);
-                if (parentValue && !parentValue->IsNull())
-                {
-                    Dom::Value* existingValue = nullptr;
-                    auto it = AZStd::find_if(
-                        nodeData.m_cachedAttributes.begin(),
-                        nodeData.m_cachedAttributes.end(),
-                        [&changeNotifyName](const AttributeData& attributeData)
-                        {
-                            return (attributeData.m_name == changeNotifyName);
-                        });
-
-                    if (it != nodeData.m_cachedAttributes.end())
-                    {
-                        existingValue = &it->m_value;
-                    }
-
-                    auto addValueToArray = [](const Dom::Value& source, Dom::Value& destination)
-                    {
-                        if (source.IsArray())
-                        {
-                            auto& destinationArray = destination.GetMutableArray();
-                            destinationArray.insert(destinationArray.end(), source.ArrayBegin(), source.ArrayEnd());
-                        }
-                        else
-                        {
-                            destination.ArrayPushBack(source);
-                        }
-                    };
-
-                    // calling order matters! Add parent's attributes first then existing attribute
-                    if (existingValue)
-                    {
-                        Dom::Value newChangeNotifyValue;
-                        newChangeNotifyValue.SetArray();
-                        addValueToArray(*parentValue, newChangeNotifyValue);
-                        addValueToArray(*existingValue, newChangeNotifyValue);
-                        nodeData.m_cachedAttributes.push_back({ Name(), changeNotifyName, newChangeNotifyValue });
-                    }
-                    else
-                    {
-                        // no existing changeNotify, so let's just inherit the parent's one
-                        nodeData.m_cachedAttributes.push_back({ Name(), changeNotifyName, *parentValue });
-                    }
-                }
+                InheritChangeNotify(parentData, nodeData);
 
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
                 AZStd::optional<AZ::TypeId> enumTypeId = {};
@@ -646,17 +601,31 @@ namespace AZ::Reflection
             bool BeginNode(
                 void* instance, const AZ::SerializeContext::ClassData* classData, const AZ::SerializeContext::ClassElement* classElement)
             {
-                // Ensure our instance pointer is resolved and safe to bind to member attributes.
-                if (classElement)
-                {
-                    instance = AZ::Utils::ResolvePointer(instance, *classElement, *m_serializeContext);
-                }
-
                 // Prepare the node references for the handlers.
                 StackEntry& parentData = m_stack.back();
 
+                if (classElement)
+                {
+                    // Ensure our instance pointer is resolved and safe to bind to member attributes.
+                    instance = AZ::Utils::ResolvePointer(instance, *classElement, *m_serializeContext);
+
+                    // Since we iterate over the SerializeContext, we end up processing all elements even if they
+                    // weren't exposed to the EditContext, so we need to skip any nodes that are missing m_editData.
+                    // There are caveats:
+                    //   - We still need to process FLG_BASE_CLASS nodes because there could be sub-classes that are exposed to the
+                    //   EditContext.
+                    //   - Elements in a container will have empty m_editData, so we need to still include nodes who are members of
+                    //   containers.
+                    if (!classElement->m_editData && ((classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_BASE_CLASS) == 0) &&
+                        !(parentData.m_classData && parentData.m_classData->m_container))
+                    {
+                        m_nodeWasSkipped = true;
+                        return false;
+                    }
+                }
+
                 // search up the stack for the "true parent", which is the last entry created by the serialize enumerate itself
-                void* instanceToInvoke = nullptr;
+                void* instanceToInvoke = instance;
                 for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
                 {
                     auto* currInstance = rIter->m_instance;
@@ -739,8 +708,10 @@ namespace AZ::Reflection
                                 {
                                     groupStackEntry.m_skipHandler = true;
                                 }
+                                auto& parentEntry = m_stack.back();
                                 m_stack.push_back(groupStackEntry);
                                 CacheAttributes();
+                                InheritChangeNotify(parentEntry, m_stack.back());
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
 
@@ -756,7 +727,9 @@ namespace AZ::Reflection
                                     // skip the bool that represented the group toggle, it's already in-line with the group
                                     continue;
                                 }
+                                auto& parentEntry = m_stack.back();
                                 m_stack.push_back({ groupEntry.m_instance, nullptr, AZ::TypeId() });
+                                InheritChangeNotify(parentEntry, m_stack.back());
                                 m_serializeContext->EnumerateInstance(
                                     m_enumerateContext,
                                     groupEntry.m_instance,
@@ -922,9 +895,18 @@ namespace AZ::Reflection
 
                 auto checkAttribute = [&](const AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
+                    bool describesChildren = it->second->m_describesChildren;
                     if (it->second->m_describesChildren != shouldDescribeChildren)
                     {
                         return;
+                    }
+
+                    // The m_describesChildren flag is true if the attribute is an ElementAttribute,
+                    // in which case the instance we want to invoke on is the actual container element
+                    // instance, as opposed to the usual invoke instance.
+                    if (describesChildren)
+                    {
+                        instance = nodeData.m_instance;
                     }
 
                     Name name = propertyEditorSystem->LookupNameFromId(it->first);
@@ -982,6 +964,12 @@ namespace AZ::Reflection
                                 visibility = isVisible ? PropertyVisibility::Show : PropertyVisibility::Hide;
                                 return;
                             }
+                            else if (auto genericVisibility = ReadGenericAttributeToDomValue(instance, it->second))
+                            {
+                                // Fallback to generic read if LegacyAttributeToDomValue fails
+                                visibility = PropertyEditor::Visibility.DomToValue(genericVisibility.value()).value();
+                                return;
+                            }
                         }
                         // The legacy ReadOnly property needs to be converted into the Disabled node property.
                         // If our ancestor is disabled we don't need to read the attribute because this node
@@ -996,15 +984,15 @@ namespace AZ::Reflection
 
                         // See if any registered attribute definitions can read this attribute
                         Dom::Value attributeValue;
-                        propertyEditorSystem->EnumerateRegisteredAttributes(
-                            name,
-                            [&](const DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+
+                        auto readValue = [&](const DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                        {
+                            if (attributeValue.IsNull())
                             {
-                                if (attributeValue.IsNull())
-                                {
-                                    attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
-                                }
-                            });
+                                attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
+                            }
+                        };
+                        propertyEditorSystem->EnumerateRegisteredAttributes(name, readValue);
 
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
@@ -1264,6 +1252,57 @@ namespace AZ::Reflection
                 nodeData.m_computedVisibility = visibility;
                 nodeData.m_cachedAttributes.push_back(
                     { group, PropertyEditor::Visibility.GetName(), Dom::Utils::ValueFromType(visibility) });
+            }
+
+
+            void InheritChangeNotify(StackEntry& parentData, StackEntry& nodeData)
+            {
+                const auto changeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::ChangeNotify.GetName();
+                auto parentValue = Find(Name(), changeNotifyName, parentData);
+                if (parentValue && !parentValue->IsNull())
+                {
+                    Dom::Value* existingValue = nullptr;
+                    auto it = AZStd::find_if(
+                        nodeData.m_cachedAttributes.begin(),
+                        nodeData.m_cachedAttributes.end(),
+                        [&changeNotifyName](const AttributeData& attributeData)
+                        {
+                            return (attributeData.m_name == changeNotifyName);
+                        });
+
+                    if (it != nodeData.m_cachedAttributes.end())
+                    {
+                        existingValue = &it->m_value;
+                    }
+
+                    auto addValueToArray = [](const Dom::Value& source, Dom::Value& destination)
+                    {
+                        if (source.IsArray())
+                        {
+                            auto& destinationArray = destination.GetMutableArray();
+                            destinationArray.insert(destinationArray.end(), source.ArrayBegin(), source.ArrayEnd());
+                        }
+                        else
+                        {
+                            destination.ArrayPushBack(source);
+                        }
+                    };
+
+                    // calling order matters! Add parent's attributes first then existing attribute
+                    if (existingValue)
+                    {
+                        Dom::Value newChangeNotifyValue;
+                        newChangeNotifyValue.SetArray();
+                        addValueToArray(*parentValue, newChangeNotifyValue);
+                        addValueToArray(*existingValue, newChangeNotifyValue);
+                        it->m_value = newChangeNotifyValue;
+                    }
+                    else
+                    {
+                        // no existing changeNotify, so let's just inherit the parent's one
+                        nodeData.m_cachedAttributes.push_back({ Name(), changeNotifyName, *parentValue });
+                    }
+                }
             }
 
             const AttributeDataType* Find(Name name) const override

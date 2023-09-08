@@ -74,7 +74,7 @@ class ArtifactManager(object):
             try:
                 logger.debug(f'Attempting to create new artifact path: "{self.dest_path}"')
                 if not os.path.exists(self.dest_path):
-                    os.makedirs(self.dest_path)
+                    os.makedirs(self.dest_path, exist_ok=True)
                     logger.info(f'Created new artifact path: "{self.dest_path}"')
                     return self.dest_path
             except (IOError, OSError, WindowsError) as err:

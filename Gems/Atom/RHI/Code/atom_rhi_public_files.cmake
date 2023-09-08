@@ -16,17 +16,27 @@ set(FILES
     Source/RHI/LinearAllocator.cpp
     Source/RHI/PoolAllocator.cpp
     Include/Atom/RHI/Buffer.h
+    Include/Atom/RHI/MultiDeviceBuffer.h
     Include/Atom/RHI/BufferView.h
     Include/Atom/RHI/IndexBufferView.h
+    Include/Atom/RHI/MultiDeviceIndexBufferView.h
     Include/Atom/RHI/StreamBufferView.h
+    Include/Atom/RHI/MultiDeviceStreamBufferView.h
     Source/RHI/Buffer.cpp
+    Source/RHI/MultiDeviceBuffer.cpp
     Source/RHI/BufferView.cpp
     Source/RHI/IndexBufferView.cpp
+    Source/RHI/MultiDeviceIndexBufferView.cpp
     Source/RHI/StreamBufferView.cpp
+    Source/RHI/MultiDeviceStreamBufferView.cpp
     Include/Atom/RHI/BufferPool.h
+    Include/Atom/RHI/MultiDeviceBufferPool.h
     Include/Atom/RHI/BufferPoolBase.h
+    Include/Atom/RHI/MultiDeviceBufferPoolBase.h
     Source/RHI/BufferPool.cpp
+    Source/RHI/MultiDeviceBufferPool.cpp
     Source/RHI/BufferPoolBase.cpp
+    Source/RHI/MultiDeviceBufferPoolBase.cpp
     Include/Atom/RHI/CommandList.h
     Include/Atom/RHI/CommandListValidator.h
     Include/Atom/RHI/CommandListStates.h
@@ -63,7 +73,9 @@ set(FILES
     Source/RHI/Factory.cpp
     Include/Atom/RHI/FactoryManagerBus.h
     Include/Atom/RHI/Fence.h
+    Include/Atom/RHI/MultiDeviceFence.h
     Source/RHI/Fence.cpp
+    Source/RHI/MultiDeviceFence.cpp
     Include/Atom/RHI/BufferFrameAttachment.h
     Include/Atom/RHI/FrameAttachment.h
     Include/Atom/RHI/ImageFrameAttachment.h
@@ -121,18 +133,26 @@ set(FILES
     Include/Atom/RHI/PhysicalDevice.h
     Source/RHI/PhysicalDevice.cpp
     Include/Atom/RHI/PipelineLibrary.h
+    Include/Atom/RHI/MultiDevicePipelineLibrary.h
     Include/Atom/RHI/PipelineState.h
+    Include/Atom/RHI/MultiDevicePipelineState.h
     Include/Atom/RHI/PipelineStateCache.h
     Include/Atom/RHI/PipelineStateDescriptor.h
     Source/RHI/PipelineLibrary.cpp
+    Source/RHI/MultiDevicePipelineLibrary.cpp
     Source/RHI/PipelineState.cpp
+    Source/RHI/MultiDevicePipelineState.cpp
     Source/RHI/PipelineStateCache.cpp
     Source/RHI/PipelineStateDescriptor.cpp
     Include/Atom/RHI/Query.h
+    Include/Atom/RHI/MultiDeviceQuery.h
     Source/RHI/Query.cpp
+    Source/RHI/MultiDeviceQuery.cpp
     Include/Atom/RHI/QueryPool.h
+    Include/Atom/RHI/MultiDeviceQueryPool.h
     Include/Atom/RHI/QueryPoolSubAllocator.h
     Source/RHI/QueryPool.cpp
+    Source/RHI/MultiDeviceQueryPool.cpp
     Source/RHI/QueryPoolSubAllocator.cpp
     Include/Atom/RHI/Resource.h
     Include/Atom/RHI/MultiDeviceResource.h
@@ -211,4 +231,5 @@ set(FILES
     Include/Atom/RHI/TagBitRegistry.h
     Include/Atom/RHI/TagRegistry.h
     Include/Atom/RHI/XRRenderingInterface.h
+    Include/Atom/RHI/DispatchRaysIndirectBuffer.h
 )

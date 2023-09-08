@@ -71,6 +71,7 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Visibility/BoundsBus.h>
+#include <AzFramework/Visibility/VisibleGeometryBus.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
@@ -212,7 +213,8 @@ namespace AzFramework
 
     void Application::StartCommon(AZ::Entity* systemEntity)
     {
-        m_pimpl.reset(Implementation::Create());
+        auto implementationFactory = AZ::Interface<Application::ImplementationFactory>::Get();
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create() : nullptr;
 
         systemEntity->Init();
         systemEntity->Activate();
@@ -326,6 +328,8 @@ namespace AzFramework
         AzFramework::ScreenGeometryReflect(context);
         AzFramework::RemoteStorageDriveConfig::Reflect(context);
         AzFramework::PaintBrushSettings::Reflect(context);
+        AzFramework::VisibleGeometry::Reflect(context);
+        AzFramework::VisibleGeometryRequests::Reflect(context);
 
         Physics::ReflectionUtils::ReflectPhysicsApi(context);
         AzFramework::SurfaceData::SurfaceTagWeight::Reflect(context);

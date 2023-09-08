@@ -7,6 +7,8 @@
  */
 
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
+
 #include <sys/resource.h>
 
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
@@ -18,8 +20,7 @@ constexpr rlim_t g_minimumOpenFileHandles = 65536L;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    Application::Implementation* Application::Implementation::Create()
+    static Application::Implementation* CreateLinuxApplication()
     {
         // The default open file limit for processes may not be enough for O3DE applications. 
         // We will need to increase to the recommended value if the current open file limit
@@ -38,7 +39,6 @@ namespace AzFramework
             [[maybe_unused]] int set_limit_result = setrlimit(RLIMIT_NOFILE, &newLimit);
             AZ_Assert(set_limit_result == 0, "Unable to update open file limits");
         }
-        
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         return aznew XcbApplication();
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
@@ -49,5 +49,4 @@ namespace AzFramework
         return nullptr;
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
     }
-
 } // namespace AzFramework

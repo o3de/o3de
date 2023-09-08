@@ -45,7 +45,9 @@ void QtViewport::BuildDragDropContext(
     AzQtComponents::ViewportDragContext& context, const AzFramework::ViewportId viewportId, const QPoint& point)
 {
     context.m_hitLocation = AzToolsFramework::FindClosestPickIntersection(
-        viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), AzToolsFramework::EditorPickRayLength,
+        viewportId,
+        AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point * devicePixelRatioF()),
+        AzToolsFramework::EditorPickRayLength,
         AzToolsFramework::GetDefaultEntityPlacementDistance());
 }
 

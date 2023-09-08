@@ -120,7 +120,7 @@ namespace AzFramework
         bool IsActive() const;
 
         //! Get the native window handle. This is used as the bus id for the WindowRequestBus and WindowNotificationBus
-        NativeWindowHandle GetWindowHandle() const { return m_pimpl->GetWindowHandle(); }
+        NativeWindowHandle GetWindowHandle() const { return (m_pimpl != nullptr) ? m_pimpl->GetWindowHandle() : nullptr; }
 
         // WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
@@ -199,6 +199,16 @@ namespace AzFramework
             bool m_activated = false;
             WindowSize m_customizedRenderResolution;
             bool m_enableCustomizedResolution = false;
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! The factory class to create a custom implementation for this native window
+        class ImplementationFactory
+        {
+        public:
+            AZ_TYPE_INFO(ImplementationFactory, "{6C2B94E1-388E-4E17-A125-94E5BAE9655C}");
+            virtual ~ImplementationFactory() = default;
+            virtual AZStd::unique_ptr<Implementation> Create() = 0;
         };
 
     private:

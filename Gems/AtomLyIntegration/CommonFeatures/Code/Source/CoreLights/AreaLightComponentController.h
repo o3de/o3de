@@ -60,6 +60,7 @@ namespace AZ
             void SetUseFastApproximation(bool useFastApproximation) override;
             PhotometricUnit GetIntensityMode() const override;
             float GetIntensity() const override;
+            void SetIntensityAndMode(float intensity, PhotometricUnit intensityMode) override;
             void SetIntensity(float intensity, PhotometricUnit intensityMode) override;
             void SetIntensity(float intensity) override;
             float GetAttenuationRadius() const override;

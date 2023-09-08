@@ -59,13 +59,9 @@ namespace EMotionFX
                 for (size_t i = 0; i < lodCount; ++i)
                 {
                     const auto& list = m_nodeSelectionLists[i];
-                    const size_t selectedNodeCount = list.GetSelectedNodeCount();
-                    for (size_t j = 0; j < selectedNodeCount; ++j)
+                    if (list.IsSelectedNode(nodePath))
                     {
-                        if (nodePath == list.GetSelectedNode(j))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
                 return false;

@@ -8,6 +8,7 @@
 
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryScriptUtils.h>
@@ -391,5 +392,17 @@ namespace AZ::SettingsRegistryScriptUtils
         Internal::ReflectSettingsRegistryCreateMethod(behaviorContext);
         // Reflect SettingsRegistryInterface Format enum
         Internal::ReflectSettingsRegistryMergeFormatEnum(behaviorContext);
+    }
+
+    void ReflectSettingsRegistry(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext{ azrtti_cast<AZ::SerializeContext*>(context) }; serializeContext != nullptr)
+        {
+            serializeContext->Class<Internal::SettingsRegistryScriptProxy>();
+        }
+        if (auto behaviorContext{ azrtti_cast<AZ::BehaviorContext*>(context) }; behaviorContext != nullptr)
+        {
+            AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
+        }
     }
 }

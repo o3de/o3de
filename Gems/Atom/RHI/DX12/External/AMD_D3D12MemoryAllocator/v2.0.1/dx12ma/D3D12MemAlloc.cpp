@@ -259,7 +259,7 @@ template<typename T>
 static void D3D12MA_SWAP(T& a, T& b) { T tmp = a; a = b; b = tmp; }
 
 // Scans integer for index of first nonzero bit from the Least Significant Bit (LSB). If mask is 0 then returns UINT8_MAX
-static UINT8 BitScanLSB(UINT64 mask)
+[[maybe_unused]] static UINT8 BitScanLSB(UINT64 mask)
 {
 #if defined(_MSC_VER) && defined(_WIN64)
     unsigned long pos;
@@ -326,7 +326,7 @@ static UINT8 BitScanMSB(UINT64 mask)
     return UINT8_MAX;
 }
 // Scans integer for index of first nonzero bit from the Most Significant Bit (MSB). If mask is 0 then returns UINT8_MAX
-static UINT8 BitScanMSB(UINT32 mask)
+[[maybe_unused]] static UINT8 BitScanMSB(UINT32 mask)
 {
 #ifdef _MSC_VER
     unsigned long pos;
@@ -4023,7 +4023,7 @@ void BlockMetadata_Linear::Alloc(
     }
     case ALLOC_REQUEST_END_OF_2ND:
     {
-        SuballocationVectorType& suballocations1st = AccessSuballocations1st();
+        [[maybe_unused]] SuballocationVectorType& suballocations1st = AccessSuballocations1st();
         // New allocation at the end of 2-part ring buffer, so before first allocation from 1st vector.
         D3D12MA_ASSERT(!suballocations1st.empty() &&
             offset + request.size <= suballocations1st[m_1stNullItemsBeginCount].offset);
@@ -9679,11 +9679,6 @@ void Allocation::SetName(LPCWSTR Name)
 
 void Allocation::ReleaseThis()
 {
-    if (this == NULL)
-    {
-        return;
-    }
-
     SAFE_RELEASE(m_Resource);
 
     switch (m_PackedData.GetType())
@@ -9829,11 +9824,6 @@ void DefragmentationContext::GetStats(DEFRAGMENTATION_STATS* pStats)
 
 void DefragmentationContext::ReleaseThis()
 {
-    if (this == NULL)
-    {
-        return;
-    }
-
     D3D12MA_DELETE(m_Pimpl->GetAllocs(), this);
 }
 
@@ -9894,11 +9884,6 @@ HRESULT Pool::BeginDefragmentation(const DEFRAGMENTATION_DESC* pDesc, Defragment
 
 void Pool::ReleaseThis()
 {
-    if (this == NULL)
-    {
-        return;
-    }
-
     D3D12MA_DELETE(m_Pimpl->GetAllocator()->GetAllocs(), this);
 }
 
@@ -10156,7 +10141,7 @@ void VirtualBlock::FreeAllocation(VirtualAllocation allocation)
 
     D3D12MA_DEBUG_GLOBAL_MUTEX_LOCK
 
-        m_Pimpl->m_Metadata->Free(allocation.AllocHandle);
+    m_Pimpl->m_Metadata->Free(allocation.AllocHandle);
     D3D12MA_HEAVY_ASSERT(m_Pimpl->m_Metadata->Validate());
 }
 
@@ -10164,7 +10149,7 @@ void VirtualBlock::Clear()
 {
     D3D12MA_DEBUG_GLOBAL_MUTEX_LOCK
 
-        m_Pimpl->m_Metadata->Clear();
+    m_Pimpl->m_Metadata->Clear();
     D3D12MA_HEAVY_ASSERT(m_Pimpl->m_Metadata->Validate());
 }
 

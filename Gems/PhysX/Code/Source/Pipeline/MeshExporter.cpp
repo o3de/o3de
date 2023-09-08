@@ -139,7 +139,7 @@ namespace PhysX
             if (serializeContext)
             {
                 serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(6 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
+                    ->Version(7 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
             }
         }
 
@@ -296,88 +296,104 @@ namespace PhysX
                 const AZ::SceneAPI::Containers::SceneGraph& sceneGraph)
             {
                 AssetMaterialsData assetMaterialData;
+                bool errorFound = false;
 
                 const auto& sceneNodeSelectionList = meshGroup.GetSceneNodeSelectionList();
-                size_t selectedNodeCount = sceneNodeSelectionList.GetSelectedNodeCount();
-
-                for (size_t index = 0; index < selectedNodeCount; index++)
-                {
-                    AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = sceneGraph.Find(sceneNodeSelectionList.GetSelectedNode(index));
-                    if (!nodeIndex.IsValid())
+                sceneNodeSelectionList.EnumerateSelectedNodes(
+                    [&](const AZStd::string& name)
                     {
-                        AZ_TracePrintf(
-                            AZ::SceneAPI::Utilities::WarningWindow,
-                            "Node '%s' was not found in the scene graph.",
-                            sceneNodeSelectionList.GetSelectedNode(index).c_str()
-                        );
-                        continue;
-                    }
-                    auto nodeMesh = azrtti_cast<const AZ::SceneAPI::DataTypes::IMeshData*>(*sceneGraph.ConvertToStorageIterator(nodeIndex));
-                    if (!nodeMesh)
-                    {
-                        continue;
-                    }
-
-                    AZStd::string_view nodeName = sceneGraph.GetNodeName(nodeIndex).GetName();
-
-                    const AZStd::vector<AZStd::string> localSourceSceneMaterialsList = GenerateLocalNodeMaterialMap(sceneGraph, nodeIndex);
-                    if (localSourceSceneMaterialsList.empty())
-                    {
-                        AZ_TracePrintf(
-                            AZ::SceneAPI::Utilities::WarningWindow,
-                            "Node '%.*s' does not have any material assigned to it. Material '%s' will be used.",
-                            AZ_STRING_ARG(nodeName), DefaultMaterialName
-                        );
-                    }
-
-                    const AZ::u32 faceCount = nodeMesh->GetFaceCount();
-
-                    assetMaterialData.m_nodesToPerFaceMaterialIndices.emplace(nodeName, AZStd::vector<AZ::u16>(faceCount));
-
-                    // Convex and primitive methods can only have 1 material per node.
-                    const bool limitToOneMaterial = meshGroup.GetExportAsConvex() || meshGroup.GetExportAsPrimitive();
-                    AZStd::string firstMaterial;
-                    AZStd::set<AZStd::string> nodeMaterials;
-
-                    for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
-                    {
-                        AZStd::string materialName = DefaultMaterialName;
-                        if (!localSourceSceneMaterialsList.empty())
+                        AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = sceneGraph.Find(name);
+                        if (!nodeIndex.IsValid())
                         {
-                            const int materialId = nodeMesh->GetFaceMaterialId(faceIndex);
-                            if (materialId >= localSourceSceneMaterialsList.size())
-                            {
-                                AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow,
-                                    "materialId %d for face %d is out of bound for localSourceSceneMaterialsList (size %d).",
-                                    materialId, faceIndex, localSourceSceneMaterialsList.size());
-
-                                return AZStd::nullopt;
-                            }
-
-                            materialName = localSourceSceneMaterialsList[materialId];
-
-                            // Use the first material found in the mesh when it has to be limited to one.
-                            if (limitToOneMaterial)
-                            {
-                                nodeMaterials.insert(materialName);
-                                if (firstMaterial.empty())
-                                {
-                                    firstMaterial = materialName;
-                                }
-                                materialName = firstMaterial;
-                            }
+                            AZ_TracePrintf(
+                                AZ::SceneAPI::Utilities::WarningWindow,
+                                "Node '%s' was not found in the scene graph.",
+                                name.c_str());
+                            return true;
+                        }
+                        auto nodeMesh =
+                            azrtti_cast<const AZ::SceneAPI::DataTypes::IMeshData*>(*sceneGraph.ConvertToStorageIterator(nodeIndex));
+                        if (!nodeMesh)
+                        {
+                            return true;
                         }
 
-                        const AZ::u16 materialIndex = InsertMaterialIndexByName(materialName, assetMaterialData);
-                        assetMaterialData.m_nodesToPerFaceMaterialIndices[nodeName][faceIndex] = materialIndex;
-                    }
+                        AZStd::string_view nodeName = sceneGraph.GetNodeName(nodeIndex).GetName();
 
-                    if (limitToOneMaterial && nodeMaterials.size() > 1)
-                    {
-                        AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow,
-                            "Node '%s' has %d materials, but cooking methods Convex and Primitive support one material per node. The first material '%s' will be used.",
-                            sceneNodeSelectionList.GetSelectedNode(index).c_str(), nodeMaterials.size(), firstMaterial.c_str());
-                    }
+                        const AZStd::vector<AZStd::string> localSourceSceneMaterialsList =
+                            GenerateLocalNodeMaterialMap(sceneGraph, nodeIndex);
+                        if (localSourceSceneMaterialsList.empty())
+                        {
+                            AZ_TracePrintf(
+                                AZ::SceneAPI::Utilities::WarningWindow,
+                                "Node '%.*s' does not have any material assigned to it. Material '%s' will be used.",
+                                AZ_STRING_ARG(nodeName),
+                                DefaultMaterialName);
+                        }
+
+                        const AZ::u32 faceCount = nodeMesh->GetFaceCount();
+
+                        assetMaterialData.m_nodesToPerFaceMaterialIndices.emplace(nodeName, AZStd::vector<AZ::u16>(faceCount));
+
+                        // Convex and primitive methods can only have 1 material per node.
+                        const bool limitToOneMaterial = meshGroup.GetExportAsConvex() || meshGroup.GetExportAsPrimitive();
+                        AZStd::string firstMaterial;
+                        AZStd::set<AZStd::string> nodeMaterials;
+
+                        for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
+                        {
+                            AZStd::string materialName = DefaultMaterialName;
+                            if (!localSourceSceneMaterialsList.empty())
+                            {
+                                const int materialId = nodeMesh->GetFaceMaterialId(faceIndex);
+                                if (materialId >= localSourceSceneMaterialsList.size())
+                                {
+                                    AZ_TracePrintf(
+                                        AZ::SceneAPI::Utilities::ErrorWindow,
+                                        "materialId %d for face %d is out of bound for localSourceSceneMaterialsList (size %d).",
+                                        materialId,
+                                        faceIndex,
+                                        localSourceSceneMaterialsList.size());
+
+                                    errorFound = true;
+                                    return false;
+                                }
+
+                                materialName = localSourceSceneMaterialsList[materialId];
+
+                                // Use the first material found in the mesh when it has to be limited to one.
+                                if (limitToOneMaterial)
+                                {
+                                    nodeMaterials.insert(materialName);
+                                    if (firstMaterial.empty())
+                                    {
+                                        firstMaterial = materialName;
+                                    }
+                                    materialName = firstMaterial;
+                                }
+                            }
+
+                            const AZ::u16 materialIndex = InsertMaterialIndexByName(materialName, assetMaterialData);
+                            assetMaterialData.m_nodesToPerFaceMaterialIndices[nodeName][faceIndex] = materialIndex;
+                        }
+
+                        if (limitToOneMaterial && nodeMaterials.size() > 1)
+                        {
+                            AZ_TracePrintf(
+                                AZ::SceneAPI::Utilities::WarningWindow,
+                                "Node '%s' has %d materials, but cooking methods Convex and Primitive support one material per node. The "
+                                "first material '%s' will be used.",
+                                name.c_str(),
+                                nodeMaterials.size(),
+                                firstMaterial.c_str());
+                        }
+
+                        return true;
+                    });
+
+                if (errorFound)
+                {
+                    return AZStd::nullopt;
                 }
 
                 return assetMaterialData;
@@ -543,7 +559,8 @@ namespace PhysX
             SceneEvents::ProcessingResult result = SceneEvents::ProcessingResult::Ignored;
 
             AZStd::string assetName = meshGroup.GetName();
-            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(assetName, context.GetOutputDirectory(), MeshAssetHandler::s_assetFileExtension);
+            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(
+                assetName, context.GetOutputDirectory(), MeshAssetHandler::s_assetFileExtension, context.GetScene().GetSourceExtension());
 
             MeshAssetData assetData;
 
@@ -842,67 +859,80 @@ namespace PhysX
                     coordSysConverter = coordinateSystemRule->GetCoordinateSystemConverter();
                 }
 
-                for (size_t index = 0; index < selectedNodeCount; index++)
+                SceneEvents::ProcessingResult enumerationResult = SceneEvents::ProcessingResult::Success;
+
+                sceneNodeSelectionList.EnumerateSelectedNodes(
+                    [&](const AZStd::string& name)
+                    {
+                        AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = graph.Find(name);
+                        auto nodeMesh = azrtti_cast<const AZ::SceneAPI::DataTypes::IMeshData*>(*graph.ConvertToStorageIterator(nodeIndex));
+
+                        if (!nodeMesh)
+                        {
+                            return true;
+                        }
+
+                        const AZ::SceneAPI::Containers::SceneGraph::Name& nodeName = graph.GetNodeName(nodeIndex);
+
+                        // CoordinateSystemConverter covers the simple transformations of CoordinateSystemRule and
+                        // DetermineWorldTransform function covers the advanced mode of CoordinateSystemRule.
+                        const AZ::SceneAPI::DataTypes::MatrixType worldTransform = coordSysConverter.ConvertMatrix3x4(
+                            AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, nodeIndex, pxMeshGroup.GetRuleContainerConst()));
+
+                        NodeCollisionGeomExportData nodeExportData;
+                        nodeExportData.m_nodeName = nodeName.GetName();
+
+                        const AZ::u32 vertexCount = nodeMesh->GetVertexCount();
+                        const AZ::u32 faceCount = nodeMesh->GetFaceCount();
+
+                        nodeExportData.m_vertices.resize(vertexCount);
+
+                        for (AZ::u32 vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+                        {
+                            AZ::Vector3 pos = nodeMesh->GetPosition(vertexIndex);
+                            pos = worldTransform * pos;
+                            nodeExportData.m_vertices[vertexIndex] = AZVec3ToLYVec3(pos);
+                        }
+
+                        nodeExportData.m_indices.resize(faceCount * 3);
+
+                        nodeExportData.m_perFaceMaterialIndices =
+                            assetMaterialData->m_nodesToPerFaceMaterialIndices[nodeExportData.m_nodeName];
+                        if (nodeExportData.m_perFaceMaterialIndices.size() != faceCount)
+                        {
+                            AZ_TracePrintf(
+                                AZ::SceneAPI::Utilities::WarningWindow,
+                                "Node '%s' material information face count %d does not match the node's %d.",
+                                nodeExportData.m_nodeName.c_str(),
+                                nodeExportData.m_perFaceMaterialIndices.size(),
+                                faceCount);
+                            enumerationResult = SceneEvents::ProcessingResult::Failure;
+                            return false;
+                        }
+
+                        for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
+                        {
+                            const AZ::SceneAPI::DataTypes::IMeshData::Face& face = nodeMesh->GetFaceInfo(faceIndex);
+                            nodeExportData.m_indices[faceIndex * 3] = face.vertexIndex[0];
+                            nodeExportData.m_indices[faceIndex * 3 + 1] = face.vertexIndex[1];
+                            nodeExportData.m_indices[faceIndex * 3 + 2] = face.vertexIndex[2];
+                        }
+
+                        if (pxMeshGroup.GetDecomposeMeshes())
+                        {
+                            DecomposeAndAppendMeshes(decomposer, vhacdParams, totalExportData, nodeExportData);
+                        }
+                        else
+                        {
+                            totalExportData.emplace_back(AZStd::move(nodeExportData));
+                        }
+
+                        return true;
+                    });
+
+                if (enumerationResult == SceneEvents::ProcessingResult::Failure)
                 {
-                    AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = graph.Find(sceneNodeSelectionList.GetSelectedNode(index));
-                    auto nodeMesh = azrtti_cast<const AZ::SceneAPI::DataTypes::IMeshData*>(*graph.ConvertToStorageIterator(nodeIndex));
-
-                    if (!nodeMesh)
-                    {
-                        continue;
-                    }
-
-                    const AZ::SceneAPI::Containers::SceneGraph::Name& nodeName = graph.GetNodeName(nodeIndex);
-
-                    // CoordinateSystemConverter covers the simple transformations of CoordinateSystemRule and
-                    // DetermineWorldTransform function covers the advanced mode of CoordinateSystemRule.
-                    const AZ::SceneAPI::DataTypes::MatrixType worldTransform = coordSysConverter.ConvertMatrix3x4(
-                        AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, nodeIndex, pxMeshGroup.GetRuleContainerConst()));
-
-                    NodeCollisionGeomExportData nodeExportData;
-                    nodeExportData.m_nodeName = nodeName.GetName();
-
-                    const AZ::u32 vertexCount = nodeMesh->GetVertexCount();
-                    const AZ::u32 faceCount = nodeMesh->GetFaceCount();
-
-                    nodeExportData.m_vertices.resize(vertexCount);
-
-                    for (AZ::u32 vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
-                    {
-                        AZ::Vector3 pos = nodeMesh->GetPosition(vertexIndex);
-                        pos = worldTransform * pos;
-                        nodeExportData.m_vertices[vertexIndex] = AZVec3ToLYVec3(pos);
-                    }
-
-                    nodeExportData.m_indices.resize(faceCount * 3);
-
-                    nodeExportData.m_perFaceMaterialIndices = assetMaterialData->m_nodesToPerFaceMaterialIndices[nodeExportData.m_nodeName];
-                    if (nodeExportData.m_perFaceMaterialIndices.size() != faceCount)
-                    {
-                        AZ_TracePrintf(
-                            AZ::SceneAPI::Utilities::WarningWindow,
-                            "Node '%s' material information face count %d does not match the node's %d.",
-                            nodeExportData.m_nodeName.c_str(), nodeExportData.m_perFaceMaterialIndices.size(), faceCount
-                        );
-                        return SceneEvents::ProcessingResult::Failure;
-                    }
-
-                    for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
-                    {
-                        const AZ::SceneAPI::DataTypes::IMeshData::Face& face = nodeMesh->GetFaceInfo(faceIndex);
-                        nodeExportData.m_indices[faceIndex * 3] = face.vertexIndex[0];
-                        nodeExportData.m_indices[faceIndex * 3 + 1] = face.vertexIndex[1];
-                        nodeExportData.m_indices[faceIndex * 3 + 2] = face.vertexIndex[2];
-                    }
-
-                    if (pxMeshGroup.GetDecomposeMeshes())
-                    {
-                        DecomposeAndAppendMeshes(decomposer, vhacdParams, totalExportData, nodeExportData);
-                    }
-                    else
-                    {
-                        totalExportData.emplace_back(AZStd::move(nodeExportData));
-                    }
+                    return enumerationResult;
                 }
 
                 // Merge triangle meshes if there's more than 1

@@ -6,17 +6,18 @@
  *
  */
 
-#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/FrameGraphCompileContext.h>
 #include <Atom/RHI/FrameGraphExecuteContext.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
-#include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 #include <Atom/RHI.Reflect/Size.h>
+#include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
 #include <Atom/RPI.Public/GpuQuery/Query.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -39,15 +40,14 @@ namespace AZ
             {
                 SetPipelineViewTag(passData->m_pipelineViewTag);
             }
+            if (passData && passData->m_bindViewSrg)
+            {
+                m_flags.m_bindViewSrg = true;
+            }
         }
 
         RenderPass::~RenderPass()
         {
-        }
-
-        const PipelineViewTag& RenderPass::GetPipelineViewTag() const
-        {
-            return m_viewTag;
         }
 
         RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration() const
@@ -367,13 +367,9 @@ namespace AZ
 
         ViewPtr RenderPass::GetView() const
         {
-            if (m_flags.m_hasPipelineViewTag && m_pipeline)
+            if (m_pipeline)
             {
-                const AZStd::vector<ViewPtr>& views = m_pipeline->GetViews(m_viewTag);
-                if (views.size() > 0)
-                {
-                    return views[0];
-                }
+                return m_pipeline->GetFirstView(GetPipelineViewTag());
             }
             return nullptr;
         }
@@ -385,12 +381,14 @@ namespace AZ
             BindSrg(sceneSrg);
 
             // View srg
-            ViewPtr view = GetView();
-            if (view)
+            if (m_flags.m_bindViewSrg)
             {
-                BindSrg(view->GetRHIShaderResourceGroup());
+                ViewPtr view = GetView();
+                if (view)
+                {
+                    BindSrg(view->GetRHIShaderResourceGroup());
+                }
             }
-
             // Pass srg
             if (m_shaderResourceGroup)
             {
@@ -432,12 +430,12 @@ namespace AZ
             if (m_viewTag != viewTag)
             {
                 m_viewTag = viewTag;
-                m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
                 if (m_pipeline)
                 {
                     m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PipelineViewTagChanged);
                 }
             }
+            m_flags.m_bindViewSrg = !viewTag.IsEmpty();
         }
 
         TimestampResult RenderPass::GetTimestampResultInternal() const
