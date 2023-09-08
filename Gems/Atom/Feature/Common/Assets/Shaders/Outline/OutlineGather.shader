@@ -3,15 +3,34 @@
     "DepthStencilState" : {
         "Depth": 
         {
-            "Enable": true,  //required to bind depth buffer SRV
+            "Enable": false,  //required to bind depth buffer SRV
+            "WriteMask" : "Zero",   // Avoid writing the depth
             "CompareFunc" : "LessEqual"
+        },
+        "Stencil" :
+        {
+            "Enable" : true,
+            "ReadMask" : "0x4",
+            "WriteMask" : "0x0",
+            "FrontFace" :
+            {
+                "Func" : "NotEqual",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Keep"
+            },
+            "BackFace" :
+            {
+                "Func" : "NotEqual",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Keep"
+            }
         }
     },
     "DrawList": "outline",
     "RasterState": { 
-        "CullMode": "Back",
-        "depthBias" : "0",
-        "depthBiasSlopeScale" : "0"        
+        "CullMode": "Front"
     },
 
     "GlobalTargetBlendState": {

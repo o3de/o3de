@@ -102,6 +102,19 @@
                 "type": "ShaderOption",
                 "name": "o_materialUseForwardPassIBLSpecular"
             }
+        },
+        {
+            "name": "blockOutline",
+            "displayName": "Block Outline",
+            "description": "Whether to block rendering of outlines.",
+            "type": "Bool",
+            "defaultValue":  false,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_blockOutlines"
+            }
         }
+    ],
+    "functors": [
     ]
 }
