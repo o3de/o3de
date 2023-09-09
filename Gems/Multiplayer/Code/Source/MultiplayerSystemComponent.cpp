@@ -325,7 +325,7 @@ namespace Multiplayer
                     }();
 
                     // Dedicated servers will automatically begin hosting
-                    if (IsDedicatedServer&& dedicatedServerHostOnStartup)
+                    if (IsDedicatedServer && shouldHostDedicatedServerOnStartup)
                     {
                         this->StartHosting(sv_port, /*is dedicated*/ true);
                     }
