@@ -274,7 +274,7 @@ namespace Multiplayer
             m_metricsEvent.Enqueue(bg_captureTransportPeriod, true);
         }
 
-        // Wait for all systems to activate because allowing this server or client to host or connect.
+        // Wait for all system components to activate before allowing this server or client to host or connect.
         // Connecting too soon causes a "version mismatch" because all of the system components haven't registered their multiplayer components.
         if (const auto settingsRegistry = AZ::SettingsRegistry::Get())
         {
@@ -307,22 +307,31 @@ namespace Multiplayer
                         *this,
                         &MultiplayerSystemComponent::ConnectConsoleCommand);
 
-                    // ExecuteDeferredConsoleCommands will execute any previously deferred "host" or "connect" commands now that they have been registered with the AZ Console
+                    // ExecuteDeferredConsoleCommands will execute any previously deferred "host" or "connect" commands now that they have
+                    // been registered with the AZ Console
                     console->ExecuteDeferredConsoleCommands();
 
-                    bool dedicatedServerHostOnStartup = false;
-
-                    if (console->GetCvarValue("sv_dedicated_host_onstartup", dedicatedServerHostOnStartup) != AZ::GetValueResult::Success)
+                    #if !AZ_TRAIT_CLIENT && AZ_TRAIT_SERVER
+                    const auto shouldHostDedicatedServerOnStartup = [&console]() -> bool
                     {
-                        AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_dedicated_host_onstartup).")
-                        return;
-                    }
+                        bool result{};
+                        if (console->GetCvarValue("sv_dedicated_host_onstartup", result) != AZ::GetValueResult::Success)
+                        {
+                            AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_dedicated_host_onstartup).")
+                            return false;
+                        }
+
+                        return result;
+                    }();
 
                     // Dedicated servers will automatically begin hosting
                     if (IsDedicatedServer&& dedicatedServerHostOnStartup)
                     {
                         this->StartHosting(sv_port, /*is dedicated*/ true);
                     }
+                    shouldHostDedicatedServerOnStartup ? StartHosting(sv_port) : bool();
+                    #endif
+
                 },
                 "SystemComponentsActivated",
                 /*autoRegisterEvent*/ true);
@@ -490,8 +499,14 @@ namespace Multiplayer
                 }
             }
         }
-        Multiplayer::MultiplayerAgentType serverType = IsDedicatedServer ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
-        InitializeMultiplayer(serverType);
+
+#if !AZ_TRAIT_CLIENT && AZ_TRAIT_SERVER
+        InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+#elif AZ_TRAIT_CLIENT && AZ_TRAIT_SERVER
+        InitializeMultiplayer(MultiplayerAgentType::ClientServer);
+#elif AZ_TRAIT_CLIENT && !AZ_TRAIT_SERVER
+        InitializeMultiplayer(MultiplayerAgentType::Client);
+#endif
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
 

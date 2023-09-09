@@ -621,7 +621,7 @@ namespace Multiplayer
         if (editorsv_clientserver)
         {
             // Start hosting as a client-server
-            const bool isDedicated = false;
+            constexpr bool isDedicated = false;
             AZ::Interface<IMultiplayer>::Get()->StartHosting(editorsv_port, isDedicated);
             return;
         }
