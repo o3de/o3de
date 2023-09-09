@@ -23,8 +23,6 @@
 // Remove this line to use a custom profile based on the scatter color
 #define USE_HUMAN_SKIN_PROFILE 1
 
-option bool o_enableDualSpecular = true;
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include MATERIAL_TYPE_AZSLI_FILE_PATH

@@ -201,14 +201,9 @@ Surface EvaluateSurface_Skin(
 
     // ------- Dual Specular -------
 
-    float dummyRoughnessA = 0;
-    surface.dualSpecFactor = MaterialSrg::m_dualSpecFactor;
-    surface.dualSpecRoughness = pow(surface.roughnessLinear, MaterialSrg::m_dualSpecRoughnessExponent) * MaterialSrg::m_dualSpecRoughnessMultiplier;
-    CalculateRoughnessValues(surface.normal, surface.dualSpecRoughness, dummyRoughnessA, surface.dualSpecRoughnessA2);
-    surface.dualSpecF0 = surface.specularF0.x * MaterialSrg::m_dualSpecF0Multiplier;
-
-    if(!o_enableDualSpecular)
-        surface.dualSpecFactor = 0;
+    GetDualSpecularInput(surface.normal, surface.roughnessLinear, surface.specularF0.x, MaterialSrg::m_dualSpecFactor,
+                          MaterialSrg::m_dualSpecF0Multiplier, MaterialSrg::m_dualSpecRoughnessExponent, MaterialSrg::m_dualSpecRoughnessMultiplier,
+                          surface.dualSpecRoughness, surface.dualSpecRoughnessA2, surface.dualSpecF0, surface.dualSpecFactor);
 
     // ------- Subsurface -------
 

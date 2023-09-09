@@ -205,24 +205,67 @@ namespace AZ::Render
                         "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
                         ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderDebugComponentConfig::m_customDebugFloat01,
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_customDebugFloat01,
                         "Custom Float 01", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
                         "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
                         ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderDebugComponentConfig::m_customDebugFloat02,
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_customDebugFloat02,
                         "Custom Float 02", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
                         "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
                         ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderDebugComponentConfig::m_customDebugFloat03,
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_customDebugFloat03,
                         "Custom Float 03", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
                         "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
                         ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &RenderDebugComponentConfig::m_customDebugFloat04,
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_customDebugFloat04,
                         "Custom Float 04", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
                         "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, -1.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_customDebugFloat05,
+                        "Custom Float 05", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, -1.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_customDebugFloat06,
+                        "Custom Float 06", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, -1.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_customDebugFloat07,
+                        "Custom Float 07", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_customDebugFloat08,
+                        "Custom Float 08", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
+                        ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &RenderDebugComponentConfig::m_customDebugFloat09,
+                        "Custom Float 09", "Custom variables are accessible from the Scene SRG for shader authors to use directly in their azsl code"
+                        "Please use these only for local debugging purposes and DO NOT leave their usage in when submitting code")
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                         ->Attribute(Edit::Attributes::Visibility, &RenderDebugComponentConfig::GetEnabled)
 
                         ;
