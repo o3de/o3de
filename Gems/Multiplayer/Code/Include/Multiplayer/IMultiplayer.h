@@ -41,9 +41,6 @@ namespace Multiplayer
     using RpcOutputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkOutputSerializer>;
 #endif
 
-// A macro that can be used to enable or disable code on dedicated server builds.
-#define AZ_DEDICATED_SERVER (AZ_TRAIT_SERVER && !AZ_TRAIT_CLIENT)
-
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {

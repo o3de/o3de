@@ -6,7 +6,6 @@
  *
  */
 
-#include "Multiplayer/IMultiplayer.h"
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
@@ -133,12 +132,12 @@ namespace Multiplayer
     AZ_CVAR(bool, bg_parallelNotifyPreRender, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "If true, OnPreRender events will be sent in parallel from job threads. Please make sure the handlers of the event are thread safe.");
     
-    constexpr bool IsDedicatedServer = static_cast<bool>(AZ_DEDICATED_SERVER); 
+    constexpr bool IsDedicatedServer = static_cast<bool>(AZ_TRAIT_CLIENT) == false && static_cast<bool>(AZ_TRAIT_SERVER);
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         NetworkSpawnable::Reflect(context);
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()
                 ->Version(1);
@@ -155,7 +154,7 @@ namespace Multiplayer
             serializeContext->Class<HostFrameId>()
                 ->Version(1);
         }
-        else if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        else if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<NetEntityId>();
             behaviorContext->Class<NetComponentId>();
@@ -320,7 +319,7 @@ namespace Multiplayer
                     }
 
                     // Dedicated servers will automatically begin hosting
-                    if (IsDedicatedServer && dedicatedServerHostOnStartup)
+                    if (IsDedicatedServer&& dedicatedServerHostOnStartup)
                     {
                         this->StartHosting(sv_port, /*is dedicated*/ true);
                     }
