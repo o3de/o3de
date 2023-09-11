@@ -9,6 +9,7 @@
 #include <AssetBrowser/ui_AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -77,6 +78,23 @@ namespace AtomToolsFramework
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::activated, this, &AtomToolsAssetBrowser::OpenSelectedEntries);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal, this, &AtomToolsAssetBrowser::UpdatePreview);
         connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel, &AssetBrowserFilterModel::filterUpdatedSlot);
+
+        // Monitor for asset browser related settings changes
+        if (auto registry = AZ::SettingsRegistry::Get())
+        {
+            m_settingsNotifyEventHandler = registry->RegisterNotifier(
+                [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                {
+                    // Refresh the asset browser model if any of the filter related settings change.
+                    if (AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(
+                            "/O3DE/AtomToolsFramework/Application/IgnoreCacheFolder", notifyEventArgs.m_jsonKeyPath) ||
+                        AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(
+                            "/O3DE/AtomToolsFramework/Application/IgnoredPathRegexPatterns", notifyEventArgs.m_jsonKeyPath))
+                    {
+                        m_filterModel->filterUpdatedSlot();
+                    }
+                });
+        }
     }
 
     AtomToolsAssetBrowser::~AtomToolsAssetBrowser()
@@ -154,7 +172,7 @@ namespace AtomToolsFramework
             }
 
             const auto& path = entry->GetFullPath();
-            return !AZ::StringFunc::Contains(path, "cache");
+            return !IsPathIgnored(path);
         };
 
         QSharedPointer<CompositeFilter> finalFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
