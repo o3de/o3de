@@ -147,7 +147,7 @@ namespace O3DE::ProjectManager
 
             // Show last line of output if any
             auto configOutputLines = configOutput.split('\n', Qt::SkipEmptyParts);
-            if (configOutputLines.length()>0)
+            if (configOutputLines.length() > 0)
             {
                 UpdateProgress(configOutputLines.last());
             }
