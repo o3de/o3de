@@ -45,6 +45,11 @@ namespace AZ::IO
 {
     struct IArchive;
 }
+// carbonated begin (akostin/mp-402-1): Revert pNetwork in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+struct INetwork;
+#endif
+// carbonated end
 struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
@@ -585,6 +590,11 @@ struct SSystemUpdateStats
 //   ISystem
 struct SSystemGlobalEnvironment
 {
+    // carbonated begin (akostin/mp-402-1): Revert pNetwork in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+    INetwork* pNetwork;
+#endif
+    // carbonated end
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
     ICryFont*                  pCryFont;
