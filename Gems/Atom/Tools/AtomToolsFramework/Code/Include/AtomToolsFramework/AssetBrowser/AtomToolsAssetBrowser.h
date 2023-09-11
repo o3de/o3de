@@ -62,7 +62,7 @@ namespace AtomToolsFramework
 
         using FileTypeFilterVec = AZStd::vector<FileTypeFilter>;
 
-        //! Set up ext based file filters for the as the browser. The filters can be set using the options menu on the search bar. This is
+        //! Set up ext based file filters for the asset browser. The filters can be set using the options menu on the search bar. This is
         //! intended to be used instead of asset type filters because some tools primarily work with source files that do not have
         //! registered asset type info.
         void SetFileTypeFilters(const FileTypeFilterVec& fileTypeFilters);
