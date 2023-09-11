@@ -833,6 +833,7 @@ namespace AZ::DocumentPropertyEditor
                             ProcessRemoval(rowNode, adapterIndex, &outgoingPatch);
                             auto adapterRow = adapter->GetContents()[rowPath];
                             AddChildRow(adapterIndex, parentNode, adapterRow, rowPath.Back().GetIndex(), &outgoingPatch);
+                            matchingSiblingFound = true;
                         }
                     }
                 }
@@ -998,6 +999,7 @@ namespace AZ::DocumentPropertyEditor
     {
         return { Nodes::PropertyEditor::OnChanged.GetName(),
                  Nodes::PropertyEditor::ChangeNotify.GetName(),
+                 Nodes::PropertyEditor::ChangeValidate.GetName(),
                  Nodes::PropertyEditor::RequestTreeUpdate.GetName(),
                  Nodes::GenericButton::OnActivate.GetName() };
     }
