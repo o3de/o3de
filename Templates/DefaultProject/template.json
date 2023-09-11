@@ -367,6 +367,10 @@
             "isTemplated": true
         },
         {
+            "file": "package.sh",
+            "isTemplated": true
+        },
+        {
             "file": "AssetBundling/SeedLists/Example.seed",
             "isTemplated": false
         },
