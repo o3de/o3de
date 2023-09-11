@@ -21,11 +21,6 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct StreamingImageExpandRequest;
-    }
-
     namespace Vulkan
     {
         class Buffer;
