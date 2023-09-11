@@ -614,42 +614,33 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='morphtargetonematerial/morphtargetonematerial.fbx.abdata.json',
-                                    sub_id=4194304,
-                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
-                                asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.actor',
                                     sub_id=-999339669,
                                     asset_type=b'f67cc648ea51464c9f5d4a9ce41a7f86'),
                                 asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.fbx.assetinfo.dbg',
-                                    sub_id=-1650525758,
+                                    sub_id=726384549,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.fbx.dbgsg',
-                                    sub_id=1414413688,
+                                    sub_id=1620685182,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.fbx.dbgsg.json',
-                                    sub_id=1407432457,
+                                    sub_id=1253137975,
                                     asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.fbx.dbgsg.xml',
-                                    sub_id=1435013070,
+                                    sub_id=-340185820,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.motion',
                                     sub_id=692653652,
                                     asset_type=b'00494b8e75784ba28b28272e90680787'),
-                                asset_db_utils.DBProduct(
-                                    product_name='morphtargetonematerial/morphtargetonematerial_fbx.procprefab',
-                                    sub_id=532704096,
-                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'),
-                                asset_db_utils.DBProduct(
-                                    product_name='morphtargetonematerial/morphtargetonematerial_fbx.procprefab.json',
-                                    sub_id=-613416016,
-                                    asset_type=b'00000000000000000000000000000000'
-                                ),
                             ]
                         ),
                     ]
@@ -674,42 +665,33 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='morphtargettwoematerials/morphtargettwomaterials.fbx.abdata.json',
-                                    sub_id=4194304,
-                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
-                                asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.actor',
                                     sub_id=-557664045,
                                     asset_type=b'f67cc648ea51464c9f5d4a9ce41a7f86'),
                                 asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.assetinfo.dbg',
-                                    sub_id=-657938679,
+                                    sub_id=-1807090167,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.dbgsg',
-                                    sub_id=594741318,
+                                    sub_id=-303201013,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.dbgsg.json',
-                                    sub_id=862170373,
+                                    sub_id=-1396790465,
                                     asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.dbgsg.xml',
-                                    sub_id=-990870494,
+                                    sub_id=-1157438659,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.motion',
                                     sub_id=1527116269,
                                     asset_type=b'00494b8e75784ba28b28272e90680787'),
-                                asset_db_utils.DBProduct(
-                                    product_name='morphtargettwomaterials/morphtargettwomaterials_fbx.procprefab',
-                                    sub_id=-1878759677,
-                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'),
-                                asset_db_utils.DBProduct(
-                                    product_name='morphtargettwomaterials/morphtargettwomaterials_fbx.procprefab.json',
-                                    sub_id=1703480205,
-                                    asset_type=b'00000000000000000000000000000000'
-                                )
                             ]
                         ),
                     ]
@@ -1267,7 +1249,7 @@ class TestsFBX_AllPlatforms(object):
             "OneMeshOneMaterial.FBX",
         ]
 
-        actual_debug_list  = [
+        expected_debug_list  = [
             "onemeshonematerial_capf.fbx.dbgsg",
             "onemeshonematerial_capbx.fbx.dbgsg",
             "onemeshonematerial_capfbx.fbx.dbgsg"
@@ -1275,7 +1257,7 @@ class TestsFBX_AllPlatforms(object):
 
         original_extension = "OneMeshOneMaterial.fbx"
 
-        for (extension, actual_debug_name) in zip(extensionlist, actual_debug_list):
+        for (extension, expected_debug_name) in zip(extensionlist, expected_debug_list):
             asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "OneMeshOneMaterial")
             rename_src = os.path.join(asset_processor.project_test_source_folder(), original_extension)
             rename_dst = os.path.join(asset_processor.project_test_source_folder(), extension)
@@ -1302,14 +1284,14 @@ class TestsFBX_AllPlatforms(object):
                 f'{str(missing_assets)}'
 
             scene_debug_expected = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug",
-                                                "onemeshonematerial.fbx.dbgsg")
+                                                expected_debug_name)
             assert os.path.exists(scene_debug_expected), \
-                "Expected scene file missing in SceneDebug/onemeshonematerial.fbx.dbgsg - Check test assets"
+                f'Expected scene file missing in {scene_debug_expected} - Check test assets'
 
             # Set path to actual dbgsg output, obtained when running AP
             scene_debug_actual = os.path.join(asset_processor.temp_project_cache(
                 asset_platform=ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]),
-                                              "onemeshonematerial", actual_debug_name)
+                                              "onemeshonematerial", "onemeshonematerial.fbx.dbgsg")
             assert os.path.exists(scene_debug_actual), f"Scene debug output missing after running AP on {extension}."
 
             expected_hashes_to_skip, actual_hashes_to_skip = self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
