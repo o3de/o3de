@@ -14,6 +14,33 @@
 #include <AzCore/std/utility/declval.h>
 #include <AzCore/std/utility/tuple_concepts.h>
 
+
+ // The tuple_size and tuple_element classes need to be specialized in the std:: namespace since the AZStd:: namespace alias them
+ // The tuple_size and tuple_element classes is to be specialized here for the AZStd::pair class
+namespace std
+{
+    // Suppressing clang warning error: 'tuple_size' defined as a class template here but previously declared as a struct template [-Werror,-Wmismatched-tags]
+    AZ_PUSH_DISABLE_WARNING(, "-Wmismatched-tags")
+        template<class T1, class T2>
+    struct tuple_size<AZStd::pair<T1, T2>> : public AZStd::integral_constant<size_t, 2> {};
+
+    template<class T1, class T2>
+    struct tuple_element<0, AZStd::pair<T1, T2>>
+    {
+    public:
+        using type = T1;
+    };
+
+    template<class T1, class T2>
+    struct tuple_element<1, AZStd::pair<T1, T2>>
+    {
+    public:
+        using type = T2;
+    };
+    AZ_POP_DISABLE_WARNING
+} // namespace std
+
+
 namespace AZStd
 {
     // std::tuple_element_t is used for the std::get overloads

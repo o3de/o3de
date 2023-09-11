@@ -93,3 +93,22 @@ namespace std
         using type = AZStd::pair<common_type_t<T1, U1>, common_type_t<T2, U2>>;
     };
 }
+
+// The tuple_size and tuple_element classes need to be specialized in the std:: namespace since the AZStd:: namespace alias them
+// The tuple_size and tuple_element classes is to be specialized here for the AZStd::array class
+
+namespace std
+{
+    // Suppressing clang warning error: 'tuple_size' defined as a class template here but previously declared as a struct template [-Werror,-Wmismatched-tags]
+    AZ_PUSH_DISABLE_WARNING(, "-Wmismatched-tags")
+    template<class T, size_t N>
+    struct tuple_size<AZStd::array<T, N>> : public AZStd::integral_constant<size_t, N> {};
+
+    template<size_t I, class T, size_t N>
+    struct tuple_element<I, AZStd::array<T, N>>
+    {
+        static_assert(I < N, "AZStd::tuple_element has been called on array with an index that is out of bounds");
+        using type = T;
+    };
+    AZ_POP_DISABLE_WARNING
+} // namespace std
