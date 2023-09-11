@@ -176,38 +176,48 @@ namespace AtomToolsFramework
             switch (entry->GetEntryType())
             {
             case AssetBrowserEntry::AssetEntryType::Folder:
-                if (const auto& path = entry->GetFullPath(); !path.empty() && !IsPathIgnored(path))
                 {
-                    return m_showEmptyFolders;
+                    if (const auto& path = entry->GetFullPath(); !path.empty() && !IsPathIgnored(path))
+                    {
+                        return m_showEmptyFolders;
+                    }
+
+                    // The path is invalid or ignored
+                    return false;
                 }
 
-                return false;
-
             case AssetBrowserEntry::AssetEntryType::Source:
-                if (const auto& path = entry->GetFullPath(); !path.empty() && !IsPathIgnored(path))
                 {
-                    // Filter assets against supported extensions instead of using asset type comparisons
-                    if (m_fileTypeFiltersEnabled)
+                    if (const auto& path = entry->GetFullPath(); !path.empty() && !IsPathIgnored(path))
                     {
-                        for (const auto& fileTypeFilter : m_fileTypeFilters)
+                        // Filter assets against supported extensions instead of using asset type comparisons
+                        if (m_fileTypeFiltersEnabled)
                         {
-                            if (fileTypeFilter.m_enabled)
+                            for (const auto& fileTypeFilter : m_fileTypeFilters)
                             {
-                                for (const auto& extension : fileTypeFilter.m_extensions)
+                                if (fileTypeFilter.m_enabled)
                                 {
-                                    if (AZ::StringFunc::EndsWith(path, extension))
+                                    for (const auto& extension : fileTypeFilter.m_extensions)
                                     {
-                                        return true;
+                                        if (AZ::StringFunc::EndsWith(path, extension))
+                                        {
+                                            return true;
+                                        }
                                     }
                                 }
                             }
-                        }
-                        return false;
-                    }
-                    return true;
-                }
 
-                return false;
+                            // Filters were enabled but no matching filter was found so exclude this entry.
+                            return false;
+                        }
+
+                        // Filters were not enabled so automatically include all entries.
+                        return true;
+                    }
+
+                    // The path is invalid or ignored
+                    return false;
+                }
             }
 
             return false;
