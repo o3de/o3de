@@ -23,8 +23,21 @@ namespace MaterialCanvas
         , m_graphViewSettingsPtr(graphViewSettingsPtr)
         , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
     {
-        m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
-        m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->ClearTypeFilter();
+        m_assetBrowser->GetSearchWidget()->SetTypeFilterVisible(false);
+        m_assetBrowser->SetFileTypeFilters({
+            { "Material", { "material" }, true },
+            { "Material Graph", { "materialgraph", "materialgraphtemplate" }, true },
+            { "Material Graph Node", { "materialgraphnode", "materialgraphnodetemplate" }, true },
+            { "Material Type", { "materialtype" }, true },
+            { "Material Pipeline", { "materialpipeline" }, true },
+            { "Shader", { "shader" }, true },
+            { "Shader Template", { "shader.template" }, true },
+            { "Shader Variant List", { "shadervariantlist" }, true },
+            { "Image", { "tif", "tiff", "png", "bmp", "jpg", "jpeg", "tga", "gif", "dds", "exr" }, true },
+            { "Lua", { "lua" }, true },
+            { "AZSL", { "azsl", "azsli", "srgi" }, true },
+        });
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialCanvas/DocumentInspector");
