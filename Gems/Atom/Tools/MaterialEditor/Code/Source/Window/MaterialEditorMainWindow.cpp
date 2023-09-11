@@ -18,8 +18,8 @@ namespace MaterialEditor
     MaterialEditorMainWindow::MaterialEditorMainWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, "MaterialEditorMainWindow", parent)
     {
-        m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
-        m_assetBrowser->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->SetFilterState("", AZ::RPI::MaterialAsset::Group, true);
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/DocumentInspector");
