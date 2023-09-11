@@ -1065,7 +1065,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         // NETWORK
         //////////////////////////////////////////////////////////////////////////
 
-        m_env.pNetwork = CryNetwork::NetworkInstance::Get();
+        m_env.pNetwork = CryNetwork::NetworkInstance::Create();
         if (!m_env.pNetwork)
         {
             AZ_Assert(false, "Network System did not initialize correctly; it was not found in the system environment.");
