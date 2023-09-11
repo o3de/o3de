@@ -28,6 +28,8 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/IndirectArguments.h>
 
+#include <RHI/DispatchRaysIndirectBuffer.h>
+
 // Conditionally disable timing at compile-time based on profile policy
 #if DX12_GPU_PROFILE_MODE == DX12_GPU_PROFILE_MODE_DETAIL
 #define DX12_COMMANDLIST_TIMER(id) ScopedTimer timer__(m_timerHeap, *this, TimerType::User, id);
@@ -448,7 +450,97 @@ namespace AZ
                 }
             case RHI::DispatchRaysType::Indirect:
                 {
-                    ExecuteIndirect(dispatchRaysItem.m_arguments.m_indirect);
+                    const auto& arguments = dispatchRaysItem.m_arguments.m_indirect;
+                    auto* dispatchIndirectBuffer = static_cast<DispatchRaysIndirectBuffer*>(arguments.m_dispatchRaysIndirectBuffer);
+                    AZ_Assert(
+                        dispatchIndirectBuffer, "CommandList: m_dispatchRaysIndirectBuffer is necessary for indirect raytracing commands");
+                    const Buffer* dx12IndirectBuffer = static_cast<const Buffer*>(dispatchIndirectBuffer->m_buffer.get());
+                    // Copy arguments from the given indirect buffer to the one we can actually use for the ExecuteIndirect call
+                    {
+                        constexpr ptrdiff_t widthOffset = offsetof(D3D12_DISPATCH_RAYS_DESC, Width);
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12IndirectBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+
+                        if (dispatchIndirectBuffer->m_shaderTableNeedsCopy)
+                        {
+                            AZ_Assert(
+                                dispatchIndirectBuffer->m_shaderTableStagingMemory.IsValid(),
+                                "DispatchRaysIndirectBuffer: Staging memory is not valid."
+                                " The Build function must be called in the same frame as the CopyData function");
+                            commandList->CopyBufferRegion(
+                                dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                                dx12IndirectBuffer->GetMemoryView().GetOffset(),
+                                dispatchIndirectBuffer->m_shaderTableStagingMemory.GetMemory(),
+                                dispatchIndirectBuffer->m_shaderTableStagingMemory.GetOffset(),
+                                widthOffset); // copy the shader table entries only
+                            dispatchIndirectBuffer->m_shaderTableNeedsCopy = false;
+                            dispatchIndirectBuffer->m_shaderTableStagingMemory = {}; // The staging memory is only valid for one frame. Make
+                                                                                     // sure to not access it again
+                        }
+                        constexpr ptrdiff_t sizeToCopy = sizeof(uint32_t) * 3;
+
+                        const Buffer* dx12OriginalBuffer = static_cast<const Buffer*>(arguments.m_indirectBufferView->GetBuffer());
+
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12OriginalBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+
+                        commandList->CopyBufferRegion(
+                            dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                            dx12IndirectBuffer->GetMemoryView().GetOffset() + widthOffset,
+                            dx12OriginalBuffer->GetMemoryView().GetMemory(),
+                            arguments.m_indirectBufferView->GetByteOffset() + arguments.m_indirectBufferByteOffset,
+                            sizeToCopy);
+
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12OriginalBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12IndirectBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+                    }
+
+                    const IndirectBufferSignature* signature =
+                        static_cast<const IndirectBufferSignature*>(arguments.m_indirectBufferView->GetSignature());
+
+                    AZ_Assert(arguments.m_countBuffer == nullptr, "CommandList: Count buffer is not supported for indirect raytracing");
+                    GetCommandList()->ExecuteIndirect(
+                        signature->Get(),
+                        arguments.m_maxSequenceCount,
+                        dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                        dx12IndirectBuffer->GetMemoryView().GetOffset(),
+                        nullptr,
+                        0);
                     break;
                 }
             default:

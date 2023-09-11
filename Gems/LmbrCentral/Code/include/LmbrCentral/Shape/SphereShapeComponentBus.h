@@ -55,10 +55,10 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual SphereShapeConfig GetSphereConfiguration() = 0;
+        virtual const SphereShapeConfig& GetSphereConfiguration() const = 0;
 
         /// @brief Returns the radius for the sphere shape component.
-        virtual float GetRadius() = 0;
+        virtual float GetRadius() const = 0;
 
         /// @brief Sets the radius for the sphere shape component.
         /// @param radius new Radius of the sphere shape.

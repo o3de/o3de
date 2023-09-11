@@ -107,15 +107,23 @@ set(FILES
     Include/Atom/RHI/FrameScheduler.h
     Source/RHI/FrameScheduler.cpp
     Include/Atom/RHI/Image.h
+    Include/Atom/RHI/MultiDeviceImage.h
     Include/Atom/RHI/ImageView.h
     Source/RHI/Image.cpp
+    Source/RHI/MultiDeviceImage.cpp
     Source/RHI/ImageView.cpp
     Include/Atom/RHI/ImagePool.h
+    Include/Atom/RHI/MultiDeviceImagePool.h
     Include/Atom/RHI/ImagePoolBase.h
+    Include/Atom/RHI/MultiDeviceImagePoolBase.h
     Include/Atom/RHI/StreamingImagePool.h
+    Include/Atom/RHI/MultiDeviceStreamingImagePool.h
     Source/RHI/ImagePool.cpp
+    Source/RHI/MultiDeviceImagePool.cpp
     Source/RHI/ImagePoolBase.cpp
+    Source/RHI/MultiDeviceImagePoolBase.cpp
     Source/RHI/StreamingImagePool.cpp
+    Source/RHI/MultiDeviceStreamingImagePool.cpp
     Include/Atom/RHI/IndirectBufferSignature.h
     Include/Atom/RHI/IndirectBufferView.h
     Include/Atom/RHI/IndirectBufferWriter.h
@@ -231,4 +239,5 @@ set(FILES
     Include/Atom/RHI/TagBitRegistry.h
     Include/Atom/RHI/TagRegistry.h
     Include/Atom/RHI/XRRenderingInterface.h
+    Include/Atom/RHI/DispatchRaysIndirectBuffer.h
 )

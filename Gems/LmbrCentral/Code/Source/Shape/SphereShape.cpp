@@ -90,13 +90,13 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float SphereShape::GetRadius()
+    float SphereShape::GetRadius() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_sphereShapeConfig.m_radius;
     }
 
-    AZ::Aabb SphereShape::GetEncompassingAabb()
+    AZ::Aabb SphereShape::GetEncompassingAabb() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
@@ -104,14 +104,14 @@ namespace LmbrCentral
             m_currentTransform.TransformPoint(m_sphereShapeConfig.m_translationOffset), m_intersectionDataCache.m_radius);
     }
 
-    void SphereShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void SphereShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         AZStd::shared_lock lock(m_mutex);
         bounds = AZ::Aabb::CreateCenterRadius(m_sphereShapeConfig.m_translationOffset, m_sphereShapeConfig.m_radius);
         transform = m_currentTransform;
     }
 
-    bool SphereShape::IsPointInside(const AZ::Vector3& point)
+    bool SphereShape::IsPointInside(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
@@ -120,7 +120,7 @@ namespace LmbrCentral
             m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius * m_intersectionDataCache.m_radius, point);
     }
 
-    float SphereShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float SphereShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
@@ -131,7 +131,7 @@ namespace LmbrCentral
         return clampedDistance * clampedDistance;
     }
 
-    bool SphereShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool SphereShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);

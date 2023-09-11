@@ -410,14 +410,14 @@ namespace AZ
             return true;
         }
 
-        AZ::Aabb EditorAreaLightComponent::GetWorldBounds()
+        AZ::Aabb EditorAreaLightComponent::GetWorldBounds() const
         {
             Transform transform = Transform::CreateIdentity();
             TransformBus::EventResult(transform, GetEntityId(), &TransformBus::Events::GetWorldTM);
             return GetLocalBounds().GetTransformedAabb(transform);
         }
 
-        AZ::Aabb EditorAreaLightComponent::GetLocalBounds()
+        AZ::Aabb EditorAreaLightComponent::GetLocalBounds() const
         {
             return m_controller.GetLocalVisualizationBounds();
         }

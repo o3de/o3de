@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 
@@ -68,5 +69,7 @@ namespace AtomToolsFramework
         QByteArray m_browserState;
 
         AZStd::function<void(const AZStd::string&)> m_openHandler;
+
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_settingsNotifyEventHandler;
     };
 } // namespace AtomToolsFramework

@@ -8,6 +8,7 @@
 
 #include <Common/RHI/Factory.h>
 #include <Common/RHI/Stubs.h>
+#include <Atom/RHI/DispatchRaysIndirectBuffer.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
@@ -211,6 +212,12 @@ namespace UnitTest
         }
 
         AZ::RHI::Ptr<AZ::RHI::RayTracingShaderTable> Factory::CreateRayTracingShaderTable()
+        {
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
+        }
+
+        RHI::Ptr<RHI::DispatchRaysIndirectBuffer> Factory::CreateDispatchRaysIndirectBuffer()
         {
             AZ_Assert(false, "Not implemented");
             return nullptr;

@@ -33,6 +33,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <QMessageBox>
 #include <WhiteBox/EditorWhiteBoxColliderBus.h>
@@ -672,7 +673,7 @@ namespace WhiteBox
         return GetWorldBounds();
     }
 
-    AZ::Aabb EditorWhiteBoxComponent::GetWorldBounds()
+    AZ::Aabb EditorWhiteBoxComponent::GetWorldBounds() const
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -685,13 +686,13 @@ namespace WhiteBox
         return m_worldAabb.value();
     }
 
-    AZ::Aabb EditorWhiteBoxComponent::GetLocalBounds()
+    AZ::Aabb EditorWhiteBoxComponent::GetLocalBounds() const
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_localAabb.has_value())
         {
-            auto& whiteBoxMesh = *GetWhiteBoxMesh();
+            auto& whiteBoxMesh = *const_cast<EditorWhiteBoxComponent*>(this)->GetWhiteBoxMesh();
 
             m_localAabb = CalculateAabb(
                 whiteBoxMesh,
