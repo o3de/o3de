@@ -296,14 +296,14 @@ namespace AZ
                 template<typename First, typename Second, typename Category>
                 void iter_swap(const PairIterator<First, Second, Category>& lhs, const PairIterator<First, Second, Category>& rhs)
                 {
-                    auto& tmpFirst = (*lhs).first;
-                    auto& tmpSecond = (*lhs).second;
+                    auto tmpFirst = AZStd::move(lhs->first);
+                    auto tmpSecond = AZStd::move(lhs->second);
 
-                    (*lhs).first = (*rhs).first;
-                    (*lhs).second = (*rhs).second;
+                    lhs->first = AZStd::move(rhs->first);
+                    lhs->second = AZStd::move(rhs->second);
 
-                    (*rhs).first = tmpFirst;
-                    (*rhs).second = tmpSecond;
+                    rhs->first = AZStd::move(tmpFirst);
+                    rhs->second = AZStd::move(tmpSecond);
                 }
             } // Views
         } // Containers
