@@ -6,8 +6,11 @@
  *
  */
 
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 #include <Editor/ColliderComponentMode.h>
 #include <System/PhysXSystem.h>
@@ -1042,12 +1045,12 @@ namespace PhysX
         m_proxyShapeConfiguration.m_cylinder.m_configuration = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();
     }
 
-    AZ::Aabb EditorColliderComponent::GetWorldBounds()
+    AZ::Aabb EditorColliderComponent::GetWorldBounds() const
     {
         return GetAabb();
     }
 
-    AZ::Aabb EditorColliderComponent::GetLocalBounds()
+    AZ::Aabb EditorColliderComponent::GetLocalBounds() const
     {
         AZ::Aabb worldBounds = GetWorldBounds();
         if (worldBounds.IsValid())

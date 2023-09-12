@@ -89,8 +89,8 @@ namespace PhysX
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         // BoundsRequestBus overrides ...
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
 
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;

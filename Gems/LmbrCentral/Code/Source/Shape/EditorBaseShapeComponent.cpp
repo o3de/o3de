@@ -217,14 +217,14 @@ namespace LmbrCentral
         }
     }
 
-    AZ::Aabb EditorBaseShapeComponent::GetWorldBounds()
+    AZ::Aabb EditorBaseShapeComponent::GetWorldBounds() const
     {
         AZ::Aabb aabb = AZ::Aabb::CreateNull();
         ShapeComponentRequestsBus::EventResult(aabb, GetEntityId(), &ShapeComponentRequests::GetEncompassingAabb);
         return aabb;
     }
 
-    AZ::Aabb EditorBaseShapeComponent::GetLocalBounds()
+    AZ::Aabb EditorBaseShapeComponent::GetLocalBounds() const
     {
         AZ::Transform unused;
         AZ::Aabb resultBounds = AZ::Aabb::CreateNull();

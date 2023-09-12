@@ -86,8 +86,6 @@ namespace AZ
                 | static_cast<unsigned long>(aiProcess_GenBoundingBoxes) // Generate bounding boxes
                 | aiProcess_GenNormals); //Generate normals for meshes
 
-            CalculateAABBandVertices(m_assImpScene, m_aabb, m_vertices);
-
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
             // Reset abort behavior for anything else that may call abort.
             std::signal(SIGABRT, previous_handler);
@@ -101,6 +99,8 @@ namespace AZ
                 AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "Failed to import Asset Importer Scene. Error returned: %s", m_importer->GetErrorString());
                 return false;
             }
+
+            CalculateAABBandVertices(m_assImpScene, m_aabb, m_vertices);
 
             return true;
         }

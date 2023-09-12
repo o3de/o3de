@@ -58,6 +58,15 @@ set(FILES
     Include/Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationConstants.h
     Include/Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationParams.inl
     Include/Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h
+    Include/Atom/Feature/PostProcess/PaniniProjection/PaniniProjectionConstants.h
+    Include/Atom/Feature/PostProcess/PaniniProjection/PaniniProjectionParams.inl
+    Include/Atom/Feature/PostProcess/PaniniProjection/PaniniProjectionSettingsInterface.h
+    Include/Atom/Feature/PostProcess/FilmGrain/FilmGrainConstants.h
+    Include/Atom/Feature/PostProcess/FilmGrain/FilmGrainParams.inl
+    Include/Atom/Feature/PostProcess/FilmGrain/FilmGrainSettingsInterface.h
+    Include/Atom/Feature/PostProcess/Vignette/VignetteConstants.h
+    Include/Atom/Feature/PostProcess/Vignette/VignetteParams.inl
+    Include/Atom/Feature/PostProcess/Vignette/VignetteSettingsInterface.h
     Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingParams.inl
     Include/Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h
     Include/Atom/Feature/PostProcess/DepthOfField/DepthOfFieldConstants.h
@@ -71,6 +80,9 @@ set(FILES
     Include/Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h
     Include/Atom/Feature/PostProcess/LookModification/LookModificationParams.inl
     Include/Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h
+    Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
+    Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl
+    Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h
     Include/Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h
     Include/Atom/Feature/ScreenSpace/DeferredFogParams.inl
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h

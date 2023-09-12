@@ -85,6 +85,9 @@ set(FILES
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
     Passes/ChromaticAberration.pass
+    Passes/PaniniProjection.pass
+    Passes/FilmGrain.pass
+    Passes/Vignette.pass
     Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
@@ -217,6 +220,7 @@ set(FILES
     Passes/TransparentParent.pass
     Passes/UI.pass
     Passes/UIParent.pass
+    Passes/WhiteBalance.pass
     Scripts/material_find_overrides_demo.lua
     Scripts/material_property_overrides_demo.lua
     ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
@@ -442,6 +446,12 @@ set(FILES
     Shaders/PostProcessing/BloomDownsampleCS.shader
     Shaders/PostProcessing/ChromaticAberration.azsl
     Shaders/PostProcessing/ChromaticAberration.shader
+    Shaders/PostProcessing/PaniniProjection.azsl
+    Shaders/PostProcessing/PaniniProjection.shader
+    Shaders/PostProcessing/FilmGrain.azsl
+    Shaders/PostProcessing/FilmGrain.shader
+    Shaders/PostProcessing/Vignette.azsl
+    Shaders/PostProcessing/Vignette.shader
     Shaders/PostProcessing/ContrastAdaptiveSharpening.azsl
     Shaders/PostProcessing/ContrastAdaptiveSharpening.shader
     Shaders/PostProcessing/ConvertToAcescg.azsl
@@ -535,6 +545,8 @@ set(FILES
     Shaders/PostProcessing/Taa.shader
     Shaders/PostProcessing/UniformColor.azsl
     Shaders/PostProcessing/UniformColor.shader
+    Shaders/PostProcessing/WhiteBalance.azsl
+    Shaders/PostProcessing/WhiteBalance.shader
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader

@@ -14,11 +14,12 @@ struct ReflectionProbeData
     row_major float3x4 m_modelToWorld;
     row_major float3x4 m_modelToWorldInverse; // does not include extents
     float3 m_outerObbHalfLengths;
-    float m_padding;
+    float m_exposure;
     float3 m_innerObbHalfLengths;
     bool m_useReflectionProbe;
     bool m_useParallaxCorrection;
-    float m_exposure;
+    float3 m_padding;
+    [[pad_to(16)]]
 };
 
 float4x4 GetReflectionProbeWorldMatrix(in ReflectionProbeData reflectionProbeData)

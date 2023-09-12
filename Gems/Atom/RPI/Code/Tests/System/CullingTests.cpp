@@ -9,6 +9,7 @@
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Task/TaskGraph.h>
+#include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
 
 #include <Atom/RPI.Public/Culling.h>
@@ -35,6 +36,7 @@ namespace UnitTest
             TaskExecutor::SetInstance(m_executor);
 
             m_octreeSystemComponent = new AzFramework::OctreeSystemComponent;
+            m_sceneSystemComponent = new AzFramework::SceneSystemComponent;
             m_testScene = Scene::CreateScene(SceneDescriptor{});
             m_cullingScene = m_testScene->GetCullingScene();
             m_cullingScene->Activate(m_testScene.get());
@@ -49,6 +51,7 @@ namespace UnitTest
             m_cullingScene->Deactivate();
             m_testScene = nullptr;
             delete m_octreeSystemComponent;
+            delete m_sceneSystemComponent;
 
             if (&TaskExecutor::Instance() == m_executor) // if this test created the default instance unset it before destroying it
             {
@@ -66,7 +69,7 @@ namespace UnitTest
 
         void Cull(TestCameraList& views)
         {
-            m_cullingScene->BeginCulling(views);
+            m_cullingScene->BeginCulling(*m_testScene, views);
 
             // Create and submit work to the culling scene in a similar style as RPI::Scene::PrepareRender
             static const TaskDescriptor processCullablesDescriptor{ "RPI::Scene::ProcessCullables", "Graphics" };
@@ -90,7 +93,7 @@ namespace UnitTest
 
             processCullablesTG.Submit(&processCullablesTGEvent);
             processCullablesTGEvent.Wait();
-            m_cullingScene->EndCulling();
+            m_cullingScene->EndCulling(*m_testScene, views);
 
             for (ViewPtr& viewPtr : views)
             {
@@ -226,6 +229,7 @@ namespace UnitTest
 
         TaskExecutor* m_executor;
         AzFramework::OctreeSystemComponent* m_octreeSystemComponent;
+        AzFramework::SceneSystemComponent* m_sceneSystemComponent;
         ScenePtr m_testScene;
         CullingScene* m_cullingScene;
         AZStd::vector<ViewPtr> m_views;

@@ -44,6 +44,7 @@ namespace AZ
                     ->Value("ReadBack", CommonBufferPoolType::ReadBack)
                     ->Value("ReadWrite", CommonBufferPoolType::ReadWrite)
                     ->Value("ReadOnly", CommonBufferPoolType::ReadOnly)
+                    ->Value("Indirect", CommonBufferPoolType::Indirect)
                     ->Value("Invalid", CommonBufferPoolType::Invalid)
                     ;
             }

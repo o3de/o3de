@@ -434,7 +434,7 @@ namespace AZ
 
         void Pass::ProcessConnection(const PassConnection& connection, uint32_t slotTypeMask)
         {
-            auto prefix = [&]() -> AZStd::string
+            [[maybe_unused]] auto prefix = [&]() -> AZStd::string
             {
                 return AZStd::string::format(
                     "Pass::ProcessConnection %s:%s -> %s:%s",
@@ -605,7 +605,7 @@ namespace AZ
             PassAttachmentBinding* inputBinding = FindAttachmentBinding(connection.m_inputSlotName);
             PassAttachmentBinding* outputBinding = FindAttachmentBinding(connection.m_outputSlotName);
 
-            auto prefix = [&]() -> AZStd::string
+            [[maybe_unused]] auto prefix = [&]() -> AZStd::string
             {
                 return AZStd::string::format(
                     "Pass::ProcessFallbackConnection: %s, %s -> %s",

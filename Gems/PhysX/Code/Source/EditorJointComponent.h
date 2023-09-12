@@ -40,8 +40,8 @@ namespace PhysX
         void Deactivate() override;
 
         // BoundsRequestBus overrides ...
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
 
     protected:
         // TransformNotificationBus overrides ...
