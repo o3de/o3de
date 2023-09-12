@@ -1760,6 +1760,8 @@ def create_project(project_path: pathlib.Path,
     replacements.append(("${NameLower}", project_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
     replacements.append(("${Version}", version if version else "1.0.0"))
+    replacements.append(("${ProjectPath}", project_path.as_posix()))
+    replacements.append(("${EnginePath}", manifest.get_this_engine_path().as_posix()))
 
     # was a project id specified
     if project_id:
