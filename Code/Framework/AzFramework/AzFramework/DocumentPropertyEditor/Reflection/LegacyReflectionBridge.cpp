@@ -1220,6 +1220,22 @@ namespace AZ::Reflection
                             }
                         }
                     }
+
+                    // Check for edge case where the parent node has a parent container, but is set to ShowChildrenOnly
+                    // which would result in the container element missing the 'Remove' button. This replicates the parent container
+                    // info to its child node instead so that the 'Remove' button can still be shown.
+                    auto parentContainer = Find(group, DescriptorAttributes::ParentContainer, parentNode);
+                    if ((parentNode.m_computedVisibility == PropertyVisibility::ShowChildrenOnly) && parentContainer)
+                    {
+                        nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::ParentContainer, *parentContainer });
+
+                        auto parentContainerInstance = Find(group, DescriptorAttributes::ParentContainerInstance, parentNode);
+                        if (parentContainerInstance)
+                        {
+                            nodeData.m_cachedAttributes.push_back(
+                                { group, DescriptorAttributes::ParentContainerInstance, *parentContainerInstance });
+                        }
+                    }
                 }
 
                 if (genericValueCache.ArraySize() > 0)
