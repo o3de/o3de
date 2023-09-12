@@ -260,8 +260,6 @@ namespace AzToolsFramework
                 return SourceFileDetails();
             }
 
-            virtual void CreateNewVariantListRequested(const char* /*fromShaderSourcePath*/) {}
-
             //! required in order to sort the busses.
             inline bool Compare(const AssetBrowserInteractionNotifications* other) const
             {
