@@ -26,7 +26,7 @@
 AZ_CVAR(
     bool,
     ed_enableDPE,
-    false,
+    true,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental Document Property Editor support, replacing the Reflected Property Editor where possible");
