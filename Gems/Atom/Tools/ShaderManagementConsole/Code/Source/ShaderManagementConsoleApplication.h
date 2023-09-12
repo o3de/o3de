@@ -53,9 +53,6 @@ namespace ShaderManagementConsole
         AZStd::string GenerateRelativeSourcePath(const AZStd::string& fullShaderPath) override;
         AZ::RPI::ShaderOptionValue MakeShaderOptionValueFromInt(int value) override;
 
-        // AssetBrowserInteractionNotificationBus overrides...
-        void CreateNewVariantListRequested(const char* /*fromShaderSourcePath*/) override;
-
     private:
         AZStd::unique_ptr<ShaderManagementConsoleWindow> m_window;
     };

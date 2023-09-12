@@ -306,7 +306,7 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::OpenFailed()
     {
-        AZ_TracePrintf("AtomToolsDocument", "Document could not opened: '%s'.\n", m_absolutePath.c_str());
+        AZ_TracePrintf("AtomToolsDocument", "Document could not open: '%s'.\n", m_absolutePath.c_str());
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentError, m_id);
         Clear();
         return false;

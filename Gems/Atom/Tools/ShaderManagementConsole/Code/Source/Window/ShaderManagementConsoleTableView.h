@@ -17,6 +17,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPushButton>
 #include <QComboBox>
 #endif
 
@@ -55,6 +56,10 @@ namespace ShaderManagementConsole
         enum RebuildMode { KeepAsIs, CallOnModified };
         void TransferViewModelToModel(RebuildMode);
 
+        enum class CountQuery { ForUi, Options };
+        int GetColumnsCount(CountQuery) const;
+        int UiColumnToOption(int uiColumnIndex) const;
+
         const AZ::Crc32 m_toolId = {};
         const AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;
@@ -75,5 +80,6 @@ namespace ShaderManagementConsole
         QHBoxLayout m_subLayout;
         QLabel m_sortLabel;
         QComboBox m_sortComboBox;
+        QPushButton m_defragVariants;
     };
 } // namespace ShaderManagementConsole

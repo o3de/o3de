@@ -363,13 +363,6 @@ namespace AzToolsFramework
 
         bool AssetGroupFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            //AZStd::string ext;
-            //AzFramework::StringFunc::Path::GetExtension(entry->GetVisiblePath().c_str(), ext, false);
-            //if (m_group == "Shader" && ext.starts_with("shadervariant"))
-            //{
-            //    return true;
-            //}
-
             if (m_group.compare("All", Qt::CaseInsensitive) == 0)
             {
                 return true;

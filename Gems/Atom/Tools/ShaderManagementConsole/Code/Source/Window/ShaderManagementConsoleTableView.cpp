@@ -116,6 +116,22 @@ namespace ShaderManagementConsole
         }
     }
 
+    int ShaderManagementConsoleTableView::UiColumnToOption(int uiColumnIndex) const
+    {
+        return uiColumnIndex - 1;  // because column #0 is the "X" (deleters)
+    }
+
+    int ShaderManagementConsoleTableView::GetColumnsCount(CountQuery query) const
+    {
+        switch (query)
+        {
+            case CountQuery::ForUi:   return columnCount();
+            case CountQuery::Options: return UiColumnToOption(columnCount());
+        }
+        AZ_Assert(false, "query argument invalid");
+        return 0;
+    }
+
     void ShaderManagementConsoleTableView::RebuildTable()
     {
         QSignalBlocker blocker(this);
@@ -145,7 +161,7 @@ namespace ShaderManagementConsole
             m_shaderOptionCount, m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptorCount);
 
         // Only clear the table if the number of columns or rows have changed
-        if (rowCount() != m_shaderVariantCount || (columnCount() + 1) != m_shaderOptionCount)
+        if (rowCount() != m_shaderVariantCount || GetColumnsCount(CountQuery::Options) != m_shaderOptionCount)
         {
             clear();
             setRowCount(static_cast<int>(m_shaderVariantCount));
@@ -154,8 +170,8 @@ namespace ShaderManagementConsole
 
         // Get a list of all of the shader option descriptors from the shader asset that will be used for the columns in the table
         m_shaderOptionDescriptors = {};
-        m_shaderOptionDescriptors.reserve(columnCount() - 1);
-        for (int column = 0; column < columnCount() - 1; ++column)
+        m_shaderOptionDescriptors.reserve(GetColumnsCount(CountQuery::Options));
+        for (int column = 0; column < GetColumnsCount(CountQuery::Options); ++column)
         {
             AZ::RPI::ShaderOptionDescriptor shaderOptionDescriptor;
             ShaderManagementConsoleDocumentRequestBus::EventResult(
@@ -207,9 +223,9 @@ namespace ShaderManagementConsole
         }
 
         // Fill in the header of each column with the descriptor name
-        for (int column = 1; column < columnCount(); ++column)
+        for (int column = 1; column < GetColumnsCount(CountQuery::ForUi); ++column)
         {
-            const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column - 1];
+            const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[UiColumnToOption(column)];
             auto* tableItem = new QTableWidgetItem(shaderOptionDescriptor.GetName().GetCStr());
             tableItem->setToolTip(tr("cost %1").arg(shaderOptionDescriptor.GetCostEstimate()));
             // color material options in yellow
@@ -230,9 +246,9 @@ namespace ShaderManagementConsole
             const auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
             setVerticalHeaderItem(row, new QTableWidgetItem(QString::number(shaderVariant.m_stableId)));
 
-            for (int column = 1; column < columnCount(); ++column)
+            for (int column = 1; column < GetColumnsCount(CountQuery::ForUi); ++column)
             {
-                const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column - 1];
+                const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[UiColumnToOption(column)];
                 const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName());
                 const AZ::Name valueName = optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : AZ::Name();
                 auto* newItem = new QTableWidgetItem(valueName.GetCStr());
@@ -277,12 +293,12 @@ namespace ShaderManagementConsole
             return;
         }
 
-        if (column < 0 || column - 1 >= m_shaderOptionDescriptors.size())
+        if (column < 0 || UiColumnToOption(column) >= m_shaderOptionDescriptors.size())
         {
             return;
         }
 
-        const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column - 1];
+        const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[UiColumnToOption(column)];
         const auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
         const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName());
 
@@ -425,8 +441,18 @@ namespace ShaderManagementConsole
         m_sortComboBox.addItem(tr("Rank (shader declaration order)"));
         m_sortComboBox.addItem(tr("Cost impact (likely-performance weight, by static-analysis)"));
         m_sortComboBox.setCurrentIndex(2);
+        m_defragVariants.setIcon(QIcon(":/Icons/defrag.svg"));
+        m_defragVariants.setToolTip(tr("Merge duplicated variants, and recompact stable IDs"));
+        connect(&m_defragVariants,
+                &QPushButton::clicked,
+                this,
+                [documentId]() {
+                    ShaderManagementConsoleDocumentRequestBus::Event(documentId,
+                        &ShaderManagementConsoleDocumentRequestBus::Events::DefragmentVariantList);
+                });
         m_subLayout.addWidget(&m_sortLabel);
         m_subLayout.addWidget(&m_sortComboBox);
+        m_subLayout.addWidget(&m_defragVariants);
         m_subLayout.addStretch();
         this->addLayout(&m_subLayout);
         this->addWidget(&m_tableView);

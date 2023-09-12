@@ -11,12 +11,15 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <ShaderManagementConsoleApplication.h>
 
 #include <Document/ShaderManagementConsoleDocument.h>
 #include <Window/ShaderManagementConsoleTableView.h>
 #include <Window/ShaderManagementConsoleWindow.h>
+
+#include <QMenu>
 
 void InitShaderManagementConsoleResources()
 {
@@ -108,6 +111,39 @@ namespace ShaderManagementConsole
 
         m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
         m_window->show();
+
+        using namespace AtomToolsFramework;
+        using namespace AzToolsFramework;
+        m_assetBrowserInteractions->RegisterContextMenuActions(
+            [](const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                return entries.front()->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
+            },
+            [this]([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                const auto* entry = entries.empty() ? nullptr : entries.front();
+                if (!entry)
+                {
+                    return;
+                }
+                QFileInfo fileInfo(entry->GetFullPath().c_str());
+                QString extension = fileInfo.completeSuffix();
+                if (extension == "shader")
+                {
+                    AZStd::string savePath = entry->GetFullPath();
+                    AzFramework::StringFunc::Path::ReplaceExtension(savePath, AZ::RPI::ShaderVariantListSourceData::Extension);
+                    menu->addAction(
+                        "Create New Variant List (side by side to source)",
+                        [entry, savePath, this]()
+                        {
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId,
+                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromFilePath,
+                                entry->GetFullPath().c_str(),
+                                savePath);
+                        });
+                }
+             });
     }
 
     void ShaderManagementConsoleApplication::Destroy()
@@ -331,11 +367,5 @@ namespace ShaderManagementConsole
     AZ::RPI::ShaderOptionValue ShaderManagementConsoleApplication::MakeShaderOptionValueFromInt(int value)
     {
         return AZ::RPI::ShaderOptionValue(value);
-    }
-
-    void ShaderManagementConsoleApplication::CreateNewVariantListRequested(const char* fromShaderSourcePath)
-    {
-        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromFilePath, fromShaderSourcePath, "");
     }
 } // namespace ShaderManagementConsole

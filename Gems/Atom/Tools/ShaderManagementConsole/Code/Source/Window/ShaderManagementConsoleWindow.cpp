@@ -124,7 +124,7 @@ namespace ShaderManagementConsole
         Base::CreateMenus(menuBar);
 
         // Add statistics button
-        QAction* action = new QAction(tr("Generate shader variant statistics..."), m_menuFile);
+        QAction* action = new QAction(tr("Generate Shader Variant Statistics..."), m_menuFile);
         QObject::connect(action, &QAction::triggered, this, &ShaderManagementConsoleWindow::GenerateStatisticView);
         m_menuFile->insertAction(m_menuFile->actions().back(), action);
     }
