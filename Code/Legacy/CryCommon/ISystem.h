@@ -48,6 +48,7 @@ namespace AZ::IO
 // carbonated begin (akostin/mp-402-1): Revert pNetwork in SSystemGlobalEnvironment
 #if defined(CARBONATED)
 struct INetwork;
+struct IGame;
 #endif
 // carbonated end
 struct IConsole;
@@ -593,6 +594,7 @@ struct SSystemGlobalEnvironment
     // carbonated begin (akostin/mp-402-1): Revert pNetwork in SSystemGlobalEnvironment
 #if defined(CARBONATED)
     INetwork* pNetwork;
+    IGame* pGame;
 #endif
     // carbonated end
     AZ::IO::IArchive*          pCryPak;
@@ -813,6 +815,14 @@ struct ISystem
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
+
+    // carbonated begin (akostin/mp-402-2): Revert pGame in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+    virtual IGame* GetIGame() = 0;
+    virtual void SetIGame(IGame* pGame) = 0;
+#endif
+    // carbonated end
+
 
     virtual bool IsDevMode() const = 0;
     //////////////////////////////////////////////////////////////////////////
