@@ -7,9 +7,18 @@
 #
 
 # Copy snapcraft file
-configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.in"
-    "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
-)
+
+if(${CPACK_DISTRO})
+  configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft_${CPACK_DISTRO}.yaml.in"
+   "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"   
+  )
+  set(snap_file_name "o3de_${CPACK_PACKAGE_VERSION}_${CPACK_DISTRO}_amd64.snap"
+else
+  configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.in"
+   "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
+  )
+  set(snap_file_name "o3de_${CPACK_PACKAGE_VERSION}_amd64.snap")
+endif()
 
 execute_process (COMMAND lsb_release -a)
 
@@ -29,11 +38,11 @@ execute_process (COMMAND snapcraft --verbose
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
 )
 
-set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap")
+set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/${snap_file_name}")
 
 # Manually copy the files, the CPACK_EXTERNAL_BUILT_PACKAGES process runs after our packaging post build script
 # which is too late to be uploaded.
 file(COPY_FILE
                 ${snap_file}
-                "${CPACK_TOPLEVEL_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap"
+                "${CPACK_TOPLEVEL_DIRECTORY}/${snap_file_name}"
             )
