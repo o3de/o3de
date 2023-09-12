@@ -11,6 +11,7 @@
 #include <Material/MaterialBuilderUtils.h>
 
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
@@ -133,9 +134,11 @@ namespace AZ
             {
                 // Load the material type data to find the exact material type format.
                 // This is required to get an accurate dependency
+                AZStd::string resolvedMaterialPath = AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), materialTypePath.c_str());
+
                 MaterialTypeSourceData::Format materialTypeForamt = MaterialTypeSourceData::Format::Invalid;
                 MaterialUtils::ImportedJsonFiles importedJsonFiles;
-                auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(materialTypePath, nullptr, &importedJsonFiles);
+                auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialPath, nullptr, &importedJsonFiles);
 
                 if (materialTypeSourceData.IsSuccess())
                 {
@@ -148,7 +151,7 @@ namespace AZ
                 {
                     MaterialBuilderUtils::AddPossibleDependencies(
                         request.m_sourceFile,
-                        materialTypePath,
+                        resolvedMaterialPath,
                         MaterialTypeBuilder::FinalStageJobKey,
                         outputJobDescriptor.m_jobDependencyList,
                         response.m_sourceFileDependencyList,
