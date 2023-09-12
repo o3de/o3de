@@ -14,33 +14,6 @@
 #include <AzCore/std/utility/declval.h>
 #include <AzCore/std/utility/tuple_concepts.h>
 
-
- // The tuple_size and tuple_element classes need to be specialized in the std:: namespace since the AZStd:: namespace alias them
- // The tuple_size and tuple_element classes is to be specialized here for the AZStd::pair class
-namespace std
-{
-    // Suppressing clang warning error: 'tuple_size' defined as a class template here but previously declared as a struct template [-Werror,-Wmismatched-tags]
-    AZ_PUSH_DISABLE_WARNING(, "-Wmismatched-tags")
-        template<class T1, class T2>
-    struct tuple_size<AZStd::pair<T1, T2>> : public AZStd::integral_constant<size_t, 2> {};
-
-    template<class T1, class T2>
-    struct tuple_element<0, AZStd::pair<T1, T2>>
-    {
-    public:
-        using type = T1;
-    };
-
-    template<class T1, class T2>
-    struct tuple_element<1, AZStd::pair<T1, T2>>
-    {
-    public:
-        using type = T2;
-    };
-    AZ_POP_DISABLE_WARNING
-} // namespace std
-
-
 namespace AZStd
 {
     // std::tuple_element_t is used for the std::get overloads
@@ -49,7 +22,36 @@ namespace AZStd
     // std::index_sequence is being brought into the namespace
     // for use with the piecewise constructor
     using std::index_sequence;
+}
 
+ // The tuple_size and tuple_element classes need to be specialized in the std:: namespace since the AZStd:: namespace alias them
+ // The tuple_size and tuple_element classes is to be specialized here for the AZStd::pair class
+namespace std
+{
+    // Suppressing clang warning error: 'tuple_size' defined as a class template here but previously declared as a struct template [-Werror,-Wmismatched-tags]
+    AZ_PUSH_DISABLE_WARNING(, "-Wmismatched-tags");
+    template<class T1, class T2>
+    struct tuple_size<AZStd::pair<T1, T2>>
+        : public AZStd::integral_constant<size_t, 2>
+    {};
+
+    template<class T1, class T2>
+    struct tuple_element<0, AZStd::pair<T1, T2>>
+    {
+        using type = T1;
+    };
+
+    template<class T1, class T2>
+    struct tuple_element<1, AZStd::pair<T1, T2>>
+    {
+        using type = T2;
+    };
+    AZ_POP_DISABLE_WARNING;
+} // namespace std
+
+
+namespace AZStd
+{
     //! Wraps the std::get function in the AZStd namespace
     //! This methods retrieves the tuple element at a particular index within the pair
     template<size_t I, class T1, class T2>
@@ -121,7 +123,6 @@ namespace AZStd
 
 namespace AZStd
 {
-
     template<class T1, class T2>
     struct pair
     {
@@ -147,10 +148,10 @@ namespace AZStd
         template<
             class P,
             class = enable_if_t<
-                !Internal::is_subrange<P> && is_constructible_v<T1, decltype(AZStd::get<0>(declval<P>()))> &&
-                is_constructible_v<T2, decltype(AZStd::get<1>(declval<P>()))>>>
+                !Internal::is_subrange<P> && is_constructible_v<T1, decltype(get<0>(declval<P>()))> &&
+                is_constructible_v<T2, decltype(get<1>(declval<P>()))>>>
 #if __cpp_conditional_explicit >= 201806L
-        explicit(!is_convertible_v<AZStd::get<0>(declval<P>()), T1> || !is_convertible_v<AZStd::get<1>(declval<P>()), T2>)
+        explicit(!is_convertible_v<get<0>(declval<P>()), T1> || !is_convertible_v<get<1>(declval<P>()), T2>)
 #endif
         constexpr pair(P&& pairLike);
 
@@ -189,8 +190,8 @@ namespace AZStd
             piecewise_construct_t,
             TupleType<Args1...>& first_args,
             TupleType<Args2...>& second_args,
-            AZStd::index_sequence<I1...>,
-            AZStd::index_sequence<I2...>);
+            index_sequence<I1...>,
+            index_sequence<I2...>);
 
         constexpr pair& operator=(const pair& rhs);
         constexpr const pair& operator=(const pair& rhs) const;
@@ -216,7 +217,7 @@ namespace AZStd
         template<class P>
         constexpr auto operator=(P&& pairLike) -> enable_if_t<
             !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P> &&
-                is_assignable_v<T1&, decltype(AZStd::get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(AZStd::get<1>(declval<P>()))>,
+                is_assignable_v<T1&, decltype(get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(get<1>(declval<P>()))>,
             pair&>;
 
         // This is an operator= overload that can change the values of the pair
@@ -226,8 +227,8 @@ namespace AZStd
         template<class P>
         constexpr auto operator=(P&& pairLike) const -> enable_if_t<
             !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P> &&
-                is_assignable_v<const T1&, decltype(AZStd::get<0>(declval<P>()))> &&
-                is_assignable_v<const T2&, decltype(AZStd::get<1>(declval<P>()))>,
+                is_assignable_v<const T1&, decltype(get<0>(declval<P>()))> &&
+                is_assignable_v<const T2&, decltype(get<1>(declval<P>()))>,
             const pair&>;
 
         constexpr auto swap(pair& rhs);

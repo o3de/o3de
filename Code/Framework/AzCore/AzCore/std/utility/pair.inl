@@ -56,31 +56,31 @@ namespace AZStd
     template<class T1, class T2>
     template<class U1, class U2, class>
     constexpr pair<T1, T2>::pair(const pair<U1, U2>& rhs)
-        : first(AZStd::get<0>(static_cast<decltype(rhs)>(rhs)))
-        , second(AZStd::get<1>(static_cast<decltype(rhs)>(rhs)))
+        : first(get<0>(static_cast<decltype(rhs)>(rhs)))
+        , second(get<1>(static_cast<decltype(rhs)>(rhs)))
     {
     }
     template<class T1, class T2>
     template<class U1, class U2, class>
     constexpr pair<T1, T2>::pair(pair<U1, U2>&& rhs)
-        : first(AZStd::get<0>(static_cast<decltype(rhs)>(rhs)))
-        , second(AZStd::get<1>(static_cast<decltype(rhs)>(rhs)))
+        : first(get<0>(static_cast<decltype(rhs)>(rhs)))
+        , second(get<1>(static_cast<decltype(rhs)>(rhs)))
     {
     }
 
     template<class T1, class T2>
     template<class U1, class U2, class>
     constexpr pair<T1, T2>::pair(pair<U1, U2>& rhs)
-        : first(AZStd::get<0>(static_cast<decltype(rhs)>(rhs)))
-        , second(AZStd::get<1>(static_cast<decltype(rhs)>(rhs)))
+        : first(get<0>(static_cast<decltype(rhs)>(rhs)))
+        , second(get<1>(static_cast<decltype(rhs)>(rhs)))
     {
     }
 
     template<class T1, class T2>
     template<class U1, class U2, class>
     constexpr pair<T1, T2>::pair(const pair<U1, U2>&& rhs)
-        : first(AZStd::get<0>(static_cast<decltype(rhs)>(rhs)))
-        , second(AZStd::get<1>(static_cast<decltype(rhs)>(rhs)))
+        : first(get<0>(static_cast<decltype(rhs)>(rhs)))
+        , second(get<1>(static_cast<decltype(rhs)>(rhs)))
     {
     }
 
@@ -89,8 +89,8 @@ namespace AZStd
     template<class T1, class T2>
     template<class P, class>
     constexpr pair<T1, T2>::pair(P&& pairLike)
-        : first(AZStd::get<0>(AZStd::forward<P>(pairLike)))
-        , second(AZStd::get<1>(AZStd::forward<P>(pairLike)))
+        : first(get<0>(AZStd::forward<P>(pairLike)))
+        , second(get<1>(AZStd::forward<P>(pairLike)))
     {
     }
 
@@ -100,8 +100,8 @@ namespace AZStd
     template<template<class...> class TupleType, class... Args1, class... Args2, size_t... I1, size_t... I2>
     constexpr pair<T1, T2>::pair(piecewise_construct_t, [[maybe_unused]] TupleType<Args1...>& first_args, [[maybe_unused]] TupleType<Args2...>& second_args,
         AZStd::index_sequence<I1...>, AZStd::index_sequence<I2...>)
-        : first(AZStd::forward<Args1>(AZStd::get<I1>(first_args))...)
-        , second(AZStd::forward<Args2>(AZStd::get<I2>(second_args))...)
+        : first(AZStd::forward<Args1>(get<I1>(first_args))...)
+        , second(AZStd::forward<Args2>(get<I2>(second_args))...)
     {
         static_assert(AZStd::is_same_v<TupleType<Args2...>, tuple<Args2...>>, "AZStd::pair tuple constructor can be called with AZStd::tuple instances");
     }
@@ -190,11 +190,11 @@ namespace AZStd
     template<class P>
     constexpr auto pair<T1, T2>::operator=(P&& pairLike) -> enable_if_t<
         !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P> &&
-            is_assignable_v<T1&, decltype(AZStd::get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(AZStd::get<1>(declval<P>()))>,
+            is_assignable_v<T1&, decltype(get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(get<1>(declval<P>()))>,
         pair&>
     {
-        first = AZStd::get<0>(AZStd::forward<P>(pairLike));
-        second = AZStd::get<1>(AZStd::forward<P>(pairLike));
+        first = get<0>(AZStd::forward<P>(pairLike));
+        second = get<1>(AZStd::forward<P>(pairLike));
         return *this;
     }
 
@@ -206,12 +206,12 @@ namespace AZStd
     template<class P>
     constexpr auto pair<T1, T2>::operator=(P&& pairLike) const -> enable_if_t<
         !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P> &&
-            is_assignable_v<const T1&, decltype(AZStd::get<0>(declval<P>()))> &&
-            is_assignable_v<const T2&, decltype(AZStd::get<1>(declval<P>()))>,
+            is_assignable_v<const T1&, decltype(get<0>(declval<P>()))> &&
+            is_assignable_v<const T2&, decltype(get<1>(declval<P>()))>,
         const pair&>
     {
-        first = AZStd::get<0>(AZStd::forward<P>(pairLike));
-        second = AZStd::get<1>(AZStd::forward<P>(pairLike));
+        first = get<0>(AZStd::forward<P>(pairLike));
+        second = get<1>(AZStd::forward<P>(pairLike));
         return *this;
     }
 
