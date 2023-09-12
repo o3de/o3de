@@ -132,8 +132,8 @@ namespace AZ
             // the child material. See https://github.com/o3de/o3de/issues/13766
             if (!materialTypePath.empty())
             {
-                // Load the material type data to find the exact material type format.
-                // This is required to get an accurate dependency
+                // We usually won't load file during CreateJob since we want to keep the function fast. 
+                // But here we have to load the material type data to find the exact material type format so we could create an accurate source dependency.
                 AZStd::string resolvedMaterialPath = AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), materialTypePath.c_str());
 
                 MaterialTypeSourceData::Format materialTypeForamt = MaterialTypeSourceData::Format::Invalid;
