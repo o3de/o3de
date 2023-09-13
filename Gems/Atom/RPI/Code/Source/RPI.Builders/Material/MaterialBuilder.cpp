@@ -147,7 +147,7 @@ namespace AZ
 
                 // If the material uses the "Direct" format, then there will need to be a dependency on that file.
                 // If it uses the "Abstract" format, then there will be an intermediate .materialtype and there needs to be a dependency on that file instead.
-                if (materialTypeForamt == MaterialTypeSourceData::Format::Direct)
+                if (materialTypeFormat == MaterialTypeSourceData::Format::Direct)
                 {
                     MaterialBuilderUtils::AddPossibleDependencies(
                         request.m_sourceFile,
