@@ -15,6 +15,7 @@ if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
         set(snap_file_name "${CPACK_PACKAGE_FILE_NAME}_${CPACK_SNAP_DISTRO}_amd64")
     else()
         set(snap_file_name "${CPACK_PACKAGE_FILE_NAME}_amd64.snap")
+    endif()
     set(snap_file "${CPACK_TOPLEVEL_DIRECTORY}/${snap_file_name}.snap")
     set(hash_file "${CPACK_TOPLEVEL_DIRECTORY}/${snap_file_name}.sha384")
     file(SHA384 ${snap_file} file_checksum) # Snap asserts use SHA384
