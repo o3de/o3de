@@ -136,7 +136,7 @@ namespace AZ
                 // But here we have to load the material type data to find the exact material type format so we could create an accurate source dependency.
                 AZStd::string resolvedMaterialPath = AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), materialTypePath.c_str());
 
-                MaterialTypeSourceData::Format materialTypeForamt = MaterialTypeSourceData::Format::Invalid;
+                MaterialTypeSourceData::Format materialTypeFormat = MaterialTypeSourceData::Format::Invalid;
                 MaterialUtils::ImportedJsonFiles importedJsonFiles;
                 auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialPath, nullptr, &importedJsonFiles);
 
