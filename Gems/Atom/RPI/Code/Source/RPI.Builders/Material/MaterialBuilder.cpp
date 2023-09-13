@@ -142,7 +142,7 @@ namespace AZ
 
                 if (materialTypeSourceData.IsSuccess())
                 {
-                    materialTypeForamt = materialTypeSourceData.GetValue().GetFormat();
+                    materialTypeFormat = materialTypeSourceData.GetValue().GetFormat();
                 }
 
                 // If the material uses the "Direct" format, then there will need to be a dependency on that file.
