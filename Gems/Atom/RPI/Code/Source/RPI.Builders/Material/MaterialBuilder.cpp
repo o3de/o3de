@@ -158,7 +158,7 @@ namespace AZ
                         false,
                         0);
                 }
-                else if (materialTypeForamt == MaterialTypeSourceData::Format::Abstract)
+                else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
                 {
                     const AZStd::string intermediateMaterialTypePath =
                         MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile, materialTypePath);
