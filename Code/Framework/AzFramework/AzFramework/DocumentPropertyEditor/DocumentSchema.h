@@ -280,7 +280,16 @@ namespace AZ::DocumentPropertyEditor
         Dom::Value ValueToDom(const GenericValuePair& attribute) const override
         {
             Dom::Value result(Dom::Type::Object);
-            result[EntryValueKey] = Dom::Value::FromOpaqueValue(AZStd::make_any<GenericValueType>(attribute.first));
+            if constexpr (AZStd::is_constructible_v<Dom::Value, GenericValueType>)
+            {
+                // this type is already constructible as a normal Dom::Value, create it as-is
+                result[EntryValueKey] = Dom::Value(attribute.first);
+            }
+            else
+            {
+                // type doesn't fit directly into a Dom::Value, construct it as an opaque value
+                result[EntryValueKey] = Dom::Value::FromOpaqueValue(AZStd::make_any<GenericValueType>(attribute.first));
+            }
             result[EntryDescriptionKey] = Dom::Value(attribute.second, true);
             return result;
         }
@@ -353,7 +362,16 @@ namespace AZ::DocumentPropertyEditor
             for (const auto& entry : attribute)
             {
                 Dom::Value entryDom(Dom::Type::Object);
-                entryDom[EntryValueKey] = Dom::Value::FromOpaqueValue(AZStd::make_any<GenericValueType>(entry.first));
+                if constexpr (AZStd::is_constructible_v<Dom::Value, GenericValueType>)
+                {
+                    // this type is already constructible as a normal Dom::Value, create it as-is
+                    entryDom[EntryValueKey] = Dom::Value(entry.first);
+                }
+                else
+                {
+                    // type doesn't fit directly into a Dom::Value, construct it as an opaque value
+                    entryDom[EntryValueKey] = Dom::Value::FromOpaqueValue(AZStd::make_any<GenericValueType>(entry.first));
+                }
                 entryDom[EntryDescriptionKey] = Dom::Value(entry.second, true);
                 result.ArrayPushBack(AZStd::move(entryDom));
             }

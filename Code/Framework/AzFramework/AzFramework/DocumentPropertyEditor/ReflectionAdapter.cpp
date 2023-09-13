@@ -383,7 +383,7 @@ namespace AZ::DocumentPropertyEditor
             {
                 m_builder.Attribute(
                     Nodes::PropertyEditor::ValueHashed,
-                    AZ::Uuid::CreateData(static_cast<AZStd::byte*>(instance), valueSize));
+                    static_cast<AZ::u64>(AZStd::hash<AZ::Uuid>{}((AZ::Uuid::CreateData(static_cast<AZStd::byte*>(instance), valueSize)))));
             }
             m_builder.EndPropertyEditor();
 
