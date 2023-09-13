@@ -39,7 +39,7 @@ execute_process (COMMAND snapcraft --verbose
                  WORKING_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}
 )
 
-set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/${snap_file_name}.snap")
+set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap")
 
 # Manually copy the files, the CPACK_EXTERNAL_BUILT_PACKAGES process runs after our packaging post build script
 # which is too late to be uploaded.
