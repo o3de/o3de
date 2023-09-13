@@ -25,7 +25,7 @@ parts:
       - libpcre2-16-0
       - libpng16-16
       - libsm6
-      - libssl
+      - libssl3
       - libtcl8.6
       - libtk8.6
       - libunwind-dev
