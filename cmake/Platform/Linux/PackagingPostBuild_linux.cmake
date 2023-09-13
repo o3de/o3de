@@ -11,7 +11,7 @@ include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
 include(${CPACK_CODESIGN_SCRIPT})
 
 if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
-    if(${CPACK_DISTRO})
+    if(DEFINED ${CPACK_DISTRO})
         set(snap_file_name "${CPACK_PACKAGE_FILE_NAME}_${CPACK_DISTRO}_amd64")
     else()
         set(snap_file_name "${CPACK_PACKAGE_FILE_NAME}_amd64.snap")
