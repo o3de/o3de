@@ -9,6 +9,7 @@
 #include <sys/utsname.h>
 #include <AzFramework/Device/DeviceAttributeDeviceModel.h>
 #include <AzFramework/Device/DeviceAttributeRAM.h>
+#include <AzCore/std/utility/charconv.h>
 
 namespace AzFramework
 {
@@ -29,14 +30,25 @@ namespace AzFramework
         {
             char buffer[256] = { 0 };
             AZ::u64 memTotalKiB = 0;
+            constexpr AZStd::string_view MemTotalKey = "MemTotal:";
             while (fgets(buffer, sizeof(buffer), f))
             {
-                if (azsscanf(buffer, "MemTotal: %d", &memTotalKiB) && memTotalKiB > 0)
+                const AZStd::string_view bufferView(buffer);
+                if(size_t offset = bufferView.find(MemTotalKey); offset != AZStd::string_view::npos)
                 {
+                    auto result = AZStd::from_chars(bufferView.begin() + MemTotalKey.size(), bufferView.end(), memTotalKiB);
+                    if(result.ec != AZStd::errc{})
+                    {
+                        constexpr double KiBtoGiB = 1024.f * 1024.f;
+                        m_valueInGiB = aznumeric_cast<float>(static_cast<double>(memTotalKiB) / KiBtoGiB);
+                    }
+                //}
+                //if (azsscanf(buffer, "MemTotal: %lu", &memTotalKiB) && memTotalKiB > 0)
+                //{
                     // meminfo displays memory in KiB (kilobytes, base 1024) 
                     // convert to GiB
-                    constexpr double KiBtoGiB = 1024.f * 1024.f;
-                    m_value = aznumeric_cast<float>(static_cast<double>(memTotalKiB) / KiBtoGiB);
+                    //constexpr double KiBtoGiB = 1024.f * 1024.f;
+                    //m_valueInGiB = aznumeric_cast<float>(static_cast<double>(memTotalKiB) / KiBtoGiB);
                     break;
                 }
             }
