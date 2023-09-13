@@ -140,6 +140,9 @@ namespace AZ
             // AzFramework::VisibleGeometryRequestBus::Handler overrides ...
             void GetVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
 
+            bool DoesMaterialUseDrawListTag(
+                const AZ::Data::Instance<AZ::RPI::Material> material, const AZ::RHI::DrawListTag searchDrawListTag) const;
+
             // IntersectionRequestBus overrides ...
             AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) const override;
 
