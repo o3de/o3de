@@ -34,7 +34,7 @@ set(CPACK_AWS_PROFILE "" CACHE STRING
 "AWS CLI profile for uploading artifacts."
 )
 
-set(CPACK_DISTRO "" CACHE STRING
+set(CPACK_SNAP_DISTRO "" CACHE STRING
   "Sets the base snap OS distro (core20, 22, etc) for the snap build"
 )
 
