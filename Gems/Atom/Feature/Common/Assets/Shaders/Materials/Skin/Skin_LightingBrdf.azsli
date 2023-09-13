@@ -42,8 +42,11 @@ real3 GetSpecularLighting_Skin(Surface surface, LightingData lightingData, const
 {
     real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
 
-    real3 dualSpecular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.dualSpecF0.xxx, lightingData.NdotV, surface.dualSpecRoughnessA2, lightingData.multiScatterCompensation);
-    specular = lerp(specular, dualSpecular, surface.dualSpecFactor);
+    if(o_enableDualSpecular)
+    {
+        real3 dualSpecular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.dualSpecF0.xxx, lightingData.NdotV, surface.dualSpecRoughnessA2, lightingData.multiScatterCompensation);
+        specular = lerp(specular, dualSpecular, surface.dualSpecFactor);
+    }
 
     specular *= lightIntensity;
     return specular;
