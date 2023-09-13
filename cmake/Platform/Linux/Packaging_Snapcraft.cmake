@@ -12,12 +12,12 @@ set(snap_file_name "o3de_${CPACK_PACKAGE_VERSION}_amd64")
 
 if(CPACK_SNAP_DISTRO)
   configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft_${CPACK_SNAP_DISTRO}.yaml.in"
-   "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"   
+    "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
   )
   set(snap_file_name "o3de_${CPACK_PACKAGE_VERSION}_${CPACK_SNAP_DISTRO}_amd64")
 else()
   configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.in"
-   "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
+    "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
   )
 endif()
 
