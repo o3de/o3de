@@ -76,6 +76,13 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
             auto& image = static_cast<Image&>(resourceBase);
+
+            if (auto* resolver = GetResolver())
+            {
+                ResourcePoolResolver* poolResolver = static_cast<ResourcePoolResolver*>(resolver);
+                poolResolver->OnResourceShutdown(resourceBase);
+            }
+
             RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
             heapMemoryUsage.m_usedResidentInBytes -= image.m_memoryRequirements.size;
