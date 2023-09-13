@@ -73,6 +73,14 @@ public:
         IRemoteConsole * ());
     MOCK_METHOD0(GetISystemEventDispatcher,
         ISystemEventDispatcher * ());
+    // carbonated begin (mp-402-3): Revert pGame in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+    MOCK_METHOD0(GetIGame,
+        IGame*());
+    MOCK_METHOD1(SetIGame,
+        void(IGame*));
+#endif
+    // carbonated end
     MOCK_CONST_METHOD0(IsDevMode,
         bool());
     MOCK_METHOD3(CreateXmlNode,
