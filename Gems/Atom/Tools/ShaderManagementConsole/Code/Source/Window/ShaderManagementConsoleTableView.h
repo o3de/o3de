@@ -80,6 +80,5 @@ namespace ShaderManagementConsole
         QHBoxLayout m_subLayout;
         QLabel m_sortLabel;
         QComboBox m_sortComboBox;
-        QPushButton m_defragVariants;
     };
 } // namespace ShaderManagementConsole
