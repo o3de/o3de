@@ -45,7 +45,6 @@ namespace ShaderManagementConsole
                 ->Event("GetShaderOptionDescriptorCount", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptorCount)
                 ->Event("GetShaderOptionDescriptor", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptor)
                 ->Event("AppendSparseVariantSet", &ShaderManagementConsoleDocumentRequestBus::Events::AppendSparseVariantSet)
-                ->Event("DefragmentVariantList", &ShaderManagementConsoleDocumentRequestBus::Events::DefragmentVariantList)
                 ->Event("AddOneVariantRow", &ShaderManagementConsoleDocumentRequestBus::Events::AddOneVariantRow)
                 ;
         }
@@ -138,20 +137,6 @@ namespace ShaderManagementConsole
         SetShaderVariantListSourceData(newSourceData);
         EndEdit();
         SetAndNotifyModified();
-    }
-
-    void ShaderManagementConsoleDocument::DefragmentVariantList()
-    {
-        // WIP
-        //BeginEdit();
-
-        // Prepare a map of equivalences
-
-        // Prepare a whole new source data
-        //AZ::RPI::ShaderVariantListSourceData newSourceData{ m_shaderVariantListSourceData };
-
-        //EndEdit();
-        //SetAndNotifyModified();
     }
 
     void ShaderManagementConsoleDocument::SetShaderVariantListSourceData(
