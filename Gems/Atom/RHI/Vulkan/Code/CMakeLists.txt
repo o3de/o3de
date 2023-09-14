@@ -63,8 +63,6 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
                     AZ::AssetBuilderSDK
                     Gem::Atom_RHI.Edit
                     Gem::Atom_RHI.Reflect
-                    Gem::Atom_RHI_Vulkan.Glad.Static
-
         )
     endif()
 
