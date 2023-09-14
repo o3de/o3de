@@ -403,7 +403,9 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ShowLogs()
     {
-        QDesktopServices::openUrl(m_projectInfo.m_logUrl);
+        [[maybe_unused]] bool openFileResult = QDesktopServices::openUrl(m_projectInfo.m_logUrl);
+        [[maybe_unused]] auto localFile = m_projectInfo.m_logUrl.toLocalFile().toUtf8();
+        AZ_Warning("ProjectManager", openFileResult, "Failed to open log file %.*s", localFile.length(), localFile.constData());
     }
 
     void ProjectButton::SetEngine(const EngineInfo& engine)

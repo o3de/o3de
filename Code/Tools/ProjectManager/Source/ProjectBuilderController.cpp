@@ -95,11 +95,13 @@ namespace O3DE::ProjectManager
                 if (openLog == QMessageBox::Yes)
                 {
                     // Open application assigned to this file type
-                    QDesktopServices::openUrl(QUrl("file:///" + m_worker->GetLogFilePath()));
+                    [[maybe_unused]] bool openFileResult = QDesktopServices::openUrl(QUrl::fromLocalFile(m_worker->GetLogFilePath()));
+                    [[maybe_unused]] auto localFile = m_worker->GetLogFilePath().toUtf8();
+                    AZ_Warning("ProjectManager", openFileResult, "Failed to open log file %.*s", localFile.length(), localFile.constData());
                 }
 
                 m_projectInfo.m_buildFailed = true;
-                m_projectInfo.m_logUrl = QUrl("file:///" + m_worker->GetLogFilePath());
+                m_projectInfo.m_logUrl = QUrl::fromLocalFile(m_worker->GetLogFilePath());
                 emit NotifyBuildProject(m_projectInfo);
             }
             else
@@ -107,7 +109,7 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(m_parent, tr("Project Failed to Build!"), result);
 
                 m_projectInfo.m_buildFailed = true;
-                m_projectInfo.m_logUrl = QUrl("file:///" + m_worker->GetLogFilePath());
+                m_projectInfo.m_logUrl = QUrl::fromLocalFile(m_worker->GetLogFilePath());
                 emit NotifyBuildProject(m_projectInfo);
             }
 
