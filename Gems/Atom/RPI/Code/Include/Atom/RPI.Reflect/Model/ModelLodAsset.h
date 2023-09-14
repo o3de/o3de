@@ -149,6 +149,10 @@ namespace AZ
             const AZ::Aabb& GetAabb() const;
 
             Data::Asset<BufferAsset> GetIndexBufferAsset() const { return m_indexBuffer; }
+
+            //! A helper method for returning a specific buffer asset view related to mesh associated with mesh index.
+            const BufferAssetView* GetSemanticBufferAssetView(const AZ::Name& semantic, uint32_t meshIndex = 0) const;
+
         private:
             // AssetData overrides...
             bool HandleAutoReload() override
