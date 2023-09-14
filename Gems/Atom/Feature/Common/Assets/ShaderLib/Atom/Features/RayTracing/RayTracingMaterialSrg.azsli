@@ -38,11 +38,9 @@ ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
         float  m_roughnessFactor;
         uint   m_textureFlags;
         uint   m_textureStartIndex;
-        uint   m_padding0;
-
-        ReflectionProbeData m_reflectionProbeData;
         uint   m_reflectionProbeCubeMapIndex;
-        float  m_padding1;
+        ReflectionProbeData m_reflectionProbeData;
+        [[pad_to(16)]]
     };
     
     // hit shaders can retrieve the MaterialInfo for a mesh hit using: RayTracingMaterialSrg::m_materialInfo[InstanceIndex()]   
