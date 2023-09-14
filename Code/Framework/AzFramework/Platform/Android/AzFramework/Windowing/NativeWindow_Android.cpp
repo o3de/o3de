@@ -71,7 +71,7 @@ namespace AzFramework
         // Using 60 for now until proper support is added
         return 60;
     }
-	
+
     void NativeWindowImpl_Android::SetRenderResolution(WindowSize resolution)
     {
         WindowSize newResolution = resolution;
