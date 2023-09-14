@@ -61,6 +61,11 @@ namespace AzFramework
         /// \return the context's Id, which is used to listen on a given context's request or event bus.
         const EntityContextId& GetContextId() const { return m_contextId; }
 
+// Gruber patch begin // VMED -- missing any access methods to entities in o3de EntityContext
+        void GetNonPrefabEntities(EntityList& entities);
+        bool GetAllEntities(EntityList& entities);
+// Gruber patch end // VMED
+
         //////////////////////////////////////////////////////////////////////////
         // EntityContextRequestBus
         AZ::Entity* CreateEntity(const char* name) override;
