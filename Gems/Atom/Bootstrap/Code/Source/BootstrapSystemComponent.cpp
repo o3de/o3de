@@ -280,20 +280,7 @@ namespace AZ
                     [this]()
                     {
                         Initialize();
-                        if (m_nativeWindow)
-                        {
-                            // wait until swapchain has been created before setting fullscreen state
-                            if (r_resolutionMode > 0u)
-                            {
-                                m_nativeWindow->SetEnableCustomizedResolution(true);
-                                m_nativeWindow->SetRenderResolution(AzFramework::WindowSize(r_width, r_height));
-                            }
-                            else
-                            {
-                                m_nativeWindow->SetEnableCustomizedResolution(false);
-                            }
-                            m_nativeWindow->SetFullScreenState(r_fullscreen);
-                        }
+                        SetWindowResolution();
                     });
             }
 
@@ -371,6 +358,7 @@ namespace AZ
                             CreateDefaultRenderPipeline();
                         }
                     }
+                    SetWindowResolution();
                 }
             }
 
@@ -411,6 +399,24 @@ namespace AZ
 
                 // Listen to window notification so we can request exit application when window closes
                 AzFramework::WindowNotificationBus::Handler::BusConnect(GetDefaultWindowHandle());
+            }
+
+            void BootstrapSystemComponent::SetWindowResolution()
+            {
+                if (m_nativeWindow)
+                {
+                    // wait until swapchain has been created before setting fullscreen state
+                    if (r_resolutionMode > 0u)
+                    {
+                        m_nativeWindow->SetEnableCustomizedResolution(true);
+                        m_nativeWindow->SetRenderResolution(AzFramework::WindowSize(r_width, r_height));
+                    }
+                    else
+                    {
+                        m_nativeWindow->SetEnableCustomizedResolution(false);
+                    }
+                    m_nativeWindow->SetFullScreenState(r_fullscreen);
+                }
             }
 
             AZ::RPI::ScenePtr BootstrapSystemComponent::GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene)
