@@ -368,21 +368,14 @@ namespace AzToolsFramework
                 return true;
             }
 
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product)
+            {
+                return false; // this filter only works on product
+            }
+
             QString group;
-            if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
-            {
-                auto product = static_cast<const ProductAssetBrowserEntry*>(entry);
-                AZ::AssetTypeInfoBus::EventResult(group, product->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
-            }
-            else if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-            {
-                const SourceAssetBrowserEntry* source = static_cast<const SourceAssetBrowserEntry*>(entry);
-                AZ::AssetTypeInfoBus::EventResult(group, source->GetPrimaryAssetType(), &AZ::AssetTypeInfo::GetGroup);
-            }
-            else
-            {
-                return false; // this filter only works on product or sources
-            }
+            auto product = static_cast<const ProductAssetBrowserEntry*>(entry);
+            AZ::AssetTypeInfoBus::EventResult(group, product->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
 
             if (m_group.compare("Other", Qt::CaseInsensitive) == 0 && group.isEmpty())
             {

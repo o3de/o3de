@@ -82,9 +82,15 @@ namespace ShaderManagementConsole
             this,
             [this]()
             {
+                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
+                    m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::BeginEdit);
+
                 ShaderManagementConsoleDocumentRequestBus::Event(
                     m_documentId,
                     &ShaderManagementConsoleDocumentRequestBus::Events::AddOneVariantRow);
+
+                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
+                    m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::EndEdit);
             });
         contextMenu.addAction(action);
 
@@ -123,13 +129,7 @@ namespace ShaderManagementConsole
 
     int ShaderManagementConsoleTableView::GetColumnsCount(CountQuery query) const
     {
-        switch (query)
-        {
-            case CountQuery::ForUi:   return columnCount();
-            case CountQuery::Options: return UiColumnToOption(columnCount());
-        }
-        AZ_Assert(false, "query argument invalid");
-        return 0;
+        return query == CountQuery::ForUi ? columnCount() : UiColumnToOption(columnCount());
     }
 
     void ShaderManagementConsoleTableView::RebuildTable()
@@ -266,8 +266,6 @@ namespace ShaderManagementConsole
                 auto& vec = m_shaderVariantListSourceData.m_shaderVariants;
                 vec.erase(vec.begin() + row);
                 TransferViewModelToModel(CallOnModified);
-                AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-                    m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_documentId);
             });
             setCellWidget(row, 0, deleterButton);
         }

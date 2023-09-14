@@ -43,6 +43,7 @@ namespace ShaderManagementConsole
         //! A wrapper to call GenerateRelativeSourcePath from python
         virtual AZStd::string GenerateRelativeSourcePath(const AZStd::string& fullShaderPath) = 0;
 
+        //! A convenience function to generate proper ShaderOptionValue instances from scripts
         virtual AZ::RPI::ShaderOptionValue MakeShaderOptionValueFromInt(int value) = 0;
 
     };

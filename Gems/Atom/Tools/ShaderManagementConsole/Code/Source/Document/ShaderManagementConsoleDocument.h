@@ -79,9 +79,6 @@ namespace ShaderManagementConsole
             AZ::Name targetValue,
             AZ::u32 stableId);
 
-        // Factored action to do after an edit
-        void SetAndNotifyModified();
-
         // Source data for shader variant list
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;
 
