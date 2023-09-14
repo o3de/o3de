@@ -13,6 +13,8 @@
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Scene.h>
 
@@ -714,6 +716,16 @@ namespace AZ
                 }
             }
 
+            // The draw list tag is needed to search material shaders and determine if they are transparent.
+            AZ::RHI::DrawListTag transparentDrawListTag =
+                AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->AcquireTag(AZ::Name("transparent"));
+
+            // Retrieve the map of material overrides from the material component. If any mesh has a material override, that must be checked
+            // for transparency instead of the material included with the model asset.
+            MaterialAssignmentMap materials;
+            MaterialComponentRequestBus::EventResult(
+                materials, m_entityComponentIdPair.GetEntityId(), &MaterialComponentRequests::GetMaterialMap);
+
             // Attempt to copy the triangle list geometry data out of the model asset into the visible geometry structure
             const auto& modelAsset = GetModelAsset();
             if (!modelAsset.IsReady() || modelAsset->GetLodAssets().empty())
@@ -723,6 +735,7 @@ namespace AZ
             }
 
             // This will only extract data from the first LOD. It might be necessary to make the LOD selectable.
+            const int lodIndex = 0;
             const auto& lodAsset = modelAsset->GetLodAssets().front();
             if (!lodAsset.IsReady())
             {
@@ -795,8 +808,70 @@ namespace AZ
 
                 memcpy(&visibleGeometry.m_vertices[0], positionPtr, positionBufferViewDesc.m_elementCount * positionBufferViewDesc.m_elementSize);
 
+                // Inspect the material assigned to this mesh to determine if it should be considered transparent.
+                const auto& materialSlotId = mesh.GetMaterialSlotId();
+                const auto& materialSlot = modelAsset->FindMaterialSlot(materialSlotId);
+
+                // The material asset assigned by the model will be used by default.
+                AZ::Data::Instance<AZ::RPI::Material> material = AZ::RPI::Material::FindOrCreate(materialSlot.m_defaultMaterialAsset);
+
+                // Materials provided by the material component take priority over materials provided by the model asset.
+                const MaterialAssignmentId id(lodIndex, materialSlotId);
+                const MaterialAssignmentId ignoreLodId(DefaultCustomMaterialLodIndex, materialSlotId);
+                for (const auto& currentId : { id, ignoreLodId, DefaultMaterialAssignmentId })
+                {
+                    if (auto itr = materials.find(currentId); itr != materials.end() && itr->second.m_materialInstance)
+                    {
+                        material = itr->second.m_materialInstance;
+                        break;
+                    }
+                }
+
+                // Once the active material has been resolved, determine if it has any shaders with the transparent tag.
+                visibleGeometry.m_transparent = DoesMaterialUseDrawListTag(material, transparentDrawListTag);
+
                 geometryContainer.emplace_back(AZStd::move(visibleGeometry));
             }
+
+            // Release the draw list tag acquired at the top of the function to determine material transparency.
+            AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->ReleaseTag(transparentDrawListTag);
+        }
+
+        bool MeshComponentController::DoesMaterialUseDrawListTag(
+            const AZ::Data::Instance<AZ::RPI::Material> material, const AZ::RHI::DrawListTag searchDrawListTag) const
+        {
+            bool foundTag = false;
+
+            if (material)
+            {
+                material->ForAllShaderItems(
+                    [&](const AZ::Name&, const AZ::RPI::ShaderCollection::Item& shaderItem)
+                    {
+                        if (shaderItem.IsEnabled())
+                        {
+                            // Get the DrawListTag. Use the explicit draw list override if exists.
+                            AZ::RHI::DrawListTag drawListTag = shaderItem.GetDrawListTagOverride();
+
+                            if (drawListTag.IsNull())
+                            {
+                                drawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(
+                                    shaderItem.GetShaderAsset()->GetDrawListName());
+                            }
+
+                            // If this shader has a matching tag end the search.
+                            if (drawListTag == searchDrawListTag)
+                            {
+                                foundTag = true;
+                                return false;
+                            }
+                        }
+
+                        // Continue iterating until all shaders have been checked or a matching tag is found. 
+                        return true;
+                    });
+            }
+
+            return foundTag;
         }
 
         AzFramework::RenderGeometry::RayResult MeshComponentController::RenderGeometryIntersect(
