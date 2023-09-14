@@ -136,6 +136,7 @@ namespace AZ
 
         void Device::EndFrameInternal()
         {
+            m_bindlessArgumentBuffer.GarbageCollect();
             m_argumentBufferConstantsAllocator.GarbageCollect();
             m_argumentBufferAllocator.GarbageCollect();
             m_commandQueueContext.End();
