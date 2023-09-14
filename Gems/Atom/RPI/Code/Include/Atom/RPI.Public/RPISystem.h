@@ -108,6 +108,9 @@ namespace AZ
 
             float GetCurrentTime() const;
 
+            // Initializes XR resources (session, device, swapchain, etc).
+            void InitXRSystem();
+
             // The set of core asset handlers registered by the system.
             AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;
 
