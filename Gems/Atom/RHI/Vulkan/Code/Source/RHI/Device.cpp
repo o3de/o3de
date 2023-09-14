@@ -347,18 +347,6 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
-            if (xrSystem)
-            {
-                // Pass the native device to the XR system.
-                XRDeviceDescriptor xrDeviceDescriptor;
-                xrDeviceDescriptor.m_inputData.m_xrVkDevice = m_nativeDevice;
-                xrDeviceDescriptor.m_inputData.m_xrVkPhysicalDevice = physicalDevice.GetNativePhysicalDevice();
-                AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDeviceDescriptor);
-                AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }
-
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
                 delete[] queueInfo.pQueuePriorities;
@@ -445,23 +433,7 @@ namespace AZ
                 bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }
-
-            // Create XR session and XR swapchain if XR system is active
-            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
-            if (xrSystem)
-            {
-                XRSessionDescriptor xrSessionDescriptor;
-                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueFamilyIndex =
-                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_familyIndex;
-                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueIndex =
-                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_queueIndex;
-                result = xrSystem->CreateSession(&xrSessionDescriptor);
-                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
-
-                result = xrSystem->CreateSwapChain();
-                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
-            }
+            }           
 
             SetName(GetName());
             return result;
@@ -1056,6 +1028,21 @@ namespace AZ
             }
             AZ_Error("Vulkan", false, "Shading Rate Image is not supported on this platform");
             return RHI::ShadingRateImageValue{};
+        }
+
+        RHI::Ptr<RHI::XRDeviceDescriptor> Device::BuildXRDescriptor() const
+        {
+            XRDeviceDescriptor* xrDeviceDescriptor = aznew XRDeviceDescriptor;
+            xrDeviceDescriptor->m_inputData.m_xrVkDevice = m_nativeDevice;
+            xrDeviceDescriptor->m_inputData.m_xrVkPhysicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice()).GetNativePhysicalDevice();
+            for (int i = 0; i < RHI::HardwareQueueClassCount; ++i)
+            {
+                const auto& queueDescriptor =
+                    m_commandQueueContext.GetCommandQueue(static_cast<RHI::HardwareQueueClass>(i)).GetQueueDescriptor();
+                xrDeviceDescriptor->m_inputData.m_xrQueueBinding[i].m_queueFamilyIndex = queueDescriptor.m_familyIndex;
+                xrDeviceDescriptor->m_inputData.m_xrQueueBinding[i].m_queueIndex = queueDescriptor.m_queueIndex;
+            }
+            return xrDeviceDescriptor;
         }
 
         void Device::InitFeaturesAndLimits(const PhysicalDevice& physicalDevice)

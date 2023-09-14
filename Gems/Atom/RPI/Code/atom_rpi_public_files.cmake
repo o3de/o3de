@@ -75,6 +75,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/PassFilter.h
     Include/Atom/RPI.Public/Pass/PassLibrary.h
     Include/Atom/RPI.Public/Pass/PassSystem.h
+    Include/Atom/RPI.Public/Pass/PassSystemBus.h
     Include/Atom/RPI.Public/Pass/PassSystemInterface.h
     Include/Atom/RPI.Public/Pass/PassUtils.h
     Include/Atom/RPI.Public/Pass/RasterPass.h
