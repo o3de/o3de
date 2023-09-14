@@ -111,9 +111,10 @@ namespace AZ::DocumentPropertyEditor
             Dom::Value newContents = GenerateContents();
 
             Dom::DeltaPatchGenerationParameters patchGenerationParams;
-            // Prefer more expensive patch generation that produces fewer replace patches, we want as minimal a GUI
-            // update as possible, as that's the really expensive side of this
-            patchGenerationParams.m_replaceThreshold = Dom::DeltaPatchGenerationParameters::NoReplace;
+
+            // at most allow row replacement, a diff to replace the whole tree is almost certainly inefficient for this architecture
+            patchGenerationParams.m_allowRootReplacement = false;
+
             // Generate denormalized paths instead of EndOfArray entries (this is required by ChangedEvent)
             patchGenerationParams.m_generateDenormalizedPaths = true;
             Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents, patchGenerationParams);

@@ -99,6 +99,7 @@ namespace AZ
             m_passSystem.Init();
             m_featureProcessorFactory.Init();
             m_querySystem.Init(m_descriptor.m_gpuQuerySystemDescriptor);
+            InitXRSystem();
 
             Interface<RPISystemInterface>::Register(this);
 
@@ -280,6 +281,29 @@ namespace AZ
         {
             const AZ::TimeUs currentSimulationTimeUs = AZ::GetRealElapsedTimeUs();
             return AZ::TimeUsToSeconds(currentSimulationTimeUs);
+        }
+
+        void RPISystem::InitXRSystem()
+        {
+            if (!m_xrSystem)
+            {
+                return;
+            }
+
+            auto xrRender = m_xrSystem->GetRHIXRRenderingInterface();
+            if (!xrRender)
+            {
+                return;
+            }
+
+            RHI::Ptr<RHI::XRDeviceDescriptor> xrDescriptor = m_rhiSystem.GetDevice()->BuildXRDescriptor();
+            auto result = xrRender->CreateDevice(xrDescriptor.get());
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR device");
+            AZ::RHI::XRSessionDescriptor sessionDescriptor;
+            result = xrRender->CreateSession(&sessionDescriptor);
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR session");
+            result = xrRender->CreateSwapChain();
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR swapchain");
         }
 
         void RPISystem::RenderTick()
