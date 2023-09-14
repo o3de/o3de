@@ -18,7 +18,9 @@ string(TOLOWER "$ENV{O3DE_PACKAGE_TYPE}" ext)
 # Set package variables for package types
 if(ext STREQUAL "snap")
     if(CPACK_SNAP_DISTRO)
-        set(file_name "${CPACK_PACKAGE_FILE_NAME}_${CPACK_SNAP_DISTRO}")
+        set(file_name "${CPACK_PACKAGE_FILE_NAME}_${CPACK_SNAP_DISTRO}_amd64")
+    else()
+        set(file_name "${CPACK_PACKAGE_FILE_NAME}_amd64")
     endif()
     set(checksum SHA384) # Snap asserts use SHA384
 elseif(ext STREQUAL "deb")
