@@ -26,6 +26,14 @@ def isDocumentOpen(document_id: azlmbr.math.Uuid) -> bool:
     return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
         azlmbr.bus.Broadcast, "IsDocumentOpen", document_id)
 
+def beginEdit(document_id):
+    azlmbr.atomtools.AtomToolsDocumentRequestBus(
+        azlmbr.bus.Broadcast, "BeginEdit", document_id)
+
+def endEdit(document_id):
+    azlmbr.atomtools.AtomToolsDocumentRequestBus(
+        azlmbr.bus.Broadcast, "EndEdit", document_id)
+
 def transferSelection(qlistSrc, qlistDst):
     '''intended to work with 2 QListWidget'''
     items = qlistSrc.selectedItems()
@@ -382,6 +390,7 @@ def main():
 
     print(f"adding {numVal} values. ({numVal/len(dialog.participantNames)} variants)")
 
+    beginEdit(documentId)
     # passing the result
     azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
         azlmbr.bus.Event,
@@ -390,6 +399,7 @@ def main():
         dialog.participantNames,
         dialog.listOfDigitArrays
     )
+    endEdit(documentId)
 
 
 #if __name__ == "__main__":

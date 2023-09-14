@@ -102,6 +102,8 @@ namespace ShaderManagementConsole
         auto documentTypeInfo = ShaderManagementConsoleDocument::BuildDocumentTypeInfo();
         documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
+            // Generic widget here serves to adapt the expected pointer type that AddDocumenTab takes.
+            // ShaderManagementConsoleContainer derives from Layout* so it wouldn't be compatible without using this dummy intermediary.
             auto* container = new QWidget;
             new ShaderManagementConsoleContainer(container, toolId, documentId, m_window.get());
             return m_window->AddDocumentTab(documentId, container);

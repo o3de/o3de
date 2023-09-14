@@ -70,7 +70,6 @@ namespace ShaderManagementConsole
         if (shaderAssetResult)
 
         {
-            BeginEdit();
             AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderAssetResult.GetValue();
             AZStd::vector<AZ::RPI::ShaderOptionDescriptor> options = shaderAsset->GetShaderOptionGroupLayout()->GetShaderOptions();
             AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
@@ -82,8 +81,6 @@ namespace ShaderManagementConsole
                 ? 0
                 : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
             m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
-            EndEdit();
-            SetAndNotifyModified();
             return variantInfo.m_stableId;
         }
         return {};
@@ -133,10 +130,7 @@ namespace ShaderManagementConsole
             AZ::RPI::ShaderVariantListSourceData::VariantInfo newLine{ stableId++, mapOfOptionNameToValues };
             newSourceData.m_shaderVariants.emplace_back(std::move(newLine));
         }
-        BeginEdit();
         SetShaderVariantListSourceData(newSourceData);
-        EndEdit();
-        SetAndNotifyModified();
     }
 
     void ShaderManagementConsoleDocument::SetShaderVariantListSourceData(
@@ -150,8 +144,7 @@ namespace ShaderManagementConsole
         {
             m_shaderAsset = shaderAssetResult.GetValue();
 
-            // TODO: check this comment. "material"?
-            // No material is using this shader, check for system option settings
+            // We consider an empty shader variant list data set, a request for initialization
             if (m_shaderVariantListSourceData.m_shaderVariants.empty())
             {
                 // Read system option file
@@ -410,19 +403,15 @@ namespace ShaderManagementConsole
             AddUndoRedoHistory(
                 [this, undoState]() { SetShaderVariantListSourceData(undoState); },
                 [this, redoState]() { SetShaderVariantListSourceData(redoState); });
+
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
         }
 
         m_shaderVariantListSourceDataBeforeEdit = {};
         return true;
-    }
-
-    void ShaderManagementConsoleDocument::SetAndNotifyModified()
-    {
-        m_modified = true;
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
-        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
     }
 
     void ShaderManagementConsoleDocument::Clear()
