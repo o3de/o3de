@@ -1420,8 +1420,7 @@ namespace AzToolsFramework
         // Free the settings ptr which saves any in-memory settings to disk and replace it
         // with a default in-memory only settings object until a saved state key is specified
         m_dpeSettings.reset();
-        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(
-            m_adapter->CreateExpanderSettings(m_adapter.get()));
+        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(m_adapter->CreateExpanderSettings(m_adapter.get()));
 
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
@@ -1709,9 +1708,23 @@ namespace AzToolsFramework
     {
         if (m_rootNode)
         {
-            for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
+            bool needsReset = false;
+            for (auto operationIterator = patch.begin(), endIterator = patch.end(); !needsReset && operationIterator != endIterator;
+                 ++operationIterator)
             {
-                m_rootNode->HandleOperationAtPath(*operationIterator, 0);
+                if (operationIterator->GetDestinationPath().IsEmpty())
+                {
+                    needsReset = true;
+                }
+                else
+                {
+                    m_rootNode->HandleOperationAtPath(*operationIterator, 0);
+                }
+            }
+
+            if (needsReset)
+            {
+                HandleReset();
             }
             emit RequestSizeUpdate();
         }

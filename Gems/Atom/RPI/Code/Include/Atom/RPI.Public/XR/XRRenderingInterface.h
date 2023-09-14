@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI/XRRenderingInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <AtomCore/Instance/Instance.h>
 
 namespace AZ::RHI
@@ -136,7 +137,10 @@ namespace AZ::RPI
         //! Returns the image that was created and initialized.
         //! If no foveated level is specified, the value will be retrieved from the settings registry.
         virtual AZ::Data::Instance<AZ::RPI::AttachmentImage> InitPassFoveatedAttachment(
-            const PassTemplate& passTemplate, const RHI::XRFoveatedLevel* level = nullptr) const = 0;
+            [[maybe_unused]] const PassTemplate& passTemplate, [[maybe_unused]] const RHI::XRFoveatedLevel* level = nullptr) const
+        {
+            return nullptr;
+        };
     };
 
     //! This class contains the interface that will be used to register the XR system with RPI and RHI.
