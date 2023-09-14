@@ -342,19 +342,12 @@ namespace AZ::RHI
         return isValidAll;
     }
 
-    uint32_t MultiDeviceShaderResourceGroupData::GetUpdateMask() const
-    {
-        return m_updateMask;
-    }
-
     void MultiDeviceShaderResourceGroupData::EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask)
     {
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
             deviceShaderResourceGroupData.EnableResourceTypeCompilation(resourceTypeMask);
         }
-
-        m_updateMask = RHI::SetBits(m_updateMask, static_cast<uint32_t>(resourceTypeMask));
     }
 
     void MultiDeviceShaderResourceGroupData::ResetUpdateMask()
@@ -363,8 +356,6 @@ namespace AZ::RHI
         {
             deviceShaderResourceGroupData.ResetUpdateMask();
         }
-
-        m_updateMask = 0;
     }
 
     void MultiDeviceShaderResourceGroupData::SetBindlessViews(
