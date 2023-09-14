@@ -19,7 +19,5 @@ jobs:
           
       - uses: mshick/add-pr-comment@v2
         with:
-          message: |
-            Thanks for your submission! Please follow the exception checklist for stabilization PRs:
           message-path: |
             sig-release/releases/Process/O3DE Exception Checklist.md
