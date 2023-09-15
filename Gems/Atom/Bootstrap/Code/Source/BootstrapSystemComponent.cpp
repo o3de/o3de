@@ -232,7 +232,11 @@ namespace AZ
                 // LY editor create its own window which we can get its handle through AzFramework::WindowSystemNotificationBus::Handler's OnWindowCreated() function
                 AZ::ApplicationTypeQuery appType;
                 ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-                if (!appType.IsValid() || appType.IsGame())
+                if (appType.IsHeadless())
+                {
+                    m_nativeWindow = nullptr;
+                }
+                else if (!appType.IsValid() || appType.IsGame())
                 {
                     // GFX TODO - investigate window creation being part of the GameApplication.
 
@@ -304,7 +308,6 @@ namespace AZ
                 TickBus::Handler::BusDisconnect();
 
                 m_brdfTexture = nullptr;
-                m_xrVrsTexture = nullptr;
                 RemoveRenderPipeline();
                 DestroyDefaultScene();
 
@@ -460,20 +463,6 @@ namespace AZ
                 const bool loadDefaultRenderPipeline = !xrSystem || xrSystem->GetRHIXRRenderingInterface()->IsDefaultRenderPipelineNeeded();
 
                 AZ::RHI::MultisampleState multisampleState;
-
-                if (xrSystem)
-                {
-                    RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-                    if (RHI::CheckBitsAll(device->GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerRegion) &&
-                        !m_xrVrsTexture)
-                    {
-                        // Need to fill the contents of the Variable shade rating image.
-                        const AZStd::shared_ptr<const RPI::PassTemplate> forwardTemplate =
-                            RPI::PassSystemInterface::Get()->GetPassTemplate(Name("MultiViewForwardPassTemplate"));
-
-                        m_xrVrsTexture = xrSystem->InitPassFoveatedAttachment(*forwardTemplate);
-                    }
-                }
 
                 // Load the main default pipeline if applicable
                 if (loadDefaultRenderPipeline)

@@ -8,6 +8,5 @@
 
 set(FILES
     BuiltInPackages_android.cmake
-    VkValidation_android.cmake
     Wwise_android.cmake
 )

@@ -8,9 +8,10 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <AzCore/std/containers/array.h>
 #include <Atom/RHI/IndirectArguments.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <AzCore/std/containers/array.h>
+
 
 namespace AZ::RHI
 {
@@ -20,6 +21,7 @@ namespace AZ::RHI
     class ShaderResourceGroup;
     class ImageView;
     class BufferView;
+    class DispatchRaysIndirectBuffer;
 
     //! Arguments used when submitting a (direct) dispatch rays call into a CommandList.
     struct DispatchRaysDirect
@@ -39,8 +41,33 @@ namespace AZ::RHI
     };
 
     //! Arguments used when submitting an indirect dispatch rays call into a CommandList.
-    //! The indirect dispatch arguments are the same ones as the indirect draw ones.
-    using DispatchRaysIndirect = IndirectArguments;
+    struct DispatchRaysIndirect : public IndirectArguments
+    {
+        DispatchRaysIndirect() = default;
+
+        DispatchRaysIndirect(
+            uint32_t maxSequenceCount,
+            const IndirectBufferView& indirectBuffer,
+            uint64_t indirectBufferByteOffset,
+            DispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer)
+            : DispatchRaysIndirect(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, dispatchRaysIndirectBuffer, nullptr, 0)
+        {
+        }
+
+        DispatchRaysIndirect(
+            uint32_t maxSequenceCount,
+            const IndirectBufferView& indirectBuffer,
+            uint64_t indirectBufferByteOffset,
+            DispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer,
+            const Buffer* countBuffer,
+            uint64_t countBufferByteOffset)
+            : IndirectArguments(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, countBuffer, countBufferByteOffset)
+            , m_dispatchRaysIndirectBuffer(dispatchRaysIndirectBuffer)
+        {
+        }
+
+        DispatchRaysIndirectBuffer* m_dispatchRaysIndirectBuffer = nullptr;
+    };
 
     enum class DispatchRaysType : uint8_t
     {
@@ -101,4 +128,4 @@ namespace AZ::RHI
         /// Global shader pipeline state
         const PipelineState* m_globalPipelineState = nullptr;
     };
-}
+} // namespace AZ::RHI

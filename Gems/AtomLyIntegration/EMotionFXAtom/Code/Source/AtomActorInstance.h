@@ -96,8 +96,8 @@ namespace AZ
             void SetIsVisible(bool isVisible) override;
 
             // BoundsRequestBus overrides ...
-            AZ::Aabb GetWorldBounds() override;
-            AZ::Aabb GetLocalBounds() override;
+            AZ::Aabb GetWorldBounds() const override;
+            AZ::Aabb GetLocalBounds() const override;
 
             AtomActor* GetRenderActor() const;
 

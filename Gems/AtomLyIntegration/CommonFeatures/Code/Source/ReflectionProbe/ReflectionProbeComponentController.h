@@ -90,8 +90,8 @@ namespace AZ
             void UpdateCubeMap();
 
             // BoundsRequestBus overrides ...
-            AZ::Aabb GetWorldBounds() override;
-            AZ::Aabb GetLocalBounds() override;
+            AZ::Aabb GetWorldBounds() const override;
+            AZ::Aabb GetLocalBounds() const override;
 
             void RegisterInnerExtentsChangedHandler(AZ::Event<bool>::Handler& handler);
 

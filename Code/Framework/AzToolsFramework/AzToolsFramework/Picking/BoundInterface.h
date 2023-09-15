@@ -86,7 +86,7 @@ namespace AzToolsFramework
             //! @param rayDir The direction of the ray to test with.
             //! @param[out] rayIntersectionDistance The distance of the intersecting point closest to the ray origin.
             //! @return Boolean indicating whether there is a least one intersecting point between this bound shape and the ray.
-            virtual bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) = 0;
+            virtual bool IntersectRay(const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDir, float& rayIntersectionDistance) const = 0;
 
             virtual void SetShapeData(const BoundRequestShapeBase& shapeData) = 0;
 

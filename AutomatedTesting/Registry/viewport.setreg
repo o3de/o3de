@@ -1,0 +1,11 @@
+{
+  "O3DE": {
+    "Viewport": {
+      "SwitchableRenderPipelines": [
+        "Passes/LowEndRenderPipeline.azasset",
+        "Passes/MainRenderPipeline.azasset",
+        "Passes/MultiViewRenderPipeline.azasset"
+      ]
+    }
+  }
+}

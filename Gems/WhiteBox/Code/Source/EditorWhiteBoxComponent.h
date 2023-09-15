@@ -70,8 +70,8 @@ namespace WhiteBox
         bool SupportsEditorRayIntersect() override;
 
         // BoundsRequestBus overrides ...
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
 
         //! Returns if the component currently has an instance of RenderMeshInterface.
         bool HasRenderMesh() const;
@@ -124,8 +124,8 @@ namespace WhiteBox
         Api::WhiteBoxMeshStream m_whiteBoxData; //!< Serialized White Box mesh data.
         //! Holds a reference to an optional WhiteBoxMeshAsset and manages the lifecycle of adding/removing an asset.
         EditorWhiteBoxMeshAsset* m_editorMeshAsset = nullptr;
-        AZStd::optional<AZ::Aabb> m_worldAabb; //!< Cached world aabb (used for selection/view determination).
-        AZStd::optional<AZ::Aabb> m_localAabb; //!< Cached local aabb (used for center pivot calculation).
+        mutable AZStd::optional<AZ::Aabb> m_worldAabb; //!< Cached world aabb (used for selection/view determination).
+        mutable AZStd::optional<AZ::Aabb> m_localAabb; //!< Cached local aabb (used for center pivot calculation).
         AZStd::optional<Api::Faces> m_faces; //!< Cached faces (triangles of mesh used for intersection/selection).
         WhiteBoxRenderData m_renderData; //!< Cached render data constructed from the White Box mesh source data.
         WhiteBoxMaterial m_material = {

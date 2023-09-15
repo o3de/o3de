@@ -67,16 +67,16 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        virtual CapsuleShapeConfig GetCapsuleConfiguration() = 0;
+        virtual const CapsuleShapeConfig& GetCapsuleConfiguration() const = 0;
 
         /// @brief Returns the end to end height of the capsule, this includes the cylinder and both caps.
-        virtual float GetHeight() = 0;
+        virtual float GetHeight() const = 0;
 
         /// @brief Returns the radius of the capsule.
-        virtual float GetRadius() = 0;
+        virtual float GetRadius() const = 0;
 
         /// @brief Returns the base and top points of the capsule, corresponding to the center points of the cap spheres.
-        virtual CapsuleInternalEndPoints GetCapsulePoints() = 0;
+        virtual CapsuleInternalEndPoints GetCapsulePoints() const = 0;
 
         /// @brief Sets the end to end height of capsule, this includes the cylinder and both caps.
         /// @param height new height of the capsule.

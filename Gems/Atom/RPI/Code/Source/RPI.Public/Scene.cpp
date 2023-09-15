@@ -589,7 +589,7 @@ namespace AZ
 
             // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs if m_parallelOctreeTraversal)
             const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
-            m_cullingScene->BeginCulling(m_renderPacket.m_views);
+            m_cullingScene->BeginCulling(*this, m_renderPacket.m_views);
             static const AZ::TaskDescriptor processCullablesDescriptor{"AZ::RPI::Scene::ProcessCullables", "Graphics"};
             AZ::TaskGraphEvent processCullablesTGEvent{ "ProcessCullables Wait" };
             AZ::TaskGraph processCullablesTG{ "ProcessCullables" };
@@ -649,7 +649,7 @@ namespace AZ
 
             // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs)
             const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
-            m_cullingScene->BeginCulling(m_renderPacket.m_views);
+            m_cullingScene->BeginCulling(*this, m_renderPacket.m_views);
             for (ViewPtr& viewPtr : m_renderPacket.m_views)
             {
                 AZ::Job* processCullablesJob = AZ::CreateJobFunction([this, &viewPtr](AZ::Job& thisJob)
@@ -815,7 +815,7 @@ namespace AZ
                     CollectDrawPacketsJobs();
                 }
 
-                m_cullingScene->EndCulling();
+                m_cullingScene->EndCulling(*this, m_renderPacket.m_views);
 
                 // Add dynamic draw data for all the views
                 if (m_dynamicDrawSystem)
@@ -904,7 +904,17 @@ namespace AZ
                 m_viewTagBitRegistry = RHI::TagBitRegistry<uint32_t>::Create();
             }
             return *m_viewTagBitRegistry;
-        };
+        }
+
+        RHI::Ptr<RHI::DrawFilterTagRegistry> Scene::GetDrawFilterTagRegistry() const
+        {
+            return m_drawFilterTagRegistry;
+        }
+
+        uint16_t Scene::GetActiveRenderPipelines() const
+        {
+            return m_numActiveRenderPipelines;
+        }
 
         void Scene::UpdateSrgs()
         {
@@ -1035,6 +1045,16 @@ namespace AZ
         bool Scene::HasOutputForPipelineState(RHI::DrawListTag drawListTag) const
         {
             return m_pipelineStatesLookup.find(drawListTag) != m_pipelineStatesLookup.end();
+        }
+
+        AzFramework::IVisibilityScene* Scene::GetVisibilityScene() const
+        {
+            return m_visibilityScene;
+        }
+
+        AZ::RPI::CullingScene* Scene::GetCullingScene() const
+        {
+            return m_cullingScene;
         }
 
         void Scene::RebuildPipelineStatesLookup()

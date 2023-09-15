@@ -71,6 +71,7 @@ namespace AZ
             RHI::Ptr<RHI::RayTracingTlas> CreateRayTracingTlas() override;
             RHI::Ptr<RHI::RayTracingPipelineState> CreateRayTracingPipelineState() override;
             RHI::Ptr<RHI::RayTracingShaderTable> CreateRayTracingShaderTable() override;
+            RHI::Ptr<RHI::DispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() override;
             ///////////////////////////////////////////////////////////////////
 
         private:

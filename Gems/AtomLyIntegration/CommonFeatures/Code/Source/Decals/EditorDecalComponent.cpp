@@ -176,7 +176,7 @@ namespace AZ
             return hitResult;
         }
 
-        AZ::Aabb EditorDecalComponent::GetWorldBounds()
+        AZ::Aabb EditorDecalComponent::GetWorldBounds() const
         {
             AZ::Transform transform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
@@ -184,7 +184,7 @@ namespace AZ
             return GetLocalBounds().GetTransformedAabb(transform);
         }
 
-        AZ::Aabb EditorDecalComponent::GetLocalBounds()
+        AZ::Aabb EditorDecalComponent::GetLocalBounds() const
         {
             AZ::Aabb bbox = AZ::Aabb::CreateNull();
             bbox.AddPoint(AZ::Vector3(-1, -1, 0));

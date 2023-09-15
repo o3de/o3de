@@ -155,7 +155,8 @@ namespace LocalUser
 
         // On platforms with no concept of a local user profile the local user id corresponds
         // to a unique input device index, so the maximum is the number of supported gamepads.
-        return AzFramework::InputDeviceGamepad::GetMaxSupportedGamepads();
+        auto deviceGamepadImplFactory = AZ::Interface<AzFramework::InputDeviceGamepad::ImplementationFactory>::Get();
+        return (deviceGamepadImplFactory != nullptr) ? deviceGamepadImplFactory->GetMaxSupportedGamepads() : 0;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
