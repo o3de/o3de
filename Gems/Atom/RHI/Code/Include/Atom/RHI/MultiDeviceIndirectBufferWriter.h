@@ -72,7 +72,7 @@ namespace AZ::RHI
         //!      initialized and is able to service write requests. If failure, the MultiDeviceIndirectBufferWriter remains
         //!      uninitialized.
         ResultCode Init(
-            void* memoryPtr, uint32_t byteStride, uint32_t maxCommandSequences, const MultiDeviceIndirectBufferSignature& signature);
+            const AZStd::unordered_map<int, void*>& memoryPtrs, uint32_t byteStride, uint32_t maxCommandSequences, const MultiDeviceIndirectBufferSignature& signature);
 
         //! Writes a vertex buffer view command into the current sequence.
         //! @param slot The stream buffer slot that the view will set.
@@ -121,7 +121,7 @@ namespace AZ::RHI
 
         bool IsInitialized() const;
 
-        AZStd::vector<uint32_t> GetCurrentSequenceIndex() const;
+        uint32_t GetCurrentSequenceIndex() const;
 
         void Shutdown() override;
 

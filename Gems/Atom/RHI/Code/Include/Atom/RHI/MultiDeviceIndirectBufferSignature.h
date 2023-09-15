@@ -70,5 +70,7 @@ namespace AZ::RHI
 
     private:
         MultiDeviceIndirectBufferSignatureDescriptor m_mdDescriptor;
+        static constexpr uint32_t UNINITIALIZED_VALUE{ std::numeric_limits<uint32_t>::max() };
+        uint32_t m_byteStride{ UNINITIALIZED_VALUE };
     };
 } // namespace AZ::RHI

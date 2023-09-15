@@ -46,7 +46,7 @@ namespace AZ::RHI
         for (auto deviceIndex{ 0 }; deviceMask && (deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount());
              deviceMask >>= 1, ++deviceIndex)
         {
-            if (deviceMask & 1)
+            if (CheckBitsAll(deviceMask, 1u))
             {
                 m_deviceIndirectBufferWriter[deviceIndex] = Factory::Get().CreateIndirectBufferWriter();
                 auto deviceIndirectBufferSignature{ signature.IsInitialized() ? signature.GetDeviceIndirectBufferSignature(deviceIndex)
@@ -75,11 +75,14 @@ namespace AZ::RHI
     }
 
     ResultCode MultiDeviceIndirectBufferWriter::Init(
-        void* memoryPtr, uint32_t byteStride, uint32_t maxCommandSequences, const MultiDeviceIndirectBufferSignature& signature)
+        const AZStd::unordered_map<int, void*>& memoryPtrs,
+        uint32_t byteStride,
+        uint32_t maxCommandSequences,
+        const MultiDeviceIndirectBufferSignature& signature)
     {
         if (Validation::IsEnabled())
         {
-            if (!memoryPtr)
+            if (memoryPtrs.empty())
             {
                 AZ_Assert(false, "Null target memory");
                 return ResultCode::InvalidArgument;
@@ -98,7 +101,7 @@ namespace AZ::RHI
                 auto deviceIndirectBufferSignature{ signature.IsInitialized() ? signature.GetDeviceIndirectBufferSignature(deviceIndex)
                                                                               : Factory::Get().CreateIndirectBufferSignature() };
                 result = m_deviceIndirectBufferWriter[deviceIndex]->Init(
-                    memoryPtr, byteStride, maxCommandSequences, *deviceIndirectBufferSignature);
+                    memoryPtrs.at(deviceIndex), byteStride, maxCommandSequences, *deviceIndirectBufferSignature);
 
                 if (result != ResultCode::Success)
                     break;
@@ -266,13 +269,21 @@ namespace AZ::RHI
         return result;
     }
 
-    AZStd::vector<uint32_t> MultiDeviceIndirectBufferWriter::GetCurrentSequenceIndex() const
+    uint32_t MultiDeviceIndirectBufferWriter::GetCurrentSequenceIndex() const
     {
-        AZStd::vector<uint32_t> currentSequenceIndex;
+        static constexpr uint32_t UNINITIALIZED_VALUE{ std::numeric_limits<uint32_t>::max() };
+        uint32_t currentSequenceIndex{ UNINITIALIZED_VALUE };
 
         for (const auto& [deviceIndex, writer] : m_deviceIndirectBufferWriter)
         {
-            currentSequenceIndex.emplace_back(writer->GetCurrentSequenceIndex());
+            auto deviceCurrentSequenceIndex{ writer->GetCurrentSequenceIndex() };
+
+            if (currentSequenceIndex == UNINITIALIZED_VALUE)
+            {
+                currentSequenceIndex = deviceCurrentSequenceIndex;
+            }
+
+            AZ_Assert(deviceCurrentSequenceIndex == currentSequenceIndex, "Device IndirectBufferWriter CurrentSequenceIndex do not match");
         }
 
         return currentSequenceIndex;

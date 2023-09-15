@@ -183,14 +183,14 @@ namespace UnitTest
 
         void ValidateWriter(const AZ::RHI::MultiDeviceIndirectBufferWriter& writer)
         {
-            auto currentSequenceIndices{ writer.GetCurrentSequenceIndex() };
+            auto currentSequenceIndex{ writer.GetCurrentSequenceIndex() };
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 EXPECT_EQ(
                     static_cast<IndirectBufferWriter*>(writer.GetDeviceIndirectBufferWriter(deviceIndex).get())->GetData(),
                     static_cast<const uint8_t*>(static_cast<Buffer*>(m_buffer->GetDeviceBuffer(deviceIndex).get())->GetData().data()));
 
-                EXPECT_EQ(currentSequenceIndices[deviceIndex], 0);
+                EXPECT_EQ(currentSequenceIndex, 0);
                 EXPECT_TRUE(static_cast<Buffer*>(m_buffer->GetDeviceBuffer(deviceIndex).get())->IsMapped());
             }
         }
@@ -387,14 +387,14 @@ namespace UnitTest
         // Initialization with memory pointer
         {
             RHI::Ptr<AZ::RHI::MultiDeviceIndirectBufferWriter> writer = aznew AZ::RHI::MultiDeviceIndirectBufferWriter;
-            EXPECT_EQ(
-                writer->Init(
-                    const_cast<uint8_t*>(
-                        static_cast<Buffer*>(m_buffer->GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex).get())->GetData().data()),
-                    m_writerCommandStride,
-                    m_writerNumCommands,
-                    *m_writerSignature),
-                RHI::ResultCode::Success);
+            AZStd::unordered_map<int, void*> memoryPtrs;
+            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
+            {
+                memoryPtrs[deviceIndex] = const_cast<uint8_t*>(
+                    static_cast<Buffer*>(m_buffer->GetDeviceBuffer(deviceIndex).get())->GetData().data());
+            }
+            
+            EXPECT_EQ(writer->Init(memoryPtrs, m_writerCommandStride, m_writerNumCommands, *m_writerSignature), RHI::ResultCode::Success);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 EXPECT_EQ(
@@ -420,20 +420,14 @@ namespace UnitTest
             EXPECT_TRUE(writer->Seek(seekPos));
             {
                 auto currentSequenceIndex{ writer->GetCurrentSequenceIndex() };
-                for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                {
-                    EXPECT_EQ(currentSequenceIndex[deviceIndex], seekPos);
-                }
+                EXPECT_EQ(currentSequenceIndex, seekPos);
             }
 
             seekPos += 6;
             EXPECT_TRUE(writer->Seek(seekPos));
             {
                 auto currentSequenceIndex{ writer->GetCurrentSequenceIndex() };
-                for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                {
-                    EXPECT_EQ(currentSequenceIndex[deviceIndex], seekPos);
-                }
+                EXPECT_EQ(currentSequenceIndex, seekPos);
             }
         }
 
@@ -443,10 +437,7 @@ namespace UnitTest
             EXPECT_FALSE(writer->Seek(m_writerNumCommands + 1));
             {
                 auto currentSequenceIndex{ writer->GetCurrentSequenceIndex() };
-                for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                {
-                    EXPECT_EQ(currentSequenceIndex[deviceIndex], 0);
-                }
+                EXPECT_EQ(currentSequenceIndex, 0);
             }
         }
 
@@ -456,10 +447,7 @@ namespace UnitTest
             EXPECT_TRUE(writer->NextSequence());
             {
                 auto currentSequenceIndex{ writer->GetCurrentSequenceIndex() };
-                for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                {
-                    EXPECT_EQ(currentSequenceIndex[deviceIndex], 1);
-                }
+                EXPECT_EQ(currentSequenceIndex, 1);
             }
         }
 
@@ -470,10 +458,7 @@ namespace UnitTest
             EXPECT_FALSE(writer->NextSequence());
             {
                 auto currentSequenceIndex{ writer->GetCurrentSequenceIndex() };
-                for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-                {
-                    EXPECT_EQ(currentSequenceIndex[deviceIndex], m_writerNumCommands - 1);
-                }
+                EXPECT_EQ(currentSequenceIndex, m_writerNumCommands - 1);
             }
         }
 

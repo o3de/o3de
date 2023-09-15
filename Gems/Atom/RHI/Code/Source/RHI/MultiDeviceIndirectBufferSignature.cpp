@@ -44,6 +44,12 @@ namespace AZ::RHI
                 resultCode = GetDeviceIndirectBufferSignature(deviceIndex)->Init(
                     *device, descriptor.GetDeviceIndirectBufferSignatureDescriptor(deviceIndex));
 
+                if(m_byteStride == UNINITIALIZED_VALUE)
+                {
+                    // Cache byteStride since it is the same for all devices
+                    m_byteStride = GetDeviceIndirectBufferSignature(deviceIndex)->GetByteStride();
+                }
+
                 return resultCode == ResultCode::Success;
             });
 
@@ -55,22 +61,7 @@ namespace AZ::RHI
     uint32_t MultiDeviceIndirectBufferSignature::GetByteStride() const
     {
         AZ_Assert(IsInitialized(), "Signature is not initialized");
-
-        uint32_t byteStride{ std::numeric_limits<uint32_t>::max() };
-
-        IterateObjects<IndirectBufferSignature>([&byteStride]([[maybe_unused]] auto deviceIndex, auto deviceSignature)
-        {
-            auto deviceByteStride{ deviceSignature->GetByteStride() };
-
-            if (byteStride == std::numeric_limits<uint32_t>::max())
-            {
-                byteStride = deviceByteStride;
-            }
-
-            AZ_Assert(deviceByteStride == byteStride, "Device Signature byte strides do not match");
-        });
-
-        return byteStride;
+        return m_byteStride;
     }
 
     uint32_t MultiDeviceIndirectBufferSignature::GetOffset(IndirectCommandIndex index) const
@@ -91,13 +82,13 @@ namespace AZ::RHI
             }
         }
 
-        uint32_t offset{ std::numeric_limits<uint32_t>::max() };
+        auto offset{ UNINITIALIZED_VALUE };
 
         IterateObjects<IndirectBufferSignature>([&offset, &index]([[maybe_unused]] auto deviceIndex, auto deviceSignature)
         {
             auto deviceOffset{ deviceSignature->GetOffset(index) };
 
-            if (offset == std::numeric_limits<uint32_t>::max())
+            if (offset == UNINITIALIZED_VALUE)
             {
                 offset = deviceOffset;
             }
