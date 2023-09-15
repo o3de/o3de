@@ -21,7 +21,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/SkyBox/MultiViewSkyBox.shader"
+                    "FilePath": "Shaders/SkyBox/SkyBox.shader"
                 },
                 "BindViewSrg": true
             }
