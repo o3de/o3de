@@ -482,6 +482,16 @@ namespace AZ
             m_featureProcessor->SetVisualizationSphereRadius(m_handle, m_configuration.m_visualizationSphereRadius);
         }
 
+        bool DiffuseProbeGridComponentController::CanBakeTextures()
+        {
+            if (!m_featureProcessor)
+            {
+                return false;
+            }
+
+            return m_featureProcessor->CanBakeTextures();
+        }
+
         void DiffuseProbeGridComponentController::BakeTextures(DiffuseProbeGridBakeTexturesCallback callback)
         {
             if (!m_featureProcessor)
