@@ -6,7 +6,7 @@
  *
  */
 
-#include <Outline/OutlineFeatureProcessor.h>
+#include <Silhouette/SilhouetteFeatureProcessor.h>
 #include <AzCore/Console/IConsole.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
@@ -15,7 +15,7 @@
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
-void OnOutlineActiveChanged(const bool& activate)
+void OnSilhouetteActiveChanged(const bool& activate)
 {
     AzFramework::EntityContextId entityContextId;
     AzFramework::GameEntityContextRequestBus::BroadcastResult(
@@ -24,47 +24,47 @@ void OnOutlineActiveChanged(const bool& activate)
     if (auto scene = AZ::RPI::Scene::GetSceneForEntityContextId(entityContextId); scene != nullptr)
     {
         // avoid unnecessary enable/disable to avoid warning log spam
-        bool alreadyActive = scene->GetFeatureProcessor<AZ::Render::OutlineFeatureProcessor>() != nullptr;
+        bool alreadyActive = scene->GetFeatureProcessor<AZ::Render::SilhouetteFeatureProcessor>() != nullptr;
         if (activate && !alreadyActive)
         {
-            scene->EnableFeatureProcessor<AZ::Render::OutlineFeatureProcessor>();
+            scene->EnableFeatureProcessor<AZ::Render::SilhouetteFeatureProcessor>();
         }
         else if (!activate && alreadyActive)
         {
-            scene->DisableFeatureProcessor<AZ::Render::OutlineFeatureProcessor>();
+            scene->DisableFeatureProcessor<AZ::Render::SilhouetteFeatureProcessor>();
         }
     }
 }
 
-AZ_CVAR( bool, r_outline, true, &OnOutlineActiveChanged, AZ::ConsoleFunctorFlags::Null,
-    "Controls if the outline rendering feature is active.  0 : Inactive,  1 : Active (default)");
+AZ_CVAR( bool, r_silhouette, true, &OnSilhouetteActiveChanged, AZ::ConsoleFunctorFlags::Null,
+    "Controls if the silhouette rendering feature is active.  0 : Inactive,  1 : Active (default)");
 
 namespace AZ::Render
 {
-    OutlineFeatureProcessor::OutlineFeatureProcessor() = default;
-    OutlineFeatureProcessor::~OutlineFeatureProcessor() = default;
+    SilhouetteFeatureProcessor::SilhouetteFeatureProcessor() = default;
+    SilhouetteFeatureProcessor::~SilhouetteFeatureProcessor() = default;
 
-    void OutlineFeatureProcessor::Reflect(ReflectContext* context)
+    void SilhouetteFeatureProcessor::Reflect(ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
             serializeContext
-                ->Class<OutlineFeatureProcessor, FeatureProcessor>()
+                ->Class<SilhouetteFeatureProcessor, FeatureProcessor>()
                 ->Version(0);
         }
     }
     
-    void OutlineFeatureProcessor::Activate()
+    void SilhouetteFeatureProcessor::Activate()
     {
         EnableSceneNotification();
     }
     
-    void OutlineFeatureProcessor::Deactivate()
+    void SilhouetteFeatureProcessor::Deactivate()
     {
         DisableSceneNotification();
     }
 
-    void OutlineFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
+    void SilhouetteFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
     {
         // Early return if pass is already found in render pipeline or if the pipeline is not the default one.
         if (renderPipeline->GetViewType() != RPI::ViewType::Default)
@@ -72,14 +72,14 @@ namespace AZ::Render
             return;
         }
 
-        const auto mergeTemplateName = Name("OutlinePassTemplate");
+        const auto mergeTemplateName = Name("SilhouettePassTemplate");
         auto mergePassFilter = AZ::RPI::PassFilter::CreateWithTemplateName(mergeTemplateName, renderPipeline);
         if(auto foundPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(mergePassFilter); foundPass)
         {
             return;
         }
 
-        const auto gatherTemplateName = Name("OutlineGatherPassTemplate");
+        const auto gatherTemplateName = Name("SilhouetteGatherPassTemplate");
         auto gatherPassFilter = AZ::RPI::PassFilter::CreateWithTemplateName(gatherTemplateName, renderPipeline);
         if(auto foundPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(gatherPassFilter); foundPass)
         {
@@ -89,7 +89,7 @@ namespace AZ::Render
         Name postProcessPassName = Name("PostProcessPass");
         if (renderPipeline->FindFirstPass(postProcessPassName) == nullptr)
         {
-            AZ_Warning("OutlineFeatureProcessor", false,
+            AZ_Warning("SilhouetteFeatureProcessor", false,
                 "Can't find %s in the render pipeline.", postProcessPassName.GetCStr());
             return;
         }
@@ -97,14 +97,14 @@ namespace AZ::Render
         Name forwardProcessPassName = Name("Forward");
         if (renderPipeline->FindFirstPass(forwardProcessPassName) == nullptr)
         {
-            AZ_Warning("OutlineFeatureProcessor", false,
+            AZ_Warning("SilhouetteFeatureProcessor", false,
                 "Can't find %s in the render pipeline.", forwardProcessPassName.GetCStr());
             return;
         }
 
         // Gather
         RPI::PassRequest gatherPassRequest;
-        gatherPassRequest.m_passName = Name("OutlineGatherPass");
+        gatherPassRequest.m_passName = Name("SilhouetteGatherPass");
         gatherPassRequest.m_templateName = gatherTemplateName;
         gatherPassRequest.AddInputConnection( RPI::PassConnection{
             Name("DepthStencilInputOutput"),
@@ -120,7 +120,7 @@ namespace AZ::Render
 
         // Merge
         RPI::PassRequest mergePassRequest;
-        mergePassRequest.m_passName = Name("OutlinePass");
+        mergePassRequest.m_passName = Name("SilhouettePass");
         mergePassRequest.m_templateName = mergeTemplateName;
         mergePassRequest.AddInputConnection( RPI::PassConnection{
             Name("InputOutput"),

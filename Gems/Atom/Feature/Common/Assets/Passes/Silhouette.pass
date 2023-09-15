@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "OutlinePassTemplate",
+            "Name": "SilhouettePassTemplate",
             "PassClass": "FullScreenTriangle",
             "Slots": [
                 {
@@ -13,8 +13,8 @@
                     "ScopeAttachmentUsage": "RenderTarget"
                 },
                 {
-                    "Name": "Outlines",
-                    "ShaderInputName": "m_outlines",
+                    "Name": "Silhouettes",
+                    "ShaderInputName": "m_silhouettes",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 }                 
@@ -22,17 +22,16 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/Outline/Outline.shader"
+                    "FilePath": "Shaders/Silhouette/Silhouette.shader"
                 },
-                //"DrawListTag": "outline",
                 "BindViewSrg": true
             },
             "Connections": [
                 {
-                    "LocalSlot": "Outlines",
+                    "LocalSlot": "Silhouettes",
                     "AttachmentRef": {
                         "Pass": "PipelineGlobal",
-                        "Attachment": "OutlineGatherBuffer"
+                        "Attachment": "SilhouetteGatherBuffer"
                     }
                 }
             ]

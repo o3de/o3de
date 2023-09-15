@@ -88,8 +88,8 @@
                     }
                 },
                 {
-                    "Name": "OutlineGatherPass",
-                    "TemplateName": "OutlineGatherPassTemplate",
+                    "Name": "SilhouetteGatherPass",
+                    "TemplateName": "SilhouetteGatherPassTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
@@ -156,8 +156,8 @@
                     ]
                 }, 
                 {
-                    "Name": "OutlinePass",
-                    "TemplateName": "OutlinePassTemplate",
+                    "Name": "SilhouettePass",
+                    "TemplateName": "SilhouettePassTemplate",
                     "Enabled": true,
                     "Connections": [
                         {

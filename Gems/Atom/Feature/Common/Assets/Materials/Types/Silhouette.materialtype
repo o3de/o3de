@@ -1,11 +1,11 @@
 {
-    "description": "Material type with properties used for drawing outlines and silhouettes",
+    "description": "Material type with properties used for drawing silhouettes and outlines",
     "version": 0,
     "versionUpdates": [],
     "propertyLayout": {
         "propertyGroups": [
             { 
-                "$import": "MaterialInputs/OutlinePropertyGroup.json"
+                "$import": "MaterialInputs/SilhouettePropertyGroup.json"
             }
         ]
     },
@@ -16,7 +16,7 @@
     },
     "shaders": [
         {
-            "file": "../../Shaders/Outline/OutlineGather.shader"
+            "file": "../../Shaders/Silhouette/SilhouetteGather.shader"
         }
     ]
 }

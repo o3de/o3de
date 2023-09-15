@@ -6,6 +6,13 @@
  *
  */
 
-#pragma once
+#pragma once 
 
-option bool o_blockOutlines;
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    float4 m_color;
+    float3x3 m_uvMatrix;
+    float m_outlineSize;
+}

@@ -6,12 +6,6 @@
  *
  */
 
-#pragma once 
+#pragma once
 
-#include <Atom/Features/SrgSemantics.azsli>
-
-ShaderResourceGroup MaterialSrg : SRG_PerMaterial
-{
-    float3 m_baseColor;
-    float3x3 m_uvMatrix;
-}
+option bool o_blockSilhouettes;

@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "OutlineGatherPassTemplate",
+            "Name": "SilhouetteGatherPassTemplate",
             "PassClass": "RasterPass",
             "Slots": [
                 {
@@ -40,9 +40,6 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R8G8B8A8_UNORM",
-                        "MultisampleState": {
-                            "samples": 1
-                        },
                         "SharedQueueMask": "Graphics"
                     }
                 }
@@ -58,11 +55,11 @@
             ],
             "PassData": {
                 "$type": "RasterPassData",
-                "DrawListTag": "outline",
+                "DrawListTag": "silhouette",
                 "BindViewSrg": true,
                 "PipelineGlobalConnections": [
                     {
-                        "GlobalName": "OutlineGatherBuffer",
+                        "GlobalName": "SilhouetteGatherBuffer",
                         "Slot": "Output"
                     }
                 ]

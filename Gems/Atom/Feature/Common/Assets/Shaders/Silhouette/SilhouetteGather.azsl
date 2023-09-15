@@ -10,7 +10,7 @@
 
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <Atom/Feature/Common/Assets/Shaders/Materials/Outline/Outline_MaterialSrg.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/Silhouette/SilhouetteGather_MaterialSrg.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/UvSetCount.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
@@ -20,7 +20,9 @@ VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
     VsOutput OUT = EvaluateVertexGeometry(IN, SV);
-    //OUT.position.z += 0.15; 
+
+    // TODO make use of MaterialSrg::m_outlineSize to expand the 
+    // geometry to make variable sized outlines
     return OUT;
 }
 
@@ -37,7 +39,7 @@ PSOutput MainPS(VsOutput IN)
 {
     PSOutput OUT;
 
-    OUT.m_color = float4(MaterialSrg::m_baseColor, 1.0);
+    OUT.m_color = MaterialSrg::m_color;
 
     return OUT;
 }
