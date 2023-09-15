@@ -9,7 +9,6 @@
 #include <sys/utsname.h>
 #include <AzFramework/Device/DeviceAttributeDeviceModel.h>
 #include <AzFramework/Device/DeviceAttributeRAM.h>
-#include <AzCore/Console/ILogger.h>
 #include <Foundation/NSProcessInfo.h>
 
 

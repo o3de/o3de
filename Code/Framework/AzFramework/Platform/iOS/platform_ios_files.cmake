@@ -11,7 +11,7 @@ set(FILES
     AzFramework/AzFramework_Traits_iOS.h
     AzFramework/API/ApplicationAPI_Platform.h
     AzFramework/API/ApplicationAPI_iOS.h
-    AzFramework/Device/DeviceAttributesCommon_iOS.mm
+    ../Common/Apple/AzFramework/Device/DeviceAttributesCommon_Apple.mm
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
