@@ -156,12 +156,12 @@ namespace AZ
             ClearFlags(0xFFFFFFFF);
         }
 
-        uint32_t View::GetAndFlags()
+        uint32_t View::GetAndFlags() const
         {
             return m_andFlags;
         }
 
-        uint32_t View::GetOrFlags()
+        uint32_t View::GetOrFlags() const
         {
             return m_orFlags;
         }
@@ -592,6 +592,21 @@ namespace AZ
             // The actual math computes the area of an ellipse as a percentage of the view area, see the paper above for the steps
             // to simplify the equations into this calculation.
             return  -0.25f * cotHalfFovYSq * AZ::Constants::Pi * radiusSq * sqrt(fabsf((distanceSq - radiusSq)/radiusSqSubDepthSq))/radiusSqSubDepthSq;
+        }
+
+        const AZ::Name& View::GetName() const
+        {
+            return m_name;
+        }
+
+        View::UsageFlags View::GetUsageFlags() const
+        {
+            return m_usageFlags;
+        }
+
+        void View::SetPassesByDrawList(PassesByDrawList* passes)
+        {
+            m_passesByDrawList = passes;
         }
 
         void View::UpdateSrg()

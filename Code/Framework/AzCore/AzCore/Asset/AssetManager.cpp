@@ -1206,6 +1206,14 @@ namespace AZ::Data
 
     Asset<AssetData> AssetManager::FindOrCreateAsset(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior)
     {
+        if (!assetId.IsValid())
+        {
+            // The null Asset has an invalid asset ID, but uses the asset type and asset load behavior supplied to this method 
+            Asset<AssetData> nullAsset(assetId, assetType);
+            nullAsset.SetAutoLoadBehavior(assetReferenceLoadBehavior);
+            return nullAsset;
+        }
+
         // Look up the asset id in the catalog, and use the result of that instead.
         // If assetId is a legacy id, assetInfo.m_assetId will be the canonical id. Otherwise, assetInfo.m_assetID == assetId.
         // This is because only canonical ids are stored in m_assets.
@@ -1237,6 +1245,15 @@ namespace AZ::Data
     //=========================================================================
     Asset<AssetData> AssetManager::CreateAsset(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior)
     {
+        if (!assetId.IsValid())
+        {
+            AZ_Error("AssetDatabase", false, R"(Cannot create Asset with the InvalidAssetId: %s)", assetId.ToFixedString().c_str());
+
+            // The null Asset has an invalid asset ID, but uses the asset type and asset load behavior supplied to this method 
+            Asset<AssetData> nullAsset(assetId, assetType);
+            nullAsset.SetAutoLoadBehavior(assetReferenceLoadBehavior);
+            return nullAsset;
+        }
         AZStd::scoped_lock<AZStd::recursive_mutex> asset_lock(m_assetMutex);
 
         // check if asset already exist

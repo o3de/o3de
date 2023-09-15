@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/AsyncWorkQueue.h>
+#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI/StreamingImagePool.h>
 #include <AzCore/std/containers/span.h>
@@ -18,11 +19,6 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct BufferStreamRequest;
-    }
-
     namespace Metal
     {
         class Device;

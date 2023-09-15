@@ -58,7 +58,7 @@ namespace AZ
             LoadPencilMap();
             m_pencilMapIndex = GetSceneSrg()->FindShaderInputImageIndex(Name("m_dofPencilMap"));
 
-            // Get default 
+            // Get default
             auto viewSrg = GetDefaultViewSrg();
             AZ_Assert(viewSrg, "DepthOfFieldSettings : Failed to get the default render pipeline's default viewSrg.");
 
@@ -259,7 +259,7 @@ namespace AZ
 
         // [GFX TODO][ATOM-3035]This function is temporary and will change with improvement to the draw list tag system
         void DepthOfFieldSettings::UpdateAutoFocusDepth(bool enabled)
-        {            
+        {
             const Name TemplateNameReadBackFocusDepth = Name("DepthOfFieldReadBackFocusDepthTemplate");
             // [GFX TODO][ATOM-4908] multiple camera should be distingushed.
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(TemplateNameReadBackFocusDepth, GetParentScene());
@@ -286,10 +286,11 @@ namespace AZ
 
         void DepthOfFieldSettings::SetQualityLevel(uint32_t qualityLevel)
         {
-            m_qualityLevel = qualityLevel;
-            m_sampleRadialDivision2 = DepthOfField::QualitySet[qualityLevel].sampleRadialDivision2;
-            m_sampleRadialDivision4 = DepthOfField::QualitySet[qualityLevel].sampleRadialDivision4;
-            m_sampleRadialDivision8 = DepthOfField::QualitySet[qualityLevel].sampleRadialDivision8;
+            // Clamp quality level to be less than the size of the QualitySet array
+            m_qualityLevel = AZStd::max(qualityLevel, static_cast<uint32_t>(AZStd::size(DepthOfField::QualitySet) - 1));
+            m_sampleRadialDivision2 = DepthOfField::QualitySet[m_qualityLevel].sampleRadialDivision2;
+            m_sampleRadialDivision4 = DepthOfField::QualitySet[m_qualityLevel].sampleRadialDivision4;
+            m_sampleRadialDivision8 = DepthOfField::QualitySet[m_qualityLevel].sampleRadialDivision8;
         }
 
         void DepthOfFieldSettings::SetApertureF(float apertureF)

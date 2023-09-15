@@ -109,7 +109,7 @@ namespace PhysX
             {
                 AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = graph.ConvertToNodeIndex(iter.GetBaseIterator());
 
-                AZStd::set<AZ::Crc32> types;
+                AZ::SceneAPI::Events::GraphMetaInfo::VirtualTypesSet types;
                 AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(&AZ::SceneAPI::Events::GraphMetaInfoBus::Events::GetVirtualTypes, types, scene, nodeIndex);
 
                 if (types.count(AZ_CRC_CE("PhysicsMesh")) == 1)

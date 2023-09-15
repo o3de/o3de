@@ -148,6 +148,8 @@ namespace EMotionFX
             // Clear the queue of messages from unit tests on our buses
             EMotionFX::Integration::ActorNotificationBus::ClearQueuedEvents();
 
+            m_app.Stop();
+
             UnitTest::LeakDetectionFixture::TearDown();
         }
 

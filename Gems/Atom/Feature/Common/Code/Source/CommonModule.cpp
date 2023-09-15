@@ -77,4 +77,8 @@ namespace AZ
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
 // The first parameter should be GemName_GemIdLower
 // The second should be the fully qualified name of the class above
+#if O3DE_HEADLESS_SERVER
+AZ_DECLARE_MODULE_CLASS(Gem_Atom_Feature_Common_Headless, AZ::Render::CommonModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Atom_Feature_Common, AZ::Render::CommonModule)
+#endif // O3DE_HEADLESS_SERVER

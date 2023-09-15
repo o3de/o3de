@@ -51,11 +51,6 @@ namespace AzFramework
         static bool IsGamepadDevice(const InputDeviceId& inputDeviceId);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Get the maximum number of gamepads that are supported on the current platform
-        //! \return The maximum number of gamepads that are supported on the current platform
-        static AZ::u32 GetMaxSupportedGamepads();
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
         //! All the input channel ids that identify game-pad digital button input
         struct Button
         {
@@ -183,12 +178,24 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // Foward declare the internal Implementation class so it can be passed into the constructor
+        // Foward declare the internal Implementation class so its unique ptr can be referenced from 
+        // the ImplementationFactory
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = Implementation*(InputDeviceGamepad&);
+        //! The factory class to create a custom implementation for this input device
+        class ImplementationFactory
+        {
+        public:
+            AZ_TYPE_INFO(ImplementationFactory, "{415C76AD-3397-4CA8-80EA-B5FACD6EDFFB}");
+            virtual ~ImplementationFactory() = default;
+            virtual AZStd::unique_ptr<Implementation> Create(InputDeviceGamepad& InputDeviceGamepad) = 0;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Get the maximum number of gamepads that are supported on the current platform
+            //! \return The maximum number of gamepads that are supported on the current platform
+            virtual AZ::u32 GetMaxSupportedGamepads() const = 0;
+        };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -204,7 +211,7 @@ namespace AzFramework
         //! \param[in] inputDeviceId Id of the input device
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceGamepad(const InputDeviceId& inputDeviceId,
-                                    ImplementationFactory implementationFactory = &Implementation::Create);
+                                    ImplementationFactory* implementationFactory = AZ::Interface<ImplementationFactory>::Get());
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

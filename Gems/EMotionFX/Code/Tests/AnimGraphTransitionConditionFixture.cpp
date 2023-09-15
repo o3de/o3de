@@ -100,6 +100,8 @@ namespace EMotionFX
             m_actorInstance->Destroy();
             m_actorInstance = nullptr;
         }
+        m_actor.reset();
+        m_animGraph.reset();
 
         SystemComponentFixture::TearDown();
     }
