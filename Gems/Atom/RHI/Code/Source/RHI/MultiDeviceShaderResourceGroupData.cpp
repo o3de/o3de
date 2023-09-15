@@ -33,7 +33,7 @@ namespace AZ::RHI
 
         for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
         {
-            if ((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1)
+            if (CheckBitsAll((AZStd::to_underlying(m_deviceMask) >> deviceIndex), 1u))
             {
                 m_deviceShaderResourceGroupDatas[deviceIndex] = ShaderResourceGroupData(layout);
             }

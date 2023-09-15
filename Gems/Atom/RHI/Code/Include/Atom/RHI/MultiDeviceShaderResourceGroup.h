@@ -79,9 +79,5 @@ namespace AZ::RHI
 
         //! The binding slot cached from the layout.
         uint32_t m_bindingSlot = aznumeric_cast<uint32_t>(-1);
-
-        //! Track hash related to views. This will help ensure we compile views in case they get invalidated and partial srg compilation
-        //! is enabled
-        AZStd::unordered_map<AZ::Name, HashValue64> m_viewHash;
     };
 } // namespace AZ::RHI

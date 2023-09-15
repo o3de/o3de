@@ -107,17 +107,31 @@ namespace AZ::RHI
 
     HashValue64 MultiDeviceShaderResourceGroup::GetViewHash(const AZ::Name& viewName)
     {
-        return m_viewHash[viewName];
+        static constexpr HashValue64 UNINITIALIZED_VALUE{ std::numeric_limits<HashValue64>::max() };
+        auto viewHash{ UNINITIALIZED_VALUE };
+        IterateObjects<ShaderResourceGroup>(
+            [&viewName, &viewHash]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroup)
+            {
+                auto deviceViewHash{ deviceShaderResourceGroup->GetViewHash(viewName) };
+
+                if (viewHash == UNINITIALIZED_VALUE)
+                {
+                    viewHash = deviceViewHash;
+                }
+
+                AZ_Assert(deviceViewHash == viewHash, "Device ViewHashs do not match");
+            });
+
+        return viewHash;
     }
 
     void MultiDeviceShaderResourceGroup::UpdateViewHash(const AZ::Name& viewName, const HashValue64 viewHash)
     {
-        IterateObjects<ShaderResourceGroup>([&viewName, viewHash]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroup)
-        {
-            deviceShaderResourceGroup->UpdateViewHash(viewName, viewHash);
-        });
-
-        m_viewHash[viewName] = viewHash;
+        IterateObjects<ShaderResourceGroup>(
+            [&viewName, viewHash]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroup)
+            {
+                deviceShaderResourceGroup->UpdateViewHash(viewName, viewHash);
+            });
     }
 
     void MultiDeviceShaderResourceGroup::Shutdown()
