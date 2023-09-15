@@ -27,6 +27,10 @@
 #define ENABLE_REFLECTIONPROBE_BLENDING 1
 #endif
 
+#ifndef ENABLE_DUAL_SPECULAR
+#define ENABLE_DUAL_SPECULAR    0
+#endif
+
 real3 GetIblDiffuse(
     real3 normal, 
     real3 albedo, 
@@ -123,6 +127,15 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseI
                 // attenuate base layer energy
                 real3 clearCoatResponse = FresnelSchlickWithRoughness(clearCoatNdotV, clearCoatSpecularF0, surface.clearCoat.roughness) * surface.clearCoat.factor;
                 iblSpecular = iblSpecular * (1.0 - clearCoatResponse) * (1.0 - clearCoatResponse) + clearCoatIblSpecular;
+            }
+#endif
+
+#if ENABLE_DUAL_SPECULAR
+            if(o_enableDualSpecular)
+            {
+                real2 dualSpecularBrdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(surface.dualSpecRoughness, lightingData.NdotV)).rg);
+                real3 dualSpecular = GetIblSpecular(surface.position, surface.normal, surface.dualSpecF0.xxx, surface.dualSpecRoughness, lightingData.dirToCamera, dualSpecularBrdf, reflectionProbe, reflectionProbeCubemap);
+                iblSpecular = lerp(iblSpecular, dualSpecular, surface.dualSpecFactor);
             }
 #endif
 
