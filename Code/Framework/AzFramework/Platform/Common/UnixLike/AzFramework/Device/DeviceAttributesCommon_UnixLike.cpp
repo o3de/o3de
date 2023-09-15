@@ -7,10 +7,11 @@
  */
 
 #include <sys/utsname.h>
-#include <AzFramework/Device/DeviceAttributeDeviceModel.h>
-#include <AzFramework/Device/DeviceAttributeRAM.h>
 #include <AzCore/std/utility/charconv.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzFramework/Device/DeviceAttributeDeviceModel.h>
+#include <AzFramework/Device/DeviceAttributeRAM.h>
 
 namespace AzFramework
 {
@@ -40,7 +41,7 @@ namespace AzFramework
                     // skip spaces because from_chars does not support non numeric string prefixes 
                     // non-numeric string postfixes are OK
                     auto iter = bufferView.begin() + MemTotalKey.size();
-                    while(iter != bufferView.end() && *iter == ' ')
+                    while(iter != bufferView.end() && AZStd::isspace(*iter))
                     {
                         iter++;
                     }

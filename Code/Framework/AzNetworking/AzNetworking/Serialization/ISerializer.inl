@@ -66,7 +66,7 @@ namespace AzNetworking
     {
         static bool Serialize(ISerializer& serializer, OBJECT_TYPE& value)
         {
-            return SerializeType<OBJECT_TYPE>::Serialize(serializer, value);
+            return value.Serialize(serializer);
         }
     };
 

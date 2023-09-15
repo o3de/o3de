@@ -20,6 +20,7 @@ namespace AzFramework
     class DeviceAttribute
     {
     public:
+        AZ_RTTI(DeviceAttribute, "{8B7AF778-DD8A-4AFA-8416-EA2D03080F29}");
         virtual ~DeviceAttribute() = default;
 
         //! Get the name of the device attribute e.g. gpuMemory, gpuVendor, customAttribute42
@@ -52,9 +53,12 @@ namespace AzFramework
         //! Unregister an existing device attribute, returns true on success, false if not found
         virtual bool UnregisterDeviceAttribute(AZStd::string_view deviceAttribute) = 0;
 
+        //! The callback function should return true to continue enumaration or false to stop
         using VisitInterfaceCallback = AZStd::function<bool(DeviceAttribute&)>;
 
         //! Visit device attribute interfaces with a callback function
+        //! The visiting callback can be useful to enumerate over multiple attributes
+        //! for display or rule evaluation.
         virtual void VisitDeviceAttributes(const VisitInterfaceCallback&) const = 0;
     };
     using DeviceAttributeRegistrar = AZ::Interface<DeviceAttributeRegistrarInterface>;

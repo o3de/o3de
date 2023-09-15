@@ -111,19 +111,19 @@ namespace UnitTest
 
         // when the device attribute registrar exists
         auto registrar = AzFramework::DeviceAttributeRegistrar::Get();
-        ASSERT_NE(registrar, nullptr);
+        ASSERT_NE(nullptr, registrar);
 
         // expect a device attribute can be registered
         EXPECT_TRUE(registrar->RegisterDeviceAttribute(deviceAttribute));
 
         // expect the registered attribute can be found
         auto foundAttribute = registrar->FindDeviceAttribute(name);
-        EXPECT_NE(foundAttribute, nullptr);
+        EXPECT_NE(nullptr, foundAttribute);
         auto foundValue = foundAttribute->GetValue();
-        EXPECT_EQ(foundValue.type(), azrtti_typeid<AZStd::string>());
-        EXPECT_EQ(AZStd::any_cast<AZStd::string>(foundValue), valueString);
-        EXPECT_EQ(foundAttribute->GetDescription(), description);
-        EXPECT_EQ(foundAttribute->GetName(), name);
+        EXPECT_EQ(azrtti_typeid<AZStd::string>(), foundValue.type());
+        EXPECT_EQ(valueString, AZStd::any_cast<AZStd::string>(foundValue));
+        EXPECT_EQ(description, foundAttribute->GetDescription());
+        EXPECT_EQ(name, foundAttribute->GetName());
         EXPECT_TRUE(foundAttribute->Evaluate("True"));
         EXPECT_FALSE(foundAttribute->Evaluate("Not true"));
 
@@ -143,7 +143,7 @@ namespace UnitTest
         EXPECT_TRUE(registrar->UnregisterDeviceAttribute(deviceAttributeDuplicate->GetName()));
 
         // expect alternate attribute is not found after removal
-        EXPECT_EQ(registrar->FindDeviceAttribute(deviceAttributeDuplicate->GetName()), nullptr);
+        EXPECT_EQ(nullptr, registrar->FindDeviceAttribute(deviceAttributeDuplicate->GetName()));
     }
 
     TEST_F(DeviceAttributesSystemComponentTestFixture, DeviceAttributesSystem_Registers_Common_Device_Attributes)
@@ -156,13 +156,13 @@ namespace UnitTest
 
         // expect common attributes are registered
         auto deviceModel = registrar->FindDeviceAttribute("DeviceModel");
-        EXPECT_NE(deviceModel, nullptr);
+        EXPECT_NE(nullptr, deviceModel);
         auto deviceModelValue = deviceModel->GetValue();
         ASSERT_TRUE(deviceModelValue.is<AZStd::string>());
         EXPECT_FALSE(AZStd::any_cast<AZStd::string>(deviceModelValue).empty());
 
         auto ram = registrar->FindDeviceAttribute("RAM");
-        EXPECT_NE(ram, nullptr);
+        EXPECT_NE(nullptr, ram);
         auto ramValue = ram->GetValue();
         ASSERT_TRUE(ramValue.is<float>());
         EXPECT_GT(AZStd::any_cast<float>(ramValue), 0);
