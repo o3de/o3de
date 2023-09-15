@@ -1,9 +1,9 @@
 {
-    "Source" : "OutlineGather.azsl",
+    "Source" : "SilhouetteGather.azsl",
     "DepthStencilState" : {
         "Depth": 
         {
-            "Enable": false,  //required to bind depth buffer SRV
+            "Enable": false, 
             "WriteMask" : "Zero",   // Avoid writing the depth
             "CompareFunc" : "LessEqual"
         },
@@ -28,7 +28,7 @@
             }
         }
     },
-    "DrawList": "outline",
+    "DrawList": "silhouette",
     "RasterState": { 
         "CullMode": "Front"
     },

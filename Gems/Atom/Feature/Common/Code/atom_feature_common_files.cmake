@@ -176,8 +176,8 @@ set(FILES
     Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.cpp
     Source/OcclusionCullingPlane/OcclusionCullingPlane.h
     Source/OcclusionCullingPlane/OcclusionCullingPlane.cpp
-    Source/Outline/OutlineFeatureProcessor.cpp
-    Source/Outline/OutlineFeatureProcessor.h
+    Source/Silhouette/SilhouetteFeatureProcessor.cpp
+    Source/Silhouette/SilhouetteFeatureProcessor.h
     Source/PostProcess/PostProcessBase.cpp
     Source/PostProcess/PostProcessBase.h
     Source/PostProcess/PostProcessFeatureProcessor.cpp

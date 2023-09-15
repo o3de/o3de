@@ -1,9 +1,9 @@
 {
-    "Source" : "Outline.azsl",
+    "Source" : "Silhouette.azsl",
     "DepthStencilState" : {
         "Depth": 
         {
-            "Enable": false,  //required to bind depth buffer SRV
+            "Enable": false,
             "CompareFunc" : "Always"
         }
     },

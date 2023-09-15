@@ -104,14 +104,14 @@
             }
         },
         {
-            "name": "blockOutline",
-            "displayName": "Block Outline",
-            "description": "Whether to block rendering of outlines.",
+            "name": "blockSilhouette",
+            "displayName": "Block Silhouette",
+            "description": "Whether to block rendering of silhouettes.",
             "type": "Bool",
             "defaultValue":  false,
             "connection": {
                 "type": "ShaderOption",
-                "name": "o_blockOutlines"
+                "name": "o_blockSilhouettes"
             }
         }
     ],

@@ -51,7 +51,7 @@ set(FILES
     Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/Eye.azsli
     Materials/Types/Eye.materialtype
-    Materials/Types/Outline.materialtype
+    Materials/Types/Silhouette.materialtype
     Materials/Types/Skin.azsli
     Materials/Types/Skin.materialtype
     Materials/Types/Skin_SpecularF0.lua
@@ -433,10 +433,10 @@ set(FILES
     Shaders/MorphTargets/MorphTargetSRG.azsli
     Shaders/MotionVector/CameraMotionVector.azsl
     Shaders/MotionVector/CameraMotionVector.shader
-    Shaders/Outline/Outline.azsl
-    Shaders/Outline/Outline.shader
-    Shaders/Outline/OutlineGather.azsl
-    Shaders/Outline/OutlineGather.shader
+    Shaders/Silhouette/Silhouette.azsl
+    Shaders/Silhouette/Silhouette.shader
+    Shaders/Silhouette/SilhouetteGather.azsl
+    Shaders/Silhouette/SilhouetteGather.shader
     Shaders/PostProcessing/AcesOutputTransformLut.azsl
     Shaders/PostProcessing/AcesOutputTransformLut.shader
     Shaders/PostProcessing/ApplyShaperLookupTable.azsl

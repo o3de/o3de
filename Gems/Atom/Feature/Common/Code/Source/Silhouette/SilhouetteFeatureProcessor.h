@@ -12,18 +12,18 @@
 
 namespace AZ::Render
 {
-    class OutlineFeatureProcessor final
+    class SilhouetteFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
     {
     public:
-        AZ_CLASS_ALLOCATOR(OutlineFeatureProcessor, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR(SilhouetteFeatureProcessor, AZ::SystemAllocator)
 
-        AZ_RTTI(AZ::Render::OutlineFeatureProcessor, "{E32ABBE6-2472-4404-AEDB-1CE7A12E7C43}", AZ::RPI::FeatureProcessor);
+        AZ_RTTI(AZ::Render::SilhouetteFeatureProcessor, "{E32ABBE6-2472-4404-AEDB-1CE7A12E7C43}", AZ::RPI::FeatureProcessor);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        OutlineFeatureProcessor();
-        ~OutlineFeatureProcessor() override;
+        SilhouetteFeatureProcessor();
+        ~SilhouetteFeatureProcessor() override;
 
         //! FeatureProcessor 
         void Activate() override;
