@@ -484,12 +484,7 @@ namespace AZ
 
         bool DiffuseProbeGridComponentController::CanBakeTextures()
         {
-            if (!m_featureProcessor)
-            {
-                return false;
-            }
-
-            return m_featureProcessor->CanBakeTextures();
+        return m_featureProcessor && m_featureProcessor->CanBakeTextures();
         }
 
         void DiffuseProbeGridComponentController::BakeTextures(DiffuseProbeGridBakeTexturesCallback callback)
