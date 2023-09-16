@@ -50,9 +50,18 @@ namespace AZ
                 }
             }
 
-            void ImportGroup::GetCategoryAssignments(CategoryRegistrationList& categories, [[maybe_unused]] const Containers::Scene& scene)
+            void ImportGroup::GetCategoryAssignments([[maybe_unused]] CategoryRegistrationList& categories, [[maybe_unused]] const Containers::Scene& scene)
             {
-                categories.emplace_back("Import", SceneData::ImportGroup::TYPEINFO_Uuid(), s_importGroupPreferredTabOrder);
+                // The Import Group settings can be made visible and editable in the Asset Browser Inspector by uncommenting
+                // the following line. However, it is currently disabled because changing the settings causes things to break.
+                // Specifically, in the Mesh Group and the PhysX Group, the settings rely on a list of selected and unselected
+                // nodes. Changing the Import optimizations settings will change what nodes exist in the scene, so those lists
+                // will no longer be valid and need to be reset. Also, the various UX widgets for those groups builds up lists
+                // of nodes to populate the dropdown lists with. Those will all need to get refreshed. Finally, if Proc Prefabs
+                // are enabled, the set of mesh groups to export for the Proc Prefab will also need to change to match the new
+                // list of meshes.
+                
+                //categories.emplace_back("Import", SceneData::ImportGroup::TYPEINFO_Uuid(), s_importGroupPreferredTabOrder);
             }
 
             void ImportGroup::InitializeObject([[maybe_unused]] const Containers::Scene& scene, [[maybe_unused]] DataTypes::IManifestObject& target)
