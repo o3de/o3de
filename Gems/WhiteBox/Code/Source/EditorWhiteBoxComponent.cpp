@@ -200,11 +200,12 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/WhiteBox.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/WhiteBox.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/white-box/")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/white-box/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_defaultShape, "Default Shape",
+                        AZ::Edit::UIHandlers::ComboBox,
+                        &EditorWhiteBoxComponent::m_defaultShape,
+                        "Default Shape",
                         "Default shape of the white box mesh.")
                     ->EnumAttribute(DefaultShapeType::Cube, "Cube")
                     ->EnumAttribute(DefaultShapeType::Tetrahedron, "Tetrahedron")
@@ -214,24 +215,33 @@ namespace WhiteBox
                     ->EnumAttribute(DefaultShapeType::Asset, "Mesh Asset")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultShapeChange)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset, "Editor Mesh Asset",
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorWhiteBoxComponent::m_editorMeshAsset,
+                        "Editor Mesh Asset",
                         "Editor Mesh Asset")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::AssetVisibility)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Save as asset", "Save as asset")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::SaveAsAsset)
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Save As ...")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_material, "White Box Material",
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorWhiteBoxComponent::m_material,
+                        "White Box Material",
                         "The properties of the White Box material.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnMaterialChange)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_componentModeDelegate,
-                        "Component Mode", "White Box Tool Component Mode")
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorWhiteBoxComponent::m_componentModeDelegate,
+                        "Component Mode",
+                        "White Box Tool Component Mode")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export to obj")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToFile)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export");
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export all whiteboxes on child entities as a single obj (excluding this one)")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportChildrenToFile)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export Children");
             }
         }
     }
@@ -529,6 +539,61 @@ namespace WhiteBox
         {
             AZ_Warning(
                 "EditorWhiteBoxComponent", false, "Failed to export white box mesh to: %s", absoluteSaveFilePathCstr);
+        }
+    }
+
+    void EditorWhiteBoxComponent::ExportChildrenToFile()
+    {
+        const AZStd::string initialAbsolutePathToExport = WhiteBoxPathAtProjectRoot(GetEntity()->GetName(), ObjExtension);
+
+        const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
+        const QString absoluteSaveFilePath =
+            AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
+
+        // Get all child entities in the viewport
+        AzToolsFramework::EntityIdList children;
+        AZ::TransformBus::EventResult(children, GetEntityId(), &AZ::TransformBus::Events::GetChildren);
+
+        if (children.empty())
+        {
+            AZ_Warning("EditorWhiteBoxComponent", false, "Failed to export children whitebox meshes: No children found.");
+            return;
+        }
+
+        // Create a new empty white box mesh
+        Api::WhiteBoxMeshPtr mesh = Api::CreateWhiteBoxMesh();
+
+        for (auto& id : children)
+        {
+            AZ::Entity* e;
+            AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationRequests::FindEntity, id);
+
+            // Add all polys from selected white boxes
+            for (auto component : e->FindComponents<EditorWhiteBoxComponent>())
+            {
+                WhiteBoxMesh* m = component->GetWhiteBoxMesh();
+                Api::PolygonHandles polys = Api::MeshPolygonHandles(*m);
+                for (auto& poly : polys)
+                {
+                    Api::VertexHandles verts = Api::PolygonVertexHandles(*m, poly);
+                    if (verts.size() == 4) // if this is in fact a quad
+                    {
+                        Api::AddQuadPolygon(*(mesh.get()), verts[0], verts[1], verts[2], verts[3]);
+                    }
+                }
+            }
+        }
+
+        const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
+        const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
+        if (WhiteBox::Api::SaveToObj(*(mesh.get()), absoluteSaveFilePathCstr))
+        {
+            AZ_Printf("EditorWhiteBoxComponent", "Exported white box mesh to: %s", absoluteSaveFilePathCstr);
+            RequestEditSourceControl(absoluteSaveFilePathCstr);
+        }
+        else
+        {
+            AZ_Warning("EditorWhiteBoxComponent", false, "Failed to export white box mesh to: %s", absoluteSaveFilePathCstr);
         }
     }
 

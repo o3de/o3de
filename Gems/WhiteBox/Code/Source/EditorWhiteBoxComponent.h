@@ -108,6 +108,7 @@ namespace WhiteBox
         void RebuildRenderMesh();
         void RebuildPhysicsMesh();
         void ExportToFile();
+        void ExportChildrenToFile();
         AZ::Crc32 SaveAsAsset();
         AZ::Crc32 OnDefaultShapeChange();
         void OnMaterialChange();
