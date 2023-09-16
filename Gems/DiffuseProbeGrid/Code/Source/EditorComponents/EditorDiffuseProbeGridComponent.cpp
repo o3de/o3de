@@ -523,7 +523,7 @@ namespace AZ
                 QMessageBox::information(
                     QApplication::activeWindow(),
                     "Diffuse Probe Grid",
-                    "Can't bake the textures. This function may require gpu raytracing support",
+                    "Can't bake the textures. Diffuse probe calculations require GPU raytracing support",
                     QMessageBox::Ok);
 
                 return AZ::Edit::PropertyRefreshLevels::None;
