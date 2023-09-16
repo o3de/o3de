@@ -239,9 +239,9 @@ namespace WhiteBox
                     ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export to obj")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToFile)
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Export")
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export all whiteboxes on child entities as a single obj (excluding this one)")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportChildrenToFile)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export Children");
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export all whiteboxes on descendant entities as a single obj (excluding this one)")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportDescendantsToFile)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export Descendants");
             }
         }
     }
@@ -542,31 +542,31 @@ namespace WhiteBox
         }
     }
 
-    void EditorWhiteBoxComponent::ExportChildrenToFile()
+    void EditorWhiteBoxComponent::ExportDescendantsToFile()
     {
+        // Get all child entities in the viewport
+        AzToolsFramework::EntityIdList children;
+        AZ::TransformBus::EventResult(children, GetEntityId(), &AZ::TransformBus::Events::GetAllDescendants);
+
+        if (children.empty())
+        {
+            AZ_Warning("EditorWhiteBoxComponent", false, "Failed to export descendant whitebox meshes: No descendant entities found.");
+            return;
+        }
+
         const AZStd::string initialAbsolutePathToExport = WhiteBoxPathAtProjectRoot(GetEntity()->GetName(), ObjExtension);
 
         const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
         const QString absoluteSaveFilePath =
             AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
 
-        // Get all child entities in the viewport
-        AzToolsFramework::EntityIdList children;
-        AZ::TransformBus::EventResult(children, GetEntityId(), &AZ::TransformBus::Events::GetChildren);
-
-        if (children.empty())
-        {
-            AZ_Warning("EditorWhiteBoxComponent", false, "Failed to export children whitebox meshes: No children found.");
-            return;
-        }
-
         // Create a new empty white box mesh
         Api::WhiteBoxMeshPtr mesh = Api::CreateWhiteBoxMesh();
-
         for (auto& id : children)
         {
             AZ::Entity* e;
             AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationRequests::FindEntity, id);
+            AZ::Transform worldTM = e->GetTransform()->GetWorldTM();
 
             // Add all polys from selected white boxes
             for (auto component : e->FindComponents<EditorWhiteBoxComponent>())
@@ -575,18 +575,28 @@ namespace WhiteBox
                 Api::PolygonHandles polys = Api::MeshPolygonHandles(*m);
                 for (auto& poly : polys)
                 {
-                    Api::VertexHandles verts = Api::PolygonVertexHandles(*m, poly);
+                    AZStd::vector<AZ::Vector3> verts = Api::PolygonVertexPositions(*m, poly);
                     if (verts.size() == 4) // if this is in fact a quad
                     {
-                        Api::AddQuadPolygon(*(mesh.get()), verts[0], verts[1], verts[2], verts[3]);
+                        Api::VertexHandle vertexHandles[4];
+
+                        // top verts
+                        vertexHandles[0] = Api::AddVertex(*mesh.get(), worldTM.TransformPoint(verts[0]));
+                        vertexHandles[1] = Api::AddVertex(*mesh.get(), worldTM.TransformPoint(verts[1]));
+                        vertexHandles[2] = Api::AddVertex(*mesh.get(), worldTM.TransformPoint(verts[2]));
+                        vertexHandles[3] = Api::AddVertex(*mesh.get(), worldTM.TransformPoint(verts[3]));
+                        Api::AddQuadPolygon(*mesh.get(), vertexHandles[0], vertexHandles[1], vertexHandles[2], vertexHandles[3]);
                     }
                 }
             }
         }
 
+        Api::CalculateNormals(*mesh.get());
+        Api::CalculatePlanarUVs(*mesh.get());
+
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
         const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
-        if (WhiteBox::Api::SaveToObj(*(mesh.get()), absoluteSaveFilePathCstr))
+        if (WhiteBox::Api::SaveToObj(*mesh.get(), absoluteSaveFilePathCstr))
         {
             AZ_Printf("EditorWhiteBoxComponent", "Exported white box mesh to: %s", absoluteSaveFilePathCstr);
             RequestEditSourceControl(absoluteSaveFilePathCstr);
