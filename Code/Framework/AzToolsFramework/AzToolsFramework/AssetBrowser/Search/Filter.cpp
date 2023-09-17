@@ -363,18 +363,19 @@ namespace AzToolsFramework
 
         bool AssetGroupFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
+            // this filter only works on products.
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product)
+            {
+                return false;
+            }
+
             if (m_group.compare("All", Qt::CaseInsensitive) == 0)
             {
                 return true;
             }
 
-            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product)
-            {
-                return false; // this filter only works on product
-            }
-
-            QString group;
             auto product = static_cast<const ProductAssetBrowserEntry*>(entry);
+            QString group;
             AZ::AssetTypeInfoBus::EventResult(group, product->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
 
             if (m_group.compare("Other", Qt::CaseInsensitive) == 0 && group.isEmpty())
@@ -382,8 +383,7 @@ namespace AzToolsFramework
                 return true;
             }
 
-            bool match = m_group.compare(group, Qt::CaseInsensitive) == 0;
-            return match;
+            return (m_group.compare(group, Qt::CaseInsensitive) == 0);
         }
 
         //////////////////////////////////////////////////////////////////////////
