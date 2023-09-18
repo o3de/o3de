@@ -232,7 +232,7 @@ namespace AZ::Dom::Utils
             // if the WrapperType is a std::reference_wrapper
             if constexpr (AZStd::is_reference_wrapper<WrapperType>::value)
             {
-                return opaqueValue.is<AZStd::remove_reference_t<T>>();
+                return opaqueValue.is<AZStd::remove_reference_t<T>>() || opaqueValue.is<WrapperType>();
             }
             else
             {
@@ -329,6 +329,13 @@ namespace AZ::Dom::Utils
                         {
                             // Construct a reference_wrapper using a deferenced value to the opaque type
                             return WrapperType(const_cast<T>(*instanceValue));
+                        }
+
+                        // Check if The Dom Value is actually storing an reference_wrapper<T> and return that if possible
+                        else if (auto referenceWrapperValue = AZStd::any_cast<WrapperType>(&opaqueValue); referenceWrapperValue != nullptr)
+                        {
+                            // return the reference_wrapper<T> directly
+                            return *referenceWrapperValue;
                         }
                     }
                     else if (!opaqueValue.is<WrapperType>())
