@@ -110,12 +110,12 @@ if "o3de_context" in globals():
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
     try:
-        export_ios_xcode_project(ctx = o3de_context,
-                                 tools_build_folder= args.tools_build_path,
+        export_ios_xcode_project(ctx=o3de_context,
+                                 tools_build_folder=args.tools_build_path,
                                  ios_build_folder=args.ios_build_path,
-                                 should_build_tools = args.build_tools,
-                                 skip_asset_processing = args.skip_asset_processing,
-                                 logger = o3de_logger)
+                                 should_build_tools=args.build_tools,
+                                 skip_asset_processing=args.skip_asset_processing,
+                                 logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
         sys.exit(1)
