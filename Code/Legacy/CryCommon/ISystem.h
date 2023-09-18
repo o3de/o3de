@@ -637,7 +637,11 @@ struct SSystemGlobalEnvironment
     }
     ILINE void SetIsClient(bool isClient)
     {
+#if defined(CONSOLE)
+        // ...
+#else
         bClient = isClient;
+#endif
     }
 #endif
     // carbonated end
