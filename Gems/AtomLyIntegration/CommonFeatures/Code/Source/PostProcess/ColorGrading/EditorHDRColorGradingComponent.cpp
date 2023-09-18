@@ -146,11 +146,11 @@ namespace AZ
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Channel Mixing")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_channelMixingRed, "Channel Mixing Red", "Channel Mixing Red Value")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRColorGradingComponentConfig::m_channelMixingRed, "Channel Mixing Red", "Channel Mixing Red Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_channelMixingGreen, "Channel Mixing Green", "Channel Mixing Green Value")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRColorGradingComponentConfig::m_channelMixingGreen, "Channel Mixing Green", "Channel Mixing Green Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_channelMixingBlue, "Channel Mixing Blue", "Channel Mixing Blue Value")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &HDRColorGradingComponentConfig::m_channelMixingBlue, "Channel Mixing Blue", "Channel Mixing Blue Value")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow Midtones Highlights")
