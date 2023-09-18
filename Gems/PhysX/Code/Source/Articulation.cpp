@@ -63,7 +63,7 @@ namespace PhysX
     void ArticulationLink::AddCollisionShape(const ArticulationLinkData& thisLinkData)
     {
         m_physicsShapes.clear();
-        for (auto &[colliderConfiguration, shapeConfiguration]: thisLinkData.m_shapeColliderConfigurationList)
+        for (auto& [colliderConfiguration, shapeConfiguration] : thisLinkData.m_shapeColliderConfigurationList)
         {
             if (shapeConfiguration && colliderConfiguration)
             {
@@ -73,9 +73,18 @@ namespace PhysX
                         static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfiguration.get());
                     if (!physicsAssetShapeConfiguration->m_asset.IsReady())
                     {
-                        const_cast<Physics::PhysicsAssetShapeConfiguration*>(physicsAssetShapeConfiguration)->m_asset.BlockUntilLoadComplete();
+                        auto asset_status = const_cast<Physics::PhysicsAssetShapeConfiguration*>(physicsAssetShapeConfiguration)
+                                                ->m_asset.BlockUntilLoadComplete();
+                        AZ_Error(
+                            "PhysX",
+                            asset_status == AZ::Data::AssetData::AssetStatus::Ready,
+                            "Failed to load physics asset %s ",
+                            physicsAssetShapeConfiguration->m_asset.GetHint().c_str());
+                        if (asset_status != AZ::Data::AssetData::AssetStatus::Ready)
+                        {
+                            continue;
+                        }
                     }
-
                     const bool hasNonUniformScale = !Physics::Utils::HasUniformScale(physicsAssetShapeConfiguration->m_assetScale) ||
                         (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
                     AZStd::vector<AZStd::shared_ptr<Physics::Shape>> assetShapes;
@@ -89,11 +98,13 @@ namespace PhysX
                 }
                 else
                 {
-                    m_physicsShapes.push_back(AZ::Interface<Physics::System>::Get()->CreateShape(*colliderConfiguration, *shapeConfiguration));
+                    m_physicsShapes.push_back(
+                        AZ::Interface<Physics::System>::Get()->CreateShape(*colliderConfiguration, *shapeConfiguration));
                 }
             }
         }
-        AZ_Printf("PhysX", "ArticulationLink::AddCollisionShape: %zu shapes added to link %s\n", m_physicsShapes.size(), m_pxLink->getName());
+        AZ_Printf(
+            "PhysX", "ArticulationLink::AddCollisionShape: %zu shapes added to link %s\n", m_physicsShapes.size(), m_pxLink->getName());
         for (const auto& shapePtr : m_physicsShapes)
         {
             if (shapePtr && shapePtr->GetNativePointer())
