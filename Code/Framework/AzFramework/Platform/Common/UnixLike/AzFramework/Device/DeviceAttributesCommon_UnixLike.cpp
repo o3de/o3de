@@ -9,7 +9,7 @@
 #include <sys/utsname.h>
 #include <AzCore/std/utility/charconv.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzFramework/Device/DeviceAttributeDeviceModel.h>
 #include <AzFramework/Device/DeviceAttributeRAM.h>
 
