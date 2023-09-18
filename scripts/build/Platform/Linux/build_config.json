@@ -23,8 +23,8 @@
       "periodic-incremental-daily",
       "periodic-clean-weekly-internal"
     ],
-    "PIPELINE_ENV":{
-      "NODE_LABEL":"linux-ubuntu-22"
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "linux-ubuntu-22"
     },
     "steps": [
       "profile_nounity",
@@ -37,8 +37,8 @@
       "periodic-incremental-daily-internal",
       "periodic-clean-weekly-internal"
     ],
-    "PIPELINE_ENV":{
-      "NODE_LABEL":"linux-ubuntu-22-arm"
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "linux-ubuntu-22-arm"
     },
     "steps": [
       "profile_unity",
@@ -147,8 +147,8 @@
   },
   "test_profile": {
     "TAGS": [
-        "daily-pipeline-metrics",
-        "weekly-build-metrics"
+      "daily-pipeline-metrics",
+      "weekly-build-metrics"
     ],
     "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
@@ -273,7 +273,7 @@
   },
   "awsi_test_profile": {
     "TAGS": [
-        "weekly-build-metrics"
+      "weekly-build-metrics"
     ],
     "PIPELINE_ENV": {
       "NONBLOCKING_STEP": "True"
@@ -381,13 +381,13 @@
     "TAGS": [],
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
-        "CONFIGURATION": "profile",
-        "OUTPUT_DIRECTORY": "build/linux",
-        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
-        "CMAKE_TARGET": "install"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+      "CMAKE_TARGET": "install"
     }
   },
-  "installer_pipe": { 
+  "installer_pipe": {
     "TAGS": [
       "periodic-clean-weekly-internal",
       "nightly-installer"
@@ -398,18 +398,18 @@
   },
   "installer": {
     "TAGS": [],
-    "PIPELINE_ENV":{
-      "NODE_LABEL":"ubuntu-20-packaging"
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "ubuntu-20-packaging"
     },
     "COMMAND": "build_installer_linux.sh",
     "PARAMETERS": {
-        "CONFIGURATION": "profile",
-        "OUTPUT_DIRECTORY": "build/linux",
-        "O3DE_PACKAGE_TYPE": "DEB",
-        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
-        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license",
-        "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
-        "CMAKE_TARGET": "all"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "O3DE_PACKAGE_TYPE": "DEB",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+      "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license",
+      "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
+      "CMAKE_TARGET": "all"
     }
   },
   "snap_package": {
@@ -417,17 +417,35 @@
       "periodic-clean-weekly-internal",
       "nightly-installer"
     ],
-    "PIPELINE_ENV":{
-      "NODE_LABEL":"ubuntu-20-packaging"
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "ubuntu-22-packaging"
     },
     "COMMAND": "build_installer_linux.sh",
     "PARAMETERS": {
-        "CONFIGURATION": "profile",
-        "OUTPUT_DIRECTORY": "build/linux",
-        "O3DE_PACKAGE_TYPE": "SNAP",
-        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
-        "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
-        "CMAKE_TARGET": "all"
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "O3DE_PACKAGE_TYPE": "SNAP",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+      "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
+      "CMAKE_TARGET": "all"
+    }
+  },
+  "snap_core20_package": {
+    "TAGS": [
+      "periodic-clean-weekly-internal",
+      "nightly-installer"
+    ],
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "ubuntu-20-packaging"
+    },
+    "COMMAND": "build_installer_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "O3DE_PACKAGE_TYPE": "SNAP",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+      "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL} -D CPACK_SNAP_DISTRO=core20",
+      "CMAKE_TARGET": "all"
     }
   },
   "install_profile_pipe": {
