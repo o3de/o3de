@@ -11,10 +11,9 @@ import logging
 import sys
 
 import o3de.export_project as exp
-from o3de.export_project import process_command
 import pathlib
 
-def export_ios_Xcode_project(ctx: exp.O3DEScriptExportContext,
+def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
                              tools_build_folder: pathlib.Path,
                              ios_build_folder: pathlib.Path,
                              should_build_tools:bool = True,
@@ -27,10 +26,10 @@ def export_ios_Xcode_project(ctx: exp.O3DEScriptExportContext,
 
     Note: In order to use this functionality, you must be running this script from a MacOS machine with a valid copy of Xcode
 
-    Instructions to handle iOS projects in Xcode will be provided soon.
+    Instructions to handle iOS projects in Xcode will be provided soon. This export function is currently experimental.
 
     :param ctx:                                     The O3DE Script context provided by the export-command
-    :param tools_build_folder:                      Optional build path to build the tools. (Will default to build/tools if not supplied)
+    :param tools_build_folder:                      Optional build path to build the tools. (see default_tools_path below)
     :param ios_build_folder:                        The base output path of the generated Xcode Project file for iOS
     :param should_build_tools:                      Option to build the export process dependent tools (AssetProcessor, AssetBundlerBatch, and dependencies)
     :param should_build_all_assets:                 Option to process all the assets for the game
@@ -47,21 +46,21 @@ def export_ios_Xcode_project(ctx: exp.O3DEScriptExportContext,
 
     # Optionally build the toolchain needed to process the assets
     if should_build_tools:
-        process_command(["cmake", "-B", tools_build_folder_str, '-G', "Xcode","-DLY_UNITY_BUILD=ON"], cwd=ctx.project_path)
+        exp.process_command(["cmake", "-B", tools_build_folder_str, '-G', "Xcode"], cwd=ctx.project_path)
 
-        process_command(["cmake", "--build", tools_build_folder_str, "--target", "Editor", "AssetProcessorBatch", "--config", "profile"],
+        exp.process_command(["cmake", "--build", tools_build_folder_str, "--target", "AssetProcessorBatch", "AssetBundlerBatch", "--config", "profile"],
                     cwd=ctx.project_path)
         
     # Optionally process the assets
     if not skip_asset_processing:
         asset_processor_batch_path = exp.get_asset_processor_batch_path(tools_build_folder, True)
-        process_command([ str(asset_processor_batch_path), '--platforms=ios' ,
+        exp.process_command([ str(asset_processor_batch_path), '--platforms=ios' ,
                         '--project-path', ctx.project_path ], cwd=ctx.project_path)
 
     # Generate the Xcode project file for the O3DE project
     cmake_toolchain_path = ctx.engine_path / 'cmake/Platform/iOS/Toolchain_ios.cmake'
 
-    process_command(['cmake', '-B', ios_build_folder_str, '-G', "Xcode", f'-DCMAKE_TOOLCHAIN_FILE={str(cmake_toolchain_path)}', '-DLY_UNITY_BUILD=ON', '-DLY_MONOLITHIC_GAME=1'],
+    exp.process_command(['cmake', '-B', ios_build_folder_str, '-G', "Xcode", f'-DCMAKE_TOOLCHAIN_FILE={str(cmake_toolchain_path)}', '-DLY_MONOLITHIC_GAME=1'],
                     cwd= ctx.project_path)
 
 
@@ -84,9 +83,9 @@ if "o3de_context" in globals():
                     add_help=False
         )
 
-        default_tools_path = o3de_context.project_path / 'build/Mac'
-        default_ios_path = o3de_context.project_path / 'build/iOS'
-        parser.add_argument(exp.CUSTOM_SCRIPT_HELP_ARGUMENT,default=False,action='store_true',help='Show this help message and exit.')
+        default_tools_path = o3de_context.project_path / 'build/mac_xcode'
+        default_ios_path = o3de_context.project_path / 'build/ios_mono'
+        parser.add_argument(exp.CUSTOM_SCRIPT_HELP_ARGUMENT, default=False, action='store_true', help='Show this help message and exit.')
         parser.add_argument('-bt', '--build-tools', default=True, action='store_true',
                             help="Specifies whether to build O3DE toolchain executables. This will build AssetBundlerBatch, AssetProcessorBatch.")
         parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=default_tools_path,
@@ -111,7 +110,7 @@ if "o3de_context" in globals():
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
     try:
-        export_ios_Xcode_project(ctx = o3de_context,
+        export_ios_xcode_project(ctx = o3de_context,
                             tools_build_folder= args.tools_build_path,
                             ios_build_folder=args.ios_build_path,
                             should_build_tools = args.build_tools,
