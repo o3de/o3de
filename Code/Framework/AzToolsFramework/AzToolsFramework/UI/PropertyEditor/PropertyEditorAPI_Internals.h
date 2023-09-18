@@ -585,12 +585,16 @@ namespace AzToolsFramework
             if (newValueSet)
             {
                 PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
+            }
 
-                // Only trigger the ChangeNotify in response to PropertyEditorGUIMessages::RequestWrite
-                if (changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
-                {
-                    OnRequestPropertyNotify();
-                }
+            // Only trigger the ChangeNotify in response to PropertyEditorGUIMessages::RequestWrite.
+            // Also, we trigger this regardless of newValueSet, because of cases like a UIElement
+            // with no backing data element where there will be no value getting set but we still
+            // need to trigger the change notify in case the user has some logic that needs to
+            // be executed.
+            if (changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
+            {
+                OnRequestPropertyNotify();
             }
         }
 
