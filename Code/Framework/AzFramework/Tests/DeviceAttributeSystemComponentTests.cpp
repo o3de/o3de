@@ -159,7 +159,10 @@ namespace UnitTest
         EXPECT_NE(nullptr, deviceModel);
         auto deviceModelValue = deviceModel->GetValue();
         ASSERT_TRUE(deviceModelValue.is<AZStd::string>());
-        EXPECT_FALSE(AZStd::any_cast<AZStd::string>(deviceModelValue).empty());
+
+        // we don't expect a non-empty device model because on some
+        // platforms (e.g. Windows server) the application may not have
+        // access to retrieve the value or the value may be empty
 
         auto ram = registrar->FindDeviceAttribute("RAM");
         EXPECT_NE(nullptr, ram);

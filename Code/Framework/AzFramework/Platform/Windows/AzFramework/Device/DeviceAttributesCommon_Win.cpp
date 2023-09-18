@@ -10,6 +10,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/Device/DeviceAttributeDeviceModel.h>
 #include <AzFramework/Device/DeviceAttributeRAM.h>
+#include <AzCore/Console/ILogger.h>
 
 namespace AzFramework
 {
@@ -25,8 +26,20 @@ namespace AzFramework
             if (::RegQueryValueEx(hKey, TEXT("SystemProductName"), NULL, &type, reinterpret_cast<LPBYTE>(buf), &dwBufSize) == ERROR_SUCCESS)
             {
                 AZStd::to_string(m_value, buf);
+                if (m_value.empty())
+                {
+                    AZLOG_WARN("Device model attribute value is empty because SystemProductName registry setting is empty.");
+                }
+            }
+            else
+            {
+                AZLOG_WARN("Unable to determine device model attribute because the SystemProductName could not be read.");
             }
             ::RegCloseKey(hKey);
+        }
+        else
+        {
+            AZLOG_WARN(R"(Unable to determine device model attribute because the registry HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS could not be read.)");
         }
     }
 
