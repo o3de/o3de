@@ -46,28 +46,6 @@ namespace AZ::RHI
         //! Returns whether the group is currently queued for compilation.
         bool IsQueuedForCompile() const;
 
-        //! Resets the update mask after m_updateMaskResetLatency number of compiles
-        void DisableCompilationForAllResourceTypes();
-
-        //! Returns true if any of the resource type has been enabled for compilation.
-        bool IsAnyResourceTypeUpdated() const;
-
-        //! Returns true if a specific resource type has been enabled for compilation.
-        bool IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const;
-
-        //! Update the m_rhiUpdateMask for a given resource type which will ensure we will compile that type for the current frame
-        void EnableRhiResourceTypeCompilation(const MultiDeviceShaderResourceGroupData::ResourceTypeMask resourceTypeMask);
-
-        //! Reset the iteration counter to 0 for a resource type which will ensure that the given type will
-        //! be compiled for another m_updateMaskResetLatency number of Compile calls
-        void ResetResourceTypeIteration(const MultiDeviceShaderResourceGroupData::ResourceType resourceType);
-
-        //! Return the view hash stored within m_viewHash
-        HashValue64 GetViewHash(const AZ::Name& viewName);
-
-        //! Update the view hash within m_viewHash
-        void UpdateViewHash(const AZ::Name& viewName, const HashValue64 viewHash);
-
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
