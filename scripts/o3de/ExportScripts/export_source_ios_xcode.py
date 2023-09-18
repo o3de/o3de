@@ -54,7 +54,7 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
     # Optionally process the assets
     if not skip_asset_processing:
         asset_processor_batch_path = exp.get_asset_processor_batch_path(tools_build_folder, True)
-        exp.process_command([ str(asset_processor_batch_path), '--platforms=ios' ,
+        exp.process_command([ str(asset_processor_batch_path), '--platforms=ios',
                         '--project-path', ctx.project_path ], cwd=ctx.project_path)
 
     # Generate the Xcode project file for the O3DE project
@@ -83,8 +83,8 @@ if "o3de_context" in globals():
                     add_help=False
         )
 
-        default_tools_path = o3de_context.project_path / 'build/mac_xcode'
-        default_ios_path = o3de_context.project_path / 'build/ios_mono'
+        default_tools_path = o3de_context.project_path / 'build/tools'
+        default_ios_path = o3de_context.project_path / 'build/game_ios'
         parser.add_argument(exp.CUSTOM_SCRIPT_HELP_ARGUMENT, default=False, action='store_true', help='Show this help message and exit.')
         parser.add_argument('-bt', '--build-tools', default=True, action='store_true',
                             help="Specifies whether to build O3DE toolchain executables. This will build AssetBundlerBatch, AssetProcessorBatch.")
@@ -111,11 +111,11 @@ if "o3de_context" in globals():
         o3de_logger.setLevel(logging.ERROR)
     try:
         export_ios_xcode_project(ctx = o3de_context,
-                            tools_build_folder= args.tools_build_path,
-                            ios_build_folder=args.ios_build_path,
-                            should_build_tools = args.build_tools,
-                            skip_asset_processing = args.skip_asset_processing,
-                            logger = o3de_logger)
+                                 tools_build_folder= args.tools_build_path,
+                                 ios_build_folder=args.ios_build_path,
+                                 should_build_tools = args.build_tools,
+                                 skip_asset_processing = args.skip_asset_processing,
+                                 logger = o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
         sys.exit(1)
