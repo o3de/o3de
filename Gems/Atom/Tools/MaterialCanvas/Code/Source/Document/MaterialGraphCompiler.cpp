@@ -152,12 +152,8 @@ namespace MaterialCanvas
                 return false;
             }
 
-            // After the material types have been processed and saved, save the materials that reference them. For now, support options to
-            // force delete materials and material types before rewriting them. This will compensate for asset dependency issues that
-            // prevent materials from reloading 100% of the time when shader assets change.
-            const bool forceDeleteMaterials =
-                AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/ForceDeleteMaterialFiles", true);
-            if (!ExportTemplatesMatchingRegex(".*\\.material\\b", forceDeleteMaterials))
+            // After the material types have been processed and saved, save the materials that reference them.
+            if (!ExportTemplatesMatchingRegex(".*\\.material\\b"))
             {
                 SetState(State::Failed);
                 return false;
@@ -454,7 +450,7 @@ namespace MaterialCanvas
         return true;
     }
 
-    bool MaterialGraphCompiler::ExportTemplatesMatchingRegex(const AZStd::string& pattern, bool forceDelete)
+    bool MaterialGraphCompiler::ExportTemplatesMatchingRegex(const AZStd::string& pattern)
     {
         const AZStd::regex patternRegex(pattern, AZStd::regex::flag_type::icase);
         for (const auto& templateFileData : m_templateFileDataVecForCurrentNode)
@@ -462,16 +458,6 @@ namespace MaterialCanvas
             if (AZStd::regex_match(templateFileData.GetPath(), patternRegex))
             {
                 const auto& templateOutputPath = GetOutputPathFromTemplatePath(templateFileData.GetPath());
-
-                if (forceDelete)
-                {
-                    auto fileIO = AZ::IO::FileIOBase::GetInstance();
-                    if (fileIO->Exists(templateOutputPath.c_str()))
-                    {
-                        fileIO->Remove(templateOutputPath.c_str());
-                    }
-                }
-
                 if (!templateFileData.Save(templateOutputPath))
                 {
                     return false;
@@ -1344,18 +1330,6 @@ namespace MaterialCanvas
 
         AZ_TracePrintf_IfTrue(
             "MaterialGraphCompiler", IsCompileLoggingEnabled(), "Saving generated file: %s\n", templateOutputPath.c_str());
-
-        // Support options to force delete material types before rewriting them to compensate for acid dependency issues and ensure that all
-        // shader changes are reflected with every edit.
-        const bool forceDeleteMaterials = AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/ForceDeleteMaterialFiles", true);
-        if (forceDeleteMaterials)
-        {
-            auto fileIO = AZ::IO::FileIOBase::GetInstance();
-            if (fileIO->Exists(templateOutputPath.c_str()))
-            {
-                fileIO->Remove(templateOutputPath.c_str());
-            }
-        }
 
         // The material type is complete and can be saved to disk.
         const auto writeOutcome = AZ::Utils::WriteFile(templateOutputText, templateOutputPath);
