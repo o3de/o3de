@@ -15,6 +15,7 @@
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingPipelineState.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/DispatchRaysIndirectBuffer.h>
 #include <Atom/RHI.Reflect/Metal/Base.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RHI/BufferPool.h>
