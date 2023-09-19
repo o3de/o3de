@@ -70,7 +70,7 @@ namespace AZ
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             if (!m_materialAsset.IsReady())
             {
-                AZ_Error(s_debugTraceName, false, "Material::Init failed because acid is not ready. materialAsset uuid=%s",
+                AZ_Error(s_debugTraceName, false, "Material::Init failed because asset is not ready. materialAsset uuid=%s",
                     materialAsset.GetId().ToFixedString().c_str());
                 return RHI::ResultCode::Fail;
             }
