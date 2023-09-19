@@ -174,6 +174,11 @@ namespace MaterialCanvas
                   "placed in the user/Registry folder for the current project.",
                   false),
               AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/ForceDeleteGeneratedFiles",
+                  "Delete Generated On Compile",
+                  "This option forces the material graph compiler to preemptively delete previously generated files before creating new ones.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen",
                   "Enable Compile On Open",
                   "If enabled, shaders and materials will automatically be generated whenever a material graph is opened.",
