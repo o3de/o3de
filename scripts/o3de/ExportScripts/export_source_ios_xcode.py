@@ -24,7 +24,8 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
     an Xcode project file containing all necessary build information to produce iOS executables. 
     In order to build and deploy projects, it is recommended to open the project file in Xcode to configure and build accordingly.
 
-    Note: In order to use this functionality, you must be running this script from a MacOS machine with a valid copy of Xcode
+    Note: In order to use this functionality, you must be running this script from a MacOS machine with a valid copy of Xcode. 
+    This will also require setting up an AppleID and provisioning profile in Xcode when the resulting xcode-project file is generated before deploying to device.
 
     Instructions to handle iOS projects in Xcode will be provided soon. This export function is currently experimental.
 
