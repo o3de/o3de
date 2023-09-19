@@ -60,18 +60,19 @@ namespace AZ
             ScopedValue isInitializing(&m_isInitializing, true, false);
 
             // All of these members must be reset if the material can be reinitialized because of the shader reload notification bus
+            m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
             m_shaderResourceGroup = {};
             m_rhiShaderResourceGroup = {};
             m_materialProperties = {};
             m_generalShaderCollection = {};
             m_materialPipelineData = {};
-            m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             if (!m_materialAsset.IsReady())
             {
-                // We will call this function again later when the asset is ready.
-                Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
-                return RHI::ResultCode::Success;
+                AZ_Error(s_debugTraceName, false, "Material::Init failed because acid is not ready. materialAsset uuid=%s",
+                    materialAsset.GetId().ToFixedString().c_str());
+                return RHI::ResultCode::Fail;
             }
 
             if (!m_materialAsset->InitializeNonSerializedData())
@@ -143,7 +144,6 @@ namespace AZ
 
         Material::~Material()
         {
-            Data::AssetBus::Handler::BusDisconnect();
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
         }
 
@@ -833,14 +833,5 @@ namespace AZ
         {
             return m_materialProperties.GetMaterialPropertiesLayout();
         }
-
-        // AssetBus overrides...
-        void Material::OnAssetReady(Data::Asset<Data::AssetData> asset)
-        {
-            Data::AssetBus::Handler::BusDisconnect();
-            Init(*static_cast<MaterialAsset*>(asset.Get()));
-        }
-        // AssetBus overrides end
-
     } // namespace RPI
 } // namespace AZ

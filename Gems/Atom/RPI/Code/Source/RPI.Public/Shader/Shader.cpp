@@ -37,11 +37,15 @@ namespace AZ
                 return nullptr;
             }
 
-            // create the InstanceId from the combined assetId and supervariantIndex
+            // Create the InstanceId By combining data from the asset ID, asset pointer, and super variant index. Using the asset pointer
+            // will help make the instance ID more unique for different versions of the same asset. It is possible to use a more robust
+            // value, like a hash of the data from the asset.
             const Data::AssetId& assetId = shaderAsset.GetId();
-            uint32_t shaderSupervariantIndex = supervariantIndex.GetIndex();
+            const Data::AssetData* assetPtr = shaderAsset.GetData();
+            const uint32_t shaderSupervariantIndex = supervariantIndex.GetIndex();
 
-            const uint32_t instanceIdDataSize = sizeof(assetId.m_guid) + sizeof(assetId.m_subId) + sizeof(shaderSupervariantIndex);
+            const uint32_t instanceIdDataSize =
+                sizeof(assetId.m_guid) + sizeof(assetId.m_subId) + sizeof(assetPtr) + sizeof(shaderSupervariantIndex);
             uint8_t instanceIdData[instanceIdDataSize];
             uint8_t* instanceIdDataPtr = instanceIdData;
 
@@ -49,14 +53,15 @@ namespace AZ
             instanceIdDataPtr += sizeof(assetId.m_guid);
             memcpy(instanceIdDataPtr, &assetId.m_subId, sizeof(assetId.m_subId));
             instanceIdDataPtr += sizeof(assetId.m_subId);
+            memcpy(instanceIdDataPtr, &assetPtr, sizeof(assetPtr));
+            instanceIdDataPtr += sizeof(assetPtr);
             memcpy(instanceIdDataPtr, &shaderSupervariantIndex, sizeof(shaderSupervariantIndex));
+            instanceIdDataPtr += sizeof(shaderSupervariantIndex);
 
-            Data::InstanceId instanceId = Data::InstanceId::CreateData(instanceIdData, instanceIdDataSize);
+            const Data::InstanceId instanceId = Data::InstanceId::CreateData(instanceIdData, instanceIdDataSize);
 
             // retrieve the shader instance from the Instance database
-            Data::Instance<Shader> shaderInstance = Data::InstanceDatabase<Shader>::Instance().FindOrCreate(instanceId, shaderAsset, &anySupervariantName);
-
-            return shaderInstance;
+            return Data::InstanceDatabase<Shader>::Instance().FindOrCreate(instanceId, shaderAsset, &anySupervariantName);
         }
 
         Data::Instance<Shader> Shader::FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset)
