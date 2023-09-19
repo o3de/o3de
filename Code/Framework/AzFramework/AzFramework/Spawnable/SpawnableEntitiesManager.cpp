@@ -564,7 +564,7 @@ namespace AzFramework
 
 // Gruber patch begin // VMED // Preprocess entity components for a level spawnable
 #ifdef CARBONATED
-                constexpr const char* levelSpawnableName = "centralplaza.spawnable"; // FIXME change to evaluated level name or use another way to get the root level entity
+                constexpr const char* levelSpawnableName = "centralplaza.spawnable"; // FIXME change to evaluated level name or use another way to detect a level spawnable
                 const bool isLevelSpawnable = ::strstr(ticket.m_spawnable.GetHint().c_str(), levelSpawnableName) != nullptr;
                 if (isLevelSpawnable)
                 {
