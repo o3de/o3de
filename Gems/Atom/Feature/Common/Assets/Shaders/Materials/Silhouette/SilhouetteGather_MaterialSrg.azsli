@@ -9,10 +9,12 @@
 #pragma once 
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include "../MaterialInputs/SilhouetteInput.azsli"
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     float4 m_color;
     float3x3 m_uvMatrix;
+    float2 m_padding0;
     float m_outlineSize;
 }
