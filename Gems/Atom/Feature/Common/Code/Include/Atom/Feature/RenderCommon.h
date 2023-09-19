@@ -37,6 +37,9 @@ namespace AZ
             //   If other stencil bits are added then these masks will need to be updated.
             const uint32_t UseIBLSpecularPass = 0x3;
 
+            // Whether silhouettes should not be allowed to draw on top of a particular mesh
+            const uint32_t BlockSilhouettes = 0x4;
+
             // UseDiffuseGIPass
             // 
             // The MeshFeatureProcessor sets this stencil bit on any geometry that should receive Diffuse GI in the DiffuseGlobalIllumination pass.

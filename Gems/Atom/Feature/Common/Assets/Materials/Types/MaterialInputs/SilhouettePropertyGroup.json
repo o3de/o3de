@@ -6,7 +6,7 @@
         {
             "name": "silhouetteType",
             "displayName": "Silhouette type",
-            "description": "Silhouette, outline or both",
+            "description": "Silhouette or outline",
             "type": "Enum",
             "defaultValue": "Silhouette",
             "enumValues": [ "None", "Silhouette", "Outline" ],
