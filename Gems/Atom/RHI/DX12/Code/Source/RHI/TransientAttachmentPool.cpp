@@ -30,7 +30,7 @@ namespace AZ
         {
             Device& device = static_cast<Device&>(deviceBase);
 
-            const uint32_t ObjectCacheSize = 512;
+            const uint32_t ObjectCacheSize = 256;
 
             {
                 D3D12_FEATURE_DATA_D3D12_OPTIONS options;

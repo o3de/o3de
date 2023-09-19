@@ -31,7 +31,7 @@ namespace AZ::RHI
         : public ResourcePoolDescriptor
     {
         AZ_CLASS_ALLOCATOR(AliasedHeapDescriptor, SystemAllocator)
-        static const uint32_t DefaultCacheSize = 512;
+        static const uint32_t DefaultCacheSize = 256;
         static const size_t DefaultAlignment = 256;
 
         uint32_t m_cacheSize = DefaultCacheSize;
