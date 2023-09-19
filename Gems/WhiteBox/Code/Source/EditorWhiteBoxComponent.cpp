@@ -246,7 +246,7 @@ namespace WhiteBox
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorWhiteBoxComponent::m_flipYZForExport,
-                        "Flip Y and Z Axes during Export",
+                        "Flip Y and Z for Export",
                         "Flip the Y and Z axes when exportings so they aren't imported sideways into coord systems where the Y-axis goes up.");
             }
         }
