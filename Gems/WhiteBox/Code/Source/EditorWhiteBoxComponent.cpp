@@ -534,6 +534,19 @@ namespace WhiteBox
         const QString absoluteSaveFilePath = AzQtComponents::FileDialog::GetSaveFileName(
             nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
 
+        if (m_flipYZForExport)
+        {
+            Api::VertexHandles vHandles = Api::MeshVertexHandles(*GetWhiteBoxMesh());
+            for (auto& handle : vHandles)
+            {
+                AZ::Vector3 p = Api::VertexPosition(*GetWhiteBoxMesh(), handle);
+                float temp = p.GetY();
+                p.SetY(p.GetZ());
+                p.SetZ(-temp);
+                Api::SetVertexPosition(*GetWhiteBoxMesh(), handle, p);
+            }
+        }
+
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
         const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
         if (WhiteBox::Api::SaveToObj(*GetWhiteBoxMesh(), absoluteSaveFilePathCstr))
