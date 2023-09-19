@@ -31,13 +31,32 @@ namespace AZ
             AZ_Assert(srgLayout != nullptr, "Failed to find SRG with name %s, using supervariantIndex %u from shaderAsset %s", srgName.GetCStr(),
                 supervariantIndex.GetIndex(), shaderAsset.GetHint().c_str());
 
-            // Create a uuid that combines string data for both the srgLayout and the srgName
-            AZ::Uuid instanceUuid =
-                AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(srgLayout->GetUniqueId().data()), srgLayout->GetUniqueId().size())
-                + AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(srgName.GetStringView().data()), srgName.GetStringView().size());
+            // Create the InstanceId By combining data from the asset ID, asset pointer, super variant index, and the SRG name hash. Using
+            // the asset pointer will help make the instance ID more unique for different versions of the same asset. It is possible to use
+            // a more robust value, like a hash of the data from the asset.
+            const Data::AssetId& assetId = shaderAsset.GetId();
+            const Data::AssetData* assetPtr = shaderAsset.GetData();
+            const uint32_t shaderSupervariantIndex = supervariantIndex.GetIndex();
+            const uint32_t srgNameHash = srgName.GetHash();
 
-            // Use the supervariantIndex as the subId for the InstanceId, since it is already an integer
-            return Data::InstanceId(instanceUuid, supervariantIndex.GetIndex());
+            const uint32_t instanceIdDataSize = sizeof(assetId.m_guid) + sizeof(assetId.m_subId) + sizeof(assetPtr) +
+                sizeof(shaderSupervariantIndex) + sizeof(srgNameHash);
+
+            uint8_t instanceIdData[instanceIdDataSize];
+            uint8_t* instanceIdDataPtr = instanceIdData;
+
+            memcpy(instanceIdDataPtr, &assetId.m_guid, sizeof(assetId.m_guid));
+            instanceIdDataPtr += sizeof(assetId.m_guid);
+            memcpy(instanceIdDataPtr, &assetId.m_subId, sizeof(assetId.m_subId));
+            instanceIdDataPtr += sizeof(assetId.m_subId);
+            memcpy(instanceIdDataPtr, &assetPtr, sizeof(assetPtr));
+            instanceIdDataPtr += sizeof(assetPtr);
+            memcpy(instanceIdDataPtr, &shaderSupervariantIndex, sizeof(shaderSupervariantIndex));
+            instanceIdDataPtr += sizeof(shaderSupervariantIndex);
+            memcpy(instanceIdDataPtr, &srgNameHash, sizeof(srgNameHash));
+            instanceIdDataPtr += sizeof(srgNameHash);
+
+            return Data::InstanceId::CreateData(instanceIdData, instanceIdDataSize);
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
