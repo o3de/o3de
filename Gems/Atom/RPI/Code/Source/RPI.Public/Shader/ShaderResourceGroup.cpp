@@ -34,29 +34,19 @@ namespace AZ
             // Create the InstanceId By combining data from the asset ID, asset pointer, super variant index, and the SRG name hash. Using
             // the asset pointer will help make the instance ID more unique for different versions of the same asset. It is possible to use
             // a more robust value, like a hash of the data from the asset.
-            const Data::AssetId& assetId = shaderAsset.GetId();
-            const Data::AssetData* assetPtr = shaderAsset.GetData();
-            const uint32_t shaderSupervariantIndex = supervariantIndex.GetIndex();
-            const uint32_t srgNameHash = srgName.GetHash();
-
-            const uint32_t instanceIdDataSize = sizeof(assetId.m_guid) + sizeof(assetId.m_subId) + sizeof(assetPtr) +
-                sizeof(shaderSupervariantIndex) + sizeof(srgNameHash);
-
-            uint8_t instanceIdData[instanceIdDataSize];
-            uint8_t* instanceIdDataPtr = instanceIdData;
-
-            memcpy(instanceIdDataPtr, &assetId.m_guid, sizeof(assetId.m_guid));
-            instanceIdDataPtr += sizeof(assetId.m_guid);
-            memcpy(instanceIdDataPtr, &assetId.m_subId, sizeof(assetId.m_subId));
-            instanceIdDataPtr += sizeof(assetId.m_subId);
-            memcpy(instanceIdDataPtr, &assetPtr, sizeof(assetPtr));
-            instanceIdDataPtr += sizeof(assetPtr);
-            memcpy(instanceIdDataPtr, &shaderSupervariantIndex, sizeof(shaderSupervariantIndex));
-            instanceIdDataPtr += sizeof(shaderSupervariantIndex);
-            memcpy(instanceIdDataPtr, &srgNameHash, sizeof(srgNameHash));
-            instanceIdDataPtr += sizeof(srgNameHash);
-
-            return Data::InstanceId::CreateData(instanceIdData, instanceIdDataSize);
+            struct InstanceIdData
+            {
+                const Data::AssetId m_assetId;
+                const Data::AssetData* m_assetPtr;
+                const uint32_t m_shaderSupervariantIndex;
+                const uint32_t m_srgNameHash;
+                const AZ::HashValue64 m_srgLayoutHash;
+            };
+            const InstanceIdData instanceIdData{
+                shaderAsset.GetId(), shaderAsset.GetData(), supervariantIndex.GetIndex(), srgName.GetHash(), srgLayout->GetHash()
+            };
+            const Data::InstanceId instanceId = Data::InstanceId::CreateData(&instanceIdData, sizeof(instanceIdData));
+            return instanceId;
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
