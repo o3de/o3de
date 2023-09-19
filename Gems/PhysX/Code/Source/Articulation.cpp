@@ -23,9 +23,9 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ArticulationLinkData>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("LinkConfiguration", &ArticulationLinkData::m_articulationLinkConfiguration)
-                ->Field("ShapeColliderPair", &ArticulationLinkData::m_shapeColliderConfiguration)
+                ->Field("ShapeColliderPairList", &ArticulationLinkData::m_shapeColliderConfigurationList)
                 ->Field("LocalTransform", &ArticulationLinkData::m_localTransform)
                 ->Field("JointLeadLocalFrame", &ArticulationLinkData::m_jointLeadLocalFrame)
                 ->Field("JointFollowerLocalFrame", &ArticulationLinkData::m_jointFollowerLocalFrame)
@@ -62,50 +62,55 @@ namespace PhysX
 
     void ArticulationLink::AddCollisionShape(const ArticulationLinkData& thisLinkData)
     {
-        const Physics::ColliderConfiguration* colliderConfiguration = thisLinkData.m_shapeColliderConfiguration.first.get();
-        const Physics::ShapeConfiguration* shapeConfiguration = thisLinkData.m_shapeColliderConfiguration.second.get();
-
-        if (shapeConfiguration && colliderConfiguration)
+        m_physicsShapes.clear();
+        for (auto& [colliderConfiguration, shapeConfiguration] : thisLinkData.m_shapeColliderConfigurationList)
         {
-            if (shapeConfiguration->GetShapeType() == Physics::ShapeType::PhysicsAsset)
+            if (shapeConfiguration && colliderConfiguration)
             {
-                const auto* physicsAssetShapeConfiguration =
-                    static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfiguration);
-                if (!physicsAssetShapeConfiguration->m_asset.IsReady())
+                if (shapeConfiguration->GetShapeType() == Physics::ShapeType::PhysicsAsset)
                 {
-                    const_cast<Physics::PhysicsAssetShapeConfiguration*>(physicsAssetShapeConfiguration)->m_asset.BlockUntilLoadComplete();
+                    const auto* physicsAssetShapeConfiguration =
+                        static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfiguration.get());
+                    if (!physicsAssetShapeConfiguration->m_asset.IsReady())
+                    {
+                        auto asset_status = const_cast<Physics::PhysicsAssetShapeConfiguration*>(physicsAssetShapeConfiguration)
+                                                ->m_asset.BlockUntilLoadComplete();
+                        AZ_Error(
+                            "PhysX",
+                            asset_status == AZ::Data::AssetData::AssetStatus::Ready,
+                            "Failed to load physics asset %s ",
+                            physicsAssetShapeConfiguration->m_asset.GetHint().c_str());
+                        if (asset_status != AZ::Data::AssetData::AssetStatus::Ready)
+                        {
+                            continue;
+                        }
+                    }
+                    const bool hasNonUniformScale = !Physics::Utils::HasUniformScale(physicsAssetShapeConfiguration->m_assetScale) ||
+                        (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+                    AZStd::vector<AZStd::shared_ptr<Physics::Shape>> assetShapes;
+                    Utils::CreateShapesFromAsset(
+                        *physicsAssetShapeConfiguration,
+                        *colliderConfiguration,
+                        hasNonUniformScale,
+                        physicsAssetShapeConfiguration->m_subdivisionLevel,
+                        assetShapes);
+                    AZStd::copy(assetShapes.begin(), assetShapes.end(), AZStd::back_inserter(m_physicsShapes));
                 }
-
-                const bool hasNonUniformScale = !Physics::Utils::HasUniformScale(physicsAssetShapeConfiguration->m_assetScale) ||
-                    (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
-                AZStd::vector<AZStd::shared_ptr<Physics::Shape>> assetShapes;
-                Utils::CreateShapesFromAsset(
-                    *physicsAssetShapeConfiguration,
-                    *colliderConfiguration,
-                    hasNonUniformScale,
-                    physicsAssetShapeConfiguration->m_subdivisionLevel,
-                    assetShapes);
-
-                if (!assetShapes.empty())
+                else
                 {
-                    m_physicsShape = assetShapes[0];
-                    AZ_Warning(
-                        "PhysX",
-                        assetShapes.size() == 1,
-                        "Articulation %s has a link with physics mesh with more than 1 shape",
-                        m_pxLink->getName());
+                    m_physicsShapes.push_back(
+                        AZ::Interface<Physics::System>::Get()->CreateShape(*colliderConfiguration, *shapeConfiguration));
                 }
-            }
-            else
-            {
-                m_physicsShape =
-                    AZ::Interface<Physics::System>::Get()->CreateShape(*colliderConfiguration, *shapeConfiguration);
             }
         }
-
-        if (m_physicsShape)
+        AZ_Printf(
+            "PhysX", "ArticulationLink::AddCollisionShape: %zu shapes added to link %s\n", m_physicsShapes.size(), m_pxLink->getName());
+        for (const auto& shapePtr : m_physicsShapes)
         {
-            m_pxLink->attachShape(*static_cast<physx::PxShape*>(m_physicsShape->GetNativePointer()));
+            if (shapePtr && shapePtr->GetNativePointer())
+            {
+                m_pxLink->attachShape(*static_cast<physx::PxShape*>(shapePtr->GetNativePointer()));
+            }
         }
     }
 

@@ -46,8 +46,8 @@ namespace PhysX
         //! This data comes from Articulation Link Component in the Editor.
         ArticulationLinkConfiguration m_articulationLinkConfiguration;
 
-        //! Data related to the collision shape for this link. 
-        AzPhysics::ShapeColliderPair m_shapeColliderConfiguration;
+        //! Data related to the collision shapes for this link.
+        AzPhysics::ShapeColliderPairList m_shapeColliderConfigurationList;
 
         //! Cached local transform of this link relative to its parent.
         //! This is needed because at the time of constructing the articulation
@@ -95,7 +95,7 @@ namespace PhysX
         physx::PxArticulationLink* m_pxLink = nullptr;
 
         ActorData m_actorData;
-        AZStd::shared_ptr<Physics::Shape> m_physicsShape;
+        AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_physicsShapes;
     };
 
     ArticulationLink* CreateArticulationLink(const ArticulationLinkConfiguration* articulationConfig);
