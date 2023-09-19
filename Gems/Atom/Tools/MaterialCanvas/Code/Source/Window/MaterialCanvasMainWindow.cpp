@@ -162,8 +162,8 @@ namespace MaterialCanvas
                   false),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/ForceDeleteGeneratedFiles",
-                  "Delete Generated On Compile",
-                  "This option forces the material graph compiler to preemptively delete previously generated files before creating new ones.",
+                  "Delete Files Before Compile",
+                  "This option forces files previously generated from the current graph to be deleted before creating new ones.",
                   false),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen",
