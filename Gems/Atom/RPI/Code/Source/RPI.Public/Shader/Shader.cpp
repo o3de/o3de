@@ -37,7 +37,7 @@ namespace AZ
                 return nullptr;
             }
 
-            // Create the InstanceId By combining data from the asset ID, asset pointer, and super variant index. Using the asset pointer
+            // Create the InstanceId by combining data from the asset ID, asset pointer, and super variant index. Using the asset pointer
             // will help make the instance ID more unique for different versions of the same asset. It is possible to use a more robust
             // value, like a hash of the data from the asset.
             struct InstanceIdData
