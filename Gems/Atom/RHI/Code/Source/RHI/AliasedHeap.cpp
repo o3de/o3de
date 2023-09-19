@@ -124,7 +124,8 @@ namespace AZ::RHI
         if (!CheckBitsAny(m_compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources))
         {
             AZ_Assert(m_totalAllocations < m_cache.GetCapacity(),
-                "Exceeded the size of the cache! This will destroy actively used resources. (Total Allocations was %i, and Cache capacity was %i)");
+                "Exceeded the size of the cache! This will destroy actively used resources. (Total Allocations was %i, and Cache capacity was %i)",
+                m_totalAllocations, m_cache.GetCapacity());
             m_totalAllocations++;
 
             HashValue64 hash = descriptor.GetHash();
