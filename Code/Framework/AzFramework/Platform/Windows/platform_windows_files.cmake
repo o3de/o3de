@@ -12,6 +12,7 @@ set(FILES
     AzFramework/API/ApplicationAPI_Platform.h
     AzFramework/API/ApplicationAPI_Windows.h
     AzFramework/Asset/AssetSystemComponentHelper_Windows.cpp
+    AzFramework/Device/DeviceAttributesCommon_Win.cpp
     AzFramework/Process/ProcessWatcher_Win.cpp
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessCommunicator_Win.cpp

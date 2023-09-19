@@ -16,6 +16,7 @@ set(FILES
     AzFramework/Process/ProcessWatcher_Linux.cpp
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessCommunicator_Linux.cpp
+    ../Common/UnixLike/AzFramework/Device/DeviceAttributesCommon_UnixLike.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
