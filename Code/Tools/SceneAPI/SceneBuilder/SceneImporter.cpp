@@ -69,6 +69,12 @@ namespace AZ
                 // Start with a default set of import settings.
                 SceneAPI::SceneImportSettings importSettings;
 
+                // Try to read in any global settings from the settings registry.
+                if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
+                {
+                    settingsRegistry->GetObject(importSettings, AZ::SceneAPI::DataTypes::IImportGroup::SceneImportSettingsRegistryKey);
+                }
+
                 // Try reading in the scene manifest (.assetinfo file), which contains the import settings if they've been
                 // changed from the defaults.
                 Containers::Scene scene("");

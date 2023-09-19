@@ -54,6 +54,11 @@ namespace AZ::SceneAPI::SceneData
         return m_importSettings;
     }
 
+    void ImportGroup::SetImportSettings(const SceneImportSettings& importSettings)
+    {
+        m_importSettings = importSettings;
+    }
+
     void ImportGroup::Reflect(ReflectContext* context)
     {
         if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context); serializeContext)

@@ -18,7 +18,7 @@ namespace AZ
 
 namespace AZ::SceneAPI::SceneData
 {
-    class ImportGroup final
+    class SCENE_DATA_CLASS ImportGroup final
         : public DataTypes::IImportGroup
     {
     public:
@@ -27,19 +27,20 @@ namespace AZ::SceneAPI::SceneData
 
         static void Reflect(AZ::ReflectContext* context);
 
-        ImportGroup();
-        ~ImportGroup() override = default;
+        SCENE_DATA_API ImportGroup();
+        SCENE_DATA_API ~ImportGroup() override = default;
 
-        const AZStd::string& GetName() const override;
-        const Uuid& GetId() const override;
+        SCENE_DATA_API const AZStd::string& GetName() const override;
+        SCENE_DATA_API const Uuid& GetId() const override;
 
-        Containers::RuleContainer& GetRuleContainer() override;
-        const Containers::RuleContainer& GetRuleContainerConst() const override;
+        SCENE_DATA_API Containers::RuleContainer& GetRuleContainer() override;
+        SCENE_DATA_API const Containers::RuleContainer& GetRuleContainerConst() const override;
 
-        DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() override;
-        const DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() const override;
+        SCENE_DATA_API DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() override;
+        SCENE_DATA_API const DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() const override;
 
-        const SceneImportSettings& GetImportSettings() const override;
+        SCENE_DATA_API const SceneImportSettings& GetImportSettings() const override;
+        SCENE_DATA_API void SetImportSettings(const SceneImportSettings& importSettings) override;
 
     private:
         SceneImportSettings m_importSettings;
