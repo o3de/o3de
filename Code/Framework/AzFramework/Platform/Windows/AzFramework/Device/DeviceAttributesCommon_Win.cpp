@@ -16,14 +16,15 @@
 
 namespace AzFramework
 {
-    AZStd::string QueryWMIProperty(IWbemServices* services, const AZStd::wstring& propertyName)
+    AZStd::string QueryWMIProperty(IWbemServices* services, AZStd::string_view propertyName)
     {
         AZStd::string result;
         IEnumWbemClassObject* classObjectEnumerator = nullptr;
 
-        // prepare a query to obtain the Model property from Win32_ComputerSystem
+        // prepare a query to obtain the property value from Win32_ComputerSystem
         // https://learn.microsoft.com/en-us/windows/win32/cimwin32prov/win32-computersystem
-        auto propertyQuery = AZStd::wstring::format(TEXT("SELECT %.*s FROM Win32_ComputerSystem"), AZ_STRING_ARG(propertyName));
+        auto propertyQuery = AZStd::wstring::format(TEXT("SELECT %.*S FROM Win32_ComputerSystem"),
+            AZ_STRING_ARG(propertyName));
 
         // ExecQuery expects BSTR types
         auto query = SysAllocString(propertyQuery.c_str());
@@ -44,9 +45,11 @@ namespace AzFramework
 
             if (!FAILED(hResult) && classObject && numResults != 0)
             {
-                // get the property value
+                // get the class object's property value
                 VARIANT propertyValue;
-                if (!FAILED(classObject->Get(propertyName.c_str(), 0, &propertyValue, 0, 0)))
+                AZStd::wstring classObjectPropertyName;
+                AZStd::to_wstring(classObjectPropertyName, propertyName);
+                if (!FAILED(classObject->Get(classObjectPropertyName.c_str(), 0, &propertyValue, 0, 0)))
                 {
                     if (propertyValue.vt != VT_NULL &&
                         propertyValue.vt != VT_EMPTY &&
@@ -72,7 +75,7 @@ namespace AzFramework
         return result;
     }
 
-    AZStd::string GetWMIPropertyValue(const AZStd::wstring& propertyName)
+    AZStd::string GetWMIPropertyValue(AZStd::string_view propertyName)
     {
         AZStd::string propertyValue;
 
@@ -133,7 +136,7 @@ namespace AzFramework
     {
         // Use WMI because the registry HARDWARE\DESCRIPTION\System\BIOS\SystemProductName is not
         // always available or non-empty and the name does not match what WMI returns for the Model
-        m_value = GetWMIPropertyValue(TEXT("Model"));
+        m_value = GetWMIPropertyValue("Model");
     }
 
     DeviceAttributeRAM::DeviceAttributeRAM()
