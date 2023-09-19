@@ -20,7 +20,7 @@ namespace AZ
         const Data::Instance<Image> ShaderResourceGroup::s_nullImage;
         const Data::Instance<Buffer> ShaderResourceGroup::s_nullBuffer;
 
-        Data::InstanceId ShaderResourceGroup::MakeInstanceId(
+        Data::InstanceId ShaderResourceGroup::MakeSRGPoolInstanceId(
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
             AZ_Assert(!srgName.IsEmpty(), "Invalid ShaderResourceGroup name");
