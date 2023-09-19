@@ -562,6 +562,30 @@ namespace AzFramework
                     request.m_preInsertionCallback(request.m_ticketId, SpawnableEntityContainerView(newEntitiesBegin, newEntitiesEnd));
                 }
 
+// Gruber patch begin // VMED // Preprocess entity components for a level spawnable
+#ifdef CARBONATED
+                constexpr const char* levelSpawnableName = "centralplaza.spawnable"; // FIXME change to evaluated level name or use another way to detect a level spawnable
+                const bool isLevelSpawnable = ::strstr(ticket.m_spawnable.GetHint().c_str(), levelSpawnableName) != nullptr;
+                if (isLevelSpawnable)
+                {
+                    AzFramework::EntityContext* gameContext = nullptr;
+                    AzFramework::GameEntityContextRequestBus::BroadcastResult(
+                        gameContext, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextInstance);
+                    if (gameContext != nullptr)
+                    {
+                        AzFramework::EntityContextEventBus::Event(
+                            gameContext->GetContextId(),
+                            &AzFramework::EntityContextEventBus::Events::OnEntityContextLoadedFromStream,
+                            ticket.m_spawnedEntities);
+                    }
+                    else
+                    {
+                        AZ_Error("SpawnableEntitiesManager::ProcessRequest", false, "Game entity context for level is not found");
+                    }
+                }
+#endif
+// Gruber patch begin // VMED // Preprocess netbinding entity components for level
+
                 // Add to the game context, now the entities are active
                 for (auto it = newEntitiesBegin; it != newEntitiesEnd; ++it)
                 {
