@@ -105,14 +105,16 @@ namespace AZ
 
             if (m_materialAsset.GetId().IsValid() && m_materialAsset.IsReady())
             {
-                m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
+                const bool createUniqueInstance = m_materialInstanceMustBeUnique || !m_propertyOverrides.empty();
+                m_materialInstance = createUniqueInstance ? RPI::Material::Create(m_materialAsset) : RPI::Material::FindOrCreate(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
                 return;
             }
 
             if (m_defaultMaterialAsset.GetId().IsValid() && m_defaultMaterialAsset.IsReady())
             {
-                m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
+                const bool createUniqueInstance = m_materialInstanceMustBeUnique || !m_propertyOverrides.empty();
+                m_materialInstance = createUniqueInstance ? RPI::Material::Create(m_defaultMaterialAsset) : RPI::Material::FindOrCreate(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
                 return;
             }
