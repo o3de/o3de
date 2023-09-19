@@ -190,7 +190,8 @@ namespace WhiteBox
                 ->Field("EditorMeshAsset", &EditorWhiteBoxComponent::m_editorMeshAsset)
                 ->Field("Material", &EditorWhiteBoxComponent::m_material)
                 ->Field("RenderData", &EditorWhiteBoxComponent::m_renderData)
-                ->Field("ComponentMode", &EditorWhiteBoxComponent::m_componentModeDelegate);
+                ->Field("ComponentMode", &EditorWhiteBoxComponent::m_componentModeDelegate)
+                ->Field("FlipYZForExport", &EditorWhiteBoxComponent::m_flipYZForExport);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -241,7 +242,12 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Export")
                     ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export all whiteboxes on descendant entities as a single obj (excluding this one)")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportDescendantsToFile)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export Descendants");
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export Descendants")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorWhiteBoxComponent::m_flipYZForExport,
+                        "Flip Y and Z Axes during Export",
+                        "Flip the Y and Z axes when exportings so they aren't imported sideways into coord systems where the Y-axis goes up.");
             }
         }
     }
@@ -580,11 +586,17 @@ namespace WhiteBox
                     {
                         Api::VertexHandle vertexHandles[4];
 
-                        // top verts
-                        vertexHandles[0] = Api::AddVertex(*mesh.get(), worldTM.TransformPoint(verts[0]));
-                        vertexHandles[1] = Api::AddVertex(*mesh.get(), worldTM.TransformPoint(verts[1]));
-                        vertexHandles[2] = Api::AddVertex(*mesh.get(), worldTM.TransformPoint(verts[2]));
-                        vertexHandles[3] = Api::AddVertex(*mesh.get(), worldTM.TransformPoint(verts[3]));
+                        for (unsigned int i = 0; i < 4; i++)
+                        {
+                            AZ::Vector3 worldV = worldTM.TransformPoint(verts[i]);
+                            if (m_flipYZForExport)
+                            {
+                                float temp = worldV.GetY();
+                                worldV.SetY(worldV.GetZ());
+                                worldV.SetZ(-temp);
+                            }
+                            vertexHandles[i] = Api::AddVertex(*mesh.get(), worldV);
+                        }
                         Api::AddQuadPolygon(*mesh.get(), vertexHandles[0], vertexHandles[1], vertexHandles[2], vertexHandles[3]);
                     }
                 }
