@@ -47,8 +47,7 @@ namespace AZ
         }
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
 
-        bool AssImpSceneWrapper::LoadSceneFromFile(const char* fileName,
-            [[maybe_unused]] const AZ::SceneAPI::SceneImportSettings& importSettings)
+        bool AssImpSceneWrapper::LoadSceneFromFile(const char* fileName, const AZ::SceneAPI::SceneImportSettings& importSettings)
         {
             AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "AssImpSceneWrapper::LoadSceneFromFile %s", fileName);
             AZ_TraceContext("Filename", fileName);
