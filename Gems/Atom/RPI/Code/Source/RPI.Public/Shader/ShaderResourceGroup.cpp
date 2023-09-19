@@ -28,25 +28,22 @@ namespace AZ
             // Let's find the srg layout with the given name, because it contains the azsl file path of origin
             // which is essential to uniquely identify an SRG and avoid redundant copies in memory.
             auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(srgName, supervariantIndex);
-            AZ_Assert(srgLayout != nullptr, "Failed to find SRG with name %s, using supervariantIndex %u from shaderAsset %s", srgName.GetCStr(),
-                supervariantIndex.GetIndex(), shaderAsset.GetHint().c_str());
+            AZ_Assert(
+                srgLayout != nullptr,
+                "Failed to find SRG with name %s, using supervariantIndex %u from shaderAsset %s",
+                srgName.GetCStr(),
+                supervariantIndex.GetIndex(),
+                shaderAsset.GetHint().c_str());
 
-            // Create the InstanceId By combining data from the asset ID, asset pointer, super variant index, and the SRG name hash. Using
-            // the asset pointer will help make the instance ID more unique for different versions of the same asset. It is possible to use
-            // a more robust value, like a hash of the data from the asset.
+            // Create the InstanceId by combining data from the SRG name hash and layout hash. This value does not need to be unique between
+            // asset IDs or versions because the data can be shared as long as the names and layouts match.
             struct InstanceIdData
             {
-                const Data::AssetId m_assetId;
-                const Data::AssetData* m_assetPtr;
-                const uint32_t m_shaderSupervariantIndex;
                 const uint32_t m_srgNameHash;
                 const AZ::HashValue64 m_srgLayoutHash;
             };
-            const InstanceIdData instanceIdData{
-                shaderAsset.GetId(), shaderAsset.GetData(), supervariantIndex.GetIndex(), srgName.GetHash(), srgLayout->GetHash()
-            };
-            const Data::InstanceId instanceId = Data::InstanceId::CreateData(&instanceIdData, sizeof(instanceIdData));
-            return instanceId;
+            const InstanceIdData instanceIdData{ srgName.GetHash(), srgLayout->GetHash() };
+            return Data::InstanceId::CreateData(&instanceIdData, sizeof(instanceIdData));
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
