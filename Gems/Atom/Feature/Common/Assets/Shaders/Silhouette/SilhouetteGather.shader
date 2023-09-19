@@ -3,9 +3,9 @@
     "DepthStencilState" : {
         "Depth": 
         {
-            "Enable": false, 
+            "Enable": true, 
             "WriteMask" : "Zero",   // Avoid writing the depth
-            "CompareFunc" : "LessEqual"
+            "CompareFunc" : "Less"
         },
         "Stencil" :
         {
@@ -14,17 +14,17 @@
             "WriteMask" : "0x0",
             "FrontFace" :
             {
-                "Func" : "NotEqual",
+                "Func" : "Equal",
                 "DepthFailOp" : "Keep",
                 "FailOp" : "Keep",
-                "PassOp" : "Keep"
+                "PassOp" : "Replace"
             },
             "BackFace" :
             {
-                "Func" : "NotEqual",
+                "Func" : "Equal",
                 "DepthFailOp" : "Keep",
                 "FailOp" : "Keep",
-                "PassOp" : "Keep"
+                "PassOp" : "Replace"
             }
         }
     },
@@ -38,8 +38,8 @@
         "BlendSource" : "One",
         "BlendDest" : "Zero",
         "BlendOp" : "Maximum",
-        "BlendAlphaSource" : "One",
-        "BlendAlphaDest" : "Zero",
+        "BlendAlphaSource" : "Zero",
+        "BlendAlphaDest" : "One",
         "BlendAlphaOp" : "Maximum"
     },
     "ProgramSettings": {
