@@ -622,7 +622,7 @@ namespace AzFramework
         constexpr const char* userCachePathFilename{ "Cache" };
         AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
 #if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
+        // The number of max attempts ultimately dictates the number of application instances that can run
         // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
         // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't
         // be set *infinitely* high - each cache folder is GBs in size, and finding a free directory is a

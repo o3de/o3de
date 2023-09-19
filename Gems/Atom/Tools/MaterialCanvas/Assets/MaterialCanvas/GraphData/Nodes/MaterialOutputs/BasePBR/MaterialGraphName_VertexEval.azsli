@@ -44,6 +44,9 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     const float3 O3DE_MC_BITANGENT_WS = bitangentWS;
     #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
 
+    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
+    const bool placeHolder = MaterialSrg::m_placeHolder;
+
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
     float3 inPositionOffset = {0.0, 0.0, 0.0};
     // O3DE_GENERATED_INSTRUCTIONS_END
