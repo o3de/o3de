@@ -25,6 +25,7 @@
 #include <QMenu>
 #include <QSpacerItem>
 #include <QProgressBar>
+#include <QDebug>
 #include <QDir>
 #include <QFileInfo>
 #include <QDesktopServices>
@@ -403,9 +404,10 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ShowLogs()
     {
-        [[maybe_unused]] bool openFileResult = QDesktopServices::openUrl(m_projectInfo.m_logUrl);
-        [[maybe_unused]] auto localFile = m_projectInfo.m_logUrl.toLocalFile().toUtf8();
-        AZ_Warning("ProjectManager", openFileResult, "Failed to open log file %.*s", localFile.length(), localFile.constData());
+        if (!QDesktopServices::openUrl(m_projectInfo.m_logUrl))
+        {
+            qDebug() << "QDesktopServices::openUrl failed to open " << m_projectInfo.m_logUrl.toString() << "\n";
+        }
     }
 
     void ProjectButton::SetEngine(const EngineInfo& engine)

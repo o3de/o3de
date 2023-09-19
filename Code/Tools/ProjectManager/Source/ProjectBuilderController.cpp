@@ -12,6 +12,7 @@
 #include <SettingsInterface.h>
 
 #include <QMessageBox>
+#include <QDebug>
 #include <QDesktopServices>
 #include <QUrl>
 
@@ -95,9 +96,10 @@ namespace O3DE::ProjectManager
                 if (openLog == QMessageBox::Yes)
                 {
                     // Open application assigned to this file type
-                    [[maybe_unused]] bool openFileResult = QDesktopServices::openUrl(QUrl::fromLocalFile(m_worker->GetLogFilePath()));
-                    [[maybe_unused]] auto localFile = m_worker->GetLogFilePath().toUtf8();
-                    AZ_Warning("ProjectManager", openFileResult, "Failed to open log file %.*s", localFile.length(), localFile.constData());
+                    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(m_worker->GetLogFilePath())))
+                    {
+                        qDebug() << "QDesktopServices::openUrl failed to open " << m_projectInfo.m_logUrl.toString() << "\n";
+                    }
                 }
 
                 m_projectInfo.m_buildFailed = true;
