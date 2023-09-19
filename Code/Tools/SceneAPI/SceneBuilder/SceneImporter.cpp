@@ -109,17 +109,13 @@ namespace AZ
                     return Events::ProcessingResult::Failure;
                 }
 
-                typedef AZStd::function<bool(Containers::Scene & scene)> ConvertFunc;
-                ConvertFunc convertFunc;
                 m_sceneSystem->Set(m_sceneWrapper.get());
                 if (!azrtti_istypeof<AssImpSDKWrapper::AssImpSceneWrapper>(m_sceneWrapper.get()))
                 {
                     return Events::ProcessingResult::Failure;
                 }
 
-                convertFunc = AZStd::bind(&SceneImporter::ConvertScene, this, AZStd::placeholders::_1);
-                
-                if (convertFunc(context.GetScene()))
+                if (ConvertScene(context.GetScene()))
                 {
                     return Events::ProcessingResult::Success;
                 }
