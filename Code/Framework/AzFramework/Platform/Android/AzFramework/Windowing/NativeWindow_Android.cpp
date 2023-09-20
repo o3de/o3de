@@ -56,8 +56,11 @@ namespace AzFramework
             m_height = geometry.m_height;
         }
 
-        // Set the resolution to the same size of the window.
-        ANativeWindow_setBuffersGeometry(m_nativeWindow, m_width, m_height, ANativeWindow_getFormat(m_nativeWindow));
+        if (m_nativeWindow)
+        {
+            // Set the resolution to the same size of the window.
+            ANativeWindow_setBuffersGeometry(m_nativeWindow, m_width, m_height, ANativeWindow_getFormat(m_nativeWindow));
+        }
     }
 
     NativeWindowHandle NativeWindowImpl_Android::GetWindowHandle() const
