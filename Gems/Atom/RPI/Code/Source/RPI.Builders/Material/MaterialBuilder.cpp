@@ -11,6 +11,7 @@
 #include <Material/MaterialBuilderUtils.h>
 
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
@@ -131,33 +132,49 @@ namespace AZ
             // the child material. See https://github.com/o3de/o3de/issues/13766
             if (!materialTypePath.empty())
             {
+                // We usually won't load file during CreateJob since we want to keep the function fast. 
+                // But here we have to load the material type data to find the exact material type format so we could create an accurate source dependency.
+                AZStd::string resolvedMaterialPath = AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), materialTypePath.c_str());
+
+                MaterialTypeSourceData::Format materialTypeFormat = MaterialTypeSourceData::Format::Invalid;
+                MaterialUtils::ImportedJsonFiles importedJsonFiles;
+                auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialPath, nullptr, &importedJsonFiles);
+
+                if (materialTypeSourceData.IsSuccess())
+                {
+                    materialTypeFormat = materialTypeSourceData.GetValue().GetFormat();
+                }
+
                 // If the material uses the "Direct" format, then there will need to be a dependency on that file.
                 // If it uses the "Abstract" format, then there will be an intermediate .materialtype and there needs to be a dependency on that file instead.
-                // At this point the builder does not know which is the case, without loading the .materialtype file and inspecting its data. The builder
-                // avoids that because it could slow things down, and instead just registers both dependencies.
-
-                MaterialBuilderUtils::AddPossibleDependencies(
-                    request.m_sourceFile,
-                    materialTypePath,
-                    MaterialTypeBuilder::FinalStageJobKey,
-                    outputJobDescriptor.m_jobDependencyList,
-                    response.m_sourceFileDependencyList,
-                    false,
-                    0);
-
-                const AZStd::string intermediateMaterialTypePath =
-                    MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile, materialTypePath);
-                if (!intermediateMaterialTypePath.empty())
+                if (materialTypeFormat == MaterialTypeSourceData::Format::Direct)
                 {
                     MaterialBuilderUtils::AddPossibleDependencies(
                         request.m_sourceFile,
-                        intermediateMaterialTypePath,
+                        resolvedMaterialPath,
                         MaterialTypeBuilder::FinalStageJobKey,
                         outputJobDescriptor.m_jobDependencyList,
                         response.m_sourceFileDependencyList,
                         false,
                         0);
                 }
+                else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
+                {
+                    const AZStd::string intermediateMaterialTypePath =
+                        MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile, materialTypePath);
+                    if (!intermediateMaterialTypePath.empty())
+                    {
+                        MaterialBuilderUtils::AddPossibleDependencies(
+                            request.m_sourceFile,
+                            intermediateMaterialTypePath,
+                            MaterialTypeBuilder::FinalStageJobKey,
+                            outputJobDescriptor.m_jobDependencyList,
+                            response.m_sourceFileDependencyList,
+                            false,
+                            0);
+                    }
+                }
+
             }
 
             // Even though above we were able to get away without deserializing the material json, we do need to deserialize here in order

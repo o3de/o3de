@@ -11,6 +11,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/string/regex.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -135,13 +136,19 @@ namespace AZ
 
                 if (referencedPath.IsRelative())
                 {
-                    AZ::IO::FixedMaxPath originatingPath;
-                    AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
-                    // Use the referencedSourceFilePath as a relative path starting at originatingSourceFilePath
-                    AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
-                    combinedPath /= referencedPath;
+                    // if the referencedPath exists under project path, then we can skip constructing a new path based on source file path
+                    AZ::IO::FixedMaxPath fullPath = AZ::Utils::GetProjectPath();
+                    fullPath /= referencedPath;
+                    if (!AZ::IO::SystemFile::Exists(fullPath.c_str()))
+                    {
+                        AZ::IO::FixedMaxPath originatingPath;
+                        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
+                        // Use the referencedSourceFilePath as a relative path starting at originatingSourceFilePath
+                        AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
+                        combinedPath /= referencedPath;
 
-                    results.push_back(combinedPath.LexicallyNormal().String());
+                        results.push_back(combinedPath.LexicallyNormal().String());
+                    }
                 }
 
                 // Use the referencedSourceFilePath as a standard asset path
