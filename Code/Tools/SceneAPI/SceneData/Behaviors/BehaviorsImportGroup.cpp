@@ -61,7 +61,7 @@ namespace AZ::SceneAPI::Behaviors
         // are enabled, the set of mesh groups to export for the Proc Prefab will also need to change to match the new
         // list of meshes.
                 
-        categories.emplace_back("Import", SceneData::ImportGroup::TYPEINFO_Uuid(), s_importGroupPreferredTabOrder);
+        //categories.emplace_back("Import", SceneData::ImportGroup::TYPEINFO_Uuid(), s_importGroupPreferredTabOrder);
     }
 
     void ImportGroup::InitializeObject(
