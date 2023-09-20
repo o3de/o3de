@@ -40,10 +40,8 @@ def read_string_data(process: lldb.SBProcess, string_type: lldb.SBType, string_a
         encoding = 'utf-8'
     elif element_type == element_type.GetBasicType(lldb.eBasicTypeWChar):
         if element_size == 4:
-            byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
             encoding = 'utf-32'
         elif element_size == 2:
-            byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
             encoding = 'utf-16'
         else:
             return f'<error: wchar_t type size ({element_size}) is not 2 or 4 bytes. string data cannot be decoded>'
