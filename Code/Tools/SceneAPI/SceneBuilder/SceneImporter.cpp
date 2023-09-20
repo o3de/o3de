@@ -10,6 +10,7 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/conversions.h>
