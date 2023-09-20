@@ -17,177 +17,103 @@ import lldb.formatters.Logger
 # Uncomment for debug output
 # lldb.formatters.Logger._lldb_formatters_debug_level = 3
 
+def read_string_data(process: lldb.SBProcess, string_type: lldb.SBType, string_address: lldb.SBValue, string_size: int):
+    # If the string size is 0, then return an empty string
+    if string_size == 0:
+        return '""'
+
+    # Get the string element type from the first tempalte argument
+    element_type = string_type.GetTemplateArgumentType(0)
+    # query the byte size of the character type. It should be 1 for `char`
+    # 2 for wchar_t on Windows and 4 for wchar_t on Linux/MacOS
+    element_size = element_type.GetByteSize()
+
+    # Stores the encoding to use to decode the string byte data read in from memory
+    # into a python unicode string
+    encoding = ''
+
+    # SBType.GetBasicType is strange, passing in the enum value of the type
+    # doesn't query the actual type but returns a new SBType
+    # instance that represents the basic type
+    # https://lldb.llvm.org/python_api/lldb.SBType.html#lldb.SBType.GetBasicType
+    if element_type == element_type.GetBasicType(lldb.eBasicTypeChar):
+        encoding = 'utf-8'
+    elif element_type == element_type.GetBasicType(lldb.eBasicTypeWChar):
+        if element_size == 4:
+            byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
+            encoding = 'utf-32'
+        elif element_size == 2:
+            byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
+            encoding = 'utf-16'
+        else:
+            return f'<error: wchar_t type size ({element_size}) is not 2 or 4 bytes. string data cannot be decoded>'
+    else:
+        # element type is not handled(not a char or wchar_t)
+        return '<not handled>'
+
+    try:
+        # Try to read from the string_address, the size of the string into a bytearray
+        # That byte array is then decoded to a python string
+        error = lldb.SBError()
+        byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
+        result_string = byte_data.decode(encoding)
+        if error.Fail():
+            return f'process read error: {error}'
+    except Exception as e:
+        return f'error: {e}'
+
+    return f'"{result_string}"'
+
 def string_summary(valobj: lldb.SBValue, internal_dict):
     logger = lldb.formatters.Logger.Logger()
     logger >> f"{valobj.GetType()} summary"
 
+    compressed_pair_storage = valobj.GetChildMemberWithName("m_storage")
+    # The first child of the compressed pair is the AZStd::basic_string::storage union
+    storage_inst = compressed_pair_storage.GetChildAtIndex(0)
+    storage_element = storage_inst.GetChildMemberWithName("m_element")
+    short_string_storage = storage_element.GetChildMemberWithName("m_shortData")
 
-    def element_type_string_summary(valobj: lldb.SBValue):
-        # Grab the SBProcess object which is needed to read a c-string from memory
-        process = valobj.GetProcess()
-
-        compressed_pair_storage = valobj.GetChildMemberWithName("m_storage")
-        # The first child of the compressed pair is the AZStd::basic_string::storage union
-        storage_inst = compressed_pair_storage.GetChildAtIndex(0)
-        storage_element = storage_inst.GetChildMemberWithName("m_element")
-        short_string_storage = storage_element.GetChildMemberWithName("m_shortData")
-
-        # Check if the Short String optimization is active
-        is_sso_active_member = short_string_storage.GetChildMemberWithName("m_packed").GetChildMemberWithName("m_ssoActive")
-        is_sso_active = int(is_sso_active_member.GetValueAsUnsigned())
-        if is_sso_active:
-            # Read the string size and memory address
-            string_size = int(short_string_storage.GetChildMemberWithName("m_packed").GetChildMemberWithName("m_size").GetValueAsUnsigned())
-            string_address = short_string_storage.GetChildMemberWithName('m_buffer').AddressOf()
-        else:
-            # Short String optimization is not active
-            try:
-                allocated_storage = storage_element.EvaluateExpression("m_allocatedData")
-            except Exception as e:
-                return f'error: {e}'
-
-            string_size = allocated_storage.GetChildMemberWithName("m_size").GetValueAsUnsigned()
-            string_address = allocated_storage.GetChildMemberWithName("m_data")
-
-        # If the string size is 0, then return an empty string
-        if string_size == 0:
-            return '""'
-
-        # Stores the result of summary string
-        result_string = ''
+    # Check if the Short String optimization is active
+    is_sso_active_member = short_string_storage.GetChildMemberWithName("m_packed").GetChildMemberWithName("m_ssoActive")
+    is_sso_active = int(is_sso_active_member.GetValueAsUnsigned())
+    if is_sso_active:
+        # Read the string size and memory address
+        string_size = int(short_string_storage.GetChildMemberWithName("m_packed").GetChildMemberWithName("m_size").GetValueAsUnsigned())
+        string_address = short_string_storage.GetChildMemberWithName('m_buffer').AddressOf()
+    else:
+        # Short String optimization is not active
         try:
-            string_type = valobj.GetType()
-            element_type = string_type.GetTemplateArgumentType(0)
-            error = lldb.SBError()
-
-            # SBType.GetBasicType is strange, passing in the enum value of the type
-            # doesn't query the actual type but returns a new SBType
-            # instance represents the basic type
-            # https://lldb.llvm.org/python_api/lldb.SBType.html#lldb.SBType.GetBasicType
-            if element_type == element_type.GetBasicType(lldb.eBasicTypeChar):
-            # Get the byte size of the character type being stored
-                element_size = element_type.GetByteSize()
-                byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
-                result_string = byte_data.decode('utf-8')
-            elif element_type == element_type.GetBasicType(lldb.eBasicTypeWChar):
-                element_size = element_type.GetByteSize()
-                if element_size == 4:
-                    byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
-                    result_string = byte_data.decode('utf-32')
-                if element_size == 2:
-                    byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
-                    result_string = byte_data.decode('utf-16')
-            else:
-                # element type is not handled(not a char or wchar_t)
-                return '"<not handled>"'
-
-            if error.Fail():
-                return f'process read error: {error}'
+            allocated_storage = storage_element.EvaluateExpression("m_allocatedData")
         except Exception as e:
             return f'error: {e}'
 
-        return f'"{result_string}"'
+        string_size = allocated_storage.GetChildMemberWithName("m_size").GetValueAsUnsigned()
+        string_address = allocated_storage.GetChildMemberWithName("m_data")
 
-    # Invoke the inner function that iterates through the AZStd::basic_string structure
-    return element_type_string_summary(valobj)
+
+    # return result of reading in the string data as python string
+    return read_string_data(valobj.GetProcess(), valobj.GetType(), string_address, string_size)
+
 
 def fixed_string_summary(valobj: lldb.SBValue, internal_dict):
     logger = lldb.formatters.Logger.Logger()
     logger >> f"{valobj.GetType()} summary"
 
-    # Grab the SBProcess object which is needed to read a c-string from memory
-    process = valobj.GetProcess()
-
     string_size = valobj.GetChildMemberWithName("m_size").GetValueAsUnsigned()
     string_address = valobj.GetChildMemberWithName("m_buffer").AddressOf()
 
-    # If the string size is 0, then return an empty string
-    if string_size == 0:
-        return '""'
+    return read_string_data(valobj.GetProcess(), valobj.GetType(), string_address, string_size)
 
-    # Stores the result of summary string
-    result_string = ''
-    try:
-        string_type = valobj.GetType()
-        element_type = string_type.GetTemplateArgumentType(0)
-        error = lldb.SBError()
-
-        # SBType.GetBasicType is strange, passing in the enum value of the type
-        # doesn't query the actual type but returns a new SBType
-        # instance represents the basic type
-        # https://lldb.llvm.org/python_api/lldb.SBType.html#lldb.SBType.GetBasicType
-        if element_type == element_type.GetBasicType(lldb.eBasicTypeChar):
-        # Get the byte size of the character type being stored
-            element_size = element_type.GetByteSize()
-            byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
-            result_string = byte_data.decode('utf-8')
-        elif element_type == element_type.GetBasicType(lldb.eBasicTypeWChar):
-            element_size = element_type.GetByteSize()
-            if element_size == 4:
-                byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
-                result_string = byte_data.decode('utf-32')
-            if element_size == 2:
-                byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
-                result_string = byte_data.decode('utf-16')
-        else:
-            # element type is not handled(not a char or wchar_t)
-            return '"<not handled>"'
-
-        if error.Fail():
-            return f'process read error: {error}'
-    except Exception as e:
-        return f'error: {e}'
-
-    return f'"{result_string}"'
 
 def string_view_summary(valobj: lldb.SBValue, internal_dict):
     logger = lldb.formatters.Logger.Logger()
     logger >> f"{valobj.GetType()} summary"
 
-    # Grab the SBProcess object which is needed to read a c-string from memory
-    process = valobj.GetProcess()
-
     string_size = valobj.GetChildMemberWithName("m_size").GetValueAsUnsigned()
     string_address = valobj.GetChildMemberWithName("m_begin")
 
-    # If the string size is 0, then return an empty string
-    if string_size == 0:
-        return '""'
-
-    # Stores the result of summary string
-    result_string = ''
-    try:
-        string_type = valobj.GetType()
-        element_type = string_type.GetTemplateArgumentType(0)
-        error = lldb.SBError()
-
-        # SBType.GetBasicType is strange, passing in the enum value of the type
-        # doesn't query the actual type but returns a new SBType
-        # instance represents the basic type
-        # https://lldb.llvm.org/python_api/lldb.SBType.html#lldb.SBType.GetBasicType
-        if element_type == element_type.GetBasicType(lldb.eBasicTypeChar):
-        # Get the byte size of the character type being stored
-            element_size = element_type.GetByteSize()
-            byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
-            result_string = byte_data.decode('utf-8')
-        elif element_type == element_type.GetBasicType(lldb.eBasicTypeWChar):
-            element_size = element_type.GetByteSize()
-            if element_size == 4:
-                byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
-                result_string = byte_data.decode('utf-32')
-            if element_size == 2:
-                byte_data = process.ReadMemory(string_address.GetValueAsUnsigned(), string_size * element_size, error)
-                result_string = byte_data.decode('utf-16')
-        else:
-            # element type is not handled(not a char or wchar_t)
-            return '"<not handled>"'
-
-        if error.Fail():
-            return f'process read error: {error}'
-    except Exception as e:
-        return f'error: {e}'
-
-    return f'"{result_string}"'
+    return read_string_data(valobj.GetProcess(), valobj.GetType(), string_address, string_size)
 
 
 class hash_table_synthetic_provider(lldb.SBSyntheticValueProvider):
@@ -253,7 +179,6 @@ class hash_table_synthetic_provider(lldb.SBSyntheticValueProvider):
             self.next_element = self.next_element.GetChildMemberWithName("m_next")
             if not self.next_element.GetValueAsUnsigned(0):
                 self.next_element = None
-
 
         # The value has been found so return it
         value = self.element_cache[index]
