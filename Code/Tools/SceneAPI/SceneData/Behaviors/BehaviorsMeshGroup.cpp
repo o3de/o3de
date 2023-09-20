@@ -30,7 +30,7 @@ namespace AZ
     {
         namespace Behaviors
         {
-            const int MeshGroup::s_meshGroupPreferredTabOrder = 1;
+            const int MeshGroup::s_meshGroupPreferredTabOrder = 0;
 
             void MeshGroup::Activate()
             {

@@ -23,7 +23,10 @@
 
 namespace AZ::SceneAPI::Behaviors
 {
-    const int ImportGroup::s_importGroupPreferredTabOrder = 0;
+    // This is set to an extremely low number to help ensure that it appears first in the list of tabs
+    // in the FBX Settings panel. Since these settings are applied before any of the other settings, they
+    // seem like the first ones that the user should be presented with.
+    const int ImportGroup::s_importGroupPreferredTabOrder = -1000000;
 
     void ImportGroup::Activate()
     {
@@ -58,7 +61,7 @@ namespace AZ::SceneAPI::Behaviors
         // are enabled, the set of mesh groups to export for the Proc Prefab will also need to change to match the new
         // list of meshes.
                 
-        //categories.emplace_back("Import", SceneData::ImportGroup::TYPEINFO_Uuid(), s_importGroupPreferredTabOrder);
+        categories.emplace_back("Import", SceneData::ImportGroup::TYPEINFO_Uuid(), s_importGroupPreferredTabOrder);
     }
 
     void ImportGroup::InitializeObject(
