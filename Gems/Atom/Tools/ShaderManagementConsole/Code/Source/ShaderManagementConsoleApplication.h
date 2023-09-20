@@ -21,7 +21,6 @@ namespace ShaderManagementConsole
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private ShaderManagementConsoleRequestBus::Handler
         , private AzToolsFramework::EditorWindowRequestBus::Handler
-        , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(ShaderManagementConsoleApplication, AZ::SystemAllocator)
@@ -41,7 +40,7 @@ namespace ShaderManagementConsole
         // AtomToolsFramework::AtomToolsApplication overrides...
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
 
-        // AzToolsFramework::EditorWindowRequests::Bus::Handler
+        // AzToolsFramework::EditorWindowRequestBus::Handler
         QWidget* GetAppMainWindow() override;
 
         // ShaderManagementConsoleRequestBus::Handler overrides...
