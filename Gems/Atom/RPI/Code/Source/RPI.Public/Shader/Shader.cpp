@@ -42,9 +42,9 @@ namespace AZ
             // value, like a hash of the data from the asset.
             struct InstanceIdData
             {
-                const Data::AssetId m_assetId;
-                const Data::AssetData* m_assetPtr;
-                const uint32_t m_shaderSupervariantIndex;
+                const Data::AssetId m_assetId{};
+                const Data::AssetData* m_assetPtr{};
+                const uint32_t m_shaderSupervariantIndex{};
             };
             const InstanceIdData instanceIdData{ shaderAsset.GetId(), shaderAsset.GetData(), supervariantIndex.GetIndex() };
             const Data::InstanceId instanceId = Data::InstanceId::CreateData(&instanceIdData, sizeof(instanceIdData));

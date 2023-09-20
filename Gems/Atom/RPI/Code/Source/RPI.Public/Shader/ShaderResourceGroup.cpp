@@ -20,7 +20,7 @@ namespace AZ
         const Data::Instance<Image> ShaderResourceGroup::s_nullImage;
         const Data::Instance<Buffer> ShaderResourceGroup::s_nullBuffer;
 
-        Data::InstanceId ShaderResourceGroup::MakeSRGPoolInstanceId(
+        Data::InstanceId ShaderResourceGroup::MakeSrgPoolInstanceId(
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
             AZ_Assert(!srgName.IsEmpty(), "Invalid ShaderResourceGroup name");
@@ -35,15 +35,21 @@ namespace AZ
                 supervariantIndex.GetIndex(),
                 shaderAsset.GetHint().c_str());
 
-            // Create the InstanceId by combining data from the SRG name hash and layout hash. This value does not need to be unique between
+            // Create the InstanceId by combining data from the SRG name and layout. This value does not need to be unique between
             // asset IDs or versions because the data can be shared as long as the names and layouts match.
             struct InstanceIdData
             {
-                const uint32_t m_srgNameHash;
-                const AZ::HashValue64 m_srgLayoutHash;
+                const AZ::Uuid m_srgNameUuid{};
+                const AZ::Uuid m_srgLayoutUuid{};
             };
-            const InstanceIdData instanceIdData{ srgName.GetHash(), srgLayout->GetHash() };
-            return Data::InstanceId::CreateData(&instanceIdData, sizeof(instanceIdData));
+            const InstanceIdData instanceIdData{ AZ::Uuid::CreateData(srgName.GetStringView()),
+                                                 AZ::Uuid::CreateData(srgLayout->GetUniqueId()) };
+
+            const AZ::Uuid instanceUuid =
+                AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(&instanceIdData), sizeof(instanceIdData));
+
+            // Use the supervariantIndex as the subId for the InstanceId, since it is already an integer
+            return Data::InstanceId(instanceUuid, supervariantIndex.GetIndex());
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
