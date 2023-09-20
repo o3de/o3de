@@ -28,6 +28,8 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/IndirectArguments.h>
 
+#include <RHI/DispatchRaysIndirectBuffer.h>
+
 // Conditionally disable timing at compile-time based on profile policy
 #if DX12_GPU_PROFILE_MODE == DX12_GPU_PROFILE_MODE_DETAIL
 #define DX12_COMMANDLIST_TIMER(id) ScopedTimer timer__(m_timerHeap, *this, TimerType::User, id);
@@ -355,7 +357,7 @@ namespace AZ
                 return;
             }
 
-            const PipelineLayout* globalPipelineLayout = globalPipelineState->GetPipelineLayout();              
+            const PipelineLayout* globalPipelineLayout = globalPipelineState->GetPipelineLayout();
             if (!globalPipelineLayout)
             {
                 AZ_Assert(false, "Pipeline layout is null.");
@@ -381,7 +383,7 @@ namespace AZ
 
                 for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                 {
-                    if (binding.m_bindlessTable.IsValid() 
+                    if (binding.m_bindlessTable.IsValid()
                         && compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                     {
                         GetCommandList()->SetComputeRootDescriptorTable(
@@ -411,31 +413,140 @@ namespace AZ
             // set RayTracing pipeline state
             commandList->SetPipelineState1(rayTracingPipelineState->Get());
 
-            // setup DispatchRays() shader table and ray counts
-            const RayTracingShaderTable* shaderTable = static_cast<const RayTracingShaderTable*>(dispatchRaysItem.m_rayTracingShaderTable);
-            const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = shaderTable->GetBuffers();
+            switch (dispatchRaysItem.m_arguments.m_type)
+            {
+            case RHI::DispatchRaysType::Direct:
+                {
+                    // setup DispatchRays() shader table and ray counts
+                    const RayTracingShaderTable* shaderTable =
+                        static_cast<const RayTracingShaderTable*>(dispatchRaysItem.m_rayTracingShaderTable);
+                    const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = shaderTable->GetBuffers();
 
-            D3D12_DISPATCH_RAYS_DESC desc = {};
-            desc.RayGenerationShaderRecord.StartAddress = shaderTableBuffers.m_rayGenerationTable->GetMemoryView().GetGpuAddress();
-            desc.RayGenerationShaderRecord.SizeInBytes = shaderTableBuffers.m_rayGenerationTableSize;
-            
-            desc.MissShaderTable.StartAddress = shaderTableBuffers.m_missTable ? shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress() : 0;
-            desc.MissShaderTable.SizeInBytes = shaderTableBuffers.m_missTableSize;
-            desc.MissShaderTable.StrideInBytes = shaderTableBuffers.m_missTableStride;
+                    D3D12_DISPATCH_RAYS_DESC desc = {};
+                    desc.RayGenerationShaderRecord.StartAddress = shaderTableBuffers.m_rayGenerationTable->GetMemoryView().GetGpuAddress();
+                    desc.RayGenerationShaderRecord.SizeInBytes = shaderTableBuffers.m_rayGenerationTableSize;
 
-            desc.CallableShaderTable.StartAddress = shaderTableBuffers.m_callableTable ? shaderTableBuffers.m_callableTable->GetMemoryView().GetGpuAddress() : 0;
-            desc.CallableShaderTable.SizeInBytes = shaderTableBuffers.m_callableTableSize;
-            desc.CallableShaderTable.StrideInBytes = shaderTableBuffers.m_callableTableStride;
-            
-            desc.HitGroupTable.StartAddress = shaderTableBuffers.m_hitGroupTable->GetMemoryView().GetGpuAddress();
-            desc.HitGroupTable.SizeInBytes = shaderTableBuffers.m_hitGroupTableSize;
-            desc.HitGroupTable.StrideInBytes = shaderTableBuffers.m_hitGroupTableStride;
+                    desc.MissShaderTable.StartAddress =
+                        shaderTableBuffers.m_missTable ? shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress() : 0;
+                    desc.MissShaderTable.SizeInBytes = shaderTableBuffers.m_missTableSize;
+                    desc.MissShaderTable.StrideInBytes = shaderTableBuffers.m_missTableStride;
 
-            desc.Width = dispatchRaysItem.m_width;
-            desc.Height = dispatchRaysItem.m_height;
-            desc.Depth = dispatchRaysItem.m_depth;
-           
-            commandList->DispatchRays(&desc);
+                    desc.CallableShaderTable.StartAddress =
+                        shaderTableBuffers.m_callableTable ? shaderTableBuffers.m_callableTable->GetMemoryView().GetGpuAddress() : 0;
+                    desc.CallableShaderTable.SizeInBytes = shaderTableBuffers.m_callableTableSize;
+                    desc.CallableShaderTable.StrideInBytes = shaderTableBuffers.m_callableTableStride;
+
+                    desc.HitGroupTable.StartAddress = shaderTableBuffers.m_hitGroupTable->GetMemoryView().GetGpuAddress();
+                    desc.HitGroupTable.SizeInBytes = shaderTableBuffers.m_hitGroupTableSize;
+                    desc.HitGroupTable.StrideInBytes = shaderTableBuffers.m_hitGroupTableStride;
+
+                    desc.Width = dispatchRaysItem.m_arguments.m_direct.m_width;
+                    desc.Height = dispatchRaysItem.m_arguments.m_direct.m_height;
+                    desc.Depth = dispatchRaysItem.m_arguments.m_direct.m_depth;
+
+                    commandList->DispatchRays(&desc);
+
+                    break;
+                }
+            case RHI::DispatchRaysType::Indirect:
+                {
+                    const auto& arguments = dispatchRaysItem.m_arguments.m_indirect;
+                    auto* dispatchIndirectBuffer = static_cast<DispatchRaysIndirectBuffer*>(arguments.m_dispatchRaysIndirectBuffer);
+                    AZ_Assert(
+                        dispatchIndirectBuffer, "CommandList: m_dispatchRaysIndirectBuffer is necessary for indirect raytracing commands");
+                    const Buffer* dx12IndirectBuffer = static_cast<const Buffer*>(dispatchIndirectBuffer->m_buffer.get());
+                    // Copy arguments from the given indirect buffer to the one we can actually use for the ExecuteIndirect call
+                    {
+                        constexpr ptrdiff_t widthOffset = offsetof(D3D12_DISPATCH_RAYS_DESC, Width);
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12IndirectBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+
+                        if (dispatchIndirectBuffer->m_shaderTableNeedsCopy)
+                        {
+                            AZ_Assert(
+                                dispatchIndirectBuffer->m_shaderTableStagingMemory.IsValid(),
+                                "DispatchRaysIndirectBuffer: Staging memory is not valid."
+                                " The Build function must be called in the same frame as the CopyData function");
+                            commandList->CopyBufferRegion(
+                                dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                                dx12IndirectBuffer->GetMemoryView().GetOffset(),
+                                dispatchIndirectBuffer->m_shaderTableStagingMemory.GetMemory(),
+                                dispatchIndirectBuffer->m_shaderTableStagingMemory.GetOffset(),
+                                widthOffset); // copy the shader table entries only
+                            dispatchIndirectBuffer->m_shaderTableNeedsCopy = false;
+                            dispatchIndirectBuffer->m_shaderTableStagingMemory = {}; // The staging memory is only valid for one frame. Make
+                                                                                     // sure to not access it again
+                        }
+                        constexpr ptrdiff_t sizeToCopy = sizeof(uint32_t) * 3;
+
+                        const Buffer* dx12OriginalBuffer = static_cast<const Buffer*>(arguments.m_indirectBufferView->GetBuffer());
+
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12OriginalBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+
+                        commandList->CopyBufferRegion(
+                            dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                            dx12IndirectBuffer->GetMemoryView().GetOffset() + widthOffset,
+                            dx12OriginalBuffer->GetMemoryView().GetMemory(),
+                            arguments.m_indirectBufferView->GetByteOffset() + arguments.m_indirectBufferByteOffset,
+                            sizeToCopy);
+
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12OriginalBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+
+                        {
+                            D3D12_RESOURCE_BARRIER barrier;
+                            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                            barrier.Transition.pResource = dx12IndirectBuffer->GetMemoryView().GetMemory();
+                            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+                            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+                            commandList->ResourceBarrier(1, &barrier);
+                        }
+                    }
+
+                    const IndirectBufferSignature* signature =
+                        static_cast<const IndirectBufferSignature*>(arguments.m_indirectBufferView->GetSignature());
+
+                    AZ_Assert(arguments.m_countBuffer == nullptr, "CommandList: Count buffer is not supported for indirect raytracing");
+                    GetCommandList()->ExecuteIndirect(
+                        signature->Get(),
+                        arguments.m_maxSequenceCount,
+                        dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                        dx12IndirectBuffer->GetMemoryView().GetOffset(),
+                        nullptr,
+                        0);
+                    break;
+                }
+            default:
+                AZ_Assert(false, "Invalid dispatch type");
+                break;
+            }
 #endif
         }
 
@@ -501,7 +612,14 @@ namespace AZ
 
             case RHI::DrawType::Indirect:
             {
-                ExecuteIndirect(drawItem.m_arguments.m_indirect);
+                const auto& indirect = drawItem.m_arguments.m_indirect;
+                const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
+                if (layout.GetType() == RHI::IndirectBufferLayoutType::IndexedDraw)
+                {
+                    AZ_Assert(drawItem.m_indexBufferView, "Index buffer view is null!");
+                    SetIndexBuffer(*drawItem.m_indexBufferView);
+                }
+                ExecuteIndirect(indirect);
                 break;
             }
             default:

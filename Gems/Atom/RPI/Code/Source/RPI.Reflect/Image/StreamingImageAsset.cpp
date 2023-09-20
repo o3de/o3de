@@ -162,7 +162,8 @@ namespace AZ
 
             for (auto& mipChain : m_mipChains)
             {
-                AZ_Assert(mipChain.m_mipOffset >= mipChain.m_mipOffset, "unexpected mipoffset");
+                // Assert that the offset does not become negative after subtraction:
+                AZ_Assert(mipChain.m_mipOffset >= mipmapShift, "unexpected mipoffset");
                 mipChain.m_mipOffset -= mipmapShift;
             }
 

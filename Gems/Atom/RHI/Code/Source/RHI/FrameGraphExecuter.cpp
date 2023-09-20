@@ -10,97 +10,95 @@
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/Image.h>
-namespace AZ
+
+namespace AZ::RHI
 {
-    namespace RHI
+    void FrameGraphExecuter::SetJobPolicy(JobPolicy jobPolicy)
     {
-        void FrameGraphExecuter::SetJobPolicy(JobPolicy jobPolicy)
-        {
-            m_jobPolicy = jobPolicy;
-        }
+        m_jobPolicy = jobPolicy;
+    }
 
-        AZStd::span<const AZStd::unique_ptr<FrameGraphExecuteGroup>> FrameGraphExecuter::GetGroups() const
-        {
-            return m_groups;
-        }
+    AZStd::span<const AZStd::unique_ptr<FrameGraphExecuteGroup>> FrameGraphExecuter::GetGroups() const
+    {
+        return m_groups;
+    }
 
-        JobPolicy FrameGraphExecuter::GetJobPolicy() const
-        {
-            return m_jobPolicy;
-        }
+    JobPolicy FrameGraphExecuter::GetJobPolicy() const
+    {
+        return m_jobPolicy;
+    }
 
-        uint32_t FrameGraphExecuter::GetGroupCount() const
-        {
-            return static_cast<uint32_t>(m_groups.size());
-        }
+    uint32_t FrameGraphExecuter::GetGroupCount() const
+    {
+        return static_cast<uint32_t>(m_groups.size());
+    }
 
-        ResultCode FrameGraphExecuter::Init(const FrameGraphExecuterDescriptor& descriptor)
-        {
-            if (Validation::IsEnabled())
-            {
-                if (IsInitialized())
-                {
-                    AZ_Error("FrameGraphExecuter", false, "FrameGraphExecuter is already initialized!");
-                    return RHI::ResultCode::InvalidOperation;
-                }
-            }
-
-            m_descriptor = descriptor;
-            const RHI::ResultCode resultCode = InitInternal(descriptor);
-
-            if (resultCode == RHI::ResultCode::Success)
-            {
-                DeviceObject::Init(*descriptor.m_device);
-            }
-
-            return resultCode;
-        }
-
-        void FrameGraphExecuter::Shutdown()
+    ResultCode FrameGraphExecuter::Init(const FrameGraphExecuterDescriptor& descriptor)
+    {
+        if (Validation::IsEnabled())
         {
             if (IsInitialized())
             {
-                AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
-                ShutdownInternal();
-                DeviceObject::Shutdown();
+                AZ_Error("FrameGraphExecuter", false, "FrameGraphExecuter is already initialized!");
+                return RHI::ResultCode::InvalidOperation;
             }
         }
 
-        void FrameGraphExecuter::Begin(const FrameGraph& frameGraph)
+        m_descriptor = descriptor;
+        const RHI::ResultCode resultCode = InitInternal(descriptor);
+
+        if (resultCode == RHI::ResultCode::Success)
         {
-            AZ_PROFILE_SCOPE(RHI, "FrameGraphExecuter: Begin");
-            BeginInternal(frameGraph);
+            DeviceObject::Init(*descriptor.m_device);
         }
 
-        void FrameGraphExecuter::End()
+        return resultCode;
+    }
+
+    void FrameGraphExecuter::Shutdown()
+    {
+        if (IsInitialized())
         {
-            AZ_PROFILE_SCOPE(RHI, "FrameGraphExecuter: End");
             AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
-            m_groups.clear();
-            EndInternal();
+            ShutdownInternal();
+            DeviceObject::Shutdown();
         }
+    }
 
-        FrameGraphExecuteGroup* FrameGraphExecuter::BeginGroup(uint32_t groupIndex)
+    void FrameGraphExecuter::Begin(const FrameGraph& frameGraph)
+    {
+        AZ_PROFILE_SCOPE(RHI, "FrameGraphExecuter: Begin");
+        BeginInternal(frameGraph);
+    }
+
+    void FrameGraphExecuter::End()
+    {
+        AZ_PROFILE_SCOPE(RHI, "FrameGraphExecuter: End");
+        AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
+        m_groups.clear();
+        EndInternal();
+    }
+
+    FrameGraphExecuteGroup* FrameGraphExecuter::BeginGroup(uint32_t groupIndex)
+    {
+        FrameGraphExecuteGroup& group = *m_groups[groupIndex];
+        AZ_Assert(group.IsComplete() == false, "Context group cannot be reused.");
+        group.BeginInternal();
+        return &group;
+    }
+
+    void FrameGraphExecuter::EndGroup(uint32_t groupIndex)
+    {
+        FrameGraphExecuteGroup& group = *m_groups[groupIndex];
+        AZ_Assert(group.IsComplete(), "Ending a context group before all child contexts have ended!");
+        group.EndInternal();
+        group.m_isSubmittable = true;
+
+        AZStd::lock_guard<AZStd::mutex> lock(m_pendingContextGroupLock);
+        while (m_pendingGroups.size() && m_pendingGroups.front()->IsSubmittable())
         {
-            FrameGraphExecuteGroup& group = *m_groups[groupIndex];
-            AZ_Assert(group.IsComplete() == false, "Context group cannot be reused.");
-            group.BeginInternal();
-            return &group;
-        }
-
-        void FrameGraphExecuter::EndGroup(uint32_t groupIndex)
-        {
-            FrameGraphExecuteGroup& group = *m_groups[groupIndex];
-            AZ_Assert(group.IsComplete(), "Ending a context group before all child contexts have ended!");
-            group.EndInternal();
-            group.m_isSubmittable = true;
-
-            AZStd::lock_guard<AZStd::mutex> lock(m_pendingContextGroupLock);
-            while (m_pendingGroups.size() && m_pendingGroups.front()->IsSubmittable())
-            {
-                ExecuteGroupInternal(*m_pendingGroups.front());
-                m_pendingGroups.pop();
-            }
+            ExecuteGroupInternal(*m_pendingGroups.front());
+            m_pendingGroups.pop();
         }
     }
 }

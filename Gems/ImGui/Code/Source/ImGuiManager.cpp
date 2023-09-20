@@ -29,6 +29,7 @@
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
+#include <ISystem.h>
 #include <sstream>
 #include <string>
 
@@ -712,10 +713,16 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
         case DisplayState::Visible:
             m_clientMenuBarState = DisplayState::Hidden;
 
-            // Restore old cursor state
-            AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
-                &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                m_previousSystemCursorState);
+            // Avoid hiding the cursor when in the Editor and not in game mode
+            const bool inGame = !gEnv->IsEditor() || gEnv->IsEditorGameMode(); 
+            const bool cursorWasVisible = m_previousSystemCursorState == AzFramework::SystemCursorState::ConstrainedAndVisible ||
+                                          m_previousSystemCursorState == AzFramework::SystemCursorState::UnconstrainedAndVisible;
+            if (inGame || cursorWasVisible)
+            {
+                AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
+                    &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                    m_previousSystemCursorState);
+            }
             m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
 
             break;
@@ -725,7 +732,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
     m_setEnabledEvent.Signal(m_clientMenuBarState == DisplayState::Hidden);
 }
 
-void ImGuiManager::OnWindowResized(uint32_t width, uint32_t height)
+void ImGuiManager::OnResolutionChanged(uint32_t width, uint32_t height)
 {
     m_windowSize.m_width = width;
     m_windowSize.m_height = height;
@@ -742,7 +749,7 @@ void ImGuiManager::InitWindowSize()
 
         if (windowHandle)
         {
-            AzFramework::WindowRequestBus::EventResult(m_windowSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            AzFramework::WindowRequestBus::EventResult(m_windowSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetRenderResolution);
             AzFramework::WindowNotificationBus::Handler::BusConnect(windowHandle);
         }
     }

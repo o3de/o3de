@@ -36,13 +36,6 @@ void CAnimParamType::operator =(const AZStd::string& name)
     m_name = name;
 }
 
-// Convert to enum. This needs to be explicit,
-// otherwise operator== will be ambiguous
-AnimParamType CAnimParamType::GetType() const { return m_type; }
-
-// Get name
-const char* CAnimParamType::GetName() const { return m_name.c_str(); }
-
 bool CAnimParamType::operator ==(const CAnimParamType& animParamType) const
 {
     if (m_type == kAnimParamTypeByString && animParamType.m_type == kAnimParamTypeByString)

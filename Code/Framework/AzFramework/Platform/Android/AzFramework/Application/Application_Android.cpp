@@ -8,6 +8,7 @@
 
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #include <AzFramework/Thermal/ThermalInfo_Android.h>
 
@@ -102,12 +103,6 @@ namespace AzFramework
         AZStd::mutex m_mutex;
         bool m_permissionGranted;
     };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    Application::Implementation* Application::Implementation::Create()
-    {
-        return aznew ApplicationAndroid();
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ApplicationAndroid::ApplicationAndroid()
@@ -266,5 +261,23 @@ namespace AzFramework
         {
             m_eventDispatcher->PumpAllEvents();
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class AndroidApplicationImplFactory 
+        : public Application::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<Application::Implementation> Create() override
+        {
+            return AZStd::make_unique<ApplicationAndroid>();
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeApplicationImplementationFactory()
+    {
+        m_applicationImplFactory = AZStd::make_unique<AndroidApplicationImplFactory>();
+        AZ::Interface<Application::ImplementationFactory>::Register(m_applicationImplFactory.get());
     }
 } // namespace AzFramework

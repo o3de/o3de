@@ -25,7 +25,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/SkyAtmosphere/SkyViewLUT.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

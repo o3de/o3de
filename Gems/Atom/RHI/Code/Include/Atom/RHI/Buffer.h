@@ -11,51 +11,48 @@
 #include <Atom/RHI/Resource.h>
 #include <Atom/RHI/BufferView.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        class MemoryStatisticsBuilder;
-        class BufferFrameAttachment;
-        struct BufferViewDescriptor;
+    class MemoryStatisticsBuilder;
+    class BufferFrameAttachment;
+    struct BufferViewDescriptor;
     
-        //! A buffer corresponds to a region of linear memory and used for rendering operations. The user
-        //! manages the lifecycle of a buffer through a BufferPool.
-        class Buffer
-            : public Resource
-        {
-            using Base = Resource;
-            friend class BufferPoolBase;
-        public:
-            AZ_RTTI(Buffer, "{3C918323-F39C-4DC6-BEE9-BC220DBA9414}", Resource);
-            virtual ~Buffer() = default;
+    //! A buffer corresponds to a region of linear memory and used for rendering operations. The user
+    //! manages the lifecycle of a buffer through a BufferPool.
+    class Buffer
+        : public Resource
+    {
+        using Base = Resource;
+        friend class BufferPoolBase;
+    public:
+        AZ_RTTI(Buffer, "{3C918323-F39C-4DC6-BEE9-BC220DBA9414}", Resource);
+        virtual ~Buffer() = default;
 
-            const BufferDescriptor& GetDescriptor() const;
+        const BufferDescriptor& GetDescriptor() const;
             
-            //! This implementation estimates memory usage using the descriptor. Platforms may
-            //! override to report more accurate usage metrics.
-            void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const override;
+        //! This implementation estimates memory usage using the descriptor. Platforms may
+        //! override to report more accurate usage metrics.
+        void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const override;
 
-            /// Returns the buffer frame attachment if the buffer is currently attached.
-            const BufferFrameAttachment* GetFrameAttachment() const;
+        /// Returns the buffer frame attachment if the buffer is currently attached.
+        const BufferFrameAttachment* GetFrameAttachment() const;
 
-            Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
 
-            // Get the hash associated with the Buffer
-            const HashValue64 GetHash() const;
+        // Get the hash associated with the Buffer
+        const HashValue64 GetHash() const;
 
-        protected:
-            Buffer() = default;
+    protected:
+        Buffer() = default;
 
-            void SetDescriptor(const BufferDescriptor& descriptor);
+        void SetDescriptor(const BufferDescriptor& descriptor);
 
-        private:
+    private:
 
-            // The RHI descriptor for this buffer.
-            BufferDescriptor m_descriptor;
+        // The RHI descriptor for this buffer.
+        BufferDescriptor m_descriptor;
 
-            // A debug reference count to track use of map / unmap operations.
-            AZStd::atomic_int m_mapRefCount = {0};
-        };
-    }
+        // A debug reference count to track use of map / unmap operations.
+        AZStd::atomic_int m_mapRefCount = {0};
+    };
 }

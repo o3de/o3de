@@ -68,6 +68,10 @@
 #include <PostProcessing/BloomBlurPass.h>
 #include <PostProcessing/BloomCompositePass.h>
 #include <PostProcessing/ChromaticAberrationPass.h>
+#include <PostProcessing/PaniniProjectionPass.h>
+#include <PostProcessing/FilmGrainPass.h>
+#include <PostProcessing/WhiteBalancePass.h>
+#include <PostProcessing/VignettePass.h>
 #include <ScreenSpace/DeferredFogPass.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 #include <SkyAtmosphere/SkyAtmosphereFeatureProcessor.h>
@@ -94,6 +98,8 @@
 #include <RayTracing/RayTracingPassData.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpacePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
+#include <ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.h>
+#include <ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.h>
@@ -276,6 +282,18 @@ namespace AZ
             // Add Chromatic Aberration
             passSystem->AddPassCreator(Name("ChromaticAberrationPass"), &ChromaticAberrationPass::Create);
 
+            // Add Panini Projection
+            passSystem->AddPassCreator(Name("PaniniProjectionPass"), &PaniniProjectionPass::Create);
+
+            // Add Film Grain
+            passSystem->AddPassCreator(Name("FilmGrainPass"), &FilmGrainPass::Create);
+
+            // Add White Balance pass
+            passSystem->AddPassCreator(Name("WhiteBalancePass"), &WhiteBalancePass::Create);
+
+            // Add Vignette
+            passSystem->AddPassCreator(Name("VignettePass"), &VignettePass::Create);
+
             // Add Luminance Histogram pass
             passSystem->AddPassCreator(Name("LuminanceHistogramGeneratorPass"), &LuminanceHistogramGeneratorPass::Create);
 
@@ -285,6 +303,8 @@ namespace AZ
             // Add Reflection passes
             passSystem->AddPassCreator(Name("ReflectionScreenSpacePass"), &Render::ReflectionScreenSpacePass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceTracePass"), &Render::ReflectionScreenSpaceTracePass::Create);
+            passSystem->AddPassCreator(Name("ReflectionScreenSpaceDownsampleDepthLinearPass"), &Render::ReflectionScreenSpaceDownsampleDepthLinearPass::Create);
+            passSystem->AddPassCreator(Name("ReflectionScreenSpaceDownsampleDepthLinearChildPass"), &Render::ReflectionScreenSpaceDownsampleDepthLinearChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurPass"), &Render::ReflectionScreenSpaceBlurPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurChildPass"), &Render::ReflectionScreenSpaceBlurChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceFilterPass"), &Render::ReflectionScreenSpaceFilterPass::Create);

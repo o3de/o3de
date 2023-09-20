@@ -99,10 +99,10 @@ namespace AZ
             void ClearAllFlags();
 
             //! Returns the boolean & combination of all flags provided with ApplyFlags() since the last frame.
-            uint32_t GetAndFlags();
+            uint32_t GetAndFlags() const;
 
             //! Returns the boolean | combination of all flags provided with ApplyFlags() since the last frame.
-            uint32_t GetOrFlags();
+            uint32_t GetOrFlags() const;
 
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);
@@ -158,10 +158,10 @@ namespace AZ
             //! Value returned is 1.0f when an area equal to the viewport height squared is covered. Useful for accurate LOD decisions.
             float CalculateSphereAreaInClipSpace(const AZ::Vector3& sphereWorldPosition, float sphereRadius) const;
 
-            const AZ::Name& GetName() const { return m_name; }
-            const UsageFlags GetUsageFlags() { return m_usageFlags; }
+            const AZ::Name& GetName() const;
+            UsageFlags GetUsageFlags() const;
 
-            void SetPassesByDrawList(PassesByDrawList* passes) { m_passesByDrawList = passes; }
+            void SetPassesByDrawList(PassesByDrawList* passes);
 
             //! Update View's SRG values and compile. This should only be called once per frame before execute command lists.
             void UpdateSrg();
@@ -180,6 +180,10 @@ namespace AZ
             //! This is called by RenderPipeline when this view is added to the pipeline.
             void OnAddToRenderPipeline();
 
+            //! Accessors for shadow pass render pipeline id.
+            void SetShadowPassRenderPipelineId(const RenderPipelineId renderPipelineId);
+            RenderPipelineId GetShadowPassRenderPipelineId() const;
+            
         private:
             View() = delete;
             View(const AZ::Name& name, UsageFlags usage);
@@ -193,6 +197,9 @@ namespace AZ
 
             //! Attempt to create a shader resource group.
             void TryCreateShaderResourceGroup();
+
+            //! Update ViewToWorld matrix as well as the view transform
+            void UpdateViewToWorldMatrix(const AZ::Matrix4x4& viewToWorld);
 
             AZ::Name m_name;
             UsageFlags m_usageFlags;
@@ -229,6 +236,9 @@ namespace AZ
             Matrix4x4 m_clipToWorldMatrix;
             AZStd::optional<Matrix4x4> m_worldToClipExcludeMatrix;
 
+            // Cached View transform from ViewToWorld matrix 
+            AZ::Transform m_viewTransform;
+
             // View's position in world space
             Vector3 m_position;
 
@@ -255,6 +265,9 @@ namespace AZ
 
             AZStd::atomic_uint32_t m_andFlags{ 0xFFFFFFFF };
             AZStd::atomic_uint32_t m_orFlags { 0x00000000 };
+
+            // Get the render pipeline id associated with this view if used as a shadow light view.
+            RenderPipelineId m_shadowPassRenderpipelineId;
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(View::UsageFlags);

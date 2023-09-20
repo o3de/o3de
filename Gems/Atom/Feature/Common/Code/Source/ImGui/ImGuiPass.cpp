@@ -176,7 +176,7 @@ namespace AZ
 
         bool ImGuiPass::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
         {
-            if (!IsEnabled() || GetRenderPipeline()->GetScene() == nullptr)
+            if (!IsEnabled() || GetRenderPipeline() == nullptr || GetRenderPipeline()->GetScene() == nullptr)
             {
                 return false;
             }
@@ -469,7 +469,7 @@ namespace AZ
                     ->Channel("UV", RHI::Format::R32G32_FLOAT)
                     ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
                 layoutBuilder.AddBuffer(RHI::StreamStepFunction::PerInstance)
-                    ->Channel("INSTANCE_DATA", RHI::Format::R8_UINT);
+                    ->Channel("INSTANCE_DATA", RHI::Format::R32_UINT);
                 m_pipelineState->InputStreamLayout() = layoutBuilder.End();
 
             }
@@ -527,15 +527,19 @@ namespace AZ
             m_imguiFontTexId = io.Fonts->TexID;
 
             // ImGuiPass will support binding 16 textures at most per frame. 
-            const uint8_t instanceData[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+            const uint32_t instanceData[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::StaticInputAssembly;
             desc.m_bufferName = "InstanceBuffer";
-            desc.m_elementSize = 1;
-            desc.m_byteCount = 16;
+            desc.m_elementSize = 4;
+            desc.m_byteCount = 64;
             desc.m_bufferData = instanceData;
             m_instanceBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-            m_instanceBufferView = RHI::StreamBufferView(*m_instanceBuffer->GetRHIBuffer(), 0, 16, 1);
+            m_instanceBufferView = RHI::StreamBufferView(
+                *m_instanceBuffer->GetRHIBuffer(),
+                0,
+                aznumeric_cast<uint32_t>(desc.m_byteCount),
+                aznumeric_cast<uint32_t>(desc.m_elementSize));
 
             ImGui::NewFrame();
             AzFramework::InputChannelEventListener::Connect();

@@ -54,7 +54,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "MeshletsDrawList",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/MeshletsDebugRenderShader.shader"
                         }

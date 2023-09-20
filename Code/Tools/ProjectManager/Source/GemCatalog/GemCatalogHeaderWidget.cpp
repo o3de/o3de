@@ -498,7 +498,6 @@ namespace O3DE::ProjectManager
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
         m_filterLineEdit = new AzQtComponents::SearchLineEdit();
-        m_filterLineEdit->setStyleSheet("background-color: #DDDDDD;");
         connect(m_filterLineEdit, &QLineEdit::textChanged, this, [=](const QString& text)
             {
                 filterProxyModel->SetSearchString(text);

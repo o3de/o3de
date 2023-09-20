@@ -764,4 +764,8 @@ namespace AZ
     AZ_TYPE_INFO_SPECIALIZE(AZ::IO::FixedMaxPath, "{FA6CA49F-376A-417C-9767-DD50744DF203}");
 }
 
+//! Use this macro to simplify safe printing of a PathView or BasicPath* which may not be null-terminated.
+//! Example: AZStd::fixed_string<1024>::format("Safely formatted: %.*s", AZ_PATH_ARG(myPathView));
+#define AZ_PATH_ARG(path) static_cast<int>(path.Native().size()), path.Native().data()
+
 #include <AzCore/IO/Path/Path.inl>

@@ -369,6 +369,14 @@
                 "Path": "Passes/ReflectionScreenSpaceTrace.pass"
             },
             {
+                "Name": "ReflectionScreenSpaceDownsampleDepthLinearPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceDownsampleDepthLinear.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceDownsampleDepthLinearChildPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceDownsampleDepthLinearChild.pass"
+            },
+            {
                 "Name": "ReflectionScreenSpaceBlurPassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceBlur.pass"
             },
@@ -533,14 +541,6 @@
                 "Path": "Passes/MultiViewTransparentParent.pass"
             },
             {
-                "Name": "MultiViewXRLeftPipelineTemplate",
-                "Path": "Passes/MultiViewXRLeftPipeline.pass"
-            },
-            {
-                "Name": "MultiViewXRRightPipelineTemplate",
-                "Path": "Passes/MultiViewXRRightPipeline.pass"
-            },
-            {
                 "Name": "KawaseShadowBlurTemplate",
                 "Path": "Passes/KawaseShadowBlur.pass"
             },
@@ -555,6 +555,22 @@
             {
                 "Name": "ChromaticAberrationTemplate",
                 "Path": "Passes/ChromaticAberration.pass"
+            },
+            {
+                "Name": "PaniniProjectionTemplate",
+                "Path": "Passes/PaniniProjection.pass"
+            }, 
+            {
+                "Name": "FilmGrainTemplate",
+                "Path": "Passes/FilmGrain.pass"
+            },
+            {
+                "Name": "WhiteBalanceTemplate",
+                "Path": "Passes/WhiteBalance.pass"
+            },
+            {
+                "Name": "VignetteTemplate",
+                "Path": "Passes/Vignette.pass"
             },
             {
                 "Name": "SplashScreenPassTemplate",

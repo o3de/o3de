@@ -17,12 +17,6 @@ namespace BarrierInput
     using namespace AzFramework;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::Implementation* InputDeviceMouseBarrier::Create(InputDeviceMouse& inputDevice)
-    {
-        return aznew InputDeviceMouseBarrier(inputDevice);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouseBarrier::InputDeviceMouseBarrier(InputDeviceMouse& inputDevice)
         : InputDeviceMouse::Implementation(inputDevice)
         , m_systemCursorState(SystemCursorState::Unknown)
@@ -192,4 +186,12 @@ namespace BarrierInput
             m_threadAwareRawButtonEventQueuesById[*inputChannelId].push_back(rawButtonState);
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    AZStd::unique_ptr<InputDeviceMouse::Implementation> InputDeviceMouseBarrierImplFactory::Create(InputDeviceMouse& inputDevice)
+    {
+        return AZStd::make_unique<InputDeviceMouseBarrier>(inputDevice);
+    }
+
+
 } // namespace BarrierInput

@@ -8,6 +8,8 @@
 
 # This file contains utility wrappers for dealing with the Gems system.
 
+set(GEM_VARIANT_DEFAULT_HeadlessServers Servers)
+
 define_property(TARGET PROPERTY LY_PROJECT_NAME
     BRIEF_DOCS "Name of the project, this target can use enabled gems from"
     FULL_DOCS "If set, the when iterating over the enabled gems in ly_enabled_gems_delayed
@@ -363,19 +365,28 @@ function(ly_add_gem_dependencies_to_project_variants)
 
     # apply the list of gem targets.  Adding a gem really just means adding the appropriate dependency.
     foreach(gem_name ${ly_add_gem_dependencies_GEM_DEPENDENCIES})
+
+        # Construct the gem target name to determine if the target exists
         set(gem_target ${gem_name}.${ly_add_gem_dependencies_VARIANT})
 
-        # if the target exists, add it.
+        # Also construct a fallback target if the target doesn't exist for the given variant, then check if the variant has a fallback
+        set(fallback_gem_target ${gem_name}.${GEM_VARIANT_DEFAULT_${ly_add_gem_dependencies_VARIANT}})
+
         if (TARGET ${gem_target})
-            # Dealias actual target
             ly_de_alias_target(${gem_target} dealiased_gem_target)
+        elseif (TARGET ${fallback_gem_target})
+            ly_de_alias_target(${fallback_gem_target} dealiased_gem_target)
+        else()
+            set(dealiased_gem_target "")
+            message(VERBOSE "Gem \"${gem_name}\" does not expose a variant of ${ly_add_gem_dependencies_VARIANT}")
+        endif()
+
+        if (NOT "${dealiased_gem_target}" STREQUAL "")
             ly_add_target_dependencies(
                 ${PREFIX_CLAUSE}
                 TARGETS ${ly_add_gem_dependencies_TARGET}
-                DEPENDENT_TARGETS ${dealiased_gem_target}
+               DEPENDENT_TARGETS ${dealiased_gem_target}
                 GEM_VARIANT ${ly_add_gem_dependencies_VARIANT})
-        else()
-            message(VERBOSE "Gem \"${gem_name}\" does not expose a variant of ${ly_add_gem_dependencies_VARIANT}")
         endif()
     endforeach()
 endfunction()

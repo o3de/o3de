@@ -47,13 +47,16 @@ public:
     // Modal, but blocking.
     void Exec(); // for browsing files
     void Exec(const QStringList& dragAndDropFileList); // for drag and drop
+    void Exec(const QStringList& dragAndDropFileList, const QString& suggestedPath);
 
 Q_SIGNALS:
     void StartAssetImporter();
     void StopAssetImporter();
+    void AssetImportingComplete();
 
 private Q_SLOTS:
     void reject();
+    void CompleteAssetImporting(bool wasSuccessful = true);
     void OnDragAndDropFiles(const QStringList* fileList);
     void OnBrowseDestinationFilePath(QLineEdit* destinationLineEdit);
     void OnCopyFiles();
@@ -93,4 +96,5 @@ private:
     QFileDialog* m_fileDialog{ nullptr };
     QString m_gameRootAbsPath;
     QString m_currentAbsolutePath;
+    QString m_suggestedInitialPath;
 };

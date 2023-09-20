@@ -299,6 +299,12 @@ namespace AtomToolsFramework
                   "Enable source control for the application if it is available",
                   false),
               CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/IgnoreCacheFolder",
+                  "Ignore Files In Cache Folder",
+                  "This toggles whether or not files located in the cache folder appear in the asset browser, file selection dialogs, and "
+                  "during file enumeration. Changing this setting may require restarting the application to take effect in some areas.",
+                  true),
+              CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
                   "Update Interval When Active",
                   "Minimum delay between ticks (in milliseconds) when the application has focus",
@@ -461,7 +467,7 @@ namespace AtomToolsFramework
                     {
                         layoutSettingsMenu->addAction(
                             layoutName.c_str(),
-                            [this, layoutName, windowState]()
+                            [this, windowState]()
                             {
                                 m_advancedDockManager->restoreState(
                                     QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
@@ -483,7 +489,7 @@ namespace AtomToolsFramework
                         // Since these layouts were created and saved by the user, give them the option to restore and delete them.
                         layoutMenu->addAction(
                             tr("Load"),
-                            [this, layoutName, windowState]()
+                            [this, windowState]()
                             {
                                 m_advancedDockManager->restoreState(
                                     QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
@@ -556,7 +562,7 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::RestoreSavedLayout()
     {
-        // Attempt to restore the layout that was saved the last time the application was closed. 
+        // Attempt to restore the layout that was saved the last time the application was closed.
         const AZStd::string windowState = GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
         if (!windowState.empty())
         {

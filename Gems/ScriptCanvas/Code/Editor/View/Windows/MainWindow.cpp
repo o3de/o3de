@@ -441,14 +441,11 @@ namespace ScriptCanvasEditor
 
         m_editorToolbar = aznew GraphCanvas::AssetEditorToolbar(ScriptCanvasEditor::AssetEditorId);
 
-        if (AzToolsFramework::IsNewActionManagerEnabled())
+        if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
         {
-            if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-            {
-                hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
-            }
+            hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
         }
-
+        
         // Custom Actions
         {
             m_assignToSelectedEntity = new QToolButton();
@@ -684,12 +681,9 @@ namespace ScriptCanvasEditor
         ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
 
-        if (AzToolsFramework::IsNewActionManagerEnabled())
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
         {
-            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-            {
-                hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
-            }
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
         }
 
         Clear();
@@ -1928,6 +1922,12 @@ namespace ScriptCanvasEditor
         connect(ui->action_AlignBottom, &QAction::triggered, this, &MainWindow::OnAlignBottom);
         connect(ui->action_AlignLeft, &QAction::triggered, this, &MainWindow::OnAlignLeft);
         connect(ui->action_AlignRight, &QAction::triggered, this, &MainWindow::OnAlignRight);
+
+        // Prevent QAction::eventFilter: Ambiguous shortcut overload
+        ui->action_AlignTop->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        ui->action_AlignBottom->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        ui->action_AlignLeft->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        ui->action_AlignRight->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
         ui->action_ZoomIn->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Plus),
                                           QKeySequence(Qt::CTRL + Qt::Key_Equal)

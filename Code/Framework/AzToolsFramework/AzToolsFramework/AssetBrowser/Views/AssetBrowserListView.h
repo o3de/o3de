@@ -39,6 +39,7 @@ namespace AzToolsFramework
             ~AssetBrowserListView() override;
 
             void setModel(QAbstractItemModel *model) override;
+            void dragMoveEvent(QDragMoveEvent* event) override;
             void SetName(const QString& name);
             QString& GetName();
             void SetIsAssetBrowserMainView();

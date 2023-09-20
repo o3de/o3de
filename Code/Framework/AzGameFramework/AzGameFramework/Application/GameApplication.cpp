@@ -12,7 +12,12 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Archive/Archive.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
+
+#if !O3DE_HEADLESS_SERVER
+#include <AzFramework/AzFrameworkNativeUIModule.h>
+#endif // O3DE_HEADLESS_SERVER
 
 namespace AzGameFramework
 {
@@ -57,6 +62,26 @@ namespace AzGameFramework
     {
     }
 
+    AZ::ComponentTypeList GameApplication::GetRequiredSystemComponents() const
+    {
+        AZ::ComponentTypeList components = AzFramework::Application::GetRequiredSystemComponents();
+
+#if !O3DE_HEADLESS_SERVER
+        components.insert(
+            components.end(),
+            {
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
+            });
+#endif // O3DE_HEADLESS_SERVER
+
+        return components;
+    }
+
+    void GameApplication::SetHeadless(bool headless)
+    {
+        m_headless = headless;
+    }
+
     void GameApplication::StartCommon(AZ::Entity* systemEntity)
     {
         AzFramework::Application::StartCommon(systemEntity);
@@ -72,15 +97,25 @@ namespace AzGameFramework
 
         MergeSharedSettings(registry, specializations, scratchBuffer);
 
-        // Used the lowercase the platform name since the bootstrap.game.<config>.setreg is being loaded
-        // from the asset cache root where all the files are in lowercased from regardless of the filesystem case-sensitivity
-        static constexpr char filename[] = "bootstrap.game." AZ_BUILD_CONFIGURATION_TYPE  ".setreg";
-
-        AZ::IO::FixedMaxPath cacheRootPath;
-        if (registry.Get(cacheRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+        // Query the launcher type from the registry
+        constexpr AZStd::string_view LauncherTypeTag = "/O3DE/Runtime/LauncherType";
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        if (FixedValueString launcherType; registry.Get(launcherType, LauncherTypeTag)
+            && !launcherType.empty())
         {
-            cacheRootPath /= filename;
-            registry.MergeSettingsFile(cacheRootPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", &scratchBuffer);
+            // The bootstrap setreg file that is loaded is in the form of
+            // bootstrap.<launcher-type-lower>.<config-lower>.setreg
+            AZ::IO::FixedMaxPath filename = "bootstrap.";
+            filename.Native() += launcherType;
+            filename.Native() += '.';
+            filename.Native() += AZ_BUILD_CONFIGURATION_TYPE ".setreg";
+
+            AZ::IO::FixedMaxPath cacheRootPath;
+            if (registry.Get(cacheRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                cacheRootPath /= filename;
+                registry.MergeSettingsFile(cacheRootPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", &scratchBuffer);
+            }
         }
 
         MergeUserSettings(registry, specializations, scratchBuffer);
@@ -91,11 +126,18 @@ namespace AzGameFramework
         AzFramework::Application::CreateStaticModules(outModules);
 
         outModules.emplace_back(aznew AzGameFrameworkModule());
+#if !O3DE_HEADLESS_SERVER
+        outModules.emplace_back(aznew AzFramework::AzFrameworkNativeUIModule());
+#endif // O3DE_HEADLESS_SERVER
     }
 
     void GameApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
     {
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
+        if (m_headless)
+        {
+            appType.m_maskValue |= AZ::ApplicationTypeQuery::Masks::Headless;
+        }
     };
 
 } // namespace AzGameFramework

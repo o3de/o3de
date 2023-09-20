@@ -80,6 +80,7 @@ namespace AZ
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
                 // AssetCatalogEventBus::Handler overrides...
+                void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
                 void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
                 void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
 
@@ -149,7 +150,9 @@ namespace AZ
             //! List of object SRGs used by meshes in this model 
             AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> m_objectSrgList;
             MeshFeatureProcessorInterface::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
-            AZStd::unique_ptr<MeshLoader> m_meshLoader;
+            // MeshLoader is a shared pointer because it can queue a reference to itself on the SystemTickBus. The reference
+            // needs to stay alive until the queued function is executed.
+            AZStd::shared_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
             RHI::DrawItemSortKey m_sortKey = 0;
 

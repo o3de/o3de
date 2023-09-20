@@ -17,7 +17,6 @@
 
 namespace UnitTest
 {
-
     TEST(MATH_Vector4, TestConstructors)
     {
         AZ::Vector4 v1(0.0f);

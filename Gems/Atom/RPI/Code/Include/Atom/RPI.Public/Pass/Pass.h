@@ -12,7 +12,6 @@
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/PassAttachment.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -153,7 +152,15 @@ namespace AZ
             virtual bool IsEnabled() const { return m_flags.m_enabled; }
 
             bool HasDrawListTag() const { return m_flags.m_hasDrawListTag; }
-            bool HasPipelineViewTag() const { return m_flags.m_hasPipelineViewTag; }
+            
+            [[deprecated( "Use BindViewSrg() instead." )]]
+            bool HasPipelineViewTag() const { return BindViewSrg(); }
+            
+            // The shader needs a View-Srg. Use GetPipelineViewTag() to find out which one.
+            bool BindViewSrg() const
+            {
+                return m_flags.m_bindViewSrg;
+            }
 
             // Searches this pass's attachment bindings for one with the provided Name (nullptr if none found)
             PassAttachmentBinding* FindAttachmentBinding(const Name& slotName);
@@ -246,14 +253,23 @@ namespace AZ
             //! Enables/Disables PipelineStatistics queries for this pass
             virtual void SetPipelineStatisticsQueryEnabled(bool enable) { m_flags.m_pipelineStatisticsQueryEnabled = enable; }
 
-            //! Readback an attachment attached to the specified slot name
+            //! For an image attachment, attached to a specific slot name, reads back, from GPU to CPU memory, one or more mip levels.
+            //! For a buffer attachment, attached to a specific slot name, reads it back from GPU memory to CPU memory. 
             //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
-            //! @param readbackIndex index from the frame capture system to identify which capture is in progress
-            //! @param slotName The attachment bind to the slot with this slotName is to be readback
+            //! @param readbackIndex index from the frame capture system to identify which capture is in progress.
+            //! @param slotName The attachment bound to the slot with this slotName is to be read back.
             //! @param option The option is used for choosing input or output state when readback an InputOutput attachment.
-            //!               It's ignored if the attachment isn't an InputOutput attachment.
+            //!        It's ignored if the attachment isn't an InputOutput attachment.
+            //!        This means that if @option == PassAttachmentReadbackOption::Input, then we'll read the attachment mips
+            //!        BEFORE the Pass runs its main shader.
+            //!        if @option ==  PassAttachmentReadbackOption::Output, then we'll read the attachment mips
+            //!        AFTER the Pass runs its main shader.
+            //! @param mipsRange Applicable ONLY to Image Attachments.
+            //!        If NOT null, defines the list of mip levels that will be read back.
+            //!        If null, only mip level 0 will be read back.
             //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
-            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
+            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName
+                , PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output, const RHI::ImageSubresourceRange* mipsRange = nullptr);
 
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const { return m_flags.m_timestampQueryEnabled; }
@@ -422,6 +438,9 @@ namespace AZ
             // Pointer to the parent pass if this pass is a child pass
             ParentPass* m_parent = nullptr;
 
+            // View tag used to associate a pipeline view for this pass or its child-passes.
+            PipelineViewTag m_viewTag;
+
             struct
             {
                 union
@@ -451,7 +470,7 @@ namespace AZ
                         uint64_t m_hasDrawListTag : 1;
 
                         // Whether this pass has a PipelineViewTag
-                        uint64_t m_hasPipelineViewTag : 1;
+                        uint64_t m_bindViewSrg : 1;
 
                         // Whether the pass should gather timestamp query metrics
                         uint64_t m_timestampQueryEnabled : 1;

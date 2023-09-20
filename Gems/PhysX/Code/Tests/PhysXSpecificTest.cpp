@@ -1576,7 +1576,7 @@ namespace PhysX
     };
 
     INSTANTIATE_TEST_CASE_P(PhysX, MassComputeFixture, ::testing::Combine(
-        ::testing::ValuesIn({ Physics::ShapeType::Sphere, Physics::ShapeType::Box, Physics::ShapeType::Capsule }), // Values for GetShapeType()
+        ::testing::ValuesIn({ Physics::ShapeType::Sphere, Physics::ShapeType::Box, Physics::ShapeType::Capsule }), // Values for GetShapeType() const
         ::testing::ValuesIn({ SimulatedShapesMode::NONE, SimulatedShapesMode::MIXED, SimulatedShapesMode::ALL }), // Values for GetShapesMode()
         ::testing::ValuesIn(PossibleMassComputeFlags), // Values for GetMassComputeFlags()
         ::testing::Bool(), // Values for IncludeAllShapes()

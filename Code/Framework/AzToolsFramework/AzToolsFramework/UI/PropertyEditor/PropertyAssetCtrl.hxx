@@ -305,15 +305,9 @@ namespace AzToolsFramework
         virtual void WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         static bool ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node);
         virtual bool ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
-    protected:
-        AZ::Data::Asset<AZ::Data::AssetData>* CastTo(void* instance, const InstanceDataNode* node, const AZ::Uuid& /*fromId*/, const AZ::Uuid& /*toId*/) const override
-        {
-            if (node->GetElementMetadata()->m_genericClassInfo && node->GetElementMetadata()->m_genericClassInfo->GetGenericTypeId() == AZ::GetAssetClassId())
-            {
-                return static_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(instance);
-            }
-            return nullptr;
-        }
+
+        static AZ::Data::Asset<AZ::Data::AssetData>* CastToInternal(void* instance, const InstanceDataNode* node);
+        AZ::Data::Asset<AZ::Data::AssetData>* CastTo(void* instance, const InstanceDataNode* node, const AZ::Uuid& fromId, const AZ::Uuid& toId) const override;
     };
 
     class AssetIdPropertyHandlerDefault
@@ -355,7 +349,9 @@ namespace AzToolsFramework
 
         virtual QWidget* CreateGUI(QWidget* pParent) override;
         virtual void ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        static void WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node);
         virtual void WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
+        static bool ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node);
         virtual bool ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 

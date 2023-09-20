@@ -16,19 +16,11 @@
 
 namespace AzToolsFramework
 {
-    static constexpr AZStd::string_view ActionManagerToggleKey = "/O3DE/ActionManager/EnableNewActionManager";
-
     bool IsNewActionManagerEnabled()
     {
-        bool isNewActionManagerEnabled = true;
-
-        // Retrieve new action manager setting
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(isNewActionManagerEnabled, ActionManagerToggleKey);
-        }
-
-        return isNewActionManagerEnabled;
+        // New Action Manager system is always enabled.
+        // This helper will be removed once the legacy system is completely removed.
+        return true;
     }
 
     void AssignWidgetToActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget)

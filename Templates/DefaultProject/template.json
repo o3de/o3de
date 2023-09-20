@@ -143,6 +143,10 @@
             "isTemplated": true
         },
         {
+            "file": "Levels/ExampleLevel/ExampleLevel.prefab",
+            "isTemplated": false
+        },
+        {
             "file": "Platform/Android/android_project.cmake",
             "isTemplated": false
         },
@@ -359,6 +363,18 @@
             "isTemplated": false
         },
         {
+            "file": "package.bat",
+            "isTemplated": true
+        },
+        {
+            "file": "package.sh",
+            "isTemplated": true
+        },
+        {
+            "file": "AssetBundling/SeedLists/Example.seed",
+            "isTemplated": false
+        },
+        {
             "file": "game.cfg",
             "isTemplated": false
         },
@@ -372,6 +388,12 @@
         }
     ],
     "createDirectories": [
+        {
+            "dir": "AssetBundling"
+        },
+        {
+            "dir": "AssetBundling/SeedLists"
+        },
         {
             "dir": "Assets"
         },
@@ -413,6 +435,12 @@
         },
         {
             "dir": "Gem/Source"
+        },
+        {
+            "dir": "Levels"
+        },
+        {
+            "dir": "Levels/ExampleLevel"
         },
         {
             "dir": "Platform"

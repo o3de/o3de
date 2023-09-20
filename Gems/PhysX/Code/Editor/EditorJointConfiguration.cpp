@@ -285,6 +285,12 @@ namespace PhysX
                 ->Field("Self Collide", &EditorJointConfig::m_selfCollide)
                 ;
 
+            serializeContext->Enum<EditorJointConfig::DisplaySetupState>()
+                ->Value("Never", EditorJointConfig::DisplaySetupState::Never)
+                ->Value("Selected", EditorJointConfig::DisplaySetupState::Selected)
+                ->Value("Always", EditorJointConfig::DisplaySetupState::Always)
+                ;
+
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Enum<EditorJointConfig::DisplaySetupState>("Joint Display Setup State", "Options for displaying joint setup.")

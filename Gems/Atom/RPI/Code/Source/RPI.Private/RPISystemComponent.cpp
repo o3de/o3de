@@ -100,22 +100,34 @@ namespace AZ
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             const char* settingPath = "/O3DE/Atom/RPI/Initialization";
-
-            // if the command line contains -NullRenderer, merge it to setting registry
-            const char* nullRendererOption = "NullRenderer"; // command line option name
             const char* setregName = "NullRenderer"; // same as serialization context name for RPISystemDescriptor::m_isNullRenderer
-            const AzFramework::CommandLine* commandLine = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
 
-            AZStd::string commandLineValue;
-            if (commandLine)
+            AZ::ApplicationTypeQuery appType;
+            ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            
+            bool isNullRenderer = false;
+            if (appType.IsHeadless())
             {
+                // if the application is `headless`, merge `NullRenderer` attribute to the setting registry
+                isNullRenderer = true;
+            }
+            else
+            {
+                // Otherwise if the command line contains -NullRenderer merge it to setting registry
+                const char* nullRendererOption = "NullRenderer"; // command line option name
+                const AzFramework::CommandLine* commandLine = nullptr;
+                AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetApplicationCommandLine);
                 if (commandLine->GetNumSwitchValues(nullRendererOption) > 0)
                 {
-                    // add it to setting registry
-                    auto overrideArg = AZStd::string::format("%s/%s=true", settingPath, setregName);
-                    settingsRegistry->MergeCommandLineArgument(overrideArg, "");
+                    isNullRenderer = true;
                 }
+            }
+
+            if (isNullRenderer)
+            {
+                // add it to setting registry
+                auto overrideArg = AZStd::string::format("%s/%s=true", settingPath, setregName);
+                settingsRegistry->MergeCommandLineArgument(overrideArg, "");
             }
 
             // load rpi desriptor from setting registry

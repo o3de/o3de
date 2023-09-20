@@ -23,6 +23,7 @@
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelAssetHelpers.h>
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
 #include <Atom/RPI.Public/Model/Model.h>
@@ -62,7 +63,7 @@ namespace AZ
             AZStd::vector<float>& blendWeightBufferData)
         {
             EMotionFX::SkinningInfoVertexAttributeLayer* sourceSkinningInfo = static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(mesh->FindSharedVertexAttributeLayer(EMotionFX::SkinningInfoVertexAttributeLayer::TYPE_ID));
-            
+
             // EMotionFX source gives 16 bit indices and 32 bit float weights
             // Atom consumes 32 bit uint indices and 32 bit float weights (range 0-1)
             const uint32_t* sourceOriginalVertex = static_cast<uint32_t*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS));
@@ -103,16 +104,18 @@ namespace AZ
                     }
                 }
 
-                while (blendIndexBufferData.size() % 4 != 0)
-                {
-                    // Pad with some extra data so the the offset to each mesh view is 16 byte aligned
-                    // which is required for raw views. These don't need corresponding weights, because
-                    // they will be ignored, and just serve as padding between different meshes
-                    blendIndexBufferData.push_back(0);
-                }
+                //Pad the blend weight and index buffers in order for it to respect alignment of RPI::SkinnedMeshBufferAlignment
+                //as that is the expected behavior of the source asset
+                RPI::ModelAssetHelpers::AlignStreamBuffer<float>(
+                    blendWeightBufferData, blendWeightBufferData.size(), RPI::SkinWeightFormat, RPI::SkinnedMeshBufferAlignment);
+
+                //We dont use RPI::SkinIndicesFormat as blendIndexBufferData contains uint32_t instead of uint16_t
+                RHI::Format blendIndexFormat = RHI::Format::R32_FLOAT;
+                RPI::ModelAssetHelpers::AlignStreamBuffer<uint32_t>(
+                    blendIndexBufferData, blendIndexBufferData.size(), blendIndexFormat, RPI::SkinnedMeshBufferAlignment);
             }
         }
-        
+
         static void ProcessMorphsForLod(
             uint32_t lodIndex,
             const EMotionFX::Actor* actor,
@@ -148,7 +151,8 @@ namespace AZ
                             float minWeight = morphTarget->GetRangeMin();
                             float maxWeight = morphTarget->GetRangeMax();
 
-                            const auto& modelLodMesh = modelLodAsset->GetMeshes()[metaData.m_meshIndex];
+                            const auto lodMeshes = modelLodAsset->GetMeshes();
+                            const auto& modelLodMesh = lodMeshes[metaData.m_meshIndex];
 
                             const RPI::BufferAssetView* morphBufferAssetView =
                                 modelLodMesh.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
@@ -196,20 +200,20 @@ namespace AZ
             for (uint32_t lodIndex = 0; lodIndex < numLODs; ++lodIndex)
             {
                 // Create a single LOD
-                const SkinnedMeshInputLod& skinnedMeshLod = skinnedMeshInputBuffers->GetLod(lodIndex);
-
                 Data::Asset<RPI::ModelLodAsset> modelLodAsset = modelAsset->GetLodAssets()[lodIndex];
 
                 // Clear out the vector for re-mapped joint data that will be populated by values from EMotionFX
                 blendIndexBufferData.clear();
                 blendWeightBufferData.clear();
 
-                // Reserve enough memory for the default/common case. This is a temporary vector, so over-allocating isn't going to be wasteful
-                // Under-allocating won't be the end of the world, just a minor one-time re-allocation when the vector runs out of space.
-                // To know exactly what we need in advance would require iterating over all the vertices twice, which isn't worth it.
-                constexpr uint32_t defaultMaxInfluencesPerVertex = 4;
-                blendIndexBufferData.reserve(skinnedMeshLod.GetVertexCount() * defaultMaxInfluencesPerVertex / 2);
-                blendWeightBufferData.reserve(skinnedMeshLod.GetVertexCount() * defaultMaxInfluencesPerVertex);
+                const RPI::BufferAssetView* indicesBuffAssetView =
+                    modelLodAsset->GetSemanticBufferAssetView(Name(RPI::ShaderSemanticName_SkinJointIndices));
+                const RPI::BufferAssetView* weightsBuffAssetView =
+                    modelLodAsset->GetSemanticBufferAssetView(Name(RPI::ShaderSemanticName_SkinWeights));
+
+                // Reserve enough memory for the default/common case. Use the element count from the main source buffer
+                blendIndexBufferData.reserve(indicesBuffAssetView->GetBufferAsset()->GetBufferViewDescriptor().m_elementCount);
+                blendWeightBufferData.reserve(weightsBuffAssetView->GetBufferAsset()->GetBufferViewDescriptor().m_elementCount);
 
                 // Now iterate over the actual data and populate the data for the per-actor buffers
                 uint32_t vertexBufferOffset = 0;
@@ -252,7 +256,7 @@ namespace AZ
                 for (const auto& modelLodMesh : modelLodAsset->GetMeshes())
                 {
                     // TODO: operate on a per-mesh basis
-                    
+
                     // If the joint id/weight buffers haven't been found on a mesh yet, keep looking
                     if (!jointIndicesBufferView)
                     {

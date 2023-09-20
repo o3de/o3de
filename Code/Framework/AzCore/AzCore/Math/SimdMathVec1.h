@@ -47,7 +47,8 @@ namespace AZ
             static void StreamAligned(float* __restrict addr, FloatArgType value); // addr *must* be 16-byte aligned
             static void StreamAligned(int32_t* __restrict addr, Int32ArgType value); // addr *must* be 16-byte aligned
 
-            static float SelectFirst(FloatArgType value);
+            static float SelectIndex0(FloatArgType value);
+            static float AZ_MATH_INLINE SelectFirst(FloatArgType value) { return SelectIndex0(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
             static FloatType Splat(float value);
             static Int32Type Splat(int32_t value);
@@ -140,6 +141,7 @@ namespace AZ
             static FloatType Acos(FloatArgType value);
             static FloatType Atan(FloatArgType value);
             static FloatType Atan2(FloatArgType y, FloatArgType x);
+            static FloatType ExpEstimate(FloatArgType x);
 
             static FloatType ConvertToFloat(Int32ArgType value);
             static Int32Type ConvertToInt(FloatArgType value); // Truncates

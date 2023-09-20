@@ -69,7 +69,7 @@
                     "FilePath": "Shaders/DiffuseGlobalIllumination/DiffuseComposite.shader"
                 },
                 "StencilRef": 128, // See RenderCommon.h and DiffuseComposite.shader
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

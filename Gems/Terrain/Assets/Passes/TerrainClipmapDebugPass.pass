@@ -11,7 +11,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Terrain/TerrainClipmapDebugPass.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             },
             "Slots": [
                 {

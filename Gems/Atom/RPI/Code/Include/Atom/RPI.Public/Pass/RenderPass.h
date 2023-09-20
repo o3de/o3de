@@ -55,9 +55,6 @@ namespace AZ
             //! Returns a pointer to the Pass ShaderResourceGroup
             Data::Instance<ShaderResourceGroup> GetShaderResourceGroup();
 
-            // Pass overrides...
-            const PipelineViewTag& GetPipelineViewTag() const override;
-
             //! Return the View if this pass is associated with a pipeline view via PipelineViewTag.
             //! It may return nullptr if this pass is independent with any views.
             ViewPtr GetView() const;
@@ -154,9 +151,6 @@ namespace AZ
             // List of all ShaderResourceGroups to be bound during rendering or computing
             // Derived classed may call BindSrg function to add other srgs the list
             AZStd::unordered_map<uint8_t, const RHI::ShaderResourceGroup*> m_shaderResourceGroupsToBind;
-            
-            // View tag used to associate a pipeline view for this pass.
-            PipelineViewTag m_viewTag;
         };
     }   // namespace RPI
 }   // namespace AZ

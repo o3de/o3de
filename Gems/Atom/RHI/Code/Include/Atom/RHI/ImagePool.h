@@ -12,109 +12,109 @@
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImagePoolBase.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! @brief The data structure used to initialize an RHI::Image on an RHI::ImagePool.
+    template <typename ImageClass>
+    struct ImageInitRequestTemplate
     {
-        /**
-         * @brief The data structure used to initialize an RHI::Image on an RHI::ImagePool.
-         */
-        struct ImageInitRequest
-        {
-            ImageInitRequest() = default;
+        ImageInitRequestTemplate() = default;
 
-            ImageInitRequest(
-                Image& image,
-                const ImageDescriptor& descriptor,
-                const ClearValue* optimizedClearValue = nullptr);
+        ImageInitRequestTemplate(
+            ImageClass& image,
+            const ImageDescriptor& descriptor,
+            const ClearValue* optimizedClearValue = nullptr)
+            : m_image{&image}
+            , m_descriptor{descriptor}
+            , m_optimizedClearValue{optimizedClearValue}
+        {}
 
-            /// The image to initialize.
-            Image* m_image = nullptr;
+        /// The image to initialize.
+        ImageClass* m_image = nullptr;
 
-            /// The descriptor used to initialize the image.
-            ImageDescriptor m_descriptor;
+        /// The descriptor used to initialize the image.
+        ImageDescriptor m_descriptor;
 
-            /// An optional, optimized clear value for the image. Certain
-            /// platforms may use this value to perform fast clears when this
-            /// clear value is used.
-            const ClearValue* m_optimizedClearValue = nullptr;
-        };
+        /// An optional, optimized clear value for the image. Certain
+        /// platforms may use this value to perform fast clears when this
+        /// clear value is used.
+        const ClearValue* m_optimizedClearValue = nullptr;
+    };
 
-        /**
-         * @brief The data structure used to update contents of an RHI::Image on an RHI::ImagePool.
-         */
-        struct ImageUpdateRequest
-        {
-            ImageUpdateRequest() = default;
+    //!@brief The data structure used to update contents of an RHI::Image on an RHI::ImagePool.
+    template <typename ImageClass, typename ImageSubresourceLayoutClass>
+    struct ImageUpdateRequestTemplate
+    {
+        ImageUpdateRequestTemplate() = default;
 
-            /// A pointer to an initialized image, whose contents will be updated.
-            Image* m_image = nullptr;
+        /// A pointer to an initialized image, whose contents will be updated.
+        ImageClass* m_image = nullptr;
 
-            /// The image subresource to update.
-            ImageSubresource m_imageSubresource;
+        /// The image subresource to update.
+        ImageSubresource m_imageSubresource;
 
-            /// The offset in pixels from the start of the sub-resource in the destination image.
-            Origin m_imageSubresourcePixelOffset;
+        /// The offset in pixels from the start of the sub-resource in the destination image.
+        Origin m_imageSubresourcePixelOffset;
 
-            /// The source data pointer
-            const void* m_sourceData = nullptr;
+        /// The source data pointer
+        const void* m_sourceData = nullptr;
 
-            /// The source sub-resource layout.
-            ImageSubresourceLayout m_sourceSubresourceLayout;
-        };
+        /// The source sub-resource layout.
+        ImageSubresourceLayoutClass m_sourceSubresourceLayout;
+    };
 
-        /**
-         * ImagePool is a pool of images that will be bound as attachments to the frame scheduler.
-         * As a result, they are intended to be produced and consumed by the GPU. Persistent Color / Depth Stencil / Image
-         * attachments should be created from this pool. This pool is not designed for intra-frame aliasing.
-         * If transient images are required, they can be created from the frame scheduler itself.
-         */
-        class ImagePool
-            : public ImagePoolBase
-        {
-        public:
-            AZ_RTTI(ImagePool, "{A5563DF9-191E-4DF7-86BA-CFF39BE07BDD}", ImagePoolBase);
-            virtual ~ImagePool() = default;
+    using ImageInitRequest = ImageInitRequestTemplate<Image>;
+    using ImageUpdateRequest = ImageUpdateRequestTemplate<Image, ImageSubresourceLayout>;
 
-            /// Initializes the pool. The pool must be initialized before images can be registered with it.
-            ResultCode Init(Device& device, const ImagePoolDescriptor& descriptor);
+    //! ImagePool is a pool of images that will be bound as attachments to the frame scheduler.
+    //! As a result, they are intended to be produced and consumed by the GPU. Persistent Color / Depth Stencil / Image
+    //! attachments should be created from this pool. This pool is not designed for intra-frame aliasing.
+    //! If transient images are required, they can be created from the frame scheduler itself.
+    class ImagePool
+        : public ImagePoolBase
+    {
+    public:
+        AZ_RTTI(ImagePool, "{A5563DF9-191E-4DF7-86BA-CFF39BE07BDD}", ImagePoolBase);
+        virtual ~ImagePool() = default;
 
-            /// Initializes an image onto the pool. The pool provides backing GPU resources to the image.
-            ResultCode InitImage(const ImageInitRequest& request);
+        /// Initializes the pool. The pool must be initialized before images can be registered with it.
+        ResultCode Init(Device& device, const ImagePoolDescriptor& descriptor);
 
-            /// Updates image content from the CPU.
-            ResultCode UpdateImageContents(const ImageUpdateRequest& request);
+        /// Initializes an image onto the pool. The pool provides backing GPU resources to the image.
+        ResultCode InitImage(const ImageInitRequest& request);
 
-            /// Returns the descriptor used to initialize the pool.
-            const ImagePoolDescriptor& GetDescriptor() const override final;
+        /// Updates image content from the CPU.
+        ResultCode UpdateImageContents(const ImageUpdateRequest& request);
 
-            /// Returns the fragmentation produced by this pool
-            void ComputeFragmentation() const override;
+        /// Returns the descriptor used to initialize the pool.
+        const ImagePoolDescriptor& GetDescriptor() const override final;
 
-        protected:
-            ImagePool() = default;
+        /// Returns the fragmentation produced by this pool
+        void ComputeFragmentation() const override;
 
-        private:
-            using ResourcePool::Init;
-            using ImagePoolBase::InitImage;
+    protected:
+        ImagePool() = default;
 
-            bool ValidateUpdateRequest(const ImageUpdateRequest& updateRequest) const;
+    private:
+        using ResourcePool::Init;
+        using ImagePoolBase::InitImage;
 
-            //////////////////////////////////////////////////////////////////////////
-            // Platform API
+        bool ValidateUpdateRequest(const ImageUpdateRequest& updateRequest) const;
 
-            /// Called when the pool is being initialized.
-            virtual ResultCode InitInternal(Device& device, const ImagePoolDescriptor& descriptor) = 0;
+        //////////////////////////////////////////////////////////////////////////
+        // Platform API
 
-            /// Called when an image contents are being updated.
-            virtual ResultCode UpdateImageContentsInternal(const ImageUpdateRequest& request) = 0;
+        /// Called when the pool is being initialized.
+        virtual ResultCode InitInternal(Device& device, const ImagePoolDescriptor& descriptor) = 0;
 
-            /// Called when an image is being initialized on the pool.
-            virtual ResultCode InitImageInternal(const ImageInitRequest& request) = 0;
+        /// Called when an image contents are being updated.
+        virtual ResultCode UpdateImageContentsInternal(const ImageUpdateRequest& request) = 0;
 
-            //////////////////////////////////////////////////////////////////////////
+        /// Called when an image is being initialized on the pool.
+        virtual ResultCode InitImageInternal(const ImageInitRequest& request) = 0;
 
-            ImagePoolDescriptor m_descriptor;
-        };
-    }
+        //////////////////////////////////////////////////////////////////////////
+
+        ImagePoolDescriptor m_descriptor;
+    };
 }

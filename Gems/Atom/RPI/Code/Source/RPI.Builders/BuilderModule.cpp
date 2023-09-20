@@ -32,6 +32,7 @@ namespace AZ
             {
                 m_descriptors.push_back(ModelExporterComponent::CreateDescriptor());
                 m_descriptors.push_back(ModelAssetBuilderComponent::CreateDescriptor());
+                m_descriptors.push_back(ModelAssetDependenciesComponent::CreateDescriptor());
                 m_descriptors.push_back(MaterialAssetBuilderComponent::CreateDescriptor());
                 m_descriptors.push_back(MaterialAssetDependenciesComponent::CreateDescriptor());
                 m_descriptors.push_back(BuilderComponent::CreateDescriptor());

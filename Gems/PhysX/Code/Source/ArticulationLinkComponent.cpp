@@ -49,6 +49,7 @@ namespace PhysX
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
         provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        provided.push_back(AZ_CRC_CE("ArticulationLinkService"));
     }
 
     void ArticulationLinkComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -97,6 +98,11 @@ namespace PhysX
             }
         }
         return currentEntity;
+    }
+
+    AZStd::vector<AzPhysics::SimulatedBodyHandle> ArticulationLinkComponent::GetSimulatedBodyHandles() const
+    {
+        return m_articulationLinks;
     }
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
@@ -265,7 +271,7 @@ namespace PhysX
 
     void setInboundJointDriveParams(
         physx::PxArticulationJointReducedCoordinate* inboundJoint,
-        physx::PxArticulationAxis articulationAxis,
+        [[maybe_unused]] physx::PxArticulationAxis articulationAxis,
         const ArticulationJointMotorProperties& motorProperties)
     {
         physx::PxArticulationDrive drive;
@@ -547,7 +553,7 @@ namespace PhysX
 
     const physx::PxArticulationJointReducedCoordinate* ArticulationLinkComponent::GetDriveJoint() const
     {
-        const bool isRootArticulation = IsRootArticulation();
+        [[maybe_unused]] const bool isRootArticulation = IsRootArticulation();
         AZ_ErrorOnce("Articulation Link Component", !isRootArticulation, "Articulation root does not have an inbound joint.");
         AZ_ErrorOnce("Articulation Link Component", m_driveJoint || IsRootArticulation(), "Invalid articulation joint pointer");
         return m_driveJoint;
@@ -710,6 +716,24 @@ namespace PhysX
         if (auto* joint = GetDriveJoint())
         {
             return joint->getDriveVelocity(GetPxArticulationAxis(jointAxis));
+        }
+        return 0.0f;
+    }
+
+    float ArticulationLinkComponent::GetJointPosition(ArticulationJointAxis jointAxis) const
+    {
+        if (auto* joint = GetDriveJoint())
+        {
+            return joint->getJointPosition(GetPxArticulationAxis(jointAxis));
+        }
+        return 0.0f;
+    }
+
+    float ArticulationLinkComponent::GetJointVelocity(ArticulationJointAxis jointAxis) const
+    {
+        if (auto* joint = GetDriveJoint())
+        {
+            return joint->getJointVelocity(GetPxArticulationAxis(jointAxis));
         }
         return 0.0f;
     }

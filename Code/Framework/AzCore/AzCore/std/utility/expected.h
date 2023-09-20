@@ -43,7 +43,8 @@ namespace AZStd
         template<class E2>
         friend constexpr bool operator==(const unexpected&, const unexpected<E2>&);
 
-        friend constexpr void swap(unexpected& x, unexpected& y) noexcept(noexcept(x.swap(y)));
+        template<class E2>
+        friend constexpr void swap(unexpected<E2>& x, unexpected<E2>& y) noexcept(noexcept(x.swap(y)));
 
     private:
         E m_unexpected;

@@ -9,8 +9,7 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 
-#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
-#include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
@@ -65,18 +64,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
 #include "ReflectionCommon.azsli"
 
-// Vertex Shader
-VSOutput MainVS(VSInput input)
-{
-    VSOutput OUT;
-
-    float4 posTex = GetVertexPositionAndTexCoords(input.m_vertexID);
-    OUT.m_texCoord = float2(posTex.z, posTex.w);
-    OUT.m_position = float4(posTex.x, posTex.y, 0.0, 1.0);
-    return OUT;
-}
-
-// Pixel Shader
 PSOutput MainPS(VSOutput IN)
 {
     float2 coords = IN.m_position.xy;

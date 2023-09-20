@@ -149,10 +149,19 @@ namespace AZ
             const AZ::Aabb& GetAabb() const;
 
             Data::Asset<BufferAsset> GetIndexBufferAsset() const { return m_indexBuffer; }
+
+            //! A helper method for returning a specific buffer asset view related to mesh associated with mesh index.
+            const BufferAssetView* GetSemanticBufferAssetView(const AZ::Name& semantic, uint32_t meshIndex = 0) const;
+
         private:
             // AssetData overrides...
             bool HandleAutoReload() override
             {
+                // Automatic asset reloads via the AssetManager are disabled for Atom models and their dependent assets because reloads
+                // need to happen in a specific order to refresh correctly. They require more complex code than what the default
+                // AssetManager reloading provides. See ModelReloader() for the actual handling of asset reloads.
+                // Models need to be loaded via the MeshFeatureProcessor to reload correctly, and reloads can be listened
+                // to by using MeshFeatureProcessor::ConnectModelChangeEventHandler().
                 return false;
             }
             

@@ -39,7 +39,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/ScreenSpace/DeferredFog.shader"
                 },
-                "PipelineViewTag": "MainCamera",
+                "BindViewSrg": true,
                 "ShaderDataMappings": {
                     "Float3Mappings": [
                         {

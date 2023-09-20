@@ -107,12 +107,12 @@ namespace AZ::Render
         AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
     }
 
-    AZ::Aabb AtomActorInstance::GetWorldBounds()
+    AZ::Aabb AtomActorInstance::GetWorldBounds() const
     {
         return m_worldAABB;
     }
 
-    AZ::Aabb AtomActorInstance::GetLocalBounds()
+    AZ::Aabb AtomActorInstance::GetLocalBounds() const
     {
         return m_localAABB;
     }

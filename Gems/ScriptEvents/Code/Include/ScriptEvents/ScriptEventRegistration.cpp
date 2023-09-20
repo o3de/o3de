@@ -33,19 +33,28 @@ namespace ScriptEvents
 
             m_assetId = scriptEventAssetId;
 
-            AZ::Data::AssetBus::Handler::BusConnect(scriptEventAssetId);
-
             m_asset = AZ::Data::AssetManager::Instance().FindAsset<ScriptEvents::ScriptEventsAsset>(m_assetId, AZ::Data::AssetLoadBehavior::PreLoad);
             if (m_asset && m_asset.IsReady())
             {
                 CompleteRegistration(m_asset);
             }
+
+            // Connect *after* checking to see if we can complete registration. Connections can potentially trigger
+            // an immediate call to OnAssetReady(). If this happens, we'd like to make sure it doesn't try to connect
+            // to the SystemTickBus. In part, it's because it would be redundant work - we've already completed the registration.
+            // But also, the SystemTickBus can only be connected to from the main thread, and this Init() call might be
+            // on a job thread, so we also want to avoid the unsafe connection to SystemTickBus in that scenario.
+            AZ::Data::AssetBus::Handler::BusConnect(scriptEventAssetId);
         }
 
         void ScriptEventRegistration::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
-            m_asset = asset;
-            AZ::SystemTickBus::Handler::BusConnect();
+            // If m_isReady is true, we've already called CompleteRegistration for this asset.
+            if (!m_isReady)
+            {
+                m_asset = asset;
+                AZ::SystemTickBus::Handler::BusConnect();
+            }
         }
 
         void ScriptEventRegistration::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)

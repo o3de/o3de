@@ -45,7 +45,7 @@ namespace UnitTest
                 m_drawListTag = drawListTagRegistry->AcquireTag(drawListTagString);
                 m_viewTag = viewTag;
                 m_flags.m_hasDrawListTag = true;
-                m_flags.m_hasPipelineViewTag = true;
+                m_flags.m_bindViewSrg = true;
             }
 
             AZ::RHI::DrawListTag GetDrawListTag() const override

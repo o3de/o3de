@@ -4,12 +4,12 @@
     "O3DEVersion": "0.1.0.0",
     "O3DEBuildNumber": 0,
     "display_version": "00.00",
-    "version": "2.1.0",
+    "version": "3.0.0",
     "api_versions": {
         "editor": "1.0.0",
         "framework": "1.1.0",
         "launcher": "1.0.0",
-        "tools": "1.0.0"
+        "tools": "1.1.0"
     },
     "file_version": 2,
     "copyright_year": 2023,
@@ -123,10 +123,11 @@
         "Templates/DefaultGem",
         "Templates/DefaultProject",
         "Templates/GemRepo",
-        "Templates/GraphicsGems",
+        "Templates/GraphicsGem",
         "Templates/MinimalProject",
         "Templates/PrebuiltGem",
         "Templates/PythonToolGem",
+        "Templates/RemoteRepo",
         "Templates/ScriptCanvasNode",
         "Templates/UnifiedMultiplayerGem"
     ],

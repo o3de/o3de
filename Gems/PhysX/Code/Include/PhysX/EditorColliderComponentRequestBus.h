@@ -217,9 +217,9 @@ namespace PhysX
         virtual void ValidateRigidBodyMeshGeometryType() = 0;
     };
 
-    AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations")
+    AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations", "-Wdeprecated-declarations");
     using EditorColliderValidationRequestBus = AZ::EBus<EditorColliderValidationRequests>;
-    AZ_POP_DISABLE_WARNING
+    AZ_POP_DISABLE_WARNING;
     
     //! Bus used to validate that non-convex meshes are not used with simulation types which do not support them.
     class EditorMeshColliderValidationRequests : public AZ::ComponentBus

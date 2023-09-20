@@ -63,7 +63,6 @@ namespace EMotionFX
             m_animGraphInstance = m_blendTreeAnimGraph->GetAnimGraphInstance(m_actorInstance, m_motionSet);
         }
 
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         BlendTree* m_blendTree;
         BlendTreeTransformNode* m_transformNode;
     };

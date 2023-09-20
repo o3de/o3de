@@ -37,6 +37,7 @@ namespace AzToolsFramework
             QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
             int columnCount(const QModelIndex& parent = QModelIndex()) const override;
             bool hasChildren(const QModelIndex& parent = QModelIndex()) const override;
+            bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
 
             // Used to keep track of the root index on the view consuming this model, so that the model
             // can generate extra data such as whether an entry is on the top level.
@@ -45,11 +46,13 @@ namespace AzToolsFramework
 
             bool GetShowSearchResultsMode() const;
             void SetShowSearchResultsMode(bool searchMode);
-            const AZStd::string ExtensionToType(AZStd::string_view str) const;
 
+            void SetSearchString(const QString& searchString);
         private:
             QPersistentModelIndex m_rootIndex;
             bool m_searchResultsMode;
+
+            AZStd::string m_searchString = "";
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

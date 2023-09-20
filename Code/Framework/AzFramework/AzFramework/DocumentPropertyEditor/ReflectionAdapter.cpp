@@ -12,6 +12,7 @@
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
@@ -329,7 +330,7 @@ namespace AZ::DocumentPropertyEditor
             attributes.ListAttributes(
                 [this](AZ::Name group, AZ::Name name, const Dom::Value& value)
                 {
-                    AZ_Warning("dpe", !name.IsEmpty(), "DPE: Received empty name in ListAttributes");
+                    AZ_Warning("ReflectionAdapter", !name.IsEmpty(), "Received empty name in ListAttributes");
                     // Skip non-default groups, we don't presently source any attributes from outside of the default group.
                     if (!group.IsEmpty())
                     {
@@ -476,7 +477,7 @@ namespace AZ::DocumentPropertyEditor
                 [&value](const Dom::Value& newValue)
                 {
                     AZStd::optional<T> extractedValue = Dom::Utils::ValueToType<T>(newValue);
-                    AZ_Warning("DPE", extractedValue.has_value(), "OnChanged failed, unable to extract value from DOM");
+                    AZ_Warning("ReflectionAdapter", extractedValue.has_value(), "OnChanged failed, unable to extract value from DOM");
                     if (extractedValue.has_value())
                     {
                         value = AZStd::move(extractedValue.value());
@@ -566,7 +567,15 @@ namespace AZ::DocumentPropertyEditor
                 }
 
                 auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerAttribute);
-                if (!parentContainer->IsFixedSize())
+
+                bool parentCanBeModified = true;
+                if (auto parentCanBeModifiedValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerCanBeModified);
+                    parentCanBeModifiedValue)
+                {
+                    parentCanBeModified = parentCanBeModifiedValue->IsBool() && parentCanBeModifiedValue->GetBool();
+                }
+
+                if (!parentContainer->IsFixedSize() && parentCanBeModified)
                 {
                     m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                     m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
@@ -633,6 +642,26 @@ namespace AZ::DocumentPropertyEditor
                     false, false);
                 return;
             }
+            else if (access.GetType() == azrtti_typeid<bool>())
+            {
+                // handle bool pointers directly for elements like group toggles
+                ExtractAndCreateLabel(attributes);
+
+                bool& value = *reinterpret_cast<bool*>(access.Get());
+                VisitValue(
+                    Dom::Utils::ValueFromType(value),
+                    &value,
+                    sizeof(value),
+                    attributes,
+                    [&value](const Dom::Value& newValue)
+                    {
+                        value = newValue.GetBool();
+                        return newValue;
+                    },
+                    false,
+                    false);
+                return;
+            }
             else
             {
                 auto containerAttribute = attributes.Find(Reflection::DescriptorAttributes::Container);
@@ -648,29 +677,47 @@ namespace AZ::DocumentPropertyEditor
                     {
                         AZStd::string_view serializedPath = ExtractSerializedPath(attributes);
 
-                        size_t containerSize = container->Size(access.Get());
-                        if (containerSize == 1)
+                        m_adapter->CreateLabel(
+                            &m_builder, labelAttribute->GetString(),
+                            serializedPath);
+
+                        auto valueTextAttribute = attributes.Find(Nodes::Label::ValueText.GetName());
+                        if (valueTextAttribute && !valueTextAttribute->IsNull() && valueTextAttribute->IsString())
                         {
-                            m_adapter->CreateLabel(
-                                &m_builder,
-                                AZStd::string::format("%s (1 element)", labelAttribute->GetString().data()),
-                                serializedPath);
+                            m_adapter->CreateLabel(&m_builder, valueTextAttribute->GetString(), serializedPath);
                         }
                         else
                         {
-                            m_adapter->CreateLabel(
-                                &m_builder,
-                                AZStd::string::format("%s (%zu elements)", labelAttribute->GetString().data(), containerSize),
-                                serializedPath);
+                            size_t containerSize = container->Size(access.Get());
+                            if (containerSize == 1)
+                            {
+                                m_adapter->CreateLabel(&m_builder, AZStd::string::format("1 element"), serializedPath);
+                            }
+                            else
+                            {
+                                m_adapter->CreateLabel(&m_builder, AZStd::string::format("%zu elements", containerSize), serializedPath);
+                            }
                         }
                     }
 
-                    if (!container->IsFixedSize())
+                    bool canBeModified = true;
+                    if (auto canBeModifiedValue = attributes.Find(Nodes::Container::ContainerCanBeModified.GetName()); canBeModifiedValue)
+                    {
+                        canBeModified = canBeModifiedValue->IsBool() && canBeModifiedValue->GetBool();
+                    }
+
+                    if (canBeModified && !container->IsFixedSize())
                     {
                         bool isDisabled = false;
                         if (auto disabledValue = attributes.Find(Nodes::NodeWithVisiblityControl::Disabled.GetName()); disabledValue)
                         {
                             isDisabled = disabledValue->IsBool() && disabledValue->GetBool();
+                        }
+
+                        bool shouldPromptOnClear = true;
+                        if (auto promptOnClearValue = attributes.Find(Nodes::Container::PromptOnContainerClear.GetName()); promptOnClearValue)
+                        {
+                            shouldPromptOnClear = promptOnClearValue->IsBool() && promptOnClearValue->GetBool();
                         }
 
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
@@ -691,6 +738,10 @@ namespace AZ::DocumentPropertyEditor
                         if (isDisabled)
                         {
                             m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+                        }
+                        if (!shouldPromptOnClear)
+                        {
+                            m_builder.Attribute(Nodes::Container::PromptOnContainerClear, false);
                         }
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                         m_builder.EndPropertyEditor();
@@ -729,43 +780,64 @@ namespace AZ::DocumentPropertyEditor
                             typeSize = rttiHelper->GetTypeSize();
                         }
                     }
+
+                    // this needs to write the value back into the reflected object via Json serialization
+                    auto StoreValueIntoPointer = [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
+                    {
+                        // marshal this new value into a pointer for use by the Json serializer
+                        auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
+
+                        rapidjson::Document buffer;
+                        JsonSerializerSettings serializeSettings;
+                        JsonDeserializerSettings deserializeSettings;
+                        serializeSettings.m_serializeContext = m_serializeContext;
+                        deserializeSettings.m_serializeContext = m_serializeContext;
+
+                        // serialize the new value to Json, using the original valuePointer as a reference object to generate a minimal
+                        // diff
+                        AZ::JsonSerializationResult::ResultCode resultCode = JsonSerialization::Store(
+                            buffer, buffer.GetAllocator(), marshalledPointer, valuePointer, valueType, serializeSettings);
+
+                        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                        {
+                            AZ_Error(
+                                "ReflectionAdapter",
+                                false,
+                                "Storing new property editor value to JSON for copying to instance has failed with error %s",
+                                resultCode.ToString("").c_str());
+                            return newValue;
+                        }
+
+                        // now deserialize that value into the original location
+                        resultCode = JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+                        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                        {
+                            AZ_Error(
+                                "ReflectionAdapter",
+                                false,
+                                "Loading JSON value containing new property editor into instance has failed with error %s",
+                                resultCode.ToString("").c_str());
+                            return newValue;
+                        }
+
+                        // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by
+                        // pointer, it will not actually detect a changed dom value. Since we are already writing directly to the DOM
+                        // before this step, it won't affect the calling DPE, however, other DPEs pointed at the same adapter would be
+                        // unaware of the change, and wouldn't update their UI. In future, to properly support multiple DPEs on one
+                        // adapter, we will need to solve this. One way would be to store the json serialized value (which is mostly
+                        // human-readable text) as an attribute, so any change to the Json would trigger an update. This would have the
+                        // advantage of allowing opaque and pointer types to be searchable by the string-based Filter adapter. Without
+                        // this, things like Vector3 will not have searchable values by text. These advantages would have to be measured
+                        // against the size changes in the DOM and the time taken to populate and parse them.
+                        return newValue;
+                    };
                     void* instance = access.Get();
                     VisitValue(
                         instancePointerValue,
                         instance,
                         typeSize,
                         attributes,
-                        // this needs to write the value back into the reflected object via Json serialization
-                        [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
-                        {
-                            // marshal this new value into a pointer for use by the Json serializer
-                            auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
-
-                            rapidjson::Document buffer;
-                            JsonSerializerSettings serializeSettings;
-                            JsonDeserializerSettings deserializeSettings;
-                            serializeSettings.m_serializeContext = m_serializeContext;
-                            deserializeSettings.m_serializeContext = m_serializeContext;
-
-                            // serialize the new value to Json, using the original valuePointer as a reference object to generate a minimal
-                            // diff
-                            JsonSerialization::Store(
-                                buffer, buffer.GetAllocator(), marshalledPointer, valuePointer, valueType, serializeSettings);
-
-                            // now deserialize that value into the original location
-                            JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
-
-                            // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by
-                            // pointer, it will not actually detect a changed dom value. Since we are already writing directly to the DOM
-                            // before this step, it won't affect the calling DPE, however, other DPEs pointed at the same adapter would be
-                            // unaware of the change, and wouldn't update their UI. In future, to properly support multiple DPEs on one
-                            // adapter, we will need to solve this. One way would be to store the json serialized value (which is mostly
-                            // human-readable text) as an attribute, so any change to the Json would trigger an update. This would have the
-                            // advantage of allowing opaque and pointer types to be searchable by the string-based Filter adapter. Without
-                            // this, things like Vector3 will not have searchable values by text. These advantages would have to be measured
-                            // against the size changes in the DOM and the time taken to populate and parse them.
-                            return newValue;
-                        },
+                        AZStd::move(StoreValueIntoPointer),
                         false,
                         hashValue);
                 }
@@ -893,6 +965,12 @@ namespace AZ::DocumentPropertyEditor
     void ReflectionAdapter::UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo)
     {
         NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
+    }
+
+    ExpanderSettings* ReflectionAdapter::CreateExpanderSettings(
+        DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
+    {
+        return new LabeledRowDPEExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
     }
 
     Dom::Value ReflectionAdapter::GenerateContents()

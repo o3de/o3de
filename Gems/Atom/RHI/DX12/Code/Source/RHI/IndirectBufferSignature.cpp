@@ -53,6 +53,10 @@ namespace AZ
                     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
                     m_stride += sizeof(D3D12_DISPATCH_ARGUMENTS);
                     break;
+                case RHI::IndirectCommandType::DispatchRays:
+                    argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH_RAYS;
+                    m_stride += sizeof(D3D12_DISPATCH_RAYS_DESC);
+                    break;
                 case RHI::IndirectCommandType::VertexBufferView:
                     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
                     argDesc.VertexBuffer.Slot = command.m_vertexBufferArgs.m_slot;

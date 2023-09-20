@@ -18,6 +18,7 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Viewport/CameraState.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Editor/ColliderComponentMode.h>
 #include <Source/HeightfieldColliderComponent.h>

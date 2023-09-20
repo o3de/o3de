@@ -25,6 +25,8 @@ namespace AZ
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required);
+            static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent);
+
             static void Reflect(AZ::ReflectContext* context);
 
             SystemComponent() = default;
@@ -71,6 +73,7 @@ namespace AZ
             RHI::Ptr<RHI::RayTracingTlas> CreateRayTracingTlas() override;
             RHI::Ptr<RHI::RayTracingPipelineState> CreateRayTracingPipelineState() override;
             RHI::Ptr<RHI::RayTracingShaderTable> CreateRayTracingShaderTable() override;
+            RHI::Ptr<RHI::DispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() override;
             ///////////////////////////////////////////////////////////////////
 
         private:

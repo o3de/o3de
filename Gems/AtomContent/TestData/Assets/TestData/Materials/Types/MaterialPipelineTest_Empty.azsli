@@ -21,6 +21,8 @@ void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out 
 
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
 
+#define MATERIAL_HAS_UVS 0
+
     struct VsInput
     {
         float3 position : POSITION;

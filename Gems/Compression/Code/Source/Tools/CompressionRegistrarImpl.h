@@ -38,6 +38,7 @@ namespace Compression
         bool UnregisterCompressionInterface(CompressionAlgorithmId algorithmId) override;
 
         [[nodiscard]] ICompressionInterface* FindCompressionInterface(CompressionAlgorithmId algorithmId) const override;
+        [[nodiscard]] ICompressionInterface* FindCompressionInterface(AZStd::string_view algorithmName) const override;
 
         [[nodiscard]] bool IsRegistered(CompressionAlgorithmId algorithmId) const override;
 

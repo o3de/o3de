@@ -106,6 +106,12 @@ namespace AZ::Settings
                 memmove(textBuffer.begin(), frontIter, readOffset);
             }
 
+            if (remainingFileLength == 0)
+            {
+                // There are no more bytes to read, no need to attempt to read from the stream
+                break;
+            }
+
             // Read up to minimum of remaining file length or 4K in the textBuffer
             readSize = (AZStd::min)(textBuffer.max_size() - readOffset, remainingFileLength);
             bytesRead = textStream.Read(readSize, textBuffer.data() + readOffset);

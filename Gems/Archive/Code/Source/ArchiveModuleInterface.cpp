@@ -10,6 +10,7 @@
 #include <AzCore/Memory/Memory.h>
 
 #include <Archive/ArchiveTypeIds.h>
+#include <Clients/ArchiveReaderFactory.h>
 #include <Clients/ArchiveSystemComponent.h>
 
 namespace Archive
@@ -28,6 +29,14 @@ namespace Archive
         m_descriptors.insert(m_descriptors.end(), {
             ArchiveSystemComponent::CreateDescriptor(),
             });
+
+        m_archiveReaderFactory = AZStd::make_unique<ArchiveReaderFactory>();
+        ArchiveReaderFactoryInterface::Register(m_archiveReaderFactory.get());
+    }
+
+    ArchiveModuleInterface::~ArchiveModuleInterface()
+    {
+        ArchiveReaderFactoryInterface::Unregister(m_archiveReaderFactory.get());
     }
 
     AZ::ComponentTypeList ArchiveModuleInterface::GetRequiredSystemComponents() const

@@ -361,11 +361,11 @@ namespace AZ::Dom::Utils
     // remove dangerous implementation that could result in dangling references
     void* TryMarshalValueToPointer(AZ::Dom::Value&& value, const AZ::TypeId& expectedType) = delete;
 
-    Dom::Value MarshalTypedPointerToValue(void* value, const AZ::TypeId& typeId)
+    Dom::Value MarshalTypedPointerToValue(const void* value, const AZ::TypeId& typeId)
     {
         Dom::Value result(Dom::Type::Object);
         result[TypeFieldName] = Dom::Value(PointerTypeName.GetStringView(), false);
-        result[PointerValueFieldName] = Dom::Value(reinterpret_cast<uint64_t>(value));
+        result[PointerValueFieldName] = Dom::Value(static_cast<uint64_t>(reinterpret_cast<const uintptr_t>(value)));
         Dom::Value typeName = TypeIdToDomValue(typeId);
         if (!typeName.GetString().empty())
         {
@@ -399,4 +399,37 @@ namespace AZ::Dom::Utils
             return azrtti_typeid<void>();
         }
     }
+
+    Dom::Value MarshalOpaqueValue(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+        AZStd::any::action_handler_for_t actionHandler)
+    {
+        if (typeTraits.m_isPointer)
+        {
+            return MarshalTypedPointerToValue(valueAddress, typeTraits.m_typeId);
+        }
+        else
+        {
+            AZStd::any::type_info typeInfo;
+            typeInfo.m_id = typeTraits.m_typeId;
+            typeInfo.m_handler = AZStd::move(actionHandler);
+            typeInfo.m_isPointer = false;
+            typeInfo.m_useHeap = typeTraits.m_typeSize > AZStd::Internal::ANY_SBO_BUF_SIZE;
+            return Dom::Value::FromOpaqueValue(AZStd::any(valueAddress, typeInfo));
+        }
+    }
+
+    Dom::Value ValueFromType(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+        AZStd::any::action_handler_for_t actionHandler)
+    {
+        if (typeTraits.m_typeId == azrtti_typeid<Dom::Value>())
+        {
+            // Rely on the Dom::Value copy constructor to make a copy
+            return *reinterpret_cast<const Dom::Value*>(valueAddress);
+        }
+        else
+        {
+            return MarshalOpaqueValue(valueAddress, typeTraits, AZStd::move(actionHandler));
+        }
+    }
+
 } // namespace AZ::Dom::Utils

@@ -15,21 +15,21 @@
 namespace AZ
 {
     class ReflectContext;
+}
 
-    namespace RHI
+namespace AZ::RHI
+{
+    class PlatformLimits;
+    class DeviceDescriptor
     {
-        class PlatformLimits;
-        class DeviceDescriptor
-        {
-        public:
-            AZ_RTTI(DeviceDescriptor, "{8446A34C-A079-44B8-A20F-45D9CAB1FAFD}");
-            static void Reflect(AZ::ReflectContext* context);
+    public:
+        AZ_RTTI(DeviceDescriptor, "{8446A34C-A079-44B8-A20F-45D9CAB1FAFD}");
+        static void Reflect(AZ::ReflectContext* context);
 
-            DeviceDescriptor() = default;
-            virtual ~DeviceDescriptor();
+        DeviceDescriptor() = default;
+        virtual ~DeviceDescriptor();
 
-            uint32_t m_frameCountMax = RHI::Limits::Device::FrameCountMax;
-            Ptr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
-        };
-    }
+        uint32_t m_frameCountMax = RHI::Limits::Device::FrameCountMax;
+        Ptr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
+    };
 }

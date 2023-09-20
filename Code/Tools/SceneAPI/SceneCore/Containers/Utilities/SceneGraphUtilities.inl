@@ -32,7 +32,7 @@ namespace AZ
                     auto view = Containers::Views::MakeFilterView(contentStorage, Containers::DerivedTypeFilter<T>());
                     for (auto it = view.begin(); it != view.end(); ++it)
                     {
-                        AZStd::set<Crc32> types;
+                        Events::GraphMetaInfo::VirtualTypesSet types;
                         Events::GraphMetaInfoBus::Broadcast(
                             &Events::GraphMetaInfoBus::Events::GetVirtualTypes,
                             types,

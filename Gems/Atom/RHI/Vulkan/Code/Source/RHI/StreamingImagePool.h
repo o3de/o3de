@@ -8,9 +8,6 @@
 #pragma once
 
 #include <Atom/RHI/StreamingImagePool.h>
-#include <Atom/RHI.Reflect/Vulkan/ImagePoolDescriptor.h>
-#include <RHI/MemoryAllocator.h>
-#include <RHI/TileAllocator.h>
 #include <AzCore/std/parallel/mutex.h>
 
 namespace AZ
@@ -33,22 +30,15 @@ namespace AZ
             ~StreamingImagePool() = default;
 
         protected:
-            // Allocate non-tiled memory with specified size and alignment
-            // via the m_memoryAllocator
-            MemoryView AllocateMemory(size_t size, size_t alignment);
-            // Deallocate a non-tiled memory
-            void DeAllocateMemory(MemoryView& memoryView);
+            //! Allocate multiple memory blocks.
+            //! All allocations use the same memory requeriments
+            RHI::ResultCode AllocateMemoryBlocks(
+                uint32_t blockCount,
+                const VkMemoryRequirements& memReq,
+                AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>>& outAllocatedBlocks);
 
-            // Allocate memory blocks via the m_tileAllocator
-            // @param [out] outHeapTiles The allocated heap tiles
-            // @param blockCount The number of memory block count to be allocated
-            // @return Returns RHI::ResultCode::Success if the allocation was successful.
-            RHI::ResultCode AllocateMemoryBlocks(AZStd::vector<HeapTiles>& outHeapTiles, uint32_t blockCount);
-
-            // Deallocate memory blocks            
-            // @param heapTiles The heap tiles to be released. After the call, the vector is cleared.
-            void DeAllocateMemoryBlocks(AZStd::vector<HeapTiles>& heapTiles);
-
+            //! DeAllocate memory blocks
+            void DeAllocateMemoryBlocks(AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>>& blocks);
 
         private:
             StreamingImagePool() = default;
@@ -72,25 +62,7 @@ namespace AZ
             void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
 
-            //////////////////////////////////////////////////////////////////////////
-            // FrameSchedulerEventBus::Handler
-            void OnFrameEnd() override;
-            //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::Object
-            void SetNameInternal(const AZStd::string_view& name) override;
-            //////////////////////////////////////////////////////////////////////////
-
             void WaitFinishUploading(const Image& image);
-            
-            // For allocating non-tile memory from heap pages
-            // or unique allocation for large memory 
-            MemoryAllocator m_memoryAllocator;
-
-            // For allocating tiles from heap pages
-            TileAllocator m_tileAllocator;
-            MemoryPageAllocator m_heapPageAllocator;
 
             bool m_enableTileResource = false;
         };

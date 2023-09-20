@@ -8,6 +8,7 @@
 
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Windows.h>
 #include <AzFramework/Windowing/NativeWindow.h>
+#include <AzFramework/Windowing/NativeWindow_Windows.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformIncl.h>
@@ -16,59 +17,6 @@
 
 namespace AzFramework
 {
-    class NativeWindowImpl_Win32 final
-        : public NativeWindow::Implementation
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Win32, AZ::SystemAllocator);
-        NativeWindowImpl_Win32();
-        ~NativeWindowImpl_Win32() override;
-
-        // NativeWindow::Implementation overrides...
-        void InitWindow(const AZStd::string& title,
-                        const WindowGeometry& geometry,
-                        const WindowStyleMasks& styleMasks) override;
-        void Activate() override;
-        void Deactivate() override;
-        NativeWindowHandle GetWindowHandle() const override;
-        void SetWindowTitle(const AZStd::string& title) override;
-
-        WindowSize GetMaximumClientAreaSize() const override;
-        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
-        bool SupportsClientAreaResize() const override { return true; }
-        bool GetFullScreenState() const override;
-        void SetFullScreenState(bool fullScreenState) override;
-        bool CanToggleFullScreenState() const override { return true; }
-        float GetDpiScaleFactor() const override;
-        uint32_t GetDisplayRefreshRate() const override;
-
-    private:
-        RECT GetMonitorRect() const;
-        static HWND GetWindowedPriority();
-
-        static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
-        static LRESULT CALLBACK WindowCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-        static const wchar_t* s_defaultClassName;
-
-        void WindowSizeChanged(const uint32_t width, const uint32_t height);
-
-        void EnterBorderlessWindowFullScreen();
-        void ExitBorderlessWindowFullScreen();
-
-        HWND m_win32Handle = nullptr;
-        RECT m_windowRectToRestoreOnFullScreenExit; //!< The position and size of the window to restore when exiting full screen.
-        UINT m_windowStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
-        UINT m_windowExtendedStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
-
-        bool m_isInBorderlessWindowFullScreenState = false; //!< Was a borderless window used to enter full screen state?
-        bool m_shouldEnterFullScreenStateOnActivate = false; //!< Should we enter full screen state when the window is activated?
-
-        using GetDpiForWindowType = UINT(HWND hwnd);
-        GetDpiForWindowType* m_getDpiFunction = nullptr;
-        uint32_t m_mainDisplayRefreshRate = 0;
-    };
-
     const wchar_t* NativeWindowImpl_Win32::s_defaultClassName = L"O3DEWin32Class";
 
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
@@ -81,7 +29,7 @@ namespace AzFramework
         // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
         if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load(false))
         {
-            m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType*>("GetDpiForWindow");
+            m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType>("GetDpiForWindow");
         }
     }
 
@@ -190,13 +138,19 @@ namespace AzFramework
     {
         return m_win32Handle;
     }
-
     HWND NativeWindowImpl_Win32::GetWindowedPriority()
     {
         // If a debugger is attached and we're running in Windowed mode instead of Fullscreen mode,
         // don't make the window TOPMOST. Otherwise, the window will stay on top of the debugger window
         // at every breakpoint, crash, etc, making it extremely difficult to debug when working on a single monitor system.
-        return AZ::Debug::Trace::Instance().IsDebuggerPresent() ? HWND_NOTOPMOST : HWND_TOPMOST;
+        bool allowTopMost = !AZ::Debug::Trace::Instance().IsDebuggerPresent();
+
+        // If we are launching with pix enabled we are probably trying to do a gpu capture and hence need to be able to
+        // access RenderDoc or Pix behind the O3de app.
+#if defined(USE_PIX)
+        allowTopMost = false;
+#endif
+        return allowTopMost ? HWND_TOPMOST : HWND_NOTOPMOST;
     }
 
     void NativeWindowImpl_Win32::SetWindowTitle(const AZStd::string& title)
@@ -426,6 +380,10 @@ namespace AzFramework
             if (m_activated)
             {
                 WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnWindowResized, width, height);
+                if (!m_enableCustomizedResolution)
+                {
+                    WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnResolutionChanged, width, height);
+                }
             }
         }
     }

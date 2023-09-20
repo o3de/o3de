@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
+#include <RHI/DispatchRaysIndirectBuffer.h>
 #include <RHI/Fence.h>
 #include <RHI/FrameGraphExecuter.h>
 #include <RHI/FrameGraphCompiler.h>
@@ -229,6 +230,11 @@ namespace AZ
         RHI::Ptr<RHI::RayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
         {
             return RayTracingShaderTable::Create();
+        }
+
+        RHI::Ptr<RHI::DispatchRaysIndirectBuffer> SystemComponent::CreateDispatchRaysIndirectBuffer()
+        {
+            return DispatchRaysIndirectBuffer::Create();
         }
     }
 }

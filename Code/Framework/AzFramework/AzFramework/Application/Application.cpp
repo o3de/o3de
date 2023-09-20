@@ -71,6 +71,7 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Visibility/BoundsBus.h>
+#include <AzFramework/Visibility/VisibleGeometryBus.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
@@ -212,7 +213,8 @@ namespace AzFramework
 
     void Application::StartCommon(AZ::Entity* systemEntity)
     {
-        m_pimpl.reset(Implementation::Create());
+        auto implementationFactory = AZ::Interface<Application::ImplementationFactory>::Get();
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create() : nullptr;
 
         systemEntity->Init();
         systemEntity->Activate();
@@ -326,6 +328,8 @@ namespace AzFramework
         AzFramework::ScreenGeometryReflect(context);
         AzFramework::RemoteStorageDriveConfig::Reflect(context);
         AzFramework::PaintBrushSettings::Reflect(context);
+        AzFramework::VisibleGeometry::Reflect(context);
+        AzFramework::VisibleGeometryRequests::Reflect(context);
 
         Physics::ReflectionUtils::ReflectPhysicsApi(context);
         AzFramework::SurfaceData::SurfaceTagWeight::Reflect(context);
@@ -618,7 +622,7 @@ namespace AzFramework
         constexpr const char* userCachePathFilename{ "Cache" };
         AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
 #if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
+        // The number of max attempts ultimately dictates the number of application instances that can run
         // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
         // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't
         // be set *infinitely* high - each cache folder is GBs in size, and finding a free directory is a

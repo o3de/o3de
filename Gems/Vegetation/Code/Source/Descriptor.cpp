@@ -170,6 +170,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Position Modifier")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_positionOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Position Modifier has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -218,6 +219,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Rotation Modifier")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_rotationOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Rotation Modifier has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -266,6 +268,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Scale Modifier")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_scaleOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Scale Modifier has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -286,6 +289,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Altitude Filter")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_altitudeFilterOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Altitude Filter has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -298,6 +302,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Distance Between Filter (Radius)")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_radiusOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Distance Between Filter has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -316,6 +321,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Surface Slope Alignment")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_surfaceAlignmentOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Surface Slope Alignment Modifier has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -332,6 +338,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Slope Filter")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(0, &Descriptor::m_slopeFilterOverrideEnabled, "Override Enabled", "Enable per-item override settings for this item when the Slope Filter has 'Allow Per-Item Overrides' enabled.")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -348,6 +355,7 @@ namespace Vegetation
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Surface Mask Filter")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &Descriptor::m_surfaceFilterOverrideMode, "Override Mode", "Enable per-item override settings for this item when the Surface Mask Filter has 'Allow Per-Item Overrides' enabled.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->EnumAttribute(OverrideMode::Disable, "Disable")

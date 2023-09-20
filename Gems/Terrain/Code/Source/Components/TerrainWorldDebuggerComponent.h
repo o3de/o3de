@@ -116,8 +116,8 @@ namespace Terrain
 
         //////////////////////////////////////////////////////////////////////////
         // BoundsRequestBus
-        AZ::Aabb GetWorldBounds() override;
-        AZ::Aabb GetLocalBounds() override;
+        AZ::Aabb GetWorldBounds() const override;
+        AZ::Aabb GetLocalBounds() const override;
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Terrain::TerrainDataNotificationBus

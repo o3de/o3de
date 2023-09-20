@@ -7,6 +7,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
 #include <AppKit/AppKit.h>
@@ -44,11 +45,6 @@ namespace AzFramework
         NSString* m_windowTitle;
         uint32_t m_mainDisplayRefreshRate = 0;
     };
-
-    NativeWindow::Implementation* NativeWindow::Implementation::Create()
-    {
-        return aznew NativeWindowImpl_Darwin();
-    }
 
     NativeWindowImpl_Darwin::~NativeWindowImpl_Darwin()
     {
@@ -146,5 +142,23 @@ namespace AzFramework
     uint32_t NativeWindowImpl_Darwin::GetDisplayRefreshRate() const
     {
         return m_mainDisplayRefreshRate;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    class MacNativeWindowFactory 
+        : public NativeWindow::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<NativeWindow::Implementation> Create() override
+        {
+            return AZStd::make_unique<NativeWindowImpl_Darwin>();
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()
+    {
+        m_nativeWindowImplFactory = AZStd::make_unique<MacNativeWindowFactory>();
+        AZ::Interface<NativeWindow::ImplementationFactory>::Register(m_nativeWindowImplFactory.get());
     }
 } // namespace AzFramework

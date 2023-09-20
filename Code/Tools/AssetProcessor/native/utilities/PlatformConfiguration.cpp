@@ -7,6 +7,7 @@
  */
 #include "native/utilities/PlatformConfiguration.h"
 #include "native/AssetManager/FileStateCache.h"
+#include "native/assetprocessor.h"
 
 #include <QDirIterator>
 
@@ -980,7 +981,7 @@ namespace AssetProcessor
     {
         for (const auto& scanfolder : m_scanFolders)
         {
-            if (scanfolder.GetPortableKey() == IntermediateAssetsFolderName)
+            if (scanfolder.GetPortableKey() == AssetProcessor::IntermediateAssetsFolderName)
             {
                 m_intermediateAssetScanFolderId = scanfolder.ScanFolderID();
                 return;
@@ -1861,7 +1862,7 @@ namespace AssetProcessor
         settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
 
         AZ::IO::Path scanfolderPath = cacheRootFolder.c_str();
-        scanfolderPath /= IntermediateAssetsFolderName;
+        scanfolderPath /= AssetProcessor::IntermediateAssetsFolderName;
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         PopulatePlatformsForScanFolder(platforms);
@@ -1874,8 +1875,8 @@ namespace AssetProcessor
 
         AddScanFolder(ScanFolderInfo{
             scanfolderPath.c_str(),
-            IntermediateAssetsFolderName,
-            IntermediateAssetsFolderName,
+            AssetProcessor::IntermediateAssetsFolderName,
+            AssetProcessor::IntermediateAssetsFolderName,
             false,
             true,
             platforms,

@@ -26,7 +26,7 @@ namespace AZ
         {
             AZ_Assert(request.m_byteCount > 0, "ByteCount of request is null");
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
-            RHI::Ptr<Buffer> stagingBuffer = m_device.AcquireStagingBuffer(request.m_byteCount);
+            RHI::Ptr<Buffer> stagingBuffer = m_device.AcquireStagingBuffer(request.m_byteCount, buffer->GetDescriptor().m_alignment);
             if (stagingBuffer)
             {
                 BufferUploadPacket uploadRequest;

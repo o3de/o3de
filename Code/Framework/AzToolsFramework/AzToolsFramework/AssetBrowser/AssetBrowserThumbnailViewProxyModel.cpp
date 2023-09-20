@@ -6,7 +6,6 @@
  *
  */
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserThumbnailViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -17,7 +16,7 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
-
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 
 namespace AzToolsFramework
@@ -42,6 +41,17 @@ namespace AzToolsFramework
 
             switch (role)
             {
+            case Qt::DisplayRole:
+                {
+                    QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
+
+                    if (!m_searchString.empty())
+                    {
+                        // highlight characters in filter
+                        name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
+                    }
+                    return name;
+                }
             case Qt::DecorationRole:
                 {
                     return AssetBrowserViewUtils::GetThumbnail(assetBrowserEntry);
@@ -116,6 +126,11 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserThumbnailViewProxyModel::SetSearchString(const QString& searchString)
+        {
+            m_searchString = searchString.toUtf8().data();
+        }
+
         Qt::DropActions AssetBrowserThumbnailViewProxyModel::supportedDropActions() const
         {
             return Qt::CopyAction | Qt::MoveAction;
@@ -160,6 +175,12 @@ namespace AzToolsFramework
 
                 if (Utils::FromMimeData(data, entries))
                 {
+                    Qt::DropAction selectedAction = AssetBrowserViewUtils::SelectDropActionForEntries(entries);
+                    if (selectedAction == Qt::IgnoreAction)
+                    {
+                        return false;
+                    }
+
                     for (auto entry : entries)
                     {
                         using namespace AZ::IO;
@@ -181,7 +202,14 @@ namespace AzToolsFramework
                             Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
                             toPath = AZ::IO::Path(sourceparent->GetFullPath()) / filename.c_str() / "*";
                         }
-                        AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        if (selectedAction == Qt::MoveAction)
+                        {
+                            AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        }
+                        else
+                        {
+                            AssetBrowserViewUtils::CopyEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        }
                     }
                     return true;
                 }
