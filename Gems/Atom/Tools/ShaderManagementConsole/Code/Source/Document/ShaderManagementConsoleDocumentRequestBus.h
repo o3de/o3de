@@ -8,7 +8,6 @@
 
 #pragma once
 
-//#include <AzCore/Name/Name.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>

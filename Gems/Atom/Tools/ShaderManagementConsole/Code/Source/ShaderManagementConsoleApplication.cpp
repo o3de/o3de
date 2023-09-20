@@ -50,14 +50,12 @@ namespace ShaderManagementConsole
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
         ShaderManagementConsoleRequestBus::Handler::BusConnect();
-        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
     }
 
     ShaderManagementConsoleApplication::~ShaderManagementConsoleApplication()
     {
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         ShaderManagementConsoleRequestBus::Handler::BusDisconnect();
-        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         m_window.reset();
     }
 
