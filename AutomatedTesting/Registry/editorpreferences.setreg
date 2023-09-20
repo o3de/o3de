@@ -8,7 +8,7 @@
         "Preferences": {
             "Prefabs": {
                 "EnableOutlinerOverrideManagement": true,
-                "EnableInspectorOverrideManagement": false
+                "EnableInspectorOverrideManagement": true
             }
         }
     }
