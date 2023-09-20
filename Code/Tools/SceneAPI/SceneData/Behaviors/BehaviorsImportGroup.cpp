@@ -21,82 +21,78 @@
 #include <SceneAPI/SceneData/Groups/ImportGroup.h>
 #include <SceneAPI/SceneData/Behaviors/ImportGroup.h>
 
-namespace AZ
+namespace AZ::SceneAPI::Behaviors
 {
-    namespace SceneAPI
+    const int ImportGroup::s_importGroupPreferredTabOrder = 0;
+
+    void ImportGroup::Activate()
     {
-        namespace Behaviors
+        Events::ManifestMetaInfoBus::Handler::BusConnect();
+        Events::AssetImportRequestBus::Handler::BusConnect();
+    }
+
+    void ImportGroup::Deactivate()
+    {
+        Events::AssetImportRequestBus::Handler::BusDisconnect();
+        Events::ManifestMetaInfoBus::Handler::BusDisconnect();
+    }
+
+    void ImportGroup::Reflect(ReflectContext* context)
+    {
+        SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+        if (serializeContext)
         {
-            const int ImportGroup::s_importGroupPreferredTabOrder = 0;
+            serializeContext->Class<ImportGroup, BehaviorComponent>()->Version(1);
+        }
+    }
 
-            void ImportGroup::Activate()
-            {
-                Events::ManifestMetaInfoBus::Handler::BusConnect();
-                Events::AssetImportRequestBus::Handler::BusConnect();
-            }
-
-            void ImportGroup::Deactivate()
-            {
-                Events::AssetImportRequestBus::Handler::BusDisconnect();
-                Events::ManifestMetaInfoBus::Handler::BusDisconnect();
-            }
-
-            void ImportGroup::Reflect(ReflectContext* context)
-            {
-                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
-                if (serializeContext)
-                {
-                    serializeContext->Class<ImportGroup, BehaviorComponent>()->Version(1);
-                }
-            }
-
-            void ImportGroup::GetCategoryAssignments([[maybe_unused]] CategoryRegistrationList& categories, [[maybe_unused]] const Containers::Scene& scene)
-            {
-                // The Import Group settings can be made visible and editable in the Asset Browser Inspector by uncommenting
-                // the following line. However, it is currently disabled because changing the settings causes things to break.
-                // Specifically, in the Mesh Group and the PhysX Group, the settings rely on a list of selected and unselected
-                // nodes. Changing the Import optimizations settings will change what nodes exist in the scene, so those lists
-                // will no longer be valid and need to be reset. Also, the various UX widgets for those groups builds up lists
-                // of nodes to populate the dropdown lists with. Those will all need to get refreshed. Finally, if Proc Prefabs
-                // are enabled, the set of mesh groups to export for the Proc Prefab will also need to change to match the new
-                // list of meshes.
+    void ImportGroup::GetCategoryAssignments(
+        [[maybe_unused]] CategoryRegistrationList& categories, [[maybe_unused]] const Containers::Scene& scene)
+    {
+        // The Import Group settings can be made visible and editable in the Asset Browser Inspector by uncommenting
+        // the following line. However, it is currently disabled because changing the settings causes things to break.
+        // Specifically, in the Mesh Group and the PhysX Group, the settings rely on a list of selected and unselected
+        // nodes. Changing the Import optimizations settings will change what nodes exist in the scene, so those lists
+        // will no longer be valid and need to be reset. Also, the various UX widgets for those groups builds up lists
+        // of nodes to populate the dropdown lists with. Those will all need to get refreshed. Finally, if Proc Prefabs
+        // are enabled, the set of mesh groups to export for the Proc Prefab will also need to change to match the new
+        // list of meshes.
                 
-                //categories.emplace_back("Import", SceneData::ImportGroup::TYPEINFO_Uuid(), s_importGroupPreferredTabOrder);
-            }
+        //categories.emplace_back("Import", SceneData::ImportGroup::TYPEINFO_Uuid(), s_importGroupPreferredTabOrder);
+    }
 
-            void ImportGroup::InitializeObject([[maybe_unused]] const Containers::Scene& scene, [[maybe_unused]] DataTypes::IManifestObject& target)
+    void ImportGroup::InitializeObject(
+        [[maybe_unused]] const Containers::Scene& scene, [[maybe_unused]] DataTypes::IManifestObject& target)
+    {
+        if (!target.RTTI_IsTypeOf(SceneData::ImportGroup::TYPEINFO_Uuid()))
+        {
+            return;
+        }
+    }
+
+    Events::ProcessingResult ImportGroup::UpdateManifest(
+        Containers::Scene& scene, [[maybe_unused]] ManifestAction action,
+        [[maybe_unused]] RequestingApplication requester)
+    {
+        // ignore empty scenes (i.e. only has the root node)
+        if (scene.GetGraph().GetNodeCount() == 1)
+        {
+            return Events::ProcessingResult::Ignored;
+        }
+
+        // If there's already an ImportGroup in the manifest, leave it there and return.
+        size_t count = scene.GetManifest().GetEntryCount();
+        for (size_t index = 0; index < count; index++)
+        {
+            if (auto* importGroup = azrtti_cast<DataTypes::IImportGroup*>(scene.GetManifest().GetValue(index).get()); importGroup)
             {
-                if (!target.RTTI_IsTypeOf(SceneData::ImportGroup::TYPEINFO_Uuid()))
-                {
-                    return;
-                }
-            }
-
-            Events::ProcessingResult ImportGroup::UpdateManifest(
-                Containers::Scene& scene, [[maybe_unused]] ManifestAction action,
-                [[maybe_unused]] RequestingApplication requester)
-            {
-                // ignore empty scenes (i.e. only has the root node)
-                if (scene.GetGraph().GetNodeCount() == 1)
-                {
-                    return Events::ProcessingResult::Ignored;
-                }
-
-                // If there's already an ImportGroup in the manifest, leave it there and return.
-                size_t count = scene.GetManifest().GetEntryCount();
-                for (size_t index = 0; index < count; index++)
-                {
-                    if (auto* importGroup = azrtti_cast<DataTypes::IImportGroup*>(scene.GetManifest().GetValue(index).get()); importGroup)
-                    {
-                        return Events::ProcessingResult::Success;
-                    }
-                }
-
-                // There's no ImportGroup yet, so add one.
-                auto importGroup = AZStd::make_shared<SceneData::ImportGroup>();
-                scene.GetManifest().AddEntry(importGroup);
                 return Events::ProcessingResult::Success;
             }
-        } // namespace Behaviors
-    } // namespace SceneAPI
-} // namespace AZ
+        }
+
+        // There's no ImportGroup yet, so add one.
+        auto importGroup = AZStd::make_shared<SceneData::ImportGroup>();
+        scene.GetManifest().AddEntry(importGroup);
+        return Events::ProcessingResult::Success;
+    }
+} // namespace AZ::SceneAPI::Behaviors

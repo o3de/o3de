@@ -12,20 +12,19 @@
 namespace AZ
 {
     class ReflectContext;
+} // namespace AZ
 
-    namespace SceneAPI
+namespace AZ::SceneAPI
+{
+    struct SceneImportSettings
     {
-        struct SceneImportSettings
-        {
-        public:
-            AZ_RTTI(SceneImportSettings, "{C91CB428-5081-439B-AC40-6149624832D4}");
-            virtual ~SceneImportSettings() = default;
+    public:
+        AZ_RTTI(SceneImportSettings, "{C91CB428-5081-439B-AC40-6149624832D4}");
+        virtual ~SceneImportSettings() = default;
 
-            static void Reflect(ReflectContext* context);
+        static void Reflect(ReflectContext* context);
 
-            bool m_optimizeScene = false;
-            bool m_optimizeMeshes = false;
-        };
-
-    } //namespace Scene
-} //namespace AZ
+        bool m_optimizeScene = false;
+        bool m_optimizeMeshes = false;
+    };
+} //namespace AZ::SceneAPI

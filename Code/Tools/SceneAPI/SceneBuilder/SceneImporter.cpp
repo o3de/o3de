@@ -77,7 +77,7 @@ namespace AZ
 
                 // Try reading in the scene manifest (.assetinfo file), which contains the import settings if they've been
                 // changed from the defaults.
-                Containers::Scene scene("");
+                Containers::Scene scene;
                 Import::ManifestImportRequestHandler manifestHandler;
                 manifestHandler.LoadAsset(
                     scene, sourceAssetPath,
