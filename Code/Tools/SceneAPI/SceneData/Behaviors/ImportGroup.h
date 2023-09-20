@@ -5,7 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- #pragma once
+
+#pragma once
 
 #include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
