@@ -471,7 +471,7 @@ namespace AzFramework
         }
     }
 #endif
-// Gruber patch begin // VMED 
+// Gruber patch end // VMED 
 
     void SpawnableEntitiesManager::RefreshEntityIdMapping(
         const AZ::EntityId& entityId, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned)
@@ -504,7 +504,7 @@ namespace AzFramework
             seedEntityId = AZ::EntityId(777777700000000); // for "centralplaza" // we have approx 0% probability to collide an existing entity id with the ids group in interval [seedEntityId, seedEntityId+NumOfEntities[
         }
 #endif
-// Gruber patch begin // VMED
+// Gruber patch end // VMED
 
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
         {
@@ -626,7 +626,7 @@ namespace AzFramework
                     }
                 }
 #endif
-// Gruber patch begin // VMED // Preprocess netbinding entity components for level
+// Gruber patch end // VMED // Preprocess netbinding entity components for level
 
                 // Add to the game context, now the entities are active
                 for (auto it = newEntitiesBegin; it != newEntitiesEnd; ++it)
