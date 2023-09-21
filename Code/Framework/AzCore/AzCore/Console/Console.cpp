@@ -484,9 +484,9 @@ namespace AZ
                     result = true;
                     if ((silentMode == ConsoleSilentMode::NotSilent) && (curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) != ConsoleFunctorFlags::IsInvisible)
                     {
-                        CVarFixedString value;
-                        curr->GetValue(value);
-                        AZLOG_INFO("> %s : %s", curr->GetName(), value.empty() ? "<empty>" : value.c_str());
+                        CVarFixedString inputStr;
+                        AZ::StringFunc::Join(inputStr, inputs, ' ');
+                        AZLOG_INFO("> %s : %s", curr->GetName(), inputStr.empty() ? "<empty>" : inputStr.c_str());
                     }
                     flags = curr->GetFlags();
                 }
