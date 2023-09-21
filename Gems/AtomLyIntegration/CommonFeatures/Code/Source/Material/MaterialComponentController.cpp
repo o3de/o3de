@@ -36,7 +36,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
-                    ->Event("GetDefaultMaterialMap", &MaterialComponentRequestBus::Events::GetDefaultMaterialMap, ""GetDefautMaterialMap")
+                    ->Event("GetDefaultMaterialMap", &MaterialComponentRequestBus::Events::GetDefaultMaterialMap, "GetDefautMaterialMap")
                     ->Event("FindMaterialAssignmentId", &MaterialComponentRequestBus::Events::FindMaterialAssignmentId)
                     ->Event("GetActiveMaterialAssetId", &MaterialComponentRequestBus::Events::GetMaterialAssetId) // This function is now redundant but cannot be marked deprecated or removed in case it's still referenced in script
                     ->Event("GetDefaultMaterialAssetId", &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId)
