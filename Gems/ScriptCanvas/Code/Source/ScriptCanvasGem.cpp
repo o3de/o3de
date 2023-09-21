@@ -7,7 +7,7 @@
  */
 
 
-#if !defined(SCRIPTCANVAS_EDITOR)
+#if defined(SCRIPTCANVAS_EDITOR)
 
 #include <ScriptCanvasGem.h>
 

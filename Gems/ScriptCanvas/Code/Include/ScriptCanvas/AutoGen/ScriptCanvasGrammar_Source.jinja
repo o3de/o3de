@@ -59,19 +59,11 @@ namespace {{attribute_Namespace}}
 {% endif %}
 
 
-class {{className}}_Reflection
+// Register reflection
+SCRIPTCANVAS_REGISTER({{className}}_Reflection)
 {
-public:
-    {% set reflectionClassName = className|join("_Reflection") %}
-    AZ_TYPE_INFO({{ className }}_Reflection, "{{ reflectionClassName|createHashGuid }}");
-
-    static void Reflect(AZ::ReflectContext* ) {}
-
-    {{className}}_Reflection();
-
-};
-
-inline const auto AutoReflection_{{className}} = ScriptCanvasModel::Instance().RegisterReflection( "AutoReflection_{{className}}", [] (AZ::ReflectContext* context) { {{ Class.attrib['QualifiedName'] }}::Reflect(context); }, {{Class.attrib['QualifiedName']}}::CreateDescriptor() );
+    ScriptCanvasModel::Instance().RegisterReflection( "AutoReflection_{{className}}", [] (AZ::ReflectContext* context) { {{ Class.attrib['QualifiedName'] }}::Reflect(context); }, {{Class.attrib['QualifiedName']}}::CreateDescriptor() );
+}
 
 
 
@@ -229,7 +221,7 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
 
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<{{ Class.attrib['QualifiedName'] }}, {{ baseClass }}>()
+        serializeContext->Class<{{ Class.attrib['QualifiedName'] }}, {{ baseClass }}, AZ::Component>()
 {% if Class.attrib['EventHandler'] is defined %}
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             ->EventHandler<{{ Class.attrib['EventHandler'] }}>()

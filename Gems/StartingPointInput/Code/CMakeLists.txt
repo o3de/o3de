@@ -23,7 +23,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             CryCommon
-            Gem::ScriptCanvas
+            Gem::ScriptCanvas.Shared
             Gem::ScriptCanvas.Extensions
     AUTOGEN_RULES
         *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Header.jinja,$path/$fileprefix.generated.h

@@ -39,6 +39,36 @@ namespace ScriptCanvas
     class Node;
 }
 
+
+
+#define CONCATENATION_IMPL(a, b) a##b
+#define CONCATENATION(a, b) CONCATENATION_IMPL(a, b)
+
+#define SCRIPTCANVAS_REGISTER_EXTERN(cls) \
+    template <typename T> \
+    extern void RegistrationCall(); \
+    template <> \
+    void RegistrationCall<cls>(); \
+    static const int CONCATENATION(temp, __COUNTER__ ) = \
+        RegistrationHelper::Register<cls>(&RegistrationCall<cls>)
+
+#define SCRIPTCANVAS_REGISTER(cls) \
+    template <> \
+    void RegistrationCall<cls>()
+
+namespace RegistrationHelper
+{
+    template <typename T>
+    inline int Register(void(*f)())
+    {
+        static const int s = [&f]() {
+            f();
+            return 0;
+        }();
+        return s;
+    }
+}
+
 //! Holds the complete list of Script Canvas nodes (grammar and nodeables), all
 //! gems and modules will register their nodes into this model
 class ScriptCanvasModel
@@ -66,6 +96,6 @@ private:
 
     AZStd::unordered_map<AZStd::string, ReflectFunction> m_registeredReflections;
 
-    bool m_verbose = true;
+    bool m_verbose = false;
 };
 

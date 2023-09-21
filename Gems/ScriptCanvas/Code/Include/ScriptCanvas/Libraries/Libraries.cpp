@@ -15,6 +15,41 @@
 #include <Libraries/Operators/OperatorsLibrary.h>
 #include <Libraries/UnitTesting/UnitTestingLibrary.h>
 
+#include <ScriptCanvas/Data/DataMacros.h>
+
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+
+#include <ScriptCanvas/Libraries/Entity/EntityFunctions.h>
+
+#include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
+
+
+#include <ScriptCanvas/Libraries/Math/AABB.h>
+#include <ScriptCanvas/Libraries/Math/Color.h>
+#include <ScriptCanvas/Libraries/Math/CRC.h>
+#include <ScriptCanvas/Libraries/Math/MathFunctions.h>
+#include <ScriptCanvas/Libraries/Math/Matrix3x3.h>
+#include <ScriptCanvas/Libraries/Math/Matrix4x4.h>
+#include <ScriptCanvas/Libraries/Math/MatrixMxN.h>
+#include <ScriptCanvas/Libraries/Math/OBB.h>
+#include <ScriptCanvas/Libraries/Math/Plane.h>
+#include <ScriptCanvas/Libraries/Math/Quaternion.h>
+#include <ScriptCanvas/Libraries/Math/Transform.h>
+#include <ScriptCanvas/Libraries/Math/Vector2.h>
+#include <ScriptCanvas/Libraries/Math/Vector3.h>
+#include <ScriptCanvas/Libraries/Math/Vector4.h>
+#include <ScriptCanvas/Libraries/Math/VectorN.h>
+#include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
+#include <ScriptCanvas/Libraries/String/StringFunctions.h>
+
+
+#include <ScriptCanvas/Libraries/Operators/Math/OperatorAdd.h>
+#include <ScriptCanvas/Libraries/Operators/Math/OperatorArithmetic.h>
+#include <ScriptCanvas/Libraries/Operators/Math/OperatorDiv.h>
+#include <ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeable.h>
+#include <ScriptCanvas/Libraries/Operators/Math/OperatorMul.h>
+#include <ScriptCanvas/Libraries/Operators/Math/OperatorSub.h>
+
 namespace ScriptCanvas
 {
     void InitLibraries()

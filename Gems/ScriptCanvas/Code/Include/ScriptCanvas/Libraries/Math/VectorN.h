@@ -48,3 +48,5 @@ namespace ScriptCanvas
         Data::NumberType Dot(const Data::VectorNType& lhs, const Data::VectorNType& rhs);
     } // namespace VectorNFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/VectorN.generated.h>

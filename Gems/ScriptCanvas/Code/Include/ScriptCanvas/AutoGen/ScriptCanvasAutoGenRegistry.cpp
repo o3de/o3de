@@ -67,6 +67,11 @@ bool ScriptCanvasModel::RegisterReflection(const AZStd::string& name, ReflectFun
         if (descriptor)
         {
             m_descriptors.push_back(descriptor);
+
+            if (m_verbose)
+            {
+                AZ_TracePrintf("ScriptCanvas", "RegisterReflection Descriptor: %s\n", name.c_str());
+            }
         }
         else
         {
@@ -74,12 +79,19 @@ bool ScriptCanvasModel::RegisterReflection(const AZStd::string& name, ReflectFun
 
             if (m_verbose)
             {
-                AZ_TracePrintf("ScriptCanvas", "RegisterReflection: %s\n", name.c_str());
+                AZ_TracePrintf("ScriptCanvas", "RegisterReflection Reflect: %s\n", name.c_str());
             }
         }
 
+
         return true;
     }
+
+    if (m_verbose)
+    {
+        AZ_TracePrintf("ScriptCanvas", "RegisterReflection: %s FAILED\n", name.c_str());
+    }
+    
     return false;
 }
 

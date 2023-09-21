@@ -8,7 +8,6 @@
 
 #include "Vector2.h"
 
-#include <Include/ScriptCanvas/Libraries/Math/Vector2.generated.h>
 
 namespace ScriptCanvas
 {
@@ -153,3 +152,5 @@ namespace ScriptCanvas
         }
     } // namespace Vector2Functions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Vector2.generated.h>

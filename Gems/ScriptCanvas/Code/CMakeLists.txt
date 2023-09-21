@@ -69,7 +69,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptCanvas.Static STATIC
+    NAME ScriptCanvas.Shared OBJECT
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvasgem_autogen_files.cmake
@@ -122,11 +122,12 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             SCRIPTCANVAS_ERRORS_ENABLED
+            SCRIPTCANVAS_EDITOR
         PRIVATE
             ${SCRIPT_CANVAS_COMMON_DEFINES}
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::ScriptCanvas.Static
+            Gem::ScriptCanvas.Shared
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
@@ -134,6 +135,7 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::ScriptEvents
         Gem::ExpressionEvaluation
+        Gem::ScriptCanvas.Shared
 )
 
 # the "ScriptCanvas" target is active in Clients and Servers
@@ -153,11 +155,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             scriptcanvasgem_editor_asset_files.cmake
             scriptcanvasgem_editor_builder_files.cmake
             scriptcanvasgem_editor_tools_files.cmake
+            scriptcanvasgem_game_files.cmake
         COMPILE_DEFINITIONS
             PUBLIC
                 SCRIPTCANVAS_ERRORS_ENABLED
             PRIVATE
-                SCRIPTCANVAS_EDITOR
                 ${SCRIPT_CANVAS_COMMON_DEFINES}
         INCLUDE_DIRECTORIES
             PUBLIC
@@ -173,7 +175,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AssetBuilderSDK
                 ${additional_dependencies}
-                Gem::ScriptCanvas
+                Gem::ScriptCanvas.Shared
                 Gem::ScriptEvents.Static
                 Gem::GraphCanvasWidgets
                 Gem::ExpressionEvaluation.Static
@@ -242,7 +244,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzCoreTestCommon
                 AZ::AzFramework
                 AZ::AzTest
-                Gem::ScriptCanvas.Static
+                Gem::ScriptCanvas
     )
     ly_add_googletest(
         NAME Gem::ScriptCanvas.Tests
@@ -262,6 +264,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzCoreTestCommon
                     AZ::AzTest
+                    Gem::ScriptCanvas.Shared
                     Gem::ScriptCanvas.Editor.Static
         )
         ly_add_googletest(

@@ -21,12 +21,21 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
+
 #include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
 
 {% for ScriptCanvas in dataFiles %}
+
+{% if ScriptCanvas.attrib['Include'] is defined %}
+#include <{{ ScriptCanvas.attrib['Include'] }}>
+{% endif %}
+
+
 {%  for Library in ScriptCanvas %}
 
+{% if Library.attrib['Include'] is defined %}
 #include <{{ Library.attrib['Include'] }}>
+{% endif %}
 
 {% set qualifiedNamespace = Library.attrib['Namespace'] %}
 {% set parts = qualifiedNamespace.split("::") %}
@@ -42,13 +51,14 @@ namespace {{ qualifiedNamespace }}
 class {{className}}_Reflection
 {
 public:
-    {% set reflectionClassName = className|join("_Reflection") %}
-    AZ_TYPE_INFO({{ className }}_Reflection, "{{ reflectionClassName|createHashGuid }}");
+
+    {{className}}_Reflection() {}
+    virtual ~{{className}}_Reflection() {}
 
     static void Reflect(AZ::ReflectContext* context);
 };
 
-inline const auto AutoReflection_{{className}} = ScriptCanvasModel::Instance().RegisterReflection( "AutoReflection_{{className}}", [] (AZ::ReflectContext* context) { {{className}}_Reflection::Reflect(context); });
+SCRIPTCANVAS_REGISTER_EXTERN({{className}}_Reflection);
 
 }
 

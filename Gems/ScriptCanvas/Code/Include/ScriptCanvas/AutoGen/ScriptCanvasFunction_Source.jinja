@@ -54,7 +54,6 @@ false
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
 #include <ScriptCanvas/Libraries/Core/ContainerTypeReflection.h>
 
 {% set includeFile = "{0}.h".format(((outputFile|basename)|splitext)[0]) %}
@@ -63,7 +62,9 @@ false
 {% for ScriptCanvas in dataFiles %}
 {%  for Library in ScriptCanvas %}
 
-#include "{{ Library.attrib['Include'] }}"
+{% if Library.attrib['Name'] is defined %}
+{% set className = Library.attrib['Name'] %}
+{% endif %}
 
 {% set qualifiedNamespace = Library.attrib['Namespace'] %}
 {% set parts = qualifiedNamespace.split("::") %}
@@ -78,8 +79,15 @@ false
 
 {% set categoryName = Library.attrib['Category'] %}
 
+
 namespace {{ namespaceName }}
 {
+
+SCRIPTCANVAS_REGISTER({{className}}_Reflection)
+{
+    ScriptCanvasModel::Instance().RegisterReflection( "{{className}}_Reflection", [] (AZ::ReflectContext* context) { {{className}}_Reflection::Reflect(context); });
+}
+
 
 void {{ className }}_Reflection::Reflect(AZ::ReflectContext* context)
 {
@@ -161,7 +169,10 @@ void {{ className }}_Reflection::Reflect(AZ::ReflectContext* context)
 }
 
 
-}
+
+
+
+} // namespace {{ namespaceName }}
 
 {%  endfor %}
 {% endfor %}

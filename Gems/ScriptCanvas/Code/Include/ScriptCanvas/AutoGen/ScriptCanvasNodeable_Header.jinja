@@ -28,6 +28,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 #include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
 
+
 {% for xml in dataFiles %}
 {%   for Class in xml.findall('Class') %}
 
@@ -135,10 +136,11 @@ public: \
                 static void Reflect(AZ::ReflectContext* ) {}
 
                 {{nodeableNodeName}}_Reflection();
+                virtual ~{{nodeableNodeName}}_Reflection() {}
 
             };
 
-          inline const auto AutoReflection_{{nodeableNodeName}} = ScriptCanvasModel::Instance().RegisterReflection( "AutoReflection_{{nodeableNodeName}}", [] (AZ::ReflectContext* context) { {{nodeableNodeName}}::Reflect(context); }, {{nodeableNodeName}}::CreateDescriptor());
+            SCRIPTCANVAS_REGISTER_EXTERN({{nodeableNodeName}}_Reflection);
       }
 {% endif %}
 

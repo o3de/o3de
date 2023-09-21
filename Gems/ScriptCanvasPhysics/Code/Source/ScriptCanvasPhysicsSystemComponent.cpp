@@ -12,6 +12,8 @@
 
 #include "ScriptCanvasPhysicsSystemComponent.h"
 
+#include "World.h"
+
 namespace ScriptCanvasPhysics
 {
     void ScriptCanvasPhysicsSystemComponent::Reflect(AZ::ReflectContext* context)

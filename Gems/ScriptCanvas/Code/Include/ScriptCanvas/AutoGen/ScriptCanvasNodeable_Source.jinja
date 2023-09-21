@@ -275,7 +275,7 @@ void Nodes::{{ nodeableNodeName }}::Reflect(AZ::ReflectContext* context)
     // Serialization Context Reflection
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        {%if ExtendReflectionSerialize is defined%}auto {{preSerialize}} = {%endif%}serializeContext->Class<{{ nodeableNodeName }}, NodeableNode>(){{postSerialize}}
+        {%if ExtendReflectionSerialize is defined%}auto {{preSerialize}} = {%endif%}serializeContext->Class<{{ nodeableNodeName }}, NodeableNode, Node, AZ::Component>(){{postSerialize}}
 {% if attribute_Version is defined %}
             {{preSerialize}}->Version({{ attribute_Version }}{% if attribute_VersionConverter is defined %}, &{{ attribute_VersionConverter }}{% endif %}){{postSerialize}}
 {% else %}
@@ -522,6 +522,17 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
     m_slotExecutionMap = SlotExecution::Map(AZStd::move(ins), AZStd::move(outs));
 
 }
+
+namespace Nodes
+{
+
+    SCRIPTCANVAS_REGISTER({{nodeableNodeName}}_Reflection)
+    {
+        ScriptCanvasModel::Instance().RegisterReflection( "{{nodeableNodeName}}_Reflection", [] (AZ::ReflectContext* context) { {{nodeableNodeName}}_Reflection::Reflect(context); }, {{nodeableNodeName}}::CreateDescriptor());
+    }
+
+}
+
 
 {# -- #}
 

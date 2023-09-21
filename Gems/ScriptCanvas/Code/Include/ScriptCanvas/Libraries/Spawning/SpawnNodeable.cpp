@@ -9,7 +9,6 @@
 #include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
 #include <AzFramework/Components/TransformComponent.h>
 
-#include <Include/ScriptCanvas/Libraries/Spawning/SpawningData.generated.h>
 
 namespace ScriptCanvas::Nodeables::Spawning
 {

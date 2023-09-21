@@ -161,6 +161,21 @@ struct {{ className | replace(' ','') }}Property
 {%         endfor %}
 };
 
+
+
+class {{className}}_Reflection
+{
+public:
+
+    {{className}}_Reflection() = default;
+    virtual ~{{className}}_Reflection() {}
+
+};
+
+SCRIPTCANVAS_REGISTER_EXTERN({{className}}_Reflection);
+
+
+
 {% if attribute_Namespace is defined %}
 }
 {% endif %}
