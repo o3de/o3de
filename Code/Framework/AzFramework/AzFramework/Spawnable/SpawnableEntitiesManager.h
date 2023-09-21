@@ -330,6 +330,10 @@ namespace AzFramework
         AZStd::unordered_map<AZ::EntityId, SpawnableInstanceAddress> m_entitySpawnableMap;  ///< A cached mapping built for quick lookups between an EntityId and its owning SpawnableInstance.
         AZStd::unordered_map<Spawnable::SpawnableInstanceId, AZ::EntityId>  m_spawnableInstanceEntityIdMap; ///< A cached mapping built for quick reverse lookups between an EntityId and its owning SpawnableInstanceId.
         // Note: we don't have a master instance for cloning as it was implemented for slices and use AZ::EntityId of first created instance by owner
+
+        // Support the same generated entity ids on all clients and on the server
+        void InitializeEntityIdMappingsWithSeed(
+            AZ::EntityId seedEntityId, const Spawnable::EntityList& entities, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned);
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 
