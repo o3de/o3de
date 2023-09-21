@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
+#include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 
@@ -16,6 +17,7 @@ namespace AZ::RHI
     class ImageFrameAttachment;
     class MultiDeviceShaderResourceGroup;
     class ImageView;
+    class MultiDeviceImageView;
     struct ImageViewDescriptor;
 
     //! MultiDeviceImage represents a collection of MultiDeviceImage Subresources, where each subresource comprises a one to three
@@ -46,6 +48,9 @@ namespace AZ::RHI
         //! Returns the image descriptor used to initialize the image. If the image is uninitialized, the contents
         //! are considered undefined.
         const ImageDescriptor& GetDescriptor() const;
+
+        //! Returns the multi-device ImageView
+        Ptr<MultiDeviceImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor);
 
         //! Computes the subresource layouts and total size of the image contents, if represented linearly. Effectively,
         //! this data represents how to store the image in a buffer resource. Naturally, if the image contents
@@ -95,5 +100,42 @@ namespace AZ::RHI
 
         //! Aspects supported by the image
         ImageAspectFlags m_aspectFlags = ImageAspectFlags::None;
+    };
+
+    //! A MultiDeviceImageView is a light-weight representation of a view onto a multi-device image.
+    //! It holds a raw pointer to a multi-device image as well as an ImageViewDescriptor.
+    //! Using both, single-device ImageViews can be retrieved.
+    class MultiDeviceImageView : public Object
+    {
+    public:
+        AZ_RTTI(MultiDeviceImageView, "{C837818B-2A4D-49F2-A37E-349494A9C9B7}", Object);
+        virtual ~MultiDeviceImageView() = default;
+
+        MultiDeviceImageView(const RHI::MultiDeviceImage* image, ImageViewDescriptor descriptor)
+            : m_image{ image }
+            , m_descriptor{ descriptor }
+        {
+        }
+
+        //! Given a device index, return the corresponding ImageView for the selected device
+        const RHI::Ptr<RHI::ImageView> GetDeviceImageView(int deviceIndex) const;
+
+        //! Return the contained multi-device image
+        const RHI::MultiDeviceImage* GetImage() const
+        {
+            return m_image;
+        }
+
+        //! Return the contained ImageViewDescriptor
+        const ImageViewDescriptor& GetDescriptor() const
+        {
+            return m_descriptor;
+        }
+
+    private:
+        //! A raw pointer to a multi-device image
+        const RHI::MultiDeviceImage* m_image;
+        //! The corresponding ImageViewDescriptor for this view.
+        ImageViewDescriptor m_descriptor;
     };
 } // namespace AZ::RHI

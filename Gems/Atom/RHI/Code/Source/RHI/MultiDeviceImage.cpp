@@ -43,6 +43,11 @@ namespace AZ::RHI
         return static_cast<const ImageFrameAttachment*>(MultiDeviceResource::GetFrameAttachment());
     }
 
+    Ptr<MultiDeviceImageView> MultiDeviceImage::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
+    {
+        return aznew MultiDeviceImageView{ this, imageViewDescriptor };
+    }
+
     ImageAspectFlags MultiDeviceImage::GetAspectFlags() const
     {
         return m_aspectFlags;
@@ -73,5 +78,11 @@ namespace AZ::RHI
         {
             deviceImage->InvalidateViews();
         });
+    }
+
+    //! Given a device index, return the corresponding BufferView for the selected device
+    const RHI::Ptr<RHI::ImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
+    {
+        return m_image->GetDeviceImage(deviceIndex)->GetImageView(m_descriptor);
     }
 } // namespace AZ::RHI
