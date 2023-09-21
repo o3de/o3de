@@ -13,6 +13,7 @@
 #include <SceneAPI/SceneData/Behaviors/LodRuleBehavior.h>
 #include <SceneAPI/SceneData/Behaviors/MaterialRuleBehavior.h>
 #include <SceneAPI/SceneData/Behaviors/MeshAdvancedRule.h>
+#include <SceneAPI/SceneData/Behaviors/ImportGroup.h>
 #include <SceneAPI/SceneData/Behaviors/MeshGroup.h>
 #include <SceneAPI/SceneData/Behaviors/ScriptProcessorRuleBehavior.h>
 #include <SceneAPI/SceneData/Behaviors/SkeletonGroup.h>
@@ -33,6 +34,7 @@ namespace AZ
                     BlendShapeRuleBehavior::CreateDescriptor(),
                     LodRuleBehavior::CreateDescriptor(),
                     MaterialRuleBehavior::CreateDescriptor(),
+                    Behaviors::ImportGroup::CreateDescriptor(),
                     Behaviors::MeshAdvancedRule::CreateDescriptor(),
                     Behaviors::MeshGroup::CreateDescriptor(),
                     Behaviors::ScriptProcessorRuleBehavior::CreateDescriptor(),
