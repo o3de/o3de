@@ -13,7 +13,6 @@
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/EBusFindAssetTypeByName.h>
 
@@ -375,6 +374,7 @@ namespace AzToolsFramework
             }
 
             auto product = static_cast<const ProductAssetBrowserEntry*>(entry);
+
             QString group;
             AZ::AssetTypeInfoBus::EventResult(group, product->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
 
