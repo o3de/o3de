@@ -99,6 +99,7 @@ namespace AZ
                 void RemoveRenderPipeline();
 
                 void CreateViewportContext();
+                void SetWindowResolution();
 
                 //! Load a render pipeline from disk and add it to the scene
                 RPI::RenderPipelinePtr LoadPipeline(
