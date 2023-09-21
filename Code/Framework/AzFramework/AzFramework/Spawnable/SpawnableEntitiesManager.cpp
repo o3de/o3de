@@ -501,7 +501,7 @@ namespace AzFramework
         AZ::EntityId seedEntityId;
         if (isLevelSpawnable)
         {
-            seedEntityId = AZ::EntityId(777777700000000); // for "centralplaza" // we have approx 0% probability to collide an existing entity id with the id group in [seedEntityId, seedEntityId+N[
+            seedEntityId = AZ::EntityId(777777700000000); // for "centralplaza" // we have approx 0% probability to collide an existing entity id with the ids group in interval [seedEntityId, seedEntityId+NumOfEntities[
         }
 #endif
 // Gruber patch begin // VMED
