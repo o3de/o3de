@@ -18,6 +18,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
+#include <Atom/RHI/IndirectArguments.h>
 #include <Atom/RHI/ObjectPool.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -31,11 +32,6 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct IndirectArguments;
-    }
-
     namespace DX12
     {
         class CommandQueue;
