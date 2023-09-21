@@ -16,7 +16,7 @@
 
 namespace AtomToolsFramework
 {
-    //! AssetStatusReporter processes a queue of job status requests for a set of source files 
+    //! AssetStatusReporter processes a queue of job status requests for a set of source files
     class AssetStatusReporter
     {
     public:

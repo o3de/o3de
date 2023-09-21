@@ -18,6 +18,7 @@ namespace AtomToolsFramework
     {
         AssetStatusReporterSystemRequestBus::Handler::BusConnect(m_toolId);
 
+        // Create a thread that continuously processes a queue of incoming asset status requests.
         m_threadRunning = true;
         m_threadDesc.m_name = "AssetStatusReporterSystem";
         m_thread = AZStd::thread(
@@ -80,6 +81,7 @@ namespace AtomToolsFramework
         {
             return reporterIt->second->GetCurrentState();
         }
+
         if (auto reporterIt = AZStd::find_if(
                 m_inactiveReporterTable.begin(),
                 m_inactiveReporterTable.end(),
@@ -91,6 +93,7 @@ namespace AtomToolsFramework
         {
             return reporterIt->second->GetCurrentState();
         }
+
         return AssetStatusReporterState::Invalid;
     }
 
@@ -99,19 +102,29 @@ namespace AtomToolsFramework
         AZStd::scoped_lock lock(m_requestMutex);
         if (!m_activeReporterTable.empty())
         {
+            // Retrieve and update the status for the current active request.
             auto reporterIt = m_activeReporterTable.begin();
             reporterIt->second->Update();
 
+            // Create a string message from the current status.
             const AZStd::string statusMessage = AZStd::string::format(
                 "%s (%s)", reporterIt->second->GetCurrentPath().c_str(), reporterIt->second->GetCurrentStateName().c_str());
+
+            // If the message has not changed since the last update then send it to the main windows status bar.
             if (m_lastStatusMessage != statusMessage)
             {
                 m_lastStatusMessage = statusMessage;
+
+                // Queuing the notification on the system take bus so that it triggers on the main thread.
                 AZ::SystemTickBus::QueueFunction([toolId = m_toolId, statusMessage]() {
-                    AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
+                    // This should be generalized with a status reporter notification bus so the message can be handled by other systems
+                    // or UI than the status bar.
+                    AtomToolsMainWindowRequestBus::Event(
+                        toolId, &AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
                 });
             }
 
+            // Any complete or canceled requests will get moved to the inactive list.
             if (reporterIt->second->GetCurrentState() != AssetStatusReporterState::Processing)
             {
                 m_inactiveReporterTable.push_back(*reporterIt);
