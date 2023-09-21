@@ -483,8 +483,10 @@ def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project, def
     //queue enable all gems specified in the control file
     if(controlFile.ENABLE_GEMS) {
         controlFile.ENABLE_GEMS.each { gemName ->
-            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || echo>nul", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
-        }
+            if(o3de_project) {
+                defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || echo>nul", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
+            }
+        }    
     }
 
     //check out all repos
