@@ -384,6 +384,16 @@ namespace AZ::SceneGenerationComponents
 
             for (const IMeshGroup& meshGroup : meshGroups)
             {
+                if (!selectedNodes.contains(&meshGroup))
+                {
+                    AZ_Warning(
+                        AZ::SceneAPI::Utilities::LogWindow,
+                        false,
+                        "MeshGroup %s wasn't found in the list of selected nodes.",
+                        meshGroup.GetName().c_str());
+                    continue;
+                }
+
                 // Skip meshes that are not used by this mesh group
                 if (AZStd::find(selectedNodes.at(&meshGroup).cbegin(), selectedNodes.at(&meshGroup).cend(), nodePath) == selectedNodes.at(&meshGroup).cend())
                 {

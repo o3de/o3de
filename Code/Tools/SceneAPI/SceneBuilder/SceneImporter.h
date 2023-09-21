@@ -13,6 +13,7 @@
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
+#include <SceneAPI/SceneCore/Import/SceneImportSettings.h>
 #include <SceneAPI/SceneBuilder/SceneSystem.h>
 #include <SceneAPI/SDKWrapper/SceneWrapper.h>
 
@@ -41,6 +42,7 @@ namespace AZ
                 Events::ProcessingResult ImportProcessing(Events::ImportEventContext& context);
 
             protected:
+                SceneAPI::SceneImportSettings GetSceneImportSettings(const AZStd::string& sourceAssetPath) const;
                 bool ConvertScene(Containers::Scene& scene) const;
                 void SanitizeNodeName(AZStd::string& nodeName) const;
 
