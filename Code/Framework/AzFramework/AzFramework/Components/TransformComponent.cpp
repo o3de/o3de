@@ -179,6 +179,7 @@ namespace AzFramework
 
             void MarshalCtorData(ReplicaChunkBase* chunk, WriteBuffer& wb) override
             {
+                AZ_Printf("TransformReplicaChunk", "MarshalCtorData");
                 TransformReplicaChunk* transformChunk = static_cast<TransformReplicaChunk*>(chunk);
                 TransformComponent* transformComponent = static_cast<TransformComponent*>(transformChunk->GetHandler());
                 if (transformComponent)

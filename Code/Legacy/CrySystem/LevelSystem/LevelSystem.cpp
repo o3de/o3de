@@ -830,7 +830,13 @@ void CLevelSystem::UnloadLevel()
 
     CryLog("UnloadLevel Start");
     INDENT_LOG_DURING_SCOPE();
-
+#ifdef CARBONATED
+    // Gruber patch. A firing of this event was lost in O3DE. Let's try to restore it
+    if (gEnv && gEnv->pSystem)
+    {
+        gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_PREPARE, 0, 0);
+    }
+#endif
     // Flush core buses. We're about to unload Cry modules and need to ensure we don't have module-owned functions left behind.
     AZ::Data::AssetBus::ExecuteQueuedEvents();
     AZ::TickBus::ExecuteQueuedEvents();

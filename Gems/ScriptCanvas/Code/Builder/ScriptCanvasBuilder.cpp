@@ -314,6 +314,12 @@ namespace ScriptCanvasBuilder
     {
         ScriptCanvas::RuntimeDataOverrides runtimeOverrides;
 
+        AZ_Printf(
+            "*****",
+            "ConvertToRuntime. Source=%s, size=%i",
+            buildOverrides.m_source.Id().ToFixedString().c_str(),
+            buildOverrides.m_variables.size());
+
         runtimeOverrides.m_runtimeAsset = AZ::Data::Asset<ScriptCanvas::RuntimeAsset>
             ({ buildOverrides.m_source.Id(), ScriptCanvas::RuntimeDataSubId }
             , azrtti_typeid<ScriptCanvas::RuntimeAsset>()

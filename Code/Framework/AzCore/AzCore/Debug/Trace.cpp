@@ -396,7 +396,7 @@ namespace AZ::Debug
             {
                 // You've encountered an assert! By default, the presence of a debugger will cause asserts
                 // to DebugBreak (walk up a few stack frames to understand what happened).
-                Instance().Break();
+                //Instance().Break();
             }
 #if AZ_ENABLE_TRACE_ASSERTS
             //display native UI dialogs at verbosity level 2
@@ -408,7 +408,7 @@ namespace AZ::Debug
                 switch (buttonResult)
                 {
                 case AZ::NativeUI::AssertAction::BREAK:
-                    Instance().Break();
+                    //Instance().Break();
                     break;
                 case AZ::NativeUI::AssertAction::IGNORE_ALL_ASSERTS:
                     SetAssertVerbosityLevel(1);
