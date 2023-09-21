@@ -496,13 +496,13 @@ namespace AzFramework
 
 // Gruber patch begin // VMED // Detect a level spawnable 
 #ifdef CARBONATED
-                constexpr const char* levelSpawnableName = "centralplaza.spawnable"; // FIXME change to evaluated level name or use another way to detect a level spawnable
-                const bool isLevelSpawnable = ::strstr(ticket.m_spawnable.GetHint().c_str(), levelSpawnableName) != nullptr;
-                AZ::EntityId seedEntityId;
-                if (isLevelSpawnable)
-                {
-                    seedEntityId = AZ::EntityId(777777700000000); // for "centralplaza" // we have approx 0% probability to collide an existing entity id with the id group in [seedEntityId, seedEntityId+N[
-                }
+        constexpr const char* levelSpawnableName = "centralplaza.spawnable"; // FIXME change to evaluated level name or use another way to detect a level spawnable
+        const bool isLevelSpawnable = ::strstr(ticket.m_spawnable.GetHint().c_str(), levelSpawnableName) != nullptr;
+        AZ::EntityId seedEntityId;
+        if (isLevelSpawnable)
+        {
+            seedEntityId = AZ::EntityId(777777700000000); // for "centralplaza" // we have approx 0% probability to collide an existing entity id with the id group in [seedEntityId, seedEntityId+N[
+        }
 #endif
 // Gruber patch begin // VMED
 
@@ -534,9 +534,9 @@ namespace AzFramework
 
 // Gruber patch begin // VMED // Support the same generated entity ids on all clients and on the server
 #ifdef CARBONATED
-                if (isLevelSpawnable)
+                if (isLevelSpawnable && seedEntityId.IsValid())
                 {
-                    InitializeEntityIdMappings(entitiesToSpawn, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
+                    InitializeEntityIdMappingsWithSeed(seedEntityId, entitiesToSpawn, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
                 }
                 else
 #endif
