@@ -28,11 +28,11 @@ def isDocumentOpen(document_id: azlmbr.math.Uuid) -> bool:
 
 def beginEdit(document_id):
     azlmbr.atomtools.AtomToolsDocumentRequestBus(
-        azlmbr.bus.Broadcast, "BeginEdit", document_id)
+        azlmbr.bus.Event, "BeginEdit", document_id)
 
 def endEdit(document_id):
     azlmbr.atomtools.AtomToolsDocumentRequestBus(
-        azlmbr.bus.Broadcast, "EndEdit", document_id)
+        azlmbr.bus.Event, "EndEdit", document_id)
 
 def transferSelection(qlistSrc, qlistDst):
     '''intended to work with 2 QListWidget'''
