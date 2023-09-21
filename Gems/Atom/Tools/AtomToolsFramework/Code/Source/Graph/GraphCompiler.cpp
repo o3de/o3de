@@ -35,6 +35,7 @@ namespace AtomToolsFramework
 
     GraphCompiler::~GraphCompiler()
     {
+        // Stop monitoring assets from prior requests since the graph compiler is being destroyed.
         AssetStatusReporterSystemRequestBus::Event(
             m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
     }
@@ -157,8 +158,10 @@ namespace AtomToolsFramework
     {
         SetState(State::Processing);
 
+        // Start monitoring and reporting AP status for any files generated during this compile.
         if (!m_generatedFiles.empty())
         {
+            // Begin requesting status from the asset reporting system, which manages a queue of requests from multiple graphs.
             AssetStatusReporterSystemRequestBus::Event(
                 m_toolId, &AssetStatusReporterSystemRequestBus::Events::StartReporting, m_assetReportRequestId, m_generatedFiles);
 

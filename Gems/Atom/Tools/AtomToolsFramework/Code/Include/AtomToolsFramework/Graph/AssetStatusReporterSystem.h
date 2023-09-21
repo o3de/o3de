@@ -18,9 +18,8 @@
 
 namespace AtomToolsFramework
 {
-    //! AssetStatusReporterSystem processes a queue of job status requests for sets of source files 
-    class AssetStatusReporterSystem
-        : public AssetStatusReporterSystemRequestBus::Handler
+    //! AssetStatusReporterSystem processes a queue of job status requests for sets of source files
+    class AssetStatusReporterSystem : public AssetStatusReporterSystemRequestBus::Handler
     {
     public:
         AZ_RTTI(AssetStatusReporterSystem, "{83ECE3A0-BFE8-47C0-B057-E4C5BE30024E}");

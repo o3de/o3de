@@ -32,7 +32,7 @@ namespace AtomToolsFramework
         //! Stop reporting job status for files corresponding to the request ID
         virtual void StopReporting(const AZ::Uuid& requestId) = 0;
 
-        //! Stop reporting status for all requests 
+        //! Stop reporting status for all requests
         virtual void StopReportingAll() = 0;
 
         //! Return the overall status for files corresponding to the request ID
