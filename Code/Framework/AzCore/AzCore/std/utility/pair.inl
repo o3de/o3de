@@ -98,10 +98,10 @@ namespace AZStd
     // pair code to inter operate with tuples
     template<class T1, class T2>
     template<template<class...> class TupleType, class... Args1, class... Args2, size_t... I1, size_t... I2>
-    constexpr pair<T1, T2>::pair(piecewise_construct_t, [[maybe_unused]] TupleType<Args1...>& first_args, [[maybe_unused]] TupleType<Args2...>& second_args,
+    constexpr pair<T1, T2>::pair(piecewise_construct_t, [[maybe_unused]] TupleType<Args1...>& firstArgs, [[maybe_unused]] TupleType<Args2...>& secondArgs,
         AZStd::index_sequence<I1...>, AZStd::index_sequence<I2...>)
-        : first(AZStd::forward<Args1>(get<I1>(first_args))...)
-        , second(AZStd::forward<Args2>(get<I2>(second_args))...)
+        : first(AZStd::forward<Args1>(get<I1>(firstArgs))...)
+        , second(AZStd::forward<Args2>(get<I2>(secondArgs))...)
     {
         static_assert(AZStd::is_same_v<TupleType<Args2...>, tuple<Args2...>>, "AZStd::pair tuple constructor can be called with AZStd::tuple instances");
     }
@@ -189,8 +189,11 @@ namespace AZStd
     template<class T1, class T2>
     template<class P>
     constexpr auto pair<T1, T2>::operator=(P&& pairLike) -> enable_if_t<
-        !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P> &&
-            is_assignable_v<T1&, decltype(get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(get<1>(declval<P>()))>,
+        pair_like<P> && !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P>
+        #if __cpp_lib_concepts
+            && is_assignable_v<T1&, decltype(get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(get<1>(declval<P>()))>
+        #endif
+        ,
         pair&>
     {
         first = get<0>(AZStd::forward<P>(pairLike));
@@ -205,9 +208,12 @@ namespace AZStd
     template<class T1, class T2>
     template<class P>
     constexpr auto pair<T1, T2>::operator=(P&& pairLike) const -> enable_if_t<
-        !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P> &&
-            is_assignable_v<const T1&, decltype(get<0>(declval<P>()))> &&
-            is_assignable_v<const T2&, decltype(get<1>(declval<P>()))>,
+        pair_like<P> && !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P>
+        #if __cpp_lib_concepts
+            && is_assignable_v<const T1&, decltype(get<0>(declval<P>()))>
+            && is_assignable_v<const T2&, decltype(get<1>(declval<P>()))>
+        #endif
+        ,
         const pair&>
     {
         first = get<0>(AZStd::forward<P>(pairLike));

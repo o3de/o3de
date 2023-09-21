@@ -147,9 +147,14 @@ namespace AZStd
         // C++ 23 pair like constructor
         template<
             class P,
-            class = enable_if_t<
-                !Internal::is_subrange<P> && is_constructible_v<T1, decltype(get<0>(declval<P>()))> &&
-                is_constructible_v<T2, decltype(get<1>(declval<P>()))>>>
+            class = enable_if_t<conjunction_v<
+                bool_constant<pair_like<P>>,
+                bool_constant<!Internal::is_subrange<P>>
+            #if __cpp_lib_concepts
+                , bool_constant<is_constructible_v<T1, decltype(get<0>(declval<P>()))>>
+                , bool_constant<is_constructible_v<T2, decltype(get<1>(declval<P>()))>>
+            #endif
+            >>>
 #if __cpp_conditional_explicit >= 201806L
         explicit(!is_convertible_v<get<0>(declval<P>()), T1> || !is_convertible_v<get<1>(declval<P>()), T2>)
 #endif
@@ -215,9 +220,12 @@ namespace AZStd
 
         // pair-like conversion forward assignment
         template<class P>
-        constexpr auto operator=(P&& pairLike) -> enable_if_t<
-            !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P> &&
-                is_assignable_v<T1&, decltype(get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(get<1>(declval<P>()))>,
+        constexpr auto operator=(P&& pairLike) -> enable_if_t<pair_like<P>
+            && !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P>
+            #if __cpp_lib_concepts
+                && is_assignable_v<T1&, decltype(get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(get<1>(declval<P>()))>
+            #endif
+            ,
             pair&>;
 
         // This is an operator= overload that can change the values of the pair
@@ -225,10 +233,15 @@ namespace AZStd
         // i.e a `const pair<int&, bool&>` can still modify the int and bool elements, despite
         // the pair itself being const
         template<class P>
-        constexpr auto operator=(P&& pairLike) const -> enable_if_t<
-            !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P> &&
-                is_assignable_v<const T1&, decltype(get<0>(declval<P>()))> &&
-                is_assignable_v<const T2&, decltype(get<1>(declval<P>()))>,
+        constexpr auto operator=(P&& pairLike) const -> enable_if_t<pair_like<P>
+            && !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P>
+            #if __cpp_lib_concepts
+                // To avoid instantiating an AZStd::pair when an incomplete type is used
+                // the is_assignable_v template is avoided when concepts are not available
+                && is_assignable_v<const T1&, decltype(get<0>(declval<P>()))>
+                && is_assignable_v<const T2&, decltype(get<1>(declval<P>()))>
+            #endif
+            ,
             const pair&>;
 
         constexpr auto swap(pair& rhs);

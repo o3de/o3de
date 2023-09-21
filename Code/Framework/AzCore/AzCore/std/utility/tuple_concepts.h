@@ -53,8 +53,12 @@ namespace AZStd
     template<class T>
     /*concept*/ constexpr bool tuple_like = Internal::is_tuple_like<remove_cvref_t<T>>;
 
+    template<class T, class = void>
+    /*concept*/ constexpr bool pair_like = false;
+
     template<class T>
-    /*concept*/ constexpr bool pair_like = tuple_like<T> && tuple_size_v<remove_cvref_t<T>> == 2;
+    /*concept*/ constexpr bool
+        pair_like<T, enable_if_t<tuple_like<T>>> = tuple_size_v<remove_cvref_t<T>> == 2;
 
     template<class... TTypes, class... UTypes, template<class> class TQual, template<class> class UQual>
     struct basic_common_reference<tuple<TTypes...>, tuple<UTypes...>, TQual, UQual>
