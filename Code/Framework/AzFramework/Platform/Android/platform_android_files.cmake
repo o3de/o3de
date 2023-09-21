@@ -11,6 +11,7 @@ set(FILES
     AzFramework/AzFramework_Traits_Android.h
     AzFramework/API/ApplicationAPI_Platform.h
     AzFramework/API/ApplicationAPI_Android.h
+    AzFramework/Device/DeviceAttributesCommon_Android.cpp
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
     AzFramework/IO/LocalFileIO_Android.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp

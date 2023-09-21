@@ -2,6 +2,7 @@
 
 # Build Tools Packages
 clang                                   # For the compiler and its dependencies
+lld                                     # For the llvm linker
 ninja-build                             # For Ninja Build System
 java-11-amazon-corretto-jdk             # For Jenkins and Android
 

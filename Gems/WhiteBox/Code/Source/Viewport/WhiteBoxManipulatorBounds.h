@@ -107,7 +107,7 @@ namespace WhiteBox
         }
 
         bool IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) override;
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const override;
         void SetShapeData(const AzToolsFramework::Picking::BoundRequestShapeBase& shapeData) override;
 
         PolygonBound m_polygonBound;
@@ -145,7 +145,7 @@ namespace WhiteBox
         }
 
         bool IntersectRay(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) override;
+            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance) const override;
         void SetShapeData(const AzToolsFramework::Picking::BoundRequestShapeBase& shapeData) override;
 
         EdgeBound m_edgeBound;

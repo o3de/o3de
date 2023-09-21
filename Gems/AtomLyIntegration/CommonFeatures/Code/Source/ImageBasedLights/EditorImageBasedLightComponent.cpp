@@ -8,6 +8,7 @@
 
 #include <ImageBasedLights/EditorImageBasedLightComponent.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>

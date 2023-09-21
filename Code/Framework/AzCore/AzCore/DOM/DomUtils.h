@@ -79,7 +79,7 @@ namespace AZ::Dom::Utils
 
     // Only add pointer to non-pointer types
     template<typename T>
-    struct DomValueWrapper<T, AZStd::enable_if_t<((AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>))
+    struct DomValueWrapper<T, AZStd::enable_if_t<(AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>)
         && !is_dom_value_v<T>>>
     {
         // i.e don't convert `const void*&` to `const void**`, instead convert to a reference wrapper
@@ -100,54 +100,90 @@ namespace AZ::Dom::Utils
     extern const AZ::Name PointerValueFieldName;
     extern const AZ::Name PointerTypeFieldName;
 
-    Dom::Value MarshalTypedPointerToValue(void* value, const AZ::TypeId& typeId);
+    Dom::Value MarshalTypedPointerToValue(const void* value, const AZ::TypeId& typeId);
     void* TryMarshalValueToPointer(const AZ::Dom::Value& value, const AZ::TypeId& expectedType = AZ::TypeId::CreateNull());
+
+    struct MarshalTypeTraits
+    {
+        AZ::TypeId m_typeId{};
+        bool m_isPointer{};
+        bool m_isReference{};
+        bool m_isCopyConstructible{};
+        size_t m_typeSize{};
+    };
+
+    Dom::Value MarshalOpaqueValue(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+        AZStd::any::action_handler_for_t actionHandler);
 
     template <typename T>
     Dom::Value MarshalOpaqueValue(T value)
     {
-        if constexpr (AZStd::is_pointer_v<T>)
+        using WrapperType = DomValueWrapperType<T>;
+        MarshalTypeTraits typeTraits;
+        // Store if the WrapperType is a pointer
+        typeTraits.m_isPointer = AZStd::is_pointer_v<AZStd::remove_cvref_t<WrapperType>>;
+        // Store if the T type is a reference
+        typeTraits.m_isReference = AZStd::is_reference_v<T>;
+        // Store if the T type is a copy constructible
+        typeTraits.m_isCopyConstructible = AZStd::is_copy_constructible_v<T>;
+
+        if constexpr (AZStd::is_pointer_v<AZStd::remove_cvref_t<WrapperType>>)
         {
-            // C-style cast to break const
-            return MarshalTypedPointerToValue((void*)(value), azrtti_typeid<T>());
+            using ValueType = AZStd::remove_cvref_t<WrapperType>;
+            typeTraits.m_typeSize = sizeof(ValueType);
+            typeTraits.m_typeId = azrtti_typeid(value);
+            return MarshalOpaqueValue(AZStd::as_const(value),
+                typeTraits, AZStd::any::get_action_handler_for_t<ValueType>());
         }
         else
         {
-            return Dom::Value::FromOpaqueValue(AZStd::any(value));
+            using ValueType = AZStd::remove_cvref_t<WrapperType>;
+            typeTraits.m_typeSize = sizeof(ValueType);
+            typeTraits.m_typeId = azrtti_typeid(value);
+            return MarshalOpaqueValue(&value,
+                typeTraits, AZStd::any::get_action_handler_for_t<ValueType>());
         }
     }
+
+    Dom::Value ValueFromType(const void* valueAddress, const MarshalTypeTraits& typeTraits,
+        AZStd::any::action_handler_for_t actionHandler);
 
     template<typename T>
     Dom::Value ValueFromType(T value)
     {
         using WrapperType = DomValueWrapperType<T>;
-        if constexpr (AZStd::is_same_v<AZStd::decay_t<T>, Dom::Value>)
-        {
-            return value;
-        }
-        else if constexpr (AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>)
+        MarshalTypeTraits typeTraits;
+        // Store if the WrapperType is a pointer
+        typeTraits.m_isPointer = AZStd::is_pointer_v<AZStd::remove_cvref_t<WrapperType>>;
+        // Store if the T type is a reference
+        typeTraits.m_isReference = AZStd::is_reference_v<T>;
+        // Store if the T type is a copy constructible
+        typeTraits.m_isCopyConstructible = AZStd::is_copy_constructible_v<T>;
+
+        AZStd::any::action_handler_for_t actionHandler;
+        using ValueType = AZStd::remove_cvref_t<WrapperType>;
+        typeTraits.m_typeId = azrtti_typeid<ValueType>();
+        typeTraits.m_typeSize = sizeof(ValueType);
+
+        // Lifetime variables provides storage for Dom::Value variable
+        // long enough to complete the call to the ValueFromType overload which accepts a void pointer
+        if constexpr (AZStd::is_reference_wrapper<ValueType>())
         {
             WrapperType wrapper = value;
             return MarshalOpaqueValue(wrapper);
         }
-        else if constexpr (AZStd::is_same_v<WrapperType, Dom::Value>)
-        {
-            return value;
-        }
         else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
         {
-            return Dom::Value(value, true);
+            constexpr bool deepCopyString = true;
+            return Dom::Value(value, deepCopyString);
         }
         else if constexpr (AZStd::is_constructible_v<Dom::Value, const WrapperType&>)
         {
             return Dom::Value(value);
         }
-        else if constexpr (AZStd::is_enum_v<WrapperType>)
-        {
-            return ValueFromType(static_cast<AZStd::underlying_type_t<WrapperType>>(value));
-        }
         else
         {
+            // The type is a non-referenced opaque value type that needs to be stored using an AZStd::any
             return MarshalOpaqueValue(value);
         }
     }
@@ -166,17 +202,14 @@ namespace AZ::Dom::Utils
         {
             return value.IsBool();
         }
-        else if constexpr (AZStd::is_integral_v<WrapperType> || AZStd::is_floating_point_v<WrapperType>)
+        else if constexpr (AZStd::is_integral_v<WrapperType> || AZStd::is_floating_point_v<WrapperType>
+            || AZStd::is_enum_v<WrapperType>)
         {
             return value.IsNumber();
         }
         else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
         {
             return value.IsString();
-        }
-        else if constexpr (AZStd::is_enum_v<WrapperType>)
-        {
-            return CanConvertValueToType<AZStd::underlying_type_t<WrapperType>>(value);
         }
         else
         {
@@ -294,7 +327,7 @@ namespace AZ::Dom::Utils
                     }
                     return {};
                 }
-                
+
             };
 
             return ExtractOpaqueValue();

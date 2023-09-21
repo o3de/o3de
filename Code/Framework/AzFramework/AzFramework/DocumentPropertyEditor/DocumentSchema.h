@@ -531,7 +531,13 @@ namespace AZ::DocumentPropertyEditor
                     // For RPE callbacks, we may store an AZ::Attribute and its instance in a DOM value
                     if (typeField->second.GetString() == Attribute::GetTypeName())
                     {
-                        void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(value[AZ::Attribute::GetInstanceField()]);
+                        void* instance = nullptr;
+                        auto foundInstance = value.FindMember(AZ::Attribute::GetInstanceField());
+                        if (foundInstance != value.MemberEnd())
+                        {
+                            instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(foundInstance->second);
+                        }
+
                         AZ::Attribute* attribute =
                             AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(value[AZ::Attribute::GetAttributeField()]);
 

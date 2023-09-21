@@ -49,9 +49,14 @@ namespace AzNetworking
         return SerializeBoundedValue<int32_t>(minValue, maxValue, value);
     }
 
-    bool NetworkInputSerializer::Serialize(int64_t& value, [[maybe_unused]] const char* name, int64_t minValue, int64_t maxValue)
+    bool NetworkInputSerializer::Serialize(long& value, [[maybe_unused]] const char* name, long minValue, long maxValue)
     {
-        return SerializeBoundedValue<int64_t>(minValue, maxValue, value);
+        return SerializeBoundedValue<long>(minValue, maxValue, value);
+    }
+
+    bool NetworkInputSerializer::Serialize(AZ::s64& value, [[maybe_unused]] const char* name, AZ::s64 minValue, AZ::s64 maxValue)
+    {
+        return SerializeBoundedValue<AZ::s64>(minValue, maxValue, value);
     }
 
     bool NetworkInputSerializer::Serialize(uint8_t& value, [[maybe_unused]] const char* name, uint8_t minValue, uint8_t maxValue)
@@ -69,9 +74,14 @@ namespace AzNetworking
         return SerializeBoundedValue<uint32_t>(minValue, maxValue, value);
     }
 
-    bool NetworkInputSerializer::Serialize(uint64_t& value, [[maybe_unused]] const char* name, uint64_t minValue, uint64_t maxValue)
+    bool NetworkInputSerializer::Serialize(unsigned long& value, [[maybe_unused]] const char* name, unsigned long minValue, unsigned long maxValue)
     {
-        return SerializeBoundedValue<uint64_t>(minValue, maxValue, value);
+        return SerializeBoundedValue<unsigned long>(minValue, maxValue, value);
+    }
+
+    bool NetworkInputSerializer::Serialize(AZ::u64& value, [[maybe_unused]] const char* name, AZ::u64 minValue, AZ::u64 maxValue)
+    {
+        return SerializeBoundedValue<AZ::u64>(minValue, maxValue, value);
     }
 
     bool NetworkInputSerializer::Serialize(float& value, [[maybe_unused]] const char* name, [[maybe_unused]] float minValue, [[maybe_unused]] float maxValue)
