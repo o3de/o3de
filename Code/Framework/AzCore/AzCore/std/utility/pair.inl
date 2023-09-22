@@ -189,11 +189,11 @@ namespace AZStd
     template<class T1, class T2>
     template<class P>
     constexpr auto pair<T1, T2>::operator=(P&& pairLike) -> enable_if_t<
-        pair_like<P> && !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P>
-        #if __cpp_lib_concepts
-            && is_assignable_v<T1&, decltype(get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(get<1>(declval<P>()))>
-        #endif
-        ,
+        conjunction_v<
+            bool_constant<pair_like<P>>,
+            bool_constant<!AZStd::same_as<pair, remove_cvref_t<P>>>,
+            bool_constant<!Internal::is_subrange<P>>,
+            bool_constant<Internal::is_pair_like_assignable_for_t<pair, P>>>,
         pair&>
     {
         first = get<0>(AZStd::forward<P>(pairLike));
@@ -208,12 +208,11 @@ namespace AZStd
     template<class T1, class T2>
     template<class P>
     constexpr auto pair<T1, T2>::operator=(P&& pairLike) const -> enable_if_t<
-        pair_like<P> && !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P>
-        #if __cpp_lib_concepts
-            && is_assignable_v<const T1&, decltype(get<0>(declval<P>()))>
-            && is_assignable_v<const T2&, decltype(get<1>(declval<P>()))>
-        #endif
-        ,
+        conjunction_v<
+            bool_constant<pair_like<P>>,
+            bool_constant<!AZStd::same_as<pair, remove_cvref_t<P>>>,
+            bool_constant<!Internal::is_subrange<P>>,
+            bool_constant<Internal::is_pair_like_assignable_for_t<const pair, P>>>,
         const pair&>
     {
         first = get<0>(AZStd::forward<P>(pairLike));

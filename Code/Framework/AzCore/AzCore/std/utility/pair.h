@@ -10,6 +10,7 @@
 
 #include <AzCore/std/utility/pair_fwd.h>
 
+#include <AzCore/std/typetraits/add_const.h>
 #include <AzCore/std/typetraits/is_swappable.h>
 #include <AzCore/std/utility/declval.h>
 #include <AzCore/std/utility/tuple_concepts.h>
@@ -55,71 +56,114 @@ namespace AZStd
     //! Wraps the std::get function in the AZStd namespace
     //! This methods retrieves the tuple element at a particular index within the pair
     template<size_t I, class T1, class T2>
-    constexpr AZStd::tuple_element_t<I, AZStd::pair<T1, T2>>& get(AZStd::pair<T1, T2>& pairObj);
+    constexpr tuple_element_t<I, pair<T1, T2>>& get(pair<T1, T2>& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods retrieves the tuple element at a particular index within the pair
     template<size_t I, class T1, class T2>
-    constexpr const AZStd::tuple_element_t<I, AZStd::pair<T1, T2>>& get(const AZStd::pair<T1, T2>& pairObj);
+    constexpr const tuple_element_t<I, pair<T1, T2>>& get(const pair<T1, T2>& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods retrieves the tuple element at a particular index within the pair
     template<size_t I, class T1, class T2>
-    constexpr AZStd::tuple_element_t<I, AZStd::pair<T1, T2>>&& get(AZStd::pair<T1, T2>&& pairObj);
+    constexpr tuple_element_t<I, pair<T1, T2>>&& get(pair<T1, T2>&& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods retrieves the tuple element at a particular index within the pair
     template<size_t I, class T1, class T2>
-    constexpr const AZStd::tuple_element_t<I, AZStd::pair<T1, T2>>&& get(const AZStd::pair<T1, T2>&& pairObj);
+    constexpr const tuple_element_t<I, pair<T1, T2>>&& get(const pair<T1, T2>&& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods extracts an element from the pair with the specified type T
     //! If there is more than one T in the pair, then this function fails to compile
     template<class T, class U>
-    constexpr T& get(AZStd::pair<T, U>& pairObj);
+    constexpr T& get(pair<T, U>& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods extracts an element from the pair with the specified type T
     //! If there is more than one T in the pair, then this function fails to compile
     template<class T, class U>
-    constexpr T& get(AZStd::pair<U, T>& pairObj);
+    constexpr T& get(pair<U, T>& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods extracts an element from the pair with the specified type T
     //! If there is more than one T in the pair, then this function fails to compile
     template<class T, class U>
-    constexpr const T& get(const AZStd::pair<T, U>& pairObj);
+    constexpr const T& get(const pair<T, U>& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods extracts an element from the pair with the specified type T
     //! If there is more than one T in the pair, then this function fails to compile
     template<class T, class U>
-    constexpr const T& get(const AZStd::pair<U, T>& pairObj);
+    constexpr const T& get(const pair<U, T>& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods extracts an element from the pair with the specified type T
     //! If there is more than one T in the pair, then this function fails to compile
     template<class T, class U>
-    constexpr T&& get(AZStd::pair<T, U>&& pairObj);
+    constexpr T&& get(pair<T, U>&& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods extracts an element from the pair with the specified type T
     //! If there is more than one T in the pair, then this function fails to compile
     template<class T, class U>
-    constexpr T&& get(AZStd::pair<U, T>&& pairObj);
+    constexpr T&& get(pair<U, T>&& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods extracts an element from the pair with the specified type T
     //! If there is more than one T in the pair, then this function fails to compile
     template<class T, class U>
-    constexpr const T&& get(const AZStd::pair<T, U>&& pairObj);
+    constexpr const T&& get(const pair<T, U>&& pairObj);
 
     //! Wraps the std::get function in the AZStd namespace
     //! This methods extracts an element from the pair with the specified type T
     //! If there is more than one T in the pair, then this function fails to compile
     template<class T, class U>
-    constexpr const T&& get(const AZStd::pair<U, T>&& pairObj);
+    constexpr const T&& get(const pair<U, T>&& pairObj);
 } // namespace AZStd
+
+
+namespace AZStd::Internal
+{
+    template<size_t I, class P, bool TupleElementValid = !is_void_v<tuple_element_t<0, remove_cvref_t<P>>> >
+    struct tuple_element_preserve_cvref;
+
+    template<size_t I, class P>
+    struct tuple_element_preserve_cvref<I, P, true>
+    {
+    private:
+        static constexpr bool is_lvalue_reference = is_lvalue_reference_v<P>;
+        static constexpr bool is_const = is_const_v<remove_reference<P>>;
+        using raw_type = tuple_element_t<0, remove_cvref_t<P>>;
+        using const_type = conditional_t<is_const, add_const_t<raw_type>, raw_type>;
+        using reference_type = conditional_t<is_lvalue_reference, add_lvalue_reference_t<const_type>, add_rvalue_reference_t<const_type>>;
+    public:
+        using type = reference_type;
+    };
+
+    template<class PairType, class P, class = void>
+    constexpr bool is_pair_like_constructible_for_t = false;
+
+    template<class T1, class T2, class P>
+    constexpr bool is_pair_like_constructible_for_t<pair<T1, T2>, P, enable_if_t<is_constructible_v<T1, typename tuple_element_preserve_cvref<0, P>::type> && is_constructible_v<T2, typename tuple_element_preserve_cvref<1, P>::type>>> = true;
+
+    template<class PairType, class P, class = void>
+    constexpr bool is_pair_like_assignable_for_t = false;
+
+    template<class T1, class T2, class P>
+    constexpr bool is_pair_like_assignable_for_t<
+        pair<T1, T2>,
+        P,
+        enable_if_t<is_assignable_v<T1&, typename tuple_element_preserve_cvref<0, P>::type> && is_assignable_v<T2&, typename tuple_element_preserve_cvref<1, P>::type> >> = true;
+
+    template<class T1, class T2, class P>
+    constexpr bool is_pair_like_assignable_for_t<
+        const pair<T1, T2>,
+        P,
+        enable_if_t<
+            is_assignable_v<const T1&, typename tuple_element_preserve_cvref<0, P>::type> && is_assignable_v<const T2&, typename tuple_element_preserve_cvref<1, P>::type>>> =
+        true;
+}
 
 namespace AZStd
 {
@@ -148,12 +192,9 @@ namespace AZStd
         template<
             class P,
             class = enable_if_t<conjunction_v<
-                bool_constant<pair_like<P>>,
-                bool_constant<!Internal::is_subrange<P>>
-            #if __cpp_lib_concepts
-                , bool_constant<is_constructible_v<T1, decltype(get<0>(declval<P>()))>>
-                , bool_constant<is_constructible_v<T2, decltype(get<1>(declval<P>()))>>
-            #endif
+                bool_constant<pair_like<P>>
+                , bool_constant<!Internal::is_subrange<P>>
+                , bool_constant<Internal::is_pair_like_constructible_for_t<pair, P>>
             >>>
 #if __cpp_conditional_explicit >= 201806L
         explicit(!is_convertible_v<get<0>(declval<P>()), T1> || !is_convertible_v<get<1>(declval<P>()), T2>)
@@ -188,13 +229,13 @@ namespace AZStd
         constexpr pair(const pair<U1, U2>&& rhs);
 
         template<template<class...> class TupleType, class... Args1, class... Args2>
-        constexpr pair(piecewise_construct_t, TupleType<Args1...> first_args, TupleType<Args2...> second_args);
+        constexpr pair(piecewise_construct_t, TupleType<Args1...> firstArgs, TupleType<Args2...> secondArgs);
 
         template<template<class...> class TupleType, class... Args1, class... Args2, size_t... I1, size_t... I2>
         constexpr pair(
             piecewise_construct_t,
-            TupleType<Args1...>& first_args,
-            TupleType<Args2...>& second_args,
+            TupleType<Args1...>& firstArgs,
+            TupleType<Args2...>& secondArgs,
             index_sequence<I1...>,
             index_sequence<I2...>);
 
@@ -220,12 +261,12 @@ namespace AZStd
 
         // pair-like conversion forward assignment
         template<class P>
-        constexpr auto operator=(P&& pairLike) -> enable_if_t<pair_like<P>
-            && !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P>
-            #if __cpp_lib_concepts
-                && is_assignable_v<T1&, decltype(get<0>(declval<P>()))> && is_assignable_v<T2&, decltype(get<1>(declval<P>()))>
-            #endif
-            ,
+        constexpr auto operator=(P&& pairLike) -> enable_if_t<
+            conjunction_v<
+                bool_constant<pair_like<P>>,
+                bool_constant<!AZStd::same_as<pair, remove_cvref_t<P>>>,
+                bool_constant<!Internal::is_subrange<P>>,
+                bool_constant<Internal::is_pair_like_assignable_for_t<pair, P>>>,
             pair&>;
 
         // This is an operator= overload that can change the values of the pair
@@ -233,15 +274,12 @@ namespace AZStd
         // i.e a `const pair<int&, bool&>` can still modify the int and bool elements, despite
         // the pair itself being const
         template<class P>
-        constexpr auto operator=(P&& pairLike) const -> enable_if_t<pair_like<P>
-            && !AZStd::same_as<pair, remove_cvref_t<P>> && !Internal::is_subrange<P>
-            #if __cpp_lib_concepts
-                // To avoid instantiating an AZStd::pair when an incomplete type is used
-                // the is_assignable_v template is avoided when concepts are not available
-                && is_assignable_v<const T1&, decltype(get<0>(declval<P>()))>
-                && is_assignable_v<const T2&, decltype(get<1>(declval<P>()))>
-            #endif
-            ,
+        constexpr auto operator=(P&& pairLike) const -> enable_if_t<
+            conjunction_v<
+                bool_constant<pair_like<P>>,
+                bool_constant<!AZStd::same_as<pair, remove_cvref_t<P>>>,
+                bool_constant<!Internal::is_subrange<P>>,
+                bool_constant<Internal::is_pair_like_assignable_for_t<const pair, P>>>,
             const pair&>;
 
         constexpr auto swap(pair& rhs);
