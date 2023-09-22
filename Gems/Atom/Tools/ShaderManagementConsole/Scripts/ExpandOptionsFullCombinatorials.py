@@ -161,7 +161,7 @@ class Dialog(QDialog):
         mainvl.addLayout(leftrightCut)
 
         # Create the list box on the left
-        self.optionsSelector = DoubleList([str(x.GetName()) for x in self.optionDescriptors])
+        self.optionsSelector = DoubleList([x.GetName().ToString() for x in self.optionDescriptors])
         listGroup = QGroupBox("Add desired participating options from the left bucket, to the selection bucket on the right:")
         listGroup.setLayout(self.optionsSelector.layout)
         vsplitter = QSplitter(QtCore.Qt.Horizontal)
@@ -367,7 +367,7 @@ def main():
 
     global optionsByNames
     for optDesc in optionDescriptors:
-        optionsByNames[str(optDesc.GetName())] = optDesc
+        optionsByNames[optDesc.GetName().ToString()] = optDesc
 
     # Get current variant list to append our expansion after it
     variantList = azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
