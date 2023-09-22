@@ -464,9 +464,18 @@ namespace AzFramework
         idMap.reserve(entities.size());
         previouslySpawned.reserve(entities.size());
 
+        // Sort entity ids to get the same id remap order on the different platforms (Win, Mac, iOS, etc)
+        AzFramework::EntityIdList sortedEntityIds;
+        sortedEntityIds.reserve(entities.size());
         for (auto& entity : entities)
         {
-            idMap.emplace(entity->GetId(), seedEntityId);
+            sortedEntityIds.push_back(entity->GetId());
+        }
+        std::sort(sortedEntityIds.begin(), sortedEntityIds.end());
+
+        for (auto& entityId : sortedEntityIds)
+        {
+            idMap.emplace(entityId, seedEntityId);
             seedEntityId = AZ::EntityId(static_cast<AZ::u64>(seedEntityId)+1);
         }
     }
