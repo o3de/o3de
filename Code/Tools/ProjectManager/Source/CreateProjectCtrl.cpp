@@ -298,6 +298,10 @@ namespace O3DE::ProjectManager
             // it will also handle detailed error messaging
             if(!ProjectUtils::RegisterProject(projectInfo.m_path, this))
             {
+                // Since the project files were created during this workflow, but register project flow was cancelled or errored out,
+                // clean up the created files here.
+                [[maybe_unused]] bool filesDeleted = ProjectUtils::DeleteProjectFiles(projectInfo.m_path, /*force*/ true);
+                AZ_Warning("O3DE", filesDeleted, "Unable to delete invalid new project files at %s", projectInfo.m_path.toUtf8().constData());
                 return;
             }
 

@@ -9,6 +9,7 @@
 #pragma once 
 
 #include "../MaterialInputs/BaseColorInput.azsli"
+#include "../MaterialInputs/DualSpecular.azsli"
 #include "../MaterialInputs/NormalInput.azsli"
 #include "../MaterialInputs/RoughnessInput.azsli"
 #include "../MaterialInputs/SpecularInput.azsli"
@@ -28,6 +29,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     COMMON_SRG_INPUTS_NORMAL(m_sclera_)
     COMMON_SRG_INPUTS_ROUGHNESS(m_sclera_)
     COMMON_SRG_INPUTS_SPECULAR_F0()
+    COMMON_SRG_INPUTS_DUAL_SPECULAR()
 
     Sampler m_sampler
     {

@@ -134,7 +134,7 @@ namespace NvCloth
 
                     // Damping
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Damping")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClothConfiguration::m_damping, "Damping",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_damping, "Damping",
                         "Damping of particle velocity.\n"
                         "0: Velocity is unaffected\n"
                         "1: Velocity is zeroed")
@@ -142,7 +142,7 @@ namespace NvCloth
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.0001f)
                         ->Attribute(AZ::Edit::Attributes::Decimals, 6)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClothConfiguration::m_linearDrag, "Linear drag",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_linearDrag, "Linear drag",
                         "Portion of velocity applied to particles.\n"
                         "0: Particles is unaffected\n"
                         "1: Damped global particle velocity")
@@ -150,7 +150,7 @@ namespace NvCloth
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.0001f)
                         ->Attribute(AZ::Edit::Attributes::Decimals, 6)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClothConfiguration::m_angularDrag, "Angular drag",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_angularDrag, "Angular drag",
                         "Portion of angular velocity applied to turning particles.\n"
                         "0: Particles is unaffected\n"
                         "1: Damped global particle angular velocity")
@@ -161,7 +161,7 @@ namespace NvCloth
 
                     // Inertia
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Inertia")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClothConfiguration::m_linearInteria, "Linear",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_linearInteria, "Linear",
                         "Portion of acceleration applied to particles.\n"
                         "0: Particles are unaffected\n"
                         "1: Physically correct")
@@ -169,7 +169,7 @@ namespace NvCloth
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.0001f)
                         ->Attribute(AZ::Edit::Attributes::Decimals, 6)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClothConfiguration::m_angularInteria, "Angular",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_angularInteria, "Angular",
                         "Portion of angular acceleration applied to turning particles.\n"
                         "0: Particles are unaffected\n"
                         "1: Physically correct")
@@ -177,7 +177,7 @@ namespace NvCloth
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.0001f)
                         ->Attribute(AZ::Edit::Attributes::Decimals, 6)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClothConfiguration::m_centrifugalInertia, "Centrifugal",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_centrifugalInertia, "Centrifugal",
                         "Portion of angular velocity applied to turning particles.\n"
                         "0: Particles are unaffected\n"
                         "1: Physically correct")
