@@ -76,7 +76,7 @@ namespace AZ
             const MaterialAssignmentMap& materials, const MaterialAssignmentId& id);
 
         //! Utility function for generating a set of available material assignments in a model
-        MaterialAssignmentMap GetDefautMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset);
+        MaterialAssignmentMap GetDefaultMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset);
 
         //! Get material slot labels from a model
         MaterialAssignmentLabelMap GetMaterialSlotLabelsFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset);
