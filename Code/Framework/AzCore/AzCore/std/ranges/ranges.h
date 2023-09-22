@@ -9,6 +9,7 @@
 
 #include <AzCore/std/concepts/concepts.h>
 #include <AzCore/std/iterator/const_iterator.h>
+#include <AzCore/std/ranges/subrange_fwd.h>
 #include <AzCore/std/typetraits/add_pointer.h>
 #include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_lvalue_reference.h>
@@ -562,17 +563,6 @@ namespace AZStd::ranges
         template <typename T>
         constexpr dangling(T&&...) noexcept {}
     };
-
-
-    enum class subrange_kind : bool
-    {
-        unsized,
-        sized
-    };
-    template<class I, class S = I,
-        subrange_kind K = sized_sentinel_for<S, I> ? subrange_kind::sized : subrange_kind::unsized,
-        class = void>
-        class subrange;
 
     template<class R>
     using borrowed_iterator_t = conditional_t<borrowed_range<R>, iterator_t<R>, dangling>;
