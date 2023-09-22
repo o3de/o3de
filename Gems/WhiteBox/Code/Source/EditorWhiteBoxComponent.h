@@ -109,8 +109,8 @@ namespace WhiteBox
         void RebuildPhysicsMesh();
         void ExportToFile();
         void ExportDescendantsToFile();
-        void SaveAsAsset();
-        void OnDefaultShapeChange();
+        AZ::Crc32 SaveAsAsset();
+        AZ::Crc32 OnDefaultShapeChange();
         void OnMaterialChange();
         AZ::Crc32 AssetVisibility() const;
 

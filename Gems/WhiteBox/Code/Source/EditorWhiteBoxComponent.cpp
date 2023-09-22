@@ -115,7 +115,7 @@ namespace WhiteBox
     }
 
     // callback for when the default shape field is changed
-    void EditorWhiteBoxComponent::OnDefaultShapeChange()
+    AZ::Crc32 EditorWhiteBoxComponent::OnDefaultShapeChange()
     {
         const AZStd::string entityIdStr = AZStd::string::format("%llu", static_cast<AZ::u64>(GetEntityId()));
         const AZStd::string componentIdStr = AZStd::string::format("%llu", GetId());
@@ -136,6 +136,8 @@ namespace WhiteBox
         EditorWhiteBoxComponentNotificationBus::Event(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()),
             &EditorWhiteBoxComponentNotificationBus::Events::OnDefaultShapeTypeChanged, m_defaultShape);
+
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     bool EditorWhiteBoxVersionConverter(
@@ -665,15 +667,15 @@ namespace WhiteBox
         return WhiteBoxSaveResult{relativePath, AZStd::string(absoluteSaveFilePathCstr)};
     }
 
-    void EditorWhiteBoxComponent::SaveAsAsset()
+    AZ::Crc32 EditorWhiteBoxComponent::SaveAsAsset()
     {
         // let the user select final location of the saved asset
         const auto absoluteSavePathFn = [](const AZStd::string& initialAbsolutePath)
         {
             const QString fileFilter =
                 AZStd::string::format("WhiteBoxMesh (*.%s)", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
-            const QString absolutePath = AzQtComponents::FileDialog::GetSaveFileName(
-                nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
+            const QString absolutePath =
+                AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
 
             return AZStd::string(absolutePath.toUtf8());
         };
@@ -686,7 +688,8 @@ namespace WhiteBox
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                 foundRelativePath,
                 &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath,
-                absolutePath, relativePath);
+                absolutePath,
+                relativePath);
 
             if (foundRelativePath)
             {
@@ -701,11 +704,13 @@ namespace WhiteBox
         const auto saveDecisionFn = []()
         {
             return QMessageBox::warning(
-                AzToolsFramework::GetActiveWindow(), "Warning",
+                AzToolsFramework::GetActiveWindow(),
+                "Warning",
                 "Saving a White Box Mesh Asset (.wbm) outside of the project root will not create an Asset for the "
                 "Component to use. The file will be saved but will not be processed. For live updates to happen the "
                 "asset must be saved somewhere in the current project folder. Would you like to continue?",
-                (QMessageBox::Save | QMessageBox::Cancel), QMessageBox::Cancel);
+                (QMessageBox::Save | QMessageBox::Cancel),
+                QMessageBox::Cancel);
         };
 
         const AZStd::optional<WhiteBoxSaveResult> saveResult =
@@ -714,7 +719,7 @@ namespace WhiteBox
         // user pressed cancel
         if (!saveResult.has_value())
         {
-            return;
+            return AZ::Edit::PropertyRefreshLevels::None;
         }
 
         const char* const absoluteSaveFilePath = saveResult.value().m_absoluteFilePath.c_str();
@@ -729,8 +734,7 @@ namespace WhiteBox
             // otherwise the internal mesh can simply be moved into the new asset
             m_editorMeshAsset->TakeOwnershipOfWhiteBoxMesh(
                 relativeAssetPath,
-                m_editorMeshAsset->InUse() ? Api::CloneMesh(*GetWhiteBoxMesh())
-                                           : AZStd::exchange(m_whiteBox, Api::CreateWhiteBoxMesh()));
+                m_editorMeshAsset->InUse() ? Api::CloneMesh(*GetWhiteBoxMesh()) : AZStd::exchange(m_whiteBox, Api::CreateWhiteBoxMesh()));
 
             // change default shape to asset
             m_defaultShape = DefaultShapeType::Asset;
@@ -750,6 +754,8 @@ namespace WhiteBox
                 RequestEditSourceControl(absoluteSaveFilePath);
             }
         }
+
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     template<typename TransformFn>
