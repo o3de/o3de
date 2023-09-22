@@ -230,7 +230,8 @@ namespace AZ::RHI
         }
 
         CopyItemType m_type;
-        union {
+        union
+        {
             MultiDeviceCopyBufferDescriptor m_mdBuffer;
             MultiDeviceCopyImageDescriptor m_mdImage;
             MultiDeviceCopyBufferToImageDescriptor m_mdBufferToImage;

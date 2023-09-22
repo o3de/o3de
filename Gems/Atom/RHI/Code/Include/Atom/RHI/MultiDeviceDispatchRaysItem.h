@@ -35,7 +35,7 @@ namespace AZ::RHI
 
             for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
-                if ((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1)
+                if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
                 {
                     m_deviceDispatchRaysItems.emplace(deviceIndex, DispatchRaysItem{});
                 }

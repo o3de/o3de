@@ -91,7 +91,7 @@ namespace AZ::RHI
 
             for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
-                if ((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1)
+                if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
                 {
                     m_deviceDrawItems.emplace(deviceIndex, DrawItem{});
                 }
@@ -210,7 +210,7 @@ namespace AZ::RHI
             }
         }
 
-        //! List of scissors to be applied to this draw item only. Scissor will be restore to the previous state
+        //! List of scissors to be applied to this draw item only. Scissor will be restored to the previous state
         //! after the MultiDeviceDrawItem has been processed.
         void SetScissors(const Scissor* scissors, uint8_t scissorsCount)
         {
@@ -221,7 +221,7 @@ namespace AZ::RHI
             }
         }
 
-        //! List of viewports to be applied to this draw item only. Viewports will be restore to the previous state
+        //! List of viewports to be applied to this draw item only. Viewports will be restored to the previous state
         //! after the MultiDeviceDrawItem has been processed.
         void SetViewports(const Viewport* viewports, uint8_t viewportCount)
         {
@@ -277,10 +277,7 @@ namespace AZ::RHI
         {
             AZ_Assert(m_mdItem, "Not initialized with MultiDeviceDrawItem\n");
 
-            DrawItemProperties result{ nullptr, m_sortKey, m_drawFilterMask };
-            result.m_item = &m_mdItem->GetDeviceDrawItem(deviceIndex);
-            result.m_depth = m_depth;
-            return result;
+            return { &m_mdItem->GetDeviceDrawItem(deviceIndex), m_sortKey, m_depth, m_drawFilterMask };
         }
 
         //! A pointer to the draw item
