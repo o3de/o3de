@@ -13,6 +13,7 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/sort.h> // Gruber patch // VMED
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
@@ -467,13 +468,13 @@ namespace AzFramework
         // Sort entity ids to get the same id remap order on the different platforms (Win, Mac, iOS, etc)
         AzFramework::EntityIdList sortedEntityIds;
         sortedEntityIds.reserve(entities.size());
-        for (auto& entity : entities)
+        for (const auto& entity : entities)
         {
             sortedEntityIds.push_back(entity->GetId());
         }
-        std::sort(sortedEntityIds.begin(), sortedEntityIds.end());
+        AZStd::sort(sortedEntityIds.begin(), sortedEntityIds.end());
 
-        for (auto& entityId : sortedEntityIds)
+        for (const auto& entityId : sortedEntityIds)
         {
             idMap.emplace(entityId, seedEntityId);
             seedEntityId = AZ::EntityId(static_cast<AZ::u64>(seedEntityId)+1);
