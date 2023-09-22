@@ -571,8 +571,11 @@ namespace AzFramework
 #ifdef CARBONATED
                     // We should add that into m_entitySpawnableMap before "Events::AddGameEntity" because Activate is called there and we
                     // need this data there
-                    m_entitySpawnableMap.insert(AZStd::make_pair(
-                        clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
+                    if (!ticket.m_spawnable->GetInstanceId().IsNull())
+                    {
+                        m_entitySpawnableMap.insert(AZStd::make_pair(
+                            clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
+                    }
 #endif
 // Gruber patch end. // LVB. // Support unique instances
                     GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
@@ -712,8 +715,11 @@ namespace AzFramework
 #ifdef CARBONATED
                     // We should add that into m_entitySpawnableMap before "Events::AddGameEntity" because Activate is called there and we
                     // need this data there
-                    m_entitySpawnableMap.insert(AZStd::make_pair(
-                        clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
+                    if (!ticket.m_spawnable->GetInstanceId().IsNull())
+                    {
+                        m_entitySpawnableMap.insert(AZStd::make_pair(
+                            clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
+                    }
 #endif
 // Gruber patch end. // LVB. // Support unique instances
                     GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);

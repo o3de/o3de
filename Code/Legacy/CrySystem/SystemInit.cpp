@@ -87,6 +87,12 @@
 #include <AzFramework/Archive/Archive.h>
 #include <CrySystemBus.h>
 
+// carbonated begin (akostin/mp-402-1): Revert pNetwork in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+#include "CryNetwork/CryNetwork.h"
+#endif
+// carbonated end
+
 #if defined(ANDROID)
 #include <AzCore/Android/Utils.h>
 #endif
@@ -1052,6 +1058,22 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
                 &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                 AzFramework::SystemCursorState::ConstrainedAndHidden);
         }
+
+        // carbonated begin (akostin/mp-402-1): Revert pNetwork in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+        //////////////////////////////////////////////////////////////////////////
+        // NETWORK
+        //////////////////////////////////////////////////////////////////////////
+
+        m_env.pNetwork = CryNetwork::NetworkInstance::Create();
+        if (!m_env.pNetwork)
+        {
+            AZ_Assert(false, "Network System did not initialize correctly; it was not found in the system environment.");
+            return false;
+        }
+        InlineInitializationProcessing("CSystem::Init InitNetwork");
+#endif
+        // carbonated end
 
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////

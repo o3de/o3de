@@ -20,4 +20,5 @@ set(FILES
     Source/RHI.Reflect/Formats.inl
     Include/Atom/RHI.Reflect/Vulkan/Conversion.h
     Include/Atom/RHI.Reflect/Vulkan/ImageViewDescriptor.h
+    Include/Atom/RHI.Reflect/Vulkan/VulkanBus.h
 )

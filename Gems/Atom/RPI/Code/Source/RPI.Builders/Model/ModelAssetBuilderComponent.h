@@ -122,6 +122,8 @@ namespace AZ
 
                 MaterialUid m_materialUid;
                 uint32_t m_influencesPerVertex = 0;
+                size_t m_vertexCount = 0;
+                
 
                 bool CanBeMerged() const
                 {
@@ -282,7 +284,12 @@ namespace AZ
 
             //! Checks to see if a data buffer is the expected size
             template<typename T>
-            bool ValidateStreamSize(size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, const char* streamName) const;
+            bool ValidateStreamSize(
+                size_t expectedVertexCount,
+                const AZStd::vector<T>& bufferData,
+                AZ::RHI::Format format,
+                const char* streamName,
+                bool isAligned = false) const;
 
             //! Checks to see if the vertex count for each stream within a mesh is the same
             bool ValidateStreamAlignment(const ProductMeshContent& mesh) const;

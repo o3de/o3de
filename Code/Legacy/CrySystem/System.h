@@ -184,6 +184,14 @@ public:
     ICmdLine* GetICmdLine() override{ return m_pCmdLine; }
     ILevelSystem* GetILevelSystem() override;
     ISystemEventDispatcher* GetISystemEventDispatcher() override { return m_pSystemEventDispatcher; }
+
+    // carbonated begin (akostin/mp-402-2): Revert pGame in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+    void SetIGame(IGame* pGame) override { m_env.pGame = pGame; }
+    IGame* GetIGame() override { return m_env.pGame; }
+#endif
+    // carbonated end
+
     //////////////////////////////////////////////////////////////////////////
     // retrieves the perlin noise singleton instance
     CPNoise3* GetNoiseGen() override;

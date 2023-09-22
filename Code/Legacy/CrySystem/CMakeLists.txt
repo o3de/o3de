@@ -10,6 +10,11 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O
 
 add_subdirectory(XML)
 
+if(CARBONATED)
+set(azcommonaddon_dependency Legacy::CryCommonAddon)
+set(aznetworkaddon_dependency Legacy::CryNetworkAddon)
+endif()
+
 ly_add_target(
     NAME CrySystem.Static STATIC
     NAMESPACE Legacy
@@ -32,6 +37,8 @@ ly_add_target(
             Legacy::CrySystem.XMLBinary
             Legacy::RemoteConsoleCore
             AZ::AzFramework
+            ${azcommonaddon_dependency}
+            ${aznetworkaddon_dependency}
         PUBLIC
             Gem::AudioSystem.API
 )

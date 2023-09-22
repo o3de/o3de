@@ -547,5 +547,12 @@ namespace AZ
             AZ_Assert(index < m_optionalExtensions.size(), "Invalid feature %d", index);
             return m_optionalExtensions.test(index);
         }
+
+        void PhysicalDevice::DisableOptionalDeviceExtension(OptionalDeviceExtension optionalDeviceExtension)
+        {
+            uint32_t index = static_cast<uint32_t>(optionalDeviceExtension);
+            AZ_Assert(index < m_optionalExtensions.size(), "Invalid feature %d", index);
+            m_optionalExtensions.set(index, false);
+        }
     }
 }

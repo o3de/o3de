@@ -59,6 +59,9 @@ namespace AZ::RPI::MaterialBuilderUtils
                     }
 
                     jobDependencies.push_back(jobDependency);
+
+                    // If the file was found, there is no need to add other possible path for the same dependency file.
+                    return;
                 }
                 else
                 {

@@ -120,6 +120,33 @@ namespace AZ
                                              requiredSet,
                                              requiredClear };
 
+#ifdef CARBONATED
+            // A protection against an execution of 2 the same commands one by one.
+            // For example, this happens because the "LoadLevel <path>" command from "Registry\autoexec.game.setreg" is compiled into
+            // "Cache\pc\bootstrap.game.<profile>.setreg" as a sequence of the same commands.
+            // This fix compares the new deffered command with the last one in the list and ignores it if they are fully equal
+            if (m_deferredCommands.size() > 0)
+            {
+                DeferredCommand& lastCommand = m_deferredCommands.back();
+                if (lastCommand.m_command == deferredCommand.m_command &&
+                    lastCommand.m_arguments.size() == deferredCommand.m_arguments.size())
+                {
+                    bool isEqual = true;
+                    for (int i = 0; i < lastCommand.m_arguments.size(); i++)
+                    {
+                        if (lastCommand.m_arguments[i] != deferredCommand.m_arguments[i])
+                        {
+                            isEqual = false;
+                            break;
+                        }
+                    }
+                    if (isEqual)
+                    {
+                        return AZ::Success();
+                    }
+                }
+            }
+#endif
             CVarFixedString commandLowercase(command);
             AZStd::to_lower(commandLowercase.begin(), commandLowercase.end());
             m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
