@@ -328,11 +328,9 @@ namespace AZ::DocumentPropertyEditor
                 return {};
             }
 
-            const AZStd::any* opaqueValue = &value[EntryValueKey].GetOpaqueValue();
-            auto genericValue = AZStd::any_cast<GenericValueType>(opaqueValue);
-            if (genericValue != nullptr)
+            if (auto genericValueOpt = Dom::Utils::ValueToType<GenericValueType>(value[EntryValueKey]); genericValueOpt.has_value())
             {
-                return GenericValuePair{ *genericValue, AZStd::string(value[EntryDescriptionKey].GetString()) };
+                return GenericValuePair{ genericValueOpt.value(), AZStd::string(value[EntryDescriptionKey].GetString()) };
             }
 
             return {};
@@ -410,27 +408,13 @@ namespace AZ::DocumentPropertyEditor
                     continue;
                 }
 
-                if (!entryDom[EntryValueKey].IsOpaqueValue())
+                if (auto genericValueOpt = Dom::Utils::ValueToType<GenericValueType>(entryDom[EntryValueKey]); genericValueOpt.has_value())
                 {
-                    continue;
-                }
-
-                const AZStd::any* opaqueValue = &entryDom[EntryValueKey].GetOpaqueValue();
-                auto genericValue = AZStd::any_cast<GenericValueType>(opaqueValue);
-                if (opaqueValue->is<GenericValueType>() && genericValue)
-                {
-                    result.emplace_back(AZStd::make_pair(*genericValue, entryDom[EntryDescriptionKey].GetString()));
+                    result.emplace_back(genericValueOpt.value(), entryDom[EntryDescriptionKey].GetString());
                 }
             }
 
-            if (result.empty())
-            {
-                return {};
-            }
-            else
-            {
-                return result;
-            }
+            return !result.empty() ? AZStd::make_optional(AZStd::move(result)) : AZStd::nullopt;
         }
     };
 
