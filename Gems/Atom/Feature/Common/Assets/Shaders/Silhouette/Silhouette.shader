@@ -10,7 +10,11 @@
     "GlobalTargetBlendState": {
         "Enable": true,
         "BlendSource" : "AlphaSource",
-        "BlendDest" : "AlphaSourceInverse"
+        "BlendDest" : "AlphaSourceInverse",
+        "BlendOp" : "Add",
+        "BlendAlphaSource" : "AlphaSource",
+        "BlendAlphaDest" : "AlphaSourceInverse",
+        "BlendAlphaOp" : "Add"
     },
     "ProgramSettings": {
         "EntryPoints": [

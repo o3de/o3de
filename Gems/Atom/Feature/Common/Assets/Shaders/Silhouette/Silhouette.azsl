@@ -29,7 +29,51 @@ PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
 
-    OUT.m_color = PassSrg::m_silhouettes.Sample(PassSrg::LinearSampler, IN.m_texCoord);
+    const int NUM_SAMPLES = 7;
+    const real outline_opacity = 1.0;
+    const real2 Silhouette_Width = 3.0;
+
+    static const real2 poison_disk[7] =
+    {
+        float2(0.3423616, -0.8391063),
+        float2(0.5596238, 0.2984108),
+        float2(-0.4140021, 0.5529465),
+        float2(-0.9800305, -0.07626212),
+        float2(0.8866654, -0.4241928),
+        float2(0.1116031, 0.8037254),
+        float2(-0.6169758, -0.6663036),
+    };
+
+    uint width, height;
+    PassSrg::m_silhouettes.GetDimensions(width, height);
+    real2 scale = Silhouette_Width / real2(width,height);
+
+    real4 pixelSample = PassSrg::m_silhouettes.Sample(PassSrg::LinearSampler, IN.m_texCoord);
+    if(dot(pixelSample.xyz, pixelSample.xyz) > 0.0)
+    {
+        // this is a silhouette pixel
+        pixelSample.a = smoothstep(0.02, 0.98, pixelSample.a);  // make fully transparent at 0.02, opaque at 0.98
+    }
+    else if (pixelSample.a < 0.001)
+    {
+        // this is a potential outline pixel 
+        for (int i = 0; i < NUM_SAMPLES; ++i)
+        {
+            real2 kernel = poison_disk[i];
+            real2 offset = kernel*scale;
+            real4 sampleColor = PassSrg::m_silhouettes.Sample(PassSrg::LinearSampler, IN.m_texCoord + offset);
+            pixelSample = max(pixelSample, sampleColor);
+        }
+
+        if(pixelSample.a == 0.0)
+        {
+            discard;
+        }
+
+        pixelSample.a = outline_opacity * step(0.001, pixelSample.a);
+    }
+
+    OUT.m_color = pixelSample;
 
     return OUT;
 }

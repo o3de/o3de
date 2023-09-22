@@ -13,7 +13,8 @@
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
-    float4 m_color;
+    float3 m_color;
+    float  m_alpha;
     float3x3 m_uvMatrix;
     float2 m_padding0;
     float m_outlineSize;

@@ -14,6 +14,7 @@
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/UvSetCount.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
 #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
 {
@@ -21,8 +22,6 @@ VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
     SV.m_instanceId = instanceId;
     VsOutput OUT = EvaluateVertexGeometry(IN, SV);
 
-    // TODO make use of MaterialSrg::m_outlineSize to expand the 
-    // geometry to make variable sized outlines
     return OUT;
 }
 
@@ -39,7 +38,8 @@ PSOutput MainPS(VsOutput IN)
 {
     PSOutput OUT;
 
-    OUT.m_color = MaterialSrg::m_color;
+    // write at least something in the alpha to distinguish between silhouette and background
+    OUT.m_color = float4(TransformColor(MaterialSrg::m_color, ColorSpaceId::ACEScg,ColorSpaceId::SRGB), max(0.01, MaterialSrg::m_alpha));
 
     return OUT;
 }
