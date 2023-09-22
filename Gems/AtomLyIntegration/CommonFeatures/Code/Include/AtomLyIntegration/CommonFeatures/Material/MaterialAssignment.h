@@ -58,6 +58,7 @@ namespace AZ
             MaterialPropertyOverrideMap m_propertyOverrides;
             RPI::MaterialModelUvOverrideMap m_matModUvOverrides;
             bool m_materialInstancePreCreated = false;
+            bool m_materialInstanceMustBeUnique = false;
         };
 
         using MaterialAssignmentMap = AZStd::unordered_map<MaterialAssignmentId, MaterialAssignment>;
