@@ -44,9 +44,6 @@ namespace AZ::RHI
         MultiDeviceTransientAttachmentPool() = default;
         virtual ~MultiDeviceTransientAttachmentPool() = default;
 
-        //! Returns true if a Transient Attachment Pool is needed according to the supplied descriptor.
-        static bool NeedsTransientAttachmentPool(const TransientAttachmentPoolDescriptor& descriptor);
-
         //! Called to initialize the pool.
         ResultCode Init(MultiDevice::DeviceMask deviceMask, const TransientAttachmentPoolDescriptor& descriptor);
 
@@ -97,12 +94,9 @@ namespace AZ::RHI
         TransientAttachmentPoolCompileFlags GetCompileFlags() const;
 
     private:
-        bool ValidateInitParameters(const TransientAttachmentPoolDescriptor& descriptor) const;
-
         //! Remove the entry related to the provided attachmentId from the cache as it is probably stale now
         void RemoveFromCache(RHI::AttachmentId attachmentId);
 
-        Scope* m_currentScope = nullptr;
         TransientAttachmentPoolDescriptor m_descriptor;
         TransientAttachmentPoolCompileFlags m_compileFlags = TransientAttachmentPoolCompileFlags::None;
 
@@ -112,8 +106,5 @@ namespace AZ::RHI
         //! This map is used to reverse look up resource hash so we can clear them out of m_cache
         //! once they have been replaced with a new resource at a different place in the heap.
         AZStd::unordered_map<AttachmentId, HashValue64> m_reverseLookupHash;
-
-        //! A map of all device-specific TransientAttachmentPools, indexed by the device index
-        AZStd::unordered_map<int, Ptr<TransientAttachmentPool>> m_deviceTransientAttachmentPools;
     };
 } // namespace AZ::RHI

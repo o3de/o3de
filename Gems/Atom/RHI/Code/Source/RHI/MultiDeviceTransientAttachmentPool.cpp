@@ -12,26 +12,6 @@
 
 namespace AZ::RHI
 {
-    bool MultiDeviceTransientAttachmentPool::NeedsTransientAttachmentPool(const TransientAttachmentPoolDescriptor& descriptor)
-    {
-        switch (descriptor.m_heapParameters.m_type)
-        {
-        case HeapAllocationStrategy::Fixed:
-            {
-                // Fixed strategy must declare a budget for at least one type of resource in order to use a transient attachment pool.
-                return descriptor.m_bufferBudgetInBytes != 0 || descriptor.m_imageBudgetInBytes != 0 ||
-                    descriptor.m_renderTargetBudgetInBytes != 0;
-            }
-        // Paging and Memory Hint strategy can work with a 0 budget.
-        case HeapAllocationStrategy::Paging:
-        case HeapAllocationStrategy::MemoryHint:
-            return true;
-        default:
-            AZ_Assert(false, "Invalid heap allocation type %d", descriptor.m_heapParameters.m_type);
-            return false;
-        }
-    }
-
     ResultCode MultiDeviceTransientAttachmentPool::Init(
         MultiDevice::DeviceMask deviceMask, const TransientAttachmentPoolDescriptor& descriptor)
     {
@@ -44,7 +24,7 @@ namespace AZ::RHI
             }
         }
 
-        if (!ValidateInitParameters(descriptor))
+        if (!TransientAttachmentPool::ValidateInitParameters(descriptor))
         {
             return ResultCode::InvalidArgument;
         }
@@ -60,7 +40,7 @@ namespace AZ::RHI
             {
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                m_deviceTransientAttachmentPools[deviceIndex] = Factory::Get().CreateTransientAttachmentPool();
+                m_deviceObjects[deviceIndex] = Factory::Get().CreateTransientAttachmentPool();
 
                 TransientAttachmentPoolDescriptor deviceDescriptor;
                 deviceDescriptor.m_bufferBudgetInBytes = descriptor.m_bufferBudgetInBytes;
@@ -68,7 +48,7 @@ namespace AZ::RHI
                 deviceDescriptor.m_imageBudgetInBytes = descriptor.m_imageBudgetInBytes;
                 deviceDescriptor.m_renderTargetBudgetInBytes = descriptor.m_renderTargetBudgetInBytes;
 
-                resultCode = m_deviceTransientAttachmentPools[deviceIndex]->Init(*device, deviceDescriptor);
+                resultCode = GetDeviceTransientAttachmentPool(deviceIndex)->Init(*device, deviceDescriptor);
 
                 return resultCode == ResultCode::Success;
             });
@@ -76,7 +56,7 @@ namespace AZ::RHI
         if (resultCode != ResultCode::Success)
         {
             // Reset already initialized device-specific TransientAttachmentPools and set deviceMask to 0
-            m_deviceTransientAttachmentPools.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
@@ -87,11 +67,12 @@ namespace AZ::RHI
     {
         if (IsInitialized())
         {
-            for (const auto& [deviceIndex, pool] : m_deviceTransientAttachmentPools)
-            {
-                pool->Shutdown();
-            }
-            m_deviceTransientAttachmentPools.clear();
+            IterateObjects<TransientAttachmentPool>(
+                [](auto deviceIndex, auto deviceTransientAttachmentPool)
+                {
+                    deviceTransientAttachmentPool->Shutdown();
+                });
+            m_deviceObjects.clear();
             MultiDeviceObject::Shutdown();
         }
     }
@@ -101,44 +82,40 @@ namespace AZ::RHI
     {
         m_compileFlags = compileFlags;
 
-        m_currentScope = nullptr;
-        for (auto& [deviceIndex, deviceTransientAttachmentPool] : m_deviceTransientAttachmentPools)
-        {
-            deviceTransientAttachmentPool->Begin(compileFlags, memoryHint);
-        }
+        IterateObjects<TransientAttachmentPool>(
+            [&compileFlags, &memoryHint](auto deviceIndex, auto deviceTransientAttachmentPool)
+            {
+                deviceTransientAttachmentPool->Begin(compileFlags, memoryHint);
+            });
     }
 
     void MultiDeviceTransientAttachmentPool::BeginScope(Scope& scopeBase)
     {
-        m_currentScope = static_cast<Scope*>(&scopeBase);
-
         // TODO: Only call for the correct device as given by the scopeBase
-        for (auto& [deviceIndex, deviceTransientAttachmentPool] : m_deviceTransientAttachmentPools)
-        {
-            deviceTransientAttachmentPool->BeginScope(scopeBase);
-        }
-
-        TransientAttachmentStatistics::Scope scope;
-        scope.m_scopeId = scopeBase.GetId();
-        scope.m_hardwareQueueClass = scopeBase.GetHardwareQueueClass();
+        IterateObjects<TransientAttachmentPool>(
+            [&scopeBase](auto deviceIndex, auto deviceTransientAttachmentPool)
+            {
+                deviceTransientAttachmentPool->BeginScope(scopeBase);
+            });
     }
 
     void MultiDeviceTransientAttachmentPool::EndScope()
     {
-        m_currentScope = nullptr;
         // TODO: Only call for the correct device as given by the scopeBase
-        for (auto& [deviceIndex, deviceTransientAttachmentPool] : m_deviceTransientAttachmentPools)
-        {
-            deviceTransientAttachmentPool->EndScope();
-        }
+        IterateObjects<TransientAttachmentPool>(
+            [](auto deviceIndex, auto deviceTransientAttachmentPool)
+            {
+                deviceTransientAttachmentPool->EndScope();
+            });
     }
 
     void MultiDeviceTransientAttachmentPool::End()
     {
-        for (auto& [deviceIndex, deviceTransientAttachmentPool] : m_deviceTransientAttachmentPools)
-        {
-            deviceTransientAttachmentPool->End();
-        }
+        IterateObjects<TransientAttachmentPool>(
+            [](auto deviceIndex, auto deviceTransientAttachmentPool)
+            {
+                deviceTransientAttachmentPool->End();
+            });
     }
 
     MultiDeviceImage* MultiDeviceTransientAttachmentPool::ActivateImage(const TransientImageDescriptor& descriptor)
@@ -164,14 +141,15 @@ namespace AZ::RHI
 
             imagePtr->Init(GetDeviceMask());
 
-            for (auto& [deviceIndex, deviceTransientAttachmentPool] : m_deviceTransientAttachmentPools)
-            {
-                imagePtr->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateImage(descriptor);
-                if (imagePtr->GetDeviceImage(deviceIndex))
+            IterateObjects<TransientAttachmentPool>(
+                [&imagePtr, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
                 {
-                    imagePtr->SetDescriptor(imagePtr->GetDeviceImage(deviceIndex)->GetDescriptor());
-                }
-            }
+                    imagePtr->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateImage(descriptor);
+                    if (imagePtr->GetDeviceImage(deviceIndex))
+                    {
+                        imagePtr->SetDescriptor(imagePtr->GetDeviceImage(deviceIndex)->GetDescriptor());
+                    }
+                });
 
             imagePtr->SetName(descriptor.m_attachmentId);
             m_cache.Insert(static_cast<uint64_t>(hash), AZStd::move(imagePtr));
@@ -207,14 +185,15 @@ namespace AZ::RHI
 
             bufferPtr->Init(GetDeviceMask());
 
-            for (auto& [deviceIndex, deviceTransientAttachmentPool] : m_deviceTransientAttachmentPools)
-            {
-                bufferPtr->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateBuffer(descriptor);
-                if (bufferPtr->GetDeviceBuffer(deviceIndex))
+            IterateObjects<TransientAttachmentPool>(
+                [&bufferPtr, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
                 {
-                    bufferPtr->SetDescriptor(bufferPtr->GetDeviceBuffer(deviceIndex)->GetDescriptor());
-                }
-            }
+                    bufferPtr->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateBuffer(descriptor);
+                    if (bufferPtr->GetDeviceBuffer(deviceIndex))
+                    {
+                        bufferPtr->SetDescriptor(bufferPtr->GetDeviceBuffer(deviceIndex)->GetDescriptor());
+                    }
+                });
 
             bufferPtr->SetName(descriptor.m_attachmentId);
             m_cache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferPtr));
@@ -231,29 +210,32 @@ namespace AZ::RHI
     {
         RemoveFromCache(attachmentId);
 
-        for (auto& [deviceIndex, deviceTransientAttachmentPool] : m_deviceTransientAttachmentPools)
-        {
-            deviceTransientAttachmentPool->DeactivateBuffer(attachmentId);
-        }
+        IterateObjects<TransientAttachmentPool>(
+            [&attachmentId](auto deviceIndex, auto deviceTransientAttachmentPool)
+            {
+                deviceTransientAttachmentPool->DeactivateBuffer(attachmentId);
+            });
     }
 
     void MultiDeviceTransientAttachmentPool::DeactivateImage(const AttachmentId& attachmentId)
     {
         RemoveFromCache(attachmentId);
 
-        for (auto& [deviceIndex, deviceTransientAttachmentPool] : m_deviceTransientAttachmentPools)
-        {
-            deviceTransientAttachmentPool->DeactivateImage(attachmentId);
-        }
+        IterateObjects<TransientAttachmentPool>(
+            [&attachmentId](auto deviceIndex, auto deviceTransientAttachmentPool)
+            {
+                deviceTransientAttachmentPool->DeactivateImage(attachmentId);
+            });
     }
 
     AZStd::unordered_map<int, TransientAttachmentStatistics> MultiDeviceTransientAttachmentPool::GetStatistics() const
     {
         AZStd::unordered_map<int, TransientAttachmentStatistics> statistics;
-        for (auto& [deviceIndex, deviceTransientAttachmentPool] : m_deviceTransientAttachmentPools)
-        {
-            statistics.insert({ deviceIndex, deviceTransientAttachmentPool->GetStatistics() });
-        }
+        IterateObjects<TransientAttachmentPool>(
+            [&statistics](auto deviceIndex, auto deviceTransientAttachmentPool)
+            {
+                statistics.insert({ deviceIndex, deviceTransientAttachmentPool->GetStatistics() });
+            });
         return statistics;
     }
 
@@ -265,113 +247,6 @@ namespace AZ::RHI
     TransientAttachmentPoolCompileFlags MultiDeviceTransientAttachmentPool::GetCompileFlags() const
     {
         return m_compileFlags;
-    }
-
-    bool MultiDeviceTransientAttachmentPool::ValidateInitParameters(
-        [[maybe_unused]] const TransientAttachmentPoolDescriptor& descriptor) const
-    {
-#if defined(AZ_RHI_ENABLE_VALIDATION)
-        switch (descriptor.m_heapParameters.m_type)
-        {
-        case HeapAllocationStrategy::Fixed:
-            {
-                if (descriptor.m_bufferBudgetInBytes == 0 && descriptor.m_imageBudgetInBytes == 0 &&
-                    descriptor.m_renderTargetBudgetInBytes == 0)
-                {
-                    AZ_Assert(false, "Invalid budget for transient attachment pool when using a Fixed allocation strategy");
-                    return false;
-                }
-                break;
-            }
-        case HeapAllocationStrategy::Paging:
-            {
-                const auto& pagingParameters = descriptor.m_heapParameters.m_pagingParameters;
-                if (pagingParameters.m_pageSizeInBytes == 0)
-                {
-                    AZ_Assert(false, "Invalid page size %d when using a Paging allocation strategy", pagingParameters.m_pageSizeInBytes);
-                    return false;
-                }
-
-                if (descriptor.m_bufferBudgetInBytes && pagingParameters.m_pageSizeInBytes > descriptor.m_bufferBudgetInBytes)
-                {
-                    AZ_Assert(
-                        false,
-                        "Page size %d is bigger than budget for buffers %d",
-                        pagingParameters.m_pageSizeInBytes,
-                        descriptor.m_bufferBudgetInBytes);
-                    return false;
-                }
-
-                if (descriptor.m_imageBudgetInBytes && pagingParameters.m_pageSizeInBytes > descriptor.m_imageBudgetInBytes)
-                {
-                    AZ_Assert(
-                        false,
-                        "Page size %d is bigger than budget for images %d",
-                        pagingParameters.m_pageSizeInBytes,
-                        descriptor.m_imageBudgetInBytes);
-                    return false;
-                }
-
-                if (descriptor.m_renderTargetBudgetInBytes && pagingParameters.m_pageSizeInBytes > descriptor.m_renderTargetBudgetInBytes)
-                {
-                    AZ_Assert(
-                        false,
-                        "Page size %d is bigger than budget for rendertargets %d",
-                        pagingParameters.m_pageSizeInBytes,
-                        descriptor.m_renderTargetBudgetInBytes);
-                    return false;
-                }
-
-                if (pagingParameters.m_initialAllocationPercentage && descriptor.m_bufferBudgetInBytes == 0 &&
-                    descriptor.m_imageBudgetInBytes == 0 && descriptor.m_renderTargetBudgetInBytes == 0)
-                {
-                    AZ_Assert(
-                        false,
-                        "Invalid initial allocation percentage (%lf) when using a Paging allocation strategy",
-                        pagingParameters.m_initialAllocationPercentage);
-                    return false;
-                }
-                break;
-            }
-        case HeapAllocationStrategy::MemoryHint:
-            {
-                const auto& memoryHintParameters = descriptor.m_heapParameters.m_usageHintParameters;
-                if (memoryHintParameters.m_heapSizeScaleFactor < 1.0f)
-                {
-                    AZ_Assert(
-                        false,
-                        "Invalid heap size scale factor (%lf) when using a MemoryHint allocation strategy",
-                        memoryHintParameters.m_heapSizeScaleFactor);
-                    return false;
-                }
-
-                if (memoryHintParameters.m_maxHeapWastedPercentage < 0.f || memoryHintParameters.m_maxHeapWastedPercentage > 1.f)
-                {
-                    AZ_Assert(
-                        false,
-                        "Invalid max heap wasted percentage (%lf) when using a MemoryHint allocation strategy",
-                        memoryHintParameters.m_maxHeapWastedPercentage);
-                    return false;
-                }
-
-                if ((memoryHintParameters.m_heapSizeScaleFactor - 1.0f) >= memoryHintParameters.m_maxHeapWastedPercentage)
-                {
-                    AZ_Assert(
-                        false,
-                        "Heap scale factor (%lf) is bugger than max wasted percentage (%lf) when using a MemoryHint allocation "
-                        "strategy",
-                        memoryHintParameters.m_heapSizeScaleFactor,
-                        memoryHintParameters.m_maxHeapWastedPercentage);
-                    return false;
-                }
-                break;
-            }
-        default:
-            AZ_Assert(false, "Invalid heap allocation strategy %d", descriptor.m_heapParameters.m_type);
-            return false;
-        }
-#endif
-        return true;
     }
 
     void MultiDeviceTransientAttachmentPool::RemoveFromCache(AttachmentId attachmentId)
