@@ -274,10 +274,10 @@
                                     "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>",
                                     "Value": {
                                         "assetId": {
-                                            "guid": "{0B360C33-D5CB-57FF-BDD4-AD64A9AAEA86}",
+                                            "guid": "{7B12D830-4138-51C2-8612-3ED5B4DFA23A}",
                                             "subId": 1000
                                         },
-                                        "assetHint": "testdata/objects/cube/cube_norm.tif.streamingimage"
+                                        "assetHint": "Textures/UtilCharts/test_chart_norm.tif"
                                     }
                                 }
                             }

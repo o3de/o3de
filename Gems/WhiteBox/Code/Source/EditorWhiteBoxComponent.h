@@ -108,9 +108,8 @@ namespace WhiteBox
         void RebuildRenderMesh();
         void RebuildPhysicsMesh();
         void ExportToFile();
-        void ExportDescendantsToFile();
-        void SaveAsAsset();
-        void OnDefaultShapeChange();
+        AZ::Crc32 SaveAsAsset();
+        AZ::Crc32 OnDefaultShapeChange();
         void OnMaterialChange();
         AZ::Crc32 AssetVisibility() const;
 
@@ -133,8 +132,6 @@ namespace WhiteBox
             DefaultMaterialTint, DefaultMaterialUseTexture}; //!< Render material for White Box mesh.
         DefaultShapeType m_defaultShape =
             DefaultShapeType::Cube; //!< Used for selecting a default shape for the White Box mesh.
-        bool m_flipYZForExport = false; //!< Toggled in the editor, used to flip the Y and Z axes for
-                                        //!< exporting White Boxes for different coordinate systems
     };
 
     inline bool EditorWhiteBoxComponent::SupportsEditorRayIntersect()

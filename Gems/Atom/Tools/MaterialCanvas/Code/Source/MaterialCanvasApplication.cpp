@@ -254,6 +254,10 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::InitMaterialGraphDocumentType()
     {
+        // Initialize system to asynchronously report material and shader related asset processing status for open documents
+        m_assetStatusReporterSystem.reset(aznew AtomToolsFramework::AssetStatusReporterSystem(m_toolId));
+
+        // Initialize system to load and store material graph template files and only reload them if modified
         m_graphTemplateFileDataCache.reset(aznew AtomToolsFramework::GraphTemplateFileDataCache(m_toolId));
 
         // Acquiring default Material Canvas document type info so that it can be customized before registration
@@ -303,14 +307,13 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::InitShaderSourceDataDocumentType()
     {
-        // Register document type for editing shader source data and template files. This document type also does not have a central view
-        // and will display a label widget that directs users to the property inspector.
+        // Register document type for editing shader source data files. This document type does not have a central view
+        // and will display a label widget that directs users to edit using the inspector.
         auto documentTypeInfo = AtomToolsFramework::AtomToolsAnyDocument::BuildDocumentTypeInfo(
             "Shader Source Data",
             { "shader" },
             {},
             AZStd::any(AZ::RPI::ShaderSourceData()),
-
             AZ::RPI::ShaderSourceData::TYPEINFO_Uuid()); // Supplying ID because it is not included in the JSON file
 
         documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId)

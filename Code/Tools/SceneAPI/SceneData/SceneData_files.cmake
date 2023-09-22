@@ -13,11 +13,13 @@ set(FILES
     ManifestMetaInfoHandler.cpp
     ReflectionRegistrar.h
     ReflectionRegistrar.cpp
+    Behaviors/BehaviorsImportGroup.cpp
     Behaviors/BehaviorsMeshGroup.cpp
     Behaviors/BehaviorsSkeletonGroup.cpp
     Behaviors/BehaviorsSkinGroup.cpp
     Behaviors/Registry.h
     Behaviors/Registry.cpp
+    Behaviors/ImportGroup.h
     Behaviors/MeshGroup.h
     Behaviors/SkeletonGroup.h
     Behaviors/SkinGroup.h
@@ -35,6 +37,8 @@ set(FILES
     Behaviors/SkinRuleBehavior.cpp
     Behaviors/ScriptProcessorRuleBehavior.h
     Behaviors/ScriptProcessorRuleBehavior.cpp
+    Groups/ImportGroup.h
+    Groups/ImportGroup.cpp
     Groups/MeshGroup.h
     Groups/MeshGroup.cpp
     Groups/SkeletonGroup.h
