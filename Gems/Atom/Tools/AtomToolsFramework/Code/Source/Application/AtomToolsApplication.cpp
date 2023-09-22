@@ -370,7 +370,7 @@ namespace AtomToolsFramework
         }
 
         // Reload the assetcatalog.xml at this point again
-        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        // Start monitoring asset changes over the network and load the AssetCatalog
         auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
         {
             if (AZ::IO::FixedMaxPath assetCatalogPath;

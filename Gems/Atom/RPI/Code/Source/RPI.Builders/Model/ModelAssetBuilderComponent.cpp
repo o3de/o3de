@@ -2499,7 +2499,7 @@ namespace AZ
             constexpr AZ::u32 ResourcePoolDefaultSubId = 0;
 
             AssetBuilderSDK::JobDependency jobDependency;
-            jobDependency.m_jobKey = "Model Asset Builder (Default Vertex Buffer Pool)";
+            jobDependency.m_jobKey = "Atom Resource Pool";
             jobDependency.m_sourceFile = defaultVertexBufferPoolSource;
             jobDependency.m_platformIdentifier = platformIdentifier;
             jobDependency.m_productSubIds.push_back(ResourcePoolDefaultSubId);

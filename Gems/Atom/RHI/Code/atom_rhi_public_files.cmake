@@ -193,15 +193,21 @@ set(FILES
     Source/RHI/ResolveScopeAttachment.cpp
     Source/RHI/ScopeAttachment.cpp
     Include/Atom/RHI/ShaderResourceGroup.h    
+    Include/Atom/RHI/MultiDeviceShaderResourceGroup.h
     Include/Atom/RHI/ShaderResourceGroupData.h
+    Include/Atom/RHI/MultiDeviceShaderResourceGroupData.h
     Include/Atom/RHI/ShaderResourceGroupDebug.h
     Include/Atom/RHI/ShaderResourceGroupInvalidateRegistry.h
     Include/Atom/RHI/ShaderResourceGroupPool.h
+    Include/Atom/RHI/MultiDeviceShaderResourceGroupPool.h
     Source/RHI/ShaderResourceGroup.cpp
+    Source/RHI/MultiDeviceShaderResourceGroup.cpp
     Source/RHI/ShaderResourceGroupData.cpp
+    Source/RHI/MultiDeviceShaderResourceGroupData.cpp
     Source/RHI/ShaderResourceGroupDebug.cpp
     Source/RHI/ShaderResourceGroupInvalidateRegistry.cpp
     Source/RHI/ShaderResourceGroupPool.cpp
+    Source/RHI/MultiDeviceShaderResourceGroupPool.cpp
     Include/Atom/RHI/MemoryStatisticsBuilder.h
     Include/Atom/RHI/MemoryStatisticsBus.h
     Source/RHI/MemoryStatisticsBuilder.cpp

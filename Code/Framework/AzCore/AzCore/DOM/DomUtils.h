@@ -79,7 +79,7 @@ namespace AZ::Dom::Utils
 
     // Only add pointer to non-pointer types
     template<typename T>
-    struct DomValueWrapper<T, AZStd::enable_if_t<((AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>))
+    struct DomValueWrapper<T, AZStd::enable_if_t<(AZStd::is_reference_v<T> || !AZStd::is_copy_constructible_v<T>)
         && !is_dom_value_v<T>>>
     {
         // i.e don't convert `const void*&` to `const void**`, instead convert to a reference wrapper
@@ -161,49 +161,30 @@ namespace AZ::Dom::Utils
         typeTraits.m_isCopyConstructible = AZStd::is_copy_constructible_v<T>;
 
         AZStd::any::action_handler_for_t actionHandler;
+        using ValueType = AZStd::remove_cvref_t<WrapperType>;
+        typeTraits.m_typeId = azrtti_typeid<ValueType>();
+        typeTraits.m_typeSize = sizeof(ValueType);
 
-        if constexpr (AZStd::is_pointer_v<AZStd::remove_cvref_t<WrapperType>>)
+        // Lifetime variables provides storage for Dom::Value variable
+        // long enough to complete the call to the ValueFromType overload which accepts a void pointer
+        if constexpr (AZStd::is_reference_wrapper<ValueType>())
         {
-            using ValueType = AZStd::remove_cvref_t<WrapperType>;
-            // Store the size of the decayed wrapper type
-            typeTraits.m_typeSize = sizeof(ValueType);
-            typeTraits.m_typeId = azrtti_typeid(value);
-
-            actionHandler = AZStd::any::get_action_handler_for_t<ValueType>();
-
-            return ValueFromType(AZStd::as_const(value),
-                typeTraits, actionHandler);
+            WrapperType wrapper = value;
+            return MarshalOpaqueValue(wrapper);
+        }
+        else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
+        {
+            constexpr bool deepCopyString = true;
+            return Dom::Value(value, deepCopyString);
+        }
+        else if constexpr (AZStd::is_constructible_v<Dom::Value, const WrapperType&>)
+        {
+            return Dom::Value(value);
         }
         else
         {
-            using ValueType = AZStd::remove_cvref_t<WrapperType>;
-            typeTraits.m_typeId = azrtti_typeid<ValueType>();
-            typeTraits.m_typeSize = sizeof(ValueType);
-
-            // Lifetime variables provides storage for Dom::Value variable
-            // long enough to complete the call to the ValueFromType overload which accepts a void pointer
-            Dom::Value domValueLifetime;
-            const void* valueAddress = &value;
-            if constexpr (AZStd::is_reference_wrapper<ValueType>())
-            {
-                return Dom::Value::FromOpaqueValue(AZStd::any(ValueType(value)));
-            }
-            else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
-            {
-                constexpr bool deepCopyString = true;
-                return Dom::Value(value, deepCopyString);
-            }
-            else if constexpr (AZStd::is_constructible_v<Dom::Value, const WrapperType&>)
-            {
-                return Dom::Value(value);
-            }
-            else
-            {
-                // The type is a non-referenced opaque value type that needs to be stored using
-                // an AZStd::any
-                actionHandler = AZStd::any::get_action_handler_for_t<ValueType>();
-                return ValueFromType(valueAddress, typeTraits, actionHandler);
-            }
+            // The type is a non-referenced opaque value type that needs to be stored using an AZStd::any
+            return MarshalOpaqueValue(value);
         }
     }
 
