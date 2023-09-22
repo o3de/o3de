@@ -452,6 +452,27 @@ namespace AzFramework
         }
     }
 
+// Gruber patch begin // VMED // Support the same generated entity ids on all clients and on the server
+#ifdef CARBONATED
+    void SpawnableEntitiesManager::InitializeEntityIdMappingsWithSeed(
+        AZ::EntityId seedEntityId, const Spawnable::EntityList& entities, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned)
+    {
+        // Make sure we don't have any previous data lingering around.
+        idMap.clear();
+        previouslySpawned.clear();
+
+        idMap.reserve(entities.size());
+        previouslySpawned.reserve(entities.size());
+
+        for (auto& entity : entities)
+        {
+            idMap.emplace(entity->GetId(), seedEntityId);
+            seedEntityId = AZ::EntityId(static_cast<AZ::u64>(seedEntityId)+1);
+        }
+    }
+#endif
+// Gruber patch end // VMED 
+
     void SpawnableEntitiesManager::RefreshEntityIdMapping(
         const AZ::EntityId& entityId, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned)
     {
@@ -472,6 +493,19 @@ namespace AzFramework
     auto SpawnableEntitiesManager::ProcessRequest(SpawnAllEntitiesCommand& request) -> CommandResult
     {
         Ticket& ticket = *request.m_ticket;
+
+// Gruber patch begin // VMED // Detect a level spawnable 
+#ifdef CARBONATED
+        constexpr const char* levelSpawnableName = "centralplaza.spawnable"; // FIXME change to evaluated level name or use another way to detect a level spawnable
+        const bool isLevelSpawnable = ::strstr(ticket.m_spawnable.GetHint().c_str(), levelSpawnableName) != nullptr;
+        AZ::EntityId seedEntityId;
+        if (isLevelSpawnable)
+        {
+            seedEntityId = AZ::EntityId(777777700000000); // for "centralplaza" // we have approx 0% probability to collide an existing entity id with the ids group in interval [seedEntityId, seedEntityId+NumOfEntities[
+        }
+#endif
+// Gruber patch end // VMED
+
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
         {
             if (Spawnable::EntityAliasConstVisitor aliases = ticket.m_spawnable->TryGetAliasesConst();
@@ -497,6 +531,16 @@ namespace AzFramework
                 // in every entity we're about to instantiate is intended to point to an entity in our newly-instantiated batch, regardless
                 // of spawn order.  If we didn't clear out the map, it would be possible for some entities here to have references to
                 // previously-spawned entities from a previous SpawnEntities or SpawnAllEntities call.
+
+// Gruber patch begin // VMED // Support the same generated entity ids on all clients and on the server
+#ifdef CARBONATED
+                if (isLevelSpawnable && seedEntityId.IsValid())
+                {
+                    InitializeEntityIdMappingsWithSeed(seedEntityId, entitiesToSpawn, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
+                }
+                else
+#endif
+// Gruber patch end // VMED
                 InitializeEntityIdMappings(entitiesToSpawn, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
 
                 auto aliasIt = aliases.begin();
@@ -564,8 +608,6 @@ namespace AzFramework
 
 // Gruber patch begin // VMED // Preprocess entity components for a level spawnable
 #ifdef CARBONATED
-                constexpr const char* levelSpawnableName = "centralplaza.spawnable"; // FIXME change to evaluated level name or use another way to detect a level spawnable
-                const bool isLevelSpawnable = ::strstr(ticket.m_spawnable.GetHint().c_str(), levelSpawnableName) != nullptr;
                 if (isLevelSpawnable)
                 {
                     AzFramework::EntityContext* gameContext = nullptr;
@@ -584,7 +626,7 @@ namespace AzFramework
                     }
                 }
 #endif
-// Gruber patch begin // VMED // Preprocess netbinding entity components for level
+// Gruber patch end // VMED // Preprocess netbinding entity components for level
 
                 // Add to the game context, now the entities are active
                 for (auto it = newEntitiesBegin; it != newEntitiesEnd; ++it)
