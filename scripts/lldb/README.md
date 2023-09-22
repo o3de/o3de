@@ -11,14 +11,16 @@ The following types have implemented formatters and the files where their implem
 
 | Types | Formatter Python Script |
 |------|------|
-|`AZStd::basic_string<.*>`| lldb/.lldb/o3destd_lldb.py|
 |`AZStd::basic_fixed_string<.*>`| lldb/.lldb/o3destd_lldb.py|
+|`AZStd::basic_string<.*>`| lldb/.lldb/o3destd_lldb.py|
 |`AZStd::basic_string_view<.*>`| lldb/.lldb/o3destd_lldb.py|
+|`AZStd::fixed_vector<.*>`| lldb/.lldb/o3destd_lldb.py|
 |`AZStd::hash_table<.*>`| lldb/.lldb/o3destd_lldb.py|
-|`AZStd::unordered_set<.*>`| lldb/.lldb/o3destd_lldb.py|
 |`AZStd::unordered_map<.*>`| lldb/.lldb/o3destd_lldb.py|
-|`AZStd::unordered_multiset<.*>`| lldb/.lldb/o3destd_lldb.py|
 |`AZStd::unordered_multimap<.*>`| lldb/.lldb/o3destd_lldb.py|
+|`AZStd::unordered_multiset<.*>`| lldb/.lldb/o3destd_lldb.py|
+|`AZStd::unordered_set<.*>`| lldb/.lldb/o3destd_lldb.py|
+|`AZStd::vector<.*>`| lldb/.lldb/o3destd_lldb.py|
 
 
 ## How to use
