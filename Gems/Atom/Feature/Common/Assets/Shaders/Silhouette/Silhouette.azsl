@@ -30,7 +30,7 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     const int NUM_SAMPLES = 7;
-    const real outline_opacity = 1.0;
+    const real outline_opacity = 0.7;
     const real2 Silhouette_Width = 3.0;
 
     static const real2 poison_disk[7] =
