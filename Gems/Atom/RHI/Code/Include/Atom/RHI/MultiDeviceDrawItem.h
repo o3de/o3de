@@ -237,10 +237,16 @@ namespace AZ::RHI
         //! A map of all device-specific DrawItems, indexed by the device index
         AZStd::unordered_map<int, DrawItem> m_deviceDrawItems;
         //! A map of all device-specific IndexBufferViews, indexed by the device index
+        //! This additional cache is needed since device-specific IndexBufferViews are returned as objects
+        //! and the device-specific DrawItem holds a pointer to it.
         AZStd::unordered_map<int, IndexBufferView> m_deviceIndexBufferView;
         //! A map of all device-specific StreamBufferViews, indexed by the device index
+        //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
+        //! and the device-specific DrawItem holds a pointer to it.
         AZStd::unordered_map<int, AZStd::vector<StreamBufferView>> m_deviceStreamBufferViews;
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
+        //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a ShaderResourceGroup**,
+        //! which are then locally cached in a vector (per device) and the device-specific DrawItem holds a pointer to this vector's data.
         AZStd::unordered_map<int, AZStd::vector<ShaderResourceGroup*>> m_deviceShaderResourceGroups;
     };
 
