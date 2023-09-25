@@ -240,7 +240,7 @@ namespace AZ
             {
                 MaterialAssignmentMap primaryMaterialSlots;
                 MaterialComponentRequestBus::EventResult(
-                    primaryMaterialSlots, primaryEntityId, &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
+                    primaryMaterialSlots, primaryEntityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialMap);
 
                 return AZStd::all_of(
                     secondaryEntityIds.begin(), secondaryEntityIds.end(),
@@ -249,7 +249,7 @@ namespace AZ
                         MaterialAssignmentMap secondaryMaterialSlots;
                         MaterialComponentRequestBus::EventResult(
                             secondaryMaterialSlots, secondaryEntityId,
-                            &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
+                            &MaterialComponentRequestBus::Events::GetDefaultMaterialMap);
 
                         if (primaryMaterialSlots.size() != secondaryMaterialSlots.size())
                         {
