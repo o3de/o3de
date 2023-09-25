@@ -650,7 +650,7 @@ namespace AzFramework
                     if (!ticket.m_spawnable->GetInstanceId().IsNull())
                     {
                         m_entitySpawnableMap.insert(AZStd::make_pair(
-                            clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
+                            clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId(), ticket.m_spawnable)));
                     }
 #endif
 // Gruber patch end. // LVB. // Support unique instances
@@ -794,7 +794,7 @@ namespace AzFramework
                     if (!ticket.m_spawnable->GetInstanceId().IsNull())
                     {
                         m_entitySpawnableMap.insert(AZStd::make_pair(
-                            clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
+                            clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId(), ticket.m_spawnable)));
                     }
 #endif
 // Gruber patch end. // LVB. // Support unique instances

@@ -72,9 +72,12 @@ namespace AzFramework
         using EntityList = AZStd::vector<AZStd::unique_ptr<AZ::Entity>>;
         using EntityAliasList = AZStd::vector<EntityAlias>;
 
+// Gruber patch begin. // LVB.
 #ifdef CARBONATED
-        using SpawnableInstanceId = AZ::Uuid;   // Gruber patch. // LVB. // Support unique instances
+        using SpawnableInstanceId = AZ::Uuid; // Support unique instances
+        using EntityIdToEntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
 #endif
+// Gruber patch end. // LVB.
 
         class EntityAliasConstVisitor
         {
@@ -190,6 +193,16 @@ namespace AzFramework
             m_instanceId = id;
         }
 
+        EntityIdToEntityIdMap& GetEntityIdMap()
+        {
+            return m_entityIdMap;
+        }
+
+        EntityIdToEntityIdMap& GetEntityIdToBaseMap()
+        {
+            return m_entityIdToBaseMap;
+        }
+
         // Generate random InstanceId for this Spawnable
         void GenerateInstanceId();
 #endif
@@ -198,9 +211,13 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
     private:
+// Gruber patch begin. // LVB.
 #ifdef CARBONATED
-        SpawnableInstanceId m_instanceId; ///< Unique Id of the instance.   // Gruber patch. // LVB. // Support unique instances
+        SpawnableInstanceId m_instanceId; ///< Unique Id of the instance. // Support unique instances
+        EntityIdToEntityIdMap m_entityIdMap;
+        EntityIdToEntityIdMap m_entityIdToBaseMap;
 #endif
+// Gruber patch end. // LVB.
 
         SpawnableMetaData m_metaData;
 

@@ -323,17 +323,25 @@ namespace AzFramework
     {
         AZ::Data::AssetId m_assetId; ///< AssetId of the spawnable
         Spawnable::SpawnableInstanceId m_spawnableInstanceId; ///< UUid of the unique instantiated spawnable
+        Spawnable* m_spawnable;
 
         SpawnableInstanceAddress()
             : m_assetId()
             , m_spawnableInstanceId(Spawnable::SpawnableInstanceId::CreateNull())
+            , m_spawnable(nullptr)
         {
         }
 
-        SpawnableInstanceAddress(const AZ::Data::AssetId& assetId, const Spawnable::SpawnableInstanceId& spawnableInstanceId)
+        SpawnableInstanceAddress(const AZ::Data::AssetId& assetId, const Spawnable::SpawnableInstanceId& spawnableInstanceId, const AZ::Data::Asset<Spawnable>& spawnable)
             : m_assetId(assetId)
             , m_spawnableInstanceId(spawnableInstanceId)
+            , m_spawnable(spawnable.Get())
         {
+        }
+
+        Spawnable* GetInstance() const
+        {
+            return m_spawnable;
         }
 
         bool IsValid() const
