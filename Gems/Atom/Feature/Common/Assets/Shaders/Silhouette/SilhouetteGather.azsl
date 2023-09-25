@@ -25,10 +25,6 @@ VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
     return OUT;
 }
 
-ShaderResourceGroup PassSrg : SRG_PerPass
-{
-}
-
 struct PSOutput
 {
     float4 m_color : SV_Target0;

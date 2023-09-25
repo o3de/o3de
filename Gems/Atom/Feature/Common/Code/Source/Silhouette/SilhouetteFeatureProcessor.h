@@ -12,6 +12,12 @@
 
 namespace AZ::Render
 {
+    // Adds a silhouette gather pass and a silhouette full screen pass for drawing and
+    // blocking silhouettes
+    // The gather pass draws silhoutte meshes that use the "Silhouette" Material type
+    // to a render target, using the depth and stencil buffer to determine where to draw
+    // The silhouette full screen pass then composites the render target with all the 
+    // silhouettes into the framebuffer and adds an outline.
     class SilhouetteFeatureProcessor final
         : public AZ::RPI::FeatureProcessor
     {

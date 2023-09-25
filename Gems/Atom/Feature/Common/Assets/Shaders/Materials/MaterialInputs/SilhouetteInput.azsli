@@ -8,6 +8,5 @@
 
 #pragma once
 
-option enum class SilhouetteType { None, Silhouette, Outline } o_silhouetteType = SilhouetteType::Silhouette;
-option enum class HighlightType { None, Silhouette, SilhouetteOnTop, Outline, OutlineOnTop, SilhouetteOutlined, SilhouetteOutlinedOnTop } o_highlightType = HighlightType::None;
+option enum class SilhouetteType { AlwaysDraw, Visible, XRay, NeverDraw } o_silhouetteType = SilhouetteType::AlwaysDraw;
 

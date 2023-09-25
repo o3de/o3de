@@ -16,7 +16,8 @@
     },
     "shaders": [
         {
-            "file": "../../Shaders/Silhouette/SilhouetteGather.shader"
+            "file": "../../Shaders/Silhouette/SilhouetteGather.shader",
+            "tag": "SilhouetteGather"
         }
     ]
 }

@@ -6,25 +6,13 @@
         {
             "name": "silhouetteType",
             "displayName": "Silhouette type",
-            "description": "Silhouette or outline",
+            "description": "Silhouette type",
             "type": "Enum",
-            "defaultValue": "Silhouette",
-            "enumValues": [ "None", "Silhouette", "Outline" ],
+            "defaultValue": "AlwaysDraw",
+            "enumValues": [ "AlwaysDraw", "Visible", "XRay", "NeverDraw" ],
             "connection": {
                 "type": "ShaderOption",
                 "name": "o_silhouetteType"
-            }
-        },
-        {
-            "name": "highlightType",
-            "displayName": "Highlight type",
-            "description": "Highlight type",
-            "type": "Enum",
-            "defaultValue": "None",
-            "enumValues": [ "None", "Silhouette", "SilhouetteOnTop", "Outline", "OutlineOnTop", "SilhouetteOutlined", "SilhouetteOutlinedOnTop" ],
-            "connection": {
-                "type": "ShaderOption",
-                "name": "o_highlightType"
             }
         },
         {
@@ -63,5 +51,12 @@
             }
         }
     ],
-    "functors": []
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/Silhouette_DepthState.lua"
+            }
+        }
+    ]
 }

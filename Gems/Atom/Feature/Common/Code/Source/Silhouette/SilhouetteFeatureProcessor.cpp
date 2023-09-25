@@ -102,7 +102,8 @@ namespace AZ::Render
             return;
         }
 
-        // Gather
+        // Add the gather pass which draws all the silhouette objects into a render target
+        // using depth and stencil to determine where to draw
         RPI::PassRequest gatherPassRequest;
         gatherPassRequest.m_passName = Name("SilhouetteGatherPass");
         gatherPassRequest.m_templateName = gatherTemplateName;
@@ -118,7 +119,8 @@ namespace AZ::Render
             renderPipeline->AddPassAfter(pass, forwardProcessPassName);
         }
 
-        // Merge
+        // Add the full screen silhouette pass which merges the silhouettes render target with
+        // the framebuffer diffuse, and adds outlines to the silhouette shapes
         RPI::PassRequest mergePassRequest;
         mergePassRequest.m_passName = Name("SilhouettePass");
         mergePassRequest.m_templateName = mergeTemplateName;
