@@ -17,6 +17,7 @@
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
 #ifdef CARBONATED
 #include <AzCore/Math/Uuid.h>       // Gruber patch. // LVB. // Support unique instances
+#include <AzCore/Serialization/IdUtils.h> // Gruber patch // VMED
 #endif
 
 namespace AZ
@@ -195,16 +196,24 @@ namespace AzFramework
 
         EntityIdToEntityIdMap& GetEntityIdMap()
         {
-            return m_entityIdMap;
+            return m_baseToNewEntityIdMap;
         }
 
         EntityIdToEntityIdMap& GetEntityIdToBaseMap()
         {
-            return m_entityIdToBaseMap;
+            if (m_entityIdToBaseCache.empty())
+            {
+                BuildReverseLookUp();
+            }
+            return m_entityIdToBaseCache;
         }
 
         // Generate random InstanceId for this Spawnable
         void GenerateInstanceId();
+
+        void FinalizeCreateInstance(void* remapContainer,
+            const AZ::Uuid& classUuid,
+            const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper);
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 
@@ -214,8 +223,12 @@ namespace AzFramework
 // Gruber patch begin. // LVB.
 #ifdef CARBONATED
         SpawnableInstanceId m_instanceId; ///< Unique Id of the instance. // Support unique instances
-        EntityIdToEntityIdMap m_entityIdMap;
-        EntityIdToEntityIdMap m_entityIdToBaseMap;
+        EntityIdToEntityIdMap m_baseToNewEntityIdMap; ///< Map of old entityId to new
+        mutable EntityIdToEntityIdMap m_entityIdToBaseCache; ///< reverse lookup to \ref m_baseToNewEntityIdMap, this is build on demand
+
+        // The lookup is built lazily when accessing the map, but constness is desirable
+        // in the higher level APIs.
+        void BuildReverseLookUp() const;
 #endif
 // Gruber patch end. // LVB.
 
