@@ -29,7 +29,7 @@ namespace AzToolsFramework::Prefab
 
     bool IsOutlinerOverrideManagementEnabled()
     {
-        bool isOutlinerOverrideManagementEnabled = false;
+        bool isOutlinerOverrideManagementEnabled = true;
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
             registry->Get(isOutlinerOverrideManagementEnabled, OutlinerOverrideManagementKey);
@@ -40,7 +40,7 @@ namespace AzToolsFramework::Prefab
 
     bool IsInspectorOverrideManagementEnabled()
     {
-        bool isInspectorOverrideManagementEnabled = false;
+        bool isInspectorOverrideManagementEnabled = true;
 
         if (auto* registry = AZ::SettingsRegistry::Get())
         {

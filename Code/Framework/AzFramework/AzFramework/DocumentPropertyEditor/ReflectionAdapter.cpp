@@ -445,7 +445,7 @@ namespace AZ::DocumentPropertyEditor
 
         bool IsInspectorOverrideManagementEnabled()
         {
-            bool isInspectorOverrideManagementEnabled = false;
+            bool isInspectorOverrideManagementEnabled = true;
 
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
