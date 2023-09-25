@@ -206,7 +206,7 @@ namespace AzToolsFramework
         {
             if (m_widget)
             {
-                delete m_widget;
+                m_widget->deleteLater();
             }
             IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
         }
