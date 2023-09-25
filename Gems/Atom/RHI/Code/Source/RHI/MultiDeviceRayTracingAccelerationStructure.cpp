@@ -203,7 +203,7 @@ namespace AZ::RHI
         }
 
         IterateObjects<RayTracingBlas>(
-            [](auto deviceIndex, auto deviceRayTracingBlas)
+            [](auto /*deviceIndex*/, auto deviceRayTracingBlas)
             {
                 if (!deviceRayTracingBlas->IsValid())
                 {
