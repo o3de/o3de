@@ -51,6 +51,7 @@ set(FILES
     Include/Atom/RHI/DrawPacket.h
     Include/Atom/RHI/DrawPacketBuilder.h
     Include/Atom/RHI/IndirectArguments.h
+    Include/Atom/RHI/MultiDeviceIndirectArguments.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandListValidator.cpp
     Source/RHI/ConstantsData.cpp
@@ -125,11 +126,17 @@ set(FILES
     Source/RHI/StreamingImagePool.cpp
     Source/RHI/MultiDeviceStreamingImagePool.cpp
     Include/Atom/RHI/IndirectBufferSignature.h
+    Include/Atom/RHI/MultiDeviceIndirectBufferSignature.h
     Include/Atom/RHI/IndirectBufferView.h
+    Include/Atom/RHI/MultiDeviceIndirectBufferView.h
     Include/Atom/RHI/IndirectBufferWriter.h
+    Include/Atom/RHI/MultiDeviceIndirectBufferWriter.h
     Source/RHI/IndirectBufferSignature.cpp
+    Source/RHI/MultiDeviceIndirectBufferSignature.cpp
     Source/RHI/IndirectBufferView.cpp
+    Source/RHI/MultiDeviceIndirectBufferView.cpp
     Source/RHI/IndirectBufferWriter.cpp
+    Source/RHI/MultiDeviceIndirectBufferWriter.cpp
     Include/Atom/RHI/Object.h
     Include/Atom/RHI/ObjectCache.h
     Include/Atom/RHI/ObjectCollector.h

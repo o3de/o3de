@@ -56,6 +56,7 @@ set(FILES
     Tests/MultiDeviceQueryTests.cpp
     Tests/MultiDeviceBufferTests.cpp
     Tests/MultiDeviceImageTests.cpp
+    Tests/MultiDeviceIndirectBufferTests.cpp
     Tests/MultiDeviceShaderResourceGroupTests.cpp
 )
 
