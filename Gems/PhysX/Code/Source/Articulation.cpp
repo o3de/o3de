@@ -73,14 +73,14 @@ namespace PhysX
                         static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfiguration.get());
                     if (!physicsAssetShapeConfiguration->m_asset.IsReady())
                     {
-                        auto asset_status = const_cast<Physics::PhysicsAssetShapeConfiguration*>(physicsAssetShapeConfiguration)
+                        auto assetStatus = const_cast<Physics::PhysicsAssetShapeConfiguration*>(physicsAssetShapeConfiguration)
                                                 ->m_asset.BlockUntilLoadComplete();
                         AZ_Error(
                             "PhysX",
-                            asset_status == AZ::Data::AssetData::AssetStatus::Ready,
+                            assetStatus == AZ::Data::AssetData::AssetStatus::Ready,
                             "Failed to load physics asset %s ",
                             physicsAssetShapeConfiguration->m_asset.GetHint().c_str());
-                        if (asset_status != AZ::Data::AssetData::AssetStatus::Ready)
+                        if (assetStatus != AZ::Data::AssetData::AssetStatus::Ready)
                         {
                             continue;
                         }
