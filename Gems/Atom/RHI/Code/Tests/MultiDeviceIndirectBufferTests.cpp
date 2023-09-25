@@ -231,22 +231,23 @@ namespace UnitTest
         //     EXPECT_FALSE(signature->IsInitialized());
         // }
 
-        // GetByteStride()
-        {
-            AZ_TEST_START_TRACE_SUPPRESSION;
-            auto signature = CreateInitializedSignature();
-            AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
-            uint32_t byteStride = 1337;
-            for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-            {
-                EXPECT_CALL(
-                    *static_cast<IndirectBufferSignature*>(signature->GetDeviceIndirectBufferSignature(deviceIndex).get()),
-                    GetByteStrideInternal())
-                    .Times(1)
-                    .WillOnce(testing::Return(byteStride));
-            }
-            EXPECT_EQ(signature->GetByteStride(), byteStride);
-        }
+        // ! Cannot tests this as we do not have access to device signatures here and cannot setup mock-call
+        // // GetByteStride()
+        // {
+        //     AZ_TEST_START_TRACE_SUPPRESSION;
+        //     auto signature = CreateInitializedSignature();
+        //     AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
+        //     uint32_t byteStride = 1337;
+        //     for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
+        //     {
+        //         EXPECT_CALL(
+        //             *static_cast<IndirectBufferSignature*>(signature->GetDeviceIndirectBufferSignature(deviceIndex).get()),
+        //             GetByteStrideInternal())
+        //             .Times(1)
+        //             .WillOnce(testing::Return(byteStride));
+        //     }
+        //     EXPECT_EQ(signature->GetByteStride(), byteStride);
+        // }
 
         // GetByteStride() on uninitialized signature.
         {
@@ -399,7 +400,7 @@ namespace UnitTest
             {
                 EXPECT_EQ(
                     static_cast<IndirectBufferWriter*>(writer->GetDeviceIndirectBufferWriter(deviceIndex).get())->GetData(),
-                    static_cast<Buffer*>(m_buffer->GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex).get())->GetData().data());
+                    static_cast<Buffer*>(m_buffer->GetDeviceBuffer(deviceIndex).get())->GetData().data());
             }
         }
 
