@@ -224,8 +224,19 @@ namespace AZ::Dom::Utils
             {
                 return false;
             }
+
             const AZStd::any& opaqueValue = value.GetOpaqueValue();
-            return opaqueValue.is<WrapperType>();
+
+            // Then the original type should be check and not the wrapper type
+            // if the WrapperType is a std::reference_wrapper
+            if constexpr (AZStd::is_reference_wrapper<WrapperType>::value)
+            {
+                return opaqueValue.is<AZStd::remove_reference_t<T>>() || opaqueValue.is<WrapperType>();
+            }
+            else
+            {
+                return opaqueValue.is<WrapperType>();
+            }
         }
     }
 
@@ -306,7 +317,27 @@ namespace AZ::Dom::Utils
                 if (value.IsOpaqueValue())
                 {
                     const AZStd::any& opaqueValue = value.GetOpaqueValue();
-                    if (!opaqueValue.is<WrapperType>())
+                    // If the wrapper type is a reference wrapper, then the original type needs to be extracted
+                    // from the opaque object and then constructed into a reference_wrapper.
+                    // This is because the implementation of std::reference_wrapper might store a pointer to T or a reference to T
+                    // and that cannot be relied on
+                    if constexpr (AZStd::is_reference_wrapper<WrapperType>::value)
+                    {
+                        if (auto instanceValue = AZStd::any_cast<AZStd::remove_reference_t<T>>(&opaqueValue);
+                            instanceValue != nullptr)
+                        {
+                            // Construct a reference_wrapper using a deferenced value to the opaque type
+                            return WrapperType(const_cast<T>(*instanceValue));
+                        }
+
+                        // Check if The Dom Value is actually storing an reference_wrapper<T> and return that if possible
+                        else if (auto referenceWrapperValue = AZStd::any_cast<WrapperType>(&opaqueValue); referenceWrapperValue != nullptr)
+                        {
+                            // return the reference_wrapper<T> directly
+                            return *referenceWrapperValue;
+                        }
+                    }
+                    else if (!opaqueValue.is<WrapperType>())
                     {
                         // Marshal void* into our type - CanConvertToType will not register this as correct,
                         // but this is an important safety hatch for marshalling out non-primitive UI elements in the DocumentPropertyEditor
