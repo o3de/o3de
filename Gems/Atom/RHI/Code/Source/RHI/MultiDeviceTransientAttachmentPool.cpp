@@ -68,7 +68,7 @@ namespace AZ::RHI
         if (IsInitialized())
         {
             IterateObjects<TransientAttachmentPool>(
-                [](auto deviceIndex, auto deviceTransientAttachmentPool)
+                [](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
                 {
                     deviceTransientAttachmentPool->Shutdown();
                 });
@@ -83,7 +83,7 @@ namespace AZ::RHI
         m_compileFlags = compileFlags;
 
         IterateObjects<TransientAttachmentPool>(
-            [&compileFlags, &memoryHint](auto deviceIndex, auto deviceTransientAttachmentPool)
+            [&compileFlags, &memoryHint](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->Begin(compileFlags, memoryHint);
             });
@@ -93,7 +93,7 @@ namespace AZ::RHI
     {
         // TODO: Only call for the correct device as given by the scopeBase
         IterateObjects<TransientAttachmentPool>(
-            [&scopeBase](auto deviceIndex, auto deviceTransientAttachmentPool)
+            [&scopeBase](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->BeginScope(scopeBase);
             });
@@ -103,7 +103,7 @@ namespace AZ::RHI
     {
         // TODO: Only call for the correct device as given by the scopeBase
         IterateObjects<TransientAttachmentPool>(
-            [](auto deviceIndex, auto deviceTransientAttachmentPool)
+            [](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->EndScope();
             });
@@ -112,7 +112,7 @@ namespace AZ::RHI
     void MultiDeviceTransientAttachmentPool::End()
     {
         IterateObjects<TransientAttachmentPool>(
-            [](auto deviceIndex, auto deviceTransientAttachmentPool)
+            [](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->End();
             });
@@ -211,7 +211,7 @@ namespace AZ::RHI
         RemoveFromCache(attachmentId);
 
         IterateObjects<TransientAttachmentPool>(
-            [&attachmentId](auto deviceIndex, auto deviceTransientAttachmentPool)
+            [&attachmentId](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->DeactivateBuffer(attachmentId);
             });
@@ -222,7 +222,7 @@ namespace AZ::RHI
         RemoveFromCache(attachmentId);
 
         IterateObjects<TransientAttachmentPool>(
-            [&attachmentId](auto deviceIndex, auto deviceTransientAttachmentPool)
+            [&attachmentId](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->DeactivateImage(attachmentId);
             });
