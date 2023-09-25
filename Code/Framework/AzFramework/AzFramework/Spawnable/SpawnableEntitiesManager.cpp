@@ -18,6 +18,7 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AzFramework
 {
@@ -506,13 +507,31 @@ namespace AzFramework
 
 // Gruber patch begin // VMED // Detect a level spawnable 
 #ifdef CARBONATED
-        constexpr const char* levelSpawnableName = "centralplaza.spawnable"; // FIXME change to evaluated level name or use another way to detect a level spawnable
-        const bool isLevelSpawnable = ::strstr(ticket.m_spawnable.GetHint().c_str(), levelSpawnableName) != nullptr;
         AZ::EntityId seedEntityId;
-        if (isLevelSpawnable)
+        if (ticket.m_spawnable->GetInstanceId().IsNull())
         {
-            seedEntityId = AZ::EntityId(777777700000000); // for "centralplaza" // we have approx 0% probability to collide an existing entity id with the ids group in interval [seedEntityId, seedEntityId+NumOfEntities[
+            AZStd::string fileName;
+            if (AzFramework::StringFunc::Path::GetFullFileName(ticket.m_spawnable.GetHint().c_str(), fileName))
+            {
+                AZ::Crc32 crc32 = AZ::Crc32(fileName.c_str());
+                AZ::u64 crc64 = crc32.operator unsigned int();
+                AZ::u64 iCrc64 = ((crc64 << 10) / 1000000) * 1000000; // we have approx 0% probability to collide an existing entity id
+                                                                      // with the ids group in interval [seedEntityId, seedEntityId+NumOfEntities]
+                seedEntityId = AZ::EntityId(iCrc64);
+                AZ_Printf("SpawnableEntitiesManager", "Level FileName=%s. seedEntityId=%llu", fileName.c_str(), seedEntityId);
+            }
+            else
+            {
+                AZ_Error(
+                    "SpawnableEntitiesManager", false, "Can't define the name of the level in %s", ticket.m_spawnable.GetHint().c_str());
+            }
         }
+        AZ_Printf(
+            "SpawnableEntitiesManager",
+            "ProcessRequest. ticket.m_spawnable.GetHint().c_str()=%s, ticket.m_spawnable->GetInstanceId()=%s",
+            ticket.m_spawnable.GetHint().c_str(),
+            ticket.m_spawnable->GetInstanceId().ToFixedString().c_str());
+
 #endif
 // Gruber patch end // VMED
 
@@ -544,7 +563,7 @@ namespace AzFramework
 
 // Gruber patch begin // VMED // Support the same generated entity ids on all clients and on the server
 #ifdef CARBONATED
-                if (isLevelSpawnable && seedEntityId.IsValid())
+                if (seedEntityId.IsValid())
                 {
                     InitializeEntityIdMappingsWithSeed(seedEntityId, entitiesToSpawn, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
                 }
@@ -618,7 +637,7 @@ namespace AzFramework
 
 // Gruber patch begin // VMED // Preprocess entity components for a level spawnable
 #ifdef CARBONATED
-                if (isLevelSpawnable)
+                if (ticket.m_spawnable->GetInstanceId().IsNull())   // That means that this spawnable is a Level
                 {
                     AzFramework::EntityContext* gameContext = nullptr;
                     AzFramework::GameEntityContextRequestBus::BroadcastResult(
