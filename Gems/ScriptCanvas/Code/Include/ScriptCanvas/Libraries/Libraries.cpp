@@ -50,6 +50,11 @@
 #include <ScriptCanvas/Libraries/Operators/Math/OperatorMul.h>
 #include <ScriptCanvas/Libraries/Operators/Math/OperatorSub.h>
 
+#include <ScriptCanvas/Libraries/Logic/TargetedSequencer.h>
+#include <Include/ScriptCanvas/Libraries/Logic/TargetedSequencer.generated.h>
+
+TargetedSequencer_Reflection g_test;
+
 namespace ScriptCanvas
 {
     void InitLibraries()
