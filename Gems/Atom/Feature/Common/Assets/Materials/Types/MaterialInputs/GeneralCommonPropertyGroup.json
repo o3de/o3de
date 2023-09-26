@@ -103,7 +103,5 @@
                 "name": "o_materialUseForwardPassIBLSpecular"
             }
         }
-    ],
-    "functors": [
     ]
 }

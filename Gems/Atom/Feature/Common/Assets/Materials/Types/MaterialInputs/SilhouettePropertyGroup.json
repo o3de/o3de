@@ -40,11 +40,26 @@
             }
         },
         {
+            "name": "depthBias",
+            "displayName": "Depth Bias",
+            "description": "Modifies the depth to avoid intersecting small distances (e.g. character's feet through the ground)",
+            "type": "float",
+            "defaultValue": 0.0,
+            "min":-1.0,
+            "max":1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_depthBias"
+            }
+        },
+        {
             "name": "outlineSize",
             "displayName": "Outline Size",
-            "description": "Outline size.",
+            "description": "Modifies the vertex position alongside the normal vector direction.",
             "type": "float",
-            "defaultValue": -1.0,
+            "defaultValue": 0.0,
+            "min":0.0,
+            "max":3.0,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_outlineSize"
