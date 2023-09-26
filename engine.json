@@ -129,6 +129,7 @@
         "Templates/PythonToolGem",
         "Templates/RemoteRepo",
         "Templates/ScriptCanvasNode",
+        "Templates/ScriptOnlyProject",
         "Templates/UnifiedMultiplayerGem"
     ],
     "repos": [
