@@ -388,7 +388,9 @@ def NoControlFile(repoName, processed_repos, o3de_project, defer_enable_gems) {
         }
         else if(fileExists("gem.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || echo>nul", "Registering gem in ${workspace}/${repoName}")
-            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project} || echo>nul", ECHO: "Enabling ${gemName} in ${o3de_project}"])
+            if(o3de_project) {
+                defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project}", ECHO: "Enabling ${gemName} in ${o3de_project}"])
+            }
         }
         else if(fileExists("project.json")) {
             PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --project-path ${workspace}/${repoName} || echo>nul", "Registering project in ${workspace}/${repoName}")
@@ -414,7 +416,9 @@ def NoControlFile(repoName, processed_repos, o3de_project, defer_enable_gems) {
             }
             if(fileExists("Gems")) {
                 PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || echo>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
-                defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project} || dir>nul", ECHO: "Enabling all gems in ${o3de_project}"])
+                if(o3de_project) {
+                    defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project}", ECHO: "Enabling all gems in ${o3de_project}"])
+                }
                 found = true
             }
             if(fileExists("Projects")) {
@@ -481,9 +485,11 @@ def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project, def
         }
     }
     //queue enable all gems specified in the control file
-    if(controlFile.ENABLE_GEMS) {
+    if(controlFile.ENABLE_GEMS && o3de_project) {
         controlFile.ENABLE_GEMS.each { gemName ->
-            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || echo>nul", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
+            if(o3de_project) {
+                defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project}", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
+            }
         }
     }
 

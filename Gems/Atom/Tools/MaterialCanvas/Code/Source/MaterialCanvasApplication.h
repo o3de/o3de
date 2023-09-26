@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
+#include <AtomToolsFramework/Graph/AssetStatusReporterSystem.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <Window/MaterialCanvasMainWindow.h>
@@ -66,6 +67,7 @@
         AZStd::unique_ptr<MaterialCanvasMainWindow> m_window;
         AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;
+        AZStd::unique_ptr<AtomToolsFramework::AssetStatusReporterSystem> m_assetStatusReporterSystem;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AZStd::shared_ptr<AtomToolsFramework::GraphTemplateFileDataCache> m_graphTemplateFileDataCache;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
