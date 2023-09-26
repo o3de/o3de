@@ -29,7 +29,7 @@ namespace AZ
                     ;
 
                 serializeContext->Class<ShaderVariantListSourceData>()
-                    ->Version(2)
+                    ->Version(2)   // 2: addition of materialOptionsHint field
                     ->Field("Shader", &ShaderVariantListSourceData::m_shaderFilePath)
                     ->Field("Variants", &ShaderVariantListSourceData::m_shaderVariants)
                     ->Field("MaterialOptionsHint", &ShaderVariantListSourceData::m_materialOptionsHint)
