@@ -74,6 +74,8 @@ namespace AZ::RHI
                 });
             m_deviceObjects.clear();
             MultiDeviceObject::Shutdown();
+            m_cache.Clear();
+            m_reverseLookupHash.clear();
         }
     }
 
@@ -208,8 +210,6 @@ namespace AZ::RHI
 
     void MultiDeviceTransientAttachmentPool::DeactivateBuffer(const AttachmentId& attachmentId)
     {
-        RemoveFromCache(attachmentId);
-
         IterateObjects<TransientAttachmentPool>(
             [&attachmentId](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
@@ -219,8 +219,6 @@ namespace AZ::RHI
 
     void MultiDeviceTransientAttachmentPool::DeactivateImage(const AttachmentId& attachmentId)
     {
-        RemoveFromCache(attachmentId);
-
         IterateObjects<TransientAttachmentPool>(
             [&attachmentId](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
