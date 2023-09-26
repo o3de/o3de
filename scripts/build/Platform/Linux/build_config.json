@@ -430,6 +430,24 @@
       "CMAKE_TARGET": "all"
     }
   },
+  "snap_physx5_package": {
+    "TAGS": [
+      "periodic-clean-weekly-internal",
+      "nightly-installer"
+    ],
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "ubuntu-22-packaging"
+    },
+    "COMMAND": "build_installer_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "O3DE_PACKAGE_TYPE": "SNAP",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE -DAZ_USE_PHYSX5=TRUE",
+      "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
+      "CMAKE_TARGET": "all"
+    }
+  },
   "snap_core20_package": {
     "TAGS": [
       "periodic-clean-weekly-internal",
