@@ -123,6 +123,43 @@ namespace AZ::Dom::Utils
         }
     }
 
+    bool CanLoadViaJsonSerialization(
+        const AZ::TypeId& typeId, const Value& root, JsonDeserializerSettings settings)
+    {
+        // A serializeContext is required for making the temporary AZStd::any for storage
+        // so if the supplied serialize context is nullptr, query the one associated with the ComponentApplication
+        auto componentApplicationInterface = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+        if (settings.m_serializeContext == nullptr)
+        {
+            settings.m_serializeContext = componentApplicationInterface != nullptr ? componentApplicationInterface->GetSerializeContext() : nullptr;
+        }
+        if (settings.m_serializeContext == nullptr)
+        {
+            return false;
+        }
+
+        rapidjson::Document jsonViewOfDomValue;
+        auto WriteDomFieldToJson = [&root](Visitor& visitor)
+        {
+            const bool copyStrings = false;
+            return root.Accept(visitor, copyStrings);
+        };
+        if (auto convertToJsonResult = Json::WriteToRapidJsonValue(jsonViewOfDomValue, jsonViewOfDomValue.GetAllocator(), AZStd::move(WriteDomFieldToJson));
+            !convertToJsonResult)
+        {
+            return false;
+        }
+
+        AZStd::any dryRunStorage = settings.m_serializeContext->CreateAny(typeId);
+        // CreateAny will fail if the type is not default constructible or not reflected to the Serialize Context
+        if (dryRunStorage.empty())
+        {
+            return false;
+        }
+        JsonSerializationResult::ResultCode loadResult = JsonSerialization::Load(AZStd::any_cast<void>(&dryRunStorage), typeId, jsonViewOfDomValue, settings);
+        return loadResult.GetProcessing() != JsonSerializationResult::Processing::Halted;
+    }
+
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(
         void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings)
     {
@@ -409,6 +446,67 @@ namespace AZ::Dom::Utils
         }
         else
         {
+            // For the non-pointer case source object is copied into the Dom::Value
+            // First try to use Json Serialization system if available to leverage
+            // the SerializeContext and JsonRegistrationContext for writing the value to a Dom::Value
+            // The ideal scenario is trying to replicate the data structure into the Dom Value as if
+            // it is a JSON Object.
+            // For example a C++ struct such as follows
+            /*
+             ```c++
+             struct DiceComponentConfig
+             {
+                int m_sides;
+                AZStd::vector<double> m_probabilities;
+                AZStd::string m_name;
+             };
+             ```
+             */
+            // Which contains the data ina C++ psuedo-layout of DiceComponentConfig{ 6, [1/6, 1/6, 1/6, 1/6, 1/6, 1/6], "Six-Sided Die" }
+            // Could map to JSON Object as follows if JSON Serialization is available
+            /*
+            ```JSON
+            {
+                "m_sides": 6,
+                "m_probabilities": [
+                    0.166667,
+                    0.166667
+                    0.166667
+                    0.166667
+                    0.166667
+                    0.166667
+                ],
+                "m_name": "Six-Sided Die"
+            }
+            ```
+            */
+            // That could then map into a Dom::Value of the following layout
+            // Dom::Value
+            // -> Object
+            //   1. Field: "m_sides" -> Int
+            //   2. Field: "m_probabilities" -> Array
+            //      Indices: 0-6 -> int
+            //   3. Field: "m_name": -> String
+            //
+            // However if JSON Serialization is not available, the data will be stored in an AZStd::any as an opaque
+            // type in which the data structure is opaque to the Dom::Value
+            // i.e
+            // Dom::Value
+            // -> Opaque = <value>
+            //
+            // The drawbacks of an opaque type is that the Dom::Value can only shallow compare two opaque values
+            // via looking at their memory address
+            // It can't actually compare the data
+            // Therefore two opaque values with the same data, but that different are aprt of different objects
+            // will always compare unequal. This can result in-efficient behavior such as creating more Dom Patches than necessary
+            Value newValue;
+            if (auto storeViaSerializationResult = StoreViaJsonSerialization(valueAddress, nullptr, typeTraits.m_typeId, newValue);
+                storeViaSerializationResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
+            {
+                return newValue;
+            }
+
+            // The data will be stored in AZStd::any as a fail-safe
             AZStd::any::type_info typeInfo;
             typeInfo.m_id = typeTraits.m_typeId;
             typeInfo.m_handler = AZStd::move(actionHandler);

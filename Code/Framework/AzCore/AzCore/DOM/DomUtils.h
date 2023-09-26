@@ -33,6 +33,16 @@ namespace AZ::Dom::Utils
     bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters = {});
     Value TypeIdToDomValue(const AZ::TypeId& typeId);
     AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);
+    //! Runs a dry-run JSON Serializer over the Dom::Value to check if it can be converted to the type associated
+    //! with the AZ TypeId
+    //! @param typeId TypeInfo ID associated with C++ type to determine if the Dom Value can be deserialized into
+    //! @param root Dom Value to be check to see if it can be converted to the C++ TypeInfo ID
+    //! @param settings Json Deserializer Settings which is used to query the serialize context to use for loading the raw object
+    //!        data from the Dom Value
+    //! @return true if the Dom Value can be deserialized into the type associated with the TypeInfo ID
+    bool CanLoadViaJsonSerialization(
+        const AZ::TypeId& typeId, const Value& root, JsonDeserializerSettings settings = {});
+
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(
         void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings = {});
     JsonSerializationResult::ResultCode StoreViaJsonSerialization(
@@ -214,6 +224,8 @@ namespace AZ::Dom::Utils
         }
         else
         {
+            // For pointer types, the pointer marshaling logic is used
+            // to extract a pointer address from the Object with the Dom::Value
             if constexpr (AZStd::is_pointer_v<WrapperType>)
             {
                 if (TryMarshalValueToPointer(value) != nullptr)
@@ -221,6 +233,14 @@ namespace AZ::Dom::Utils
                     return true;
                 }
             }
+
+            // If the Dom::Value can be loaded into the WrapperType using JSON
+            // Serialization, then the Value is convertible to the C++ type
+            if (CanLoadViaJsonSerialization(azrtti_typeid<WrapperType>(), value))
+            {
+                return true;
+            }
+
             if (!value.IsOpaqueValue())
             {
                 return false;
@@ -309,12 +329,28 @@ namespace AZ::Dom::Utils
             {
                 if constexpr (AZStd::is_pointer_v<WrapperType>)
                 {
+                    // When the Wrapped C++ Type is a pointer
+                    // then the attempt to read the pointer address
+                    // from the Dom Value object
                     void* valuePointer = TryMarshalValueToPointer(value);
                     if (valuePointer != nullptr)
                     {
                         return reinterpret_cast<WrapperType>(valuePointer);
                     }
                 }
+
+                if constexpr (AZStd::is_constructible_v<WrapperType>)
+                {
+                    // Attempt to deserialize the type into T using JSON Serialization if possible
+                    WrapperType typeValue;
+                    if (auto loadViaJsonSerializationResult = LoadViaJsonSerialization(typeValue, value);
+                        loadViaJsonSerializationResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
+                    {
+                        return typeValue;
+                    }
+                }
+
+                // At this point, the type must be an opaque type which is an AZStd::any stored within the Dom::Value
                 if (value.IsOpaqueValue())
                 {
                     const AZStd::any& opaqueValue = value.GetOpaqueValue();
