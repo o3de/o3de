@@ -52,7 +52,7 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
-        m_subAllocator = AZStd::make_unique<MallocSchema>();
+        m_subAllocator = AZStd::make_unique<HphaSchema>();
         return true;
     }
 
