@@ -398,80 +398,11 @@ namespace AzFramework
 
     Spawnable::Spawnable(const AZ::Data::AssetId& id, AssetStatus status)
         : AZ::Data::AssetData(id, status)
-    {
-// Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
-        m_instanceId = SpawnableInstanceId::CreateNull();
+        , m_isDynamic(false) // Gruber patch // VMED
 #endif
-    }
-// Gruber patch end. // LVB. // Support unique instances
-
-// Gruber patch begin. // LVB. // Support unique instances
-#ifdef CARBONATED
-    void Spawnable::GenerateInstanceId()
     {
-        m_instanceId = SpawnableInstanceId::CreateRandom();
     }
-
-    void Spawnable::BuildReverseLookUp() const
-    {
-        m_entityIdToBaseCache.clear();
-        for (const auto& entityIdPair : m_baseToNewEntityIdMap)
-        {
-            m_entityIdToBaseCache.insert(AZStd::make_pair(entityIdPair.second, entityIdPair.first));
-        }
-    }
-
-    void Spawnable::FinalizeCreateInstance(void* remapContainer,
-        const AZ::Uuid& classUuid,
-        const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper)
-    {
-        Spawnable& instance = *this; // for compatibility
-        if (!remapContainer)
-        {
-            AZ_Error("Spawnable::FinalizeCreateInstance",
-                false,
-                "Invalid Remap Container provided. Unable to proceed.");
-
-            /// RemoveInstance(&instance);
-            /// return nullptr;
-        }
-
-        AZ::IdUtils::Remapper<AZ::EntityId>::ReplaceIdsAndIdRefs(remapContainer, classUuid,
-            [&](const AZ::EntityId& originalId, bool isEntityId, const AZStd::function<AZ::EntityId()>& idGenerator) -> AZ::EntityId
-            {
-                if (isEntityId) // replace EntityId
-                {
-                    AZ::EntityId newId = customMapper ? customMapper(originalId, isEntityId, idGenerator) : idGenerator();
-                    auto insertIt = instance.m_baseToNewEntityIdMap.emplace(AZStd::make_pair(originalId, newId));
-                    return insertIt.first->second;
-                }
-                else // replace EntityRef
-                {
-                    auto findIt = instance.m_baseToNewEntityIdMap.find(originalId);
-                    if (findIt == instance.m_baseToNewEntityIdMap.end())
-                    {
-                        return originalId; // Referenced EntityId is not part of the slice, so keep the same id reference.
-                    }
-                    else
-                    {
-                        return findIt->second; // return the remapped id
-                    }
-                }
-            }, nullptr);
-
-#if 0
-        if (!m_component->m_entityInfoMap.empty())
-        {
-            AddInstanceToEntityInfoMap(instance);
-        }
-
-        FixUpMetadataEntityForSliceInstance(&instance);
-#endif
-        /// return &instance;
-    }
-#endif
-// Gruber patch end. // LVB. // Support unique instances
 
     const Spawnable::EntityList& Spawnable::GetEntities() const
     {

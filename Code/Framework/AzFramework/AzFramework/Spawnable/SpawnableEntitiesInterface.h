@@ -19,6 +19,12 @@
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/functional.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+// Gruber patch begin // VMED
+#ifdef CARBONATED
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/Serialization/IdUtils.h> 
+#endif
+// Gruber patch begin // VMED
 
 namespace AZ
 {
@@ -319,35 +325,73 @@ namespace AzFramework
 
 // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
-    struct SpawnableInstanceAddress
+    using SpawnableInstanceId = AZ::Uuid; 
+    using EntityIdToEntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
+
+    struct SpawnableInstanceDescriptor
     {
-        AZ::Data::AssetId m_assetId; ///< AssetId of the spawnable
-        Spawnable::SpawnableInstanceId m_spawnableInstanceId; ///< UUid of the unique instantiated spawnable
-        Spawnable* m_spawnable;
+        SpawnableInstanceDescriptor();
 
-        SpawnableInstanceAddress()
-            : m_assetId()
-            , m_spawnableInstanceId(Spawnable::SpawnableInstanceId::CreateNull())
-            , m_spawnable(nullptr)
-        {
-        }
-
-        SpawnableInstanceAddress(const AZ::Data::AssetId& assetId, const Spawnable::SpawnableInstanceId& spawnableInstanceId, const AZ::Data::Asset<Spawnable>& spawnable)
-            : m_assetId(assetId)
-            , m_spawnableInstanceId(spawnableInstanceId)
-            , m_spawnable(spawnable.Get())
-        {
-        }
-
-        Spawnable* GetInstance() const
-        {
-            return m_spawnable;
-        }
-
+        SpawnableInstanceDescriptor(const AZ::Data::AssetId& assetId, AZ::u32 entitySpawnTicketId); // it also generates m_spawnableInstanceId
+        
         bool IsValid() const
         {
             return m_assetId.IsValid() && !m_spawnableInstanceId.IsNull();
         }
+
+        SpawnableInstanceId GetInstanceId() const
+        {
+            return m_spawnableInstanceId;
+        }
+
+        void SetInstanceId(SpawnableInstanceId value)
+        {
+            m_spawnableInstanceId = value;
+        }
+
+        void SetEntityIdMap(const EntityIdToEntityIdMap& baseToNewEntityIdMap)
+        {
+            BuildReverseLookUp();
+            m_baseToNewEntityIdMap = baseToNewEntityIdMap;
+        }
+
+        const EntityIdToEntityIdMap& GetEntityIdMap() const
+        {
+            return m_baseToNewEntityIdMap;
+        }
+
+        const EntityIdToEntityIdMap& GetEntityIdToBaseMap() const //reverse map
+        {
+            if (m_entityIdToBaseCache.empty())
+            {
+                BuildReverseLookUp();
+            }
+            return m_entityIdToBaseCache;
+        }
+
+        const AZ::Data::AssetId& GetAssetId() const
+        {
+            return m_assetId;
+        }
+
+        const AzFramework::Spawnable::EntityList& GetInstantiatedEntities() const;
+
+        void FinalizeCreateInstance(void* remapContainer,
+            const AZ::Uuid& classUuid,
+            const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper);
+
+    protected:
+
+        AZ::Data::AssetId m_assetId; ///< AssetId of the spawnable
+        SpawnableInstanceId m_spawnableInstanceId; ///< UUid of the unique instantiated spawnable
+        EntityIdToEntityIdMap m_baseToNewEntityIdMap; ///< Map of old entityId to new
+        mutable EntityIdToEntityIdMap m_entityIdToBaseCache; ///< reverse lookup to \ref m_baseToNewEntityIdMap, this is build on demand
+        AZ::u32 m_entitySpawnTicketId; // reserved for Spawnable access
+
+        // The lookup is built lazily when accessing the map, but constness is desirable
+        // in the higher level APIs.
+        void BuildReverseLookUp() const;
+        SpawnableInstanceId GenerateInstanceId() const;
     };
 #endif
 // Gruber patch end. // LVB. // Support unique instances
@@ -463,8 +507,8 @@ namespace AzFramework
          *
          * @return SpawnableInstanceAddress
          */
-        virtual SpawnableInstanceAddress GetOwningSpawnable(const AZ::EntityId& entityId) = 0;
-        virtual AZ::EntityId GetStaticEntityId(const SpawnableInstanceAddress& spawnableInfo, const AZ::EntityId& currentEntityId) = 0;
+        virtual SpawnableInstanceDescriptor GetOwningSpawnable(const AZ::EntityId& entityId) = 0;
+        virtual AZ::EntityId GetStaticEntityId(const SpawnableInstanceDescriptor& spawnableInfo, const AZ::EntityId& currentEntityId) = 0;
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 

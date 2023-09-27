@@ -79,7 +79,7 @@ namespace AzFramework
         MOCK_METHOD1(GetSpawnableOnTicket, const AZ::Data::Asset<Spawnable>&(void* ticket));
 // Gruber patch begin // VMED // Added mock for GetOwningSpawnable method
 #ifdef CARBONATED
-        MOCK_METHOD1(GetOwningSpawnable, SpawnableInstanceAddress(const AZ::EntityId& entityId));
+        MOCK_METHOD1(GetOwningSpawnable, SpawnableInstanceDescriptor(const AZ::EntityId& entityId));
         MOCK_METHOD2(GetStaticEntityId, AZ::EntityId(const SpawnableInstanceAddress& spawnableInfo, const AZ::EntityId& currentEntityId));
 #endif // CARBONATED
 // Gruber patch end // VMED // Added mock for GetOwningSpawnable method
