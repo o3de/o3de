@@ -34,6 +34,19 @@
                     }
                 }
             },
+            "VirtualGamepad": {
+                "Targets": {
+                    "VirtualGamepad": {
+                        "AutoLoad": false
+                    },
+                    "VirtualGamepad.Clients": {
+                        "AutoLoad": false
+                    },
+                    "VirtualGamepad.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
             "LyShine": {
                 "Targets": {
                     "LyShine": {
