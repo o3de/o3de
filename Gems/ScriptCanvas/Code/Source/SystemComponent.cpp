@@ -30,6 +30,11 @@
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Contracts/MathOperatorContract.h>
 
+#include <ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h>
+#include <ScriptCanvas/Libraries/Spawning/DespawnNodeable.h>
+#include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
+
+
 #if defined(SC_EXECUTION_TRACE_ENABLED)
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
 #endif
