@@ -345,25 +345,39 @@ namespace AZ::Dom::Utils
                     }
                 }
 
-                if constexpr (AZStd::is_constructible_v<WrapperType>)
+                if (!value.IsOpaqueValue())
                 {
-                    // Attempt to deserialize the type into T using JSON Serialization if possible
-                    WrapperType typeValue;
-                    // Create a pass no-op issue reporting to skip the DefaultIssueReporter logging AZ_Warnings
-                    JsonDeserializerSettings loadSettings;
-                    loadSettings.m_reporting = [](AZStd::string_view, JsonSerializationResult::ResultCode result, AZStd::string_view)
+                    // For a non-opaque type attempt to first check if it Dom Object
+                    // which represents a pointer type and try to marshal that value to the pointer type
+                    void* valuePointer = TryMarshalValueToPointer(value);
+                    if (valuePointer != nullptr)
                     {
-                        return result;
-                    };
-                    if (auto loadViaJsonSerializationResult = LoadViaJsonSerialization(typeValue, value, loadSettings);
-                        loadViaJsonSerializationResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
-                    {
-                        return typeValue;
+                        return WrapperType(*reinterpret_cast<WrapperType*>(valuePointer));
                     }
-                }
 
+                    // If the Dom is not storing an object that is a pointer
+                    // attempt to use Json Serialization to load into the WrapperType if it is default constructible
+                    if constexpr (AZStd::is_constructible_v<WrapperType>)
+                    {
+                        // Attempt to deserialize the type into T using JSON Serialization if possible
+                        WrapperType typeValue;
+                        // Create a pass no-op issue reporting to skip the DefaultIssueReporter logging AZ_Warnings
+                        JsonDeserializerSettings loadSettings;
+                        loadSettings.m_reporting = [](AZStd::string_view, JsonSerializationResult::ResultCode result, AZStd::string_view)
+                            {
+                                return result;
+                            };
+                        if (auto loadViaJsonSerializationResult = LoadViaJsonSerialization(typeValue, value, loadSettings);
+                            loadViaJsonSerializationResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
+                        {
+                            return typeValue;
+                        }
+                    }
+
+                    return {};
+                }
                 // At this point, the type must be an opaque type which is an AZStd::any stored within the Dom::Value
-                if (value.IsOpaqueValue())
+                else
                 {
                     const AZStd::any& opaqueValue = value.GetOpaqueValue();
                     // If the wrapper type is a reference wrapper, then the original type needs to be extracted
@@ -398,16 +412,6 @@ namespace AZ::Dom::Utils
                     }
                     return AZStd::any_cast<WrapperType>(opaqueValue);
                 }
-                else
-                {
-                    void* valuePointer = TryMarshalValueToPointer(value);
-                    if (valuePointer != nullptr)
-                    {
-                        return WrapperType(*reinterpret_cast<WrapperType*>(valuePointer));
-                    }
-                    return {};
-                }
-
             };
 
             return ExtractOpaqueValue();
