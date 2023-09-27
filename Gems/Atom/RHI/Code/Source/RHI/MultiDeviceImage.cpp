@@ -48,6 +48,26 @@ namespace AZ::RHI
         return aznew MultiDeviceImageView{ this, imageViewDescriptor };
     }
 
+    uint32_t MultiDeviceImage::GetResidentMipLevel() const
+    {
+        auto minLevel{AZStd::numeric_limits<uint32_t>::max()};
+        IterateObjects<Image>([&minLevel]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        {
+            minLevel = AZStd::min(minLevel, deviceImage->GetResidentMipLevel());
+        });
+        return minLevel;
+    }
+
+    bool MultiDeviceImage::IsStreamable() const
+    {
+        bool isStreamable{true};
+        IterateObjects<Image>([&isStreamable]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        {
+            isStreamable &= deviceImage->IsStreamable();
+        });
+        return isStreamable;
+    }
+
     ImageAspectFlags MultiDeviceImage::GetAspectFlags() const
     {
         return m_aspectFlags;

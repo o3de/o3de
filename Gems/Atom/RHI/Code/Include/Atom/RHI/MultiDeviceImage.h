@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI/Image.h>
+#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 
 namespace AZ::RHI
@@ -64,7 +65,7 @@ namespace AZ::RHI
         //!      number of array slices).
         //!  @param totalSizeInBytes
         //!      [Optional] If specified, will be filled with the total size necessary to contain all subresources.
-        void GetSubresourceLayout(MultiDeviceImageSubresourceLayout& subresourceLayout, ImageAspectFlags aspectFlags) const;
+        void GetSubresourceLayout(MultiDeviceImageSubresourceLayout& subresourceLayout, ImageAspectFlags aspectFlags = ImageAspectFlags::All) const;
 
         //! Returns the set of queue classes that are supported for usage as an attachment on the frame scheduler.
         //! Effectively, for a scope of a specific hardware class to use the image as an attachment, the queue must
@@ -75,6 +76,13 @@ namespace AZ::RHI
         //! is imported into the frame scheduler (which is reset every frame). This value will be null for non-attachment
         //! images.
         const ImageFrameAttachment* GetFrameAttachment() const;
+
+        //! Returns the most detailed mip level currently resident in memory on any device, where a value of 0
+        //! is the highest detailed mip.
+        uint32_t GetResidentMipLevel() const;
+
+        //! Returns whether the image has sub-resources which can be evicted from or streamed into the device memory
+        bool IsStreamable() const;
 
         //! Returns the aspects that are included in the image.
         ImageAspectFlags GetAspectFlags() const;
