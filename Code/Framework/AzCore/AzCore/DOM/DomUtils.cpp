@@ -534,8 +534,11 @@ namespace AZ::Dom::Utils
             // It can't actually compare the data
             // Therefore two opaque values with the same data, but that different are aprt of different objects
             // will always compare unequal. This can result in-efficient behavior such as creating more Dom Patches than necessary
+            AZ::JsonSerializerSettings storeSettings;
+            // Defaults should be kept in the Dom::Value to make sure a complete object is written to the Dom
+            storeSettings.m_keepDefaults = true;
             Value newValue;
-            if (auto storeViaSerializationResult = StoreViaJsonSerialization(valueAddress, nullptr, typeTraits.m_typeId, newValue);
+            if (auto storeViaSerializationResult = StoreViaJsonSerialization(valueAddress, nullptr, typeTraits.m_typeId, newValue, storeSettings);
                 storeViaSerializationResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
             {
                 return newValue;
