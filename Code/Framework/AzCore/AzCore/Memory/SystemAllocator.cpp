@@ -9,6 +9,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/AllocatorManager.h>
 
+#include <AzCore/Memory/MallocSchema.h>
+
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
@@ -50,7 +52,7 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
-        m_subAllocator = AZStd::make_unique<HphaSchema>();
+        m_subAllocator = AZStd::make_unique<MallocSchema>();
         return true;
     }
 
