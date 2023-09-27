@@ -144,7 +144,7 @@ namespace AZ::Dom::Utils
         }
         if (settings.m_registrationContext == nullptr)
         {
-            false;
+            return false;
         }
 
         JsonSerializerSettings serializerSettings;
