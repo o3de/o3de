@@ -1326,6 +1326,7 @@ namespace AzToolsFramework
         {
             // only save our expander state if our expanse/collapse was user-driven
             dpe->SetSavedExpanderStateForRow(BuildDomPath(), isExpanded);
+            dpe->updateGeometry();
             dpe->ExpanderChangedByUser();
         }
     }
@@ -1701,6 +1702,7 @@ namespace AzToolsFramework
             }
         }
         m_layout->addStretch();
+        updateGeometry();
         emit RequestSizeUpdate();
     }
 
@@ -1726,7 +1728,11 @@ namespace AzToolsFramework
             {
                 HandleReset();
             }
-            emit RequestSizeUpdate();
+            else
+            {
+                updateGeometry();
+                emit RequestSizeUpdate();
+            }
         }
     }
 
