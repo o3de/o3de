@@ -69,7 +69,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptCanvas.Shared OBJECT
+    NAME ScriptCanvas.Shared STATIC
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvasgem_autogen_files.cmake
@@ -135,7 +135,6 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::ScriptEvents
         Gem::ExpressionEvaluation
-        Gem::ScriptCanvas.Shared
 )
 
 # the "ScriptCanvas" target is active in Clients and Servers
