@@ -87,7 +87,6 @@ namespace AzFramework
 // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
         AZStd::shared_ptr<SpawnableInstanceDescriptor> GetOwningSpawnable(const AZ::EntityId& entityId) override;
-        AZ::EntityId GetStaticEntityId(const AZStd::shared_ptr<SpawnableInstanceDescriptor>& spawnableInfo, const AZ::EntityId& currentEntityId) override;
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 
@@ -328,8 +327,6 @@ namespace AzFramework
 // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
         AZStd::unordered_map<AZ::EntityId, AZStd::shared_ptr<SpawnableInstanceDescriptor>> m_entitySpawnableMap;  ///< A cached mapping built for quick lookups between an EntityId and its owning SpawnableInstance.
-        AZStd::unordered_map<SpawnableInstanceId, AZ::EntityId>  m_spawnableInstanceEntityIdMap; ///< A cached mapping built for quick reverse lookups between an EntityId and its owning SpawnableInstanceId.
-        // Note: we don't have a master instance for cloning as it was implemented for slices and use AZ::EntityId of first created instance by owner
 
         // Support the same generated entity ids on all clients and on the server
         void InitializeEntityIdMappingsWithSeed(
