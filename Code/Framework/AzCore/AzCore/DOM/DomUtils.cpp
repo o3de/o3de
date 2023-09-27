@@ -138,6 +138,24 @@ namespace AZ::Dom::Utils
             return false;
         }
 
+        if (settings.m_registrationContext == nullptr)
+        {
+            settings.m_registrationContext = componentApplicationInterface != nullptr ? componentApplicationInterface->GetJsonRegistrationContext() : nullptr;
+        }
+        if (settings.m_registrationContext == nullptr)
+        {
+            false;
+        }
+
+        JsonSerializerSettings serializerSettings;
+        serializerSettings.m_serializeContext = settings.m_serializeContext;
+        serializerSettings.m_registrationContext = settings.m_registrationContext;
+        // Check if the type is serializable before moving on converting the Dom Value into a temporary JSON document
+        if (!JsonSerialization::IsTypeSerializable(typeId, serializerSettings))
+        {
+            return false;
+        }
+
         rapidjson::Document jsonViewOfDomValue;
         auto WriteDomFieldToJson = [&root](Visitor& visitor)
         {
@@ -163,6 +181,16 @@ namespace AZ::Dom::Utils
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(
         void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings)
     {
+        // Check if the Type is serializable before attempting to load into the object pointer
+        JsonSerializerSettings serializerSettings;
+        serializerSettings.m_serializeContext = settings.m_serializeContext;
+        serializerSettings.m_registrationContext = settings.m_registrationContext;
+        if (!JsonSerialization::IsTypeSerializable(typeId, serializerSettings))
+        {
+            return JsonSerializationResult::ResultCode{ JsonSerializationResult::Tasks::Convert,
+                                                        JsonSerializationResult::Outcomes::Catastrophic };
+        }
+
         rapidjson::Document buffer;
         auto convertToRapidjsonResult = Json::WriteToRapidJsonValue(buffer, buffer.GetAllocator(), [&root](Visitor& visitor)
             {
@@ -179,6 +207,13 @@ namespace AZ::Dom::Utils
     JsonSerializationResult::ResultCode StoreViaJsonSerialization(
         const void* object, const void* defaultObject, const AZ::TypeId& typeId, Value& output, const JsonSerializerSettings& settings)
     {
+        // Check if the Type is serializable before attempting to store the object address into the Dom Value
+        if (!JsonSerialization::IsTypeSerializable(typeId, settings))
+        {
+            return JsonSerializationResult::ResultCode{ JsonSerializationResult::Tasks::Convert,
+                                                        JsonSerializationResult::Outcomes::Catastrophic };
+        }
+
         rapidjson::Document buffer;
         auto result = JsonSerialization::Store(buffer, buffer.GetAllocator(), object, defaultObject, typeId, settings);
         auto outputWriter = output.GetWriteHandler();

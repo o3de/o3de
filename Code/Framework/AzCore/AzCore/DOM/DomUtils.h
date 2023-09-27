@@ -25,7 +25,7 @@ namespace AZ::Dom::Utils
     struct ComparisonParameters
     {
         //! If set, opaque values will only be compared by type and not contents
-        //! This can be useful when comparing opaque values that aren't equal in-memory but shouldn't constitue a
+        //! This can be useful when comparing opaque values that aren't equal in-memory but shouldn't constitute a
         //! comparison failure (e.g. comparing callbacks)
         bool m_treatOpaqueValuesOfSameTypeAsEqual = false;
     };
