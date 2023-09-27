@@ -36,7 +36,7 @@ function MaterialTypeSetup(context)
     end
     
     if(lightingModel == "Skin") then
-        Error("The low end pipeline does not support the Skin lighting model. This combination should not be used at runtime.")
+        Error("The mobile pipeline does not support the Skin lighting model. This combination should not be used at runtime.")
         -- This returns 'true' to pass the build, the surface won't be rendered at runtime.
         -- TODO(MaterialPipeline): Instead of rendering nothing, either render an error shader (like a magenta surface) or fall back to StandardLighting.
         --                         For an error shader, .materialtype needs to have new field for an ObjectSrg azsli file separate from "materialShaderCode", so that
