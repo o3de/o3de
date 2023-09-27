@@ -503,13 +503,6 @@ namespace AzFramework
 #endif
         /// return &instance;
     }
-
-    const AzFramework::Spawnable::EntityList& SpawnableInstanceDescriptor::GetInstantiatedEntities() const
-    {
-        static AzFramework::Spawnable::EntityList dummyList; // FIXME todo get list
-        return dummyList;
-    }
-
 #endif
 
 // Gruber patch end // VMED // Support unique instances

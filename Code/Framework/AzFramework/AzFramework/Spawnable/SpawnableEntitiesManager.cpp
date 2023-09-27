@@ -661,7 +661,8 @@ namespace AzFramework
                 if (ticket.m_spawnable->IsDynamic())
                 {
                     spawnableInfo = SpawnableInstanceDescriptor(ticket.m_spawnable.GetId(), ticket.m_ticketId); 
-                    spawnableInfo.SetEntityIdMap(ticket.m_entityIdReferenceMap); 
+                    spawnableInfo.SetEntityIdMap(ticket.m_entityIdReferenceMap);
+                    spawnableInfo.SetInstantiatedEntities(ticket.m_spawnedEntities);
                 }
 // Gruber patch end // VMED
                 for (auto it = newEntitiesBegin; it != newEntitiesEnd; ++it)
@@ -811,8 +812,9 @@ namespace AzFramework
                 SpawnableInstanceDescriptor spawnableInfo;
                 if (ticket.m_spawnable->IsDynamic())
                 {
-                    spawnableInfo = SpawnableInstanceDescriptor(ticket.m_spawnable.GetId(), ticket.m_ticketId); 
-                    spawnableInfo.SetEntityIdMap(ticket.m_entityIdReferenceMap); 
+                    spawnableInfo = SpawnableInstanceDescriptor(ticket.m_spawnable.GetId(), ticket.m_ticketId);
+                    spawnableInfo.SetEntityIdMap(ticket.m_entityIdReferenceMap);
+                    spawnableInfo.SetInstantiatedEntities(ticket.m_spawnedEntities);
                 }
                 // Gruber patch end // VMED
                 for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)

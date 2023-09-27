@@ -327,9 +327,11 @@ namespace AzFramework
 #ifdef CARBONATED
     using SpawnableInstanceId = AZ::Uuid; 
     using EntityIdToEntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
+    using EntityPtrList = AZStd::vector<AZ::Entity*>;
 
     struct SpawnableInstanceDescriptor
     {
+
         SpawnableInstanceDescriptor();
 
         SpawnableInstanceDescriptor(const AZ::Data::AssetId& assetId, AZ::u32 entitySpawnTicketId); // it also generates m_spawnableInstanceId
@@ -351,6 +353,7 @@ namespace AzFramework
 
         void SetEntityIdMap(const EntityIdToEntityIdMap& baseToNewEntityIdMap)
         {
+            m_entityIdToBaseCache.clear();
             m_baseToNewEntityIdMap = baseToNewEntityIdMap;
         }
 
@@ -373,7 +376,15 @@ namespace AzFramework
             return m_assetId;
         }
 
-        const AzFramework::Spawnable::EntityList& GetInstantiatedEntities() const;
+        const EntityPtrList& GetInstantiatedEntities() const
+        {
+            return m_entityPtrList;
+        }
+
+        void SetInstantiatedEntities(const EntityPtrList& entityList)
+        {
+            m_entityPtrList = entityList;
+        }
 
         void FinalizeCreateInstance(void* remapContainer,
             const AZ::Uuid& classUuid,
@@ -386,6 +397,7 @@ namespace AzFramework
         EntityIdToEntityIdMap m_baseToNewEntityIdMap; ///< Map of old entityId to new
         mutable EntityIdToEntityIdMap m_entityIdToBaseCache; ///< reverse lookup to \ref m_baseToNewEntityIdMap, this is build on demand
         AZ::u32 m_entitySpawnTicketId; // reserved for Spawnable access
+        EntityPtrList m_entityPtrList;
 
         // The lookup is built lazily when accessing the map, but constness is desirable
         // in the higher level APIs.
