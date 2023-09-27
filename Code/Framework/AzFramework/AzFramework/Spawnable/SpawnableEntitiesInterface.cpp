@@ -461,7 +461,7 @@ namespace AzFramework
         }
     }
 
-    void SpawnableInstanceDescriptor::FinalizeCreateInstance(void* remapContainer,
+    bool SpawnableInstanceDescriptor::FinalizeCreateInstance(void* remapContainer,
             const AZ::Uuid& classUuid,
             const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper)
     {
@@ -469,11 +469,10 @@ namespace AzFramework
         if (!remapContainer)
         {
             AZ_Error("Spawnable::FinalizeCreateInstance",
-                false,
-                "Invalid Remap Container provided. Unable to proceed.");
+                false, "Invalid Remap Container provided. Unable to proceed.");
 
             /// RemoveInstance(&instance);
-            /// return nullptr;
+            return false;
         }
 
         AZ::IdUtils::Remapper<AZ::EntityId>::ReplaceIdsAndIdRefs(remapContainer, classUuid,
@@ -507,7 +506,7 @@ namespace AzFramework
 
         FixUpMetadataEntityForSliceInstance(&instance);
 #endif
-        /// return &instance;
+        return true;
     }
 #endif
 

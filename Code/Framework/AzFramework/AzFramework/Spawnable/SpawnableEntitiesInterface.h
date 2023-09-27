@@ -389,7 +389,7 @@ namespace AzFramework
 
         static AZStd::shared_ptr<SpawnableInstanceDescriptor> GetInvalidDescriptor();
 
-        void FinalizeCreateInstance(void* remapContainer,
+        bool FinalizeCreateInstance(void* remapContainer,
             const AZ::Uuid& classUuid,
             const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper);
 
