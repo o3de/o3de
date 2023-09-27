@@ -715,7 +715,20 @@ namespace AZ
                     structuredBufferTempStructs += AZStd::string::format("struct type_RWStructuredDummyBuffer%i_DescSet%i\n{\n    DummySRG_%s_DescSet%i _m0[%i];\n};\n", regId, groupLayoutIndex, shaderInputBuffer.m_name.GetCStr(), groupLayoutIndex, shaderInputBuffer.m_count);
 
                     //Create the final resource entry to be added to the set
-                    AZStd::string dummyResource = AZStd::string::format("device type_RWStructuredDummyBuffer%i_DescSet%i* dummyStructuredBuffer%i [[id(%i)]];", regId, groupLayoutIndex, regId, regId);
+                    AZStd::string dummyResource;
+                    switch(shaderInputBuffer.m_type)
+                    {
+                        case RHI::ShaderInputBufferType::Typed:
+                        {
+                            dummyResource = AZStd::string::format("texture_buffer<float> TypedDummyBuffer%i [[id(%i)]];", regId, regId);
+                            break;
+                        }
+                        default:
+                        {
+                            dummyResource = AZStd::string::format("device type_RWStructuredDummyBuffer%i_DescSet%i* dummyStructuredBuffer%i [[id(%i)]];", regId, groupLayoutIndex, regId, regId);
+                            break;
+                        }
+                    }
                     m_argBufferEntries.insert(AZStd::make_pair(dummyResource, regId));
                 }
                 else

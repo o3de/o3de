@@ -189,7 +189,14 @@ namespace AZ
                 m_graphicsPipelineState = [device.GetMtlDevice() newRenderPipelineStateWithDescriptor:m_renderPipelineDesc options : MTLPipelineOptionBufferTypeInfo reflection : &ref error : &error];
             }
             
-            AZ_Assert(m_graphicsPipelineState, "Could not create Pipeline object!.");
+            if(m_graphicsPipelineState==nil)
+            {
+                if (RHI::Validation::IsEnabled())
+                {
+                    NSLog(@" error => %@ ", [error userInfo] );
+                }
+                AZ_Assert(false, "Could not create Pipeline object!.");
+            }
             //We keep the descriptors alive in case we want to build the PSO cache. Delete them otherwise.
             if (!r_enablePsoCaching)
             {
