@@ -22,7 +22,8 @@
 // Gruber patch begin // VMED
 #ifdef CARBONATED
 #include <AzCore/Math/Uuid.h>
-#include <AzCore/Serialization/IdUtils.h> 
+#include <AzCore/Serialization/IdUtils.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #endif
 // Gruber patch begin // VMED
 
@@ -386,6 +387,8 @@ namespace AzFramework
             m_entityPtrList = entityList;
         }
 
+        static AZStd::shared_ptr<SpawnableInstanceDescriptor> GetInvalidDescriptor();
+
         void FinalizeCreateInstance(void* remapContainer,
             const AZ::Uuid& classUuid,
             const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper);
@@ -516,10 +519,10 @@ namespace AzFramework
         /**
          * Gets the address of the spawnable instance that owns the entity.
          *
-         * @return SpawnableInstanceAddress
+         * @return SpawnableInstanceDescriptor
          */
-        virtual SpawnableInstanceDescriptor GetOwningSpawnable(const AZ::EntityId& entityId) = 0;
-        virtual AZ::EntityId GetStaticEntityId(const SpawnableInstanceDescriptor& spawnableInfo, const AZ::EntityId& currentEntityId) = 0;
+        virtual AZStd::shared_ptr<SpawnableInstanceDescriptor> GetOwningSpawnable(const AZ::EntityId& entityId) = 0;
+        virtual AZ::EntityId GetStaticEntityId(const AZStd::shared_ptr<SpawnableInstanceDescriptor>& spawnableInfo, const AZ::EntityId& currentEntityId) = 0;
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 

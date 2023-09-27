@@ -291,24 +291,24 @@ namespace AzFramework
 
 // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
-    SpawnableInstanceDescriptor SpawnableEntitiesManager::GetOwningSpawnable(const AZ::EntityId& entityId)
+    AZStd::shared_ptr<SpawnableInstanceDescriptor> SpawnableEntitiesManager::GetOwningSpawnable(const AZ::EntityId& entityId)
     {
         auto entityInfoMapIt = m_entitySpawnableMap.find(entityId);
         if (entityInfoMapIt != m_entitySpawnableMap.end())
         {
             return entityInfoMapIt->second;
         }
-        return SpawnableInstanceDescriptor();
+        return SpawnableInstanceDescriptor::GetInvalidDescriptor();
     }
 
-    AZ::EntityId SpawnableEntitiesManager::GetStaticEntityId(const SpawnableInstanceDescriptor& spawnableInfo, const AZ::EntityId& currentEntityId)
+    AZ::EntityId SpawnableEntitiesManager::GetStaticEntityId(const AZStd::shared_ptr<SpawnableInstanceDescriptor>& spawnableInfo, const AZ::EntityId& currentEntityId)
     {
-        auto instanceEntityIt = m_spawnableInstanceEntityIdMap.find(spawnableInfo.GetInstanceId());
+        auto instanceEntityIt = m_spawnableInstanceEntityIdMap.find(spawnableInfo->GetInstanceId());
         if (instanceEntityIt != m_spawnableInstanceEntityIdMap.end())
         {
             return instanceEntityIt->second;
         }
-        m_spawnableInstanceEntityIdMap[spawnableInfo.GetInstanceId()] = currentEntityId;
+        m_spawnableInstanceEntityIdMap[spawnableInfo->GetInstanceId()] = currentEntityId;
         return currentEntityId;
     }
 #endif
@@ -657,12 +657,12 @@ namespace AzFramework
 
                 // Add to the game context, now the entities are active
 // Gruber patch begin // VMED
-                SpawnableInstanceDescriptor spawnableInfo;
+                AZStd::shared_ptr<SpawnableInstanceDescriptor> spawnableInfo;
                 if (ticket.m_spawnable->IsDynamic())
                 {
-                    spawnableInfo = SpawnableInstanceDescriptor(ticket.m_spawnable.GetId(), ticket.m_ticketId); 
-                    spawnableInfo.SetEntityIdMap(ticket.m_entityIdReferenceMap);
-                    spawnableInfo.SetInstantiatedEntities(ticket.m_spawnedEntities);
+                    spawnableInfo = AZStd::make_shared<SpawnableInstanceDescriptor>(ticket.m_spawnable.GetId(), ticket.m_ticketId); 
+                    spawnableInfo->SetEntityIdMap(ticket.m_entityIdReferenceMap);
+                    spawnableInfo->SetInstantiatedEntities(ticket.m_spawnedEntities);
                 }
 // Gruber patch end // VMED
                 for (auto it = newEntitiesBegin; it != newEntitiesEnd; ++it)
@@ -673,7 +673,7 @@ namespace AzFramework
 #ifdef CARBONATED
                     // We should add that into m_entitySpawnableMap before "Events::AddGameEntity" because Activate is called there and we
                     // need this data there
-                    if (spawnableInfo.IsValid())
+                    if (spawnableInfo && spawnableInfo->IsValid())
                     {
                         m_entitySpawnableMap.insert(AZStd::make_pair(clone->GetId(), spawnableInfo));
                     }
@@ -808,15 +808,15 @@ namespace AzFramework
                 }
 
                 // Add to the game context, now the entities are active
-                // Gruber patch begin // VMED
-                SpawnableInstanceDescriptor spawnableInfo;
+// Gruber patch begin // VMED
+                AZStd::shared_ptr<SpawnableInstanceDescriptor> spawnableInfo;
                 if (ticket.m_spawnable->IsDynamic())
                 {
-                    spawnableInfo = SpawnableInstanceDescriptor(ticket.m_spawnable.GetId(), ticket.m_ticketId);
-                    spawnableInfo.SetEntityIdMap(ticket.m_entityIdReferenceMap);
-                    spawnableInfo.SetInstantiatedEntities(ticket.m_spawnedEntities);
+                    spawnableInfo = AZStd::make_shared<SpawnableInstanceDescriptor>(ticket.m_spawnable.GetId(), ticket.m_ticketId); 
+                    spawnableInfo->SetEntityIdMap(ticket.m_entityIdReferenceMap);
+                    spawnableInfo->SetInstantiatedEntities(ticket.m_spawnedEntities);
                 }
-                // Gruber patch end // VMED
+// Gruber patch end // VMED
                 for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
                 {
                     AZ::Entity* clone = (*it);
@@ -825,7 +825,7 @@ namespace AzFramework
 #ifdef CARBONATED
                     // We should add that into m_entitySpawnableMap before "Events::AddGameEntity" because Activate is called there and we
                     // need this data there
-                    if (spawnableInfo.IsValid())
+                    if (spawnableInfo && spawnableInfo->IsValid())
                     {
                         m_entitySpawnableMap.insert(AZStd::make_pair(clone->GetId(), spawnableInfo));
                     }

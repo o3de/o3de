@@ -424,6 +424,12 @@ namespace AzFramework
         return result;
     }
 
+    AZStd::shared_ptr<SpawnableInstanceDescriptor> SpawnableInstanceDescriptor::GetInvalidDescriptor()
+    {
+        static AZStd::shared_ptr<SpawnableInstanceDescriptor> s_invalidDescriptor = AZStd::make_shared<SpawnableInstanceDescriptor>();
+        return s_invalidDescriptor;
+    }
+
 
 // Gruber patch begin // VMED // Support unique instances
 #ifdef CARBONATED
