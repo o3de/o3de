@@ -537,6 +537,12 @@ namespace AZ::Dom::Utils
             AZ::JsonSerializerSettings storeSettings;
             // Defaults should be kept in the Dom::Value to make sure a complete object is written to the Dom
             storeSettings.m_keepDefaults = true;
+
+            // Create a pass no-op issue reporting to skip the DefaultIssueReporter logging AZ_Warnings
+            storeSettings.m_reporting = [](AZStd::string_view, JsonSerializationResult::ResultCode result, AZStd::string_view)
+            {
+                return result;
+            };
             Value newValue;
             if (auto storeViaSerializationResult = StoreViaJsonSerialization(valueAddress, nullptr, typeTraits.m_typeId, newValue, storeSettings);
                 storeViaSerializationResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
