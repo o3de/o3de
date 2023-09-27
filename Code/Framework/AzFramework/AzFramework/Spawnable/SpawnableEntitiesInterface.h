@@ -351,7 +351,6 @@ namespace AzFramework
 
         void SetEntityIdMap(const EntityIdToEntityIdMap& baseToNewEntityIdMap)
         {
-            BuildReverseLookUp();
             m_baseToNewEntityIdMap = baseToNewEntityIdMap;
         }
 
