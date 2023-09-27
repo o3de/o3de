@@ -1,5 +1,0 @@
-# adding a prompt for lldb commands
-settings set prompt "[lldb]$ "
-
-# Import the AZStd library formatters
-command script import ~/.lldb/o3destd_lldb.py
