@@ -190,7 +190,8 @@ namespace WhiteBox
                 ->Field("EditorMeshAsset", &EditorWhiteBoxComponent::m_editorMeshAsset)
                 ->Field("Material", &EditorWhiteBoxComponent::m_material)
                 ->Field("RenderData", &EditorWhiteBoxComponent::m_renderData)
-                ->Field("ComponentMode", &EditorWhiteBoxComponent::m_componentModeDelegate);
+                ->Field("ComponentMode", &EditorWhiteBoxComponent::m_componentModeDelegate)
+                ->Field("FlipYZForExport", &EditorWhiteBoxComponent::m_flipYZForExport);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -231,7 +232,15 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export to obj")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToFile)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export");
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export all whiteboxes on descendant entities as a single obj (excluding this one)")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportDescendantsToFile)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export Descendants")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorWhiteBoxComponent::m_flipYZForExport,
+                        "Flip Y and Z for Export",
+                        "Flip the Y and Z axes when exportings so they aren't imported sideways into coord systems where the Y-axis goes up.");
             }
         }
     }
@@ -518,6 +527,19 @@ namespace WhiteBox
         const QString absoluteSaveFilePath = AzQtComponents::FileDialog::GetSaveFileName(
             nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
 
+        if (m_flipYZForExport)
+        {
+            Api::VertexHandles vHandles = Api::MeshVertexHandles(*GetWhiteBoxMesh());
+            for (auto& handle : vHandles)
+            {
+                AZ::Vector3 p = Api::VertexPosition(*GetWhiteBoxMesh(), handle);
+                float temp = p.GetY();
+                p.SetY(p.GetZ());
+                p.SetZ(-temp);
+                Api::SetVertexPosition(*GetWhiteBoxMesh(), handle, p);
+            }
+        }
+
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
         const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
         if (WhiteBox::Api::SaveToObj(*GetWhiteBoxMesh(), absoluteSaveFilePathCstr))
@@ -529,6 +551,77 @@ namespace WhiteBox
         {
             AZ_Warning(
                 "EditorWhiteBoxComponent", false, "Failed to export white box mesh to: %s", absoluteSaveFilePathCstr);
+        }
+    }
+
+    void EditorWhiteBoxComponent::ExportDescendantsToFile()
+    {
+        // Get all child entities in the viewport
+        AzToolsFramework::EntityIdList children;
+        AZ::TransformBus::EventResult(children, GetEntityId(), &AZ::TransformBus::Events::GetAllDescendants);
+
+        if (children.empty())
+        {
+            AZ_Warning("EditorWhiteBoxComponent", false, "Failed to export descendant whitebox meshes: No descendant entities found.");
+            return;
+        }
+
+        const AZStd::string initialAbsolutePathToExport = WhiteBoxPathAtProjectRoot(GetEntity()->GetName(), ObjExtension);
+
+        const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
+        const QString absoluteSaveFilePath =
+            AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
+
+        // Create a new empty white box mesh
+        Api::WhiteBoxMeshPtr mesh = Api::CreateWhiteBoxMesh();
+        for (auto& id : children)
+        {
+            AZ::Entity* e;
+            AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationRequests::FindEntity, id);
+            AZ::Transform worldTM = e->GetTransform()->GetWorldTM();
+
+            // Add all polys from selected white boxes
+            for (auto component : e->FindComponents<EditorWhiteBoxComponent>())
+            {
+                WhiteBoxMesh* m = component->GetWhiteBoxMesh();
+                Api::PolygonHandles polys = Api::MeshPolygonHandles(*m);
+                for (auto& poly : polys)
+                {
+                    AZStd::vector<AZ::Vector3> verts = Api::PolygonVertexPositions(*m, poly);
+                    if (verts.size() == 4) // if this is in fact a quad
+                    {
+                        Api::VertexHandle vertexHandles[4];
+
+                        for (unsigned int i = 0; i < 4; i++)
+                        {
+                            AZ::Vector3 worldV = worldTM.TransformPoint(verts[i]);
+                            if (m_flipYZForExport)
+                            {
+                                float temp = worldV.GetY();
+                                worldV.SetY(worldV.GetZ());
+                                worldV.SetZ(-temp);
+                            }
+                            vertexHandles[i] = Api::AddVertex(*mesh.get(), worldV);
+                        }
+                        Api::AddQuadPolygon(*mesh.get(), vertexHandles[0], vertexHandles[1], vertexHandles[2], vertexHandles[3]);
+                    }
+                }
+            }
+        }
+
+        Api::CalculateNormals(*mesh.get());
+        Api::CalculatePlanarUVs(*mesh.get());
+
+        const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
+        const auto absoluteSaveFilePathCstr = absoluteSaveFilePathUtf8.constData();
+        if (WhiteBox::Api::SaveToObj(*mesh.get(), absoluteSaveFilePathCstr))
+        {
+            AZ_Printf("EditorWhiteBoxComponent", "Exported white box mesh to: %s", absoluteSaveFilePathCstr);
+            RequestEditSourceControl(absoluteSaveFilePathCstr);
+        }
+        else
+        {
+            AZ_Warning("EditorWhiteBoxComponent", false, "Failed to export white box mesh to: %s", absoluteSaveFilePathCstr);
         }
     }
 
@@ -579,8 +672,8 @@ namespace WhiteBox
         {
             const QString fileFilter =
                 AZStd::string::format("WhiteBoxMesh (*.%s)", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
-            const QString absolutePath = AzQtComponents::FileDialog::GetSaveFileName(
-                nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
+            const QString absolutePath =
+                AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
 
             return AZStd::string(absolutePath.toUtf8());
         };
@@ -593,7 +686,8 @@ namespace WhiteBox
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                 foundRelativePath,
                 &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath,
-                absolutePath, relativePath);
+                absolutePath,
+                relativePath);
 
             if (foundRelativePath)
             {
@@ -608,11 +702,13 @@ namespace WhiteBox
         const auto saveDecisionFn = []()
         {
             return QMessageBox::warning(
-                AzToolsFramework::GetActiveWindow(), "Warning",
+                AzToolsFramework::GetActiveWindow(),
+                "Warning",
                 "Saving a White Box Mesh Asset (.wbm) outside of the project root will not create an Asset for the "
                 "Component to use. The file will be saved but will not be processed. For live updates to happen the "
                 "asset must be saved somewhere in the current project folder. Would you like to continue?",
-                (QMessageBox::Save | QMessageBox::Cancel), QMessageBox::Cancel);
+                (QMessageBox::Save | QMessageBox::Cancel),
+                QMessageBox::Cancel);
         };
 
         const AZStd::optional<WhiteBoxSaveResult> saveResult =
@@ -636,8 +732,7 @@ namespace WhiteBox
             // otherwise the internal mesh can simply be moved into the new asset
             m_editorMeshAsset->TakeOwnershipOfWhiteBoxMesh(
                 relativeAssetPath,
-                m_editorMeshAsset->InUse() ? Api::CloneMesh(*GetWhiteBoxMesh())
-                                           : AZStd::exchange(m_whiteBox, Api::CreateWhiteBoxMesh()));
+                m_editorMeshAsset->InUse() ? Api::CloneMesh(*GetWhiteBoxMesh()) : AZStd::exchange(m_whiteBox, Api::CreateWhiteBoxMesh()));
 
             // change default shape to asset
             m_defaultShape = DefaultShapeType::Asset;
