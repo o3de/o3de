@@ -88,6 +88,40 @@ namespace AtomToolsFramework
         GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_graphId);
         GraphDocumentRequestBus::Handler::BusConnect(m_id);
         AZ::SystemTickBus::Handler::BusConnect();
+
+        m_graphCompiler->SetStateChangeHandler(
+            [toolId, documentId = m_id](const GraphCompiler* graphCompiler)
+            {
+                AZ::SystemTickBus::QueueFunction(
+                    [toolId, documentId, state = graphCompiler->GetState(), generatedFiles = graphCompiler->GetGeneratedFilePaths()]()
+                    {
+                        switch (state)
+                        {
+                        case GraphCompiler::State::Idle:
+                            break;
+                        case GraphCompiler::State::Compiling:
+                            GraphDocumentRequestBus::Event(
+                                documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, AZStd::vector<AZStd::string>{});
+                            GraphDocumentNotificationBus::Event(
+                                toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
+                            break;
+                        case GraphCompiler::State::Processing:
+                            break;
+                        case GraphCompiler::State::Complete:
+                            GraphDocumentRequestBus::Event(
+                                documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
+                            GraphDocumentNotificationBus::Event(
+                                toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphCompleted, documentId);
+                            break;
+                        case GraphCompiler::State::Failed:
+                            GraphDocumentNotificationBus::Event(
+                                toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphFailed, documentId);
+                            break;
+                        case GraphCompiler::State::Canceled:
+                            break;
+                        }
+                    });
+            });
     }
 
     GraphDocument::~GraphDocument()
@@ -344,9 +378,7 @@ namespace AtomToolsFramework
         AZ::IO::ByteContainerStream<decltype(graphBuffer)> graphBufferStream(&graphBuffer);
         AZ::Utils::SaveObjectToStream(graphBufferStream, AZ::ObjectStream::ST_BINARY, m_graph.get());
 
-        auto compileJobFn = [toolId = m_toolId,
-                             documentId = m_id,
-                             graphBuffer,
+        auto compileJobFn = [graphBuffer,
                              graphCompiler = m_graphCompiler,
                              graphContext = m_graphContext,
                              graphName = GetGraphName(),
@@ -357,34 +389,7 @@ namespace AtomToolsFramework
             AZ::Utils::LoadObjectFromBufferInPlace(graphBuffer.data(), graphBuffer.size(), *graph.get());
             graph->PostLoadSetup(graphContext);
 
-            graphCompiler->SetStateChangeHandler([toolId, documentId](const GraphCompiler* graphCompiler){
-                AZ::SystemTickBus::QueueFunction([toolId, documentId, state = graphCompiler->GetState(), generatedFiles = graphCompiler->GetGeneratedFilePaths()]() {
-                    switch (state)
-                    {
-                    case GraphCompiler::State::Idle:
-                        break;
-                    case GraphCompiler::State::Compiling:
-                        GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, AZStd::vector<AZStd::string>{});
-                        GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphStarted, documentId);
-                        break;
-                    case GraphCompiler::State::Processing:
-                        break;
-                    case GraphCompiler::State::Complete:
-                        GraphDocumentRequestBus::Event(documentId, &GraphDocumentRequestBus::Events::SetGeneratedFilePaths, generatedFiles);
-                        GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphCompleted, documentId);
-                        break;
-                    case GraphCompiler::State::Failed:
-                        GraphDocumentNotificationBus::Event(toolId, &GraphDocumentNotificationBus::Events::OnCompileGraphFailed, documentId);
-                        break;
-                    case GraphCompiler::State::Canceled:
-                        break;
-                    }
-                });
-            });
-
             graphCompiler->CompileGraph(graph, graphName, graphPath);
-            graphCompiler->SetStateChangeHandler({});
-            graph.reset();
         };
 
         auto job = AZ::CreateJobFunction(compileJobFn, true);

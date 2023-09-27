@@ -324,7 +324,7 @@ namespace AZ
             //! @param shaderAsset: The shader asset where the ShaderResourceGroupLayout will be searched.
             //! @param supervariantIndex: The supervariant index in @shaderAsset where the search will be conducted.
             //! @param srgName: Name of the ShaderResourceGroup as it was declared in the azsl file of origin.
-            static Data::InstanceId MakeInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
+            static Data::InstanceId MakeSrgPoolInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
             RHI::ResultCode Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 

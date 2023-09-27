@@ -110,6 +110,9 @@ namespace MaterialCanvas
                 return false;
             }
 
+            // Force delete prior versions of files to be generated if settings are configured to do so.
+            DeleteExistingFilesForCurrentNode();
+
             // Perform an initial pass over all template files, injecting include files, class definitions, function definitions, simple
             // things that don't require much processing.
             PreprocessTemplatesForCurrentNode();
@@ -286,6 +289,24 @@ namespace MaterialCanvas
             }
         }
         return true;
+    }
+
+    void MaterialGraphCompiler::DeleteExistingFilesForCurrentNode()
+    {
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/ForceDeleteGeneratedFiles", false))
+        {
+            AZ::parallel_for_each(
+                m_templateFileDataVecForCurrentNode.begin(),
+                m_templateFileDataVecForCurrentNode.end(),
+                [this](const auto& templateFileData)
+                {
+                    const auto& templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templateFileData.GetPath());
+                    const auto& templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
+
+                    auto fileIO = AZ::IO::FileIOBase::GetInstance();
+                    fileIO->Remove(templateOutputPath.c_str());
+                });
+        }
     }
 
     void MaterialGraphCompiler::PreprocessTemplatesForCurrentNode()
