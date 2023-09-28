@@ -168,14 +168,10 @@ namespace AzToolsFramework
 
             QWidget* propertyEditor = nullptr;
 
-            // use the DPE version of the AssetEditor if both ed_enableDPE and ed_enableDPEAssetEditor are enabled
-            m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
-            if (m_useDPE)
+            // use the DPE version of the AssetEditor if ed_enableDPEAssetEditor is enabled
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
             {
-                if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
-                {
-                    console->GetCvarValue("ed_enableDPEAssetEditor", m_useDPE);
-                }
+                console->GetCvarValue("ed_enableDPEAssetEditor", m_useDPE);
             }
 
             if (!m_useDPE)

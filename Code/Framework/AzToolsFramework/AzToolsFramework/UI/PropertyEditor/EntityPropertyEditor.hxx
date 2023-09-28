@@ -452,6 +452,7 @@ namespace AzToolsFramework
 
         void ResetToSlice();
 
+        static bool ShouldUseDPE();
         bool DoesOwnFocus() const;
         AZ::u32 GetHeightOfRowAndVisibleChildren(const PropertyRowWidget* row) const;
         QRect GetWidgetAndVisibleChildrenGlobalRect(const PropertyRowWidget* widget) const;

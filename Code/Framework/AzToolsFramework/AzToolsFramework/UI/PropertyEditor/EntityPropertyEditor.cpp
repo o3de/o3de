@@ -121,6 +121,16 @@ void initEntityPropertyEditorResources()
     Q_INIT_RESOURCE(OverrideResources);
 }
 
+static constexpr const char* enableDPECVarName = "ed_enableDPEInspector";
+
+AZ_CVAR(
+    bool,
+    ed_enableDPEInspector,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, enables experimental Document Property Editor support for the Entity Inspector");
+
 namespace AzToolsFramework
 {
     constexpr const char*  kComponentEditorIndexMimeType = "editor/componentEditorIndices";
@@ -510,7 +520,7 @@ namespace AzToolsFramework
         , m_commandInvokedHandler(
               [this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
               {
-                  if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableDPECVarName())
+                  if (command == enableDPECVarName)
                   {
                       ClearInstances();
                       for (auto componentEditor : m_componentEditors)
@@ -1816,7 +1826,7 @@ namespace AzToolsFramework
             }
 
             // Set up other entity property editor customization
-            if (DocumentPropertyEditor::ShouldReplaceRPE() && Prefab::IsInspectorOverrideManagementEnabled())
+            if (ShouldUseDPE() && Prefab::IsInspectorOverrideManagementEnabled())
             {
                 // Set up visualization for overrides on the component
                 UpdateOverrideVisualization(*componentEditor);
@@ -1906,7 +1916,7 @@ namespace AzToolsFramework
             ComponentEditor::ComponentAdapterFactory adapterFactory =
                 [&]() -> AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter>
             {
-                if (DocumentPropertyEditor::ShouldReplaceRPE())
+                if (ShouldUseDPE())
                 {
                     return (
                         Prefab::IsInspectorOverrideManagementEnabled()
@@ -1939,7 +1949,7 @@ namespace AzToolsFramework
             componentEditor->GetPropertyEditor()->SetHiddenQueryFunction([this](const InstanceDataNode* node) { return QueryInstanceDataNodeHiddenStatus(node); });
             componentEditor->GetPropertyEditor()->SetIndicatorQueryFunction([this](const InstanceDataNode* node) { return GetAppropriateIndicator(node); });
 
-            if (DocumentPropertyEditor::ShouldReplaceRPE() && Prefab::IsInspectorOverrideManagementEnabled())
+            if (ShouldUseDPE() && Prefab::IsInspectorOverrideManagementEnabled())
             {
                 // Connect to the component icon's click event to display override context menu
                 connect(
@@ -4104,6 +4114,16 @@ namespace AzToolsFramework
         ComponentEditorVector componentEditors = m_componentEditors;
         AZStd::reverse(componentEditors.begin(), componentEditors.end());
         return IsMoveAllowed(componentEditors);
+    }
+
+    bool EntityPropertyEditor::ShouldUseDPE()
+    {
+        bool dpeEnabled = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue(enableDPECVarName, dpeEnabled);
+        }
+        return dpeEnabled;
     }
 
     void EntityPropertyEditor::ResetToSlice()
