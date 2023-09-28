@@ -14,6 +14,11 @@
 #include "Framework/ScriptCanvasTestVerify.h"
 #include "Nodes/BehaviorContextObjectTestNode.h"
 
+#include "Nodes/Nodeables/SharedDataSlotExample.h"
+#include "Nodes/Nodeables/ValuePointerReferenceExample.h"
+
+#include "Nodes/TestAutoGenFunctions.h"
+
 namespace ScriptCanvasTestingNodes
 {
     void BehaviorContextObjectTest::Reflect(AZ::ReflectContext* context)
