@@ -41,8 +41,6 @@ namespace ScriptCanvas::Nodeables::Spawning
 
     private:
         AzFramework::Scripts::SpawnableScriptMediator m_spawnableScriptMediator;
-
-        AZStd::vector<AzFramework::Scripts::SpawnableScriptAssetRef> m_dummy;
     };
 }
 
