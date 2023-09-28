@@ -475,6 +475,8 @@ namespace AzFramework
             return false;
         }
 
+        AZ_Printf("SpawnableInstanceDescriptor", "FinalizeCreateInstance. %s, GetInstanceId=%s", classUuid.ToFixedString().c_str(), this->GetInstanceId().ToFixedString().c_str());
+
         AZ::IdUtils::Remapper<AZ::EntityId>::ReplaceIdsAndIdRefs(remapContainer, classUuid,
             [&](const AZ::EntityId& originalId, bool isEntityId, const AZStd::function<AZ::EntityId()>& idGenerator) -> AZ::EntityId
             {
@@ -482,6 +484,14 @@ namespace AzFramework
                 {
                     AZ::EntityId newId = customMapper ? customMapper(originalId, isEntityId, idGenerator) : idGenerator();
                     auto insertIt = instance.m_baseToNewEntityIdMap.emplace(AZStd::make_pair(originalId, newId));
+
+                    AZ_Printf(
+                        "SpawnableInstanceDescriptor",
+                        "  ReplaceIdsAndIdRefs. isEntityId. customMapper=%s, originalId=%s, newId=%s",
+                        customMapper ? "null" : "something",
+                        originalId.ToString().c_str(),
+                        newId.ToString().c_str());
+
                     return insertIt.first->second;
                 }
                 else // replace EntityRef
@@ -489,10 +499,17 @@ namespace AzFramework
                     auto findIt = instance.m_baseToNewEntityIdMap.find(originalId);
                     if (findIt == instance.m_baseToNewEntityIdMap.end())
                     {
+                        AZ_Printf("SpawnableInstanceDescriptor","  ReplaceIdsAndIdRefs. return originalId=%s", originalId.ToString().c_str());
+
                         return originalId; // Referenced EntityId is not part of the slice, so keep the same id reference.
                     }
                     else
                     {
+                        AZ_Printf(
+                            "SpawnableInstanceDescriptor",
+                            "  ReplaceIdsAndIdRefs. return RemappedId=%s, originalId=%s",
+                            findIt->second.ToString().c_str(), originalId.ToString().c_str());
+
                         return findIt->second; // return the remapped id
                     }
                 }
