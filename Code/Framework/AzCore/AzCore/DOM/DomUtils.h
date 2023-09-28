@@ -25,7 +25,7 @@ namespace AZ::Dom::Utils
     struct ComparisonParameters
     {
         //! If set, opaque values will only be compared by type and not contents
-        //! This can be useful when comparing opaque values that aren't equal in-memory but shouldn't constitue a
+        //! This can be useful when comparing opaque values that aren't equal in-memory but shouldn't constitute a
         //! comparison failure (e.g. comparing callbacks)
         bool m_treatOpaqueValuesOfSameTypeAsEqual = false;
     };
@@ -33,6 +33,16 @@ namespace AZ::Dom::Utils
     bool DeepCompareIsEqual(const Value& lhs, const Value& rhs, const ComparisonParameters& parameters = {});
     Value TypeIdToDomValue(const AZ::TypeId& typeId);
     AZ::TypeId DomValueToTypeId(const AZ::Dom::Value& value, const AZ::TypeId* baseClassId = nullptr);
+    //! Runs a dry-run JSON Serializer over the Dom::Value to check if it can be converted to the type associated
+    //! with the AZ TypeId
+    //! @param typeId TypeInfo ID associated with C++ type to determine if the Dom Value can be deserialized into
+    //! @param root Dom Value to be check to see if it can be converted to the C++ TypeInfo ID
+    //! @param settings Json Deserializer Settings which is used to query the serialize context to use for loading the raw object
+    //!        data from the Dom Value
+    //! @return true if the Dom Value can be deserialized into the type associated with the TypeInfo ID
+    bool CanLoadViaJsonSerialization(
+        const AZ::TypeId& typeId, const Value& root, JsonDeserializerSettings settings = {});
+
     JsonSerializationResult::ResultCode LoadViaJsonSerialization(
         void* object, const AZ::TypeId& typeId, const Value& root, const JsonDeserializerSettings& settings = {});
     JsonSerializationResult::ResultCode StoreViaJsonSerialization(
@@ -214,6 +224,8 @@ namespace AZ::Dom::Utils
         }
         else
         {
+            // For pointer types, the pointer marshaling logic is used
+            // to extract a pointer address from the Object with the Dom::Value
             if constexpr (AZStd::is_pointer_v<WrapperType>)
             {
                 if (TryMarshalValueToPointer(value) != nullptr)
@@ -221,6 +233,20 @@ namespace AZ::Dom::Utils
                     return true;
                 }
             }
+
+            // If the Dom::Value can be loaded into the WrapperType using JSON
+            // Serialization, then the Value is convertible to the C++ type
+            JsonDeserializerSettings loadSettings;
+            // Create a no-op issue reporter to suppress AZ_Warnings
+            loadSettings.m_reporting = [](AZStd::string_view, JsonSerializationResult::ResultCode result, AZStd::string_view)
+            {
+                return result;
+            };
+            if (CanLoadViaJsonSerialization(azrtti_typeid<WrapperType>(), value, loadSettings))
+            {
+                return true;
+            }
+
             if (!value.IsOpaqueValue())
             {
                 return false;
@@ -309,13 +335,49 @@ namespace AZ::Dom::Utils
             {
                 if constexpr (AZStd::is_pointer_v<WrapperType>)
                 {
+                    // When the Wrapped C++ Type is a pointer
+                    // then the attempt to read the pointer address
+                    // from the Dom Value object
                     void* valuePointer = TryMarshalValueToPointer(value);
                     if (valuePointer != nullptr)
                     {
                         return reinterpret_cast<WrapperType>(valuePointer);
                     }
                 }
-                if (value.IsOpaqueValue())
+
+                if (!value.IsOpaqueValue())
+                {
+                    // For a non-opaque type attempt to first check if it Dom Object
+                    // which represents a pointer type and try to marshal that value to the pointer type
+                    void* valuePointer = TryMarshalValueToPointer(value);
+                    if (valuePointer != nullptr)
+                    {
+                        return WrapperType(*reinterpret_cast<WrapperType*>(valuePointer));
+                    }
+
+                    // If the Dom is not storing an object that is a pointer
+                    // attempt to use Json Serialization to load into the WrapperType if it is default constructible
+                    if constexpr (AZStd::is_constructible_v<WrapperType>)
+                    {
+                        // Attempt to deserialize the type into T using JSON Serialization if possible
+                        WrapperType typeValue;
+                        // Create a pass no-op issue reporting to skip the DefaultIssueReporter logging AZ_Warnings
+                        JsonDeserializerSettings loadSettings;
+                        loadSettings.m_reporting = [](AZStd::string_view, JsonSerializationResult::ResultCode result, AZStd::string_view)
+                            {
+                                return result;
+                            };
+                        if (auto loadViaJsonSerializationResult = LoadViaJsonSerialization(typeValue, value, loadSettings);
+                            loadViaJsonSerializationResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
+                        {
+                            return typeValue;
+                        }
+                    }
+
+                    return {};
+                }
+                // At this point, the type must be an opaque type which is an AZStd::any stored within the Dom::Value
+                else
                 {
                     const AZStd::any& opaqueValue = value.GetOpaqueValue();
                     // If the wrapper type is a reference wrapper, then the original type needs to be extracted
@@ -350,16 +412,6 @@ namespace AZ::Dom::Utils
                     }
                     return AZStd::any_cast<WrapperType>(opaqueValue);
                 }
-                else
-                {
-                    void* valuePointer = TryMarshalValueToPointer(value);
-                    if (valuePointer != nullptr)
-                    {
-                        return WrapperType(*reinterpret_cast<WrapperType*>(valuePointer));
-                    }
-                    return {};
-                }
-
             };
 
             return ExtractOpaqueValue();
