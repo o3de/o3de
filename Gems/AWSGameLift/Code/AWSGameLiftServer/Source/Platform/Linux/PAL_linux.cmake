@@ -14,7 +14,7 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 
 elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
 
-    ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.1.1-rev1-linux-aarch64    TARGETS AWSGameLiftServerSDK        PACKAGE_HASH b84791e792b7cd4a6dcb213fd756fd4bd4e3118425d85d8a618a474386e95bd3)
+    ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.1.1-rev1-linux-aarch64    TARGETS AWSGameLiftServerSDK        PACKAGE_HASH ed742f43285776b1a91e70bc3757f1190476fd484542c597364519651c2097aa)
 
 else()
 
