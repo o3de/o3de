@@ -106,6 +106,14 @@ namespace AZ
                 AZ_Assert(!lod.has_value() || lod < 16, "Lod value has to be between 0 and 15 or disabled.");
 
                 size_t index = m_products.size();
+                auto FindProduct = [productFilename = AZ::IO::PathView(filename)](const ExportProduct& exportProduct)
+                {
+                    return AZ::IO::PathView(exportProduct.m_filename) == productFilename;
+                };
+                if (auto productIt = AZStd::find_if(m_products.begin(), m_products.end(), FindProduct); productIt != m_products.end())
+                {
+                    return *productIt;
+                }
                 m_products.emplace_back(AZStd::move(filename), id, assetType, lod, subId, dependencyFlags);
                 return m_products[index];
             }
