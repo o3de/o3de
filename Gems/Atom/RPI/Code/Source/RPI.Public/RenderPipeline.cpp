@@ -228,6 +228,9 @@ namespace AZ
             // Use a new list for building pipeline views since we may need information from the previous list in m_views in the process
             PipelineViewMap newViewsByTag;
 
+            // re-register only views where the view-tag still exists after rebuilding.
+            m_persistentViewsByViewTag.clear();
+
             for (const auto& tag : viewTags)
             {
                 PipelineViews pipelineViews;
@@ -240,6 +243,16 @@ namespace AZ
                     {
                         pipelineViews.m_views.clear();
                     }
+                    else if (pipelineViews.m_type == PipelineViewType::Persistent)
+                    {
+                        for (auto& view : pipelineViews.m_views)
+                        {
+                            if (view)
+                            {
+                                m_persistentViewsByViewTag[view.get()] = pipelineViews.m_viewTag;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -251,6 +264,9 @@ namespace AZ
             }
 
             m_pipelineViewsByTag = AZStd::move(newViewsByTag);
+
+            // transient views are re-registered every frame anyway
+            m_transientViewsByViewTag.clear();
         }
 
         void RenderPipeline::CollectDrawListMaskForViews(PipelineViews& views)
