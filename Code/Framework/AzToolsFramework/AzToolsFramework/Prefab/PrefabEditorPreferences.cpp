@@ -21,10 +21,10 @@ AZ_CVAR(
 AZ_CVAR(
     bool,
     ed_enableOutlinerOverrideManagement,
-    true,
+    false,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, enables prefab override support in the Outliner");
+    "If set, enables experimental prefab override support in the Outliner");
 
 namespace AzToolsFramework::Prefab
 {
