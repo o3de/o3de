@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/DOM/DomComparison.h>
+#include <AzCore/DOM/DomUtils.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/unordered_set.h>
 
@@ -84,7 +85,7 @@ namespace AZ::Dom
                 const size_t entriesToEnumerate = AZStd::min(beforeSize, afterSize);
                 for (size_t i = 0; i < entriesToEnumerate; ++i)
                 {
-                    if (before[i] != after[i])
+                    if (!Utils::DeepCompareIsEqual(before[i], after[i]))
                     {
                         ++changedValueCount;
                         if (changedValueCount >= params.m_replaceThreshold)
