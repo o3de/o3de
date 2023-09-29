@@ -26,6 +26,18 @@ namespace AzFramework
     AZ_DEFINE_ENUM_ARITHMETIC_OPERATORS(QualityLevel);
     AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(QualityLevel);
 
+    // Device rule resolution 
+    AZ_ENUM_CLASS(DeviceRuleResolution,
+        (Invalid, -1),
+        (Min, 0), // use the lowest setting for all matching rules
+        (Max, 1), // use the maximum setting for all matching rules
+        (First, 2), // use the setting for the first rule that matches
+        (Last, 3)  // use the setting for the last rule that matches
+    );
+    AZ_TYPE_INFO_SPECIALIZE(DeviceRuleResolution, "{DB0E23FC-433A-4A95-BEFA-8E39E3A1E344}");
+    AZ_DEFINE_ENUM_ARITHMETIC_OPERATORS(DeviceRuleResolution);
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(DeviceRuleResolution);
+
     class QualitySystemEvents
         : public AZ::EBusTraits
     {

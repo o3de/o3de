@@ -7,6 +7,7 @@
  */
 
 #include <sys/utsname.h>
+#include <AzCore/Console/ConsoleTypeHelpers.h>
 #include <AzCore/std/utility/charconv.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/string/conversions.h>
@@ -50,6 +51,7 @@ namespace AzFramework
                     {
                         constexpr double KiBtoGiB = 1024.f * 1024.f;
                         m_valueInGiB = aznumeric_cast<float>(static_cast<double>(memTotalKiB) / KiBtoGiB);
+                        m_value = AZ::ConsoleTypeHelpers::ValueToString(m_valueInGiB);
                     }
                     break;
                 }

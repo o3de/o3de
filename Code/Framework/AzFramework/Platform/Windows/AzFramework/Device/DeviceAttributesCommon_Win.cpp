@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Console/ConsoleTypeHelpers.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/Device/DeviceAttributeDeviceModel.h>
 #include <AzFramework/Device/DeviceAttributeRAM.h>
@@ -155,6 +156,7 @@ namespace AzFramework
                 if (globalMemoryStatusExFunc(&memStats))
                 {
                     m_valueInGiB = aznumeric_cast<float>(static_cast<double>(memStats.ullTotalPhys) / bytesToGiB);
+                    m_value = AZ::ConsoleTypeHelpers::ValueToString(m_valueInGiB);
                 }
             }
 
@@ -167,6 +169,7 @@ namespace AzFramework
                 memStats.dwLength = sizeof(memStats);
                 ::GlobalMemoryStatus(&memStats);
                 m_valueInGiB = aznumeric_cast<float>(static_cast<double>(memStats.dwTotalPhys) / bytesToGiB);
+                m_value = AZ::ConsoleTypeHelpers::ValueToString(m_valueInGiB);
             }
         }
     }

@@ -25,5 +25,6 @@ namespace AzFramework
         AZStd::string m_name = "RAM";
         AZStd::string m_description = "RAM available to OS in GiB, usually less than the physically installed RAM.";
         float m_valueInGiB = 0.f;
+        AZStd::string m_value = "";
     };
 } // namespace AzFramework
