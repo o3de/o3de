@@ -238,5 +238,61 @@ namespace UnitTest
         EXPECT_EQ(m_console->GetCvarValue("d_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 42);
     }
+
+    TEST_F(QualitySystemComponentTestFixture, QualitySystem_Evaluates_Device_Rules)
+    {
+        // when the quality system component registers group cvars
+        StartApplicationWithSettings(R"(
+            {
+                "O3DE": {
+                    "Quality": {
+                        "DefaultGroup":"q_test",
+                        "Groups": {
+                            "q_test": {
+                                "Levels": [ "low", "medium", "high", "veryhigh"],
+                                "Default": 2,
+                                "Description": "q_test quality group",
+                                "Settings": {
+                                    "a_setting": [0,1,2,3],
+                                    "b_setting": ["a","b","c","d"],
+                                    "q_test_sub": [0,1,1,1]
+                                }
+                            },
+                            "q_test_sub": {
+                                "Levels": [ "low", "high" ],
+                                "Default": "DefaultQualityLevel",
+                                "Description": "q_test_sub quality group",
+                                "Settings": {
+                                    "c_setting": [123,234],
+                                    "d_setting": [42] // test missing high level setting
+                                }
+                            }
+                        },
+                        "Devices": {
+                            "Test": {
+                                "Rules": {
+                                    "Test Device": { "DeviceModel": "[a-z]*" }
+                                },
+                                "Settings": {
+                                    "q_test": 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            )");
+
+        auto value = AzFramework::QualityLevel::LevelFromDeviceRules;
+
+        // when the default group is loaded
+        AzFramework::QualitySystemEvents::Bus::Broadcast(
+            &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
+            AzFramework::QualityLevel::LevelFromDeviceRules);
+
+        // expect the values are set based on the device rules 
+        EXPECT_EQ(m_console->GetCvarValue("q_test", value), AZ::GetValueResult::Success);
+        EXPECT_EQ(value, AzFramework::QualityLevel{1});
+    }
 } // namespace UnitTest
 
