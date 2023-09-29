@@ -64,6 +64,11 @@ namespace AzFramework
             optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
         queueEntry.m_preInsertionCallback = AZStd::move(optionalArgs.m_preInsertionCallback);
+// Gruber patch begin // VMED // Custom entity id remapper
+#ifdef CARBONATED
+        queueEntry.m_customEntityIdMapper = optionalArgs.m_customEntityIdMapper;
+#endif
+// Gruber patch end // VMED // Custom entity id remapper
         QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
@@ -470,6 +475,25 @@ namespace AzFramework
             seedEntityId = AZ::EntityId(static_cast<AZ::u64>(seedEntityId)+1);
         }
     }
+
+    void SpawnableEntitiesManager::InitializeEntityIdMappingsWithExternalRemapper(
+        const Spawnable::EntityList& entities, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned,
+        const EntityIdToEntityIdMap& customEntityIdMapper)
+    {
+        // Make sure we don't have any previous data lingering around.
+        idMap.clear();
+        previouslySpawned.clear();
+
+        idMap.reserve(entities.size());
+        previouslySpawned.reserve(entities.size());
+
+        for (auto& entity : entities)
+        {
+            auto iter = customEntityIdMapper.find(entity->GetId());
+            AZ::EntityId newEntityId = (iter != customEntityIdMapper.end()) ? iter->second : AZ::Entity::MakeId();
+            idMap.emplace(entity->GetId(), newEntityId);
+        }
+    }
 #endif
 // Gruber patch end // VMED 
 
@@ -553,6 +577,10 @@ namespace AzFramework
                 if (!ticket.m_spawnable->IsDynamic() && seedEntityId.IsValid())
                 {
                     InitializeEntityIdMappingsWithSeed(seedEntityId, entitiesToSpawn, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
+                }
+                else if (request.m_customEntityIdMapper.size() > 0)
+                {
+                    InitializeEntityIdMappingsWithExternalRemapper(entitiesToSpawn, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned, request.m_customEntityIdMapper);
                 }
                 else
 #endif

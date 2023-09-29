@@ -231,6 +231,12 @@ namespace AzFramework
         AZ::SerializeContext* m_serializeContext { nullptr };
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority { SpawnablePriority_Default };
+// Gruber patch begin // VMED // Custom entity id remapper
+#ifdef CARBONATED
+        //! Custom entity id remapper.
+        AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_customEntityIdMapper;
+#endif
+// Gruber patch end // VMED 
     };
 
     struct SpawnEntitiesOptionalArgs final
