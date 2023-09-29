@@ -31,7 +31,6 @@ namespace AZ::RHI
         RHI::Format m_vertexFormat = RHI::Format::Unknown;
         RHI::MultiDeviceStreamBufferView m_mdVertexBuffer;
         RHI::MultiDeviceIndexBufferView m_mdIndexBuffer;
-        // [GFX TODO][ATOM-4989] Add DXR BLAS Transform Buffer
     };
     using MultiDeviceRayTracingGeometryVector = AZStd::vector<MultiDeviceRayTracingGeometry>;
 
@@ -192,7 +191,7 @@ namespace AZ::RHI
 
         //! externally created Instances buffer, cannot be combined with other Instances
         RHI::Ptr<RHI::MultiDeviceBuffer> m_mdInstancesBuffer;
-        uint32_t m_numInstancesInBuffer;
+        uint32_t m_numInstancesInBuffer = 0;
     };
 
     //! MultiDeviceRayTracingTlas
