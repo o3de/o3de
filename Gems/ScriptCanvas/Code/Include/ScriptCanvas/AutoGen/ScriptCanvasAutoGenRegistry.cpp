@@ -20,11 +20,9 @@ static AZ::EnvironmentVariable<ScriptCanvasModel> s_scriptModel;
 
 ScriptCanvasModel& ScriptCanvasModel::Instance()
 {
-    static bool _initialized = false;
     if (!s_scriptModel)
     {
         s_scriptModel = AZ::Environment::CreateVariable<ScriptCanvasModel>(s_scriptCanvasModelName);
-        _initialized = true;
     }
 
     return s_scriptModel.Get();
