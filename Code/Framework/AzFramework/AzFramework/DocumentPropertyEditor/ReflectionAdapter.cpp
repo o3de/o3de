@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>

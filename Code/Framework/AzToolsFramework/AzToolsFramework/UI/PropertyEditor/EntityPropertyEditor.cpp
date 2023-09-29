@@ -18,6 +18,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -121,16 +122,6 @@ void initEntityPropertyEditorResources()
     Q_INIT_RESOURCE(OverrideResources);
 }
 
-static constexpr const char* enableDPECVarName = "ed_enableDPEInspector";
-
-AZ_CVAR(
-    bool,
-    ed_enableDPEInspector,
-    false,
-    nullptr,
-    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, enables experimental Document Property Editor support for the Entity Inspector");
-
 namespace AzToolsFramework
 {
     constexpr const char*  kComponentEditorIndexMimeType = "editor/componentEditorIndices";
@@ -138,6 +129,26 @@ namespace AzToolsFramework
 
     constexpr const char* kPropertyEditorMenuActionMoveUp("editor/propertyEditorMoveUp");
     constexpr const char* kPropertyEditorMenuActionMoveDown("editor/propertyEditorMoveDown");
+
+    static constexpr const char* enableDPECVarName = "ed_enableDPEInspector";
+
+    AZ_CVAR(
+        bool,
+        ed_enableDPEInspector,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set, enables experimental Document Property Editor support for the Entity Inspector");
+
+    static bool ShouldUseDPE()
+    {
+        bool dpeEnabled = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue(enableDPECVarName, dpeEnabled);
+        }
+        return dpeEnabled;
+    }
 
     //since component editors are spaced apart to make room for drop indicator,
     //giving drop logic simple buffer so drops between editors don't go to the bottom
@@ -4114,16 +4125,6 @@ namespace AzToolsFramework
         ComponentEditorVector componentEditors = m_componentEditors;
         AZStd::reverse(componentEditors.begin(), componentEditors.end());
         return IsMoveAllowed(componentEditors);
-    }
-
-    bool EntityPropertyEditor::ShouldUseDPE()
-    {
-        bool dpeEnabled = false;
-        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
-        {
-            console->GetCvarValue(enableDPECVarName, dpeEnabled);
-        }
-        return dpeEnabled;
     }
 
     void EntityPropertyEditor::ResetToSlice()
