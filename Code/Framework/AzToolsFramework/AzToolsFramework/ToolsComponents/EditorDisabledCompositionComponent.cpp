@@ -66,7 +66,7 @@ namespace AzToolsFramework
                         // the template is null and the component should not be added.
                         if (component && component->GetUnderlyingComponentType() != genericComponentWrapperTypeId)
                         {
-                            componentInstance->m_disabledComponents.emplace(componentKey, component);
+                            componentInstance->AddDisabledComponent(component);
                         }
                     }
                 }
