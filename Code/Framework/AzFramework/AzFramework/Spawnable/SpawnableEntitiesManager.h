@@ -142,6 +142,11 @@ namespace AzFramework
             Ticket* m_ticket;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
+// Gruber patch begin // VMED // Custom entity id remapper
+#ifdef CARBONATED
+            EntityIdToEntityIdMap m_customEntityIdMapper;
+#endif
+// Gruber patch end // VMED 
         };
         struct SpawnEntitiesCommand final
         {
@@ -331,6 +336,10 @@ namespace AzFramework
         // Support the same generated entity ids on all clients and on the server
         void InitializeEntityIdMappingsWithSeed(
             AZ::EntityId seedEntityId, const Spawnable::EntityList& entities, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned);
+
+        void InitializeEntityIdMappingsWithExternalRemapper(
+            const Spawnable::EntityList& entities, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned,
+            const EntityIdToEntityIdMap& customEntityIdMapper);
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 
