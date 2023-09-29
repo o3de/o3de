@@ -44,7 +44,7 @@ namespace AzToolsFramework::Prefab
 
     bool IsOutlinerOverrideManagementEnabled()
     {
-        bool isOutlinerOverrideManagementEnabled = true;
+        bool isOutlinerOverrideManagementEnabled = false;
         if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
             console->GetCvarValue("ed_enableOutlinerOverrideManagement", isOutlinerOverrideManagementEnabled);
