@@ -319,7 +319,14 @@ namespace AZ::Reflection
                     path.append("/");
                     path.append(AZStd::string::format("%zu", parentData.m_childElementIndex));
                 }
-                else if (nodeData.m_classElement)
+                // If we have a class element, we skip appending to the SerializedPath if its a base class
+                // because base class information is ignored by the JSON serializer in JsonSerializer::StoreWithClassElement.
+                // The name for these look like "BaseClass1", "BaseClass2", etc... are defined in c_serializeBaseClassStrings
+                // and won't be present once serialized so if we don't ignore them then certain logic that attempts to
+                // match against the SerializedPath won't be accurate.
+                else if (
+                    nodeData.m_classElement &&
+                    ((nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_BASE_CLASS) == 0))
                 {
                     AZStd::string_view elementName = nodeData.m_classElement->m_name;
 
