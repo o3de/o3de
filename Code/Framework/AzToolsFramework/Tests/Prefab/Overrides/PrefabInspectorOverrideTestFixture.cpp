@@ -16,8 +16,8 @@ namespace UnitTest
     {
         // Enable feature flags for DPE and InspectorOverrideManagement
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-        registry->Set(InspectorOverrideManagementKey, true);
-        registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableDPE", true);
+        registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableDPEInspector", true);
+        registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableInspectorOverrideManagement", true);
 
         PrefabOverrideTestFixture::SetUpEditorFixtureImpl();
 
