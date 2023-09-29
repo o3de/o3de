@@ -57,18 +57,16 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr':
 AZ_POP_DISABLE_WARNING
 #include <QAction>
 
-AZ_CVAR_EXTERNED(bool, ed_enableDPE);
-
-AZ_CVAR(
-    bool,
-    ed_enableDPEAssetEditor,
-    false,
-    nullptr,
-    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, enables experimental Document Property Editor for the AssetEditor");
-
 namespace AzToolsFramework
 {
+    AZ_CVAR(
+        bool,
+        ed_enableDPEAssetEditor,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set, enables experimental Document Property Editor for the AssetEditor");
+
     namespace AssetEditor
     {
         // Amount to add on to the save confirm dialog text width to account for the icon etc when padding.
