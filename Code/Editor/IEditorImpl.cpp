@@ -238,7 +238,16 @@ void CEditorImpl::LoadPlugins()
     AZ::ComponentApplicationBus::BroadcastResult(exeFolder, &AZ::ComponentApplicationRequests::GetExecutableFolder);
 
     QDir testDir;
+#if defined(AZ_PLATFORM_MAC)
+    AZ::IO::FixedMaxPath binaryPath{ exeFolder };
+    // In Mac the Editor is within a bundle, so the path to the sibling app
+    // has to go up from the Contents/MacOS folder the binary is in
+    binaryPath /= "../../../";
+    testDir.setPath(binaryPath.LexicallyNormal().c_str());
+#else
     testDir.setPath(AZStd::string(exeFolder).c_str());
+#endif
+
     if (testDir.exists() && testDir.cd(editor_plugins_folder))
     {
         editorPluginPathStr = testDir.absolutePath();
