@@ -28,6 +28,8 @@ namespace AtomToolsFramework
                 while (m_threadRunning)
                 {
                     Update();
+
+                    // Sleep briefly to give AP time to update and other possible threads time to make AssetSystemJobRequestBus requests
                     AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
                 }
             });
