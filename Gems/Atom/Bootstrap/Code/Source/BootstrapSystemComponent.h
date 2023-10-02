@@ -109,6 +109,8 @@ namespace AZ
                     AZ::RPI::ViewType viewType,
                     AZ::RHI::MultisampleState& multisampleState);
 
+                AzFramework::WindowSize GetWindowResolution() const;
+
                 AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;
 
                 AZStd::unique_ptr<AzFramework::NativeWindow> m_nativeWindow;
