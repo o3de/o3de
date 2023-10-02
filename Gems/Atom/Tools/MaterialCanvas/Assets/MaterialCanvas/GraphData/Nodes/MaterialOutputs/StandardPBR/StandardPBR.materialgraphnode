@@ -12,24 +12,9 @@
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName.material",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName.materialtype",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_Common.azsli",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_Depth.azsl",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_DepthPass.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_DepthPass_WithPS.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_DepthPassTransparentMax.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_DepthPassTransparentMin.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_Forward.azsl",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_ForwardPass.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_ForwardPass_EDS.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_LowEndForward.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_LowEndForward_EDS.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_MeshMotionVector.azsl",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_MeshMotionVector.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_MultiViewForward.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_MultiViewForward_EDS.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_MultiViewTransparentForward_EDS.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_DepthVertexData.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_DepthVertexEval.azsli",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_PixelGeometryEval.azsli",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_Shadowmap.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_Shadowmap_WithPS.shader",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_SurfaceEval.azsli",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/MaterialGraphName_VertexEval.azsli"
             ]
@@ -132,6 +117,9 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "doubleSided"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "InternalProperty"
                     ]
                 }
             },
@@ -195,6 +183,9 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "castShadows"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "InternalProperty"
                     ]
                 }
             },
