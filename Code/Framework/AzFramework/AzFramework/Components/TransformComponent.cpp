@@ -140,7 +140,7 @@ namespace AzFramework
             AZ::Transform newXform = AZ::Transform::CreateFromQuaternionAndTranslation(m_localRotation.Get(), m_localTranslation.Get());
             // Gruber patch begin // VMED -- missed MultiplyByScale is replaced
             newXform.MultiplyByUniformScale(m_localScale.Get().GetX()); // local scale is setup as uniform scale
-            //  Gruber patch end // VMED
+            // Gruber patch end // VMED
             return newXform;
         }
 
@@ -1074,12 +1074,10 @@ namespace AzFramework
         const AZ::Vector3 newTranslation = m_netTargetTranslation->GetInterpolatedValue(localTime);
         const AZ::Quaternion newRotation = m_netTargetRotation->GetInterpolatedValue(localTime);
         AZ::Transform newXform = AZ::Transform::CreateFromQuaternionAndTranslation(newRotation, newTranslation);
-        // Gruber patch begin // FIXME // AVK -- missed MultiplyByScale
-        AZ_Assert(false, "Must be fixed");
-#if 0
-        newXform.MultiplyByScale(m_netTargetScale);
-#endif
-        // Gruber patch end // FIXME // AVK
+
+        // Gruber patch begin // VMED -- missed MultiplyByScale is replaced
+        newXform.MultiplyByUniformScale(m_netTargetScale.GetX()); // local scale is setup as uniform scale
+        // Gruber patch end // VMED
 #if defined(CARBONATED)
         AZ_Assert(newXform.IsFinite(), "Interpolated Transform is invalid");
 #endif
