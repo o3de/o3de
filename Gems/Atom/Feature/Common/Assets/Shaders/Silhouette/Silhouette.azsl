@@ -22,10 +22,10 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
-    Texture2D<float4> m_silhouettes;
+    Texture2DMS<float4> m_silhouettes;
 }
 
-PSOutput MainPS(VSOutput IN)
+PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
     PSOutput OUT;
 
@@ -44,11 +44,11 @@ PSOutput MainPS(VSOutput IN)
         float2(-0.6169758, -0.6663036),
     };
 
-    uint width, height;
-    PassSrg::m_silhouettes.GetDimensions(width, height);
+    uint width, height, samples;
+    PassSrg::m_silhouettes.GetDimensions(width, height, samples);
     real2 scale = Silhouette_Width / real2(width,height);
 
-    real4 pixelSample = PassSrg::m_silhouettes.Sample(PassSrg::LinearSampler, IN.m_texCoord);
+    real4 pixelSample = PassSrg::m_silhouettes.Load(IN.m_texCoord, sampleIndex);
     if(dot(pixelSample.xyz, pixelSample.xyz) > 0.0)
     {
         // this is a silhouette pixel
@@ -61,7 +61,7 @@ PSOutput MainPS(VSOutput IN)
         {
             real2 kernel = poison_disk[i];
             real2 offset = kernel*scale;
-            real4 sampleColor = PassSrg::m_silhouettes.Sample(PassSrg::LinearSampler, IN.m_texCoord + offset);
+            real4 sampleColor = PassSrg::m_silhouettes.Load(IN.m_texCoord + offset, sampleIndex);
             pixelSample = max(pixelSample, sampleColor);
         }
 
