@@ -80,6 +80,7 @@ namespace AzFramework
 // Gruber patch begin // VMED // Added mock for GetOwningSpawnable method
 #ifdef CARBONATED
         MOCK_METHOD1(GetOwningSpawnable, AZStd::shared_ptr<SpawnableInstanceDescriptor>(const AZ::EntityId& entityId));
+        MOCK_METHOD2(DespawnAllEntitiesInTicketByEntityID, void(const AZ::EntityId& entityId, DespawnAllEntitiesOptionalArgs optionalArgs));
 #endif // CARBONATED
 // Gruber patch end // VMED // Added mock for GetOwningSpawnable method
 
