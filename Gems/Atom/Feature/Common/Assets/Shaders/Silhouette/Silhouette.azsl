@@ -46,9 +46,9 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 
     uint width, height, samples;
     PassSrg::m_silhouettes.GetDimensions(width, height, samples);
-    real2 scale = Silhouette_Width / real2(width,height);
+    real2 scale = Silhouette_Width;
 
-    real4 pixelSample = PassSrg::m_silhouettes.Load(IN.m_texCoord, sampleIndex);
+    real4 pixelSample = PassSrg::m_silhouettes.Load(IN.m_position.xy, sampleIndex);
     if(dot(pixelSample.xyz, pixelSample.xyz) > 0.0)
     {
         // this is a silhouette pixel
@@ -60,8 +60,8 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
         for (int i = 0; i < NUM_SAMPLES; ++i)
         {
             real2 kernel = poison_disk[i];
-            real2 offset = kernel*scale;
-            real4 sampleColor = PassSrg::m_silhouettes.Load(IN.m_texCoord + offset, sampleIndex);
+            int2 offset = int2(kernel*scale);
+            real4 sampleColor = PassSrg::m_silhouettes.Load(IN.m_position.xy + offset, sampleIndex);
             pixelSample = max(pixelSample, sampleColor);
         }
 
