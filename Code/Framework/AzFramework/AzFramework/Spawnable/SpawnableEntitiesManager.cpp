@@ -13,7 +13,10 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/std/sort.h> // Gruber patch // VMED
+// Gruber patch begin // VMED
+#include <AzCore/std/sort.h> 
+#include <AzFramework/Helpers/EntityHelpers.h> // Helper methods to evaluate Entities moved here
+// Gruber patch end // VMED
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
@@ -64,11 +67,11 @@ namespace AzFramework
             optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
         queueEntry.m_preInsertionCallback = AZStd::move(optionalArgs.m_preInsertionCallback);
-// Gruber patch begin // VMED // Custom entity id remapper
+        // Gruber patch begin // VMED // Custom entity id remapper
 #ifdef CARBONATED
         queueEntry.m_customEntityIdMapper = optionalArgs.m_customEntityIdMapper;
 #endif
-// Gruber patch end // VMED // Custom entity id remapper
+        // Gruber patch end // VMED // Custom entity id remapper
         QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
@@ -294,7 +297,7 @@ namespace AzFramework
         return queue.m_delayed.empty() ? CommandQueueStatus::NoCommandsLeft : CommandQueueStatus::HasCommandsLeft;
     }
 
-// Gruber patch begin. // LVB. // Support unique instances
+    // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
     AZStd::shared_ptr<SpawnableInstanceDescriptor> SpawnableEntitiesManager::GetOwningSpawnable(const AZ::EntityId& entityId)
     {
@@ -305,6 +308,49 @@ namespace AzFramework
         }
         return SpawnableInstanceDescriptor::GetInvalidDescriptor();
     }
+
+    void SpawnableEntitiesManager::DespawnAllEntitiesInTicketByEntityID(const AZ::EntityId& entityId, DespawnAllEntitiesOptionalArgs optionalArgs)
+    {
+        EntitySpawnTicket::Id ticketId = 0;
+
+        AZStd::shared_ptr<SpawnableInstanceDescriptor> spawnableInfo = GetOwningSpawnable(entityId);
+        if (spawnableInfo && spawnableInfo->IsValid())
+        {
+            // get ticket id from SpawnableInstanceDescriptor
+            ticketId = spawnableInfo->GetEntitySpawnTicketId();
+
+            // remove all SpawnableInstanceDescriptor entries
+            for (auto it = begin(m_entitySpawnableMap); it != end(m_entitySpawnableMap);)
+            {
+                if (it->second == spawnableInfo)
+                {
+                    it = m_entitySpawnableMap.erase(it); // erase() returns ++it // described in https://stackoverflow.com/questions/9210014/remove-elements-from-an-unordered-map-fulfilling-a-predicate
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+        }
+        else
+        {
+            // get ticket id from Entity
+            const AZ::Entity* entity = EntityHelpers::GetEntity(entityId);
+            ticketId = entity->GetEntitySpawnTicketId();
+        }
+
+        SpawnableEntitiesInterface::Get()->RetrieveTicket(ticketId,
+            [optionalArgs](EntitySpawnTicket&& entitySpawnTicket)
+            {
+                if (entitySpawnTicket.IsValid())
+                {
+                    SpawnableEntitiesInterface::Get()->DespawnAllEntities(entitySpawnTicket, optionalArgs);
+                }
+            });
+    }
+
+
+
 #endif
     // Gruber patch end. // LVB. // Support unique instances
 

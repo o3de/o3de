@@ -393,6 +393,11 @@ namespace AzFramework
             m_entityPtrList = entityList;
         }
 
+        const AZ::u32 GetEntitySpawnTicketId() const
+        {
+            return m_entitySpawnTicketId;
+        }
+
         static AZStd::shared_ptr<SpawnableInstanceDescriptor> GetInvalidDescriptor();
 
         bool FinalizeCreateInstance(void* remapContainer,
@@ -528,6 +533,11 @@ namespace AzFramework
          * @return SpawnableInstanceDescriptor
          */
         virtual AZStd::shared_ptr<SpawnableInstanceDescriptor> GetOwningSpawnable(const AZ::EntityId& entityId) = 0;
+
+        // Uses a ticket to despawn entities.
+        // Gets ticket id from SpawnableInstanceDescriptor or from entity definition.
+        // Also removes an associated SpawnableInstanceDescriptor if it exists.
+        virtual void DespawnAllEntitiesInTicketByEntityID(const AZ::EntityId& entityId, DespawnAllEntitiesOptionalArgs optionalArgs = {}) = 0; // async
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 
