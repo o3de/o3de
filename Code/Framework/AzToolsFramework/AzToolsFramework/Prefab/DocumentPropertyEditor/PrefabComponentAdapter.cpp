@@ -114,11 +114,8 @@ namespace AzToolsFramework::Prefab
     {
         if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
         {
-            if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get())
-            {
-                instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(true);
-            }
-
+            // The Begin/ResumeUndoBatch call will come from PropertyManagerComponent::RequestWrite which gets invoked
+            // just before this, so we just need to retrieve the undo batch.
             AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
                 m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
             if (!m_currentUndoBatch)
@@ -131,6 +128,17 @@ namespace AzToolsFramework::Prefab
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
                     m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Component Property");
             }
+
+            // But we do need to mark our entity as dirty. In the RPE, this is handled by EntityPropertyEditor::BeforePropertyModified,
+            // but the DPE doesn't use those notification triggers.
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_entityId);
+
+            if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get())
+            {
+                instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(true);
+            }
+
 
             AZ::Dom::Path serializedPath = propertyChangeInfo.path / AZ::Reflection::DescriptorAttributes::SerializedPath;
 
@@ -147,42 +155,39 @@ namespace AzToolsFramework::Prefab
             auto prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
             if (prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityId))
             {
-                if (CreateAndApplyComponentEditPatch(relativePathFromOwningPrefab.ToString(), propertyChangeInfo))
-                {
-                    NotifyContentsChanged(
-                        { AZ::Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
-                }
+                // Normal component edit, so invoke the base behavior that updates the source template.
+                ComponentAdapter::UpdateDomContents(propertyChangeInfo);
             }
             else if (prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(m_entityId))
             {
-                if (CreateAndApplyComponentOverridePatch(relativePathFromOwningPrefab, propertyChangeInfo))
-                {
-                    AZ::Dom::Patch patches(
-                        { AZ::Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
+                // This is for an override, so in addition to the default replace operation,
+                // we need to also patch in the PrefabOverrideLabel in case the change doesn't
+                // trigger a refresh in the adapter.
+                AZ::Dom::Patch patches(
+                    { AZ::Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
 
-                    AZ::Dom::Path pathToProperty = propertyChangeInfo.path;
+                AZ::Dom::Path pathToProperty = propertyChangeInfo.path;
 
-                    // Get the path to parent row and its value.
-                    pathToProperty.Pop();
-                    AZ::Dom::Value propertyRowValue = GetContents()[pathToProperty];
+                // Get the path to parent row and its value.
+                pathToProperty.Pop();
+                AZ::Dom::Value propertyRowValue = GetContents()[pathToProperty];
 
-                    AZ_Assert(
-                        propertyRowValue.IsNode() &&
-                            propertyRowValue.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::Row::Name,
-                        "PrefabComponentAdapter::UpdateDomContents - Parent path to property doesn't map to a 'Row' node. ");
+                AZ_Assert(
+                    propertyRowValue.IsNode() &&
+                    propertyRowValue.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::Row::Name,
+                    "PrefabComponentAdapter::UpdateDomContents - Parent path to property doesn't map to a 'Row' node. ");
 
-                    AZ::Dom::Value firstRowElement = propertyRowValue[0];
-                    AZ_Assert(
-                        firstRowElement.IsNode() &&
-                            firstRowElement.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name &&
-                            firstRowElement["Type"].GetString() == PrefabPropertyEditorNodes::PrefabOverrideLabel::Name,
-                        "PrefabComponentAdapter::UpdateDomContents - First element in the property row is not a 'PrefabOverrideLabel'.");
+                AZ::Dom::Value firstRowElement = propertyRowValue[0];
+                AZ_Assert(
+                    firstRowElement.IsNode() &&
+                    firstRowElement.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name &&
+                    firstRowElement["Type"].GetString() == PrefabPropertyEditorNodes::PrefabOverrideLabel::Name,
+                    "PrefabComponentAdapter::UpdateDomContents - First element in the property row is not a 'PrefabOverrideLabel'.");
 
-                    // Patch the first child in the row, which is going to the PrefabOverrideLabel.
-                    patches.PushBack(AZ::Dom::PatchOperation::ReplaceOperation(
-                        pathToProperty / 0 / PrefabPropertyEditorNodes::PrefabOverrideLabel::IsOverridden.GetName(), AZ::Dom::Value(true)));
-                    NotifyContentsChanged(patches);
-                }
+                // Patch the first child in the row, which is going to the PrefabOverrideLabel.
+                patches.PushBack(AZ::Dom::PatchOperation::ReplaceOperation(
+                    pathToProperty / 0 / PrefabPropertyEditorNodes::PrefabOverrideLabel::IsOverridden.GetName(), AZ::Dom::Value(true)));
+                NotifyContentsChanged(patches);
             }
         }
         else if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
@@ -192,6 +197,8 @@ namespace AzToolsFramework::Prefab
                 instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(false);
             }
 
+            // The EndUndoBatch will get called from PropertyManagerComponent::OnEditingFinished, so we can just clear
+            // out our reference to the undo batch here.
             m_currentUndoBatch = nullptr;
         }
     }
