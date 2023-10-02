@@ -399,14 +399,23 @@ namespace AZ
             }
 
             // set the bindless descriptor table if required by the shader
+            const auto& device = static_cast<Device&>(GetDevice());
             for (uint32_t bindingIndex = 0; bindingIndex < globalPipelineLayout->GetRootParameterBindingCount(); ++bindingIndex)
             {
-                RootParameterBinding binding = globalPipelineLayout->GetRootParameterBindingByIndex(bindingIndex);
-                if (binding.m_bindlessTable.IsValid())
+                const size_t srgSlot = globalPipelineLayout->GetSlotByIndex(bindingIndex);
+                if (srgSlot == device.GetBindlessSrgSlot())
                 {
-                    GetCommandList()->SetComputeRootDescriptorTable(
-                        binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
-                    break;
+                    RootParameterBinding binding = globalPipelineLayout->GetRootParameterBindingByIndex(bindingIndex);
+                    if (binding.m_bindlessTable.IsValid())
+                    {
+                        GetCommandList()->SetComputeRootDescriptorTable(
+                            binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
+                        break;
+                    }
+                    else
+                    {
+                        AZ_Assert(false, "The ShaderResourceGroup using the Bindless SRG Slot doesn't have bindless arrays.");
+                    }
                 }
             }
 
