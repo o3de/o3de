@@ -335,7 +335,7 @@ namespace AZ
                 }
                 if (pipelineViews.m_views.empty())
                 {
-                    m_pipelineViewsByTag.erase(viewTag);
+                    pipelineViews.m_type = PipelineViewType::Unknown;
                 }
             }
         }
@@ -366,10 +366,13 @@ namespace AZ
                     pipelineViews.m_views[0]->GetName().GetCStr(),
                     viewTag.GetCStr());
 
+                // persistent views always have exactly one view
                 pipelineViews.m_views[0]->SetPassesByDrawList(nullptr);
                 m_persistentViewsByViewTag.erase(pipelineViews.m_views[0].get());
-                // persistent views always have exactly one view
-                pipelineViews.m_views[0].reset();
+
+                // we are removing the only view, so we have to set the type to Unknown or the engine assumes m_views[0] is valid
+                pipelineViews.m_views.clear();
+                pipelineViews.m_type = PipelineViewType::Unknown;
 
                 if (m_scene)
                 {
@@ -382,6 +385,7 @@ namespace AZ
 
         void RenderPipeline::SetPersistentView(const PipelineViewTag& viewTag, ViewPtr view)
         {
+            AZ_Assert(view, "Persistent View for ViewTag [%s] is invalid.", viewTag.GetCStr());
             // If a view is registered for multiple viewTags, it gets only the PassesByDrawList of whatever
             // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
             // here if the view is already registered with another viewTag.
@@ -411,10 +415,9 @@ namespace AZ
                 }
                 else if (pipelineViews.m_type == PipelineViewType::Persistent) // re-registering a view
                 {
-                    if (pipelineViews.m_views.empty()) // the view could have been deleted previously
-                    {
-                        pipelineViews.m_views.resize(1, nullptr);
-                    }
+                    AZ_Assert(
+                        pipelineViews.m_views.size() == 1, "SetPersistentView(): PipelineViewType::Persistent needs exactly one view.");
+                    AZ_Assert(pipelineViews.m_views[0] != nullptr, "SetPersistentView(): previous view is invalid.");
                     previousView = pipelineViews.m_views[0];
                 }
 
@@ -484,6 +487,7 @@ namespace AZ
 
         void RenderPipeline::AddTransientView(const PipelineViewTag& viewTag, ViewPtr view)
         {
+            AZ_Assert(view, "Transient View for ViewTag [%s] is invalid.", viewTag.GetCStr());
             // If a view is registered for multiple viewTags, it gets only the PassesByDrawList of whatever
             // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
             // here if the view is already registered with another viewTag.
