@@ -177,8 +177,7 @@ namespace AtomToolsFramework
                         m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
                     return status == AssetStatusReporterState::Succeeded;
                 }
-
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
             }
 
             AssetStatusReporterSystemRequestBus::Event(

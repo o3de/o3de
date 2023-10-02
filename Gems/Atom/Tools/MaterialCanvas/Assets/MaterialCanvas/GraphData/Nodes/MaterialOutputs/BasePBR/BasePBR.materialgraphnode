@@ -12,15 +12,8 @@
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName.material",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName.materialtype",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_Common.azsli",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_Depth.azsl",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_DepthPass.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_Forward.azsl",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_ForwardPass.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_LowEndForward.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_MeshMotionVector.azsl",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_MeshMotionVector.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_MultiViewForward.shader",
-                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_Shadowmap.shader",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_DepthVertexData.azsli",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_DepthVertexEval.azsli",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_SurfaceEval.azsli",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/MaterialGraphName_VertexEval.azsli"
             ]
@@ -73,6 +66,9 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "doubleSided"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "InternalProperty"
                     ]
                 }
             },
@@ -136,6 +132,9 @@
                 "settings": {
                     "materialPropertyConnectionName": [
                         "castShadows"
+                    ],
+                    "materialPropertyConnectionType": [
+                        "InternalProperty"
                     ]
                 }
             },
