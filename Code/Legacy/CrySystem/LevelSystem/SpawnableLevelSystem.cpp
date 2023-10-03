@@ -326,10 +326,12 @@ namespace LegacyLevelSystem
             AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable(
                 rootSpawnableAssetId, azrtti_typeid<AzFramework::Spawnable>(), levelName);
 
-            // Gruber patch begin. // LVB
+// Gruber patch begin. // LVB
+#ifdef CARBONATED
             rootSpawnable.QueueLoad();
             rootSpawnable.BlockUntilLoadComplete();
-            // Gruber patch end. // LVB
+#endif
+// Gruber patch end. // LVB
 
             m_rootSpawnableId = rootSpawnableAssetId;
             m_rootSpawnableGeneration = AzFramework::RootSpawnableInterface::Get()->AssignRootSpawnable(rootSpawnable);

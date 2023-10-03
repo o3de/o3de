@@ -16,12 +16,12 @@
 // Gruber patch begin // VMED
 #include <AzCore/std/sort.h> 
 #include <AzFramework/Helpers/EntityHelpers.h> // Helper methods to evaluate Entities moved here
+#include <AzFramework/StringFunc/StringFunc.h>
 // Gruber patch end // VMED
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AzFramework
 {
@@ -655,7 +655,7 @@ namespace AzFramework
                 }
                 else
 #endif
-                // Gruber patch end // VMED
+// Gruber patch end // VMED
                 InitializeEntityIdMappings(entitiesToSpawn, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
 
                 auto aliasIt = aliases.begin();

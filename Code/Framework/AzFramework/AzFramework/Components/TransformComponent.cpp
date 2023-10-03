@@ -1076,7 +1076,6 @@ namespace AzFramework
         const AZ::Vector3 newTranslation = m_netTargetTranslation->GetInterpolatedValue(localTime);
         const AZ::Quaternion newRotation = m_netTargetRotation->GetInterpolatedValue(localTime);
         AZ::Transform newXform = AZ::Transform::CreateFromQuaternionAndTranslation(newRotation, newTranslation);
-
         // Gruber patch begin // VMED -- missed MultiplyByScale is replaced
         newXform.MultiplyByUniformScale(m_netTargetScale.GetX()); // local scale is setup as uniform scale
         // Gruber patch end // VMED
