@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
@@ -26,8 +27,6 @@ namespace AZ::DocumentPropertyEditor
         AdapterBuilder m_builder;
         // Look-up table of onChanged callbacks for handling property changes
         AZ::Dom::DomPrefixTree<AZStd::function<Dom::Value(const Dom::Value&)>> m_onChangedCallbacks;
-
-        static constexpr AZStd::string_view InspectorOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement";
 
         //! This represents a container or associative container instance and has methods
         //! for interacting with the container.
@@ -490,13 +489,11 @@ namespace AZ::DocumentPropertyEditor
 
         bool IsInspectorOverrideManagementEnabled()
         {
-            bool isInspectorOverrideManagementEnabled = true;
-
-            if (auto* registry = AZ::SettingsRegistry::Get())
+            bool isInspectorOverrideManagementEnabled = false;
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
             {
-                registry->Get(isInspectorOverrideManagementEnabled, InspectorOverrideManagementKey);
+                console->GetCvarValue("ed_enableInspectorOverrideManagement", isInspectorOverrideManagementEnabled);
             }
-
             return isInspectorOverrideManagementEnabled;
         }
 
