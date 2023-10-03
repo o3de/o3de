@@ -67,11 +67,11 @@ namespace AzFramework
             optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
         queueEntry.m_preInsertionCallback = AZStd::move(optionalArgs.m_preInsertionCallback);
-        // Gruber patch begin // VMED // Custom entity id remapper
+// Gruber patch begin // VMED // Custom entity id remapper
 #ifdef CARBONATED
         queueEntry.m_customEntityIdMapper = optionalArgs.m_customEntityIdMapper;
 #endif
-        // Gruber patch end // VMED // Custom entity id remapper
+// Gruber patch end // VMED // Custom entity id remapper
         QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
@@ -297,7 +297,7 @@ namespace AzFramework
         return queue.m_delayed.empty() ? CommandQueueStatus::NoCommandsLeft : CommandQueueStatus::HasCommandsLeft;
     }
 
-    // Gruber patch begin. // LVB. // Support unique instances
+// Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
     AZStd::shared_ptr<SpawnableInstanceDescriptor> SpawnableEntitiesManager::GetOwningSpawnable(const AZ::EntityId& entityId)
     {
