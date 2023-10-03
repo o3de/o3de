@@ -939,6 +939,13 @@ namespace AzFramework
     auto SpawnableEntitiesManager::ProcessRequest(DespawnAllEntitiesCommand& request) -> CommandResult
     {
         Ticket& ticket = *request.m_ticket;
+
+// Gruber patch begin // VMED // entity state ticket notificator
+#ifdef CARBONATED
+        EntitySpawnTicketStateBus::Broadcast(&EntitySpawnTicketStateBus::Events::OnRemoveEntities, ticket.m_ticketId);
+#endif
+// Gruber patch end // VMED // entity state ticket notificator
+
         if (request.m_requestId == ticket.m_currentRequestId)
         {
             for (AZ::Entity* entity : ticket.m_spawnedEntities)
@@ -978,6 +985,13 @@ namespace AzFramework
     auto SpawnableEntitiesManager::ProcessRequest(DespawnEntityCommand& request) -> CommandResult
     {
         Ticket& ticket = *request.m_ticket;
+
+// Gruber patch begin // VMED // entity state ticket notificator
+#ifdef CARBONATED
+        EntitySpawnTicketStateBus::Broadcast(&EntitySpawnTicketStateBus::Events::OnRemoveEntities, ticket.m_ticketId);
+#endif
+// Gruber patch end // VMED // entity state ticket notificator
+
         if (request.m_requestId == ticket.m_currentRequestId)
         {
             AZStd::vector<AZ::Entity*>& spawnedEntities = request.m_ticket->m_spawnedEntities;
