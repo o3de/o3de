@@ -17,7 +17,7 @@ namespace UnitTest
         // Enable feature flags for DPE and InspectorOverrideManagement
         if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            console->GetCvarValue("ed_enableOutlinerOverrideManagement", m_ed_enableInspectorOverrideManagement);
+            console->GetCvarValue("ed_enableOutlinerOverrideManagement", m_ed_enableOutlinerOverrideManagement);
             console->GetCvarValue("ed_enableDPEInspector", m_ed_enableDPEInspector);
             console->PerformCommand("ed_enableOutlinerOverrideManagement true");
             console->PerformCommand("ed_enableDPEInspector true");
@@ -34,7 +34,7 @@ namespace UnitTest
         PrefabOverrideTestFixture::TearDownEditorFixtureImpl();
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableDPEInspector", m_ed_enableDPEInspector);
-        registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableInspectorOverrideManagement", m_ed_enableInspectorOverrideManagement);
+        registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableOutlinerOverrideManagement", m_ed_enableOutlinerOverrideManagement);
     }
 
     void PrefabInspectorOverrideTestFixture::GenerateComponentAdapterDoms(AZ::EntityId entityId)
