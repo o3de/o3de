@@ -45,23 +45,23 @@ namespace AZ
                     template<typename FirstIterator, typename SecondIterator>
                     struct PairIteratorCategory
                     {
-                        static const bool s_sameCategory = AZStd::is_same<
-                                typename AZStd::iterator_traits<FirstIterator>::iterator_category,
-                                typename AZStd::iterator_traits<SecondIterator>::iterator_category>::value;
+                        static constexpr bool s_sameCategory = AZStd::is_same<
+                            typename AZStd::iterator_traits<FirstIterator>::iterator_category,
+                            typename AZStd::iterator_traits<SecondIterator>::iterator_category>::value;
 
                         // True if both categories are the same.
                         // True if FirstIterator has the lower category in the hierarchy
                         // False if ValueItator has the lower category or is unrelated.
-                        static const bool s_firstIteratorCategoryIsBaseOfSecondIterator = AZStd::is_base_of<
-                                typename AZStd::iterator_traits<FirstIterator>::iterator_category,
-                                typename AZStd::iterator_traits<SecondIterator>::iterator_category>::value;
+                        static constexpr bool s_firstIteratorCategoryIsBaseOfSecondIterator = AZStd::is_base_of<
+                            typename AZStd::iterator_traits<FirstIterator>::iterator_category,
+                            typename AZStd::iterator_traits<SecondIterator>::iterator_category>::value;
 
                         // True if both categories are the same.
                         // True if SecondIterator has the lower category in the hierarchy
                         // False if FirstItator has the lower category or is unrelated.
-                        static const bool s_SecondIteratorCategoryIsBaseOfFirstIterator = AZStd::is_base_of<
-                                typename AZStd::iterator_traits<SecondIterator>::iterator_category,
-                                typename AZStd::iterator_traits<FirstIterator>::iterator_category>::value;
+                        static constexpr bool s_SecondIteratorCategoryIsBaseOfFirstIterator = AZStd::is_base_of<
+                            typename AZStd::iterator_traits<SecondIterator>::iterator_category,
+                            typename AZStd::iterator_traits<FirstIterator>::iterator_category>::value;
 
                         static_assert(s_sameCategory || (s_firstIteratorCategoryIsBaseOfSecondIterator != s_SecondIteratorCategoryIsBaseOfFirstIterator),
                             "The iterator categories for the first and second in the PairIterator are unrelated categories.");
