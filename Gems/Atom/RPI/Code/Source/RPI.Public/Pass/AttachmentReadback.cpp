@@ -126,7 +126,7 @@ namespace AZ
             AZ_Assert(result == RHI::ResultCode::Success, "AttachmentReadback failed to init fence");
 
             // Load shader and srg
-            const char* ShaderPath = "shaders/decomposemsimage.azshader";
+            constexpr const char* ShaderPath = "shaders/decomposemsimage.azshader";
             m_decomposeShader = LoadCriticalShader(ShaderPath);
 
             if (m_decomposeShader == nullptr)
