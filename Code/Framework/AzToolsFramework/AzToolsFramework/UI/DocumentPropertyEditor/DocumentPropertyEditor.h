@@ -221,11 +221,6 @@ namespace AzToolsFramework
         // but can be overridden here
         void SetSpawnDebugView(bool shouldSpawn);
 
-        static constexpr const char* GetEnableDPECVarName()
-        {
-            return "ed_enableDPE";
-        }
-        static bool ShouldReplaceRPE();
         static bool ShouldReplaceCVarEditor();
 
         static constexpr const char* GetEnableCVarEditorName()

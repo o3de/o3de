@@ -25,14 +25,6 @@
 
 AZ_CVAR(
     bool,
-    ed_enableDPE,
-    true,
-    nullptr,
-    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, enables experimental Document Property Editor support, replacing the Reflected Property Editor where possible");
-
-AZ_CVAR(
-    bool,
     ed_enableCVarDPE,
     true,
     nullptr,
@@ -1599,16 +1591,6 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::SetSpawnDebugView(bool shouldSpawn)
     {
         m_spawnDebugView = shouldSpawn;
-    }
-
-    bool DocumentPropertyEditor::ShouldReplaceRPE()
-    {
-        bool dpeEnabled = false;
-        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
-        {
-            console->GetCvarValue(GetEnableDPECVarName(), dpeEnabled);
-        }
-        return dpeEnabled;
     }
 
     bool DocumentPropertyEditor::ShouldReplaceCVarEditor()

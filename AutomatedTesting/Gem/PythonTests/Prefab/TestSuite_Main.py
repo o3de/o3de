@@ -17,9 +17,9 @@ class TestAutomationOverridesDisabled(EditorTestSuite):
 
     # These tests will execute with Outliner Overrides/Inspector DPE/Inspector Overrides disabled
     EditorTestSuite.global_extra_cmdline_args.extend(
-        [f"--regset=/O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement=false",
-         f"--regset=/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement=false",
-         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPE=false"])
+        [f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableOutlinerOverrideManagement=false",
+         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableInspectorOverrideManagement=false",
+         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPEInspector=false"])
 
     # Add Entity Tests
     class test_AddEntity_UnderAnotherEntity(EditorBatchedTest):
@@ -182,9 +182,9 @@ class TestAutomationOverrides(EditorTestSuite):
 
     # These tests will execute with Outliner Overrides/Inspector DPE/Inspector Overrides enabled
     EditorTestSuite.global_extra_cmdline_args.extend(
-        [f"--regset=/O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement=true",
-         f"--regset=/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement=true",
-         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPE=true"])
+        [f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableOutlinerOverrideManagement=true",
+         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableInspectorOverrideManagement=true",
+         f"--regset=/O3DE/Autoexec/ConsoleCommands/ed_enableDPEInspector=true"])
 
     # Overrides Tests
 
