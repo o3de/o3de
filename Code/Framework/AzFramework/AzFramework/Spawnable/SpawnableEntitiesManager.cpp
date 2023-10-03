@@ -346,11 +346,8 @@ namespace AzFramework
             }
         }
     }
-
-
-
 #endif
-    // Gruber patch end. // LVB. // Support unique instances
+// Gruber patch end. // LVB. // Support unique instances
 
     void* SpawnableEntitiesManager::CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable)
     {
