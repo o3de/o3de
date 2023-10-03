@@ -58,8 +58,7 @@ namespace AZ
 
                 [[nodiscard]] explicit constexpr operator size_t() const
                 {
-                    size_t path_hash = AZ::IO::hash_value(AZ::IO::PathView(m_filename));
-                    return path_hash;
+                    return AZ::IO::hash_value(AZ::IO::PathView(m_filename));
                 }
 
                 bool operator==(const ExportProduct& other) const
