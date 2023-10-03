@@ -11,6 +11,10 @@
 #include <scenesrg.srgi>
 #include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
 
+#ifndef MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
+#define MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
+#endif
+
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
     uint m_objectId;
@@ -35,4 +39,6 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
     ReflectionProbeData m_reflectionProbeData;
     TextureCube m_reflectionProbeCubeMap;
+
+    MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
 }
