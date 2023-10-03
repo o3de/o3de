@@ -31,6 +31,10 @@ namespace AZ::Render
         SilhouetteFeatureProcessor();
         ~SilhouetteFeatureProcessor() override;
 
+        //! Set the enabled state of the gather and composite passes
+        //! @param enabled Whether to enable the passes or not
+        void SetPassesEnabled(bool enabled);
+
         //! FeatureProcessor 
         void Activate() override;
         void Deactivate() override;
