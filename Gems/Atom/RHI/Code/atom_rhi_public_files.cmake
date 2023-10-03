@@ -237,7 +237,9 @@ set(FILES
     Include/Atom/RHI/TileAllocator.h
     Include/Atom/RHI/TileAllocator.inl
     Include/Atom/RHI/TransientAttachmentPool.h
+    Include/Atom/RHI/MultiDeviceTransientAttachmentPool.h
     Source/RHI/TransientAttachmentPool.cpp
+    Source/RHI/MultiDeviceTransientAttachmentPool.cpp
     Include/Atom/RHI/RHIUtils.h
     Source/RHI/RHIUtils.cpp
     Include/Atom/RHI/RayTracingAccelerationStructure.h
