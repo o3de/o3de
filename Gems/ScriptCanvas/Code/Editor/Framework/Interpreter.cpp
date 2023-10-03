@@ -97,6 +97,7 @@ namespace ScriptCanvasEditor
 
     bool Interpreter::InitializeExecution(ScriptCanvas::RuntimeAssetPtr asset)
     {
+        AZ_Printf("**** Interpreter", "InitializeExecution. id=%s, hint=%s\n", asset.GetId().ToFixedString().c_str(), asset.GetHint().c_str());
         if (asset.Get())
         {
             if (m_executor.IsExecutable())

@@ -215,6 +215,7 @@ namespace AZ
 
         SetState(State::Active);
 
+        AZ_Printf("Entity", "Activate. %s, %s, m_components.size=%i", GetId().ToString().c_str(), GetName().c_str(), m_components.size());
         EntityBus::Event(m_id, &EntityBus::Events::OnEntityActivated, m_id);
         EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityActivated, m_id);
         AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
@@ -238,6 +239,8 @@ namespace AZ
 
         AZ_Assert(m_state == State::Active, "Component should be in Active state to be Deactivated!");
         SetState(State::Deactivating);
+
+        AZ_Printf("Entity", "Deactivate. %s, %s, m_components.size=%i", GetId().ToString().c_str(), GetName().c_str(), m_components.size());
 
         for (ComponentArrayType::reverse_iterator it = m_components.rbegin(); it != m_components.rend(); ++it)
         {

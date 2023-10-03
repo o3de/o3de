@@ -398,22 +398,11 @@ namespace AzFramework
 
     Spawnable::Spawnable(const AZ::Data::AssetId& id, AssetStatus status)
         : AZ::Data::AssetData(id, status)
-    {
-// Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
-        m_instanceId = SpawnableInstanceId::CreateNull();
+        , m_isDynamic(false) // Gruber patch // VMED
 #endif
-    }
-// Gruber patch end. // LVB. // Support unique instances
-
-// Gruber patch begin. // LVB. // Support unique instances
-#ifdef CARBONATED
-    void Spawnable::GenerateInstanceId()
     {
-        m_instanceId = SpawnableInstanceId::CreateRandom();
     }
-#endif
-// Gruber patch end. // LVB. // Support unique instances
 
     const Spawnable::EntityList& Spawnable::GetEntities() const
     {

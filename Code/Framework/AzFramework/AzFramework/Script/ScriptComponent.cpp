@@ -522,9 +522,11 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::Activate()
     {
+        AZ_Printf("ScriptComponent", "Load: %s", m_script.GetHint().c_str());
+
         AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
         AZ_Error("LuaComponent", m_script.GetAutoLoadBehavior() == AZ::Data::AssetLoadBehavior::PreLoad, "Runtime LuaComponent script asset not set to Preload");
-        AZ_Error("LuaComponent", m_script.Get(), "Runtime LuaComponent script asset not preloaded and ready");
+        AZ_Error("LuaComponent", m_script.Get(), "Runtime LuaComponent script asset not preloaded and ready. %s", m_script.GetHint().c_str());
 
         // Load the script, find the base table...
         if (LoadInContext())

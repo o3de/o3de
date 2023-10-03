@@ -77,10 +77,21 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
+        AZ_Printf(
+            "*****",
+            "EditorScriptCanvasComponent::BuildGameEntity. gameEntity->GetId()=%s. HasSource=%i",
+            gameEntity->GetId().ToString().c_str(),
+            m_configuration.HasSource(),
+            m_configuration.GetSource().Name().c_str());
+
         if (!m_configuration.HasSource())
         {
             return;
         }
+
+        AZ_Printf(
+            "*****",
+            "EditorScriptCanvasComponent::BuildGameEntity. Source=%s", m_configuration.GetSource().Name().c_str());
 
         if (auto buildVariableOptional = m_configuration.CompileLatest())
         {
@@ -89,7 +100,7 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            AZ_Error("ScriptCanvasBuilder", false, "Runtime information did not build for ScriptCanvas Component using source: %s"
+            AZ_Error("***** ScriptCanvasBuilder", false, "Runtime information did not build for ScriptCanvas Component using source: %s"
                 , m_configuration.GetSource().ToString().c_str());
         }
     }
