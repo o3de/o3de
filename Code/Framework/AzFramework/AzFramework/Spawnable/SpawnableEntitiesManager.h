@@ -87,6 +87,7 @@ namespace AzFramework
 // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
         AZStd::shared_ptr<SpawnableInstanceDescriptor> GetOwningSpawnable(const AZ::EntityId& entityId) override;
+        void DespawnAllEntitiesInTicketByEntityID(const AZ::EntityId& entityId, DespawnAllEntitiesOptionalArgs optionalArgs) override; // async
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 

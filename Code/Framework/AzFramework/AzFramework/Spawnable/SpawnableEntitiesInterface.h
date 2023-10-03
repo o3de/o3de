@@ -208,6 +208,21 @@ namespace AzFramework
         class SpawnableEntitiesDefinition* m_interface{ nullptr };
     };
 
+// Gruber patch begin // VMED // entity state ticket notificator
+#ifdef CARBONATED
+    class EntitySpawnTicketState :
+        public AZ::EBusTraits
+    {
+    public:
+        virtual ~EntitySpawnTicketState() = default;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        virtual void OnRemoveEntities(EntitySpawnTicket::Id) {}
+    };
+
+    typedef AZ::EBus<EntitySpawnTicketState> EntitySpawnTicketStateBus;
+#endif
+// Gruber patch end // VMED
+
     using EntitySpawnCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
     using EntityPreInsertionCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableEntityContainerView)>;
     using EntityDespawnCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
@@ -393,6 +408,11 @@ namespace AzFramework
             m_entityPtrList = entityList;
         }
 
+        const AZ::u32 GetEntitySpawnTicketId() const
+        {
+            return m_entitySpawnTicketId;
+        }
+
         static AZStd::shared_ptr<SpawnableInstanceDescriptor> GetInvalidDescriptor();
 
         bool FinalizeCreateInstance(void* remapContainer,
@@ -405,7 +425,7 @@ namespace AzFramework
         SpawnableInstanceId m_spawnableInstanceId; ///< UUid of the unique instantiated spawnable
         EntityIdToEntityIdMap m_baseToNewEntityIdMap; ///< Map of old entityId to new
         mutable EntityIdToEntityIdMap m_entityIdToBaseCache; ///< reverse lookup to \ref m_baseToNewEntityIdMap, this is build on demand
-        AZ::u32 m_entitySpawnTicketId; // reserved for Spawnable access
+        AZ::u32 m_entitySpawnTicketId; ///< Spawned ticket id
         EntityPtrList m_entityPtrList;
 
         // The lookup is built lazily when accessing the map, but constness is desirable
@@ -528,6 +548,11 @@ namespace AzFramework
          * @return SpawnableInstanceDescriptor
          */
         virtual AZStd::shared_ptr<SpawnableInstanceDescriptor> GetOwningSpawnable(const AZ::EntityId& entityId) = 0;
+
+        // Uses a ticket to despawn entities.
+        // Gets ticket id from SpawnableInstanceDescriptor or from entity definition.
+        // Also removes an associated SpawnableInstanceDescriptor if it exists.
+        virtual void DespawnAllEntitiesInTicketByEntityID(const AZ::EntityId& entityId, DespawnAllEntitiesOptionalArgs optionalArgs = {}) = 0; // async
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 

@@ -13,7 +13,10 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzCore/std/sort.h> // Gruber patch // VMED
+// Gruber patch begin // VMED
+#include <AzCore/std/sort.h> 
+#include <AzFramework/Helpers/EntityHelpers.h> // Helper methods to evaluate Entities moved here
+// Gruber patch end // VMED
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
@@ -305,6 +308,47 @@ namespace AzFramework
         }
         return SpawnableInstanceDescriptor::GetInvalidDescriptor();
     }
+
+    void SpawnableEntitiesManager::DespawnAllEntitiesInTicketByEntityID(const AZ::EntityId& entityId, DespawnAllEntitiesOptionalArgs optionalArgs)
+    {
+        constexpr EntitySpawnTicket::Id InvalidTicketId = (EntitySpawnTicket::Id)-1;
+
+        if (entityId.IsValid())
+        {
+            EntitySpawnTicket::Id ticketId = InvalidTicketId;
+
+            AZStd::shared_ptr<SpawnableInstanceDescriptor> spawnableInfo = GetOwningSpawnable(entityId);
+            if (spawnableInfo && spawnableInfo->IsValid())
+            {
+                // get ticket id from SpawnableInstanceDescriptor
+                ticketId = spawnableInfo->GetEntitySpawnTicketId();
+            }
+            else
+            {
+                // get ticket id from Entity (when SpawnableInstanceDescriptor is absent)
+                const AZ::Entity* entity = EntityHelpers::GetEntity(entityId);
+                if (entity) // "entity is NULL" if entity with this entityId is missed or already removed
+                {
+                    ticketId = entity->GetEntitySpawnTicketId();
+                }
+            }
+
+            if (ticketId != InvalidTicketId)
+            {
+                SpawnableEntitiesInterface::Get()->RetrieveTicket(ticketId,
+                    [optionalArgs](EntitySpawnTicket&& entitySpawnTicket)
+                    {
+                        if (entitySpawnTicket.IsValid())
+                        {
+                            SpawnableEntitiesInterface::Get()->DespawnAllEntities(entitySpawnTicket, optionalArgs);
+                        }
+                    });
+            }
+        }
+    }
+
+
+
 #endif
     // Gruber patch end. // LVB. // Support unique instances
 
@@ -895,6 +939,13 @@ namespace AzFramework
     auto SpawnableEntitiesManager::ProcessRequest(DespawnAllEntitiesCommand& request) -> CommandResult
     {
         Ticket& ticket = *request.m_ticket;
+
+// Gruber patch begin // VMED // entity state ticket notificator
+#ifdef CARBONATED
+        EntitySpawnTicketStateBus::Broadcast(&EntitySpawnTicketStateBus::Events::OnRemoveEntities, ticket.m_ticketId);
+#endif
+// Gruber patch end // VMED // entity state ticket notificator
+
         if (request.m_requestId == ticket.m_currentRequestId)
         {
             for (AZ::Entity* entity : ticket.m_spawnedEntities)
@@ -934,6 +985,13 @@ namespace AzFramework
     auto SpawnableEntitiesManager::ProcessRequest(DespawnEntityCommand& request) -> CommandResult
     {
         Ticket& ticket = *request.m_ticket;
+
+// Gruber patch begin // VMED // entity state ticket notificator
+#ifdef CARBONATED
+        EntitySpawnTicketStateBus::Broadcast(&EntitySpawnTicketStateBus::Events::OnRemoveEntities, ticket.m_ticketId);
+#endif
+// Gruber patch end // VMED // entity state ticket notificator
+
         if (request.m_requestId == ticket.m_currentRequestId)
         {
             AZStd::vector<AZ::Entity*>& spawnedEntities = request.m_ticket->m_spawnedEntities;
