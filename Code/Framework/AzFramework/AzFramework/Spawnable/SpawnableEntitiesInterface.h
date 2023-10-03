@@ -415,15 +415,11 @@ namespace AzFramework
 
         static AZStd::shared_ptr<SpawnableInstanceDescriptor> GetInvalidDescriptor();
 
-        bool FinalizeCreateInstance(void* remapContainer,
-            const AZ::Uuid& classUuid,
-            const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customMapper);
-
     protected:
 
         AZ::Data::AssetId m_assetId; ///< AssetId of the spawnable
         SpawnableInstanceId m_spawnableInstanceId; ///< UUid of the unique instantiated spawnable
-        EntityIdToEntityIdMap m_baseToNewEntityIdMap; ///< Map of old entityId to new
+        EntityIdToEntityIdMap m_baseToNewEntityIdMap; ///< Map of the static entityId to the new (dynamic) entityId
         mutable EntityIdToEntityIdMap m_entityIdToBaseCache; ///< reverse lookup to \ref m_baseToNewEntityIdMap, this is build on demand
         AZ::u32 m_entitySpawnTicketId; ///< Spawned ticket id
         EntityPtrList m_entityPtrList;

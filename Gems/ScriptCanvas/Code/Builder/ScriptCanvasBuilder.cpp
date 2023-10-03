@@ -315,7 +315,7 @@ namespace ScriptCanvasBuilder
         ScriptCanvas::RuntimeDataOverrides runtimeOverrides;
 #if defined(CARBONATED_LOG)
         AZ_Printf(
-            "*****",
+            "ScriptCanvas",
             "ConvertToRuntime. Source=%s, size=%i",
             buildOverrides.m_source.Id().ToFixedString().c_str(),
             buildOverrides.m_variables.size());

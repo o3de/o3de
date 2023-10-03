@@ -216,7 +216,7 @@ namespace AZ
         SetState(State::Active);
 
 #if defined(CARBONATED_LOG)
-        AZ_Printf("Entity", "Activate. %s, %s, m_components.size=%i", GetId().ToString().c_str(), GetName().c_str(), m_components.size());
+        AZ_Printf("Entity", "Activate. %s, %s, m_components.size=%u", GetId().ToString().c_str(), GetName().c_str(), m_components.size());
 #endif
         EntityBus::Event(m_id, &EntityBus::Events::OnEntityActivated, m_id);
         EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityActivated, m_id);
@@ -243,7 +243,7 @@ namespace AZ
         SetState(State::Deactivating);
 
 #if defined(CARBONATED_LOG)
-        AZ_Printf("Entity", "Deactivate. %s, %s, m_components.size=%i", GetId().ToString().c_str(), GetName().c_str(), m_components.size());
+        AZ_Printf("Entity", "Deactivate. %s, %s, m_components.size=%u", GetId().ToString().c_str(), GetName().c_str(), m_components.size());
 #endif
 
         for (ComponentArrayType::reverse_iterator it = m_components.rbegin(); it != m_components.rend(); ++it)
