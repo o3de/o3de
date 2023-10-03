@@ -59,6 +59,14 @@ AZ_POP_DISABLE_WARNING
 
 AZ_CVAR_EXTERNED(bool, ed_enableDPE);
 
+AZ_CVAR(
+    bool,
+    ed_enableDPEAssetEditor,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, enables experimental Document Property Editor for the AssetEditor");
+
 namespace AzToolsFramework
 {
     namespace AssetEditor
@@ -159,8 +167,17 @@ namespace AzToolsFramework
             setObjectName("AssetEditorTab");
 
             QWidget* propertyEditor = nullptr;
-            // TODO: Re-enable the DPE in the Asset Editor
-            //m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
+
+            // use the DPE version of the AssetEditor if both ed_enableDPE and ed_enableDPEAssetEditor are enabled
+            m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
+            if (m_useDPE)
+            {
+                if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+                {
+                    console->GetCvarValue("ed_enableDPEAssetEditor", m_useDPE);
+                }
+            }
+
             if (!m_useDPE)
             {
                 m_propertyEditor = new ReflectedPropertyEditor(this);
