@@ -107,11 +107,12 @@ namespace AzFramework
             {
                 if (visitArgs.m_type != AZ::SettingsRegistryInterface::Type::String)
                 {
-                    // object entries (Lua) are not supported yet
+                    // when Lua entries are supported, object entries will also be supported
+                    // but for now only strings are supported
                     AZ_Warning(
                         "QualitySystemComponent",
                         false,
-                        "Skipping device attribute rule object entry '%.*s' that is not a string.",
+                        "Skipping device attribute rule entry '%.*s' that is not a string.",
                         AZ_STRING_ARG(visitArgs.m_fieldName));
                     return AZ::SettingsRegistryInterface::VisitResponse::Skip;
                 }
@@ -171,10 +172,13 @@ namespace AzFramework
             return hasMatchingRule;
         }
 
+        //! Stores the value for a console variable setting found in a matching device rule 
+        //! DeviceRuleResolution will be used to ensure only one console setting value is
+        //! actually executed after all rules have been evaluated.
         struct RuleSetting
         {
-            AZStd::string setting;
-            AZStd::string value;
+            AZStd::string m_setting;
+            AZStd::string m_value;
         };
 
         // order matters with rules, the user may choose to use the first matching rule or the last (default)
@@ -207,11 +211,20 @@ namespace AzFramework
                         if (iter != settingsMap.end() && ruleResolution != DeviceRuleResolution::Last)
                         {
                             double currentValue = 0;
-                            AZ::ConsoleTypeHelpers::StringToValue(currentValue, iter->second->value);
+
+                            // When the user specifies they want to use the "Min" rule resolution
+                            // they want to apply the setting with the lowest value so we check if the
+                            // current value we have for a settings is already equal to or lower than the
+                            // new value, and if it is we skip this value - this is useful
+                            // when you want to take a conservative approach to apply settings
+                            // that should definitely work on a device.
+                            // Conversely, when "Max" rule resolution is selected, we want the highest
+                            // setting values so we skip any values that are not greater than the
+                            // current setting value.
+                            AZ::ConsoleTypeHelpers::StringToValue(currentValue, iter->second->m_value);
                             if ((ruleResolution == DeviceRuleResolution::Min && currentValue <= value) ||
                                 (ruleResolution == DeviceRuleResolution::Max && currentValue >= value))
                             {
-                                // disregard this entry because we already have a better value
                                 return AZ::SettingsRegistryInterface::VisitResponse::Skip;
                             }
                         }
@@ -227,15 +240,15 @@ namespace AzFramework
                 case Type::Integer:
                     if (AZ::s64 value; registry->Get(value, visitArgs.m_jsonKeyPath))
                     {
-                        // handle Min/Max rule resolution for numbers
                         if (iter != settingsMap.end() && ruleResolution != DeviceRuleResolution::Last)
                         {
+                            // see the comments above regarding "Min" and "Max" rule resolution,
+                            // we're following the same logic here 
                             AZ::s64 currentValue = 0;
-                            AZ::ConsoleTypeHelpers::StringToValue(currentValue, iter->second->value);
+                            AZ::ConsoleTypeHelpers::StringToValue(currentValue, iter->second->m_value);
                             if ((ruleResolution == DeviceRuleResolution::Min && currentValue <= value) ||
                                 (ruleResolution == DeviceRuleResolution::Max && currentValue >= value))
                             {
-                                // disregard this entry because we already have a better value
                                 return AZ::SettingsRegistryInterface::VisitResponse::Skip;
                             }
                         }
@@ -265,11 +278,10 @@ namespace AzFramework
                     settingsList.erase(iter->second);
                 }
 
-                // add the setting to the back of the list
-                settingsList.push_back({ AZStd::string(visitArgs.m_fieldName), stringValue.c_str() });
-
-                // update/store a mapping of "setting" -> list iterator in the settings map
-                settingsMap[visitArgs.m_fieldName] = --settingsList.end();
+                // add the setting to the back of the list and update/store
+                // a mapping of "setting" -> list iterator in the settings map
+                settingsMap[visitArgs.m_fieldName] = settingsList.emplace(settingsList.end(),
+                    RuleSetting{ AZStd::string(visitArgs.m_fieldName), stringValue.c_str() });
 
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             };
@@ -330,8 +342,8 @@ namespace AzFramework
         // go through rule settings list and apply them in order
         for (auto entry : ruleSettings)
         {
-            console->PerformCommand(AZStd::string_view(entry.setting),
-                { entry.value }, AZ::ConsoleSilentMode::Silent);
+            console->PerformCommand(AZStd::string_view(entry.m_setting),
+                { entry.m_value }, AZ::ConsoleSilentMode::Silent);
         }
     }
 

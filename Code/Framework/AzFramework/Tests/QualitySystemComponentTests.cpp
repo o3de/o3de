@@ -88,7 +88,7 @@ namespace UnitTest
                 auto regex = AZStd::regex(rule.data(), rule.size());
                 return AZStd::regex_match(valueString, regex);
             };
-            m_testDeviceAttribute = AZStd::make_shared<TestDeviceAttribute>(name, description, value, eval);
+            m_testDeviceAttribute = AZStd::make_shared<TestDeviceAttribute>(AZStd::move(name), AZStd::move(description), AZStd::move(value), AZStd::move(eval));
             auto registrar = AzFramework::DeviceAttributeRegistrar::Get();
             ASSERT_NE(nullptr, registrar);
             EXPECT_TRUE(registrar->RegisterDeviceAttribute(m_testDeviceAttribute));
