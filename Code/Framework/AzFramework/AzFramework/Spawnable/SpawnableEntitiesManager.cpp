@@ -311,9 +311,11 @@ namespace AzFramework
 
     void SpawnableEntitiesManager::DespawnAllEntitiesInTicketByEntityID(const AZ::EntityId& entityId, DespawnAllEntitiesOptionalArgs optionalArgs)
     {
+        constexpr EntitySpawnTicket::Id InvalidTicketId = (EntitySpawnTicket::Id)-1;
+
         if (entityId.IsValid())
         {
-            EntitySpawnTicket::Id ticketId = 0;
+            EntitySpawnTicket::Id ticketId = InvalidTicketId;
 
             AZStd::shared_ptr<SpawnableInstanceDescriptor> spawnableInfo = GetOwningSpawnable(entityId);
             if (spawnableInfo && spawnableInfo->IsValid())
@@ -331,7 +333,7 @@ namespace AzFramework
                 }
             }
 
-            if (ticketId != 0)
+            if (ticketId != InvalidTicketId)
             {
                 SpawnableEntitiesInterface::Get()->RetrieveTicket(ticketId,
                     [optionalArgs](EntitySpawnTicket&& entitySpawnTicket)
