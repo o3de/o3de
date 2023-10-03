@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/Importer/Importer.h>
@@ -172,7 +173,7 @@ namespace EMotionFX
         AZStd::optional<AZ::Data::AssetId> ActorGroupExporter::GetMeshAssetId(const ActorGroupExportContext& context) const
         {
             AZ::Data::AssetType atomModelAssetType = azrtti_typeid<AZ::RPI::ModelAsset>();
-            const AZStd::vector<AZ::SceneAPI::Events::ExportProduct>& products = context.m_products.GetProducts();
+            const AZStd::unordered_set<AZ::SceneAPI::Events::ExportProduct>& products = context.m_products.GetProducts();
 
             // Gather the asset ids from the exported mesh groups (Atom model assets).
             AZStd::vector<AZ::SceneAPI::Events::ExportProduct> atomModelAssets;
@@ -199,7 +200,7 @@ namespace EMotionFX
         AZStd::optional<AZ::SceneAPI::Events::ExportProduct> ActorGroupExporter::GetFirstProductByType(
             const ActorGroupExportContext& context, AZ::Data::AssetType type)
         {
-            const AZStd::vector<AZ::SceneAPI::Events::ExportProduct>& products = context.m_products.GetProducts();
+            const AZStd::unordered_set<AZ::SceneAPI::Events::ExportProduct>& products = context.m_products.GetProducts();
             for (const AZ::SceneAPI::Events::ExportProduct& product : products)
             {
                 if (product.m_assetType == type)

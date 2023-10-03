@@ -11,6 +11,8 @@
 #include <AzCore/base.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
 
 namespace AZ
@@ -53,6 +55,17 @@ namespace AZ
                 AZStd::vector<AZStd::string> m_legacyPathDependencies;
                 //! In the case of CGFs, we will have LOD export products that are dependencies of the base LOD
                 AZStd::vector<ExportProduct> m_productDependencies;
+
+                [[nodiscard]] explicit constexpr operator size_t() const
+                {
+                    size_t path_hash = AZ::IO::hash_value(AZ::IO::PathView(m_filename));
+                    return path_hash;
+                }
+
+                bool operator==(const ExportProduct& other) const
+                {
+                    return AZ::IO::PathView(m_filename) == AZ::IO::PathView(other.m_filename);
+                }
             };
 
             class ExportProductList
@@ -65,12 +78,12 @@ namespace AZ
                 SCENE_CORE_API ExportProduct& AddProduct(AZStd::string&& filename, Uuid id, Data::AssetType assetType, AZStd::optional<u8> lod, AZStd::optional<u32> subId,
                     Data::ProductDependencyInfo::ProductDependencyFlags dependencyFlags = Data::ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::NoLoad));
 
-                SCENE_CORE_API const AZStd::vector<ExportProduct>& GetProducts() const;
+                SCENE_CORE_API const AZStd::unordered_set<ExportProduct>& GetProducts() const;
 
                 SCENE_CORE_API void AddDependencyToProduct(const AZStd::string& productName, ExportProduct& dependency);
 
             private:
-                AZStd::vector<ExportProduct> m_products;
+                AZStd::unordered_set<ExportProduct> m_products;
             };
         } // namespace Events
     } // namespace SceneAPI
