@@ -45,10 +45,12 @@ namespace ScriptCanvas
 
         const void* ActivationData::GetVariableSource(size_t index, size_t& overrideIndexTracker) const
         {
+#if defined(CARBONATED_LOG)
             if (index == 0 && variableOverrides.m_variableIndices.size() == 0)
             {
                 AZ_Printf("ActivationData", "Execution");
             }
+#endif
             if (index < variableOverrides.m_variableIndices.size() && variableOverrides.m_variableIndices[index])
             {
                 return AZStd::any_cast<void>(&variableOverrides.m_variables[overrideIndexTracker++].value);
@@ -68,10 +70,12 @@ namespace ScriptCanvas
             AZ_Assert(rangeOut.totalCount <= activationData.storage.size(), "Too many initial arguments for activation. "
                 "Consider increasing size, source of ActivationInputArray, or breaking up the source graph");
 
+#if defined(CARBONATED_LOG)
             if (activationData.variableOverrides.m_runtimeAsset.GetHint().contains("playercharactervisualfeedback.scriptcanvas_compiled"))
             {
                 AZ_Printf("Context", "*** CreateActivateInputRange");
             }
+#endif
 
             // nodeables - until the optimization is required, every instance gets their own copy
             {
