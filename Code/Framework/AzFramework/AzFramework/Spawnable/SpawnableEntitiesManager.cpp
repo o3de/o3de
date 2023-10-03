@@ -311,42 +311,38 @@ namespace AzFramework
 
     void SpawnableEntitiesManager::DespawnAllEntitiesInTicketByEntityID(const AZ::EntityId& entityId, DespawnAllEntitiesOptionalArgs optionalArgs)
     {
-        EntitySpawnTicket::Id ticketId = 0;
-
-        AZStd::shared_ptr<SpawnableInstanceDescriptor> spawnableInfo = GetOwningSpawnable(entityId);
-        if (spawnableInfo && spawnableInfo->IsValid())
+        if (entityId.IsValid())
         {
-            // get ticket id from SpawnableInstanceDescriptor
-            ticketId = spawnableInfo->GetEntitySpawnTicketId();
+            EntitySpawnTicket::Id ticketId = 0;
 
-            // remove all SpawnableInstanceDescriptor entries
-            for (auto it = begin(m_entitySpawnableMap); it != end(m_entitySpawnableMap);)
+            AZStd::shared_ptr<SpawnableInstanceDescriptor> spawnableInfo = GetOwningSpawnable(entityId);
+            if (spawnableInfo && spawnableInfo->IsValid())
             {
-                if (it->second == spawnableInfo)
+                // get ticket id from SpawnableInstanceDescriptor
+                ticketId = spawnableInfo->GetEntitySpawnTicketId();
+            }
+            else
+            {
+                // get ticket id from Entity (when SpawnableInstanceDescriptor is absent)
+                const AZ::Entity* entity = EntityHelpers::GetEntity(entityId);
+                if (entity) // "entity is NULL" if entity with this entityId is missed or already removed
                 {
-                    it = m_entitySpawnableMap.erase(it); // erase() returns ++it // described in https://stackoverflow.com/questions/9210014/remove-elements-from-an-unordered-map-fulfilling-a-predicate
-                }
-                else
-                {
-                    ++it;
+                    ticketId = entity->GetEntitySpawnTicketId();
                 }
             }
-        }
-        else
-        {
-            // get ticket id from Entity
-            const AZ::Entity* entity = EntityHelpers::GetEntity(entityId);
-            ticketId = entity->GetEntitySpawnTicketId();
-        }
 
-        SpawnableEntitiesInterface::Get()->RetrieveTicket(ticketId,
-            [optionalArgs](EntitySpawnTicket&& entitySpawnTicket)
+            if (ticketId != 0)
             {
-                if (entitySpawnTicket.IsValid())
-                {
-                    SpawnableEntitiesInterface::Get()->DespawnAllEntities(entitySpawnTicket, optionalArgs);
-                }
-            });
+                SpawnableEntitiesInterface::Get()->RetrieveTicket(ticketId,
+                    [optionalArgs](EntitySpawnTicket&& entitySpawnTicket)
+                    {
+                        if (entitySpawnTicket.IsValid())
+                        {
+                            SpawnableEntitiesInterface::Get()->DespawnAllEntities(entitySpawnTicket, optionalArgs);
+                        }
+                    });
+            }
+        }
     }
 
 
