@@ -1078,7 +1078,7 @@ namespace AZ::Serialize
 
         public:
             //! Stores the type structure of container the associative type represents
-            //! The valid values are an ordered set(Set, Map) or an hash table structure(UnorderedSet, UnorderedMap)
+            //! The valid values are an ordered set(Set, Map) or a hash table structure(UnorderedSet, UnorderedMap)
             enum class AssociativeType
             {
                 Unknown,

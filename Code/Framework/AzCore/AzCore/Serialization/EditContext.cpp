@@ -21,14 +21,14 @@ namespace AZ
         {
             // Iterate over each reflected Edit::ElementData field
             // and check if it has an associated SerializeContext class element which
-            // provides a DataContainer as part of it's SerializeContext ClassData which inherits
+            // provides a DataContainer as part of its SerializeContext ClassData which inherits
             // from IAssociativeDataContainer
             for (const AZ::Edit::ElementData& syntheticElement : classData.m_elements)
             {
                 if (syntheticElement.m_serializeClassElement != nullptr)
                 {
                     // The edit element data is backed by a serialize context field
-                    // so query it's class data
+                    // so query its class data
                     auto elementClassData =
                         editContext.GetSerializeContext().FindClassData(syntheticElement.m_serializeClassElement->m_typeId);
                     if (elementClassData == nullptr)
@@ -47,7 +47,7 @@ namespace AZ
                     }
 
                     // Once this point has been reached, the reflected element corresponds to an associative container
-                    // So the log the name of the class containing
+                    // So log the name of the containing class
                     logString += AZStd::string::format(R"("%s", "%s", "%s")" "\n", classData.m_name, syntheticElement.m_name, elementClassData->m_name);
                 }
             }
@@ -72,7 +72,7 @@ namespace AZ
                 if (syntheticElement.m_serializeClassElement != nullptr)
                 {
                     // The edit element data is backed by a serialize context field
-                    // so query it's class data
+                    // so query its class data
                     auto elementClassData =
                         editContext.GetSerializeContext().FindClassData(syntheticElement.m_serializeClassElement->m_typeId);
 
@@ -83,8 +83,6 @@ namespace AZ
                         continue;
                     }
 
-                    // Once this point has been reached, the reflected element corresponds to an associative container
-                    // So the log the name of the class containing
                     logString += AZStd::string::format(R"("%s", "%s", "%s")" "\n", classData.m_name, syntheticElement.m_name, elementClassData->m_name);
                 }
             }
@@ -124,7 +122,7 @@ namespace AZ
             AZ::ConsoleFunctorFlags::DontReplicate,
             AZ::TypeId{},
             editContext,
-            & LogSequenceContainerFields);
+            &LogSequenceContainerFields);
     }
 }
 
