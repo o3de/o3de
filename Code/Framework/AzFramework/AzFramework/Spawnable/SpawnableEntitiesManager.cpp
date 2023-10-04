@@ -528,7 +528,7 @@ namespace AzFramework
         idMap.reserve(entities.size());
         previouslySpawned.reserve(entities.size());
 
-        for (auto& entity : entities)
+        for (const auto& entity : entities)
         {
             auto iter = customEntityIdMapper.find(entity->GetId());
             AZ::EntityId newEntityId = (iter != customEntityIdMapper.end()) ? iter->second : AZ::Entity::MakeId();
