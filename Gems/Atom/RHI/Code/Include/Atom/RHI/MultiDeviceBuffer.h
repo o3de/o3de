@@ -42,7 +42,7 @@ namespace AZ::RHI
         //! Returns the buffer frame attachment if the buffer is currently attached.
         const BufferFrameAttachment* GetFrameAttachment() const;
 
-        Ptr<MultiDeviceBufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<MultiDeviceBufferView> BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor);
 
         //! Get the hash associated with the MultiDeviceBuffer
         const HashValue64 GetHash() const;

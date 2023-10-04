@@ -31,7 +31,7 @@ namespace AZ::RHI
         return static_cast<const BufferFrameAttachment*>(MultiDeviceResource::GetFrameAttachment());
     }
 
-    Ptr<MultiDeviceBufferView> MultiDeviceBuffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
+    Ptr<MultiDeviceBufferView> MultiDeviceBuffer::BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor)
     {
         return aznew MultiDeviceBufferView{ this, bufferViewDescriptor };
     }

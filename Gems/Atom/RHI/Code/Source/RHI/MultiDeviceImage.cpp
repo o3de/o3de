@@ -43,7 +43,7 @@ namespace AZ::RHI
         return static_cast<const ImageFrameAttachment*>(MultiDeviceResource::GetFrameAttachment());
     }
 
-    Ptr<MultiDeviceImageView> MultiDeviceImage::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
+    Ptr<MultiDeviceImageView> MultiDeviceImage::BuildImageView(const ImageViewDescriptor& imageViewDescriptor)
     {
         return aznew MultiDeviceImageView{ this, imageViewDescriptor };
     }
