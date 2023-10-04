@@ -134,16 +134,17 @@ namespace AZ
             {
                 // We usually won't load file during CreateJob since we want to keep the function fast. 
                 // But here we have to load the material type data to find the exact material type format so we could create an accurate source dependency.
-                AZStd::string resolvedMaterialPath = AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), materialTypePath.c_str());
+                const AZStd::string resolvedMaterialTypePath =
+                    AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), materialTypePath.c_str());
 
-                MaterialTypeSourceData::Format materialTypeFormat = MaterialTypeSourceData::Format::Invalid;
                 MaterialUtils::ImportedJsonFiles importedJsonFiles;
-                auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialPath, nullptr, &importedJsonFiles);
 
-                if (materialTypeSourceData.IsSuccess())
-                {
-                    materialTypeFormat = materialTypeSourceData.GetValue().GetFormat();
-                }
+                const auto materialTypeSourceData =
+                    MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialTypePath, nullptr, &importedJsonFiles);
+
+                const MaterialTypeSourceData::Format materialTypeFormat = materialTypeSourceData.IsSuccess()
+                    ? materialTypeSourceData.GetValue().GetFormat()
+                    : MaterialTypeSourceData::Format::Invalid;
 
                 // If the material uses the "Direct" format, then there will need to be a dependency on that file.
                 // If it uses the "Abstract" format, then there will be an intermediate .materialtype and there needs to be a dependency on that file instead.
@@ -151,7 +152,7 @@ namespace AZ
                 {
                     MaterialBuilderUtils::AddPossibleDependencies(
                         request.m_sourceFile,
-                        resolvedMaterialPath,
+                        resolvedMaterialTypePath,
                         MaterialTypeBuilder::FinalStageJobKey,
                         outputJobDescriptor.m_jobDependencyList,
                         response.m_sourceFileDependencyList,
@@ -160,8 +161,17 @@ namespace AZ
                 }
                 else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
                 {
+                    MaterialBuilderUtils::AddPossibleDependencies(
+                        request.m_sourceFile,
+                        resolvedMaterialTypePath,
+                        MaterialTypeBuilder::PipelineStageJobKey,
+                        outputJobDescriptor.m_jobDependencyList,
+                        response.m_sourceFileDependencyList,
+                        false,
+                        0);
+
                     const AZStd::string intermediateMaterialTypePath =
-                        MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile, materialTypePath);
+                        MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile, resolvedMaterialTypePath);
                     if (!intermediateMaterialTypePath.empty())
                     {
                         MaterialBuilderUtils::AddPossibleDependencies(
@@ -174,7 +184,6 @@ namespace AZ
                             0);
                     }
                 }
-
             }
 
             // Even though above we were able to get away without deserializing the material json, we do need to deserialize here in order
