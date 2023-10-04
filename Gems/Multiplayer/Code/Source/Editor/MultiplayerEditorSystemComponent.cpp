@@ -190,7 +190,10 @@ namespace Multiplayer
         AZ_Assert(m_editor == nullptr, "NotifyRegisterViews occurred twice!");
         m_editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(m_editor, &AzToolsFramework::EditorRequests::GetEditor);
-        m_editor->RegisterNotifyListener(this);
+        if(m_editor)
+        {
+            m_editor->RegisterNotifyListener(this);
+        }
     }
 
     void MultiplayerEditorSystemComponent::ResetLevelSendData()
