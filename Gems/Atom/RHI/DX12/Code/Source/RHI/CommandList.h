@@ -240,9 +240,6 @@ namespace AZ
                 // A queue of tile mappings to execute on the command queue at submission time (prior to executing the command list).
                 TileMapRequestList m_tileMapRequests;
 
-                // Signal that the global bindless heap is bound to the index
-                int m_bindlessHeapLastIndex = -1;
-
                 // The currently bound shading rate image
                 const ImageView* m_shadingRateImage = nullptr;
 
@@ -382,11 +379,6 @@ namespace AZ
                 const auto& device = static_cast<Device&>(GetDevice());
                 if (srgSlot == device.GetBindlessSrgSlot() && shaderResourceGroup == nullptr)
                 {
-                    // Skip in case the global static heap is already bound
-                    if (m_state.m_bindlessHeapLastIndex == binding.m_bindlessTable.GetIndex())
-                    {
-                        continue;
-                    }
                     AZ_Assert(binding.m_bindlessTable.IsValid(), "BindlessSRG handles is not valid.");
 
                     switch (pipelineType)
@@ -407,10 +399,9 @@ namespace AZ
                         AZ_Assert(false, "Invalid PipelineType");
                         break;
                     }
-                    m_state.m_bindlessHeapLastIndex = binding.m_bindlessTable.GetIndex();
                     continue;
                 }
-                
+
                 if (AZ::RHI::Validation::IsEnabled())
                 {
                     if (!shaderResourceGroup)
