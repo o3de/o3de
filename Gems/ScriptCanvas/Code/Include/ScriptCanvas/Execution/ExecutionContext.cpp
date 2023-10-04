@@ -45,7 +45,7 @@ namespace ScriptCanvas
 
         const void* ActivationData::GetVariableSource(size_t index, size_t& overrideIndexTracker) const
         {
-            if (variableOverrides.m_variableIndices[index])
+            if (index < variableOverrides.m_variableIndices.size() && variableOverrides.m_variableIndices[index])
             {
                 return AZStd::any_cast<void>(&variableOverrides.m_variables[overrideIndexTracker++].value);
             }

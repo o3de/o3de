@@ -423,4 +423,43 @@ namespace AzFramework
         result.m_payload = internalTicket;
         return result;
     }
+
+// Gruber patch begin // VMED // Support unique instances
+#ifdef CARBONATED
+    AZStd::shared_ptr<SpawnableInstanceDescriptor> SpawnableInstanceDescriptor::GetInvalidDescriptor()
+    {
+        static AZStd::shared_ptr<SpawnableInstanceDescriptor> s_invalidDescriptor = AZStd::make_shared<SpawnableInstanceDescriptor>();
+        return s_invalidDescriptor;
+    }
+
+    SpawnableInstanceDescriptor::SpawnableInstanceDescriptor()
+        : m_assetId()
+        , m_spawnableInstanceId(SpawnableInstanceId::CreateNull())
+        , m_entitySpawnTicketId(0)
+    {
+    }
+
+    SpawnableInstanceDescriptor::SpawnableInstanceDescriptor(const AZ::Data::AssetId& assetId, AZ::u32 entitySpawnTicketId)
+        : m_assetId(assetId)
+        , m_spawnableInstanceId(GenerateInstanceId())
+        , m_entitySpawnTicketId(entitySpawnTicketId)
+    {
+    }
+
+    SpawnableInstanceId SpawnableInstanceDescriptor::GenerateInstanceId() const
+    {
+        return SpawnableInstanceId::CreateRandom();
+    }
+
+    void SpawnableInstanceDescriptor::BuildReverseLookUp() const
+    {
+        m_entityIdToBaseCache.clear();
+        for (const auto& entityIdPair : m_baseToNewEntityIdMap)
+        {
+            m_entityIdToBaseCache.insert(AZStd::make_pair(entityIdPair.second, entityIdPair.first));
+        }
+    }
+#endif
+// Gruber patch end // VMED // Support unique instances
+
 } // namespace AzFramework
