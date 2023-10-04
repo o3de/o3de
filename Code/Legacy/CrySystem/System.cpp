@@ -374,8 +374,10 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_env.pMovieSystem);
     SAFE_RELEASE(m_env.pCryFont);
 
+#if defined(CARBONATED)
     // carbonated begin (akostin/mp-402-1): Revert pNetwork in SSystemGlobalEnvironment
     CryNetwork::NetworkInstance::Release();
+#endif
     // carbonated end
 
     if (m_env.pConsole)

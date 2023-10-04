@@ -122,7 +122,7 @@
                     ]
                 },
                 {
-                    "Name": "TransparentPass",
+                    "Name": "MobileTransparentPass",
                     "TemplateName": "MobileTransparentParentTemplate",
                     "Connections": [
                         {
@@ -149,7 +149,7 @@
                         {
                             "LocalSlot": "ColorInputOutput",
                             "AttachmentRef": {
-                                "Pass": "TransparentPass",
+                                "Pass": "MobileTransparentPass",
                                 "Attachment": "InputOutput"
                             }
                         },
