@@ -14,9 +14,11 @@
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 // Gruber patch begin // VMED
+#ifdef CARBONATED
 #include <AzCore/std/sort.h> 
 #include <AzFramework/Helpers/EntityHelpers.h> // Helper methods to evaluate Entities moved here
 #include <AzFramework/StringFunc/StringFunc.h>
+#endif
 // Gruber patch end // VMED
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
@@ -904,6 +906,7 @@ namespace AzFramework
 
                 // Add to the game context, now the entities are active
 // Gruber patch begin // VMED
+#ifdef CARBONATED
                 AZStd::shared_ptr<SpawnableInstanceDescriptor> spawnableInfo;
                 if (ticket.m_spawnable->IsDynamic())
                 {
@@ -918,6 +921,7 @@ namespace AzFramework
                     }
                 }
 // Gruber patch end // VMED
+#endif
                 for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
                 {
                     AZ::Entity* clone = (*it);
