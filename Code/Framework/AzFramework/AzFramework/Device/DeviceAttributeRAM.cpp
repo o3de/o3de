@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Device/DeviceAttributeRAM.h>
+#include <AzCore/std/string/regex.h>
 
 namespace AzFramework
 {
@@ -28,9 +29,10 @@ namespace AzFramework
         return AZStd::any(m_valueInGiB);
     }
 
-    bool DeviceAttributeRAM::Evaluate([[maybe_unused]] AZStd::string_view rule) const
+    bool DeviceAttributeRAM::Evaluate(AZStd::string_view rule) const
     {
-        return false;
+        auto regex = AZStd::regex(rule.data(), rule.size());
+        return AZStd::regex_match(m_value, regex);
     }
 } // namespace AzFramework
 
