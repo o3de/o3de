@@ -105,17 +105,9 @@ namespace AZ
                 AZ_Assert(!id.IsNull(), "Provided guid is not valid");
                 AZ_Assert(!lod.has_value() || lod < 16, "Lod value has to be between 0 and 15 or disabled.");
 
-                ExportProduct exportProduct(AZStd::move(filename), id, assetType, lod, subId, dependencyFlags);
-                auto iter = m_products.find(exportProduct);
-                if (iter != m_products.end())
-                {
-                    return *iter;
-                }
-                else
-                {
-                    auto insertion = m_products.insert(AZStd::move(exportProduct));
-                    return *insertion.first;
-                }
+                // Either insert the new export product if it's the first time this product is being produced,
+                // or else silently fail the insert if it's a duplicate and return the previously-inserted product.
+                return m_products.insert(ExportProduct(AZStd::move(filename), id, assetType, lod, subId, dependencyFlags).first;
             }
 
             const AZStd::unordered_set<ExportProduct>& ExportProductList::GetProducts() const
