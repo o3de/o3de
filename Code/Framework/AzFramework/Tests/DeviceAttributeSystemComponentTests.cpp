@@ -15,6 +15,7 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/Device/DeviceAttributesSystemComponent.h>
+#include "DeviceAttribute/TestDeviceAttribute.h" 
 
 namespace UnitTest
 {
@@ -49,50 +50,6 @@ namespace UnitTest
 
         AZStd::unique_ptr<AzFramework::DeviceAttributesSystemComponent> m_deviceAttributesSystemComponent;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
-    };
-
-    class TestDeviceAttribute
-        : public AzFramework::DeviceAttribute
-    {
-    public:
-        using EvalFunc = AZStd::function<bool(AZStd::string_view)>;
-
-        TestDeviceAttribute(AZStd::string_view name, AZStd::string_view description,
-            AZStd::any value, EvalFunc eval)
-            : m_name(name)
-            , m_description(description)
-            , m_eval(eval)
-            , m_value(value)
-        {
-
-        }
-        ~TestDeviceAttribute() = default;
-
-        AZStd::string_view GetName() const override
-        {
-            return m_name;
-        }
-
-        AZStd::string_view GetDescription() const override
-        {
-            return m_description;
-        }
-
-        bool Evaluate(AZStd::string_view rule) const override
-        {
-            return m_eval(rule);
-        }
-
-        AZStd::any GetValue() const override
-        {
-            return m_value; 
-        }
-
-    private:
-        AZStd::string m_name;
-        AZStd::string m_description;
-        EvalFunc m_eval;
-        AZStd::any m_value;
     };
 
 

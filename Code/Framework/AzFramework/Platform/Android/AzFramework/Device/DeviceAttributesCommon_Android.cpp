@@ -8,6 +8,7 @@
 
 #include <AzCore/Android/JNI/JNI.h>
 #include <AzCore/Android/JNI/Object.h>
+#include <AzCore/Console/ConsoleTypeHelpers.h>
 #include <AzFramework/Device/DeviceAttributeDeviceModel.h>
 #include <AzFramework/Device/DeviceAttributeRAM.h>
 
@@ -27,6 +28,7 @@ namespace AzFramework
         AZ::Android::JNI::Object obj("com/amazon/lumberyard/AndroidDeviceManager");
         obj.RegisterStaticMethod(JavaFuntionNameGetDeviceRamInGB, "()F");
         m_valueInGiB = obj.InvokeStaticFloatMethod(JavaFuntionNameGetDeviceRamInGB);
+        m_value = AZ::ConsoleTypeHelpers::ValueToString(m_valueInGiB);
     }
 } // AzFramework
 
