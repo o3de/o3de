@@ -132,6 +132,20 @@ namespace AZ
             outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
             outputJobDescriptor.SetPlatformIdentifier(AssetBuilderSDK::CommonPlatformName);
 
+            const AZStd::string intermediateMaterialTypePath =
+                MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile);
+            if (!intermediateMaterialTypePath.empty())
+            {
+                MaterialBuilderUtils::AddPossibleDependencies(
+                    request.m_sourceFile,
+                    intermediateMaterialTypePath,
+                    MaterialTypeBuilder::FinalStageJobKey,
+                    outputJobDescriptor.m_jobDependencyList,
+                    response.m_sourceFileDependencyList,
+                    false,
+                    0);
+            }
+
             auto addPossibleDependencies = [&response](const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
                 AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath);
