@@ -638,7 +638,7 @@ namespace AzToolsFramework
                     if (editorOnlyEntityIds.end() != editorOnlyEntityIds.find(id))
                     {
                         result = AZ::Failure(AZStd::string::format(
-                            "A runtime entity (%s) contains references to an entity marked as editor-only. id=%s, elementData->m_name=%s. entities.size=%u",
+                            "A runtime entity (%s) contains references to an entity marked as editor-only. id=%s, elementData->m_name=%s. entities.size=%lu",
                             runtimeEntity->GetName().c_str(),
                             id.ToString().c_str(),
                             elementData ? elementData->m_name : "null",
