@@ -52,7 +52,7 @@ namespace UnitTest
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 1);
-        EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CarEntityName]);
+        EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[StreetEntityName]);
 
         // Restore default state for other tests.
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);
@@ -90,7 +90,7 @@ namespace UnitTest
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 1);
-        EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[StreetEntityName]);
+        EXPECT_EQ(selectedEntitiesAfter.front(), m_entityMap[CityEntityName]);
 
         // Restore default state for other tests.
         m_containerEntityInterface->UnregisterEntityAsContainer(m_entityMap[StreetEntityName]);

@@ -237,19 +237,29 @@ set(FILES
     Include/Atom/RHI/TileAllocator.h
     Include/Atom/RHI/TileAllocator.inl
     Include/Atom/RHI/TransientAttachmentPool.h
+    Include/Atom/RHI/MultiDeviceTransientAttachmentPool.h
     Source/RHI/TransientAttachmentPool.cpp
+    Source/RHI/MultiDeviceTransientAttachmentPool.cpp
     Include/Atom/RHI/RHIUtils.h
     Source/RHI/RHIUtils.cpp
     Include/Atom/RHI/RayTracingAccelerationStructure.h
+    Include/Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h
     Include/Atom/RHI/RayTracingPipelineState.h
+    Include/Atom/RHI/MultiDeviceRayTracingPipelineState.h
     Include/Atom/RHI/RayTracingShaderTable.h
+    Include/Atom/RHI/MultiDeviceRayTracingShaderTable.h
     Include/Atom/RHI/RayTracingBufferPools.h
+    Include/Atom/RHI/MultiDeviceRayTracingBufferPools.h
     Include/Atom/RHI/DispatchRaysItem.h
     Include/Atom/RHI/MultiDeviceDispatchRaysItem.h
     Source/RHI/RayTracingAccelerationStructure.cpp
+    Source/RHI/MultiDeviceRayTracingAccelerationStructure.cpp
     Source/RHI/RayTracingPipelineState.cpp
+    Source/RHI/MultiDeviceRayTracingPipelineState.cpp
     Source/RHI/RayTracingShaderTable.cpp
+    Source/RHI/MultiDeviceRayTracingShaderTable.cpp
     Source/RHI/RayTracingBufferPools.cpp
+    Source/RHI/MultiDeviceRayTracingBufferPools.cpp
     Include/Atom/RHI/interval_map.h
     Include/Atom/RHI/ImageProperty.h
     Include/Atom/RHI/BufferProperty.h

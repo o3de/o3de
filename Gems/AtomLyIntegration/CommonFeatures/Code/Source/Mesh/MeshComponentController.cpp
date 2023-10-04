@@ -348,9 +348,9 @@ namespace AZ
             return GetMaterialSlotIdFromModelAsset(GetModelAsset(), lod, label);
         }
 
-        MaterialAssignmentMap MeshComponentController::GetDefautMaterialMap() const
+        MaterialAssignmentMap MeshComponentController::GetDefaultMaterialMap() const
         {
-            return GetDefautMaterialMapFromModelAsset(GetModelAsset());
+            return GetDefaultMaterialMapFromModelAsset(GetModelAsset());
         }
 
         AZStd::unordered_set<AZ::Name> MeshComponentController::GetModelUvNames() const

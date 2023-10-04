@@ -315,7 +315,7 @@ namespace AZ
             // Get the known material assignment slots from the associated model or other source
             MaterialAssignmentMap originalMaterials;
             MaterialComponentRequestBus::EventResult(
-                originalMaterials, GetEntityId(), &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
+                originalMaterials, GetEntityId(), &MaterialComponentRequestBus::Events::GetDefaultMaterialMap);
                         
             // Generate the table of editable materials using the source data to define number of groups, elements, and initial values
             for (const auto& materialPair : originalMaterials)
@@ -371,7 +371,7 @@ namespace AZ
         {
             MaterialAssignmentMap originalMaterials;
             MaterialComponentRequestBus::EventResult(
-                originalMaterials, GetEntityId(), &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
+                originalMaterials, GetEntityId(), &MaterialComponentRequestBus::Events::GetDefaultMaterialMap);
 
             // Generate a unique set of all material asset IDs that will be used for source data generation
             AZStd::unordered_map<AZ::Data::AssetId, AZStd::string> assetIdToSlotNameMap;

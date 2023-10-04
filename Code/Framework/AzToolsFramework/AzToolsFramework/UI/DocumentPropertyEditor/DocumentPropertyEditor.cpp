@@ -25,14 +25,6 @@
 
 AZ_CVAR(
     bool,
-    ed_enableDPE,
-    false,
-    nullptr,
-    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, enables experimental Document Property Editor support, replacing the Reflected Property Editor where possible");
-
-AZ_CVAR(
-    bool,
     ed_enableCVarDPE,
     true,
     nullptr,
@@ -1326,6 +1318,7 @@ namespace AzToolsFramework
         {
             // only save our expander state if our expanse/collapse was user-driven
             dpe->SetSavedExpanderStateForRow(BuildDomPath(), isExpanded);
+            dpe->updateGeometry();
             dpe->ExpanderChangedByUser();
         }
     }
@@ -1600,16 +1593,6 @@ namespace AzToolsFramework
         m_spawnDebugView = shouldSpawn;
     }
 
-    bool DocumentPropertyEditor::ShouldReplaceRPE()
-    {
-        bool dpeEnabled = false;
-        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
-        {
-            console->GetCvarValue(GetEnableDPECVarName(), dpeEnabled);
-        }
-        return dpeEnabled;
-    }
-
     bool DocumentPropertyEditor::ShouldReplaceCVarEditor()
     {
         bool dpeCVarEditorEnabled = false;
@@ -1701,6 +1684,7 @@ namespace AzToolsFramework
             }
         }
         m_layout->addStretch();
+        updateGeometry();
         emit RequestSizeUpdate();
     }
 
@@ -1726,7 +1710,11 @@ namespace AzToolsFramework
             {
                 HandleReset();
             }
-            emit RequestSizeUpdate();
+            else
+            {
+                updateGeometry();
+                emit RequestSizeUpdate();
+            }
         }
     }
 

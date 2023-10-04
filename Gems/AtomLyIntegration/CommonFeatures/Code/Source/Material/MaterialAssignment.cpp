@@ -236,7 +236,7 @@ namespace AZ
             return DefaultMaterialAssignment;
         }
 
-        MaterialAssignmentMap GetDefautMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
+        MaterialAssignmentMap GetDefaultMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
         {
             MaterialAssignmentMap materials;
             materials[DefaultMaterialAssignmentId] = MaterialAssignment();
