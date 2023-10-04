@@ -736,7 +736,7 @@ namespace AZ::SceneAPI::Containers
         ExpectExecute("productList = exportProductList:GetProducts()");
         ExpectExecute("TestExpectEquals(productList:GetSize(), 2)");
         ExpectExecute("exportProductList:AddDependencyToProduct(exportProduct.filename, exportProductDep)");
-        ExpectExecute("TestExpectEquals(productList:Front().productDependencies:GetSize(), 1)");
+        ExpectExecute("TestExpectEquals(exportProduct.productDependencies:GetSize(), 1)");
     }
 
     TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_Fetch_GetsValue)
