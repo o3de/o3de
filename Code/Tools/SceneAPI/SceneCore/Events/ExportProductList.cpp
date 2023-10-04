@@ -107,7 +107,7 @@ namespace AZ
 
                 // Either insert the new export product if it's the first time this product is being produced,
                 // or else silently fail the insert if it's a duplicate and return the previously-inserted product.
-                return m_products.insert(ExportProduct(AZStd::move(filename), id, assetType, lod, subId, dependencyFlags).first;
+                return *m_products.insert(ExportProduct(AZStd::move(filename), id, assetType, lod, subId, dependencyFlags)).first;
             }
 
             const AZStd::unordered_set<ExportProduct>& ExportProductList::GetProducts() const
