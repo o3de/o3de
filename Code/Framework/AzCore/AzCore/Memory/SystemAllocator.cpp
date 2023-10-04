@@ -9,6 +9,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/AllocatorManager.h>
 
+#include <AzCore/Memory/MallocSchema.h>
+
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
 

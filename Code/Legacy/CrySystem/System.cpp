@@ -205,6 +205,14 @@ CSystem::CSystem()
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
 
+    // carbonated begin (akostin/mp-413-1): Revert bClient, bServer, bMultiplayer in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+#if !defined(CONSOLE)
+    m_env.SetIsClient(false);
+#endif
+#endif
+    // carbonated end
+
     //////////////////////////////////////////////////////////////////////////
 
     m_sysNoUpdate = NULL;

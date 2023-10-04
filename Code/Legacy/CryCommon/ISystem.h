@@ -595,6 +595,9 @@ struct SSystemGlobalEnvironment
 #if defined(CARBONATED)
     INetwork* pNetwork;
     IGame* pGame;
+    // Used to tell if this is a server/multiplayer instance
+    bool bServer;
+    bool bMultiplayer;
 #endif
     // carbonated end
     AZ::IO::IArchive*          pCryPak;
@@ -621,6 +624,27 @@ struct SSystemGlobalEnvironment
     bool                                            bToolMode;
 
     int                                             retCode = 0;
+
+    // carbonated begin (akostin/mp-413-1): Revert bClient, bServer, bMultiplayer in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+    ILINE const bool IsClient() const
+    {
+#if defined(CONSOLE)
+        return true;
+#else
+        return bClient;
+#endif
+    }
+    ILINE void SetIsClient(bool isClient)
+    {
+#if defined(CONSOLE)
+        // ...
+#else
+        bClient = isClient;
+#endif
+    }
+#endif
+    // carbonated end
 
     ILINE const bool IsDedicated() const
     {
@@ -702,6 +726,12 @@ struct SSystemGlobalEnvironment
 
 #if !defined(CONSOLE)
 private:
+    // carbonated begin (akostin/mp-413-1): Revert bClient, bServer, bMultiplayer in SSystemGlobalEnvironment
+#if defined(CARBONATED)
+    bool bClient;
+#endif
+    // carbonated end
+
     bool bEditor;          // Engine is running under editor.
     bool bEditorGameMode;  // Engine is in editor game mode.
     bool bEditorSimulationMode;  // Engine is in editor simulation mode.

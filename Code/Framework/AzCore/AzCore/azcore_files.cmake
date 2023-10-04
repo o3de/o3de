@@ -422,6 +422,8 @@ set(FILES
     Memory/HphaAllocator.cpp
     Memory/HphaAllocator.h
     Memory/IAllocator.h
+    Memory/MallocSchema.cpp
+    Memory/MallocSchema.h
     Memory/Memory_fwd.h
     Memory/Memory.cpp
     Memory/Memory.h
