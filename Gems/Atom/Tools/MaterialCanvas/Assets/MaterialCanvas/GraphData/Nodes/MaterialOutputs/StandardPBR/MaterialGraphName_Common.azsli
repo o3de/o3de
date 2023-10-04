@@ -8,32 +8,8 @@
  
 #pragma once
 
-#ifndef ENABLE_CLEAR_COAT
-#define ENABLE_CLEAR_COAT 1
-#endif
-
 #ifndef ENABLE_TRANSMISSION
 #define ENABLE_TRANSMISSION 0
-#endif
-
-#ifndef ENABLE_AREA_LIGHT_VALIDATION
-#define ENABLE_AREA_LIGHT_VALIDATION 0
-#endif
-
-#ifndef ENABLE_SHADER_DEBUGGING
-#define ENABLE_SHADER_DEBUGGING 1
-#endif
-
-#ifndef OUTPUT_SUBSURFACE
-#define OUTPUT_SUBSURFACE 0
-#endif
-
-#ifndef OUTPUT_DEPTH
-#define OUTPUT_DEPTH 0
-#endif
-
-#ifndef FORCE_OPAQUE
-#define FORCE_OPAQUE 0
 #endif
 
 #ifndef ENABLE_PARALLAX
@@ -56,11 +32,11 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
-#include <../Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli>
 
 #if ENABLE_PARALLAX
-#include <../Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli>
-#include <../Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli>
 COMMON_OPTIONS_PARALLAX()
 #endif
 
@@ -114,13 +90,32 @@ bool NeedsTangentFrame()
     return true;
 }
 
-// Use same vertex logic as BasePBR
-#include <../Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
 #include "MaterialGraphName_VertexEval.azsli"
 
-#include <../Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
 #include "MaterialGraphName_PixelGeometryEval.azsli"
 
-#include <../Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli>
 #include "MaterialGraphName_SurfaceEval.azsli"
 
+#elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+    
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+#include "MaterialGraphName_VertexEval.azsli"
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
+#include "MaterialGraphName_PixelGeometryEval.azsli"
+    
+void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+{
+}
+
+#else
+
+#include "MaterialGraphName_DepthVertexData.azsli"
+#include "MaterialGraphName_DepthVertexEval.azsli"
+
+#endif

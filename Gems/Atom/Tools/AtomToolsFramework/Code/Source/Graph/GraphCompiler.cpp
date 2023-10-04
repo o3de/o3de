@@ -178,7 +178,8 @@ namespace AtomToolsFramework
                     return status == AssetStatusReporterState::Succeeded;
                 }
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
+                // Sleep to give other possible threats time to make AssetStatusReporterSystemRequestBus requests
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
             }
 
             AssetStatusReporterSystemRequestBus::Event(
