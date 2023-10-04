@@ -163,7 +163,7 @@
                         {
                             "LocalSlot": "InputOutput",
                             "AttachmentRef": {
-                                "Pass": "TransparentPass",
+                                "Pass": "MobileTransparentPass",
                                 "Attachment": "InputOutput"
                             }
                         }
