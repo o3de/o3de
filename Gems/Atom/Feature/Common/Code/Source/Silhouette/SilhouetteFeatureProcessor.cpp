@@ -8,7 +8,11 @@
 
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
+#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Scene/Scene.h>
@@ -79,6 +83,45 @@ namespace AZ::Render
             if (auto foundPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(gatherPassFilter); foundPass)
             {
                 foundPass->SetEnabled(enabled);
+            }
+        }
+    }
+
+    void SilhouetteFeatureProcessor::OnEndPrepareRender()
+    {
+        if (auto scene = GetParentScene(); scene != nullptr)
+        {
+            const auto mergeTemplateName = Name("SilhouettePassTemplate");
+            auto compositePassFilter = AZ::RPI::PassFilter::CreateWithTemplateName(mergeTemplateName, scene);
+            auto compositePass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(compositePassFilter);
+
+            const auto gatherTemplateName = Name("SilhouetteGatherPassTemplate");
+            auto gatherPassFilter = AZ::RPI::PassFilter::CreateWithTemplateName(gatherTemplateName, scene);
+            auto gatherPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(gatherPassFilter);
+
+            if (compositePass && gatherPass)
+            {
+                AZ::RPI::RasterPass* rasterPass = static_cast<AZ::RPI::RasterPass*> (gatherPass);
+
+                // Get DrawList from the dynamic draw interface and view
+                AZStd::vector<RHI::DrawListView> drawLists = AZ::RPI::DynamicDrawInterface::Get()->GetDrawListsForPass(rasterPass);
+
+                const AZStd::vector<AZ::RPI::ViewPtr>& views = rasterPass->GetRenderPipeline()->GetViews(gatherPass->GetPipelineViewTag());
+                RHI::DrawListView viewDrawList;
+                if (!views.empty())
+                {
+                    const AZ::RPI::ViewPtr& view = views.front();
+                    viewDrawList = view->GetDrawList(gatherPass->GetDrawListTag());
+                }
+
+                if (drawLists.empty() && viewDrawList.empty())
+                {
+                    compositePass->SetEnabled(false);
+                }
+                else
+                {
+                    compositePass->SetEnabled(true);
+                }
             }
         }
     }

@@ -39,6 +39,9 @@ namespace AZ::Render
         void Activate() override;
         void Deactivate() override;
         void AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline) override;
+
+        //! RPI::SceneNotificationBus
+        void OnEndPrepareRender() override;
     };
 }
 
