@@ -23,6 +23,13 @@
                     "TemplateName": "MobileTransparentPassTemplate",
                     "Enabled": true,
                     "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencil"
+                            }
+                        },
                         // Input/Outputs...
                         {
                             "LocalSlot": "DepthStencil",
@@ -38,16 +45,7 @@
                                 "Attachment": "InputOutput"
                             }
                         }
-                    ],
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "DrawListTag": "mobileTransparent",
-                        "DrawListSortType": "KeyThenReverseDepth",
-                        "BindViewSrg": true,
-                        "PassSrgShaderAsset": {
-                            "FilePath": "Shaders/ForwardPassSrg.shader"
-                        }
-                    }
+                    ]
                 }
             ]
         }
