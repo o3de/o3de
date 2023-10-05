@@ -921,7 +921,7 @@ namespace AzFramework
                     }
                 }
 #endif
-                // Gruber patch end // VMED
+// Gruber patch end // VMED
                 for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
                 {
                     AZ::Entity* clone = (*it);
