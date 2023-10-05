@@ -55,9 +55,10 @@ namespace AzToolsFramework
     {
     }
 
-    void DPELayout::Init(int depth, [[maybe_unused]] QWidget* parentWidget)
+    void DPELayout::Init(int depth, bool enforceMinWidth, [[maybe_unused]] QWidget* parentWidget)
     {
         m_depth = depth;
+        m_enforceMinWidth = enforceMinWidth;
     }
 
     void DPELayout::Clear()
@@ -189,7 +190,7 @@ namespace AzToolsFramework
 
         m_cachedMinLayoutSize = QSize(cumulativeWidth, minimumHeight);
 
-        return { cumulativeWidth, minimumHeight };
+        return { (m_enforceMinWidth ? cumulativeWidth : 0), minimumHeight };
     }
 
     void DPELayout::setGeometry(const QRect& rect)
@@ -485,7 +486,7 @@ namespace AzToolsFramework
         : QFrame(nullptr) // parent will be set when the row is added to its layout
         , m_columnLayout(new DPELayout(this))
     {
-        m_columnLayout->Init(-1, this);
+        m_columnLayout->Init(-1, m_enforceMinWidth, this);
         // allow horizontal stretching, but use the vertical size hint exactly
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QObject::connect(m_columnLayout, &DPELayout::expanderChanged, this, &DPERowWidget::onExpanderChanged);
@@ -1081,7 +1082,8 @@ namespace AzToolsFramework
         {
             rowWidget->m_parentRow = this;
             rowWidget->m_depth = m_depth + 1;
-            rowWidget->m_columnLayout->Init(rowWidget->m_depth, this);
+            rowWidget->m_enforceMinWidth = m_enforceMinWidth;
+            rowWidget->m_columnLayout->Init(rowWidget->m_depth, m_enforceMinWidth, this);
         }
 
         m_columnLayout->SetExpanderShown(true);
@@ -1350,7 +1352,7 @@ namespace AzToolsFramework
 
         m_spawnDebugView = AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled();
 
-        setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         // register as a co-owner of the recycled widgets lists if they exist; create if not
@@ -1428,13 +1430,19 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::SetAllowVerticalScroll(bool allowVerticalScroll)
     {
         m_allowVerticalScroll = allowVerticalScroll;
-
-        /* as a temporary work-around to https://github.com/o3de/o3de/issues/14863 , never prevent vertical scrollbars
-           setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
-         */
+        setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
 
         auto existingPolicy = sizePolicy();
         setSizePolicy(existingPolicy.horizontalPolicy(), (allowVerticalScroll ? existingPolicy.verticalPolicy() : QSizePolicy::Fixed));
+    }
+
+    void DocumentPropertyEditor::SetEnforceMinWidth(bool enforceMinWidth)
+    {
+        m_enforceMinWidth = enforceMinWidth;
+        if (m_rootNode)
+        {
+            HandleReset();
+        }
     }
 
     QSize DocumentPropertyEditor::sizeHint() const
@@ -1666,6 +1674,7 @@ namespace AzToolsFramework
 
         // invisible root node has a "depth" of -1; its children are all at indent 0
         m_rootNode = m_rowPool->GetInstance();
+        m_rootNode->m_enforceMinWidth = m_enforceMinWidth;
         m_rootNode->setParent(this);
         m_rootNode->hide();
 
