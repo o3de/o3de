@@ -920,8 +920,8 @@ namespace AzFramework
                         m_entitySpawnableMap.insert(AZStd::make_pair(clone->GetId(), spawnableInfo));
                     }
                 }
-// Gruber patch end // VMED
 #endif
+                // Gruber patch end // VMED
                 for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
                 {
                     AZ::Entity* clone = (*it);
