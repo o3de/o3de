@@ -384,10 +384,10 @@ void CSystem::ShutDown()
 
 #if defined(CARBONATED)
     // carbonated begin (akostin/mp-402-1): Revert pNetwork in SSystemGlobalEnvironment
+#if defined(CARBONATED)
     CryNetwork::NetworkInstance::Release();
 #endif
     // carbonated end
-
     if (m_env.pConsole)
     {
         ((CXConsole*)m_env.pConsole)->FreeRenderResources();
