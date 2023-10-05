@@ -6,8 +6,6 @@
  *
  */
 
-#pragma optimize("", off)
-
 #if defined(CARBONATED)
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
@@ -852,8 +850,13 @@ namespace AzFramework
     {
         AZ::Transform newLocalTM = m_localTM;
 
-        //newLocalTM.ExtractScaleExact();
-        //newLocalTM.MultiplyByScale(scale);
+        // Gruber patch begin // commented out as unsupported
+        AZ_Assert(false, "To be fixed");
+#if 0
+        newLocalTM.ExtractScaleExact();
+        newLocalTM.MultiplyByScale(scale);
+#endif
+        // Gruber patch end
 
         SetLocalTM(newLocalTM);
     }
@@ -2365,5 +2368,3 @@ namespace AzFramework
 } // namespace AZ
 
 #endif
-
-#pragma optimize("", on)
