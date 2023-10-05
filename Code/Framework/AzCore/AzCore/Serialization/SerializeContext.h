@@ -1054,13 +1054,14 @@ namespace AZ::Serialize
     };
 
     /**
-         * Interface for a data container. This might be an AZStd container or just a class with
-         * elements defined in some template manner (usually with templates :) )
-         */
+    * Interface for a data container. This might be an AZStd container or just a class with
+    * elements defined in some template manner (usually with templates :) )
+    */
     class IDataContainer
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(IDataContainer);
+        AZ_RTTI_NO_TYPE_INFO_DECL()
 
         using ElementCB = AZStd::function< bool(void* /* instance pointer */, const Uuid& /*elementClassId*/, const ClassData* /* elementGenericClassData */, const ClassElement* /* genericClassElement */) >;
         using ElementTypeCB = AZStd::function< bool(const Uuid& /*elementClassId*/, const ClassElement* /* genericClassElement */) >;
@@ -1076,6 +1077,16 @@ namespace AZ::Serialize
             virtual void    FreeKey(void* key) = 0;
 
         public:
+            //! Stores the type structure of container the associative type represents
+            //! The valid values are an ordered set(Set, Map) or a hash table structure(UnorderedSet, UnorderedMap)
+            enum class AssociativeType
+            {
+                Unknown,
+                Set,
+                Map,
+                UnorderedSet,
+                UnorderedMap
+            };
             AZ_TYPE_INFO_WITH_NAME_DECL(IAssociativeDataContainer);
             virtual ~IAssociativeDataContainer() {}
 
@@ -1098,12 +1109,14 @@ namespace AZ::Serialize
             {
                 return AZStd::shared_ptr<void>(AllocateKey(), KeyPtrDeleter(this));
             }
-            /// Get an element's address by its key. Not used for serialization.
-            virtual void* GetElementByKey(void* instance, const ClassElement* classElement, const void* key) = 0;
-            /// Populates element with key (for associative containers). Not used for serialization.
-            virtual void    SetElementKey(void* element, void* key) = 0;
-            /// Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is the key itself
-            virtual void* GetValueByKey(void* instance, const void* key) = 0;
+            //! Get an element's address by its key. Not used for serialization.
+            virtual void* GetElementByKey(void* instance, const ClassElement* classElement, const void* key) const = 0;
+            //! Populates element with key (for associative containers). Not used for serialization.
+            virtual void    SetElementKey(void* element, void* key) const = 0;
+            //! Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is the key itself
+            virtual void* GetValueByKey(void* instance, const void* key) const = 0;
+            //! Queries the type structure(Set vs. Map, Ordered vs. Hash Table) represented by the AssociativeDataContainer
+            virtual AssociativeType GetAssociativeType() const = 0;
         };
 
         /// Return default element generic name (used by most containers).
@@ -1140,6 +1153,9 @@ namespace AZ::Serialize
         virtual bool    CanAccessElementsByIndex() const = 0;
         /// Returns the associative interface for this container (e.g. the container itself if it inherits it) if available, otherwise null.
         virtual IAssociativeDataContainer* GetAssociativeContainerInterface() { return nullptr; }
+        virtual const IAssociativeDataContainer* GetAssociativeContainerInterface() const { return nullptr; }
+        //! Returns true if the IDataContainer represents a reflected sequence type(AZStd array, (fixed)vector, list)
+        virtual bool IsSequenceContainer() const { return false; }
         /// Reserve an element and get its address (called before the element is loaded).
         virtual void* ReserveElement(void* instance, const ClassElement* classElement) = 0;
         /// Free an element that was reserved using ReserveElement, but was not stored by calling StoreElement.
