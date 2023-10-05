@@ -1438,10 +1438,13 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::SetEnforceMinWidth(bool enforceMinWidth)
     {
-        m_enforceMinWidth = enforceMinWidth;
-        if (m_rootNode)
+        if (m_enforceMinWidth != enforceMinWidth)
         {
-            HandleReset();
+            m_enforceMinWidth = enforceMinWidth;
+            if (m_rootNode)
+            {
+                HandleReset();
+            }
         }
     }
 
