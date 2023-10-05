@@ -9,6 +9,7 @@
 
 #include "EditorDefs.h"
 
+#include <AzAssetBrowser/AzAssetBrowserMultiWindow.h>
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AzAssetBrowserRequestHandler.h"
 
@@ -33,8 +34,10 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesView.h>
+
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserListView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
@@ -383,6 +386,105 @@ AzAssetBrowserRequestHandler::~AzAssetBrowserRequestHandler()
     AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusDisconnect();
 }
 
+void AzAssetBrowserRequestHandler::CreateSortAction(
+    QMenu* menu,
+    AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+    QString name,
+    AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntrySortMode sortMode)
+{
+    QAction* action = menu->addAction(
+        name,
+        [thumbnailView, treeView, sortMode]()
+        {
+            if (thumbnailView)
+            {
+                thumbnailView->SetSortMode(sortMode);
+            }
+            else if (treeView)
+            {
+                treeView->SetSortMode(sortMode);
+                if (treeView->GetAttachedThumbnailView())
+                {
+                    treeView->GetAttachedThumbnailView()->SetSortMode(sortMode);
+                }
+            }
+        });
+
+    action->setCheckable(true);
+
+    if (thumbnailView)
+    {
+        if (thumbnailView->GetSortMode() == sortMode)
+        {
+            action->setChecked(true);
+        }
+    }
+    else if (treeView)
+    {
+        // If there is a thumbnailView attached, the sorting will be happening in there.
+        if (treeView->GetAttachedThumbnailView())
+        {
+            if (treeView->GetAttachedThumbnailView()->GetSortMode() == sortMode)
+            {
+                action->setChecked(true);
+            }
+        }
+        else if (treeView->GetSortMode() == sortMode)
+        {
+            action->setChecked(true);
+        }
+    }
+}
+    
+
+void AzAssetBrowserRequestHandler::AddSortMenu(
+    QMenu* menu,
+    AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView)
+{
+    using namespace AzToolsFramework::AssetBrowser;
+
+    //TableView handles its own sorting.
+    if (tableView)
+    {
+        return;
+    }
+
+    // Check for the menu being called from the treeview when a tableview is active.
+    if (treeView && treeView->GetAttachedTableView() && treeView->GetAttachedTableView()->GetTableViewActive())
+    {
+        return;
+    }
+
+    QMenu* sortMenu = menu->addMenu(QObject::tr("Sort by"));
+    
+    CreateSortAction(
+        sortMenu,
+        thumbnailView,
+        treeView,
+        QObject::tr("Name"), AssetBrowserEntry::AssetEntrySortMode::Name);
+    
+    CreateSortAction(
+        sortMenu,
+        thumbnailView,
+        treeView,
+        QObject::tr("Type"), AssetBrowserEntry::AssetEntrySortMode::FileType);
+
+    CreateSortAction(
+        sortMenu,
+        thumbnailView,
+        treeView,
+        QObject::tr("Date"), AssetBrowserEntry::AssetEntrySortMode::LastModified);
+
+    CreateSortAction(
+        sortMenu,
+        thumbnailView,
+        treeView,
+        QObject::tr("Size"), AssetBrowserEntry::AssetEntrySortMode::Size);
+}
+
 void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string fullFilePath)
 {
     using namespace AzToolsFramework::AssetBrowser;
@@ -424,10 +526,10 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         calledFromAssetBrowser = treeView->GetIsAssetBrowserMainView();
     }
 
-    AssetBrowserTableView* tableView = qobject_cast<AssetBrowserTableView*>(caller);
-    if (tableView)
+    AssetBrowserListView* listView = qobject_cast<AssetBrowserListView*>(caller);
+    if (listView)
     {
-        calledFromAssetBrowser |= tableView->GetIsAssetBrowserMainView();
+        calledFromAssetBrowser |= listView->GetIsAssetBrowserMainView();
     }
 
     AssetBrowserThumbnailView* thumbnailView = qobject_cast<AssetBrowserThumbnailView*>(caller);
@@ -436,13 +538,19 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         calledFromAssetBrowser |= thumbnailView->GetIsAssetBrowserMainView();
     }
 
-    AssetBrowserExpandedTableView* expandedTableView = qobject_cast<AssetBrowserExpandedTableView*>(caller);
-    if (expandedTableView)
+    AssetBrowserTableView* tableView = qobject_cast<AssetBrowserTableView*>(caller);
+    if (tableView)
     {
-        calledFromAssetBrowser |= expandedTableView->GetIsAssetBrowserMainView();
+        calledFromAssetBrowser |= tableView->GetIsAssetBrowserMainView();
     }
 
-    if (!treeView && !tableView && !thumbnailView && !expandedTableView)
+    AssetBrowserFavoritesView* favoritesView = qobject_cast<AssetBrowserFavoritesView*>(caller);
+    if (favoritesView)
+    {
+        calledFromAssetBrowser = false;
+    }
+
+    if (!treeView && !tableView && !thumbnailView && !listView && !favoritesView)
     {
         return;
     }
@@ -451,6 +559,47 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     if (!entry)
     {
         return;
+    }
+
+    if (favoritesView)
+    {
+        menu->addAction(
+            QObject::tr("View in Asset Browser"),
+            [favoritesView, entry]()
+            {
+                AssetBrowserFavoriteRequestBus::Broadcast(
+                    &AssetBrowserFavoriteRequestBus::Events::ViewEntryInAssetBrowser, favoritesView, entry);
+            });
+    }
+
+    bool isFavorite = false;
+    AssetBrowserFavoriteRequestBus::BroadcastResult(isFavorite, &AssetBrowserFavoriteRequestBus::Events::GetIsFavoriteAsset, entry);
+
+    if (isFavorite)
+    {
+        menu->addAction(
+            QObject::tr("Remove from Favorites"),
+            [entry]()
+            {
+                AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveEntryFromFavorites, entry);
+            });
+    }
+    else
+    {
+        if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product)
+        {
+            menu->addAction(
+                QObject::tr("Add to Favorites"),
+                [caller]()
+                {
+                    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteEntriesButtonPressed, caller);
+                });
+        }
+    }
+
+    if (calledFromAssetBrowser)
+    {
+        AddSortMenu(menu, thumbnailView, treeView, tableView);
     }
 
     size_t numOfEntries = entries.size();
@@ -539,19 +688,27 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
             }
 
-            menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath, caller](){
-                auto* browser1 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser)->Widget());
-                const QString name2 = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
-                auto* browser2 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(name2)->Widget());
-                if (browser1->ViewWidgetBelongsTo(caller))
+            menu->addAction(
+                QObject::tr("Open in another Asset Browser"),
+                [fullFilePath, thumbnailView, tableView]()
                 {
-                    browser2->SelectAsset(fullFilePath.c_str());
-                }
-                else
-                {
-                    browser1->SelectAsset(fullFilePath.c_str());
-                }
-            });
+                    AzAssetBrowserWindow* newAssetBrowser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
+                    
+                    if (thumbnailView)
+                    {
+                        newAssetBrowser->SetCurrentMode(AssetBrowserMode::ThumbnailView);
+                    }
+                    else if (tableView)
+                    {
+                        newAssetBrowser->SetCurrentMode(AssetBrowserMode::TableView);
+                    }
+                    else
+                    {
+                        newAssetBrowser->SetCurrentMode(AssetBrowserMode::ListView);
+                    }
+
+                    newAssetBrowser->SelectAsset(fullFilePath.c_str());
+                });
 
             AZStd::vector<const ProductAssetBrowserEntry*> products;
             entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
@@ -594,23 +751,23 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 // Add Rename option
                 QAction* action = menu->addAction(
                     QObject::tr("Rename asset"),
-                    [treeView, tableView, thumbnailView, expandedTableView]()
+                    [treeView, listView, thumbnailView, tableView]()
                     {
                         if (treeView)
                         {
                             treeView->RenameEntry();
                         }
-                        else if (tableView)
+                        else if (listView)
                         {
-                            tableView->RenameEntry();
+                            listView->RenameEntry();
                         }
                         else if (thumbnailView)
                         {
                             thumbnailView->RenameEntry();
                         }
-                        else if (expandedTableView)
+                        else if (tableView)
                         {
-                            expandedTableView->RenameEntry();
+                            tableView->RenameEntry();
                         }
                     });
                 action->setShortcut(Qt::Key_F2);
@@ -623,23 +780,23 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             // Add Delete option
             QAction* action = menu->addAction(
                 QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""),
-                [treeView, tableView, thumbnailView, expandedTableView]()
+                [treeView, listView, thumbnailView, tableView]()
                 {
                     if (treeView)
                     {
                         treeView->DeleteEntries();
                     }
-                    else if (tableView)
+                    else if (listView)
                     {
-                        tableView->DeleteEntries();
+                        listView->DeleteEntries();
                     }
                     else if (thumbnailView)
                     {
                         thumbnailView->DeleteEntries();
                     }
-                    else if (expandedTableView)
+                    else if (tableView)
                     {
-                        expandedTableView->DeleteEntries();
+                        tableView->DeleteEntries();
                     }
                 });
             action->setShortcut(QKeySequence::Delete);
@@ -648,23 +805,23 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             // Add Duplicate option
             action = menu->addAction(
                 QObject::tr("Duplicate asset%1").arg(numOfEntries > 1 ? "s" : ""),
-                [treeView, tableView, thumbnailView, expandedTableView]()
+                [treeView, listView, thumbnailView, tableView]()
                 {
                     if (treeView)
                     {
                         treeView->DuplicateEntries();
                     }
-                    else if (tableView)
+                    else if (listView)
                     {
-                        tableView->DuplicateEntries();
+                        listView->DuplicateEntries();
                     }
                     else if (thumbnailView)
                     {
                         thumbnailView->DuplicateEntries();
                     }
-                    else if (expandedTableView)
+                    else if (tableView)
                     {
-                        expandedTableView->DuplicateEntries();
+                        tableView->DuplicateEntries();
                     }
                 });
             action->setShortcut(QKeySequence("Ctrl+D"));
@@ -673,23 +830,23 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             // Add Move to option
             menu->addAction(
                 QObject::tr("Move to"),
-                [treeView, tableView, thumbnailView, expandedTableView]()
+                [treeView, listView, thumbnailView, tableView]()
                 {
                     if (treeView)
                     {
                         treeView->MoveEntries();
                     }
-                    else if (tableView)
+                    else if (listView)
                     {
-                        tableView->MoveEntries();
+                        listView->MoveEntries();
                     }
                     else if (thumbnailView)
                     {
                         thumbnailView->MoveEntries();
                     }
-                    else if (expandedTableView)
+                    else if (tableView)
                     {
-                        expandedTableView->MoveEntries();
+                        tableView->MoveEntries();
                     }
                 });
         }
@@ -708,23 +865,23 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 // Add Rename option
                 QAction* action = menu->addAction(
                     QObject::tr("Rename Folder"),
-                    [treeView, tableView, thumbnailView, expandedTableView]()
+                    [treeView, listView, thumbnailView, tableView]()
                     {
                         if (treeView)
                         {
                             treeView->RenameEntry();
                         }
-                        else if (tableView)
+                        else if (listView)
                         {
-                            tableView->RenameEntry();
+                            listView->RenameEntry();
                         }
                         else if (thumbnailView)
                         {
                             thumbnailView->RenameEntry();
                         }
-                        else if (expandedTableView)
+                        else if (tableView)
                         {
-                            expandedTableView->RenameEntry();
+                            tableView->RenameEntry();
                         }
                     });
                 action->setShortcut(Qt::Key_F2);
@@ -733,23 +890,23 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 // Add Delete option
                 action = menu->addAction(
                     QObject::tr("Delete Folder"),
-                    [treeView, tableView, thumbnailView, expandedTableView]()
+                    [treeView, listView, thumbnailView, tableView]()
                     {
                         if (treeView)
                         {
                             treeView->DeleteEntries();
                         }
-                        else if (tableView)
+                        else if (listView)
                         {
-                            tableView->DeleteEntries();
+                            listView->DeleteEntries();
                         }
                         else if (thumbnailView)
                         {
                             thumbnailView->DeleteEntries();
                         }
-                        else if (expandedTableView)
+                        else if (tableView)
                         {
-                            expandedTableView->DeleteEntries();
+                            tableView->DeleteEntries();
                         }
                     });
                 action->setShortcut(QKeySequence::Delete);
@@ -758,23 +915,23 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 // Add Move to option
                 menu->addAction(
                     QObject::tr("Move to"),
-                    [treeView, tableView, thumbnailView, expandedTableView]()
+                    [treeView, listView, thumbnailView, tableView]()
                     {
                         if (treeView)
                         {
                             treeView->MoveEntries();
                         }
-                        else if (tableView)
+                        else if (listView)
                         {
-                            tableView->MoveEntries();
+                            listView->MoveEntries();
                         }
                         else if (thumbnailView)
                         {
                             thumbnailView->MoveEntries();
                         }
-                        else if (expandedTableView)
+                        else if (tableView)
                         {
-                            expandedTableView->MoveEntries();
+                            tableView->MoveEntries();
                         }
                     });
                 AddCreateMenu(menu, fullFilePath);
@@ -1142,4 +1299,51 @@ bool AzAssetBrowserRequestHandler::OpenWithOS(const AZStd::string& fullEntryPath
     }
 
     return openedSuccessfully;
+}
+
+AzAssetBrowserWindow* AzAssetBrowserRequestHandler::FindAzAssetBrowserWindowThatContainsWidget(QWidget* widget)
+{
+    AzAssetBrowserWindow* targetAssetBrowserWindow = nullptr;
+    QWidget* candidate = widget;
+    while (!targetAssetBrowserWindow)
+    {
+        targetAssetBrowserWindow = qobject_cast<AzAssetBrowserWindow*>(candidate);
+        if (targetAssetBrowserWindow)
+        {
+            return targetAssetBrowserWindow;
+        }
+
+        if (!candidate->parentWidget())
+        {
+            return nullptr;
+        }
+
+        candidate = candidate->parentWidget();
+    }
+
+    return nullptr;
+}
+
+void AzAssetBrowserRequestHandler::SelectAsset(QWidget* caller, const AZStd::string& fullFilePath)
+{
+    AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindowThatContainsWidget(caller);
+
+    if (!assetBrowserWindow)
+    {
+        return;
+    }
+
+    assetBrowserWindow->SelectAsset(fullFilePath.c_str(), false);
+}
+
+void AzAssetBrowserRequestHandler::SelectFolderAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFolderPath)
+{
+    AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindowThatContainsWidget(caller);
+
+    if (!assetBrowserWindow)
+    {
+        return;
+    }
+
+    assetBrowserWindow->SelectAsset(fullFolderPath.c_str(), true);
 }

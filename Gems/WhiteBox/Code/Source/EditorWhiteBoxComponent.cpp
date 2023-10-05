@@ -33,6 +33,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <QMessageBox>
 #include <WhiteBox/EditorWhiteBoxColliderBus.h>
@@ -114,7 +115,7 @@ namespace WhiteBox
     }
 
     // callback for when the default shape field is changed
-    void EditorWhiteBoxComponent::OnDefaultShapeChange()
+    AZ::Crc32 EditorWhiteBoxComponent::OnDefaultShapeChange()
     {
         const AZStd::string entityIdStr = AZStd::string::format("%llu", static_cast<AZ::u64>(GetEntityId()));
         const AZStd::string componentIdStr = AZStd::string::format("%llu", GetId());
@@ -135,6 +136,8 @@ namespace WhiteBox
         EditorWhiteBoxComponentNotificationBus::Event(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()),
             &EditorWhiteBoxComponentNotificationBus::Events::OnDefaultShapeTypeChanged, m_defaultShape);
+
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     bool EditorWhiteBoxVersionConverter(
@@ -210,14 +213,12 @@ namespace WhiteBox
                     ->EnumAttribute(DefaultShapeType::Sphere, "Sphere")
                     ->EnumAttribute(DefaultShapeType::Asset, "Mesh Asset")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultShapeChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset, "Editor Mesh Asset",
                         "Editor Mesh Asset")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::AssetVisibility)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Save as asset", "Save as asset")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::SaveAsAsset)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Save As ...")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_material, "White Box Material",
@@ -571,13 +572,13 @@ namespace WhiteBox
         return WhiteBoxSaveResult{relativePath, AZStd::string(absoluteSaveFilePathCstr)};
     }
 
-    void EditorWhiteBoxComponent::SaveAsAsset()
+    AZ::Crc32 EditorWhiteBoxComponent::SaveAsAsset()
     {
         // let the user select final location of the saved asset
         const auto absoluteSavePathFn = [](const AZStd::string& initialAbsolutePath)
         {
             const QString fileFilter =
-                AZStd::string::format("*.%s", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
+                AZStd::string::format("WhiteBoxMesh (*.%s)", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
             const QString absolutePath = AzQtComponents::FileDialog::GetSaveFileName(
                 nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
 
@@ -620,7 +621,7 @@ namespace WhiteBox
         // user pressed cancel
         if (!saveResult.has_value())
         {
-            return;
+            return AZ::Edit::PropertyRefreshLevels::None;
         }
 
         const char* const absoluteSaveFilePath = saveResult.value().m_absoluteFilePath.c_str();
@@ -656,6 +657,8 @@ namespace WhiteBox
                 RequestEditSourceControl(absoluteSaveFilePath);
             }
         }
+
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     template<typename TransformFn>

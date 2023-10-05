@@ -96,6 +96,7 @@ namespace EMotionFX
             GetEMotionFX().GetActorManager()->UnregisterAllActors();
             QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
             delete m_animGraph;
+            m_actorAsset.Reset();
             UIFixture::TearDown();
         }
 

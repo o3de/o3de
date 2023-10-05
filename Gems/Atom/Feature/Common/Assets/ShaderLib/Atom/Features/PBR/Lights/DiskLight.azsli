@@ -9,8 +9,12 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
-#include <Atom/Features/Shadow/ProjectedShadow.azsli>
 
+#if ENABLE_SHADOWS
+#include <Atom/Features/Shadow/ProjectedShadow.azsli>
+#endif
+
+#if ENABLE_DISK_LIGHTS
 enum DiskLightFlag
 {
     UseConeAngle = 1,
@@ -30,7 +34,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
     // Only calculate shading if light is in range
     if (falloff < 1.0f && angleFalloff > 0.0f)
     {
-        bool useConeAngle = light.m_flags & DiskLightFlag::UseConeAngle;
+        bool useConeAngle = light.m_flags & UseConeAngle;
         float3 dirToConeTip;
         float dotWithDirection;
 
@@ -213,7 +217,6 @@ void ValidateDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lighting
 
 void ApplyDiskLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_DISK_LIGHTS
     if (o_enableDiskLights)
     {
         ViewSrg::DiskLight light = ViewSrg::m_diskLights[lightIndex];
@@ -229,7 +232,6 @@ void ApplyDiskLightInternal(uint lightIndex, Surface surface, inout LightingData
             ApplyDiskLight(light, surface, lightingData);
         }
     }
-#endif // ENABLE_DISK_LIGHTS
 }
 
 void ApplyDiskLights(Surface surface, inout LightingData lightingData)
@@ -251,3 +253,12 @@ void ApplyDiskLights(Surface surface, inout LightingData lightingData)
     }
 #endif
 }
+
+#else
+
+void ApplyDiskLights(Surface surface, inout LightingData lightingData)
+{    
+    //Not Enabled
+}
+
+#endif

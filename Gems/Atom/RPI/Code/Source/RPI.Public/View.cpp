@@ -94,6 +94,7 @@ namespace AZ
         {
             m_drawListMask.reset();
             m_drawListContext.Shutdown();
+            m_visibleObjectContext.Shutdown();
             m_passesByDrawList = nullptr;
         }
 
@@ -113,11 +114,24 @@ namespace AZ
             m_drawListContext.AddDrawPacket(drawPacket, depth);
         }        
 
-        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition)
+        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition)
         {
             Vector3 cameraToObject = worldPosition - m_position;
             float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
             AddDrawPacket(drawPacket, depth);
+        }
+
+        void View::AddVisibleObject(const void* userData, float depth)
+        {
+            // This function is thread safe since VisibleObjectContext has storage per thread for draw item data.
+            m_visibleObjectContext.AddVisibleObject(userData, depth);
+        }
+
+        void View::AddVisibleObject(const void* userData, const Vector3& worldPosition)
+        {
+            Vector3 cameraToObject = worldPosition - m_position;
+            float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
+            AddVisibleObject(userData, depth);
         }
 
         void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
@@ -152,13 +166,27 @@ namespace AZ
             return m_orFlags;
         }
 
+        void View::UpdateViewToWorldMatrix(const AZ::Matrix4x4& viewToWorld)
+        {
+            m_viewToWorldMatrix = viewToWorld;
+
+            //Update view transform
+            static const Quaternion yUpToZUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
+            m_viewTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+                       Quaternion::CreateFromMatrix4x4(m_viewToWorldMatrix) * yUpToZUp, m_viewToWorldMatrix.GetTranslation()).GetOrthogonalized();
+        }
+
         void View::SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView)
         {
-            m_viewToWorldMatrix = worldToView.GetInverseFast();
+            UpdateViewToWorldMatrix(worldToView.GetInverseFast());
             m_position = m_viewToWorldMatrix.GetTranslation();
 
             m_worldToViewMatrix = worldToView;
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            if (m_viewToClipExcludeMatrix.has_value())
+            {
+                m_worldToClipExcludeMatrix = m_viewToClipExcludeMatrix.value() * m_worldToViewMatrix;
+            }
             m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
@@ -167,11 +195,7 @@ namespace AZ
 
         AZ::Transform View::GetCameraTransform() const
         {
-            static const Quaternion yUpToZUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
-            return AZ::Transform::CreateFromQuaternionAndTranslation(
-                Quaternion::CreateFromMatrix4x4(m_viewToWorldMatrix) * yUpToZUp,
-                m_viewToWorldMatrix.GetTranslation()
-            ).GetOrthogonalized();
+            return m_viewTransform;
         }
 
         void View::SetCameraTransform(const AZ::Matrix3x4& cameraTransform)
@@ -192,11 +216,15 @@ namespace AZ
                         0,0,0,1 };
             yUpWorld.StoreToRowMajorFloat12(viewToWorldMatrixRaw);
             const AZ::Matrix4x4 prevViewToWorldMatrix = m_viewToWorldMatrix;
-            m_viewToWorldMatrix = AZ::Matrix4x4::CreateFromRowMajorFloat16(viewToWorldMatrixRaw);
-
+            UpdateViewToWorldMatrix(AZ::Matrix4x4::CreateFromRowMajorFloat16(viewToWorldMatrixRaw));
+ 
             m_worldToViewMatrix = m_viewToWorldMatrix.GetInverseFast();
 
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            if (m_viewToClipExcludeMatrix.has_value())
+            {
+                m_worldToClipExcludeMatrix = m_viewToClipExcludeMatrix.value() * m_worldToViewMatrix;
+            }
             m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             // Only signal an update when there is a change, otherwise this might block
@@ -249,6 +277,20 @@ namespace AZ
             m_unprojectionConstants.SetW(float(tanHalfFovY));
 
             m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
+        }
+
+        void View::SetViewToClipExcludeMatrix(const AZ::Matrix4x4* viewToClipExclude)
+        {
+            if (viewToClipExclude)
+            {
+                m_viewToClipExcludeMatrix = *viewToClipExclude;
+                m_worldToClipExcludeMatrix = *viewToClipExclude * m_worldToViewMatrix;
+            }
+            else
+            {
+                m_viewToClipExcludeMatrix.reset();
+                m_worldToClipExcludeMatrix.reset();
+            }
         }
 
         void View::SetStereoscopicViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth)
@@ -336,6 +378,11 @@ namespace AZ
             return m_viewToClipMatrix;
         }
 
+        const AZ::Matrix4x4* View::GetWorldToClipExcludeMatrix() const
+        {
+            return m_worldToClipExcludeMatrix.has_value() ? &m_worldToClipExcludeMatrix.value() : nullptr;
+        }
+
         const AZ::Matrix4x4& View::GetWorldToClipMatrix() const
         {
             return m_worldToClipMatrix;
@@ -354,6 +401,16 @@ namespace AZ
         RHI::DrawListView View::GetDrawList(RHI::DrawListTag drawListTag)
         {
             return m_drawListContext.GetList(drawListTag);
+        }
+
+        VisibleObjectListView View::GetVisibleObjectList()
+        {
+            return m_visibleObjectContext.GetList();
+        }
+
+        void View::FinalizeVisibleObjectList()
+        {
+            m_visibleObjectContext.FinalizeLists();
         }
 
         void View::FinalizeDrawListsTG(AZ::TaskGraphEvent& finalizeDrawListsTGEvent)
@@ -624,5 +681,16 @@ namespace AZ
                 AZ_Warning("RPI::View", false, "Shader Resource Group failed to initialize");
             }
         }
+
+        void View::SetShadowPassRenderPipelineId(const RenderPipelineId renderPipelineId)
+        {
+            m_shadowPassRenderpipelineId = renderPipelineId;
+        }
+
+        RenderPipelineId View::GetShadowPassRenderPipelineId() const
+        {
+            return m_shadowPassRenderpipelineId;
+        }
+
     } // namespace RPI
 } // namespace AZ

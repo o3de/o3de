@@ -26,6 +26,7 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
         file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
                            True, True)
 
+    @pytest.mark.skip(reason="Skipped for intermittently failing.")
     class test_AssetPicker_UI_UX(EditorBatchedTest):
         from .EditorScripts import AssetPicker_UI_UX as test_module
 
@@ -57,6 +58,9 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
 
+    class test_InputBindings_Add_Remove_Input_Events(EditorBatchedTest):
+        from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
+
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -69,8 +73,11 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_AssetBrowser_SearchFiltering(EditorBatchedTest):
         from .EditorScripts import AssetBrowser_SearchFiltering as test_module
 
-    class test_AssetBrowser_TreeNavigation(EditorBatchedTest):
+    class test_AssetBrowser_TreeNavigation(EditorSingleTest):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module
+
+    class test_ComponentCRUD_Add_Delete_Components(EditorSingleTest):
+        from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
 
     @pytest.mark.REQUIRES_gpu
     class test_Docking_BasicDockedTools(EditorSingleTest):
@@ -84,6 +91,9 @@ class TestAutomationAutoTestMode(EditorTestSuite):
 
     class test_Menus_EditMenuOptions_Work(EditorBatchedTest):
         from .EditorScripts import Menus_EditMenuOptions as test_module
+
+    class test_Menus_FileMenuOptions_Work(EditorBatchedTest):
+        from .EditorScripts import Menus_FileMenuOptions as test_module
 
     class test_Menus_ViewMenuOptions_Work(EditorBatchedTest):
         from .EditorScripts import Menus_ViewMenuOptions as test_module

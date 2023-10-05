@@ -44,9 +44,7 @@ set(FILES
     Util/RefCountBase.h
     Util/PathUtil.h
     Util/PathUtil.cpp
-    Util/ImageHistogram.cpp
     Util/Image.cpp
-    Util/ImageHistogram.h
     Util/Image.h
     Undo/Undo.cpp
     Undo/IUndoManagerListener.h

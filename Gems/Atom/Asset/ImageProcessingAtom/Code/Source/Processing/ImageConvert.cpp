@@ -166,6 +166,17 @@ namespace ImageProcessingAtom
             // set start time
             m_startTime = AZStd::GetTimeUTCMilliSecond();
 
+            // Volume Textures are special. They are saved in the asset catalog
+            // as-is. They are expected to have the mipmaps precalculated and we don't do any kind
+            // of processing on them.
+            if (m_input->m_inputImage->HasImageFlags(EIF_Volumetexture))
+            {
+                m_image = new ImageToProcess(m_input->m_inputImage);
+                // And go straight into the final step next time UpdateProcess() is called.
+                m_progressStep = StepSaveToFile - 1;
+                break;
+            }
+
             // identify the alpha content of input image if gloss from normal wasn't set
             m_alphaContent = m_input->m_inputImage->GetAlphaContent();
 
@@ -815,7 +826,9 @@ namespace ImageProcessingAtom
             m_input->m_sourceAssetId,
             m_input->m_imageName,
             m_input->m_presetSetting.m_numResidentMips,
-            subId);
+            subId,
+            m_input->m_textureSetting.m_tags
+            );
 
         if (assetProducer.BuildImageAssets())
         {

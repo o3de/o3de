@@ -85,6 +85,14 @@ namespace AZStd
             bool m_useHeap = false;
         };
 
+        using action_handler_for_t = type_info::HandleFnT;
+        // Returns a default action handler for the type.
+        // The type must be constructible and destructible
+        // To support copy construction it must be constructible with a `const T&`
+        // To support move construction it must be constructible with a `T&&`
+        template <typename T>
+        static constexpr auto get_action_handler_for_t();
+
         /// Constructs an empty object.
         any(allocator alloc = allocator("AZStd::any"))
             : m_allocator(alloc)
@@ -423,6 +431,12 @@ namespace AZStd
         template <typename ValueType>
         friend add_pointer_t<ValueType> any_cast(any*);
     };
+
+    template <typename ValueType>
+    constexpr auto any::get_action_handler_for_t()
+    {
+        return &action_handler<ValueType>;
+    }
 
     namespace Internal
     {

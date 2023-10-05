@@ -16,6 +16,7 @@
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
+#include <QCollator>
 #include <QObject>
 #include <QModelIndex>
 #endif
@@ -46,6 +47,16 @@ namespace AzToolsFramework
 
             Q_OBJECT
         public:
+            enum class AssetEntrySortMode
+            {
+                Name,
+                FileType,
+                LastModified,
+                Size,
+                Vertices,
+                Dimensions
+            };
+
             enum class AssetEntryType
             {
                 Root,
@@ -116,10 +127,15 @@ namespace AzToolsFramework
             const AZStd::string GetFullPath() const;
             //! Return the size on disk of the asset
             const size_t GetDiskSize() const;
+            //! Return the time the file was last modified.
+            const AZ::u64 GetModificationTime() const;
             //! Returns the dimension of the model
             const AZ::Vector3& GetDimension() const;
             //! Returns the number of vertices in the model
             const uint32_t GetNumVertices() const;
+
+            const QString& GetEntryTypeAsString() const;
+            static const AZStd::string ExtensionToType(AZStd::string_view str);
 
             //! Get immediate children of specific type
             template<typename EntryType>
@@ -145,13 +161,24 @@ namespace AzToolsFramework
             void SetThumbnailKey(SharedThumbnailKey thumbnailKey);
             virtual SharedThumbnailKey CreateThumbnailKey() = 0;
 
+            void SetDisplayName(const QString name);
+            void SetIconPath(const AZ::IO::Path path);
+            AZ::IO::Path GetIconPath() const; 
+
+            bool lessThan(const AssetBrowserEntry* other, const AssetBrowserEntry::AssetEntrySortMode sortColumn, const QCollator& collator) const;
+            void SetFullPath(const AZ::IO::Path& fullPath);
+
         protected:
             AZStd::string m_name;
             QString m_displayName;
             QString m_displayPath;
+            QString m_entryType;
             AZ::IO::Path m_relativePath;
             AZ::IO::Path m_visiblePath;
             AZ::IO::Path m_fullPath;
+            AZ::IO::Path m_iconPath;
+            AZ::u64 m_modificationTime;
+
             size_t m_diskSize;
             AZ::Vector3 m_dimension{ NAN, NAN, NAN };
             uint32_t m_vertices{ 0 };

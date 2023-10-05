@@ -1,4 +1,5 @@
 .idea/
+.venv/
 .vs/
 .vscode/
 __pycache__
@@ -13,6 +14,7 @@ CMakeUserPresets.json
 [Uu]ser/
 FrameCapture/**
 .DS_Store
+.automatedtesting.json
 user*.cfg
 client*.cfg
 server*.cfg
@@ -20,4 +22,3 @@ server*.cfg
 _savebackup/
 *.swatches
 /imgui.ini
-

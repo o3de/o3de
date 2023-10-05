@@ -62,10 +62,6 @@
 #include <dirent.h>
 #endif
 
-#if defined(APPLE)
-    #include <AzFramework/Utils/SystemUtilsApple.h>
-#endif
-
 #if AZ_TRAIT_COMPILER_DEFINE_FS_ERRNO_TYPE
 typedef int FS_ERRNO_TYPE;
 

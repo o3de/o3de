@@ -20,6 +20,7 @@
 #include "native/utilities/JobDiagnosticTracker.h"
 
 #include <qstorageinfo.h>
+#include <native/utilities/ProductOutputUtil.h>
 
 namespace
 {
@@ -678,7 +679,7 @@ namespace AssetProcessor
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     shouldRemoveTempFolder = false;
                 }
-                shouldRemoveTempFolder = shouldRemoveTempFolder && !s_createRequestFileForSuccessfulJob;
+                shouldRemoveTempFolder = shouldRemoveTempFolder && !result.m_keepTempFolder && !s_createRequestFileForSuccessfulJob;
             }
             break;
 
@@ -808,6 +809,17 @@ namespace AssetProcessor
                 return false;
             }
 
+            const bool isSourceMetadataEnabled = !params.m_sourceUuid.IsNull();
+
+            if (isSourceMetadataEnabled)
+            {
+                // For metadata enabled files, the output file needs to be prefixed to handle multiple files with the same relative path.
+                // This phase will just use a temporary prefix which is longer and less likely to result in accidental conflicts.
+                // During AssetProcessed_Impl in APM, the prefixing will be resolved to figure out which file is highest priority and gets renamed
+                // back to the non-prefixed, backwards compatible format and every other file with the same rel path will be re-prefixed to a finalized form.
+                ProductOutputUtil::GetInterimProductPath(outputFilename, params.m_rcJob->GetJobEntry().m_sourceAssetReference.ScanFolderId());
+            }
+
             if(outputToCache)
             {
                 needCacheDirectory = true;
@@ -843,7 +855,7 @@ namespace AssetProcessor
                     // The assumption for the UUID generated below is that the source UUID will not change.  A type which has no metadata
                     // file currently may be updated later to have a metadata file, which would break that assumption.  In that case, stick
                     // with the default path-based UUID.
-                    if (!params.m_sourceUuid.IsNull())
+                    if (isSourceMetadataEnabled)
                     {
                         // Generate a UUID for the intermediate as:
                         // SourceUuid:BuilderUuid:SubId
@@ -928,6 +940,7 @@ namespace AssetProcessor
             const QString& productAbsolutePath = filePair.second;
 
             bool isCopyJob = !(sourceAbsolutePath.startsWith(tempFolder, Qt::CaseInsensitive));
+            isCopyJob |= response.m_keepTempFolder; // Copy instead of Move if the builder wants to keep the Temp Folder. 
 
             if (!MoveCopyFile(sourceAbsolutePath, productAbsolutePath, isCopyJob)) // this has its own traceprintf for failure
             {

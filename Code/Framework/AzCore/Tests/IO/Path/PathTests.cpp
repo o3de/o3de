@@ -193,7 +193,10 @@ namespace UnitTest
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/foo", "test/foo"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/foo", "test\\foo"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("test////foo", "test///foo"),
-            AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/bar/baz//foo", "test/bar/baz\\\\\\foo")
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/bar/baz//foo", "test/bar/baz\\\\\\foo"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("/home/foo/ros_ws/install/foo_robot/./meshes/bar.dae", "/home/foo/ros_ws/install/foo_robot/meshes/bar.dae"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("/./boo/far/./faz", "/boo/./././././far/././faz"),
+            AZStd::tuple<AZStd::string_view, AZStd::string_view>("test/foo/.", "test/foo")
         ));
 
     TEST_F(PathFixture, ComparisonOperators_Succeeds)

@@ -61,6 +61,7 @@ namespace AZ
             void SetVisualizationShowInactiveProbes(const DiffuseProbeGridHandle& probeGrid, bool visualizationShowInactiveProbes) override;
             void SetVisualizationSphereRadius(const DiffuseProbeGridHandle& probeGrid, float visualizationSphereRadius) override;
 
+            bool CanBakeTextures() override;
             void BakeTextures(
                 const DiffuseProbeGridHandle& probeGrid,
                 DiffuseProbeGridBakeTexturesCallback callback,

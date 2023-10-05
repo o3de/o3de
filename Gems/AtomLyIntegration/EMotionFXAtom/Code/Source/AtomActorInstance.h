@@ -126,7 +126,7 @@ namespace AZ
             MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             MaterialAssignmentLabelMap GetMaterialLabels() const override;
-            MaterialAssignmentMap GetDefautMaterialMap() const override;
+            MaterialAssignmentMap GetDefaultMaterialMap() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,6 +202,8 @@ namespace AZ
             void InitWrinkleMasks();
             void UpdateWrinkleMasks();
 
+            void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
+
             // Debug geometry rendering
             AZStd::unique_ptr<AtomActorDebugDraw> m_atomActorDebugDraw;
 
@@ -222,6 +224,11 @@ namespace AZ
 
             AZStd::vector<Data::Instance<RPI::Image>> m_wrinkleMasks;
             AZStd::vector<float> m_wrinkleMaskWeights;
+            
+            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
+            {
+                [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }
+            };
         };
 
     } // namespace Render

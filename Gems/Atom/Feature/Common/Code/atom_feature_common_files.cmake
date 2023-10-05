@@ -157,6 +157,12 @@ set(FILES
     Source/Math/MathFilter.h
     Source/Math/MathFilter.cpp
     Source/Math/MathFilterDescriptor.h
+    Source/Mesh/MeshInstanceGroupKey.cpp
+    Source/Mesh/MeshInstanceGroupKey.h
+    Source/Mesh/MeshInstanceGroupList.cpp
+    Source/Mesh/MeshInstanceGroupList.h
+    Source/Mesh/MeshInstanceManager.cpp
+    Source/Mesh/MeshInstanceManager.h
     Source/Mesh/MeshFeatureProcessor.cpp
     Source/Mesh/ModelReloader.cpp
     Source/Mesh/ModelReloader.h
@@ -274,6 +280,10 @@ set(FILES
     Source/ReflectionScreenSpace/ReflectionScreenSpacePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp

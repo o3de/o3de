@@ -69,7 +69,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DepthUpsample.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

@@ -35,6 +35,10 @@ namespace AZ
                 uint32_t m_missTableSize = 0;
                 uint32_t m_missTableStride = 0;
 
+                RHI::Ptr<Buffer> m_callableTable;
+                uint32_t m_callableTableSize = 0;
+                uint32_t m_callableTableStride = 0;
+
                 RHI::Ptr<Buffer> m_hitGroupTable;
                 uint32_t m_hitGroupTableSize = 0;
                 uint32_t m_hitGroupTableStride = 0;

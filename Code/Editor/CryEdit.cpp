@@ -91,7 +91,6 @@ AZ_POP_DISABLE_WARNING
 #include "GameExporter.h"
 #include "GameResourcesExporter.h"
 
-#include "ActionManager.h"
 #include "MainWindow.h"
 
 #include "Core/QtEditorApplication.h"
@@ -127,10 +126,6 @@ AZ_POP_DISABLE_WARNING
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
-
-#include "QuickAccessBar.h"
-
-#include "Export/ExportManager.h"
 
 #include "LevelFileDialog.h"
 #include "LevelIndependentFileMan.h"
@@ -354,84 +349,6 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* filename, bool addToMo
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
-void CCryEditApp::RegisterActionHandlers()
-{
-    ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
-    ON_COMMAND(ID_APP_SHOW_WELCOME, OnAppShowWelcomeScreen)
-    ON_COMMAND(ID_DOCUMENTATION_TUTORIALS, OnDocumentationTutorials)
-    ON_COMMAND(ID_DOCUMENTATION_O3DE, OnDocumentationO3DE)
-    ON_COMMAND(ID_DOCUMENTATION_GAMELIFT, OnDocumentationGamelift)
-    ON_COMMAND(ID_DOCUMENTATION_RELEASENOTES, OnDocumentationReleaseNotes)
-    ON_COMMAND(ID_DOCUMENTATION_GAMEDEVBLOG, OnDocumentationGameDevBlog)
-    ON_COMMAND(ID_DOCUMENTATION_FORUMS, OnDocumentationForums)
-    ON_COMMAND(ID_DOCUMENTATION_AWSSUPPORT, OnDocumentationAWSSupport)
-    ON_COMMAND(ID_FILE_EXPORT_SELECTEDOBJECTS, OnExportSelectedObjects)
-    ON_COMMAND(ID_EDIT_HOLD, OnEditHold)
-    ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
-    ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
-    ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
-    ON_COMMAND(ID_VIEW_SWITCHTOGAME_VIEWPORT, OnViewSwitchToGame)
-    ON_COMMAND(ID_VIEW_SWITCHTOGAME_FULLSCREEN, OnViewSwitchToGameFullScreen)
-    ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
-    ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
-    ON_COMMAND(ID_UNDO, OnUndo)
-    ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
-    ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
-    ON_COMMAND(ID_EDIT_LEVELDATA, OnEditLevelData)
-    ON_COMMAND(ID_FILE_EDITLOGFILE, OnFileEditLogFile)
-    ON_COMMAND(ID_FILE_EDITEDITORINI, OnFileEditEditorini)
-    ON_COMMAND(ID_PREFERENCES, OnPreferences)
-    ON_COMMAND(ID_REDO, OnRedo)
-    ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnRedo)
-    ON_COMMAND(ID_FILE_OPEN_LEVEL, OnOpenLevel)
-#ifdef ENABLE_SLICE_EDITOR
-    ON_COMMAND(ID_FILE_RESAVESLICES, OnFileResaveSlices)
-    ON_COMMAND(ID_FILE_NEW_SLICE, OnCreateSlice)
-    ON_COMMAND(ID_FILE_OPEN_SLICE, OnOpenSlice)
-#endif
-    ON_COMMAND(ID_SWITCH_PHYSICS, OnSwitchPhysics)
-    ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
-    ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
-
-    ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
-
-    ON_COMMAND(IDC_SELECTION, OnDummyCommand)
-
-    //////////////////////////////////////////////////////////////////////////
-
-    ON_COMMAND(ID_TOOLS_LOGMEMORYUSAGE, OnToolsLogMemoryUsage)
-    ON_COMMAND(ID_TOOLS_CUSTOMIZEKEYBOARD, OnCustomizeKeyboard)
-    ON_COMMAND(ID_TOOLS_CONFIGURETOOLS, OnToolsConfiguretools)
-    ON_COMMAND(ID_TOOLS_SCRIPTHELP, OnToolsScriptHelp)
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
-#endif
-    ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
-    ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
-    ON_COMMAND(ID_TOOLS_PREFERENCES, OnToolsPreferences)
-    ON_COMMAND(ID_SWITCHCAMERA_DEFAULTCAMERA, OnSwitchToDefaultCamera)
-    ON_COMMAND(ID_SWITCHCAMERA_SEQUENCECAMERA, OnSwitchToSequenceCamera)
-    ON_COMMAND(ID_SWITCHCAMERA_SELECTEDCAMERA, OnSwitchToSelectedcamera)
-    ON_COMMAND(ID_SWITCHCAMERA_NEXT, OnSwitchcameraNext)
-    ON_COMMAND(ID_OPEN_SUBSTANCE_EDITOR, OnOpenProceduralMaterialEditor)
-    ON_COMMAND(ID_OPEN_ASSET_BROWSER, OnOpenAssetBrowserView)
-    ON_COMMAND(ID_OPEN_AUDIO_CONTROLS_BROWSER, OnOpenAudioControlsEditor)
-
-    ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
-    ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
-
-    ON_COMMAND(ID_OPEN_QUICK_ACCESS_BAR, OnOpenQuickAccessBar)
-
-    ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
-    ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
-
-    // Project Manager
-    ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
-    ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManagerNew)
-    ON_COMMAND(ID_FILE_PROJECT_MANAGER_OPEN, OnOpenProjectManager)
-}
-
 CCryEditApp* CCryEditApp::s_currentInstance = nullptr;
 /////////////////////////////////////////////////////////////////////////////
 // CCryEditApp construction
@@ -442,6 +359,7 @@ CCryEditApp::CCryEditApp()
     m_sPreviewFile[0] = 0;
 
     AzFramework::AssetSystemInfoBus::Handler::BusConnect();
+    AzFramework::AssetSystemStatusBus::Handler::BusConnect();
 
     m_disableIdleProcessingCounter = 0;
     EditorIdleProcessingBus::Handler::BusConnect();
@@ -451,6 +369,7 @@ CCryEditApp::CCryEditApp()
 CCryEditApp::~CCryEditApp()
 {
     EditorIdleProcessingBus::Handler::BusDisconnect();
+    AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
     s_currentInstance = nullptr;
 }
@@ -877,6 +796,11 @@ QString FormatRichTextCopyrightNotice()
     return copyrightString.arg(copyrightHtmlSymbol);
 }
 
+void CCryEditApp::AssetSystemWaiting()
+{
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 {
@@ -891,8 +815,6 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
     g_splashScreenStateLock.unlock();
 
     splashScreen->show();
-    // Make sure the initial paint of the splash screen occurs so we dont get stuck with a blank window
-    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
     QObject::connect(splashScreen, &QObject::destroyed, splashScreen, [=]
     {
@@ -1095,8 +1017,6 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
 
     if (m_bPreviewMode)
     {
-        GetIEditor()->EnableAcceleratos(false);
-
         // Load geometry object.
         if (!cmdInfo.m_strFileName.isEmpty())
         {
@@ -1751,14 +1671,6 @@ bool CCryEditApp::InitInstance()
     mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "O3DE", "mainWindowGeometry");
     m_pDocManager->OnFileNew();
 
-    if (IsInRegularEditorMode())
-    {
-        // QuickAccessBar creation should be before m_pMainWnd->SetFocus(),
-        // since it receives the focus at creation time. It brakes MainFrame key accelerators.
-        m_pQuickAccessBar = new CQuickAccessBar;
-        m_pQuickAccessBar->setVisible(false);
-    }
-
     if (MainWindow::instance())
     {
         if (m_bConsoleMode || IsInAutotestMode())
@@ -1819,10 +1731,7 @@ bool CCryEditApp::InitInstance()
     }
 
     // Trigger the Action Manager registration hooks once all systems and Gems are initialized and listening.
-    if (AzToolsFramework::IsNewActionManagerEnabled())
-    {
-        AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
-    }
+    AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
 
     CloseSplashScreen();
 
@@ -2178,7 +2087,6 @@ int CCryEditApp::ExitInstance(int exitCode)
     }
 
     SAFE_DELETE(m_pConsoleDialog);
-    SAFE_DELETE(m_pQuickAccessBar);
 
     if (GetIEditor())
     {
@@ -2616,43 +2524,6 @@ void CCryEditApp::OnViewSwitchToGameFullScreen()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnExportSelectedObjects()
-{
-    CExportManager* pExportManager = static_cast<CExportManager*> (GetIEditor()->GetExportManager());
-    QString filename = "untitled";
-    CBaseObject* pObj = GetIEditor()->GetSelectedObject();
-    if (pObj)
-    {
-        filename = pObj->GetName();
-    }
-    else
-    {
-        QString levelName = GetIEditor()->GetGameEngine()->GetLevelName();
-        if (!levelName.isEmpty())
-        {
-            filename = levelName;
-        }
-    }
-    QString levelPath = GetIEditor()->GetGameEngine()->GetLevelPath();
-    pExportManager->Export(filename.toUtf8().data(), "obj", levelPath.toUtf8().data());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnFileExportOcclusionMesh()
-{
-    CExportManager* pExportManager = static_cast<CExportManager*> (GetIEditor()->GetExportManager());
-    QString levelName = GetIEditor()->GetGameEngine()->GetLevelName();
-    QString levelPath = GetIEditor()->GetGameEngine()->GetLevelPath();
-    pExportManager->Export(levelName.toUtf8().data(), "ocm", levelPath.toUtf8().data(), false, false, true);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnOpenAssetImporter()
-{
-    QtViewPaneManager::instance()->OpenPane(LyViewPane::SceneSettings);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSelected(QAction* action)
 {
     action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
@@ -2901,61 +2772,6 @@ void CCryEditApp::OnUpdateUndo(QAction* action)
     }
 }
 
-/// Undo command to track entering and leaving Simulation Mode.
-class SimulationModeCommand
-    : public AzToolsFramework::UndoSystem::URSequencePoint
-{
-public:
-    AZ_CLASS_ALLOCATOR(SimulationModeCommand, AZ::SystemAllocator);
-    AZ_RTTI(SimulationModeCommand, "{FB9FB958-5C56-47F6-B168-B5F564F70E69}");
-
-    SimulationModeCommand(const AZStd::string& friendlyName);
-
-    void Undo() override;
-    void Redo() override;
-
-    bool Changed() const override { return true; } // State will always have changed.
-
-private:
-    void UndoRedo()
-    {
-        if (ActionManager* actionManager = MainWindow::instance()->GetActionManager())
-        {
-            if (auto* action = actionManager->GetAction(ID_SWITCH_PHYSICS))
-            {
-                action->trigger();
-            }
-        }
-    }
-};
-
-SimulationModeCommand::SimulationModeCommand(const AZStd::string& friendlyName)
-    : URSequencePoint(friendlyName)
-{
-}
-
-void SimulationModeCommand::Undo()
-{
-    UndoRedo();
-}
-
-void SimulationModeCommand::Redo()
-{
-    UndoRedo();
-}
-
-namespace UndoRedo
-{
-    static bool IsHappening()
-    {
-        bool undoRedo = false;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            undoRedo, &AzToolsFramework::ToolsApplicationRequests::IsDuringUndoRedo);
-
-        return undoRedo;
-    }
-} // namespace UndoRedo
-
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchPhysics()
 {
@@ -2966,17 +2782,6 @@ void CCryEditApp::OnSwitchPhysics()
     }
 
     QWaitCursor wait;
-
-    AZStd::unique_ptr<AzToolsFramework::ScopedUndoBatch> undoBatch;
-    if (!UndoRedo::IsHappening())
-    {
-        undoBatch = AZStd::make_unique<AzToolsFramework::ScopedUndoBatch>("Switching Physics Simulation");
-
-        auto simulationModeCommand = AZStd::make_unique<SimulationModeCommand>(AZStd::string("Switch Physics"));
-        // simulationModeCommand managed by undoBatch
-        simulationModeCommand->SetParent(undoBatch->GetUndoBatch());
-        simulationModeCommand.release();
-    }
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_EDITOR_SIMULATION_MODE_SWITCH_START, 0, 0);
 
@@ -3467,18 +3272,6 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
 
     MainWindow::instance()->menuBar()->setEnabled(true);
 
-    if (doc->GetEditMode() == CCryEditDoc::DocumentEditingMode::SliceEdit)
-    {
-        // center camera on entities in slice
-        if (ActionManager* actionManager = MainWindow::instance()->GetActionManager())
-        {
-            GetIEditor()->GetUndoManager()->Suspend();
-            actionManager->GetAction(AzToolsFramework::SelectAll)->trigger();
-            actionManager->GetAction(ID_GOTO_SELECTED)->trigger();
-            GetIEditor()->GetUndoManager()->Resume();
-        }
-    }
-
     m_levelErrorsHaveBeenDisplayed = false;
 
     return doc; // the API wants a CDocument* to be returned. It seems not to be used, though, in our current state.
@@ -3538,16 +3331,6 @@ void CCryEditApp::OnToolsLogMemoryUsage()
 void CCryEditApp::OnCustomizeKeyboard()
 {
     MainWindow::instance()->OnCustomizeToolbar();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnToolsConfiguretools()
-{
-    ToolsConfigDialog dlg;
-    if (dlg.exec() == QDialog::Accepted)
-    {
-        MainWindow::instance()->UpdateToolsMenu();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3709,21 +3492,6 @@ bool CCryEditApp::IsInRegularEditorMode()
 {
     return !IsInTestMode() && !IsInPreviewMode()
            && !IsInExportMode() && !IsInConsoleMode() && !IsInLevelLoadTestMode() && !GetIEditor()->IsInMatEditMode();
-}
-
-void CCryEditApp::OnOpenQuickAccessBar()
-{
-    if (m_pQuickAccessBar == nullptr)
-    {
-        return;
-    }
-
-    QRect geo = m_pQuickAccessBar->geometry();
-    auto mainWindow = MainWindow::instance();
-    geo.moveCenter(mainWindow->mapToGlobal(mainWindow->geometry().center()));
-    m_pQuickAccessBar->setGeometry(geo);
-    m_pQuickAccessBar->setVisible(true);
-    m_pQuickAccessBar->setFocus();
 }
 
 void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, QString sPostTitleStr)

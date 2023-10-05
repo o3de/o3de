@@ -18,13 +18,11 @@ namespace AZ
         ;
     }
 
-
     AZ_MATH_INLINE Vector2::Vector2(float x, float y)
         : m_value(Simd::Vec2::LoadImmediate(x, y))
     {
         ;
     }
-
 
     AZ_MATH_INLINE Vector2::Vector2(Simd::Vec2::FloatArgType value)
         : m_value(value)
@@ -47,30 +45,25 @@ namespace AZ
         return Vector2(0.0f);
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::CreateOne()
     {
         return Vector2(1.0f);
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::CreateAxisX(float length)
     {
         return Vector2(length, 0.0f);
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::CreateAxisY(float length)
     {
         return Vector2(0.0f, length);
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::CreateFromFloat2(const float* values)
     {
         return Vector2(values[0], values[1]);
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::CreateFromAngle(float angle)
     {
@@ -78,7 +71,6 @@ namespace AZ
         SinCos(angle, sin, cos);
         return Vector2(sin, cos);
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::CreateSelectCmpEqual(const Vector2& cmp1, const Vector2& cmp2, const Vector2& vA, const Vector2& vB)
     {
@@ -90,7 +82,6 @@ namespace AZ
 #endif
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::CreateSelectCmpGreaterEqual(const Vector2& cmp1, const Vector2& cmp2, const Vector2& vA, const Vector2& vB)
     {
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
@@ -100,7 +91,6 @@ namespace AZ
         return Vector2(Simd::Vec2::Select(vA.m_value, vB.m_value, mask));
 #endif
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::CreateSelectCmpGreater(const Vector2& cmp1, const Vector2& cmp2, const Vector2& vA, const Vector2& vB)
     {
@@ -112,37 +102,31 @@ namespace AZ
 #endif
     }
 
-
     AZ_MATH_INLINE void Vector2::StoreToFloat2(float* values) const
     {
         values[0] = m_x;
         values[1] = m_y;
     }
 
-
     AZ_MATH_INLINE float Vector2::GetX() const
     {
         return m_x;
     }
-
 
     AZ_MATH_INLINE float Vector2::GetY() const
     {
         return m_y;
     }
 
-
     AZ_MATH_INLINE void Vector2::SetX(float x)
     {
         m_x = x;
     }
 
-
     AZ_MATH_INLINE void Vector2::SetY(float y)
     {
         m_y = y;
     }
-
 
     AZ_MATH_INLINE float Vector2::GetElement(int index) const
     {
@@ -150,85 +134,71 @@ namespace AZ
         return m_values[index];
     }
 
-
     AZ_MATH_INLINE void Vector2::SetElement(int index, float value)
     {
         AZ_MATH_ASSERT((index >= 0) && (index < Simd::Vec2::ElementCount), "Invalid index for component access.\n");
         m_values[index] = value;
     }
 
-
     AZ_MATH_INLINE void Vector2::Set(float x)
     {
         m_value = Simd::Vec2::Splat(x);
     }
-
 
     AZ_MATH_INLINE void Vector2::Set(float x, float y)
     {
         m_value = Simd::Vec2::LoadImmediate(x, y);
     }
 
-
     AZ_MATH_INLINE float Vector2::operator()(int index) const
     {
         return GetElement(index);
     }
-
 
     AZ_MATH_INLINE float Vector2::GetLengthSq() const
     {
         return Dot(*this);
     }
 
-
     AZ_MATH_INLINE float Vector2::GetLength() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Sqrt(Simd::Vec2::Dot(m_value, m_value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Sqrt(Simd::Vec2::Dot(m_value, m_value)));
     }
-
 
     AZ_MATH_INLINE float Vector2::GetLengthEstimate() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtEstimate(Simd::Vec2::Dot(m_value, m_value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtEstimate(Simd::Vec2::Dot(m_value, m_value)));
     }
-
 
     AZ_MATH_INLINE float Vector2::GetLengthReciprocal() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInv(Simd::Vec2::Dot(m_value, m_value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInv(Simd::Vec2::Dot(m_value, m_value)));
     }
-
 
     AZ_MATH_INLINE float Vector2::GetLengthReciprocalEstimate() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInvEstimate(Simd::Vec2::Dot(m_value, m_value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInvEstimate(Simd::Vec2::Dot(m_value, m_value)));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetNormalized() const
     {
         return Vector2(Simd::Vec2::Normalize(m_value));
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetNormalizedEstimate() const
     {
         return Vector2(Simd::Vec2::NormalizeEstimate(m_value));
     }
-
 
     AZ_MATH_INLINE void Vector2::Normalize()
     {
         m_value = Simd::Vec2::Normalize(m_value);
     }
 
-
     AZ_MATH_INLINE void Vector2::NormalizeEstimate()
     {
         m_value = Simd::Vec2::NormalizeEstimate(m_value);
     }
-
 
     AZ_MATH_INLINE float Vector2::NormalizeWithLength()
     {
@@ -237,7 +207,6 @@ namespace AZ
         return length;
     }
 
-
     AZ_MATH_INLINE float Vector2::NormalizeWithLengthEstimate()
     {
         float length = GetLengthEstimate();
@@ -245,52 +214,44 @@ namespace AZ
         return length;
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetNormalizedSafe(float tolerance) const
     {
         return Vector2(Simd::Vec2::NormalizeSafe(m_value, tolerance));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetNormalizedSafeEstimate(float tolerance) const
     {
         return Vector2(Simd::Vec2::NormalizeSafeEstimate(m_value, tolerance));
     }
 
-
     AZ_MATH_INLINE void Vector2::NormalizeSafe(float tolerance)
     {
         m_value = Simd::Vec2::NormalizeSafe(m_value, tolerance);
     }
-
 
     AZ_MATH_INLINE void Vector2::NormalizeSafeEstimate(float tolerance)
     {
         m_value = Simd::Vec2::NormalizeSafeEstimate(m_value, tolerance);
     }
 
-
     AZ_MATH_INLINE float Vector2::NormalizeSafeWithLength(float tolerance)
     {
         const Simd::Vec1::FloatType length = Simd::Vec1::Sqrt(Simd::Vec2::Dot(m_value, m_value));
-        m_value = (Simd::Vec1::SelectFirst(length) < tolerance) ? Simd::Vec2::ZeroFloat() : Simd::Vec2::Div(m_value, Simd::Vec2::SplatFirst(Simd::Vec2::FromVec1(length)));
-        return Simd::Vec1::SelectFirst(length);
+        m_value = (Simd::Vec1::SelectIndex0(length) < tolerance) ? Simd::Vec2::ZeroFloat() : Simd::Vec2::Div(m_value, Simd::Vec2::SplatIndex0(Simd::Vec2::FromVec1(length)));
+        return Simd::Vec1::SelectIndex0(length);
     }
-
 
     AZ_MATH_INLINE float Vector2::NormalizeSafeWithLengthEstimate(float tolerance)
     {
         const Simd::Vec1::FloatType length = Simd::Vec1::SqrtEstimate(Simd::Vec2::Dot(m_value, m_value));
-        m_value = (Simd::Vec1::SelectFirst(length) < tolerance) ? Simd::Vec2::ZeroFloat() : Simd::Vec2::Div(m_value, Simd::Vec2::SplatFirst(Simd::Vec2::FromVec1(length)));
-        return Simd::Vec1::SelectFirst(length);
+        m_value = (Simd::Vec1::SelectIndex0(length) < tolerance) ? Simd::Vec2::ZeroFloat() : Simd::Vec2::Div(m_value, Simd::Vec2::SplatIndex0(Simd::Vec2::FromVec1(length)));
+        return Simd::Vec1::SelectIndex0(length);
     }
-
 
     AZ_MATH_INLINE bool Vector2::IsNormalized(float tolerance) const
     {
         return (Abs(GetLengthSq() - 1.0f) <= tolerance);
     }
-
 
     AZ_MATH_INLINE void Vector2::SetLength(float length)
     {
@@ -298,37 +259,31 @@ namespace AZ
         m_value = Simd::Vec2::Mul(m_value, Simd::Vec2::Splat(scale));
     }
 
-
     AZ_MATH_INLINE void Vector2::SetLengthEstimate(float length)
     {
         float scale = length / GetLengthEstimate();
         m_value = Simd::Vec2::Mul(m_value, Simd::Vec2::Splat(scale));
     }
 
-
     AZ_MATH_INLINE float Vector2::GetDistanceSq(const Vector2& v) const
     {
         return ((*this) - v).GetLengthSq();
     }
-
 
     AZ_MATH_INLINE float Vector2::GetDistance(const Vector2& v) const
     {
         return ((*this) - v).GetLength();
     }
 
-
     AZ_MATH_INLINE float Vector2::GetDistanceEstimate(const Vector2& v) const
     {
         return ((*this) - v).GetLengthEstimate();
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::Lerp(const Vector2& dest, float t) const
     {
         return Vector2(Simd::Vec2::Madd(Simd::Vec2::Sub(dest.m_value, m_value), Simd::Vec2::Splat(t), m_value));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::Slerp(const Vector2& dest, float t) const
     {
@@ -339,22 +294,19 @@ namespace AZ
         const Simd::Vec2::FloatType relativeVec = Simd::Vec2::Sub(dest.GetSimdValue(), Simd::Vec2::Mul(GetSimdValue(), Simd::Vec2::FromVec1(dot)));
         const Simd::Vec2::FloatType relVecNorm = Simd::Vec2::NormalizeSafe(relativeVec, Constants::Tolerance);
         const Simd::Vec2::FloatType sinCos = Simd::Vec2::SinCos(theta);
-        const Simd::Vec2::FloatType relVecSinTheta = Simd::Vec2::Mul(relVecNorm, Simd::Vec2::SplatFirst(sinCos));
-        return Vector2(Simd::Vec2::Madd(GetSimdValue(), Simd::Vec2::SplatSecond(sinCos), relVecSinTheta));
+        const Simd::Vec2::FloatType relVecSinTheta = Simd::Vec2::Mul(relVecNorm, Simd::Vec2::SplatIndex0(sinCos));
+        return Vector2(Simd::Vec2::Madd(GetSimdValue(), Simd::Vec2::SplatIndex1(sinCos), relVecSinTheta));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::Nlerp(const Vector2& dest, float t) const
     {
         return Lerp(dest, t).GetNormalizedSafe(Constants::Tolerance);
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetPerpendicular() const
     {
         return Vector2(-m_y, m_x);
     }
-
 
     AZ_MATH_INLINE bool Vector2::IsClose(const Vector2& v, float tolerance) const
     {
@@ -362,66 +314,56 @@ namespace AZ
         return dist.IsLessEqualThan(Vector2(tolerance));
     }
 
-
     AZ_MATH_INLINE bool Vector2::IsZero(float tolerance) const
     {
-        return IsClose(Vector2::CreateZero(), tolerance);
+        Vector2 dist = GetAbs();
+        return dist.IsLessEqualThan(Vector2(tolerance));
     }
-
 
     AZ_MATH_INLINE bool Vector2::operator==(const Vector2& rhs) const
     {
         return Simd::Vec2::CmpAllEq(m_value, rhs.m_value);
     }
 
-
     AZ_MATH_INLINE bool Vector2::operator!=(const Vector2& rhs) const
     {
         return !Simd::Vec2::CmpAllEq(m_value, rhs.m_value);
     }
-
 
     AZ_MATH_INLINE bool Vector2::IsLessThan(const Vector2& v) const
     {
         return Simd::Vec2::CmpAllLt(m_value, v.m_value);
     }
 
-
     AZ_MATH_INLINE bool Vector2::IsLessEqualThan(const Vector2& v) const
     {
         return Simd::Vec2::CmpAllLtEq(m_value, v.m_value);
     }
-
 
     AZ_MATH_INLINE bool Vector2::IsGreaterThan(const Vector2& v) const
     {
         return Simd::Vec2::CmpAllGt(m_value, v.m_value);
     }
 
-
     AZ_MATH_INLINE bool Vector2::IsGreaterEqualThan(const Vector2& v) const
     {
         return Simd::Vec2::CmpAllGtEq(m_value, v.m_value);
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetFloor() const
     {
         return Vector2(Simd::Vec2::Floor(m_value));
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetCeil() const
     {
         return Vector2(Simd::Vec2::Ceil(m_value));
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetRound() const
     {
         return Vector2(Simd::Vec2::Round(m_value));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetMin(const Vector2& v) const
     {
@@ -432,7 +374,6 @@ namespace AZ
 #endif
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetMax(const Vector2& v) const
     {
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
@@ -442,12 +383,10 @@ namespace AZ
 #endif
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetClamp(const Vector2& min, const Vector2& max) const
     {
         return GetMin(max).GetMax(min);
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetSelect(const Vector2& vCmp, const Vector2& vB)
     {
@@ -459,18 +398,15 @@ namespace AZ
 #endif
     }
 
-
     AZ_MATH_INLINE void Vector2::Select(const Vector2& vCmp, const Vector2& vB)
     {
         *this = GetSelect(vCmp, vB);
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetAbs() const
     {
         return Vector2(Simd::Vec2::Abs(m_value));
     }
-
 
     AZ_MATH_INLINE Vector2& Vector2::operator+=(const Vector2& rhs)
     {
@@ -478,13 +414,11 @@ namespace AZ
         return *this;
     }
 
-
     AZ_MATH_INLINE Vector2& Vector2::operator-=(const Vector2& rhs)
     {
         m_value = Simd::Vec2::Sub(m_value, rhs.m_value);
         return *this;
     }
-
 
     AZ_MATH_INLINE Vector2& Vector2::operator*=(const Vector2& rhs)
     {
@@ -492,13 +426,11 @@ namespace AZ
         return *this;
     }
 
-
     AZ_MATH_INLINE Vector2& Vector2::operator/=(const Vector2& rhs)
     {
         m_value = Simd::Vec2::Div(m_value, rhs.m_value);
         return *this;
     }
-
 
     AZ_MATH_INLINE Vector2& Vector2::operator*=(float multiplier)
     {
@@ -506,67 +438,56 @@ namespace AZ
         return *this;
     }
 
-
     AZ_MATH_INLINE Vector2& Vector2::operator/=(float divisor)
     {
         m_value = Simd::Vec2::Div(m_value, Simd::Vec2::Splat(divisor));
         return *this;
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::operator-() const
     {
         return Vector2(-m_x, -m_y);
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::operator+(const Vector2& rhs) const
     {
         return Vector2(Simd::Vec2::Add(m_value, rhs.m_value));
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::operator-(const Vector2& rhs) const
     {
         return Vector2(Simd::Vec2::Sub(m_value, rhs.m_value));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::operator*(const Vector2& rhs) const
     {
         return Vector2(Simd::Vec2::Mul(m_value, rhs.m_value));
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::operator*(float multiplier) const
     {
         return Vector2(Simd::Vec2::Mul(m_value, Simd::Vec2::Splat(multiplier)));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::operator/(float divisor) const
     {
         return Vector2(Simd::Vec2::Div(m_value, Simd::Vec2::Splat(divisor)));
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::operator/(const Vector2& rhs) const
     {
         return Vector2(Simd::Vec2::Div(m_value, rhs.m_value));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetSin() const
     {
         return Vector2(Simd::Vec2::Sin(m_value));
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetCos() const
     {
         return Vector2(Simd::Vec2::Cos(m_value));
     }
-
 
     AZ_MATH_INLINE void Vector2::GetSinCos(Vector2& sin, Vector2& cos) const
     {
@@ -576,30 +497,25 @@ namespace AZ
         cos = Vector2(cosValues);
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetAcos() const
     {
         return Vector2(Simd::Vec2::Acos(m_value));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetAtan() const
     {
         return Vector2(Simd::Vec2::Atan(m_value));
     }
 
-
     AZ_MATH_INLINE float Vector2::GetAtan2() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec2::Atan2(m_value));
+        return Simd::Vec1::SelectIndex0(Simd::Vec2::Atan2(m_value));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetAngleMod() const
     {
         return Vector2(Simd::Vec2::AngleMod(m_value));
     }
-
 
     AZ_MATH_INLINE float Vector2::Angle(const Vector2& v) const
     {
@@ -610,60 +526,50 @@ namespace AZ
         return res;
     }
 
-
     AZ_MATH_INLINE float Vector2::AngleDeg(const Vector2& v) const
     {
         return RadToDeg(Angle(v));
     }
-
 
     AZ_MATH_INLINE float Vector2::AngleSafe(const Vector2& v) const
     {
         return (!IsZero() && !v.IsZero()) ? Angle(v) : 0.0f;
     }
 
-
     AZ_MATH_INLINE float Vector2::AngleSafeDeg(const Vector2& v) const
     {
         return (!IsZero() && !v.IsZero()) ? AngleDeg(v) : 0.0f;
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetReciprocal() const
     {
         return Vector2(Simd::Vec2::Reciprocal(m_value));
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetReciprocalEstimate() const
     {
         return Vector2(Simd::Vec2::ReciprocalEstimate(m_value));
     }
 
-
     AZ_MATH_INLINE float Vector2::Dot(const Vector2& rhs) const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec2::Dot(m_value, rhs.m_value));
+        return Simd::Vec1::SelectIndex0(Simd::Vec2::Dot(m_value, rhs.m_value));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetMadd(const Vector2& mul, const Vector2& add)
     {
         return Vector2(Simd::Vec2::Madd(m_value, mul.m_value, add.m_value));
     }
 
-
     AZ_MATH_INLINE void Vector2::Madd(const Vector2& mul, const Vector2& add)
     {
         *this = GetMadd(mul, add);
     }
 
-
     AZ_MATH_INLINE void Vector2::Project(const Vector2& rhs)
     {
         *this = rhs * (Dot(rhs) / rhs.Dot(rhs));
     }
-
 
     AZ_MATH_INLINE void Vector2::ProjectOnNormal(const Vector2& normal)
     {
@@ -671,12 +577,10 @@ namespace AZ
         *this = normal * Dot(normal);
     }
 
-
     AZ_MATH_INLINE Vector2 Vector2::GetProjected(const Vector2& rhs) const
     {
         return rhs * (Dot(rhs) / rhs.Dot(rhs));
     }
-
 
     AZ_MATH_INLINE Vector2 Vector2::GetProjectedOnNormal(const Vector2& normal)
     {
@@ -684,18 +588,20 @@ namespace AZ
         return normal * Dot(normal);
     }
 
-
     AZ_MATH_INLINE bool Vector2::IsFinite() const
     {
         return IsFiniteFloat(GetX()) && IsFiniteFloat(GetY());
     }
-
 
     AZ_MATH_INLINE Simd::Vec2::FloatType Vector2::GetSimdValue() const
     {
         return m_value;
     }
 
+    AZ_MATH_INLINE void Vector2::SetSimdValue(Simd::Vec2::FloatArgType value)
+    {
+        m_value = value;
+    }
 
     AZ_MATH_INLINE Vector2 operator*(float multiplier, const Vector2& rhs)
     {

@@ -376,7 +376,7 @@ namespace AZ
             }
             if (path.ends_with(AZ::RPI::MaterialTypeSourceData::Extension))
             {
-                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/materialtype.svg");
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/MaterialType_80.svg");
             }
             if (path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphNodeExtensionWithDot) ||

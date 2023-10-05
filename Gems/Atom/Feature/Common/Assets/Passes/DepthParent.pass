@@ -61,7 +61,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "depth",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     },
                     "Connections": [
                         {

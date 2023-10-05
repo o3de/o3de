@@ -43,12 +43,6 @@ namespace AZ
         DisplayMapperPass::DisplayMapperPass(const RPI::PassDescriptor& descriptor)
             : RPI::ParentPass(descriptor)
         {
-            AzFramework::NativeWindowHandle windowHandle = nullptr;
-            AzFramework::WindowSystemRequestBus::BroadcastResult(
-                windowHandle,
-                &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
-            AzFramework::WindowNotificationBus::Handler::BusConnect(windowHandle);
-
             GetDisplayMapperConfiguration();
 
             const DisplayMapperPassData* passData = RPI::PassUtils::GetPassData<DisplayMapperPassData>(descriptor);
@@ -56,26 +50,6 @@ namespace AZ
             {
                 m_displayMapperConfigurationDescriptor = passData->m_config;
             }
-        }
-
-        DisplayMapperPass::~DisplayMapperPass()
-        {
-            AzFramework::WindowNotificationBus::Handler::BusDisconnect();
-        }
-
-        void DisplayMapperPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
-        {
-            // Need to invalidate the CopyToSwapChain pass so that it updates the pipeline state in the event that 
-            // the swapchain format changed (for example, moving from LDR to HDR display)
-            const Name copyToSwapChainPassName("CopyToSwapChain");
-            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(copyToSwapChainPassName, GetRenderPipeline());
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
-                {
-                    pass->QueueForInitialization();
-                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
-                });
-
-            ConfigureDisplayParameters();
         }
 
         void DisplayMapperPass::ConfigureDisplayParameters()

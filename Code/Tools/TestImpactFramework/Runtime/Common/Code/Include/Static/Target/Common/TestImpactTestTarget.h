@@ -34,6 +34,9 @@ namespace TestImpact
         //! Returns the suite label set.
         const SuiteLabelSet& GetSuiteLabelSet() const;
 
+        //! Returns `true` if the test target can enumerate its tests, otherwise `false`.
+        virtual bool CanEnumerate() const = 0; 
+
     private:
         TestTargetMeta m_testTargetMeta;
     };

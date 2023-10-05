@@ -15,10 +15,11 @@ struct ForwardPassOutput
 };
 
 // --- Vertex Shader ---
-
-VsOutput VertexShader(VsInput IN)
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    VsOutput OUT = EvaluateVertexGeometry(IN);
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
     return OUT;
 }
 

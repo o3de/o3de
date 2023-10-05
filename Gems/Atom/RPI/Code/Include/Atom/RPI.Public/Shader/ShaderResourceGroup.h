@@ -157,7 +157,7 @@ namespace AZ
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::ImageView* const> imageViews,
                 uint32_t* outIndices,
-                bool viewReadOnly = true,
+                AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
             
             /// Returns a single image view associated with the image shader input index and array offset.
@@ -188,7 +188,7 @@ namespace AZ
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::BufferView* const> bufferViews,
                 uint32_t* outIndices,
-                bool viewReadOnly = true,
+                AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
             
             /// Returns a single buffer view associated with the buffer shader input index and array offset.
@@ -324,7 +324,7 @@ namespace AZ
             //! @param shaderAsset: The shader asset where the ShaderResourceGroupLayout will be searched.
             //! @param supervariantIndex: The supervariant index in @shaderAsset where the search will be conducted.
             //! @param srgName: Name of the ShaderResourceGroup as it was declared in the azsl file of origin.
-            static Data::InstanceId MakeInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
+            static Data::InstanceId MakeSrgPoolInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
             RHI::ResultCode Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 

@@ -87,13 +87,12 @@ public:
     
     void OpenFile(const AZStd::string& filePath);
     
-    void closeEvent(QCloseEvent* ev) override;
+    bool CanClose();
 
 public slots:
     void OnClearUnsavedChangesRequested();
     void OnSceneResetRequested();
     void OnAssignScript();
-    void OnOpenDocumentation();
     void OnInspect();
     void SceneSettingsCardDestroyed();
     void SceneSettingsCardProcessingCompleted();
@@ -102,16 +101,8 @@ private:
     void Init();
     void OpenFileInternal(const AZStd::string& filePath);
     bool IsAllowedToChangeSourceFile();
-    
-    enum class WindowState
-    {
-        InitialNothingLoaded,
-        FileLoaded,
-        OverlayShowing
-    };
+    bool ShouldSaveBeforeClose();
 
-    void ResetMenuAccess(WindowState state);
-    void SetTitle(const char* filePath);
     void HandleAssetLoadingCompleted();
 
     SceneSettingsCard* CreateSceneSettingsCard(

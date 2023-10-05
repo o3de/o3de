@@ -8,6 +8,11 @@
 #pragma once
 
 #include <Atom/RHI/BufferPool.h>
+#include <RHI/Device.h>
+
+#ifdef USE_AMD_D3D12MA
+#include <RHI/BufferD3D12MemoryAllocator.h>
+#endif
 #include <RHI/BufferMemoryAllocator.h>
 
 namespace AZ
@@ -52,7 +57,11 @@ namespace AZ
 
             BufferPoolResolver* GetResolver();
 
+#ifdef USE_AMD_D3D12MA
+            BufferD3D12MemoryAllocator m_allocator;
+#else
             BufferMemoryAllocator m_allocator;
+#endif
         };
     }
 }

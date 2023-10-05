@@ -47,39 +47,10 @@ namespace AzToolsFramework
             if ((currentScreenCoords - contextMenu.m_clickPoint).manhattanLength() < ed_contextMenuDisplayThreshold &&
                 !mouseInteraction.m_captured)
             {
-                if (IsNewActionManagerEnabled())
+                auto menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+                if (menuManagerInterface)
                 {
-                    auto menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
-                    if (menuManagerInterface)
-                    {
-                        menuManagerInterface->DisplayMenuUnderCursor(EditorIdentifiers::ViewportContextMenuIdentifier);
-                    }
-                }
-                else
-                {
-                    QWidget* parent = nullptr;
-                    ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
-                        parent,
-                        mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
-                        &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::GetWidgetForViewportContextMenu);
-
-                    contextMenu.m_menu = new QMenu(parent);
-                    contextMenu.m_menu->setAttribute(Qt::WA_DeleteOnClose);
-                    contextMenu.m_menu->setParent(parent);
-
-                    // populate global context menu.
-                    const int contextMenuFlag = 0;
-                    AzToolsFramework::EditorContextMenuBus::Broadcast(
-                        &AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
-                        contextMenu.m_menu.data(),
-                        mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates,
-                        contextMenuFlag);
-
-                    if (!contextMenu.m_menu->isEmpty())
-                    {
-                        // use popup instead of exec; this avoids blocking input event processing while the menu dialog is active
-                        contextMenu.m_menu->popup(QCursor::pos());
-                    }
+                    menuManagerInterface->DisplayMenuUnderCursor(EditorIdentifiers::ViewportContextMenuIdentifier);
                 }
             }
         }

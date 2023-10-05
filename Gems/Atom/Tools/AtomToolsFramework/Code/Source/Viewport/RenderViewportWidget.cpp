@@ -82,7 +82,10 @@ namespace AtomToolsFramework
 
         m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(GetDefaultCamera());
         m_viewportInteractionImpl->m_deviceScalingFactorFn = [this] { return aznumeric_cast<float>(devicePixelRatioF()); };
-        m_viewportInteractionImpl->m_screenSizeFn = [this] { return AzFramework::ScreenSize(width(), height()); };
+        m_viewportInteractionImpl->m_screenSizeFn = [this] {
+            AzFramework::WindowSize screenSize = GetClientAreaSize();
+            return AzFramework::ScreenSize(screenSize.m_width, screenSize.m_height);
+        };
         m_viewportInteractionImpl->Connect(newId);
 
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
@@ -264,7 +267,7 @@ namespace AtomToolsFramework
             eventType == QEvent::Type::MouseMove)
         {
             const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
-            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
+            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos() * devicePixelRatioF());
         }
     }
 
@@ -275,7 +278,7 @@ namespace AtomToolsFramework
 
     void RenderViewportWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
     {
-        m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
+        m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos() * devicePixelRatioF());
     }
 
     void RenderViewportWidget::SendWindowResizeEvent()
@@ -289,6 +292,8 @@ namespace AtomToolsFramework
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged, windowSize.width(), windowSize.height());
     }
 
     void RenderViewportWidget::SendWindowCloseEvent()
@@ -411,7 +416,9 @@ namespace AtomToolsFramework
 
     AzFramework::WindowSize RenderViewportWidget::GetClientAreaSize() const
     {
-        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
+        // The client area size need to be measured in device pixel size. 
+        const auto pixelRatio = devicePixelRatioF();
+        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()*pixelRatio), aznumeric_cast<uint32_t>(height()*pixelRatio)};
     }
 
     void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize, [[maybe_unused]] const AzFramework::WindowPosOptions& options)
@@ -445,6 +452,27 @@ namespace AtomToolsFramework
     void RenderViewportWidget::ToggleFullScreenState()
     {
         // The RenderViewportWidget does not currently support full screen.
+    }
+
+    void RenderViewportWidget::SetEnableCustomizedResolution([[maybe_unused]]bool enable)
+    {
+        // The RenderViewportWidget does not currently support customized render resolution.
+    }
+
+    bool RenderViewportWidget::IsCustomizedResolutionEnabled() const
+    {
+        return false;
+    }
+
+    AzFramework::WindowSize RenderViewportWidget::GetRenderResolution() const
+    {
+        // We want render resolution matches the screen's resolution
+        return GetClientAreaSize();
+    }
+
+    void RenderViewportWidget::SetRenderResolution([[maybe_unused]]AzFramework::WindowSize resolution)
+    {
+        // The RenderViewportWidget does not currently support customized render resolution.
     }
 
     float RenderViewportWidget::GetDpiScaleFactor() const

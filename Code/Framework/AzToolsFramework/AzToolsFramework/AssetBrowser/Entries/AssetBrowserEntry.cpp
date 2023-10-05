@@ -16,11 +16,16 @@
 #include <AzCore/Serialization/Utils.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 
+#include <QCollator>
 #include <QVariant>
 #include <QMimeData>
 #include <QUrl>
@@ -203,6 +208,11 @@ namespace AzToolsFramework
             return m_diskSize;
         }
 
+        const AZ::u64 AssetBrowserEntry::GetModificationTime() const
+        {
+            return m_modificationTime;
+        }
+
         const AZ::Vector3& AssetBrowserEntry::GetDimension() const
         {
             return m_dimension;
@@ -211,6 +221,97 @@ namespace AzToolsFramework
         const uint32_t AssetBrowserEntry::GetNumVertices() const
         {
             return m_vertices;
+        }
+
+        void AssetBrowserEntry::SetFullPath(const AZ::IO::Path& fullPath)
+        {
+            m_fullPath = fullPath;
+
+            // Update the entryType string.
+            m_entryType = "";
+
+            switch (GetEntryType())
+            {
+            case AssetBrowserEntry::AssetEntryType::Root:
+                m_entryType = tr("Root");
+                break;
+            case AssetBrowserEntry::AssetEntryType::Folder:
+                m_entryType = tr("Folder");
+                break;
+            case AssetBrowserEntry::AssetEntryType::Source:
+                m_entryType = ExtensionToType(static_cast<const SourceAssetBrowserEntry*>(this)->GetExtension()).c_str();
+                break;
+            case AssetBrowserEntry::AssetEntryType::Product:
+                m_entryType = tr("Product");
+                break;
+            }
+        }
+        
+
+        const QString& AssetBrowserEntry::GetEntryTypeAsString() const
+        {
+            return m_entryType;
+        }
+
+        inline constexpr auto operator"" _hash(const char* str, size_t len)
+        {
+            return AZStd::hash<AZStd::string_view>{}(AZStd::string_view{ str, len });
+        }
+
+        const AZStd::string AssetBrowserEntry::ExtensionToType(AZStd::string_view str)
+        {
+            switch (AZStd::hash<AZStd::string_view>{}(str))
+            {
+            case ".png"_hash:
+                return "PNG";
+            case ".scriptcanvas"_hash:
+                return "Script Canvas";
+            case ".fbx"_hash:
+                return "FBX";
+            case ".mtl"_hash:
+                return "Material";
+            case ".animgraph"_hash:
+                return "Anim Graph";
+            case ".motionset"_hash:
+                return "Motion Set";
+            case ".assetinfo"_hash:
+                return "Asset Info";
+            case ".py"_hash:
+                return "Python Script";
+            case ".lua"_hash:
+                return "Lua Script";
+            case ".tif"_hash:
+            case ".tiff"_hash:
+                return "TIF";
+            case ".physxmaterial"_hash:
+                return "PhysX Material";
+            case ".prefab"_hash:
+                return "Prefab";
+            case ".dds"_hash:
+                return "DDS";
+            case ".font"_hash:
+                return "Font";
+            case ".xml"_hash:
+                return "XML";
+            case ".json"_hash:
+                return "JSON";
+            case ".exr"_hash:
+                return "EXR";
+            case ".wav"_hash:
+                return "WAV";
+            case ".uicanvas"_hash:
+                return "UI Canvas";
+            case ".wwu"_hash:
+                return "Wwise Work Unit";
+            case ".wproj"_hash:
+                return "Wwise Project File";
+            default:
+                if (str.length() > 0)
+                {
+                    str.remove_prefix(1);
+                }
+                return str;
+            }
         }
 
         const AssetBrowserEntry* AssetBrowserEntry::GetChild(int index) const
@@ -276,6 +377,81 @@ namespace AzToolsFramework
             }
         }
 
+
+        void AssetBrowserEntry::SetDisplayName(const QString name)
+        {
+            m_displayName = name;
+        }
+
+        void AssetBrowserEntry::SetIconPath(const AZ::IO::Path path)
+        {
+            m_iconPath = path;
+        }
+
+        AZ::IO::Path AssetBrowserEntry::GetIconPath() const
+        {
+            return m_iconPath;
+        }
+        
+        bool AssetBrowserEntry::lessThan(const AssetBrowserEntry* other, const AssetEntrySortMode sortMode, const QCollator& collator) const
+        {
+            // folders should always come first
+            if (azrtti_istypeof<const FolderAssetBrowserEntry*>(this) && azrtti_istypeof<const SourceAssetBrowserEntry*>(other))
+            {
+                return false;
+            }
+            if (azrtti_istypeof<const SourceAssetBrowserEntry*>(this) && azrtti_istypeof<const FolderAssetBrowserEntry*>(other))
+            {
+                return true;
+            }
+
+            switch (sortMode)
+            {
+            case AssetEntrySortMode::FileType:
+                {
+                    int comparison = collator.compare(GetEntryTypeAsString(), other->GetEntryTypeAsString());
+                    if (comparison == 0)
+                    {
+                        return collator.compare(GetDisplayName(), other->GetDisplayName()) > 0;
+                    }
+                    return comparison > 0;
+                }
+            case AssetBrowserEntry::AssetEntrySortMode::LastModified:
+                return GetModificationTime() < other->GetModificationTime();
+            case AssetEntrySortMode::Size:
+                return GetDiskSize() > other->GetDiskSize();
+            case AssetEntrySortMode::Vertices:
+                if (GetNumVertices() == other->GetNumVertices())
+                {
+                    return collator.compare(GetDisplayName(), other->GetDisplayName()) > 0;
+                }
+                return GetNumVertices() > other->GetNumVertices();
+            case AssetEntrySortMode::Dimensions:
+                {
+                    AZ::Vector3 leftDimension = GetDimension();
+                    AZ::Vector3 rightDimension = other->GetDimension();
+
+                    if (AZStd::isnan(leftDimension.GetX()) && AZStd::isnan(rightDimension.GetX()))
+                    {
+                        return collator.compare(GetDisplayName(), other->GetDisplayName()) > 0;
+                    }
+                    if (AZStd::isnan(leftDimension.GetX()) && !AZStd::isnan(rightDimension.GetX()))
+                    {
+                        return false;
+                    }
+                    if (!AZStd::isnan(leftDimension.GetX()) && AZStd::isnan(rightDimension.GetX()))
+                    {
+                        return true;
+                    }
+
+                    return leftDimension.GetX() * leftDimension.GetY() * leftDimension.GetZ() >
+                        rightDimension.GetX() * rightDimension.GetY() * rightDimension.GetZ();
+                }
+            default:
+                // if both entries are of same type, sort alphabetically
+                return collator.compare(GetDisplayName(), other->GetDisplayName()) > 0;
+            }
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

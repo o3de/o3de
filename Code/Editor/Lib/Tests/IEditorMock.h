@@ -9,7 +9,6 @@
 
 #include <AzTest/AzTest.h>
 #include <IEditor.h>
-#include <RenderHelpers/AxisHelper.h>
 
 class CEditorMock
     : public IEditor
@@ -68,12 +67,10 @@ public:
     MOCK_METHOD0(IsInLevelLoadTestMode, bool());
     MOCK_METHOD0(IsInMatEditMode, bool());
     MOCK_METHOD1(EnableUpdate, void(bool));
-    MOCK_METHOD1(EnableAcceleratos, void(bool));
     MOCK_METHOD0(GetFileVersion, SFileVersion());
     MOCK_METHOD0(GetProductVersion, SFileVersion());
     MOCK_METHOD0(GetGameEngine , CGameEngine* ());
     MOCK_METHOD0(GetDisplaySettings, CDisplaySettings*());
-    MOCK_METHOD0(GetGlobalGizmoParameters, const SGizmoParameters& ());
     MOCK_METHOD7(NewObject, CBaseObject* (const char*, const char*, const char*, float, float, float, bool));
     MOCK_METHOD1(DeleteObject, void(CBaseObject* obj));
     MOCK_METHOD1(CloneObject, CBaseObject* (CBaseObject* ));
@@ -85,7 +82,6 @@ public:
     MOCK_METHOD0(IsSelectionLocked, bool());
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
-    MOCK_METHOD0(GetIconManager, IIconManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));
     MOCK_METHOD0(GetVegetationMap, class CVegetationMap* ());
@@ -109,8 +105,6 @@ public:
     MOCK_METHOD1(GetSelectedRegion, void(AABB& box));
     MOCK_METHOD1(SetOperationMode, void(EOperationMode ));
     MOCK_METHOD0(GetOperationMode, EOperationMode());
-    MOCK_METHOD1(ShowTransformManipulator, ITransformManipulator* (bool));
-    MOCK_METHOD0(GetTransformManipulator, ITransformManipulator* ());
     MOCK_METHOD1(SetAxisConstraints, void(AxisConstrains ));
     MOCK_METHOD0(GetAxisConstrains, AxisConstrains());
     MOCK_METHOD1(SetAxisVectorLock, void(bool));
@@ -164,7 +158,6 @@ public:
     MOCK_METHOD0(IsSourceControlAvailable, bool());
     MOCK_METHOD0(IsSourceControlConnected, bool());
     MOCK_METHOD0(ReduceMemory, void());
-    MOCK_METHOD0(GetExportManager, IExportManager* ());
     MOCK_CONST_METHOD0(GetEditorConfigPlatform, ESystemConfigPlatform());
     MOCK_METHOD0(ReloadTemplates, void());
     MOCK_METHOD1(ShowStatusText, void(bool ));

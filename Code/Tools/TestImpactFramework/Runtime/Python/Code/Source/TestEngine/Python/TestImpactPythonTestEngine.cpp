@@ -18,7 +18,6 @@
 #include <TestRunner/Python/TestImpactPythonRegularTestRunner.h>
 #include <TestRunner/Python/TestImpactPythonRegularNullTestRunner.h>
 
-#include <iostream>
 namespace TestImpact
 {
     AZStd::optional<Client::TestRunResult> PythonRegularTestRunnerErrorCodeChecker(

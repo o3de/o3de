@@ -226,7 +226,7 @@
                 "MaxPayloadSize": 80,
                 "MaxRecursionDepth": 5,
                 "Make Fullscreen Pass": true,
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

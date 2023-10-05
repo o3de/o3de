@@ -80,6 +80,10 @@ namespace AZ::IO
         SystemFileStream(SystemFile&& file, OpenMode mode);
         ~SystemFileStream() override;
 
+        //! Move constructor and assignment which is defaulted in the cpp file
+        SystemFileStream(SystemFileStream&&);
+        SystemFileStream& operator=(SystemFileStream&&);
+
         bool Open(const char* path, OpenMode mode);
 
         void Close() override;

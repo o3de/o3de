@@ -27,6 +27,10 @@
             "isTemplated": true
         },
         {
+            "file": "CMakePresets.json",
+            "isTemplated": true
+        },
+        {
             "file": "cmake/EngineFinder.cmake",
             "isTemplated": false
         },
@@ -48,6 +52,10 @@
         },
         {
             "file": "Gem/Include/${Name}/${Name}Bus.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Include/${Name}/${Name}TypeIds.h",
             "isTemplated": true
         },
         {

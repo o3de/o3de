@@ -80,13 +80,16 @@ namespace AZ
          * Calculates the value from a block of raw data.
          */
         Crc32(const void* data, size_t size, bool forceLowerCase = false);
-        constexpr Crc32(const uint8_t* data, size_t size, bool forceLowerCase = false);
-        constexpr Crc32(const char* data, size_t size, bool forceLowerCase = false);
+        template<class ByteType, class = AZStd::enable_if_t<sizeof(ByteType) == 1>>
+        constexpr Crc32(const ByteType* data, size_t size, bool forceLowerCase = false);
+        constexpr Crc32(AZStd::span<const AZStd::byte> inputSpan);
 
         constexpr void Add(AZStd::string_view view);
         void Add(const void* data, size_t size, bool forceLowerCase = false);
-        constexpr void Add(const uint8_t* data, size_t size, bool forceLowerCase = false);
-        constexpr void Add(const char* data, size_t size, bool forceLowerCase = false);
+        template<class ByteType>
+        constexpr auto Add(const ByteType* data, size_t size, bool forceLowerCase = false)
+            -> AZStd::enable_if_t<sizeof(ByteType) == 1>;
+        constexpr void Add(AZStd::span<const AZStd::byte> inputSpan);
 
         constexpr operator u32() const               { return m_value; }
 
@@ -101,8 +104,9 @@ namespace AZ
         // A constant expression cannot contain a conversion from const-volatile void to any pointer to object type
         // nor can it contain a reinterpret_cast, therefore overloads for const char* and uint8_t are added
         void Set(const void* data, size_t size, bool forceLowerCase = false);
-        constexpr void Set(const uint8_t* data, size_t size, bool forceLowerCase = false);
-        constexpr void Set(const char* data, size_t size, bool forceLowerCase = false);
+        template<class ByteType>
+        constexpr auto Set(const ByteType* data, size_t size, bool forceLowerCase = false)
+            -> AZStd::enable_if_t<sizeof(ByteType) == 1>;
         constexpr void Combine(u32 crc, size_t len);
 
         u32 m_value;

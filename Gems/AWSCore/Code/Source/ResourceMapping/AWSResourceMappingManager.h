@@ -79,6 +79,7 @@ namespace AWSCore
         // AWSResourceMappingRequestBus interface implementation
         AZStd::string GetDefaultAccountId() const override;
         AZStd::string GetDefaultRegion() const override;
+        bool HasResource(const AZStd::string& resourceKeyName) const override;
         AZStd::string GetResourceAccountId(const AZStd::string& resourceKeyName) const override;
         AZStd::string GetResourceNameId(const AZStd::string& resourceKeyName) const override;
         AZStd::string GetResourceRegion(const AZStd::string& resourceKeyName) const override;

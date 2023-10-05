@@ -26,10 +26,6 @@ namespace AZ
 
         JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue, const Uuid& valueTypeId,
             JsonSerializerContext& context) override;
-
-    private:
-        void ConvertComponentVectorToMap(const AZ::Entity::ComponentArrayType& components,
-            AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut);
     };
 
     //! Helper class to track components that have been skipped during loading.

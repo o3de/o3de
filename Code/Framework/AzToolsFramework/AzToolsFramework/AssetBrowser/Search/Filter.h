@@ -230,26 +230,6 @@ namespace AzToolsFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
-        // AssetPathFilter
-        //////////////////////////////////////////////////////////////////////////
-        class AssetPathFilter : public AssetBrowserEntryFilter
-        {
-            Q_OBJECT
-        public:
-            AssetPathFilter();
-            ~AssetPathFilter() override = default;
-
-            void SetAssetPath(AZ::IO::Path path);
-
-        protected:
-            QString GetNameInternal() const override;
-            bool MatchInternal(const AssetBrowserEntry* entry) const override;
-
-        private:
-            AZ::IO::Path m_assetPath;
-        };
-
-        //////////////////////////////////////////////////////////////////////////
         // CompositeFilter
         //////////////////////////////////////////////////////////////////////////
         //! CompositeFilter performs an AND/OR operation between multiple subfilters

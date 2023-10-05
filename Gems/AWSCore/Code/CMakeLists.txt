@@ -181,6 +181,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME Gem::AWSCore.Tests
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_target_files(
@@ -222,6 +223,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         if ("${PAL_PLATFORM_NAME}" IN_LIST SUPPORTED_PLATFORMS)
             ly_add_googletest(
                 NAME Gem::AWSCore.Editor.Tests
+                LABELS REQUIRES_tiaf
             )
         endif()
     endif()

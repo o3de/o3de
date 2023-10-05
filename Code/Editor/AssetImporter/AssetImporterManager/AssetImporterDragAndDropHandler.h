@@ -44,16 +44,19 @@ public:
 
     void DragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
     void Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
+    void DropAtLocation(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context, QString& path) override;
 
     static void ProcessDragEnter(QDragEnterEvent* event);
     static QStringList GetFileList(QDropEvent* event);
 
 Q_SIGNALS:
     void OpenAssetImporterManager(const QStringList& fileList);
+    void OpenAssetImporterManagerWithSuggestedPath(const QStringList& fileList, const QString& destinationPath);
 
 public Q_SLOTS:
     void OnStartAssetImporter();
     void OnStopAssetImporter();
+    void OnAssetImportingComplete();
 
 private:
     bool m_isAssetImporterRunning = false;

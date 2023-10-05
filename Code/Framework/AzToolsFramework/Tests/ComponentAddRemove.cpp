@@ -578,7 +578,9 @@ namespace UnitTest
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             AzFramework::Application::Descriptor descriptor;
-            m_app.Start(descriptor);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(descriptor, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -1425,7 +1427,9 @@ namespace UnitTest
 
         // now add a socks component to the pending set which will fulfill the boots' dependency
         testEntity->CreateComponent<AzToolsFramework::Components::GenericComponentWrapper>(aznew LeatherBootsComponent());
-        AzToolsFramework::EditorPendingCompositionRequestBus::Event(testEntity->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::AddPendingComponent, aznew WoolSocksComponent());
+        WoolSocksComponent* woolSocksComponent = aznew WoolSocksComponent();
+        woolSocksComponent->SetSerializedIdentifier("WoolSocksComponent"); // pending composition component cannot store an empty serialized identifier.
+        AzToolsFramework::EditorPendingCompositionRequestBus::Event(testEntity->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::AddPendingComponent, woolSocksComponent);
 
         pendingComponents.clear();
         AzToolsFramework::EditorPendingCompositionRequestBus::Event(testEntity->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);

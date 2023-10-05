@@ -30,7 +30,7 @@ namespace AZ
 
         namespace MaterialUtils
         {
-            using ImportedJsonFiles = AZStd::unordered_set<AZStd::string>;
+            using ImportedJsonFiles = AZStd::unordered_set<AZ::IO::Path>;
 
             enum class GetImageAssetResult
             {

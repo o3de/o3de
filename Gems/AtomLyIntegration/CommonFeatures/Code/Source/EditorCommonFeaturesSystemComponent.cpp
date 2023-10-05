@@ -143,7 +143,8 @@ namespace AZ
 
                             AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
-                            if (IEditor* editor = GetLegacyEditor(); !editor->IsUndoSuspended())
+                            IEditor* editor = GetLegacyEditor();
+                            if (editor && !editor->IsUndoSuspended())
                             {
                                 editor->SuspendUndo();
                             }
@@ -180,12 +181,15 @@ namespace AZ
 
                 IEditor* editor = GetLegacyEditor();
 
-                //save after level default slice fully instantiated
-                editor->SaveDocument();
-
-                if (editor->IsUndoSuspended())
+                if(editor)
                 {
-                    editor->ResumeUndo();
+                    //save after level default slice fully instantiated
+                    editor->SaveDocument();
+                    
+                    if (editor->IsUndoSuspended())
+                    {
+                        editor->ResumeUndo();
+                    }
                 }
             }
         }

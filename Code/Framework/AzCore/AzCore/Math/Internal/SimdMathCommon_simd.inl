@@ -12,29 +12,35 @@ namespace AZ
 {
     namespace Simd
     {
-        alignas(16) static constexpr float g_sinCoef1[4]    = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
-        alignas(16) static constexpr float g_sinCoef2[4]    = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
-        alignas(16) static constexpr float g_sinCoef3[4]    = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
-        alignas(16) static constexpr float g_cosCoef1[4]    = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
-        alignas(16) static constexpr float g_cosCoef2[4]    = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
-        alignas(16) static constexpr float g_cosCoef3[4]    = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
-        alignas(16) static constexpr float g_acosHiCoef1[4] = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
-        alignas(16) static constexpr float g_acosHiCoef2[4] = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
-        alignas(16) static constexpr float g_acosHiCoef3[4] = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
-        alignas(16) static constexpr float g_acosHiCoef4[4] = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
-        alignas(16) static constexpr float g_acosLoCoef1[4] = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
-        alignas(16) static constexpr float g_acosLoCoef2[4] = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
-        alignas(16) static constexpr float g_acosLoCoef3[4] = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
-        alignas(16) static constexpr float g_acosLoCoef4[4] = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
-        alignas(16) static constexpr float g_acosCoef1[4]   = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
-        alignas(16) static constexpr float g_acosCoef2[4]   = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
-        alignas(16) static constexpr float g_acosCoef3[4]   = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
-        alignas(16) static constexpr float g_atanHiRange[4] = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
-        alignas(16) static constexpr float g_atanLoRange[4] = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
-        alignas(16) static constexpr float g_atanCoef1[4]   = {  8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f };
-        alignas(16) static constexpr float g_atanCoef2[4]   = {  -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
-        alignas(16) static constexpr float g_atanCoef3[4]   = {  1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f };
-        alignas(16) static constexpr float g_atanCoef4[4]   = {  -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
+        alignas(16) constexpr float g_sinCoef1[4]    = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
+        alignas(16) constexpr float g_sinCoef2[4]    = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
+        alignas(16) constexpr float g_sinCoef3[4]    = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
+        alignas(16) constexpr float g_cosCoef1[4]    = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
+        alignas(16) constexpr float g_cosCoef2[4]    = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
+        alignas(16) constexpr float g_cosCoef3[4]    = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
+        alignas(16) constexpr float g_acosHiCoef1[4] = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
+        alignas(16) constexpr float g_acosHiCoef2[4] = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
+        alignas(16) constexpr float g_acosHiCoef3[4] = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
+        alignas(16) constexpr float g_acosHiCoef4[4] = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
+        alignas(16) constexpr float g_acosLoCoef1[4] = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
+        alignas(16) constexpr float g_acosLoCoef2[4] = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
+        alignas(16) constexpr float g_acosLoCoef3[4] = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
+        alignas(16) constexpr float g_acosLoCoef4[4] = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
+        alignas(16) constexpr float g_acosCoef1[4]   = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
+        alignas(16) constexpr float g_acosCoef2[4]   = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
+        alignas(16) constexpr float g_acosCoef3[4]   = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
+        alignas(16) constexpr float g_atanHiRange[4] = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
+        alignas(16) constexpr float g_atanLoRange[4] = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
+        alignas(16) constexpr float g_atanCoef1[4]   = {  8.05374449538e-2f,  8.05374449538e-2f,  8.05374449538e-2f,  8.05374449538e-2f };
+        alignas(16) constexpr float g_atanCoef2[4]   = { -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
+        alignas(16) constexpr float g_atanCoef3[4]   = {  1.99777106478e-1f,  1.99777106478e-1f,  1.99777106478e-1f,  1.99777106478e-1f };
+        alignas(16) constexpr float g_atanCoef4[4]   = { -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
+        alignas(16) constexpr float g_expCoef1[4]    = {  1.2102203e7f, 1.2102203e7f, 1.2102203e7f, 1.2102203e7f };
+        alignas(16) constexpr int32_t g_expCoef2[4]  = { -8388608, -8388608, -8388608, -8388608 };
+        alignas(16) constexpr float g_expCoef3[4]    = {  1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f };
+        alignas(16) constexpr float g_expCoef4[4]    = {  3.371894346e-1, 3.371894346e-1, 3.371894346e-1f, 3.371894346e-1f };
+        alignas(16) constexpr float g_expCoef5[4]    = {  6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f };
+        alignas(16) constexpr float g_expCoef6[4]    = {  1.00172476f, 1.00172476f, 1.00172476f, 1.00172476f };
 
         namespace Common
         {
@@ -48,7 +54,6 @@ namespace AZ
 #endif
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::Int32Type FastLoadConstant(const int32_t* values)
             {
@@ -59,7 +64,6 @@ namespace AZ
 #endif
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Wrap(typename VecType::FloatArgType value, typename VecType::FloatArgType minValue, typename VecType::FloatArgType maxValue)
             {
@@ -68,7 +72,6 @@ namespace AZ
                 const typename VecType::FloatType valueOffset = VecType::Select(maxAdjust, VecType::ZeroFloat(), VecType::CmpLt(valueAdjust, VecType::ZeroFloat()));
                 return VecType::Add(minValue, VecType::Add(valueOffset, VecType::Mod(valueAdjust, maxAdjust)));
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType AngleMod(typename VecType::FloatArgType value)
@@ -80,7 +83,6 @@ namespace AZ
                 const typename VecType::FloatType mask = VecType::CmpGtEq(value, VecType::ZeroFloat());
                 return VecType::Select(positiveAngles, negativeAngles, mask);
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE void ComputeSinxCosx(typename VecType::FloatArgType x, typename VecType::FloatArgType& sinx, typename VecType::FloatArgType& cosx)
@@ -102,7 +104,6 @@ namespace AZ
                         FastLoadConstant<VecType>(Simd::g_cosCoef3)),
                     VecType::Splat(1.0f));
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Sin(typename VecType::FloatArgType value)
@@ -131,7 +132,6 @@ namespace AZ
                 return result;
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Cos(typename VecType::FloatArgType value)
             {
@@ -158,7 +158,6 @@ namespace AZ
 
                 return result;
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE void SinCos(typename VecType::FloatArgType value, typename VecType::FloatArgType& sin, typename VecType::FloatArgType& cos)
@@ -192,7 +191,6 @@ namespace AZ
                 cos = VecType::Select(cos, VecType::Xor(cos, FastLoadConstant<VecType>(reinterpret_cast<const float*>(Simd::g_negateMask))), cosMask);
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType SinCos(typename VecType::FloatArgType angles)
             {
@@ -200,7 +198,6 @@ namespace AZ
                 const typename VecType::FloatType sinAngles = VecType::Add(angles, angleOffset);
                 return VecType::Sin(sinAngles);
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Acos(typename VecType::FloatArgType value)
@@ -244,7 +241,6 @@ namespace AZ
                 return VecType::Select(negative, positive, select);
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType AcosEstimate(typename VecType::FloatArgType value)
             {
@@ -270,7 +266,6 @@ namespace AZ
 
                 return VecType::Select(negative, positive, select);
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Atan(typename VecType::FloatArgType value)
@@ -333,7 +328,6 @@ namespace AZ
                 return y;
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Atan2(typename VecType::FloatArgType y, typename VecType::FloatArgType x)
             {
@@ -387,30 +381,43 @@ namespace AZ
                 return result;
             }
 
+            template <typename VecType>
+            AZ_MATH_INLINE typename VecType::FloatType ExpEstimate(typename VecType::FloatArgType x)
+            {
+                // N. N. Schraudolph, 'A Fast, Compact Approximation of the Exponential Function'
+                // This method exploits the logrithmic nature of IEEE-754 floating point to quickly estimate exp(x)
+                // While the concept is based on that paper, this specific implementation is based on a selection from several variants 
+                // of that algorithm to choose the fastest of the variants that had the highest accuracy.
+                typename VecType::Int32Type a = VecType::ConvertToIntNearest(VecType::Mul(FastLoadConstant<VecType>(Simd::g_expCoef1), x));
+                typename VecType::Int32Type b = VecType::And(a, FastLoadConstant<VecType>(Simd::g_expCoef2));
+                typename VecType::Int32Type c = VecType::Sub(a, b);
+                typename VecType::FloatType f = VecType::Mul(FastLoadConstant<VecType>(Simd::g_expCoef3), VecType::ConvertToFloat(c)); // Approximately (x/log(2)) - floor(x/log(2))
+                typename VecType::FloatType i = VecType::Madd(f, FastLoadConstant<VecType>(Simd::g_expCoef4), FastLoadConstant<VecType>(Simd::g_expCoef5));
+                typename VecType::FloatType j = VecType::Madd(i, f, FastLoadConstant<VecType>(Simd::g_expCoef6)); // Approximately 2^f
+                return VecType::CastToFloat(VecType::Add(b, VecType::CastToInt(j)));
+            }
 
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Normalize(typename VecType::FloatArgType value)
             {
-                const typename VecType::FloatType lengthSquared = VecType::SplatFirst(VecType::FromVec1(VecType::Dot(value, value)));
+                const typename VecType::FloatType lengthSquared = VecType::SplatIndex0(VecType::FromVec1(VecType::Dot(value, value)));
                 const typename VecType::FloatType length = VecType::Sqrt(lengthSquared);
                 return VecType::Div(value, length);
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType NormalizeEstimate(typename VecType::FloatArgType value)
             {
-                const typename VecType::FloatType lengthSquared = VecType::SplatFirst(VecType::FromVec1(VecType::Dot(value, value)));
+                const typename VecType::FloatType lengthSquared = VecType::SplatIndex0(VecType::FromVec1(VecType::Dot(value, value)));
                 const typename VecType::FloatType invLength = VecType::SqrtInvEstimate(lengthSquared);
                 return VecType::Mul(invLength, value);
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType NormalizeSafe(typename VecType::FloatArgType value, float tolerance)
             {
                 const typename VecType::FloatType floatEpsilon = VecType::Splat(tolerance * tolerance);
-                const typename VecType::FloatType lengthSquared = VecType::SplatFirst(VecType::FromVec1(VecType::Dot(value, value)));
+                const typename VecType::FloatType lengthSquared = VecType::SplatIndex0(VecType::FromVec1(VecType::Dot(value, value)));
                 if (VecType::CmpAllLt(lengthSquared, floatEpsilon))
                 {
                     return VecType::ZeroFloat();
@@ -418,12 +425,11 @@ namespace AZ
                 return VecType::Div(value, VecType::Sqrt(lengthSquared));
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType NormalizeSafeEstimate(typename VecType::FloatArgType value, float tolerance)
             {
                 const typename VecType::FloatType floatEpsilon = VecType::Splat(tolerance * tolerance);
-                const typename VecType::FloatType lengthSquared = VecType::SplatFirst(VecType::FromVec1(VecType::Dot(value, value)));
+                const typename VecType::FloatType lengthSquared = VecType::SplatIndex0(VecType::FromVec1(VecType::Dot(value, value)));
                 if (VecType::CmpAllLt(lengthSquared, floatEpsilon))
                 {
                     return VecType::ZeroFloat();
@@ -431,18 +437,17 @@ namespace AZ
                 return VecType::Mul(value, VecType::SqrtInvEstimate(lengthSquared));
             }
 
-
             template <typename Vec4Type, typename Vec3Type>
             AZ_MATH_INLINE typename Vec4Type::FloatType QuaternionTransform(typename Vec4Type::FloatArgType quat, typename Vec3Type::FloatArgType vec3)
             {
                 const typename Vec4Type::FloatType Two = Vec4Type::Splat(2.0f);
-                const typename Vec4Type::FloatType scalar = Vec4Type::SplatFourth(quat); // Scalar portion of quat (W, W, W)
+                const typename Vec4Type::FloatType scalar = Vec4Type::SplatIndex3(quat); // Scalar portion of quat (W, W, W)
 
-                const typename Vec4Type::FloatType partial1 = Vec4Type::SplatFirst(Vec4Type::FromVec1(Vec3Type::Dot(quat, vec3)));
+                const typename Vec4Type::FloatType partial1 = Vec4Type::SplatIndex0(Vec4Type::FromVec1(Vec3Type::Dot(quat, vec3)));
                 const typename Vec4Type::FloatType partial2 = Vec4Type::Mul(quat, partial1);
                 const typename Vec4Type::FloatType sum1 = Vec4Type::Mul(partial2, Two); // quat.Dot(vec3) * vec3 * 2.0f
 
-                const typename Vec4Type::FloatType partial3 = Vec4Type::SplatFirst(Vec4Type::FromVec1(Vec3Type::Dot(quat, quat)));
+                const typename Vec4Type::FloatType partial3 = Vec4Type::SplatIndex0(Vec4Type::FromVec1(Vec3Type::Dot(quat, quat)));
                 const typename Vec4Type::FloatType partial4 = Vec4Type::Mul(scalar, scalar);
                 const typename Vec4Type::FloatType partial5 = Vec4Type::Sub(partial4, partial3);
                 const typename Vec4Type::FloatType sum2 = Vec4Type::Mul(partial5, vec3); // vec3 * (scalar * scalar - quat.Dot(quat))
@@ -454,40 +459,35 @@ namespace AZ
                 return Vec4Type::Add(Vec4Type::Add(sum1, sum2), sum3);
             }
 
-
             template <typename Vec4Type, typename Vec3Type>
             AZ_MATH_INLINE typename Vec4Type::FloatType ConstructPlane(typename Vec3Type::FloatArgType normal, typename Vec3Type::FloatArgType point)
             {
                 const Vec1::FloatType distance = Vec1::Sub(Vec1::ZeroFloat(), Vec3Type::Dot(normal, point));
-                return Vec4Type::ReplaceFourth(normal, Vec4Type::SplatFirst(Vec4Type::FromVec1(distance))); // replace 'w' coordinate with distance
+                return Vec4Type::ReplaceIndex3(normal, Vec4Type::SplatIndex0(Vec4Type::FromVec1(distance))); // replace 'w' coordinate with distance
             }
-
 
             template <typename Vec4Type, typename Vec3Type>
             AZ_MATH_INLINE Vec1::FloatType PlaneDistance(typename Vec4Type::FloatArgType plane, typename Vec3Type::FloatArgType point)
             {
-                const typename Vec4Type::FloatType referencePoint = Vec4Type::ReplaceFourth(point, 1.0f); // replace 'w' coordinate with 1.0
+                const typename Vec4Type::FloatType referencePoint = Vec4Type::ReplaceIndex3(point, 1.0f); // replace 'w' coordinate with 1.0
                 return Vec4Type::Dot(referencePoint, plane);
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE void Mat3x3Multiply(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, typename VecType::FloatType* __restrict out)
             {
-                out[0] = VecType::Madd(VecType::SplatThird(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[0]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[0]), rowsB[0])));
-                out[1] = VecType::Madd(VecType::SplatThird(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[1]), rowsB[0])));
-                out[2] = VecType::Madd(VecType::SplatThird(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[2]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[2]), rowsB[0])));
+                out[0] = VecType::Madd(VecType::SplatIndex2(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[0]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[0]), rowsB[0])));
+                out[1] = VecType::Madd(VecType::SplatIndex2(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[1]), rowsB[0])));
+                out[2] = VecType::Madd(VecType::SplatIndex2(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[2]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[2]), rowsB[0])));
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE void Mat3x3TransposeMultiply(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, typename VecType::FloatType* __restrict out)
             {
-                out[0] = VecType::Madd(VecType::SplatFirst (rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatFirst (rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatFirst (rowsA[2]), rowsB[2])));
-                out[1] = VecType::Madd(VecType::SplatSecond(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatSecond(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatSecond(rowsA[2]), rowsB[2])));
-                out[2] = VecType::Madd(VecType::SplatThird (rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatThird (rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatThird (rowsA[2]), rowsB[2])));
+                out[0] = VecType::Madd(VecType::SplatIndex0(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatIndex0(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[2]), rowsB[2])));
+                out[1] = VecType::Madd(VecType::SplatIndex1(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatIndex1(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatIndex1(rowsA[2]), rowsB[2])));
+                out[2] = VecType::Madd(VecType::SplatIndex2(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatIndex2(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatIndex2(rowsA[2]), rowsB[2])));
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Mat3x3TransformVector(const typename VecType::FloatType* __restrict rows, typename VecType::FloatArgType vector)
@@ -497,60 +497,63 @@ namespace AZ
                 return VecType::Mat3x3TransposeTransformVector(transposed, vector);
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Mat3x3TransposeTransformVector(const typename VecType::FloatType* __restrict rows, typename VecType::FloatArgType vector)
             {
-                return VecType::Madd(VecType::SplatThird(vector), rows[2], VecType::Madd(VecType::SplatSecond(vector), rows[1], VecType::Mul(VecType::SplatFirst(vector), rows[0])));
+                return VecType::Madd(VecType::SplatIndex2(vector), rows[2], VecType::Madd(VecType::SplatIndex1(vector), rows[1], VecType::Mul(VecType::SplatIndex0(vector), rows[0])));
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE void Mat3x4Multiply(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, typename VecType::FloatType* __restrict out)
             {
                 const typename VecType::FloatType fourth = FastLoadConstant<VecType>(g_vec0001);
-                out[0] = VecType::Madd(VecType::SplatFourth(rowsA[0]), fourth, VecType::Madd(VecType::SplatThird(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[0]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[0]), rowsB[0]))));
-                out[1] = VecType::Madd(VecType::SplatFourth(rowsA[1]), fourth, VecType::Madd(VecType::SplatThird(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[1]), rowsB[0]))));
-                out[2] = VecType::Madd(VecType::SplatFourth(rowsA[2]), fourth, VecType::Madd(VecType::SplatThird(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[2]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[2]), rowsB[0]))));
+                out[0] = VecType::Madd(VecType::SplatIndex3(rowsA[0]), fourth, VecType::Madd(VecType::SplatIndex2(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[0]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[0]), rowsB[0]))));
+                out[1] = VecType::Madd(VecType::SplatIndex3(rowsA[1]), fourth, VecType::Madd(VecType::SplatIndex2(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[1]), rowsB[0]))));
+                out[2] = VecType::Madd(VecType::SplatIndex3(rowsA[2]), fourth, VecType::Madd(VecType::SplatIndex2(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[2]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[2]), rowsB[0]))));
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE void Mat4x4InverseFast(const typename VecType::FloatType* __restrict rows, typename VecType::FloatType* __restrict out)
             {
-                const typename VecType::FloatType pos = VecType::Madd(VecType::SplatFourth(rows[2]), rows[2]
-                                                      , VecType::Madd(VecType::SplatFourth(rows[1]), rows[1]
-                                                      , VecType::Mul (VecType::SplatFourth(rows[0]), rows[0])));
+                const typename VecType::FloatType pos = VecType::Madd(VecType::SplatIndex3(rows[2]), rows[2]
+                                                      , VecType::Madd(VecType::SplatIndex3(rows[1]), rows[1]
+                                                      , VecType::Mul (VecType::SplatIndex3(rows[0]), rows[0])));
                 typename VecType::FloatType transposed[4] = { rows[0], rows[1], rows[2], VecType::Xor(pos, FastLoadConstant<VecType>(reinterpret_cast<const float*>(g_negateMask))) };
                 VecType::Mat4x4Transpose(transposed, out);
                 out[3] = FastLoadConstant<VecType>(g_vec0001);
             }
 
-
             template <typename VecType>
             AZ_MATH_INLINE void Mat4x4Multiply(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, typename VecType::FloatType* __restrict out)
             {
-                out[0] = VecType::Madd(VecType::SplatFourth(rowsA[0]), rowsB[3], VecType::Madd(VecType::SplatThird(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[0]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[0]), rowsB[0]))));
-                out[1] = VecType::Madd(VecType::SplatFourth(rowsA[1]), rowsB[3], VecType::Madd(VecType::SplatThird(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[1]), rowsB[0]))));
-                out[2] = VecType::Madd(VecType::SplatFourth(rowsA[2]), rowsB[3], VecType::Madd(VecType::SplatThird(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[2]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[2]), rowsB[0]))));
-                out[3] = VecType::Madd(VecType::SplatFourth(rowsA[3]), rowsB[3], VecType::Madd(VecType::SplatThird(rowsA[3]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[3]), rowsB[1], VecType::Mul(VecType::SplatFirst(rowsA[3]), rowsB[0]))));
+                out[0] = VecType::Madd(VecType::SplatIndex3(rowsA[0]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[0]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[0]), rowsB[0]))));
+                out[1] = VecType::Madd(VecType::SplatIndex3(rowsA[1]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[1]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[1]), rowsB[0]))));
+                out[2] = VecType::Madd(VecType::SplatIndex3(rowsA[2]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[2]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[2]), rowsB[0]))));
+                out[3] = VecType::Madd(VecType::SplatIndex3(rowsA[3]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[3]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[3]), rowsB[1], VecType::Mul(VecType::SplatIndex0(rowsA[3]), rowsB[0]))));
             }
 
+            template <typename VecType>
+            AZ_MATH_INLINE void Mat4x4MultiplyAdd(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, const typename VecType::FloatType* __restrict add, typename VecType::FloatType* __restrict out)
+            {
+                out[0] = VecType::Madd(VecType::SplatIndex3(rowsA[0]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[0]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[0]), rowsB[0], add[0]))));
+                out[1] = VecType::Madd(VecType::SplatIndex3(rowsA[1]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[1]), rowsB[0], add[1]))));
+                out[2] = VecType::Madd(VecType::SplatIndex3(rowsA[2]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[2]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[2]), rowsB[0], add[2]))));
+                out[3] = VecType::Madd(VecType::SplatIndex3(rowsA[3]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[3]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[3]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[3]), rowsB[0], add[3]))));
+            }
 
             template <typename VecType>
             AZ_MATH_INLINE void Mat4x4TransposeMultiply(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, typename VecType::FloatType* __restrict out)
             {
-                out[0] = VecType::Madd(VecType::SplatFirst (rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatFirst (rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatFirst (rowsA[2]), rowsB[2], VecType::Mul(VecType::SplatFirst (rowsA[3]), rowsB[3]))));
-                out[1] = VecType::Madd(VecType::SplatSecond(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatSecond(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatSecond(rowsA[2]), rowsB[2], VecType::Mul(VecType::SplatSecond(rowsA[3]), rowsB[3]))));
-                out[2] = VecType::Madd(VecType::SplatThird (rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatThird (rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatThird (rowsA[2]), rowsB[2], VecType::Mul(VecType::SplatThird (rowsA[3]), rowsB[3]))));
-                out[3] = VecType::Madd(VecType::SplatFourth(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatFourth(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatFourth(rowsA[2]), rowsB[2], VecType::Mul(VecType::SplatFourth(rowsA[3]), rowsB[3]))));
+                out[0] = VecType::Madd(VecType::SplatIndex0(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatIndex0(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[2]), rowsB[2], VecType::Mul(VecType::SplatIndex0(rowsA[3]), rowsB[3]))));
+                out[1] = VecType::Madd(VecType::SplatIndex1(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatIndex1(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatIndex1(rowsA[2]), rowsB[2], VecType::Mul(VecType::SplatIndex1(rowsA[3]), rowsB[3]))));
+                out[2] = VecType::Madd(VecType::SplatIndex2(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatIndex2(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatIndex2(rowsA[2]), rowsB[2], VecType::Mul(VecType::SplatIndex2(rowsA[3]), rowsB[3]))));
+                out[3] = VecType::Madd(VecType::SplatIndex3(rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatIndex3(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatIndex3(rowsA[2]), rowsB[2], VecType::Mul(VecType::SplatIndex3(rowsA[3]), rowsB[3]))));
             }
-
 
             template <typename VecType>
             AZ_MATH_INLINE typename VecType::FloatType Mat4x4TransposeTransformVector(const typename VecType::FloatType* __restrict rows, typename VecType::FloatArgType vector)
             {
-                return VecType::Madd(VecType::SplatFourth(vector), rows[3], VecType::Madd(VecType::SplatThird(vector), rows[2], VecType::Madd(VecType::SplatSecond(vector), rows[1], VecType::Mul(VecType::SplatFirst(vector), rows[0]))));
+                return VecType::Madd(VecType::SplatIndex3(vector), rows[3], VecType::Madd(VecType::SplatIndex2(vector), rows[2], VecType::Madd(VecType::SplatIndex1(vector), rows[1], VecType::Mul(VecType::SplatIndex0(vector), rows[0]))));
             }
         }
     }

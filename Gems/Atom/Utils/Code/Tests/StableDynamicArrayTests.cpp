@@ -438,7 +438,7 @@ namespace UnitTest
 
         for (auto iteratorPair : pageIterators)
         {
-            for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
+            for (auto iterator = iteratorPair.m_begin; iterator != iteratorPair.m_end; ++iterator)
             {
                 TestItem& item = *iterator;
                 success = success && (item.index == index);
@@ -459,7 +459,7 @@ namespace UnitTest
         pageIterators = testArray.GetParallelRanges();
         for (auto iteratorPair : pageIterators)
         {
-            for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
+            for (auto iterator = iteratorPair.m_begin; iterator != iteratorPair.m_end; ++iterator)
             {
                 TestItem& item = *iterator;
                 success = success && (item.index == index);
@@ -482,7 +482,7 @@ namespace UnitTest
 
         for (auto iteratorPair : pageIterators)
         {
-            for (auto iterator = iteratorPair.first; iterator != iteratorPair.second; ++iterator)
+            for (auto iterator = iteratorPair.m_begin; iterator != iteratorPair.m_end; ++iterator)
             {
                 TestItem& item = *iterator;
                 success = success && (item.index == index);

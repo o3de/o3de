@@ -9,20 +9,25 @@
 This file contains utility functions
 """
 import argparse
-import sys
-import uuid
+import importlib.util
+import logging
 import os
 import stat
 import pathlib
+import re
 import shutil
+import subprocess
+import sys
 import urllib.request
 from urllib.parse import ParseResult
-import logging
+import uuid
 import zipfile
-import re
+from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
-from o3de import github_utils, git_utils
+from o3de import github_utils, git_utils, validation as valid
+from subprocess import Popen, PIPE, STDOUT
+from typing import List, Tuple
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
@@ -61,6 +66,133 @@ class VerbosityAction(argparse.Action):
         elif count == 1:
             log.setLevel(logging.INFO)
 
+class CLICommand(object):
+    """
+    CLICommand is an interface for storing CLI commands as list of string arguments to run later in a script.
+    A current working directory, pre-existing OS environment, and desired logger can also be specified.
+    To execute a command, use the run() function.
+    This class is responsible for starting a new process, polling it for updates and logging, and safely terminating it.
+    """
+    def __init__(self, 
+                args: list,
+                cwd: pathlib.Path,
+                logger: logging.Logger,
+                env: os._Environ=None) -> None:
+        self.args = args
+        self.cwd = cwd
+        self.env = env
+        self.logger = logger
+        self._stdout_lines = []
+        self._stderr_lines = []
+    
+    @property
+    def stdout_lines(self) -> List[str]:
+        """The result of stdout, separated by newlines."""
+        return self._stdout_lines
+
+    @property
+    def stdout(self) -> str:
+        """The result of stdout, as a single string."""
+        return "\n".join(self._stdout_lines)
+
+    @property
+    def stderr_lines(self) -> List[str]:
+        """The result of stderr, separated by newlines."""
+        return self._stderr_lines
+
+    @property
+    def stderr(self) -> str:
+        """The result of stderr, as a single string."""
+        return "\n".join(self._stderr_lines)
+
+    
+    def _poll_process(self, process) -> None:
+        # while process is not done, read any log lines coming from subprocess
+        while process.poll() is None:
+            line = process.stdout.readline()
+            if not line: break
+
+            log_line = line.decode('utf-8', 'ignore').rstrip()
+            self._stdout_lines.append(log_line)
+            self.logger.info(log_line)
+    
+    def _cleanup_process(self, process) -> None:
+        # flush remaining log lines
+        log_lines = process.stdout.read().decode('utf-8', 'ignore')
+        self._stdout_lines += log_lines.split('\n')
+        self.logger.info(log_lines)
+
+        safe_kill_processes(process, process_logger = self.logger)
+
+
+    
+    def run(self) -> int:
+        """
+        Takes the arguments specified during CLICommand initialization, and opens a new subprocess to handle it.
+        This function automatically manages polling the process for logs, error reporting, and safely cleaning up the process afterwards.
+        :return return code on success or failure 
+        """
+        ret = 1
+        try:
+            with Popen(self.args, cwd=self.cwd, env=self.env, stdout=PIPE, stderr=STDOUT) as process:
+                self.logger.info(f"Running process '{self.args[0]}' with PID({process.pid}): {self.args}")
+                
+                self._poll_process(process)
+
+                self._cleanup_process(process)
+
+                ret = process.returncode
+
+                return ret
+
+        except Exception as err:
+            self.logger.error(err)
+            raise err
+
+
+# Per Python documentation, only strings should be inserted into sys.path
+# https://docs.python.org/3/library/sys.html#sys.path
+def prepend_to_system_path(file_path: pathlib.Path or str) -> None:
+    """
+    Prepend the running script's imported system module paths. Useful for loading scripts in a foreign directory
+    :param path: The file path of the desired script to load
+    :return: None
+    """
+    if isinstance(file_path, str):
+        file_path = pathlib.Path(file_path)
+
+    folder_path = file_path if file_path.is_dir() else file_path.parent
+    if str(folder_path) not in sys.path:
+        sys.path.insert(0, str(folder_path))
+
+def load_and_execute_script(script_path: pathlib.Path or str, **context_variables) -> int:
+    """
+    For a given python script, use importlib to load the script spec and module to execute it later
+    :param script_path: The path to the python script to run
+    :param context_variables: A series of keyword arguments which specify the context for the script before it is run.
+    :return: return code indicating succes or failure of script
+    """
+    
+    if isinstance(script_path, str):
+        script_path = pathlib.Path(script_path)
+    
+    # load the target script as a module, set the context, and then execute
+    script_name = script_path.name
+    spec = importlib.util.spec_from_file_location(script_name, script_path)
+    script_module = importlib.util.module_from_spec(spec)
+    sys.modules[script_name] = script_module
+
+    # inject the script module with relevant context variables
+    for key, value in context_variables.items():
+        setattr(script_module, key, value)
+
+    try:
+        spec.loader.exec_module(script_module)
+    except Exception as err:
+        logger.error(f"Failed to run script '{script_path}'. Here is the stacktrace: ", exc_info=True)
+        return 1
+
+    return 0
 
 def add_verbosity_arg(parser: argparse.ArgumentParser) -> None:
     """
@@ -294,8 +426,17 @@ def download_file(parsed_uri: ParseResult, download_path: pathlib.Path, force_ov
             logger.error(f'URL Error {e.reason} opening {parsed_uri.geturl()}')
             return 1
     else:
-        origin_file = pathlib.Path(parsed_uri.geturl()).resolve()
+        parsed_uri_path = urllib.parse.unquote(parsed_uri.path)
+        if isinstance(download_path, pathlib.PureWindowsPath):
+            # On Windows we want to remove the initial slash in front of the drive letter
+            if parsed_uri_path.startswith('/'):
+                parsed_uri_path = parsed_uri_path[1:]
+            else:
+                logger.warning(f"The provided path URI '{parsed_uri_path}' may be missing a '/', "
+                               "file URIs typically have 3 slashes when they have an empty authority (RFC 8089) e.g. file:///")
+        origin_file = pathlib.Path(parsed_uri_path).resolve()
         if not origin_file.is_file():
+            logger.error(f"Failed to find local file '{origin_file}' based on URI '{parsed_uri}'")
             return 1
         shutil.copy(origin_file, download_path)
 
@@ -367,6 +508,21 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
     return ancestor_file.parent if ancestor_file else None
 
+def get_project_path_from_file(target_file_path: pathlib.Path, supplied_project_path: pathlib.Path = None) -> pathlib.Path or None:
+    """
+    Based on a file supplied by the user, and optionally a differing project path, determine and validate a proper project path, if any.
+    :param target_file_path: A user supplied file path
+    :param supplied_project_path: (Optional) If the target file is different from the project path, the user may also specify this path as well.
+    :return: A valid project path, or None
+    """
+    project_path = supplied_project_path
+    if not project_path:
+        project_path = find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), target_file_path)
+    
+    if not project_path or not valid.valid_o3de_project_json(project_path / 'project.json'):
+        return None
+
+    return project_path
 
 def get_gem_names_set(gems: list, include_optional:bool = True) -> set:
     """
@@ -596,3 +752,32 @@ def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_nam
             input[value[value_key]] = entries
         else:
             input[value[value_key]] = value
+
+def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger = None) -> None:
+    """
+    Kills a given process without raising an error
+    :param processes: An iterable of processes to kill
+    :param process_logger: (Optional) logger to use
+    """
+    def on_terminate(proc) -> None:
+        try:
+            process_logger.info(f"process '{proc.args[0]}' with PID({proc.pid}) terminated with exit code {proc.returncode}")
+        except Exception:  # purposefully broad
+            process_logger.error("Exception encountered with termination request, with stacktrace:", exc_info=True)
+
+    if not process_logger:
+        process_logger = logger
+    
+    for proc in processes:
+        try:
+            process_logger.info(f"Terminating process '{proc.args[0]}' with PID({proc.pid})")
+            proc.kill()
+        except Exception:  # purposefully broad
+            process_logger.error("Unexpected exception ignored while terminating process, with stacktrace:", exc_info=True)
+    try:
+        for proc in processes:
+            proc.wait(timeout=30)
+            on_terminate(proc)
+    except Exception:  # purposefully broad
+        process_logger.error("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
+

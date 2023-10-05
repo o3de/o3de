@@ -80,7 +80,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
         // not inside the inner AABB, so it's in between the inner and outer AABBs
         // compute blend amount based on the distance to the outer AABB
         blendWeight = ComputeLerpBetweenInnerOuterOBBs(
-            ObjectSrg::GetWorldMatrixInverse(),
+            (float3x4)ObjectSrg::GetWorldMatrixInverse(),
             ObjectSrg::m_innerObbHalfLengths,
             ObjectSrg::m_outerObbHalfLengths,
             positionWS);

@@ -327,7 +327,7 @@ namespace ScriptCanvas
     {
         for (auto& variablePair : m_variableData.GetVariables())
         {
-            if (variablePair.second.GetDataType() == dataType)
+            if (variablePair.second.GetDataType().IS_A(dataType))
             {
                 if (excludedVariableIds.count(variablePair.first) == 0)
                 {

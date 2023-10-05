@@ -371,9 +371,9 @@ namespace AZ
             const Simd::Vec3::FloatType angles = Simd::Vec3::LoadImmediate(omega, (1.0f - t) * omega, t * omega);
             const Simd::Vec3::FloatType sin = Simd::Vec3::Sin(angles);
 
-            const float sinom = 1.0f / Simd::Vec3::SelectFirst(sin);
-            sclA = Simd::Vec3::SelectSecond(sin) * sinom;
-            sclB = Simd::Vec3::SelectThird(sin) * sinom;
+            const float sinom = 1.0f / Simd::Vec3::SelectIndex0(sin);
+            sclA = Simd::Vec3::SelectIndex1(sin) * sinom;
+            sclB = Simd::Vec3::SelectIndex2(sin) * sinom;
         }
         else
         {
@@ -398,12 +398,12 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sx = Simd::Vec3::SelectFirst(sin);
-        const float sy = Simd::Vec3::SelectSecond(sin);
-        const float sz = Simd::Vec3::SelectThird(sin);
-        const float cx = Simd::Vec3::SelectFirst(cos);
-        const float cy = Simd::Vec3::SelectSecond(cos);
-        const float cz = Simd::Vec3::SelectThird(cos);
+        const float sx = Simd::Vec3::SelectIndex0(sin);
+        const float sy = Simd::Vec3::SelectIndex1(sin);
+        const float sz = Simd::Vec3::SelectIndex2(sin);
+        const float cx = Simd::Vec3::SelectIndex0(cos);
+        const float cy = Simd::Vec3::SelectIndex1(cos);
+        const float cz = Simd::Vec3::SelectIndex2(cos);
 
         // rot = rotx * roty * rotz
         const float w = cx * cy * cz - sx * sy * sz;
@@ -421,12 +421,12 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sx = Simd::Vec3::SelectFirst(sin);
-        const float cx = Simd::Vec3::SelectFirst(cos);
-        const float sy = Simd::Vec3::SelectSecond(sin);
-        const float cy = Simd::Vec3::SelectSecond(cos);    
-        const float sz = Simd::Vec3::SelectThird(sin);
-        const float cz = Simd::Vec3::SelectThird(cos);
+        const float sx = Simd::Vec3::SelectIndex0(sin);
+        const float cx = Simd::Vec3::SelectIndex0(cos);
+        const float sy = Simd::Vec3::SelectIndex1(sin);
+        const float cy = Simd::Vec3::SelectIndex1(cos);    
+        const float sz = Simd::Vec3::SelectIndex2(sin);
+        const float cz = Simd::Vec3::SelectIndex2(cos);
 
         // rot = rotx * roty * rotz
         return AZ::Quaternion(
@@ -444,12 +444,12 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sx = Simd::Vec3::SelectFirst(sin);
-        const float cx = Simd::Vec3::SelectFirst(cos);
-        const float sy = Simd::Vec3::SelectSecond(sin);
-        const float cy = Simd::Vec3::SelectSecond(cos);
-        const float sz = Simd::Vec3::SelectThird(sin);
-        const float cz = Simd::Vec3::SelectThird(cos);
+        const float sx = Simd::Vec3::SelectIndex0(sin);
+        const float cx = Simd::Vec3::SelectIndex0(cos);
+        const float sy = Simd::Vec3::SelectIndex1(sin);
+        const float cy = Simd::Vec3::SelectIndex1(cos);
+        const float sz = Simd::Vec3::SelectIndex2(sin);
+        const float cz = Simd::Vec3::SelectIndex2(cos);
 
         // rot = roty * rotx * rotz
         return AZ::Quaternion(
@@ -466,12 +466,12 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sx = Simd::Vec3::SelectFirst(sin);
-        const float cx = Simd::Vec3::SelectFirst(cos);
-        const float sy = Simd::Vec3::SelectSecond(sin);
-        const float cy = Simd::Vec3::SelectSecond(cos);
-        const float sz = Simd::Vec3::SelectThird(sin);
-        const float cz = Simd::Vec3::SelectThird(cos);
+        const float sx = Simd::Vec3::SelectIndex0(sin);
+        const float cx = Simd::Vec3::SelectIndex0(cos);
+        const float sy = Simd::Vec3::SelectIndex1(sin);
+        const float cy = Simd::Vec3::SelectIndex1(cos);
+        const float sz = Simd::Vec3::SelectIndex2(sin);
+        const float cz = Simd::Vec3::SelectIndex2(cos);
         
         // rot = rotz * roty * rotx
         return AZ::Quaternion(

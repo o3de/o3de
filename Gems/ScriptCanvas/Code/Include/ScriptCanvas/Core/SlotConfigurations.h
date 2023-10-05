@@ -229,6 +229,11 @@ namespace ScriptCanvas
         bool m_isLatent = false;
         bool m_isUserAdded = false;
         bool m_canHaveInputField = true;
+        bool m_isNameHidden = false;
+
+        // Enabling this attribute on an execution slot will cause it to automatically make a "behind the scenes"
+        // connection to nodes connected by other slots of the same connection type as this slot
+        bool m_createsImplicitConnections = false;
 
         AZStd::vector<ContractDescriptor> m_contractDescs;
         bool m_addUniqueSlotByNameAndType = true; // Only adds a new slot if a slot with the supplied name and CombinedSlotType does not exist on the node

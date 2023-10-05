@@ -25,6 +25,7 @@ namespace UnitTest
         MOCK_METHOD2(StartHosting, bool(uint16_t, bool));
         MOCK_METHOD2(Connect, bool(const AZStd::string&, uint16_t));
         MOCK_METHOD1(Terminate, void(AzNetworking::DisconnectReason));
+        MOCK_METHOD1(AddNetworkInitHandler, void(AZ::Event<INetworkInterface*>::Handler&));
         MOCK_METHOD1(AddClientMigrationStartEventHandler, void(Multiplayer::ClientMigrationStartEvent::Handler&));
         MOCK_METHOD1(AddClientMigrationEndEventHandler, void(Multiplayer::ClientMigrationEndEvent::Handler&));
         MOCK_METHOD1(AddEndpointDisconnectedHandler, void(Multiplayer::EndpointDisconnectedEvent::Handler&));
@@ -166,11 +167,13 @@ namespace UnitTest
         MOCK_METHOD4(Serialize, bool (int8_t&, const char*, int8_t, int8_t));
         MOCK_METHOD4(Serialize, bool (int16_t&, const char*, int16_t, int16_t));
         MOCK_METHOD4(Serialize, bool (int32_t&, const char*, int32_t, int32_t));
-        MOCK_METHOD4(Serialize, bool (int64_t&, const char*, int64_t, int64_t));
+        MOCK_METHOD4(Serialize, bool (long&, const char*, long, long));
+        MOCK_METHOD4(Serialize, bool (AZ::s64&, const char*, AZ::s64, AZ::s64));
         MOCK_METHOD4(Serialize, bool (uint8_t&, const char*, uint8_t, uint8_t));
         MOCK_METHOD4(Serialize, bool (uint16_t&, const char*, uint16_t, uint16_t));
         MOCK_METHOD4(Serialize, bool (uint32_t&, const char*, uint32_t, uint32_t));
-        MOCK_METHOD4(Serialize, bool (uint64_t&, const char*, uint64_t, uint64_t));
+        MOCK_METHOD4(Serialize, bool (unsigned long&, const char*, unsigned long, unsigned long));
+        MOCK_METHOD4(Serialize, bool (AZ::u64&, const char*, AZ::u64, AZ::u64));
         MOCK_METHOD4(Serialize, bool (float&, const char*, float, float));
         MOCK_METHOD4(Serialize, bool (double&, const char*, double, double));
         MOCK_METHOD5(SerializeBytes, bool (uint8_t*, uint32_t, bool, uint32_t&, const char*));
@@ -183,4 +186,3 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetTrackedChangesFlag, bool ());
     };
 }
-

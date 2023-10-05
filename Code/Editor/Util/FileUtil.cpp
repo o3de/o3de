@@ -1955,40 +1955,6 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view f
     }
 }
 
-void CFileUtil::GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase, bool bMakeUnixPath)
-{
-    rOutFilenames.clear();
-    CBaseObjectsArray objArr;
-    CUsedResources usedRes;
-
-    GetIEditor()->GetObjectManager()->GetObjects(objArr);
-
-    for (size_t i = 0, iCount = objArr.size(); i < iCount; ++i)
-    {
-        CBaseObject* pObj = objArr[i];
-
-        usedRes.files.clear();
-        pObj->GatherUsedResources(usedRes);
-
-        for (CUsedResources::TResourceFiles::iterator iter = usedRes.files.begin(); iter != usedRes.files.end(); ++iter)
-        {
-            QString tmpStr = (*iter);
-
-            if (bMakeLowerCase)
-            {
-                tmpStr = tmpStr.toLower();
-            }
-
-            if (bMakeUnixPath)
-            {
-                tmpStr = Path::ToUnixPath(tmpStr);
-            }
-
-            rOutFilenames.insert(tmpStr);
-        }
-    }
-}
-
 uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*= true*/)
 {
     using namespace AzToolsFramework;

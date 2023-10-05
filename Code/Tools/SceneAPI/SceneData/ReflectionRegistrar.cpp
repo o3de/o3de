@@ -23,6 +23,7 @@
 #include <SceneAPI/SceneData/Rules/TangentsRule.h>
 #include <SceneAPI/SceneData/Rules/UVsRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneData/Rules/TagRule.h>
 
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
 
@@ -77,6 +78,7 @@ namespace AZ
             SceneData::TangentsRule::Reflect(context);
             SceneData::UVsRule::Reflect(context);
             SceneData::CoordinateSystemRule::Reflect(context);
+            SceneData::TagRule::Reflect(context);
 
             // Utility
             SceneData::SceneNodeSelectionList::Reflect(context);

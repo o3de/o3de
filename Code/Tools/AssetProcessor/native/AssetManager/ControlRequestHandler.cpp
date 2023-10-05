@@ -23,7 +23,7 @@ ControlRequestHandler::ControlRequestHandler(ApplicationManagerBase* parent) : Q
 m_applicationManager(parent)
 {
     connect(m_applicationManager, &ApplicationManagerBase::FullIdle, this, &ControlRequestHandler::AssetManagerIdleStateChange);
-    
+
     StartListening(0);
 
 }
@@ -128,6 +128,10 @@ void ControlRequestHandler::ReadData(QTcpSocket* incoming)
     {
         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Control request adding signal idle waiter\n");
         m_idleWaitSockets.push_back(incoming);
+    }
+    else if (sentMessage == "windowid")
+    {
+        incoming->write(AZStd::string::format("%lld", m_applicationManager->GetWindowId()).c_str());
     }
 }
 

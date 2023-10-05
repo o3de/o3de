@@ -245,7 +245,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 13. Add the Mesh component to the Ground Plane Entity and set the Mesh component Model Asset property.
         ground_plane_mesh_component = ground_plane_entity.add_component(AtomComponentProperties.mesh())
         Report.result(Tests.mesh_component_added, ground_plane_entity.has_component(AtomComponentProperties.mesh()))
-        ground_plane_model_asset_path = os.path.join("testdata", "objects", "plane.azmodel")
+        ground_plane_model_asset_path = os.path.join("testdata", "objects", "plane.fbx.azmodel")
         ground_plane_model_asset = Asset.find_asset_by_path(ground_plane_model_asset_path, False)
         ground_plane_mesh_component.set_component_property_value(
             AtomComponentProperties.mesh('Model Asset'), ground_plane_model_asset.id)
@@ -283,7 +283,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 18. Add Mesh component to Sphere Entity and set the Model Asset property for the Mesh component.
         sphere_mesh_component = sphere_entity.add_component(AtomComponentProperties.mesh())
-        sphere_model_asset_path = os.path.join("models", "sphere.azmodel")
+        sphere_model_asset_path = os.path.join("models", "sphere.fbx.azmodel")
         sphere_model_asset = Asset.find_asset_by_path(sphere_model_asset_path, False)
         sphere_mesh_component.set_component_property_value(
             AtomComponentProperties.mesh('Model Asset'), sphere_model_asset.id)

@@ -6,6 +6,20 @@
 #
 #
 
+# The DebugDraw.API target declares the common interface that users of this gem should depend on in their targets to avoid linking.
+ly_add_target(
+    NAME DebugDraw.API INTERFACE
+    NAMESPACE Gem
+    FILES_CMAKE
+        debugdraw_api_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            Include
+    BUILD_DEPENDENCIES
+        INTERFACE
+           AZ::AzCore
+)
+
 ly_add_target(
     NAME DebugDraw.Static STATIC
     NAMESPACE Gem

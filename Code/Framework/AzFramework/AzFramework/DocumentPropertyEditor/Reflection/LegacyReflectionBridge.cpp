@@ -30,6 +30,8 @@ namespace AZ::Reflection
         const Name Container = Name::FromStringLiteral("Container", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ParentContainer = Name::FromStringLiteral("ParentContainer", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ParentContainerInstance = Name::FromStringLiteral("ParentContainerInstance", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentContainerCanBeModified =
+            Name::FromStringLiteral("ParentContainerCanBeModified", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ContainerElementOverride = Name::FromStringLiteral("ContainerElementOverride", AZ::Interface<AZ::NameDictionary>::Get());
     } // namespace DescriptorAttributes
 
@@ -126,6 +128,7 @@ namespace AZ::Reflection
         {
             IReadWrite* m_visitor;
             SerializeContext* m_serializeContext;
+            SerializeContext::EnumerateInstanceCallContext* m_enumerateContext;
 
             struct AttributeData
             {
@@ -141,8 +144,17 @@ namespace AZ::Reflection
             struct StackEntry
             {
                 void* m_instance;
-                void* m_parentInstance = nullptr;
+                // Instance that is used to retrieve attribute values that are tied to invokable functions.
+                // Commonly, it is the parent instance for property nodes, and the instance for UI element nodes.
+                void* m_instanceToInvoke = nullptr;
                 AZ::TypeId m_typeId;
+
+                //! Keeps tracks of how many pointers are attached to the instance type
+                //! For example if the actual instance being referenced is an AZ::Component, then m_pointerLevel is 0
+                //! But if the instance being referenced is an AZ::Component*, then the m_pointerLevel is 1
+                //! Finally if the instance being referenced is an AZ::Component**, then the m_pointerLevel is 2
+                AZ::u32 m_pointerLevel = 0;
+
                 const SerializeContext::ClassData* m_classData = nullptr;
                 const SerializeContext::ClassElement* m_classElement = nullptr;
                 AZStd::vector<AttributeData> m_cachedAttributes;
@@ -161,25 +173,63 @@ namespace AZ::Reflection
                 bool m_disableEditor = false;
                 bool m_isAncestorDisabled = false;
 
+                bool m_skipHandler = false;
+                bool m_createdByEnumerate = false;
+
                 // extra data necessary to support Containers composed of pair<> children (like maps!)
                 bool m_extractKeyedPair = false;
                 AZ::SerializeContext::IDataContainer* m_parentContainerInfo = nullptr;
                 void* m_parentContainerOverride = nullptr;
                 void* m_containerElementOverride = nullptr;
+
+                const AZ::Edit::ElementData* GetElementEditMetadata() const
+                {
+                    if (m_classElement)
+                    {
+                        return m_classElement->m_editData;
+                    }
+
+                    return nullptr;
+                }
+
+                //! Returns an address that can be casted to the Type of the instance via a "reinterpret_cast<Type*>" cast
+                //! If the instance is storing a pointer to a Type*, that is actually a Type**
+                //! So this code make sure that dereferences occurs before returning the address
+                const void* GetRawInstance() const
+                {
+                    const void* directInstance = m_instance;
+                    for (AZ::u32 pointersToDereference = m_pointerLevel; pointersToDereference > 0; --pointersToDereference)
+                    {
+                        directInstance = *reinterpret_cast<const void* const*>(directInstance);
+                    }
+                    return directInstance;
+                }
+
+                void* GetRawInstance()
+                {
+                    return const_cast<void*>(AZStd::as_const(*this).GetRawInstance());
+                }
+
+                AZStd::vector<AZStd::pair<AZStd::string, AZStd::optional<StackEntry>>> m_groups;
+                AZStd::map<AZStd::string, AZStd::vector<StackEntry>> m_groupEntries;
+                AZStd::map<AZStd::string, AZStd::string> m_propertyToGroupMap;
+                AZStd::vector<AZStd::pair<AZStd::string, StackEntry>> m_nonSerializedChildren;
             };
             AZStd::deque<StackEntry> m_stack;
-            AZStd::vector<AZStd::pair<const char*, StackEntry>> m_nonSerializedElements;
+
+            bool m_nodeWasSkipped = false;
 
             using HandlerCallback = AZStd::function<bool()>;
             AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
 
+            static constexpr auto VisibilityBoolean = AZ::DocumentPropertyEditor::AttributeDefinition<bool>("VisibilityBoolean");
+
             // Specify whether the visit starts from the root of the instance.
             bool m_visitFromRoot = true;
 
-            virtual ~InstanceVisitor() = default;
-
             InstanceVisitor(
-                IReadWrite* visitor, void* instance,
+                IReadWrite* visitor,
+                void* instance,
                 const AZ::TypeId& typeId,
                 SerializeContext* serializeContext,
                 bool visitFromRoot = true)
@@ -187,11 +237,44 @@ namespace AZ::Reflection
                 , m_serializeContext(serializeContext)
             {
                 // Push a dummy node into stack, which serves as the parent node for the first node.
-                m_stack.push_back({ instance, nullptr, typeId });
+                m_stack.emplace_back(StackEntry{ instance, nullptr, typeId });
 
                 m_visitFromRoot = visitFromRoot;
 
-                RegisterPrimitiveHandlers<bool, char, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
+                RegisterPrimitiveHandlers<
+                    bool,
+                    char,
+                    AZ::u8,
+                    AZ::u16,
+                    AZ::u32,
+                    AZ::u64,
+                    AZ::s8,
+                    AZ::s16,
+                    AZ::s32,
+                    AZ::s64,
+                    float,
+                    double>();
+
+                m_enumerateContext = new SerializeContext::EnumerateInstanceCallContext(
+                    [this](
+                        void* instance,
+                        const AZ::SerializeContext::ClassData* classData,
+                        const AZ::SerializeContext::ClassElement* classElement)
+                    {
+                        return BeginNode(instance, classData, classElement);
+                    },
+                    [this]()
+                    {
+                        return EndNode();
+                    },
+                    m_serializeContext,
+                    SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_READ,
+                    nullptr);
+            }
+
+            virtual ~InstanceVisitor()
+            {
+                delete m_enumerateContext;
             }
 
             template<typename T>
@@ -199,7 +282,7 @@ namespace AZ::Reflection
             {
                 m_handlers[azrtti_typeid<T>()] = [this, handler = AZStd::move(handler)]() -> bool
                 {
-                    return handler(*reinterpret_cast<T*>(m_stack.back().m_instance));
+                    return handler(*reinterpret_cast<T*>(Get()));
                 };
             }
 
@@ -222,239 +305,427 @@ namespace AZ::Reflection
                 {
                     return;
                 }
-                SerializeContext::EnumerateInstanceCallContext context(
-                    [this](
-                        void* instance,
-                        const AZ::SerializeContext::ClassData* classData,
-                        const AZ::SerializeContext::ClassElement* classElement)
-                    {
-                        return BeginNode(instance, classData, classElement);
-                    },
-                    [this]()
-                    {
-                        return EndNode();
-                    },
-                    m_serializeContext,
-                    SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_WRITE,
-                    nullptr);
 
                 // Note that this is the dummy parent node for the root node. It contains null classData and classElement.
                 const StackEntry& nodeData = m_stack.back();
-                m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
+                m_serializeContext->EnumerateInstanceConst(m_enumerateContext, nodeData.GetRawInstance(), nodeData.m_typeId, nullptr, nullptr);
             }
 
-            bool BeginNode(
-                void* instance, const AZ::SerializeContext::ClassData* classData, const AZ::SerializeContext::ClassElement* classElement)
+            void GenerateNodePath(const StackEntry& parentData, StackEntry& nodeData)
             {
-                // Ensure our instance pointer is resolved and safe to bind to member attributes
-                if (classElement)
-                {
-                    instance = AZ::Utils::ResolvePointer(instance, *classElement, *m_serializeContext);
-                }
-
-                StackEntry& parentData = m_stack.back();
                 AZStd::string path = parentData.m_path;
-                AZ::SerializeContext::IDataContainer::IAssociativeDataContainer* parentAssociativeInterface = nullptr;
                 if (parentData.m_classData && parentData.m_classData->m_container)
                 {
                     path.append("/");
                     path.append(AZStd::string::format("%zu", parentData.m_childElementIndex));
-
-                    auto& containerInfo = parentData.m_classData->m_container;
-                    parentAssociativeInterface = containerInfo->GetAssociativeContainerInterface();
                 }
-                else if (classElement)
+                // If we have a class element, we skip appending to the SerializedPath if its a base class
+                // because base class information is ignored by the JSON serializer in JsonSerializer::StoreWithClassElement.
+                // The name for these look like "BaseClass1", "BaseClass2", etc... are defined in c_serializeBaseClassStrings
+                // and won't be present once serialized so if we don't ignore them then certain logic that attempts to
+                // match against the SerializedPath won't be accurate.
+                else if (
+                    nodeData.m_classElement &&
+                    ((nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_BASE_CLASS) == 0))
                 {
-                    AZStd::string_view elementName = classElement->m_name;
+                    AZStd::string_view elementName = nodeData.m_classElement->m_name;
 
                     // Construct the serialized path for only those elements that have valid edit data. Otherwise, you can end up with
                     // serialized paths looking like "token1////token2/token3"
-                    if (!elementName.empty() && classElement->m_editData)
+                    if (!elementName.empty())
                     {
                         path.append("/");
                         path.append(elementName);
                     }
                 }
 
-                //! This is the case to create UIElements, Groups and Editor Data if any one of these is the first element in a class
-                auto iter = m_nonSerializedElements.begin();
-                while (iter != m_nonSerializedElements.end())
+                nodeData.m_path = AZStd::move(path);
+            }
+
+            bool HandleNodeInParentGroup(const StackEntry& nodeData, StackEntry& parentData)
+            {
+                if (parentData.m_propertyToGroupMap.contains(nodeData.m_path))
                 {
-                    if (strlen(iter->first) == 0)
+                    // Add to group vector.
+                    AZStd::string groupName = parentData.m_propertyToGroupMap[nodeData.m_path];
+                    parentData.m_groupEntries[groupName].push_back(AZStd::move(nodeData));
+                    m_stack.pop_back();
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            void HandleNodeGroups(StackEntry& nodeData)
+            {
+                // Search through classData for Groups.
+                if (nodeData.m_classData && nodeData.m_classData->m_editData)
+                {
+                    AZStd::string groupName = "";
+                    int groupCounter = 0;
+
+                    for (auto iter = nodeData.m_classData->m_editData->m_elements.begin(),
+                              endIter = nodeData.m_classData->m_editData->m_elements.end();
+                         iter != endIter;
+                         ++iter)
                     {
-                        if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::Group)
+                        auto& currElement = *iter;
+
+                        //! If this node has group definitions in its element, create the vectors.
+                        if (currElement.m_elementId == AZ::Edit::ClassElements::Group)
                         {
-                            // Add the group to the stack and keep it open
-                            AZStd::string_view groupName = iter->second.m_classElement->m_editData->m_description;
-                            if (!groupName.empty())
+                            AZStd::string_view itemDescription(currElement.m_description);
+
+                            if (!itemDescription.empty())
                             {
-                                iter->second.m_group = groupName;
-                                m_stack.push_back(iter->second);
-                                CacheAttributes();
-                                m_visitor->VisitObjectBegin(*this, *this);
+                                // Update groupName to new group's name
+                                groupName = currElement.m_description;
+                                nodeData.m_groupEntries.insert(groupName);
+
+                                if (currElement.m_serializeClassElement)
+                                {
+                                    // groups with a serialize class element are toggle groups, make an entry for their bool value
+                                    const AZ::Serialize::ClassElement* serializeClassElement = currElement.m_serializeClassElement;
+                                    void* boolAddress = reinterpret_cast<void*>(
+                                        reinterpret_cast<size_t>(nodeData.GetRawInstance()) + serializeClassElement->m_offset);
+                                    boolAddress = AZ::Utils::ResolvePointer(boolAddress, *serializeClassElement, *m_serializeContext);
+
+                                    constexpr AZ::u32 pointerLevel = 0;
+
+                                    StackEntry entry = { boolAddress,
+                                                         nodeData.m_instance,
+                                                         serializeClassElement->m_typeId,
+                                                         pointerLevel,
+                                                         nullptr,
+                                                         currElement.m_serializeClassElement };
+                                    nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
+
+                                    AZStd::string propertyPath = AZStd::string::format(
+                                        "%s/%s", nodeData.m_path.c_str(), currElement.m_serializeClassElement->m_name);
+                                    nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
+                                }
+                                else
+                                {
+                                    // not a toggle group, just make the normal group UI element
+                                    AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                                    UIElement->m_editData = &currElement;
+                                    UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                                    // A UI node isn't backed with a real C++ type, so its pointer level is 0
+                                    constexpr AZ::u32 pointerLevel =  0;
+                                    StackEntry entry = { nodeData.m_instance,
+                                                         nodeData.m_instance,
+                                                         nodeData.m_classData->m_typeId,
+                                                         pointerLevel,
+                                                         nodeData.m_classData,
+                                                         UIElement };
+
+                                    nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
+                                }
+                            }
+                            else
+                            {
+                                // If the group name is empty, this is the end of the previous group.
+                                // Create a group for entries that should be displayed after the previous group.
+                                if (!groupName.empty())
+                                {
+                                    groupName = AZStd::string::format("_GROUP[%d]", ++groupCounter);
+                                    nodeData.m_groupEntries.insert(groupName);
+                                    nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::nullopt));
+                                }
                             }
                         }
-                        else if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
+                        else
                         {
-                            m_stack.push_back(iter->second);
-                            CacheAttributes();
-                            m_visitor->VisitObjectBegin(*this, *this);
-                            m_visitor->VisitObjectEnd(*this, *this);
-                            m_stack.pop_back();
+                            if (!groupName.empty() && currElement.m_serializeClassElement)
+                            {
+                                AZStd::string propertyPath =
+                                    AZStd::string::format("%s/%s", nodeData.m_path.c_str(), currElement.m_serializeClassElement->m_name);
+                                nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
+                            }
                         }
-                        iter = m_nonSerializedElements.erase(iter);
+                    }
+                }
+            }
+
+            void HandleNodeUiElementsRetrieval(StackEntry& nodeData)
+            {
+                // Search through classData for UIElements and Editor Data.
+                if (nodeData.m_classData && nodeData.m_classData->m_editData)
+                {
+                    // Store current group.
+                    AZStd::string groupName = "";
+                    AZStd::string lastValidElementName = "";
+
+                    for (auto iter = nodeData.m_classData->m_editData->m_elements.begin();
+                         iter != nodeData.m_classData->m_editData->m_elements.end();
+                         ++iter)
+                    {
+                        if (iter->m_elementId == AZ::Edit::ClassElements::Group)
+                        {
+                            // The group name is stored in the description.
+                            groupName = iter->m_description;
+                            lastValidElementName = "";
+                        }
+                        else if (iter->m_elementId == AZ::Edit::ClassElements::UIElement)
+                        {
+                            AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                            UIElement->m_editData = &*iter;
+                            UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                            // Use the instance itself to retrieve parameter values that invoke functions on the UI Element.
+                            constexpr AZ::u32 pointerLevel = 0;
+                            StackEntry entry = {
+                                nodeData.m_instance, nodeData.m_instance, nodeData.m_classData->m_typeId, pointerLevel,
+                                nodeData.m_classData, UIElement
+                            };
+
+                            AZStd::string pathString = nodeData.m_path;
+
+                            if (!groupName.empty())
+                            {
+                                pathString.append("/");
+                                pathString.append(groupName);
+                            }
+
+                            if (!lastValidElementName.empty())
+                            {
+                                pathString.append("/");
+                                pathString.append(lastValidElementName);
+                            }
+
+                            nodeData.m_nonSerializedChildren.push_back(AZStd::make_pair(pathString.c_str(), entry));
+                        }
+                        else
+                        {
+                            // Keep track of the last valid element name
+                            if (iter->m_serializeClassElement && strlen(iter->m_serializeClassElement->m_name) > 0)
+                            {
+                                lastValidElementName = iter->m_serializeClassElement->m_name;
+                            }
+                        }
+                    }
+                }
+            }
+
+            void HandleNodeUiElementsCreation(const AZStd::string_view path)
+            {
+                // find the last non-ui element in the stack -- it may hold UI elements to create at this path
+                StackEntry* nonUIAncestor = nullptr;
+                for (auto stackIter = m_stack.rbegin(), endIter = m_stack.rend(); !nonUIAncestor && stackIter != endIter; ++stackIter)
+                {
+                    if (!stackIter->m_classElement ||
+                        !(stackIter->m_classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT))
+                    {
+                        nonUIAncestor = &*stackIter;
+                    }
+                }
+                if (!nonUIAncestor)
+                {
+                    return;
+                }
+
+                // Iterate over non serialized elements to see if any of them should be added
+                auto iter = nonUIAncestor->m_nonSerializedChildren.begin();
+                while (iter != nonUIAncestor->m_nonSerializedChildren.end())
+                {
+                    // If the parent of the element that was just created has the same name as the parent of any non serialized
+                    // elements, and the element that was just created is the element immediately before any non serialized element,
+                    // create that serialized element
+                    if (path == iter->first)
+                    {
+                        m_stack.push_back(iter->second);
+                        CacheAttributes();
+                        m_stack.back().m_entryClosed = true;
+                        m_visitor->VisitObjectBegin(*this, *this);
+                        m_visitor->VisitObjectEnd(*this, *this);
+                        m_stack.pop_back();
+
+                        iter = nonUIAncestor->m_nonSerializedChildren.erase(iter);
                     }
                     else
                     {
                         ++iter;
                     }
                 }
+            }
 
-                // Search through classData for UIElements, Groups and Editor Data.
-                if (classData->m_editData)
+            AZStd::optional<bool> HandleNodeAssociativeInterface(StackEntry& parentData, StackEntry& nodeData)
+            {
+                if (parentData.m_classData && parentData.m_classData->m_container)
                 {
-                    const char* name = "";
-                    for (auto eltIt = classData->m_editData->m_elements.begin(); eltIt != classData->m_editData->m_elements.end(); ++eltIt)
+                    auto& containerInfo = parentData.m_classData->m_container;
+                    AZ::SerializeContext::IDataContainer::IAssociativeDataContainer* parentAssociativeInterface =
+                        containerInfo->GetAssociativeContainerInterface();
+
+                    if (parentAssociativeInterface)
                     {
-                        if (
-                            eltIt->m_elementId == AZ::Edit::ClassElements::Group ||
-                            eltIt->m_elementId == AZ::Edit::ClassElements::UIElement)
+                        if (nodeData.m_instance == parentAssociativeInterface->GetValueByKey(parentData.m_instance, nodeData.m_instance))
                         {
-                            AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
-                            UIElement->m_editData = &*eltIt;
-                            UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
-                            StackEntry entry = { parentData.m_instance, parentData.m_instance, classData->m_typeId, classData, UIElement };
-                            auto elementPair = AZStd::pair<const char*, StackEntry>(name, entry);
-                            m_nonSerializedElements.push_back(elementPair);
-                        }
+                            // the element *is* the key. This is some kind of set and has only one read-only value per entry
+                            nodeData.m_skipLabel = true;
+                            nodeData.m_disableEditor = true;
 
-                        // Keep track of the last valid element name
-                        if (eltIt->m_name && strlen(eltIt->m_name) != 0)
-                        {
-                            name = eltIt->m_name;
-                        }
-                    }
-                }
-                
-                // Push the current node into the stack
-                m_stack.push_back(
-                    { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
-                StackEntry* nodeData = &m_stack.back();
-                nodeData->m_path = AZStd::move(path);
-
-                // If our parent node is disabled then we should inherit its disabled state
-                if (parentData.m_disableEditor || parentData.m_isAncestorDisabled)
-                {
-                    nodeData->m_isAncestorDisabled = true;
-                }
-                else if (classElement && classElement->m_editData)
-                {
-                    if (auto readOnlyAttribute = classElement->m_editData->FindAttribute(AZ::Crc32("ReadOnly")); readOnlyAttribute)
-                    {
-                        Dom::Value readOnlyValue;
-                        if (readOnlyAttribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
-                        {
-                            readOnlyValue = readOnlyAttribute->DomInvoke(instance, Dom::Value(Dom::Type::Array));
+                            // TODO: if preferred, we can still include a label for set elements,
+                            // in this case, the stringified value
+                            /*  GetValueStringHelper(
+                                nodeData->m_instance,
+                                nodeData->m_classData,
+                                nodeData->m_classElement,
+                                m_serializeContext,
+                                nodeData->m_labelOverride); */
                         }
                         else
                         {
-                            readOnlyValue = readOnlyAttribute->GetAsDomValue(instance);
+                            // parent is a real associative container with pair<> children,
+                            // extract the info from the parent and just show label/editor pairs
+                            nodeData.m_extractKeyedPair = true;
+                            nodeData.m_parentContainerInfo = parentData.m_classData->m_container;
+                            nodeData.m_parentContainerOverride = parentData.m_instance;
+                            nodeData.m_containerElementOverride = nodeData.m_instance;
+                            nodeData.m_entryClosed = true;
+                            return true;
                         }
-
-                        if (readOnlyValue.IsBool())
-                        {
-                            nodeData->m_disableEditor |= readOnlyValue.GetBool();
-                        }
-                        else
-                        {
-                            AZ_Warning("LegacyReflectionBridge", false, "ReadOnly attribute yielded non-bool Value");
-                        }
-                    }
-                }
-
-                if (parentAssociativeInterface)
-                {
-                    if (nodeData->m_instance ==
-                        parentAssociativeInterface->GetValueByKey(parentData.m_instance, nodeData->m_instance))
-                    {
-                        // the element *is* the key. This is some kind of set and has only one read-only value per entry
-                        nodeData->m_skipLabel = true;
-                        nodeData->m_disableEditor = true;
-
-                        // TODO: if preferred, we can still include a label for set elements,
-                        // in this case, the stringified value
-                        /*  GetValueStringHelper(
-                            nodeData->m_instance,
-                            nodeData->m_classData,
-                            nodeData->m_classElement,
-                            m_serializeContext,
-                            nodeData->m_labelOverride); */
-                    }
-                    else
-                    {
-                        // parent is a real associative container with pair<> children,
-                        // extract the info from the parent and just show label/editor pairs
-                        nodeData->m_extractKeyedPair = true;
-                        nodeData->m_parentContainerInfo = parentData.m_classData->m_container;
-                        nodeData->m_parentContainerOverride = parentData.m_instance;
-                        nodeData->m_containerElementOverride = instance;
-                        nodeData->m_entryClosed = true;
-                        return true;
                     }
                 }
 
                 if (parentData.m_extractKeyedPair)
                 {
-                    // alternate behavoir for the pair children. The first is the key, stringify it
+                    // alternate behavior for the pair children. The first is the key, stringify it
                     if (parentData.m_childElementIndex % 2 == 0)
                     {
                         // store the label override in the parent for the next child to consume
                         GetValueStringHelper(
-                            nodeData->m_instance,
-                            nodeData->m_classData,
-                            nodeData->m_classElement,
+                            nodeData.m_instance,
+                            nodeData.m_classData,
+                            nodeData.m_classElement,
                             m_serializeContext,
                             parentData.m_labelOverride);
-                        nodeData->m_entryClosed = true;
+                        nodeData.m_entryClosed = true;
                         return true;
                     }
                     else // the second is the value, make an editor as normal
                     {
                         // this is the second pair<> child, consume the label override stored above
-                        nodeData->m_labelOverride = parentData.m_labelOverride;
+                        nodeData.m_labelOverride = parentData.m_labelOverride;
                     }
+                }
+
+                return AZStd::nullopt;
+            }
+
+            AZStd::optional<bool> HandleNodeAttributes(StackEntry& parentData, StackEntry& nodeData)
+            {
+                // If our parent node is disabled then we should inherit its disabled state
+                if (parentData.m_disableEditor || parentData.m_isAncestorDisabled)
+                {
+                    nodeData.m_isAncestorDisabled = true;
                 }
 
                 // Cache attributes for the current node. Attribute data will be used in ReflectionAdapter.
                 CacheAttributes();
 
-                // Inherit the change notify attribute from our parent
-                const Name changeNotify = Name("ChangeNotify");
-                Dom::Value changeNotifyValue = Find(changeNotify);
-                if (changeNotifyValue.IsNull())
-                {
-                    changeNotifyValue = Find(Name(), changeNotify, parentData);
-                    if (!changeNotifyValue.IsNull())
-                    {
-                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotify, changeNotifyValue });
-                    }
-                }
+                // Inherit the change notify attribute from our parent, if it exists
+                InheritChangeNotify(parentData, nodeData);
 
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
-                Dom::Value enumTypeValue = Find(EnumTypeAttribute.GetName());
-                auto enumTypeId = EnumTypeAttribute.DomToValue(enumTypeValue);
+                AZStd::optional<AZ::TypeId> enumTypeId = {};
+                if (auto enumTypeValue = Find(EnumTypeAttribute.GetName()); enumTypeValue)
+                {
+                    enumTypeId = EnumTypeAttribute.DomToValue(*enumTypeValue);
+                }
 
-                const AZ::TypeId* typeIdForHandler = &nodeData->m_typeId;
+                const AZ::TypeId* typeIdForHandler = &nodeData.m_typeId;
                 if (enumTypeId.has_value())
                 {
                     typeIdForHandler = &enumTypeId.value();
                 }
+
                 if (auto handlerIt = m_handlers.find(*typeIdForHandler); handlerIt != m_handlers.end())
                 {
-                    nodeData->m_entryClosed = true;
+                    nodeData.m_entryClosed = true;
                     return handlerIt->second();
                 }
 
+                return AZStd::nullopt;
+            }
+
+            bool BeginNode(
+                void* instance, const AZ::SerializeContext::ClassData* classData, const AZ::SerializeContext::ClassElement* classElement)
+            {
+                // Prepare the node references for the handlers.
+                StackEntry& parentData = m_stack.back();
+
+                if (classElement)
+                {
+                    // Ensure our instance pointer is resolved and safe to bind to member attributes.
+                    instance = AZ::Utils::ResolvePointer(instance, *classElement, *m_serializeContext);
+
+                    // Since we iterate over the SerializeContext, we end up processing all elements even if they
+                    // weren't exposed to the EditContext, so we need to skip any nodes that are missing m_editData.
+                    // There are caveats:
+                    //   - We still need to process FLG_BASE_CLASS nodes because there could be sub-classes that are exposed to the
+                    //   EditContext.
+                    //   - Elements in a container will have empty m_editData, so we need to still include nodes who are members of
+                    //   containers.
+                    if (!classElement->m_editData && ((classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_BASE_CLASS) == 0) &&
+                        !(parentData.m_classData && parentData.m_classData->m_container))
+                    {
+                        m_nodeWasSkipped = true;
+                        return false;
+                    }
+                }
+
+                // Set the pointerLevel to 0 as the pointer is resolved by the AZ::Utils::ResolvePointer
+                constexpr AZ::u32 pointerLevel = 0;
+
+
+                // search up the stack for the "true parent", which is the last entry created by the serialize enumerate itself
+                void* instanceToInvoke = instance;
+                for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
+                {
+                    auto* currInstance = rIter->GetRawInstance();
+                    if (rIter->m_createdByEnumerate && currInstance)
+                    {
+                        instanceToInvoke = currInstance;
+                        break;
+                    }
+                }
+
+                StackEntry newEntry = {
+                    instance, instanceToInvoke, classData ? classData->m_typeId : Uuid::CreateNull(), pointerLevel,
+                    classData, classElement
+                };
+                newEntry.m_createdByEnumerate = true;
+
+                StackEntry& nodeData = m_stack.emplace_back(newEntry);
+
+                // Generate this node's path (will be stored in nodeData.m_path)
+                GenerateNodePath(parentData, nodeData);
+
+                // If this instance is part of a group in its parent, postpone this iteration.
+                // It will be re-executed in the parent's EndNode.
+                if (HandleNodeInParentGroup(nodeData, parentData))
+                {
+                    m_nodeWasSkipped = true;
+                    // Return false to prevent descendants from being enumerated.
+                    return false;
+                }
+
+                HandleNodeGroups(nodeData);
+                HandleNodeUiElementsRetrieval(nodeData);
+
+                if (auto result = HandleNodeAssociativeInterface(parentData, nodeData); result.has_value())
+                {
+                    return result.value();
+                }
+
+                if (auto result = HandleNodeAttributes(parentData, nodeData); result.has_value())
+                {
+                    return result.value();
+                }
+
+                // handle direct descendant UI element creation
+                HandleNodeUiElementsCreation(nodeData.m_path);
                 m_visitor->VisitObjectBegin(*this, *this);
 
                 return true;
@@ -462,68 +733,102 @@ namespace AZ::Reflection
 
             bool EndNode()
             {
-                StackEntry& nodeData = m_stack.back();
-                if (!nodeData.m_entryClosed)
+                // Return early if node was skipped.
+                if (m_nodeWasSkipped)
                 {
-                    m_visitor->VisitObjectEnd(*this, *this);
+                    m_nodeWasSkipped = false;
+                    return true;
                 }
-                m_stack.pop_back();
-                if (!nodeData.m_group.empty())
+
+                // Use current node before popping it from the stack.
                 {
-                    EndNode();
-                }
-                // Iterate over non serialized elements to see if any of them should be added
-                const char* elementName = "";
-                if (nodeData.m_classElement&& nodeData.m_classElement->m_editData&& nodeData.m_classElement->m_editData->m_name)
-                {
-                    elementName = nodeData.m_classElement->m_editData->m_name;
-                }
-                auto iter = m_nonSerializedElements.begin();
-                while (iter != m_nonSerializedElements.end())
-                {
-                    // If the parent of the element that was just created has the same name as the parent of any non serialized elements,
-                    // and the element that was just created is the element immediately before any non serialized element, create that serialized element
-                    if (m_stack.back().m_classData && m_stack.back().m_classData->m_name == iter->second.m_classData->m_name &&
-                        elementName == iter->first)
+                    StackEntry& nodeData = m_stack.back();
+
+                    if (!nodeData.m_entryClosed)
                     {
-                        if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::Group)
+                        m_visitor->VisitObjectEnd(*this, *this);
+                    }
+
+                    // Handle groups
+                    if (nodeData.m_groups.size() > 0)
+                    {
+                        for (auto& groupPair : nodeData.m_groups)
                         {
-                            AZStd::string_view groupName = iter->second.m_classElement->m_editData->m_description;
-                            if (!m_stack.back().m_group.empty())
+                            if (groupPair.second.has_value())
                             {
-                                // If we're superceding a previous group, finish visiting the previous group first
+                                auto& groupStackEntry = groupPair.second.value();
+                                groupStackEntry.m_group = groupPair.first;
+
+                                if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement)
+                                {
+                                    groupStackEntry.m_skipHandler = true;
+                                }
+                                auto& parentEntry = m_stack.back();
+                                m_stack.push_back(groupStackEntry);
+                                CacheAttributes();
+                                InheritChangeNotify(parentEntry, m_stack.back());
+                                m_visitor->VisitObjectBegin(*this, *this);
+                            }
+
+                            AZStd::string path = AZStd::string::format("%s/%s", nodeData.m_path.c_str(), groupPair.first.c_str());
+                            HandleNodeUiElementsCreation(path);
+
+                            for (const auto& groupEntry : nodeData.m_groupEntries[groupPair.first])
+                            {
+                                if (groupPair.second.has_value() &&
+                                    groupPair.second.value().m_classElement->m_editData->m_serializeClassElement ==
+                                        groupEntry.m_classElement)
+                                {
+                                    // skip the bool that represented the group toggle, it's already in-line with the group
+                                    continue;
+                                }
+                                auto& parentEntry = m_stack.back();
+                                StackEntry& newStackEntry = m_stack.emplace_back(StackEntry{ groupEntry.m_instance, nullptr, AZ::TypeId(), groupEntry.m_pointerLevel,
+                                    groupEntry.m_classData, groupEntry.m_classElement });
+                                InheritChangeNotify(parentEntry, newStackEntry);
+                                m_serializeContext->EnumerateInstance(
+                                    m_enumerateContext,
+                                    newStackEntry.m_instance,
+                                    newStackEntry.m_typeId,
+                                    newStackEntry.m_classData,
+                                    newStackEntry.m_classElement);
+                                m_stack.pop_back();
+                            }
+
+                            if (groupPair.second.has_value())
+                            {
                                 m_visitor->VisitObjectEnd(*this, *this);
                                 m_stack.pop_back();
                             }
-                            if (!groupName.empty())
-                            {
-                                // If our group has a name, we should actually call VisitObjectEnd, so continue with the group set
-                                m_stack.push_back(iter->second);
-                                m_stack.back().m_group = groupName;
-                                CacheAttributes();
-                                m_visitor->VisitObjectBegin(*this, *this);
-                            }
                         }
-                        else if (iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
-                        {
-                            m_stack.push_back(iter->second);
-                            CacheAttributes();
-                            m_stack.back().m_entryClosed = true;
-                            m_visitor->VisitObjectBegin(*this, *this);
-                            m_visitor->VisitObjectEnd(*this, *this);
-                            m_stack.pop_back();
-                        }
-                        iter = m_nonSerializedElements.erase(iter);
+
+                        nodeData.m_propertyToGroupMap.clear();
+                        nodeData.m_groupEntries.clear();
+                        nodeData.m_groups.clear();
                     }
-                    else
-                    {
-                        ++iter;
-                    }
+
+                    auto nodePath = nodeData.m_path;
+                    m_stack.pop_back();
+
+                    // handle creation of an UI elements that were slated to come directly after this element
+                    HandleNodeUiElementsCreation(nodePath);
                 }
-                if (!m_stack.empty() && nodeData.m_computedVisibility == DocumentPropertyEditor::Nodes::PropertyVisibility::Show)
+
+                // The back of the stack now holds the parent.
                 {
-                    ++m_stack.back().m_childElementIndex;
+                    StackEntry& parentData = m_stack.back();
+
+                    if (!parentData.m_group.empty())
+                    {
+                        EndNode();
+                    }
+
+                    if (!m_stack.empty() && parentData.m_computedVisibility == DocumentPropertyEditor::Nodes::PropertyVisibility::Show)
+                    {
+                        ++m_stack.back().m_childElementIndex;
+                    }
                 }
+
                 return true;
             }
 
@@ -538,14 +843,72 @@ namespace AZ::Reflection
                 return classData ? classData->m_name : "<unregistered type>";
             }
 
+            // This returns a pointer to an instance that can be cast to a <TypeId>* for that instance
+            // Even if the StackEntry::m_instance is referencing a <TypeId>**, a pointer is returned that can be casted to <TypeId>*
             void* Get() override
             {
-                return m_stack.back().m_instance;
+                StackEntry& topEntry = m_stack.back();
+                return topEntry.GetRawInstance();
             }
 
             const void* Get() const override
             {
-                return m_stack.back().m_instance;
+                const StackEntry& topEntry = m_stack.back();
+                return topEntry.GetRawInstance();
+            }
+
+            AZStd::string_view GetNodeDisplayLabel(StackEntry& nodeData, AZStd::fixed_string<128>& labelAttributeBuffer)
+            {
+                using DocumentPropertyEditor::Nodes::PropertyEditor;
+
+                // First check for overrides or for presence of parent container
+                if (!nodeData.m_labelOverride.empty())
+                {
+                    return nodeData.m_labelOverride;
+                }
+                else if (auto nameLabelOverrideAttribute = Find(PropertyEditor::NameLabelOverride.GetName()); nameLabelOverrideAttribute)
+                {
+                    nodeData.m_labelOverride = PropertyEditor::NameLabelOverride.DomToValue(*nameLabelOverrideAttribute).value_or("");
+                    return nodeData.m_labelOverride;
+                }
+                else if (!nodeData.m_group.empty())
+                {
+                    return nodeData.m_group;
+                }
+                else if (m_stack.size() > 1)
+                {
+                    const StackEntry& parentNode = m_stack[m_stack.size() - 2];
+                    if (parentNode.m_classData && parentNode.m_classData->m_container)
+                    {
+                        labelAttributeBuffer = AZStd::fixed_string<128>::format("[%zu]", parentNode.m_childElementIndex);
+                        return labelAttributeBuffer;
+                    }
+                }
+
+                // No overrides, so check the element edit data, class data, and class element
+                if (const auto metadata = nodeData.GetElementEditMetadata(); metadata && metadata->m_name)
+                {
+                    return metadata->m_name;
+                }
+                else if (nodeData.m_classData)
+                {
+                    if (nodeData.m_classData->m_editData && nodeData.m_classData->m_editData->m_name)
+                    {
+                        return nodeData.m_classData->m_editData->m_name;
+                    }
+                    else if (
+                        nodeData.m_classElement && nodeData.m_classElement->m_name && nodeData.m_classData->m_container &&
+                        nodeData.m_classElement->m_nameCrc != nodeData.m_classData->m_container->GetDefaultElementNameCrc())
+                    {
+                        return nodeData.m_classElement->m_name;
+                    }
+                    else if (nodeData.m_classData->m_name)
+                    {
+                        return nodeData.m_classData->m_name;
+                    }
+                }
+
+                return {};
             }
 
             void CacheAttributes()
@@ -591,9 +954,18 @@ namespace AZ::Reflection
 
                 auto checkAttribute = [&](const AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
+                    bool describesChildren = it->second->m_describesChildren;
                     if (it->second->m_describesChildren != shouldDescribeChildren)
                     {
                         return;
+                    }
+
+                    // The m_describesChildren flag is true if the attribute is an ElementAttribute,
+                    // in which case the instance we want to invoke on is the actual container element
+                    // instance, as opposed to the usual invoke instance.
+                    if (describesChildren)
+                    {
+                        instance = nodeData.m_instance;
                     }
 
                     Name name = propertyEditorSystem->LookupNameFromId(it->first);
@@ -608,25 +980,78 @@ namespace AZ::Reflection
                         }
                         visitedAttributes.insert(name);
 
-                        // Handle visibility calculations internally, as we calculate and emit an aggregate visiblity value.
+                        // Handle visibility calculations internally, as we calculate and emit an aggregate visibility value.
+                        // We also need to handle special cases here, because the Visibility attribute supports 3 different value types:
+                        //      1. AZ::Crc32 - This is the default
+                        //      2. AZ::u32 - This allows the user to specify a value of 1/0 for Show/Hide, respectively
+                        //      3. bool - This allows the user to specify true/false for Show/Hide, respectively
+                        //
+                        // We need to return out of checkAttribute for Visibility attributes since the attributeValue handling
+                        // below doesn't account for these special cases. The Visibility attribute instead gets cached at
+                        // the end of the CacheAttributes method after it has done further visibility computations.
                         if (name == PropertyEditor::Visibility.GetName())
                         {
-                            visibility = PropertyEditor::Visibility
-                                             .DomToValue(PropertyEditor::Visibility.LegacyAttributeToDomValue(instance, it->second))
-                                             .value_or(visibility);
+                            auto visibilityValue = PropertyEditor::Visibility.DomToValue(
+                                PropertyEditor::Visibility.LegacyAttributeToDomValue(instance, it->second));
+
+                            if (visibilityValue.has_value())
+                            {
+                                visibility = visibilityValue.value();
+
+                                // The PropertyEditor::Visibility is actually an AZ::u32 enum class, so we need
+                                // to check here if we read in a 0 or 1 instead of a hash so we can handle
+                                // those special cases.
+                                AZ::u32 visibilityNumericValue = static_cast<AZ::u32>(visibility);
+                                switch (visibilityNumericValue)
+                                {
+                                case 0:
+                                    visibility = PropertyVisibility::Hide;
+                                    break;
+                                case 1:
+                                    visibility = PropertyVisibility::Show;
+                                    break;
+                                default:
+                                    break;
+                                }
+                                return;
+                            }
+                            else if (
+                                auto visibilityBoolValue =
+                                    VisibilityBoolean.DomToValue(VisibilityBoolean.LegacyAttributeToDomValue(instance, it->second)))
+                            {
+                                bool isVisible = visibilityBoolValue.value();
+                                visibility = isVisible ? PropertyVisibility::Show : PropertyVisibility::Hide;
+                                return;
+                            }
+                            else if (auto genericVisibility = ReadGenericAttributeToDomValue(instance, it->second))
+                            {
+                                // Fallback to generic read if LegacyAttributeToDomValue fails
+                                visibility = PropertyEditor::Visibility.DomToValue(genericVisibility.value()).value();
+                                return;
+                            }
+                        }
+                        // The legacy ReadOnly property needs to be converted into the Disabled node property.
+                        // If our ancestor is disabled we don't need to read the attribute because this node
+                        // will already be disabled as well.
+                        else if ((name == PropertyEditor::ReadOnly.GetName()) && !nodeData.m_isAncestorDisabled)
+                        {
+                            nodeData.m_disableEditor |=
+                                PropertyEditor::ReadOnly
+                                    .DomToValue(PropertyEditor::ReadOnly.LegacyAttributeToDomValue(instance, it->second))
+                                    .value_or(nodeData.m_disableEditor);
                         }
 
                         // See if any registered attribute definitions can read this attribute
                         Dom::Value attributeValue;
-                        propertyEditorSystem->EnumerateRegisteredAttributes(
-                            name,
-                            [&](const DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+
+                        auto readValue = [&](const DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                        {
+                            if (attributeValue.IsNull())
                             {
-                                if (attributeValue.IsNull())
-                                {
-                                    attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
-                                }
-                            });
+                                attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
+                            }
+                        };
+                        propertyEditorSystem->EnumerateRegisteredAttributes(name, readValue);
 
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
@@ -650,14 +1075,18 @@ namespace AZ::Reflection
                                 genericValueCache.ArrayPushBack(attributeValue);
                                 return;
                             }
-                            // Collect EnumValueKey attributes unless this node has an EnumValues or GenericValueList
-                            // attribute. If an EnumValues or GenericValueList attribute is present we do not cache
+                            // Collect EnumValueKey attributes unless this node has an EnumValues, GenericValue or GenericValueList
+                            // attribute. If an EnumValues, GenericValue or GenericValueList attribute is present we do not cache
                             // because such nodes also have internal EnumValueKey attributes that we won't use.
                             // The cached values will be stored as a GenericValueList attribute.
-                            if (name == enumValueKeyName &&
-                                !visitedAttributes.contains(enumValuesCrcName) &&
-                                !visitedAttributes.contains(genericValueListName))
+                            if (name == enumValueKeyName)
                             {
+                                if (visitedAttributes.contains(enumValuesCrcName) || visitedAttributes.contains(genericValueListName) ||
+                                    visitedAttributes.contains(genericValueName))
+                                {
+                                    return;
+                                }
+
                                 genericValueCache.ArrayPushBack(attributeValue);
                                 // Forcing the node's typeId to AZ::u64 so the correct property handler will be chosen
                                 // in the PropertyEditorSystem.
@@ -688,15 +1117,11 @@ namespace AZ::Reflection
                         {
                             if (!isParentAttribute)
                             {
-                                if (elementEditData->m_elementId)
+                                if (!nodeData.m_skipHandler && elementEditData->m_elementId)
                                 {
                                     handlerName = propertyEditorSystem->LookupNameFromId(elementEditData->m_elementId);
                                 }
 
-                                if (elementEditData->m_name)
-                                {
-                                    labelAttributeValue = elementEditData->m_name;
-                                }
                                 if (elementEditData->m_description)
                                 {
                                     descriptionAttributeValue = elementEditData->m_description;
@@ -705,13 +1130,8 @@ namespace AZ::Reflection
 
                             for (auto it = elementEditData->m_attributes.begin(); it != elementEditData->m_attributes.end(); ++it)
                             {
-                                checkAttribute(it, nodeData.m_parentInstance, isParentAttribute);
+                                checkAttribute(it, nodeData.m_instanceToInvoke, isParentAttribute);
                             }
-                        }
-
-                        if (labelAttributeValue.empty() && nodeData.m_classElement->m_name)
-                        {
-                            labelAttributeValue = nodeData.m_classElement->m_name;
                         }
 
                         for (auto it = nodeData.m_classElement->m_attributes.begin(); it != nodeData.m_classElement->m_attributes.end();
@@ -720,22 +1140,12 @@ namespace AZ::Reflection
                             AZ::AttributePair pair;
                             pair.first = it->first;
                             pair.second = it->second.get();
-                            checkAttribute(&pair, nodeData.m_parentInstance, isParentAttribute);
+                            checkAttribute(&pair, nodeData.m_instanceToInvoke, isParentAttribute);
                         }
                     }
 
                     if (nodeData.m_classData)
                     {
-                        if (!isParentAttribute && labelAttributeValue.empty() && nodeData.m_classData->m_name)
-                        {
-                            // Don't inject labels from class data for UI elements
-                            if (nodeData.m_classElement == nullptr ||
-                                (nodeData.m_classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT) == 0)
-                            {
-                                labelAttributeValue = nodeData.m_classData->m_name;
-                            }
-                        }
-
                         if (!isParentAttribute && descriptionAttributeValue.empty() && nodeData.m_classData->m_editData &&
                             nodeData.m_classData->m_editData->m_description)
                         {
@@ -748,6 +1158,27 @@ namespace AZ::Reflection
                             pair.first = it->first;
                             pair.second = it->second.get();
                             checkAttribute(&pair, nodeData.m_instance, isParentAttribute);
+                        }
+
+                        // Lastly, check the AZ::SerializeContext::ClassData -> AZ::Edit::ClassData -> EditorData for attributes
+                        if (const auto* editClassData = nodeData.m_classData->m_editData; editClassData && !isParentAttribute)
+                        {
+                            if (const auto* classEditorData = editClassData->FindElementData(AZ::Edit::ClassElements::EditorData))
+                            {
+                                // Ignore EditorData attributes for UIElements (e.g. groups)
+                                bool ignore = false;
+                                if (nodeData.m_classElement)
+                                {
+                                    ignore = (nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_UI_ELEMENT) != 0;
+                                }
+                                if (!ignore)
+                                {
+                                    for (auto it = classEditorData->m_attributes.begin(); it != classEditorData->m_attributes.end(); ++it)
+                                    {
+                                        checkAttribute(it, nodeData.m_instanceToInvoke, isParentAttribute);
+                                    }
+                                }
+                            }
                         }
                     }
                 };
@@ -784,28 +1215,43 @@ namespace AZ::Reflection
                                   Dom::Utils::ValueFromType<void*>(parentNode.m_containerElementOverride) });
                         }
 
-                        if (nodeData.m_labelOverride.empty())
+                        auto canBeModifiedValue =
+                            Find(Name(), DocumentPropertyEditor::Nodes::Container::ContainerCanBeModified.GetName(), parentNode);
+                        if (canBeModifiedValue)
                         {
-                            labelAttributeBuffer = decltype(labelAttributeBuffer)::format("[%zu]", parentNode.m_childElementIndex);
-                            labelAttributeValue = labelAttributeBuffer;
+                            bool canBeModified = canBeModifiedValue->IsBool() && canBeModifiedValue->GetBool();
+                            if (!canBeModified)
+                            {
+                                nodeData.m_cachedAttributes.push_back(
+                                    { group, DescriptorAttributes::ParentContainerCanBeModified, Dom::Value(canBeModified) });
+                            }
+                        }
+                    }
+
+                    // Check for edge case where the parent node has a parent container, but is set to ShowChildrenOnly
+                    // which would result in the container element missing the 'Remove' button. This replicates the parent container
+                    // info to its child node instead so that the 'Remove' button can still be shown.
+                    auto parentContainer = Find(group, DescriptorAttributes::ParentContainer, parentNode);
+                    if ((parentNode.m_computedVisibility == PropertyVisibility::ShowChildrenOnly) && parentContainer)
+                    {
+                        nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::ParentContainer, *parentContainer });
+
+                        auto parentContainerInstance = Find(group, DescriptorAttributes::ParentContainerInstance, parentNode);
+                        if (parentContainerInstance)
+                        {
+                            nodeData.m_cachedAttributes.push_back(
+                                { group, DescriptorAttributes::ParentContainerInstance, *parentContainerInstance });
                         }
                     }
                 }
 
                 if (genericValueCache.ArraySize() > 0)
                 {
-                    nodeData.m_cachedAttributes.push_back({
-                        group, DocumentPropertyEditor::Nodes::PropertyEditor::GenericValueList<AZ::u64>.GetName(), genericValueCache });
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, DocumentPropertyEditor::Nodes::PropertyEditor::GenericValueList<AZ::u64>.GetName(), genericValueCache });
                 }
 
-                if (!nodeData.m_labelOverride.empty())
-                {
-                    labelAttributeValue = nodeData.m_labelOverride;
-                }
-                else if (!nodeData.m_group.empty())
-                {
-                    labelAttributeValue = nodeData.m_group;
-                }
+                labelAttributeValue = GetNodeDisplayLabel(nodeData, labelAttributeBuffer);
 
                 if (!handlerName.IsEmpty())
                 {
@@ -834,19 +1280,28 @@ namespace AZ::Reflection
                 if (nodeData.m_disableEditor)
                 {
                     nodeData.m_cachedAttributes.push_back(
-                        { group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Disabled.GetName(), Dom::Value(true) });
+                        { group, AZ::DocumentPropertyEditor::Nodes::NodeWithVisiblityControl::Disabled.GetName(), Dom::Value(true) });
                 }
 
                 if (nodeData.m_isAncestorDisabled)
                 {
                     nodeData.m_cachedAttributes.push_back(
-                        { group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::AncestorDisabled.GetName(), Dom::Value(true) });
+                        { group,
+                          AZ::DocumentPropertyEditor::Nodes::NodeWithVisiblityControl::AncestorDisabled.GetName(),
+                          Dom::Value(true) });
                 }
 
-                if (nodeData.m_classData->m_container)
+                if (nodeData.m_classData && nodeData.m_classData->m_container)
                 {
                     nodeData.m_cachedAttributes.push_back(
                         { group, DescriptorAttributes::Container, Dom::Utils::ValueFromType<void*>(nodeData.m_classData->m_container) });
+                }
+
+                // RpePropertyHandlerWrapper would cache the parent info from which a wrapped handler may retrieve the parent instance.
+                if (nodeData.m_instanceToInvoke)
+                {
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, PropertyEditor::ParentValue.GetName(), Dom::Utils::ValueFromType<void*>(nodeData.m_instanceToInvoke) });
                 }
 
                 // Calculate our visibility, going through parent nodes in reverse order to see if we should be hidden
@@ -863,7 +1318,8 @@ namespace AZ::Reflection
 
                 // If this node has no edit data and is not the child of a container, only show its children
                 auto parentData = m_stack.end() - 2;
-                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData && !parentData->m_classData->m_container)
+                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData &&
+                    (parentData->m_classData && !parentData->m_classData->m_container))
                 {
                     visibility = DocumentPropertyEditor::Nodes::PropertyVisibility::ShowChildrenOnly;
                 }
@@ -873,34 +1329,84 @@ namespace AZ::Reflection
                     { group, PropertyEditor::Visibility.GetName(), Dom::Utils::ValueFromType(visibility) });
             }
 
-            AttributeDataType Find(Name name) const override
+            void InheritChangeNotify(StackEntry& parentData, StackEntry& nodeData)
+            {
+                const auto changeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::ChangeNotify.GetName();
+                auto parentValue = Find(Name(), changeNotifyName, parentData);
+                if (parentValue && !parentValue->IsNull())
+                {
+                    Dom::Value* existingValue = nullptr;
+                    auto it = AZStd::find_if(
+                        nodeData.m_cachedAttributes.begin(),
+                        nodeData.m_cachedAttributes.end(),
+                        [&changeNotifyName](const AttributeData& attributeData)
+                        {
+                            return (attributeData.m_name == changeNotifyName);
+                        });
+
+                    if (it != nodeData.m_cachedAttributes.end())
+                    {
+                        existingValue = &it->m_value;
+                    }
+
+                    auto addValueToArray = [](const Dom::Value& source, Dom::Value& destination)
+                    {
+                        if (source.IsArray())
+                        {
+                            auto& destinationArray = destination.GetMutableArray();
+                            destinationArray.insert(destinationArray.end(), source.ArrayBegin(), source.ArrayEnd());
+                        }
+                        else
+                        {
+                            destination.ArrayPushBack(source);
+                        }
+                    };
+
+                    // calling order matters! Add parent's attributes first then existing attribute
+                    if (existingValue)
+                    {
+                        Dom::Value newChangeNotifyValue;
+                        newChangeNotifyValue.SetArray();
+                        addValueToArray(*parentValue, newChangeNotifyValue);
+                        addValueToArray(*existingValue, newChangeNotifyValue);
+                        it->m_value = newChangeNotifyValue;
+                    }
+                    else
+                    {
+                        // no existing changeNotify, so let's just inherit the parent's one
+                        nodeData.m_cachedAttributes.push_back({ Name(), changeNotifyName, *parentValue });
+                    }
+                }
+            }
+
+            const AttributeDataType* Find(Name name) const override
             {
                 return Find(Name(), AZStd::move(name));
             }
 
-            AttributeDataType Find(Name group, Name name) const override
+            const AttributeDataType* Find(Name group, Name name) const override
             {
                 const StackEntry& nodeData = m_stack.back();
                 for (auto it = nodeData.m_cachedAttributes.begin(); it != nodeData.m_cachedAttributes.end(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {
-                        return it->m_value;
+                        return &(it->m_value);
                     }
                 }
-                return Dom::Value();
+                return nullptr;
             }
 
-            AttributeDataType Find(Name group, Name name, StackEntry& parentData) const
+            const AttributeDataType* Find(Name group, Name name, StackEntry& parentData) const
             {
                 for (auto it = parentData.m_cachedAttributes.begin(); it != parentData.m_cachedAttributes.end(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {
-                        return it->m_value;
+                        return &(it->m_value);
                     }
                 }
-                return Dom::Value();
+                return nullptr;
             }
 
             void ListAttributes(const IterationCallback& callback) const override
