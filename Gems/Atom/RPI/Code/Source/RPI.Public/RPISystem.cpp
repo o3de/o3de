@@ -80,21 +80,6 @@ namespace AZ
 
         void RPISystem::Initialize(const RPISystemDescriptor& rpiSystemDescriptor)
         {
-            //If xr system is registered with RPI init xr instance
-            if (m_xrSystem)
-            {
-                AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
-                // UnRegister xr system if a Fail ResultCode is returned
-                if (resultCode == AZ::RHI::ResultCode::Fail)
-                {
-                    UnregisterXRSystem();
-                    AZ_Error(
-                        "RPISystem",
-                        resultCode == AZ::RHI::ResultCode::Success,
-                        "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled.");
-                }
-            }
-
             // Init RHI device(s)
             m_rhiSystem.InitDevices(AzFramework::StringFunc::Equal(RHI::GetCommandLineValue("enableMultipleDevices").c_str(), "enable") ? RHI::InitDevicesFlags::MultiDevice : RHI::InitDevicesFlags::SingleDevice);
 
@@ -114,6 +99,7 @@ namespace AZ
             m_passSystem.Init();
             m_featureProcessorFactory.Init();
             m_querySystem.Init(m_descriptor.m_gpuQuerySystemDescriptor);
+            InitXRSystem();
 
             Interface<RPISystemInterface>::Register(this);
 
@@ -295,6 +281,29 @@ namespace AZ
         {
             const AZ::TimeUs currentSimulationTimeUs = AZ::GetRealElapsedTimeUs();
             return AZ::TimeUsToSeconds(currentSimulationTimeUs);
+        }
+
+        void RPISystem::InitXRSystem()
+        {
+            if (!m_xrSystem)
+            {
+                return;
+            }
+
+            auto xrRender = m_xrSystem->GetRHIXRRenderingInterface();
+            if (!xrRender)
+            {
+                return;
+            }
+
+            RHI::Ptr<RHI::XRDeviceDescriptor> xrDescriptor = m_rhiSystem.GetDevice()->BuildXRDescriptor();
+            [[maybe_unused]] auto result = xrRender->CreateDevice(xrDescriptor.get());
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR device");
+            AZ::RHI::XRSessionDescriptor sessionDescriptor;
+            result = xrRender->CreateSession(&sessionDescriptor);
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR session");
+            result = xrRender->CreateSwapChain();
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR swapchain");
         }
 
         void RPISystem::RenderTick()

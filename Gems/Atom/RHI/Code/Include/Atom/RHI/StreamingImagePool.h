@@ -37,17 +37,22 @@ namespace AZ::RHI
     using CompleteCallback = AZStd::function<void()>;
 
     //! A structure used as an argument to StreamingImagePool::InitImage.
-    struct StreamingImageInitRequest
+    template <typename ImageClass>
+    struct StreamingImageInitRequestTemplate
     {
-        StreamingImageInitRequest() = default;
+        StreamingImageInitRequestTemplate() = default;
 
-        StreamingImageInitRequest(
-            Image& image,
+        StreamingImageInitRequestTemplate(
+            ImageClass& image,
             const ImageDescriptor& descriptor,
-            AZStd::span<const StreamingImageMipSlice> tailMipSlices);
+            AZStd::span<const StreamingImageMipSlice> tailMipSlices)
+            : m_image{&image}
+            , m_descriptor{descriptor}
+            , m_tailMipSlices{tailMipSlices}
+        {}
 
         /// The image to initialize.
-        Image* m_image = nullptr;
+        ImageClass* m_image = nullptr;
 
         /// The descriptor used to to initialize the image.
         ImageDescriptor m_descriptor;
@@ -59,12 +64,13 @@ namespace AZ::RHI
     };
 
     //! A structure used as an argument to StreamingImagePool::ExpandImage.
-    struct StreamingImageExpandRequest
+    template <typename ImageClass>
+    struct StreamingImageExpandRequestTemplate
     {
-        StreamingImageExpandRequest() = default;
+        StreamingImageExpandRequestTemplate() = default;
 
         /// The image with which to expand its mip chain.
-        Image* m_image = nullptr;
+        ImageClass* m_image = nullptr;
 
         //! A list of image mip slices used to expand the contents. The data *must*
         //! remain valid for the duration of the upload (until m_completeCallback
@@ -77,6 +83,9 @@ namespace AZ::RHI
         /// A function to call when the upload is complete. It will be called instantly if m_waitForUpload was set to true.
         CompleteCallback m_completeCallback;
     };
+
+    using StreamingImageInitRequest = StreamingImageInitRequestTemplate<Image>;
+    using StreamingImageExpandRequest = StreamingImageExpandRequestTemplate<Image>;
 
     class StreamingImagePool
         : public ImagePoolBase

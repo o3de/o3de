@@ -299,6 +299,12 @@ namespace AtomToolsFramework
                   "Enable source control for the application if it is available",
                   false),
               CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/IgnoreCacheFolder",
+                  "Ignore Files In Cache Folder",
+                  "This toggles whether or not files located in the cache folder appear in the asset browser, file selection dialogs, and "
+                  "during file enumeration. Changing this setting may require restarting the application to take effect in some areas.",
+                  true),
+              CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
                   "Update Interval When Active",
                   "Minimum delay between ticks (in milliseconds) when the application has focus",

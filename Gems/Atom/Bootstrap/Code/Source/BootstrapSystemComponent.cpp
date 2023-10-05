@@ -82,6 +82,7 @@ AZ_CVAR(uint32_t, r_width, 1920, nullptr, AZ::ConsoleFunctorFlags::DontReplicate
 AZ_CVAR(uint32_t, r_height, 1080, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
 AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
+AZ_CVAR(float, r_renderScale, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scale to apply to the window resolution.");
 
 namespace AZ
 {
@@ -224,6 +225,24 @@ namespace AZ
                         }
                     }
                 }
+
+                const AZStd::string renderScaleCvarName("r_renderScale");
+                if (pCmdLine->HasSwitch(renderScaleCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(renderScaleCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(renderScaleCvarName);
+                        if (AZ::StringFunc::LooksLikeFloat(valueStr.c_str()))
+                        {
+                            auto renderScale = AZ::StringFunc::ToFloat(valueStr.c_str());
+                            if (renderScale > 0)
+                            {
+                                r_renderScale = renderScale;
+                            }
+                        }
+                    }
+                }
             }
 
             void BootstrapSystemComponent::Activate()
@@ -232,7 +251,11 @@ namespace AZ
                 // LY editor create its own window which we can get its handle through AzFramework::WindowSystemNotificationBus::Handler's OnWindowCreated() function
                 AZ::ApplicationTypeQuery appType;
                 ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-                if (!appType.IsValid() || appType.IsGame())
+                if (appType.IsHeadless())
+                {
+                    m_nativeWindow = nullptr;
+                }
+                else if (!appType.IsValid() || appType.IsGame())
                 {
                     // GFX TODO - investigate window creation being part of the GameApplication.
 
@@ -243,7 +266,8 @@ namespace AZ
                     // command line arguments into cvars.
                     UpdateCVarsFromCommandLine();
 
-                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, r_width, r_height));
+                    auto windowSize = GetWindowResolution();
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, windowSize.m_width, windowSize.m_height));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
 
                     m_nativeWindow->Activate();
@@ -268,30 +292,21 @@ namespace AZ
                 Render::Bootstrap::DefaultWindowBus::Handler::BusConnect();
                 Render::Bootstrap::RequestBus::Handler::BusConnect();
 
+                // Listen for application's window creation/destruction (e.g. window is created/destroyed on Android when suspending the app)
+                AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
+
                 // delay one frame for Initialize which asset system is ready by then
                 AZ::TickBus::QueueFunction(
                     [this]()
                     {
                         Initialize();
-                        if (m_nativeWindow)
-                        {
-                            // wait until swapchain has been created before setting fullscreen state
-                            if (r_resolutionMode > 0u)
-                            {
-                                m_nativeWindow->SetEnableCustomizedResolution(true);
-                                m_nativeWindow->SetRenderResolution(AzFramework::WindowSize(r_width, r_height));
-                            }
-                            else
-                            {
-                                m_nativeWindow->SetEnableCustomizedResolution(false);
-                            }
-                            m_nativeWindow->SetFullScreenState(r_fullscreen);
-                        }
+                        SetWindowResolution();
                     });
             }
 
             void BootstrapSystemComponent::Deactivate()
             {
+                AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
                 Render::Bootstrap::RequestBus::Handler::BusDisconnect();
                 Render::Bootstrap::DefaultWindowBus::Handler::BusDisconnect();
 
@@ -300,7 +315,6 @@ namespace AZ
                 TickBus::Handler::BusDisconnect();
 
                 m_brdfTexture = nullptr;
-                m_xrVrsTexture = nullptr;
                 RemoveRenderPipeline();
                 DestroyDefaultScene();
 
@@ -364,7 +378,28 @@ namespace AZ
                             CreateDefaultRenderPipeline();
                         }
                     }
+                    SetWindowResolution();
                 }
+            }
+
+            void BootstrapSystemComponent::OnApplicationWindowCreated()
+            {
+                if (!m_nativeWindow)
+                {
+                    auto projectTitle = AZ::Utils::GetProjectDisplayName();
+                    auto windowSize = GetWindowResolution();
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, windowSize.m_width, windowSize.m_height));
+                    AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
+
+                    m_nativeWindow->Activate();
+
+                    OnWindowCreated(m_nativeWindow->GetWindowHandle());
+                }
+            }
+
+            void BootstrapSystemComponent::OnApplicationWindowDestroy()
+            {
+                m_nativeWindow = nullptr;
             }
 
             void BootstrapSystemComponent::CreateViewportContext()
@@ -385,6 +420,24 @@ namespace AZ
 
                 // Listen to window notification so we can request exit application when window closes
                 AzFramework::WindowNotificationBus::Handler::BusConnect(GetDefaultWindowHandle());
+            }
+
+            void BootstrapSystemComponent::SetWindowResolution()
+            {
+                if (m_nativeWindow)
+                {
+                    // wait until swapchain has been created before setting fullscreen state
+                    if (r_resolutionMode > 0u)
+                    {
+                        m_nativeWindow->SetEnableCustomizedResolution(true);
+                        m_nativeWindow->SetRenderResolution(GetWindowResolution());
+                    }
+                    else
+                    {
+                        m_nativeWindow->SetEnableCustomizedResolution(false);
+                    }
+                    m_nativeWindow->SetFullScreenState(r_fullscreen);
+                }
             }
 
             AZ::RPI::ScenePtr BootstrapSystemComponent::GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene)
@@ -437,20 +490,6 @@ namespace AZ
                 const bool loadDefaultRenderPipeline = !xrSystem || xrSystem->GetRHIXRRenderingInterface()->IsDefaultRenderPipelineNeeded();
 
                 AZ::RHI::MultisampleState multisampleState;
-
-                if (xrSystem)
-                {
-                    RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
-                    if (RHI::CheckBitsAll(device->GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerRegion) &&
-                        !m_xrVrsTexture)
-                    {
-                        // Need to fill the contents of the Variable shade rating image.
-                        const AZStd::shared_ptr<const RPI::PassTemplate> forwardTemplate =
-                            RPI::PassSystemInterface::Get()->GetPassTemplate(Name("MultiViewForwardPassTemplate"));
-
-                        m_xrVrsTexture = xrSystem->InitPassFoveatedAttachment(*forwardTemplate);
-                    }
-                }
 
                 // Load the main default pipeline if applicable
                 if (loadDefaultRenderPipeline)
@@ -620,6 +659,12 @@ namespace AZ
                 }
             }
 
+            AzFramework::WindowSize BootstrapSystemComponent::GetWindowResolution() const
+            {
+                float scale = AZStd::max(static_cast<float>(r_renderScale), 0.f);
+                return AzFramework::WindowSize(static_cast<uint32_t>(r_width * scale), static_cast<uint32_t>(r_height * scale));
+            }
+
             void BootstrapSystemComponent::CreateDefaultRenderPipeline()
             {
                 EnsureDefaultRenderPipelineInstalledForScene(m_defaultScene, m_viewportContext);
@@ -681,7 +726,12 @@ namespace AZ
             {
                 m_windowHandle = nullptr;
                 m_viewportContext.reset();
+                // On some platforms (e.g. Android) the main window is destroyed when the app is suspended
+                // but this doesn't mean that we need to exit the app. The window will be recreated when the app
+                // is resumed.
+#if AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_EXIT_ON_WINDOW_CLOSE
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+#endif
                 AzFramework::WindowNotificationBus::Handler::BusDisconnect();
             }
 

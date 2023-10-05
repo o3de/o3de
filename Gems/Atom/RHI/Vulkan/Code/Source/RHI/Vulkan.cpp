@@ -220,63 +220,7 @@ namespace AZ
 
         namespace Debug
         {
-            VkDebugReportCallbackEXT s_reportCallback = VK_NULL_HANDLE;
-            const char* s_debugMessageLabel = "vkDebugMessage";
-
-            VKAPI_ATTR VkBool32 VKAPI_CALL ReportCallback(
-                VkDebugReportFlagsEXT flags,
-                VkDebugReportObjectTypeEXT objType,
-                uint64_t srcObject,
-                size_t location,
-                int32_t msgCode,
-                const char* layerPrefix,
-                const char* msg,
-                void* userData)
-            {
-                AZ_UNUSED(objType);
-                AZ_UNUSED(srcObject);
-                AZ_UNUSED(location);
-                AZ_UNUSED(userData);
-
-                // Error that may result in undefined behavior
-                if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
-                {
-                    AZ_Error(s_debugMessageLabel, false, "ERROR: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                // Warnings may hint at unexpected / non-spec API usage
-                if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
-                {
-                    AZ_Warning(s_debugMessageLabel, false, "WARNING: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                // May indicate sub-optimal usage of the API
-                if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
-                {
-                    AZ_Printf(s_debugMessageLabel, "PERFORMANCE: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                // Informal messages that may become handy during debugging
-                if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
-                {
-                    AZ_Printf(s_debugMessageLabel, "INFO: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                // Diagnostic info from the Vulkan loader and layers
-                // Usually not helpful in terms of API usage, but may help to debug layer and loader problems 
-                if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
-                {
-                    AZ_Printf(s_debugMessageLabel, "DEBUG: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                /*
-                    The return value of this callback controls whether the Vulkan call that caused the validation message
-                    will be aborted or not. We return VK_FALSE as we DON'T want Vulkan calls that cause a validation message
-                    (and return a VkResult) to abort. If you instead want to have calls abort, pass in VK_TRUE and the function will
-                    return VK_ERROR_VALIDATION_FAILED_EXT.
-                */
-                return VK_FALSE;
-            }
+            const char* s_debugMessageLabel = "vkDebugMessage";            
 
             VkDebugUtilsMessengerEXT s_messageCallback = VK_NULL_HANDLE;
             VKAPI_ATTR VkBool32 VKAPI_CALL MessageCallbak(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, [[maybe_unused]] void* pUserData)
@@ -331,7 +275,6 @@ namespace AZ
 
             void InitDebugMessages(const GladVulkanContext& context, VkInstance instance, DebugMessageTypeFlag messageTypeMask)
             {
-                // First check if VK_EXT_debug_utils is supported since it has the same functionalities as VK_EXT_debug_report and more.
                 if (VK_INSTANCE_EXTENSION_SUPPORTED(context, EXT_debug_utils))
                 {
                     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
@@ -369,46 +312,10 @@ namespace AZ
 
                     AZ_Error("Vulkan", !result, "Failed to initialize the debug messaging system");
                 }
-                else if (VK_INSTANCE_EXTENSION_SUPPORTED(context, EXT_debug_report))
-                {
-                    VkDebugReportCallbackCreateInfoEXT dbgCreateInfo = {};
-                    dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
-                    dbgCreateInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)ReportCallback;
-
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Info))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
-                    }
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Warning))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_WARNING_BIT_EXT;
-                    }
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Error))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_ERROR_BIT_EXT;
-                    }
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Debug))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_DEBUG_BIT_EXT;
-                    }
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Performance))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
-                    }
-
-                    [[maybe_unused]] VkResult result =
-                        context.CreateDebugReportCallbackEXT(instance, &dbgCreateInfo, VkSystemAllocator::Get(), &s_reportCallback);
-
-                    AZ_Error("Vulkan", !result, "Failed to initialize the debug reporting system");
-                }
             }
 
             void ShutdownDebugMessages(const GladVulkanContext& context, VkInstance instance)
             {
-                if (s_reportCallback != VK_NULL_HANDLE)
-                {
-                    context.DestroyDebugReportCallbackEXT(instance, s_reportCallback, VkSystemAllocator::Get());
-                }
                 if (s_messageCallback != VK_NULL_HANDLE)
                 {
                     context.DestroyDebugUtilsMessengerEXT(instance, s_messageCallback, VkSystemAllocator::Get());
@@ -419,28 +326,10 @@ namespace AZ
             {
                 if (Instance::GetInstance().GetValidationMode() != RHI::ValidationMode::Disabled)
                 {
-#if AZ_TRAIT_ATOM_VULKAN_LAYER_LUNARG_STD_VALIDATION_SUPPORT
                     return
-                    { {
-                            "VK_LAYER_LUNARG_standard_validation",
-                            "VK_LAYER_KHRONOS_validation"
-                    } };
-#else
-                    // Android doesn't support the meta-layer "VK_LAYER_KHRONOS_validation" so 
-                    // we need to add each layer manually.
-                    return
-                    { {
-                            "VK_LAYER_GOOGLE_threading",
-                            "VK_LAYER_LUNARG_parameter_validation",
-                            "VK_LAYER_LUNARG_device_limits",
-                            "VK_LAYER_LUNARG_object_tracker",
-                            "VK_LAYER_LUNARG_image",
-                            "VK_LAYER_LUNARG_core_validation",
-                            "VK_LAYER_LUNARG_swapchain",
-                            "VK_LAYER_GOOGLE_unique_objects",
-                            "VK_LAYER_KHRONOS_validation"
-                    } };
-#endif
+                    {
+                        "VK_LAYER_KHRONOS_validation"
+                    };
                 }
                 return RawStringList{};
             }

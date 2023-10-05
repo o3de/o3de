@@ -10,6 +10,11 @@
 
 namespace AzFramework
 {
+    XcbBaseTestFixture::XcbBaseTestFixture() :
+        ::UnitTest::LeakDetectionFixture()
+    {
+        m_nativeUiComponent = AZStd::make_unique<AzFramework::NativeUISystemComponent>();
+    }
     void XcbBaseTestFixture::SetUp()
     {
         using testing::Return;

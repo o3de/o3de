@@ -271,7 +271,7 @@ namespace PhysX
 
     void setInboundJointDriveParams(
         physx::PxArticulationJointReducedCoordinate* inboundJoint,
-        physx::PxArticulationAxis articulationAxis,
+        [[maybe_unused]] physx::PxArticulationAxis articulationAxis,
         const ArticulationJointMotorProperties& motorProperties)
     {
         physx::PxArticulationDrive drive;
@@ -553,7 +553,7 @@ namespace PhysX
 
     const physx::PxArticulationJointReducedCoordinate* ArticulationLinkComponent::GetDriveJoint() const
     {
-        const bool isRootArticulation = IsRootArticulation();
+        [[maybe_unused]] const bool isRootArticulation = IsRootArticulation();
         AZ_ErrorOnce("Articulation Link Component", !isRootArticulation, "Articulation root does not have an inbound joint.");
         AZ_ErrorOnce("Articulation Link Component", m_driveJoint || IsRootArticulation(), "Invalid articulation joint pointer");
         return m_driveJoint;

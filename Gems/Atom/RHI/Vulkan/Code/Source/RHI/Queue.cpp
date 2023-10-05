@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/iterator.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>

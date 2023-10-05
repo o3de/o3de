@@ -29,6 +29,7 @@ namespace UnitTest
             EXPECT_NEAR(testLoadValues[i], testStoreValues[i], AZ::Constants::Tolerance);
         }
     }
+
     template<typename VectorType>
     void TestFromVec1()
     {
@@ -1496,6 +1497,54 @@ namespace UnitTest
     }
 
     template <typename VectorType>
+    void TestExpEstimate()
+    {
+        float testLoadValuesX1[4] = { 0.0f, 1.0f, -1.0f, 2.0f };
+        float testLoadValuesX2[4] = { 0.5f, 0.9f, -1.1f, 9.0f };
+
+        float precision = 0.005f;
+
+        typename VectorType::FloatType sourceVectorX1 = VectorType::LoadUnaligned(testLoadValuesX1);
+        typename VectorType::FloatType sourceVectorX2 = VectorType::LoadUnaligned(testLoadValuesX2);
+
+        {
+            float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+            typename VectorType::FloatType testVector = VectorType::ExpEstimate(sourceVectorX1);
+            VectorType::StoreUnaligned(testStoreValues, testVector);
+
+            switch (VectorType::ElementCount)
+            {
+            case 4:
+                EXPECT_TRUE(AZ::IsCloseMag(testStoreValues[3], exp(2.0f), precision));
+            case 3:
+                EXPECT_TRUE(AZ::IsCloseMag(testStoreValues[2], exp(-1.0f), precision));
+            case 2:
+                EXPECT_TRUE(AZ::IsCloseMag(testStoreValues[1], exp(1.0f), precision));
+            case 1:
+                EXPECT_TRUE(AZ::IsCloseMag(testStoreValues[0], exp(0.0f), precision));
+            }
+        }
+
+        {
+            float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+            typename VectorType::FloatType testVector = VectorType::ExpEstimate(sourceVectorX2);
+            VectorType::StoreUnaligned(testStoreValues, testVector);
+
+            switch (VectorType::ElementCount)
+            {
+            case 4:
+                EXPECT_TRUE(AZ::IsCloseMag(testStoreValues[3], exp(9.0f), precision));
+            case 3:
+                EXPECT_TRUE(AZ::IsCloseMag(testStoreValues[2], exp(-1.1f), precision));
+            case 2:
+                EXPECT_TRUE(AZ::IsCloseMag(testStoreValues[1], exp(0.9f), precision));
+            case 1:
+                EXPECT_TRUE(AZ::IsCloseMag(testStoreValues[0], exp(0.5f), precision));
+            }
+        }
+    }
+
+    template <typename VectorType>
     void TestConvertToInt()
     {
         // Positive values
@@ -2585,6 +2634,26 @@ namespace UnitTest
     TEST(MATH_SimdMath, TestAtan2Vec4)
     {
         TestAtan2<Simd::Vec4>();
+    }
+
+    TEST(MATH_SimdMath, TestExpEstimateVec1)
+    {
+        TestExpEstimate<Simd::Vec1>();
+    }
+
+    TEST(MATH_SimdMath, TestExpEstimateVec2)
+    {
+        TestExpEstimate<Simd::Vec2>();
+    }
+
+    TEST(MATH_SimdMath, TestExpEstimateVec3)
+    {
+        TestExpEstimate<Simd::Vec3>();
+    }
+
+    TEST(MATH_SimdMath, TestExpEstimateVec4)
+    {
+        TestExpEstimate<Simd::Vec4>();
     }
 
     TEST(MATH_SimdMath, TestDotFloatVec2)

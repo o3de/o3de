@@ -14,11 +14,13 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
+#include <AzFramework/Device/DeviceAttributesSystemComponent.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/Contexts/InputContextComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
 #include <AzFramework/PaintBrush/PaintBrushSystemComponent.h>
+#include <AzFramework/Quality/QualitySystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Script/ScriptComponent.h>
@@ -55,6 +57,8 @@ namespace AzFramework
             AzFramework::SceneSystemComponent::CreateDescriptor(),
             AzFramework::StreamingInstall::StreamingInstallSystemComponent::CreateDescriptor(),
             AzFramework::AzFrameworkConfigurationSystemComponent::CreateDescriptor(),
+            AzFramework::QualitySystemComponent::CreateDescriptor(),
+            AzFramework::DeviceAttributesSystemComponent::CreateDescriptor(),
 
             AzFramework::OctreeSystemComponent::CreateDescriptor(),
             AzFramework::SpawnableSystemComponent::CreateDescriptor(),
@@ -67,6 +71,8 @@ namespace AzFramework
         return AZ::ComponentTypeList
         {
             azrtti_typeid<AzFramework::OctreeSystemComponent>(),
+            azrtti_typeid<AzFramework::QualitySystemComponent>(),
+            azrtti_typeid<AzFramework::DeviceAttributesSystemComponent>(),
         };
     }
 }

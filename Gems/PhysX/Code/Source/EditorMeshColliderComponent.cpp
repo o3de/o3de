@@ -10,6 +10,7 @@
 #include <AzFramework/Physics/Utils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 #include <Editor/ColliderComponentMode.h>
 #include <System/PhysXSystem.h>
@@ -1111,12 +1112,12 @@ namespace PhysX
         UpdateShapeConfigurationScale();
     }
 
-    AZ::Aabb EditorMeshColliderComponent::GetWorldBounds()
+    AZ::Aabb EditorMeshColliderComponent::GetWorldBounds() const
     {
         return GetAabb();
     }
 
-    AZ::Aabb EditorMeshColliderComponent::GetLocalBounds()
+    AZ::Aabb EditorMeshColliderComponent::GetLocalBounds() const
     {
         AZ::Aabb worldBounds = GetWorldBounds();
         if (worldBounds.IsValid())

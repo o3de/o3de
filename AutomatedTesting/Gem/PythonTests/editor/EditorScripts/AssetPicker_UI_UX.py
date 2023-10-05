@@ -64,7 +64,7 @@ def AssetPicker_UI_UX():
         file_path = ["AutomatedTesting", "Assets", "Objects", "Foliage"]
 
         def is_asset_assigned(component, interaction_option):
-            path = os.path.join("assets", "objects", "foliage", "cedar.azmodel")
+            path = os.path.join("assets", "objects", "foliage", "cedar.fbx.azmodel")
             expected_asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', path, math.Uuid(),
                                                              False)
             result = hydra.get_component_property_value(component, "Controller|Configuration|Model Asset")
@@ -230,12 +230,11 @@ def AssetPicker_UI_UX():
         # 4) Click on Asset Picker (Model Asset)
         general.select_object("TestEntity")
         general.idle_wait(0.5)
-        model_asset = component_list_widget.findChildren(QtWidgets.QFrame, "Model Asset")[0]
-        attached_button = model_asset.findChildren(QtWidgets.QPushButton, "attached-button")[0]
+        attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 
         # Assign Model Asset via OK button
         pyside_utils.click_button_async(attached_button)
-        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "ok")
+        await asset_picker(["azmodel", "fbx"], "cedar.fbx (ModelAsset)", "ok")
 
         # 5) Verify if Model Asset is assigned
         try:
@@ -254,12 +253,11 @@ def AssetPicker_UI_UX():
         hydra.get_set_test(entity, 0, "Controller|Configuration|Model Asset", None)
         general.select_object("TestEntity")
         general.idle_wait(0.5)
-        model_asset = component_list_widget.findChildren(QtWidgets.QFrame, "Model Asset")[0]
-        attached_button = model_asset.findChildren(QtWidgets.QPushButton, "attached-button")[0]
+        attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 
         # Assign Model Asset via Enter
         pyside_utils.click_button_async(attached_button)
-        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "enter")
+        await asset_picker(["azmodel", "fbx"], "cedar.fbx (ModelAsset)", "enter")
 
         # 5) Verify if Model Asset is assigned
         try:

@@ -8,6 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/Events/GraphMetaInfoBus.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/Behaviors/LodRuleBehavior.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
@@ -33,7 +34,10 @@ namespace AZ
                 BusDisconnect();
             }
 
-            void GetVirtualTypes(AZStd::set<Crc32>& types, const SceneAPI::Containers::Scene&, SceneAPI::Containers::SceneGraph::NodeIndex) override
+            void GetVirtualTypes(
+                SceneAPI::Events::GraphMetaInfo::VirtualTypesSet& types,
+                const SceneAPI::Containers::Scene&,
+                SceneAPI::Containers::SceneGraph::NodeIndex) override
             {
                 // Indicate this node is a LOD1 type
                 types.emplace(AZ_CRC_CE("LODMesh1"));

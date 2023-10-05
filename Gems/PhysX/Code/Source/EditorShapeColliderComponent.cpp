@@ -6,31 +6,35 @@
  *
  */
 
-#include <EditorShapeColliderComponent.h>
+#include <AzCore/Math/Geometry2DUtils.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+
 #include <AzFramework/Physics/ColliderComponentBus.h>
-#include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
-#include <LyViewPaneNames.h>
-#include <ShapeColliderComponent.h>
+#include <AzFramework/Physics/SystemBus.h>
+
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
+#include <cmath>
+
 #include <EditorRigidBodyComponent.h>
+#include <EditorShapeColliderComponent.h>
 #include <EditorStaticRigidBodyComponent.h>
 #include <Editor/ConfigurationWindowBus.h>
-#include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
-#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 #include <LmbrCentral/Shape/QuadShapeComponentBus.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <LmbrCentral/Shape/SphereShapeComponentBus.h>
+#include <LyViewPaneNames.h>
 #include <PhysX/SystemComponentBus.h>
-#include <Source/Utils.h>
-#include <AzCore/Math/Geometry2DUtils.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
-#include <cmath>
-
 #include <RigidBodyStatic.h>
+#include <ShapeColliderComponent.h>
+#include <Source/Utils.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX

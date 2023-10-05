@@ -26,13 +26,15 @@ namespace AZ
             {
             public:
                 AZ_TYPE_INFO(Scene, "{1F2E6142-B0D8-42C6-A6E5-CD726DAA9EF0}");
-                
+
+                Scene() = default;
                 explicit Scene(const AZStd::string& name);
                 explicit Scene(AZStd::string&& name);
 
                 void SetSource(const AZStd::string& filename, const Uuid& guid);
                 void SetSource(AZStd::string&& filename, const Uuid& guid);
                 const AZStd::string& GetSourceFilename() const;
+                AZStd::string_view GetSourceExtension() const;
                 const Uuid& GetSourceGuid() const;
 
                 void SetWatchFolder(const AZStd::string& watchFolder);

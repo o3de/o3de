@@ -85,8 +85,8 @@ namespace EMotionFX
             void OnAssetUnloaded(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType) override;
 
             // BoundsRequestBus overrides ...
-            AZ::Aabb GetWorldBounds() override;
-            AZ::Aabb GetLocalBounds() override;
+            AZ::Aabb GetWorldBounds() const override;
+            AZ::Aabb GetLocalBounds() const override;
 
             // AzFramework::EntityDebugDisplayEventBus overrides ...
             void DisplayEntityViewport(

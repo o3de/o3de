@@ -54,6 +54,7 @@ namespace AZ
             if (m_passData)
             {
                 PassUtils::ExtractPipelineGlobalConnections(m_passData, m_pipelineGlobalConnections);
+                m_viewTag = m_passData->m_pipelineViewTag;
             }
 
             m_flags.m_enabled = true;
@@ -433,15 +434,23 @@ namespace AZ
 
         void Pass::ProcessConnection(const PassConnection& connection, uint32_t slotTypeMask)
         {
+            [[maybe_unused]] auto prefix = [&]() -> AZStd::string
+            {
+                return AZStd::string::format(
+                    "Pass::ProcessConnection %s:%s -> %s:%s",
+                    m_path.GetCStr(),
+                    connection.m_localSlot.GetCStr(),
+                    connection.m_attachmentRef.m_pass.GetCStr(),
+                    connection.m_attachmentRef.m_attachment.GetCStr());
+            };
+
             // -- Find Local Binding --
 
             // Get the input from this pass that forms one end of the connection
             PassAttachmentBinding* localBinding = FindAttachmentBinding(connection.m_localSlot);
             if (!localBinding)
             {
-                AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - Pass [%s] failed to find slot [%s].",
-                    m_path.GetCStr(),
-                    connection.m_localSlot.GetCStr());
+                AZ_RPI_PASS_ERROR(false, "%s: failed to find Local Slot.", prefix().c_str());
                 return;
             }
 
@@ -468,18 +477,15 @@ namespace AZ
                 foundPass = true;
                 attachment = FindOwnedAttachment(connectedSlotName);
 
-                AZ_RPI_PASS_ERROR(attachment, "Pass::ProcessConnection - Pass [%s] doesn't own an attachment named [%s].",
-                    m_path.GetCStr(),
-                    connectedSlotName.GetCStr());
+                AZ_RPI_PASS_ERROR(
+                    attachment, "%s: Current Pass doesn't own an attachment named [%s].", prefix().c_str(), connectedSlotName.GetCStr());
             }
 
             // -- Search Pipeline --
 
             else if (connectedPassName == PipelineGlobalKeyword)
             {
-                AZ_RPI_PASS_ERROR(m_pipeline != nullptr, "Pass::ProcessConnection - Pass [%s] references pipeline attachment [%s] doesn't have a valid pipeline pointer",
-                    m_path.GetCStr(),
-                    connectedSlotName.GetCStr());
+                AZ_RPI_PASS_ERROR(m_pipeline != nullptr, "%s: Pass doesn't have a valid pipeline pointer.", prefix().c_str());
 
                 foundPass = true;   // Using the "Pipeline" keyword, no need to continue searching for passes
 
@@ -491,9 +497,7 @@ namespace AZ
                         connectedBinding = globalBinding->m_binding;
                     }
 
-                    AZ_RPI_PASS_ERROR(connectedBinding , "Pass::ProcessConnection - Pass [%s] cannot find a pipeline global connection named [%s].",
-                        m_path.GetCStr(),
-                        connectedSlotName.GetCStr());
+                    AZ_RPI_PASS_ERROR(connectedBinding, "%s: Cannot find pipeline global connection.", prefix().c_str());
                 }
             }
 
@@ -558,7 +562,11 @@ namespace AZ
 
             if (slotTypeMismatch)
             {
-                AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - When connecting to a child slot, both slots must be of the same type (or one must be InputOutput)");
+                AZ_RPI_PASS_ERROR(
+                    false,
+                    "%s: Slot Type Mismatch - When connecting to a child slot, both slots must be of the same type, or one must be "
+                    "InputOutput.",
+                    prefix().c_str());
                 connectedBinding = nullptr;
             }
 
@@ -579,23 +587,15 @@ namespace AZ
                     // [GFX TODO][ATOM-13693]: REMOVE POST R1 - passes not in hierarchy should no longer have this function called
                     // When view is changing, removal of the passes can occur (cascade shadow passes for example)
                     // resulting in temporary orphan passes that will be removed over the next frame.
-                    AZ_RPI_PASS_WARNING(false,
-                        "Pass::ProcessConnection - Pass [%s] is no longer part of the heirarchy and about to be removed",
-                        m_path.GetCStr());
+                    AZ_RPI_PASS_WARNING(false, "%s: Pass is no longer part of the hierarchy and about to be removed.", prefix().c_str());
                 }
                 else if (foundPass)
                 {
-                    AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - Pass [%s] couldn't find a valid binding [%s] on [%s].",
-                        m_path.GetCStr(),
-                        connectedSlotName.GetCStr(),
-                        connectedPassName.GetCStr());
+                    AZ_RPI_PASS_ERROR(false, "%s: Could not find binding on target.", prefix().c_str());
                 }
                 else
                 {
-                    AZ_RPI_PASS_ERROR(
-                        false, "Pass::ProcessConnection - Pass [%s] could not find neighbor or child pass named [%s].",
-                        m_path.GetCStr(),
-                        connectedPassName.GetCStr());
+                    AZ_RPI_PASS_ERROR(false, "%s: Could not find target pass.", prefix().c_str());
                 }
             }
         }
@@ -605,13 +605,19 @@ namespace AZ
             PassAttachmentBinding* inputBinding = FindAttachmentBinding(connection.m_inputSlotName);
             PassAttachmentBinding* outputBinding = FindAttachmentBinding(connection.m_outputSlotName);
 
+            [[maybe_unused]] auto prefix = [&]() -> AZStd::string
+            {
+                return AZStd::string::format(
+                    "Pass::ProcessFallbackConnection: %s, %s -> %s",
+                    m_path.GetCStr(),
+                    connection.m_inputSlotName.GetCStr(),
+                    connection.m_outputSlotName.GetCStr());
+            };
             if (!outputBinding || !inputBinding)
             {
-                AZ_RPI_PASS_ERROR(inputBinding, "Pass::ProcessFallbackConnection - Pass [%s] failed to find input slot [%s].",
-                    m_path.GetCStr(), connection.m_inputSlotName.GetCStr());
+                AZ_RPI_PASS_ERROR(inputBinding, "%s: failed to find input slot.", prefix().c_str());
 
-                AZ_RPI_PASS_ERROR(outputBinding, "Pass::ProcessFallbackConnection - Pass [%s] failed to find output slot [%s].",
-                    m_path.GetCStr(), connection.m_outputSlotName.GetCStr());
+                AZ_RPI_PASS_ERROR(outputBinding, "%s: failed to find output slot.", prefix().c_str());
 
                 return;
             }
@@ -620,11 +626,11 @@ namespace AZ
 
             if (!typesAreValid)
             {
-                AZ_RPI_PASS_ERROR(inputBinding->m_slotType == PassSlotType::Input, "Pass::ProcessFallbackConnection - Pass [%s] specifies fallback connection input [%s], which is not an input.",
-                    m_path.GetCStr(), connection.m_inputSlotName.GetCStr());
+                AZ_RPI_PASS_ERROR(
+                    inputBinding->m_slotType == PassSlotType::Input, "%s: Input doesn't have SlotType::Input.", prefix().c_str());
 
-                AZ_RPI_PASS_ERROR(outputBinding->m_slotType == PassSlotType::Output, "Pass::ProcessFallbackConnection - Pass [%s] specifies fallback connection output [%s], which is not an output.",
-                    m_path.GetCStr(), connection.m_inputSlotName.GetCStr());
+                AZ_RPI_PASS_ERROR(
+                    outputBinding->m_slotType == PassSlotType::Output, "%s: Output doesn't have SlotType::Output.", prefix().c_str());
 
                 return;
             }
@@ -1367,8 +1373,18 @@ namespace AZ
 
         const PipelineViewTag& Pass::GetPipelineViewTag() const
         {
-            static PipelineViewTag viewTag;
-            return viewTag;
+            if (m_viewTag.IsEmpty())
+            {
+                if (m_flags.m_isPipelineRoot && m_pipeline)
+                {
+                    return m_pipeline->GetMainViewTag();
+                }
+                else if (m_parent)
+                {
+                    return m_parent->GetPipelineViewTag();
+                }
+            }
+            return m_viewTag;
         }
 
         void Pass::SetRenderPipeline(RenderPipeline* pipeline)
@@ -1421,7 +1437,7 @@ namespace AZ
             // even when pass is disabled so it can continue work correctly when re-enable it.
 
             // Only get the DrawListTag if this pass has a DrawListTag and it's PipelineViewId matches
-            if (HasPipelineViewTag() && HasDrawListTag() && GetPipelineViewTag() == viewTag)
+            if (BindViewSrg() && HasDrawListTag() && GetPipelineViewTag() == viewTag)
             {
                 RHI::DrawListTag drawListTag = GetDrawListTag();
                 if (drawListTag.IsValid() && outPassesByDrawList.find(drawListTag) == outPassesByDrawList.end())
@@ -1434,7 +1450,7 @@ namespace AZ
 
         void Pass::GetPipelineViewTags(PipelineViewTags& outTags) const
         {
-            if (HasPipelineViewTag())
+            if (BindViewSrg())
             {
                 outTags.insert(GetPipelineViewTag());
             }
@@ -1473,7 +1489,8 @@ namespace AZ
             return GetPipelineStatisticsResultInternal();
         }
 
-        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName, PassAttachmentReadbackOption option)
+        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName
+            , PassAttachmentReadbackOption option, const RHI::ImageSubresourceRange* mipsRange)
         {
             // Return false if it's already readback
             if (m_attachmentReadback)
@@ -1494,7 +1511,7 @@ namespace AZ
                         // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
                         AZStd::string readbackName = AZStd::string::format("%s_%d_%d_%s", attachmentId.GetCStr(),
                             readbackIndex, bindingIndex, GetName().GetCStr());
-                        if (readback->ReadPassAttachment(binding.GetAttachment().get(), AZ::Name(readbackName)))
+                        if (readback->ReadPassAttachment(binding.GetAttachment().get(), AZ::Name(readbackName), mipsRange))
                         {
                             m_readbackOption = PassAttachmentReadbackOption::Output;
                             // The m_readbackOption is only meaningful if the attachment is used for InputOutput.

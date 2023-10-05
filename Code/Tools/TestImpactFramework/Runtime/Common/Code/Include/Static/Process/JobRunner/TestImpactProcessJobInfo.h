@@ -123,7 +123,7 @@ namespace TestImpact
 
     //! Comparison between jobs of the same job type.
     template<typename AdditionalInfo>
-    bool operator==(const typename JobInfo<AdditionalInfo>& lhs, const typename JobInfo<AdditionalInfo>& rhs)
+    bool operator==(const JobInfo<AdditionalInfo>& lhs, const JobInfo<AdditionalInfo>& rhs)
     {
         return lhs.GetId().m_value == rhs.GetId().m_value;
     }

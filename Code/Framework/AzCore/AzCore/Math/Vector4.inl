@@ -613,6 +613,11 @@ namespace AZ
         return Vector4(Simd::Vec4::Atan(m_value));
     }
 
+    AZ_MATH_INLINE Vector4 Vector4::GetExpEstimate() const
+    {
+        return Vector4(Simd::Vec4::ExpEstimate(m_value));
+    }
+
     AZ_MATH_INLINE Vector4 Vector4::GetAngleMod() const
     {
         return Vector4(Simd::Vec4::AngleMod(m_value));

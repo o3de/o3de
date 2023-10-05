@@ -92,7 +92,7 @@ namespace AZ
                     return *it;
                 }
                 auto shaderAsset{ AZ::RPI::FindShaderAsset(assetReference.m_assetId, assetReference.m_filePath) };
-                AZ_Assert(shaderAsset.GetId().IsValid(), "Failed to load shader %s", assetReference.m_filePath.c_str());
+                AZ_Assert(shaderAsset.IsReady(), "Failed to load shader %s", assetReference.m_filePath.c_str());
                 auto shader{ AZ::RPI::Shader::FindOrCreate(shaderAsset) };
                 auto shaderVariant{ shader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId) };
                 AZ::RHI::PipelineStateDescriptorForRayTracing pipelineStateDescriptor;
@@ -189,7 +189,7 @@ namespace AZ
                 shaderAsset = RPI::FindShaderAsset(shaderAssetReference.m_assetId, shaderAssetReference.m_filePath);
             }
 
-            if (!shaderAsset.GetId().IsValid())
+            if (!shaderAsset.IsReady())
             {
                 AZ_Error("PassSystem", false, "RayTracingPass [%s]: Failed to load shader asset [%s]", GetPathName().GetCStr(), shaderAssetReference.m_filePath.data());
                 return nullptr;
@@ -376,10 +376,10 @@ namespace AZ
 
             if (m_requiresViewSrg)
             {
-                const AZStd::vector<RPI::ViewPtr>& views = m_pipeline->GetViews(m_passData->m_pipelineViewTag);
-                if (views.size() > 0)
+                RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
+                if (view)
                 {
-                    shaderResourceGroups.push_back(views[0]->GetRHIShaderResourceGroup());
+                    shaderResourceGroups.push_back(view->GetRHIShaderResourceGroup());
                 }
             }
 

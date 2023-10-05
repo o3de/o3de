@@ -948,7 +948,7 @@ namespace AZ
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
             meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
-            meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
+            meshDataHandle->m_meshLoader = AZStd::make_shared<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
             meshDataHandle->m_flags.m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
             meshDataHandle->m_flags.m_isDrawMotion = descriptor.m_isAlwaysDynamic;
 
@@ -1627,9 +1627,15 @@ namespace AZ
                 // If the asset was modified, reload it. This will also cause a model to change back to the default missing
                 // asset if it was removed, and it will replace the default missing asset with the real asset if it was added.
                 AZ::SystemTickBus::QueueFunction(
-                    [=]() mutable
+                    [=, meshLoader = m_parent->m_meshLoader]() mutable
                     {
-                        ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
+                        // Only trigger the reload if the meshLoader is still being used by something other than the lambda.
+                        // If the lambda is the only owner, it will get destroyed after this queued call, so there's no point
+                        // in reloading the model.
+                        if (meshLoader.use_count() > 1)
+                        {
+                            ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
+                        }
                     });
             }
         }

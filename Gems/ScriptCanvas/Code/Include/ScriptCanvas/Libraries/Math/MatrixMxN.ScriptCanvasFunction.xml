@@ -33,14 +33,24 @@
             <Parameter Name="Source"/>
         </Function>
 
-        <Function Name="MultiplyByVector">
-            <Parameter Name="Source"/>
+        <Function Name="OuterProduct">
+            <Parameter Name="Vector1"/>
+            <Parameter Name="Vector2"/>
+        </Function>
+
+        <Function Name="LeftMultiplyByVector">
+            <Parameter Name="Matrix"/>
             <Parameter Name="Vector"/>
         </Function>
 
-        <Function Name="MultiplyByMatrix">
-            <Parameter Name="Source"/>
+        <Function Name="RightMultiplyByVector">
             <Parameter Name="Vector"/>
+            <Parameter Name="Matrix"/>
+        </Function>
+
+        <Function Name="MultiplyByMatrix">
+            <Parameter Name="Matrix1"/>
+            <Parameter Name="Matrix2"/>
         </Function>
     </Library>
 </ScriptCanvas>

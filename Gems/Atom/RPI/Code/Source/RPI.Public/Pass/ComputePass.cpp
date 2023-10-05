@@ -85,7 +85,7 @@ namespace AZ
                 shaderAsset = RPI::FindShaderAsset(passData->m_shaderReference.m_assetId, passData->m_shaderReference.m_filePath);
             }
 
-            if (!shaderAsset.GetId().IsValid())
+            if (!shaderAsset.IsReady())
             {
                 AZ_Error("PassSystem", false, "[ComputePass '%s']: Failed to load shader '%s'!",
                     GetPathName().GetCStr(),
@@ -96,7 +96,7 @@ namespace AZ
             m_shader = Shader::FindOrCreate(shaderAsset, supervariant);
             if (m_shader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[ComputePass '%s']: Failed to load shader '%s'!",
+                AZ_Error("PassSystem", false, "[ComputePass '%s']: Failed to create shader instance from asset '%s'!",
                     GetPathName().GetCStr(),
                     passData->m_shaderReference.m_filePath.data());
                 return;
@@ -142,6 +142,8 @@ namespace AZ
             m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
 
             m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+
+            OnShaderReloadedInternal();
 
             ShaderReloadNotificationBus::Handler::BusDisconnect();
             ShaderReloadNotificationBus::Handler::BusConnect(passData->m_shaderReference.m_assetId);
@@ -240,6 +242,19 @@ namespace AZ
         void ComputePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
             LoadShader();
+        }
+
+        void ComputePass::SetComputeShaderReloadedCallback(ComputeShaderReloadedCallback callback)
+        {
+            m_shaderReloadedCallback = callback;
+        }
+
+        void ComputePass::OnShaderReloadedInternal()
+        {
+            if (m_shaderReloadedCallback)
+            {
+                m_shaderReloadedCallback(this);
+            }
         }
 
     }   // namespace RPI

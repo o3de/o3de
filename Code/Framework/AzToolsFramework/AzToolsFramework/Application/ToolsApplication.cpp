@@ -15,7 +15,10 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
+#include <AzFramework/AzFrameworkNativeUIModule.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
 
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
@@ -269,7 +272,7 @@ namespace AzToolsFramework
     void ToolsApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
         AzFramework::Application::CreateStaticModules(outModules);
-
+        outModules.emplace_back(aznew AzFramework::AzFrameworkNativeUIModule());
         outModules.emplace_back(aznew AzToolsFrameworkModule);
     }
 
@@ -310,6 +313,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::GlobalPaintBrushSettingsSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::MetadataManager>(),
                 azrtti_typeid<AzToolsFramework::UuidUtilComponent>(),
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
 
         return components;

@@ -328,10 +328,12 @@ namespace AZ::SceneGenerationComponents
 
             const auto addSelectionListToMap = [&selectedNodes](const IMeshGroup& meshGroup, const SceneAPI::DataTypes::ISceneNodeSelectionList& selectionList)
             {
-                for (size_t selectedNodeIndex = 0; selectedNodeIndex < selectionList.GetSelectedNodeCount(); ++selectedNodeIndex)
-                {
-                    selectedNodes[&meshGroup].emplace_back(selectionList.GetSelectedNode(selectedNodeIndex));
-                }
+                selectionList.EnumerateSelectedNodes(
+                    [&selectedNodes, &meshGroup](const AZStd::string& name)
+                    {
+                        selectedNodes[&meshGroup].emplace_back(name);
+                        return true;
+                    });
             };
 
             for (const IMeshGroup& meshGroup : meshGroups)
@@ -382,6 +384,16 @@ namespace AZ::SceneGenerationComponents
 
             for (const IMeshGroup& meshGroup : meshGroups)
             {
+                if (!selectedNodes.contains(&meshGroup))
+                {
+                    AZ_Warning(
+                        AZ::SceneAPI::Utilities::LogWindow,
+                        false,
+                        "MeshGroup %s wasn't found in the list of selected nodes.",
+                        meshGroup.GetName().c_str());
+                    continue;
+                }
+
                 // Skip meshes that are not used by this mesh group
                 if (AZStd::find(selectedNodes.at(&meshGroup).cbegin(), selectedNodes.at(&meshGroup).cend(), nodePath) == selectedNodes.at(&meshGroup).cend())
                 {

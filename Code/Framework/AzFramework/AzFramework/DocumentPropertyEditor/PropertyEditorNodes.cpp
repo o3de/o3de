@@ -64,6 +64,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::InternalEnumValueKey);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeValidate);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueHashed);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ParentValue);
 
@@ -72,6 +73,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(Container::RemoveNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::ClearNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::ContainerCanBeModified);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::PromptOnContainerClear);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);

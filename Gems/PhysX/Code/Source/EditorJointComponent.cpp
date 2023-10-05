@@ -118,7 +118,7 @@ namespace PhysX
         return aabb;
     }
 
-    AZ::Aabb EditorJointComponent::GetWorldBounds()
+    AZ::Aabb EditorJointComponent::GetWorldBounds() const
     {
         AZ::Transform worldTM = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldTM, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
@@ -126,7 +126,7 @@ namespace PhysX
         return GetLocalBounds().GetTransformedAabb(worldTM);
     }
 
-    AZ::Aabb EditorJointComponent::GetLocalBounds()
+    AZ::Aabb EditorJointComponent::GetLocalBounds() const
     {
         return AZ::Aabb::CreateFromMinMax(-AZ::Vector3(JointAabbHalfExtent), AZ::Vector3(JointAabbHalfExtent));
     }

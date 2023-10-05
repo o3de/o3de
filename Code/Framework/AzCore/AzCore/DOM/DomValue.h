@@ -20,6 +20,7 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/utility/to_underlying.h>
 
 namespace AZ::Dom
 {
@@ -163,13 +164,16 @@ namespace AZ::Dom
         //! The internal storage type for Value.
         //! These types do not correspond one-to-one with the Value's external Type as there may be multiple storage classes
         //! for the same type in some instances, such as string storage.
+        //! The AZ type aliases of `AZ::s64` and `AZ::u64` are being used in lieu of `int64_t` and `uint64_t`
+        //! As those guaranteed to always be `long long` and `unsigned long long` on all platforms, where the C standard type aliases
+        //! are long-based on Linux and Android and long long-based on Windows, Mac and iOS
         using ValueType = AZStd::variant<
             // Null
             AZStd::monostate,
             // Int64
-            int64_t,
+            AZ::s64,
             // Uint64
-            uint64_t,
+            AZ::u64,
             // Double
             double,
             // Bool
@@ -209,6 +213,10 @@ namespace AZ::Dom
         explicit Value(bool value);
 
         explicit Value(Type type);
+
+        // Stores the enum type as it's underlying type
+        template<class EnumType, class = AZStd::enable_if_t<AZStd::is_enum_v<EnumType>>>
+        explicit Value(EnumType enumType);
 
         // Disable accidental calls to Value(bool) with pointer types
         template<class T>
@@ -338,12 +346,12 @@ namespace AZ::Dom
         const Node& GetNode() const;
 
         // int API...
-        int64_t GetInt64() const;
-        void SetInt64(int64_t);
+        AZ::s64 GetInt64() const;
+        void SetInt64(AZ::s64);
 
         // uint API...
-        uint64_t GetUint64() const;
-        void SetUint64(uint64_t);
+        AZ::u64 GetUint64() const;
+        void SetUint64(AZ::u64);
 
         // bool API...
         bool GetBool() const;
@@ -406,4 +414,10 @@ namespace AZ::Dom
 
         ValueType m_value;
     };
+
+    template<class EnumType, class>
+    Value::Value(EnumType enumType)
+        : Value(AZStd::to_underlying(enumType))
+    {
+    }
 } // namespace AZ::Dom

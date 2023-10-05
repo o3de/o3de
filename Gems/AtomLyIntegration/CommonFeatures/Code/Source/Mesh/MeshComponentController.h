@@ -22,6 +22,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Render/GeometryIntersectionBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
+#include <AzFramework/Visibility/VisibleGeometryBus.h>
 
 namespace AZ
 {
@@ -60,6 +61,7 @@ namespace AZ
             , private MeshHandleStateRequestBus::Handler
             , private AtomImGuiTools::AtomImGuiMeshCallbackBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
+            , public AzFramework::VisibleGeometryRequestBus::Handler
             , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
             , private TransformNotificationBus::Handler
             , private MaterialConsumerRequestBus::Handler
@@ -131,12 +133,20 @@ namespace AZ
             void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
             bool GetExcludeFromReflectionCubeMaps() const override;
 
-            // BoundsRequestBus and MeshComponentRequestBus overrides ...
-            AZ::Aabb GetWorldBounds() override;
-            AZ::Aabb GetLocalBounds() override;
+            // AzFramework::BoundsRequestBus::Handler overrides ...
+            AZ::Aabb GetWorldBounds() const override;
+            AZ::Aabb GetLocalBounds() const override;
+
+            // AzFramework::VisibleGeometryRequestBus::Handler overrides ...
+            void GetVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
+
+            // Searches all shader items referenced by the material for one with a matching draw list tag.
+            // Returns true if a matching tag was found. Otherwise, false.
+            bool DoesMaterialUseDrawListTag(
+                const AZ::Data::Instance<AZ::RPI::Material> material, const AZ::RHI::DrawListTag searchDrawListTag) const;
 
             // IntersectionRequestBus overrides ...
-            AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) override;
+            AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) const override;
 
             // TransformNotificationBus::Handler overrides ...
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -145,7 +155,7 @@ namespace AZ
             MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             MaterialAssignmentLabelMap GetMaterialLabels() const override;
-            MaterialAssignmentMap GetDefautMaterialMap() const override;
+            MaterialAssignmentMap GetDefaultMaterialMap() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
             // MaterialComponentNotificationBus::Handler overrides ...

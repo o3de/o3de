@@ -67,7 +67,7 @@ def DPE_AllComponentPropertyTypesEditable():
         TestHelper.open_level("", "Base")
 
         # Verify the DPE is enabled
-        Report.critical_result(Tests.dpe_enabled, general.get_cvar("ed_enableDPE") == "true")
+        Report.critical_result(Tests.dpe_enabled, general.get_cvar("ed_enableDPEInspector") == "true")
 
         # Create several new entities to hold various components
         dither_entity = EditorEntity.create_editor_entity("DitherComponentTestEntity")
@@ -112,7 +112,7 @@ def DPE_AllComponentPropertyTypesEditable():
         edit_component_property_value(light_component, 'Controller|Configuration|Color', math.Color(0.5, 0.5, 0.5, 0.5))
 
         # Asset Picker
-        asset_to_pick_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+        asset_to_pick_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
         asset_to_pick = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", asset_to_pick_path,
                                                      math.Uuid(), False)
         edit_component_property_value(mesh_component, 'Controller|Configuration|Model Asset', asset_to_pick)

@@ -102,4 +102,11 @@ namespace BarrierInput
         AZ::Vector2                    m_threadAwareSystemCursorPosition;
         AZStd::mutex                   m_threadAwareSystemCursorPositionMutex;
     };
+
+    struct InputDeviceMouseBarrierImplFactory 
+        : public AzFramework::InputDeviceMouse::ImplementationFactory
+    {
+        AZStd::unique_ptr<AzFramework::InputDeviceMouse::Implementation> Create(AzFramework::InputDeviceMouse& inputDevice) override;
+    };
+
 } // namespace BarrierInput

@@ -9,47 +9,11 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Application/Application_Windows.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    class ApplicationWindows
-        : public Application::Implementation
-        , public WindowsLifecycleEvents::Bus::Handler
-    {
-    public:
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationWindows, AZ::SystemAllocator);
-        ApplicationWindows();
-        ~ApplicationWindows() override;
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        // WindowsLifecycleEvents
-        void OnMinimized() override; // Suspend
-        void OnRestored() override;  // Resume
-
-        void OnKillFocus() override; // Constrain
-        void OnSetFocus() override;  // Unconstrain
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        // Application::Implementation
-        void PumpSystemEventLoopOnce() override;
-        void PumpSystemEventLoopUntilEmpty() override;
-
-    protected:
-        void ProcessSystemEvent(MSG& msg);
-
-    private:
-        ApplicationLifecycleEvents::Event m_lastEvent;
-    };
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    Application::Implementation* Application::Implementation::Create()
-    {
-        return aznew ApplicationWindows();
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ApplicationWindows::ApplicationWindows()
         : m_lastEvent(ApplicationLifecycleEvents::Event::None)

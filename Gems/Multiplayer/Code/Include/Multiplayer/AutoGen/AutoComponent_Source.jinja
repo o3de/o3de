@@ -722,10 +722,18 @@ void {{ ClassName }}::NotifyChanges{{ AutoComponentMacros.GetNetPropertiesSetNam
     }
 {%         endif %}
 {%     else %}
+
+{%         if Property.attrib['ReplicateTo'] == 'Server' %}
+#if AZ_TRAIT_SERVER
+{%         endif %}
     if (replicationRecord.m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.GetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property) }})))
     {
         m_{{ LowerFirst(Property.attrib['Name']) }}Event.Signal(m_{{ LowerFirst(Property.attrib['Name']) }});
     }
+{%         if Property.attrib['ReplicateTo'] == 'Server' %}
+#endif
+{%         endif %}
+
 {%     endif %}
 {% endif %}
 {% endcall %}

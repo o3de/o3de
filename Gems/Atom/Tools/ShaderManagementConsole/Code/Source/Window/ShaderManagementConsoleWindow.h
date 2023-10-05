@@ -37,6 +37,8 @@ namespace ShaderManagementConsole
 
         void GenerateStatisticView();
 
+        void ShowContextMenu(const QPoint& pos);
+
     private:
         void closeEvent(QCloseEvent* closeEvent) override;
 

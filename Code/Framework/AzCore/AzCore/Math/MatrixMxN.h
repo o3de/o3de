@@ -96,6 +96,9 @@ namespace AZ
         //! Returns a new MatrixMxN containing the square of all elements in the source MatrixMxN.
         MatrixMxN GetSquare() const;
 
+        //! Quickly zeros all elements of the matrix to create a zero matrix.
+        void SetZero();
+
         //! Aside from multiplication, these operators perform basic arithmetic on the individual elements within the respective matrices.
         //! @{
         MatrixMxN operator-() const;
@@ -125,12 +128,13 @@ namespace AZ
         const Matrix4x4& GetSubmatrix(AZStd::size_t rowGroup, AZStd::size_t colGroup) const;
         Matrix4x4& GetSubmatrix(AZStd::size_t rowGroup, AZStd::size_t colGroup);
         void SetSubmatrix(AZStd::size_t rowGroup, AZStd::size_t colGroup, const Matrix4x4& subMatrix);
+        AZStd::vector<Matrix4x4>& GetMatrixElements();
         //! @}
-
-    private:
 
         //! Zeros out unused components of any submatrices
         void FixUnusedElements();
+
+    private:
 
         //! Updates the matrix internals to reflect the current row and column counts.
         void OnSizeChanged();
@@ -148,8 +152,15 @@ namespace AZ
         AZStd::vector<Matrix4x4> m_values;
     };
 
+    //! Computes the outer product of two vectors to produce an MxN matrix.
+    //! The dimensionality of the resulting matrix will be M = lhs.dimensionality, N = rhs.dimensionality
+    void OuterProduct(const VectorN& lhs, const VectorN& rhs, MatrixMxN& output);
+
     //! Multiplies the input vector of dimensionality RowCount, with the current matrix and stores the result in the provided output vector of dimensionality ColCount.
     void VectorMatrixMultiply(const MatrixMxN& matrix, const VectorN& vector, VectorN& output);
+
+    //! Left-multiplies the input vector of dimensionality ColCount, with the current matrix and stores the result in the provided output vector of dimensionality RowCount.
+    void VectorMatrixMultiplyLeft(const VectorN& vector, const MatrixMxN& matrix, VectorN& output);
 
     //! Multiplies the two input matrices to produce the output matrix.
     //! The column count of the right-hand side matrix must match the row count of the left-hand side matrix
