@@ -124,14 +124,13 @@ namespace AzFramework
         void SetLocalTM(const AZ::Transform& t)
         {
             // Gruber patch begin // VMED -- missed ExtractScaleExact, CreateFromTransform are replaced
-            AZ::Transform copy = t;
-            const float uniformScale = copy.GetUniformScale();
+            const float uniformScale = t.GetUniformScale();
             m_localScale.Set(AZ::Vector3(uniformScale, uniformScale, uniformScale));
 #if defined(CARBONATED)
-            AZ_Assert(copy.GetTranslation().IsFinite(), "SetLocalTM: Transform is invalid");
+            AZ_Assert(t.GetTranslation().IsFinite(), "SetLocalTM: Transform is invalid");
 #endif
-            m_localTranslation.Set(copy.GetTranslation());
-            m_localRotation.Set(copy.GetRotation());
+            m_localTranslation.Set(t.GetTranslation());
+            m_localRotation.Set(t.GetRotation());
             // Gruber patch end // VMED
         }
 
