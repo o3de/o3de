@@ -88,6 +88,20 @@
                     }
                 },
                 {
+                    "Name": "SilhouetteGatherPass",
+                    "TemplateName": "SilhouetteGatherPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "DepthStencilOutput"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "SkyBoxPass",
                     "TemplateName": "MobileSkyBoxTemplate",
                     "Enabled": true,
@@ -122,7 +136,7 @@
                     ]
                 },
                 {
-                    "Name": "TransparentPass",
+                    "Name": "MobileTransparentPass",
                     "TemplateName": "MobileTransparentParentTemplate",
                     "Connections": [
                         {
@@ -142,6 +156,20 @@
                     ]
                 }, 
                 {
+                    "Name": "SilhouettePass",
+                    "TemplateName": "SilhouettePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "MobileTransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "AuxGeomPass",
                     "TemplateName": "AuxGeomPassTemplate",
                     "Enabled": true,
@@ -149,7 +177,7 @@
                         {
                             "LocalSlot": "ColorInputOutput",
                             "AttachmentRef": {
-                                "Pass": "TransparentPass",
+                                "Pass": "MobileTransparentPass",
                                 "Attachment": "InputOutput"
                             }
                         },
