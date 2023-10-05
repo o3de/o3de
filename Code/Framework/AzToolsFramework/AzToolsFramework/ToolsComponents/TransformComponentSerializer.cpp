@@ -67,6 +67,18 @@ namespace AzToolsFramework
                 result.Combine(isStaticLoadResult);
             }
 
+            // carbonated begin (mp-438): Provide the Sync Enabled option to the TransformComponent
+#if defined(CARBONATED)
+            {
+                JSR::ResultCode netSyncEnabledLoadResult = ContinueLoadingFromJsonObjectField(
+                    &transformComponentInstance->m_netSyncEnabled, azrtti_typeid<decltype(transformComponentInstance->m_netSyncEnabled)>(),
+                    inputValue, "Sync Enabled", context);
+
+                result.Combine(netSyncEnabledLoadResult);
+            }
+#endif
+            // carbonated end
+
             {
                 JSR::ResultCode interpolatePositionLoadResult = ContinueLoadingFromJsonObjectField(
                     &transformComponentInstance->m_interpolatePosition, azrtti_typeid<decltype(transformComponentInstance->m_interpolatePosition)>(),
@@ -163,6 +175,22 @@ namespace AzToolsFramework
 
                 result.Combine(resultIsStatic);
             }
+
+            // carbonated begin (mp-438): Provide the Sync Enabled option to the TransformComponent
+#if defined(CARBONATED)
+            {
+                AZ::ScopedContextPath subPathName(context, "m_netSyncEnabled");
+                const bool* netSyncEnabled = &transformComponentInstance->m_netSyncEnabled;
+                const bool* defaultNetSyncEnabled = defaultTransformComponentInstance ? &defaultTransformComponentInstance->m_netSyncEnabled : nullptr;
+
+                JSR::ResultCode resultNetSyncEnabled = ContinueStoringToJsonObjectField(
+                    outputValue, "Sync Enabled", netSyncEnabled, defaultNetSyncEnabled,
+                    azrtti_typeid<decltype(transformComponentInstance->m_netSyncEnabled)>(), context);
+
+                result.Combine(resultNetSyncEnabled);
+            }
+#endif
+            // carbonated end
 
             {
                 AZ::ScopedContextPath subPathName(context, "m_interpolatePosition");

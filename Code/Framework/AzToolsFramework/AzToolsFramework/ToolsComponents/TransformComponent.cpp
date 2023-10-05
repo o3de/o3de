@@ -162,12 +162,15 @@ namespace AzToolsFramework
                     classElement.RemoveElementByName(AZ_CRC("InterpolateScale", 0x9d00b831));
                 }
 
+                // carbonated begin (mp-438): Provide the Sync Enabled option to the TransformComponent
+#if !defined(CARBONATED)
                 if (classElement.GetVersion() < 10)
                 {
                     // The "Sync Enabled" flag is no longer needed.
                     classElement.RemoveElementByName(AZ_CRC_CE("Sync Enabled"));
                 }
-
+#endif
+                // carbonated end
                 return true;
             }
 
@@ -194,6 +197,11 @@ namespace AzToolsFramework
             , m_parentActivationTransformMode(AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform)
             , m_cachedWorldTransform(AZ::Transform::Identity())
             , m_suppressTransformChangedEvent(false)
+            // carbonated begin (mp-438): Provide the Sync Enabled option to the TransformComponent
+#if defined(CARBONATED)
+            , m_netSyncEnabled(false)
+#endif
+            // carbonated end
             , m_interpolatePosition(AZ::InterpolationMode::NoInterpolation)
             , m_interpolateRotation(AZ::InterpolationMode::NoInterpolation)
             , m_focusModeInterface(AZ::Interface<AzToolsFramework::FocusModeInterface>::Get())
@@ -1277,7 +1285,7 @@ namespace AzToolsFramework
                         ->
                         ClassElement(AZ::Edit::ClassElements::Group, "Network Sync")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_netSyncEnabled, "Sync to replicas", "Sync to network replicas.")->
+                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_netSyncEnabled, "Sync to network replicas", "")->
                         DataElement(AZ::Edit::UIHandlers::ComboBox, &TransformComponent::m_interpolatePosition,
                             "Position Interpolation", "Enable local interpolation of position.")->
                             EnumAttribute(AZ::InterpolationMode::NoInterpolation, "None")->
