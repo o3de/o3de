@@ -122,13 +122,12 @@ namespace AzToolsFramework::AssetUtils
         AZStd::vector<AZStd::string>& enabledPlatforms)
     {
         // note that the current host platform is enabled by default.
-        enabledPlatforms.push_back(AzToolsFramework::AssetSystem::GetHostAssetPlatform());
-
         // in the setreg the platform can be missing (commented out)
         // in which case it is disabled implicitly by not being there
         // or it can be 'disabled' which means that it is explicitly disabled.
         // or it can be 'enabled' which means that it is explicitly enabled.
         EnabledPlatformsVisitor visitor;
+        visitor.m_enabledPlatforms.push_back(AzToolsFramework::AssetSystem::GetHostAssetPlatform());
         settingsRegistry.Visit(visitor, AZ::SettingsRegistryInterface::FixedValueString(Internal::AssetProcessorSettingsKey) + "/Platforms");
         enabledPlatforms.insert(enabledPlatforms.end(), AZStd::make_move_iterator(visitor.m_enabledPlatforms.begin()),
             AZStd::make_move_iterator(visitor.m_enabledPlatforms.end()));
