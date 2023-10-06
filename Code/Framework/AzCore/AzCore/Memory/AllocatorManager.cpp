@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/Memory.h>
@@ -20,6 +21,12 @@
 
 namespace AZ
 {
+
+static void sys_DumpAllocators([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+{
+    AllocatorManager::Instance().DumpAllocators();
+}
+AZ_CONSOLEFREEFUNC(sys_DumpAllocators, AZ::ConsoleFunctorFlags::Null, "Print memory allocator statistics.");
 
 static EnvironmentVariable<AllocatorManager>& GetAllocatorManagerEnvVar()
 {
