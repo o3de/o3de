@@ -11,6 +11,7 @@
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
+#include <AzCore/Serialization/PointerObject.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
@@ -45,10 +46,18 @@ namespace AZ::DocumentPropertyEditor
             {
                 AZ_Assert(instance != nullptr, "Instance was nullptr when attempting to create a BoundContainer");
 
-                auto containerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
-                if (containerValue && !containerValue->IsNull())
+                AZ::Serialize::IDataContainer* container{};
+                if (auto containerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
+                    containerValue && !containerValue->IsNull())
                 {
-                    auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*containerValue);
+                    if (auto containerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerValue);
+                        containerObject && containerObject->m_typeId == azrtti_typeid<AZ::Serialize::IDataContainer>())
+                    {
+                        container = reinterpret_cast<AZ::Serialize::IDataContainer*>(containerObject->m_address);
+                    }
+                }
+                if (container != nullptr)
+                {
                     return AZStd::make_unique<BoundContainer>(container, instance);
                 }
                 return nullptr;
@@ -197,13 +206,25 @@ namespace AZ::DocumentPropertyEditor
             {
                 AZ_Assert(instance != nullptr, "Instance was nullptr when attempting to create a ContainerElement");
 
-                auto parentContainerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
-                if (parentContainerValue && !parentContainerValue->IsNull())
+                AZ::Serialize::IDataContainer* parentContainer{};
+                if (auto parentContainerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
+                    parentContainerValue && !parentContainerValue->IsNull())
                 {
-                    auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerValue);
-
+                    auto parentContainerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerValue);
+                    if (parentContainerObject && parentContainerObject->m_typeId == azrtti_typeid<AZ::Serialize::IDataContainer>())
+                    {
+                        parentContainer = reinterpret_cast<AZ::Serialize::IDataContainer*>(parentContainerObject->m_address);
+                    }
+                }
+                if (parentContainer != nullptr)
+                {
                     auto parentContainerInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
-                    auto parentContainerInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*parentContainerInstanceValue);
+                    void* parentContainerInstance{};
+                    AZStd::optional<AZ::PointerObject> parentContainerInstanceObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerInstanceValue);
+                    if (parentContainerInstanceObject.has_value())
+                    {
+                        parentContainerInstance = parentContainerInstanceObject->m_address;
+                    }
 
                     // Check if this element is actually standing in for a direct child of a container. This is used in scenarios like
                     // maps, where the direct children are actually pairs of key/value, but we need to only show the value as an
@@ -211,7 +232,11 @@ namespace AZ::DocumentPropertyEditor
                     auto containerElementOverrideValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
                     if (containerElementOverrideValue)
                     {
-                        instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*containerElementOverrideValue);
+                        AZStd::optional<AZ::PointerObject> containerElementOverrideObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerElementOverrideValue);
+                        if (containerElementOverrideObject.has_value())
+                        {
+                            instance = containerElementOverrideObject->m_address;
+                        }
                     }
 
                     return AZStd::make_unique<ContainerElement>(parentContainer, parentContainerInstance, instance);
@@ -593,8 +618,18 @@ namespace AZ::DocumentPropertyEditor
         {
             auto parentContainerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
             auto parentContainerInstanceAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
-            if (parentContainerAttribute && !parentContainerAttribute->IsNull() &&
-                parentContainerInstanceAttribute && !parentContainerInstanceAttribute->IsNull())
+
+            AZ::Serialize::IDataContainer* parentContainer{};
+            if (parentContainerAttribute && !parentContainerAttribute->IsNull())
+            {
+                if (auto parentContainerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerAttribute);
+                    parentContainerObject && parentContainerObject->m_typeId == azrtti_typeid<AZ::Serialize::IDataContainer>())
+                {
+                    parentContainer = reinterpret_cast<AZ::Serialize::IDataContainer*>(parentContainerObject->m_address);
+                }
+            }
+
+            if (parentContainer != nullptr && parentContainerInstanceAttribute && !parentContainerInstanceAttribute->IsNull())
             {
                 auto containerEntry = m_containers.ValueAtPath(m_builder.GetCurrentPath(), AZ::Dom::PrefixTreeMatch::ExactPath);
                 if (containerEntry)
@@ -607,8 +642,6 @@ namespace AZ::DocumentPropertyEditor
                         m_builder.GetCurrentPath(),
                         ContainerEntry{ nullptr, ContainerElement::CreateContainerElement(instance, attributes) });
                 }
-
-                auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerAttribute);
 
                 bool parentCanBeModified = true;
                 if (auto parentCanBeModifiedValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerCanBeModified);
@@ -707,12 +740,20 @@ namespace AZ::DocumentPropertyEditor
             else
             {
                 auto containerAttribute = attributes.Find(Reflection::DescriptorAttributes::Container);
+
+                AZ::Serialize::IDataContainer* container{};
                 if (containerAttribute && !containerAttribute->IsNull())
+                {
+                    if (auto containerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerAttribute);
+                        containerObject && containerObject->m_typeId == azrtti_typeid<AZ::Serialize::IDataContainer>())
+                    {
+                        container = reinterpret_cast<AZ::Serialize::IDataContainer*>(containerObject->m_address);
+                    }
+                }
+                if (container != nullptr)
                 {
                     m_containers.SetValue(
                         m_builder.GetCurrentPath(), ContainerEntry{ BoundContainer::CreateBoundContainer(access.Get(), attributes) });
-
-                    auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*containerAttribute);
 
                     auto labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
                     if (labelAttribute && !labelAttribute->IsNull() && labelAttribute->IsString())
