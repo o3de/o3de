@@ -34,6 +34,7 @@ namespace AZ::Test
     void CopyParameters(int argc, char** target, char** source);
 
     //! Get index of the specified parameter
+    //! Returns -1 if the parameter is not found
     int GetParameterIndex(int argc, char** argv, const std::string& param);
 
     //! Get multi-value parameter list based on a flag (and remove from argv if specified)

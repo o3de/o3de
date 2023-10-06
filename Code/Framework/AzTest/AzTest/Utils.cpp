@@ -22,8 +22,7 @@ namespace AZ::Test
 {
     bool ContainsParameter(int argc, char** argv, const std::string& param)
     {
-        int index = GetParameterIndex(argc, argv, param);
-        return index < 0 ? false : true;
+        return GetParameterIndex(argc, argv, param) >= 0;
     }
 
     void CopyParameters(int argc, char** target, char** source)
@@ -158,10 +157,7 @@ namespace AZ::Test
 
     AZStd::string GetCurrentExecutablePath()
     {
-        char exeDirectory[AZ_MAX_PATH_LEN];
-        AZ::Utils::GetExecutableDirectory(exeDirectory, AZ_ARRAY_SIZE(exeDirectory));
-
-        AZStd::string executablePath = exeDirectory;
+        AZStd::string executablePath{ AZStd::string_view(AZ::Utils::GetExecutableDirectory()) };
         return executablePath;
     }
 
@@ -237,26 +233,27 @@ namespace AZ::Test
     // Method to delete a folder recursively
     static void DeleteFolderRecursive(const AZ::IO::PathView& path)
     {
-        auto callback = [&path](AZStd::string_view filename, bool isFile) -> bool
+        AZ::IO::FixedMaxPath nullTerminatedPath{ path };
+        auto callback = [&nullTerminatedPath](AZStd::string_view filename, bool isFile) -> bool
         {
             if (isFile)
             {
-                auto filePath = AZ::IO::FixedMaxPath(path) / filename;
+                auto filePath = nullTerminatedPath / filename;
                 AZ::IO::SystemFile::Delete(filePath.c_str());
             }
             else
             {
                 if (filename != "." && filename != "..")
                 {
-                    auto folderPath = AZ::IO::FixedMaxPath(path) / filename;
+                    auto folderPath = nullTerminatedPath / filename;
                     DeleteFolderRecursive(folderPath);
                 }
             }
             return true;
         };
-        auto searchPath = AZ::IO::FixedMaxPath(path) / "*";
+        auto searchPath = nullTerminatedPath / "*";
         AZ::IO::SystemFile::FindFiles(searchPath.c_str(), callback);
-        AZ::IO::SystemFile::DeleteDir(AZ::IO::FixedMaxPathString(path.Native()).c_str());
+        AZ::IO::SystemFile::DeleteDir(nullTerminatedPath.c_str());
     }
 
     ScopedAutoTempDirectory::~ScopedAutoTempDirectory()
