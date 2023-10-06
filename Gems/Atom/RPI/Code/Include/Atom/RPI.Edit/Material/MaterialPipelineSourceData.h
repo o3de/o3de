@@ -58,6 +58,17 @@ namespace AZ
 
             AZStd::vector<ShaderTemplate> m_shaderTemplates;
 
+            // A list of members to be added to the Object SRG. For example, writing:
+            // 
+            // "objectSrg": [
+            //     "float4 m_myCustomVar1",
+            //     "uint   m_myCustomVar2"
+            // ],
+            // 
+            // in your .materialpipeline file will add m_myCustomVar1 and m_myCustomVar2
+            // to the ObjectSrg of all materials rendered in your material pipeline
+            AZStd::vector<AZStd::string> m_objectSrgAdditions;
+
             //! Relative path to a lua script to configure shader compilation
             AZStd::string m_pipelineScript;
         };
