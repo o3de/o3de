@@ -62,7 +62,8 @@ namespace AZ
             //! Return true if the pool was set to new memory budget successfully
             bool SetMemoryBudget(size_t newBudget);
 
-            //! Returns the maximum memory used by one of its pools for a specific heap type.
+            //! Iterates through all device-specific image pools and returns the HeapMemoryUsage
+            //! from the pool with the maximum memory budget.
             const HeapMemoryUsage& GetHeapMemoryUsage(HeapMemoryLevel heapMemoryLevel) const;
 
             //! Return if it supports tiled image feature
