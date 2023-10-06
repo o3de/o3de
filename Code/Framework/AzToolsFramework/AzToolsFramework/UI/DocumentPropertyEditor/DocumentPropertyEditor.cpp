@@ -1724,7 +1724,7 @@ namespace AzToolsFramework
         // message match for QueryKey
         auto showKeyQueryDialog = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapter, AZ::Dom::Path containerPath)
         {
-            KeyQueryDPE keyQueryUi(adapter);
+            KeyQueryDPE keyQueryUi(*adapter);
             if (keyQueryUi.exec() == QDialog::Accepted)
             {
                 AZ::DocumentPropertyEditor::Nodes::Adapter::AddContainerKey.InvokeOnDomNode(
