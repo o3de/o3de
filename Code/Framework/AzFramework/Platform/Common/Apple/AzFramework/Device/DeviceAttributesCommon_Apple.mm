@@ -7,6 +7,7 @@
  */
 
 #include <sys/utsname.h>
+#include <AzCore/Console/ConsoleTypeHelpers.h>
 #include <AzFramework/Device/DeviceAttributeDeviceModel.h>
 #include <AzFramework/Device/DeviceAttributeRAM.h>
 #include <Foundation/NSProcessInfo.h>
@@ -30,5 +31,6 @@ namespace AzFramework
         constexpr double BytestoGiB = 1024.0 * 1024.0 * 1024.0;
         auto memInBytes = [[NSProcessInfo processInfo] physicalMemory];
         m_valueInGiB = aznumeric_cast<float>(static_cast<double>(memInBytes) / BytestoGiB);
+        m_value = AZ::ConsoleTypeHelpers::ValueToString(m_valueInGiB);
     }
 } // AzFramework

@@ -6,6 +6,13 @@
                     "": [ "@gemroot:ShaderManagementConsole@/Scripts/GenerateShaderVariantListForMaterials.py" ]
                 }
             }
+		},
+		"ShaderManagementConsole": {
+			"DocumentTableView": {
+				"ContextMenuScripts" : {
+					"": [ "@gemroot:ShaderManagementConsole@/Scripts/ExpandOptionsFullCombinatorials.py" ]
+                }
+			}
         }
     }
 }

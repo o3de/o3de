@@ -348,7 +348,7 @@ def DPE_AllComponentsAddedRemoved():
         TestHelper.open_level("", "Base")
 
         # Verify the DPE is enabled
-        Report.critical_result(Tests.dpe_enabled, general.get_cvar("ed_enableDPE") == "true")
+        Report.critical_result(Tests.dpe_enabled, general.get_cvar("ed_enableDPEInspector") == "true")
 
         # Loop through list of components
         for component_category in all_component_categories:

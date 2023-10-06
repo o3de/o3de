@@ -18,6 +18,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -128,6 +129,26 @@ namespace AzToolsFramework
 
     constexpr const char* kPropertyEditorMenuActionMoveUp("editor/propertyEditorMoveUp");
     constexpr const char* kPropertyEditorMenuActionMoveDown("editor/propertyEditorMoveDown");
+
+    static constexpr const char* enableDPECVarName = "ed_enableDPEInspector";
+
+    AZ_CVAR(
+        bool,
+        ed_enableDPEInspector,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set, enables experimental Document Property Editor support for the Entity Inspector");
+
+    static bool ShouldUseDPE()
+    {
+        bool dpeEnabled = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue(enableDPECVarName, dpeEnabled);
+        }
+        return dpeEnabled;
+    }
 
     //since component editors are spaced apart to make room for drop indicator,
     //giving drop logic simple buffer so drops between editors don't go to the bottom
@@ -510,7 +531,7 @@ namespace AzToolsFramework
         , m_commandInvokedHandler(
               [this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
               {
-                  if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableDPECVarName())
+                  if (command == enableDPECVarName)
                   {
                       ClearInstances();
                       for (auto componentEditor : m_componentEditors)
@@ -1816,7 +1837,7 @@ namespace AzToolsFramework
             }
 
             // Set up other entity property editor customization
-            if (DocumentPropertyEditor::ShouldReplaceRPE() && Prefab::IsInspectorOverrideManagementEnabled())
+            if (ShouldUseDPE() && Prefab::IsInspectorOverrideManagementEnabled())
             {
                 // Set up visualization for overrides on the component
                 UpdateOverrideVisualization(*componentEditor);
@@ -1906,7 +1927,7 @@ namespace AzToolsFramework
             ComponentEditor::ComponentAdapterFactory adapterFactory =
                 [&]() -> AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter>
             {
-                if (DocumentPropertyEditor::ShouldReplaceRPE())
+                if (ShouldUseDPE())
                 {
                     return (
                         Prefab::IsInspectorOverrideManagementEnabled()
@@ -1939,7 +1960,7 @@ namespace AzToolsFramework
             componentEditor->GetPropertyEditor()->SetHiddenQueryFunction([this](const InstanceDataNode* node) { return QueryInstanceDataNodeHiddenStatus(node); });
             componentEditor->GetPropertyEditor()->SetIndicatorQueryFunction([this](const InstanceDataNode* node) { return GetAppropriateIndicator(node); });
 
-            if (DocumentPropertyEditor::ShouldReplaceRPE() && Prefab::IsInspectorOverrideManagementEnabled())
+            if (ShouldUseDPE() && Prefab::IsInspectorOverrideManagementEnabled())
             {
                 // Connect to the component icon's click event to display override context menu
                 connect(

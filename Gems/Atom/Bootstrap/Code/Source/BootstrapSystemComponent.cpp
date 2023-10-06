@@ -82,6 +82,7 @@ AZ_CVAR(uint32_t, r_width, 1920, nullptr, AZ::ConsoleFunctorFlags::DontReplicate
 AZ_CVAR(uint32_t, r_height, 1080, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
 AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
+AZ_CVAR(float, r_renderScale, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scale to apply to the window resolution.");
 
 namespace AZ
 {
@@ -224,6 +225,24 @@ namespace AZ
                         }
                     }
                 }
+
+                const AZStd::string renderScaleCvarName("r_renderScale");
+                if (pCmdLine->HasSwitch(renderScaleCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(renderScaleCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(renderScaleCvarName);
+                        if (AZ::StringFunc::LooksLikeFloat(valueStr.c_str()))
+                        {
+                            auto renderScale = AZ::StringFunc::ToFloat(valueStr.c_str());
+                            if (renderScale > 0)
+                            {
+                                r_renderScale = renderScale;
+                            }
+                        }
+                    }
+                }
             }
 
             void BootstrapSystemComponent::Activate()
@@ -247,7 +266,8 @@ namespace AZ
                     // command line arguments into cvars.
                     UpdateCVarsFromCommandLine();
 
-                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, r_width, r_height));
+                    auto windowSize = GetWindowResolution();
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, windowSize.m_width, windowSize.m_height));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
 
                     m_nativeWindow->Activate();
@@ -367,7 +387,8 @@ namespace AZ
                 if (!m_nativeWindow)
                 {
                     auto projectTitle = AZ::Utils::GetProjectDisplayName();
-                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, r_width, r_height));
+                    auto windowSize = GetWindowResolution();
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, windowSize.m_width, windowSize.m_height));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
 
                     m_nativeWindow->Activate();
@@ -409,7 +430,7 @@ namespace AZ
                     if (r_resolutionMode > 0u)
                     {
                         m_nativeWindow->SetEnableCustomizedResolution(true);
-                        m_nativeWindow->SetRenderResolution(AzFramework::WindowSize(r_width, r_height));
+                        m_nativeWindow->SetRenderResolution(GetWindowResolution());
                     }
                     else
                     {
@@ -636,6 +657,12 @@ namespace AZ
                     AZ_Error("AtomBootstrap", false, "Pipeline file failed to load from path: %s.", pipelineName.data());
                     return nullptr;
                 }
+            }
+
+            AzFramework::WindowSize BootstrapSystemComponent::GetWindowResolution() const
+            {
+                float scale = AZStd::max(static_cast<float>(r_renderScale), 0.f);
+                return AzFramework::WindowSize(static_cast<uint32_t>(r_width * scale), static_cast<uint32_t>(r_height * scale));
             }
 
             void BootstrapSystemComponent::CreateDefaultRenderPipeline()

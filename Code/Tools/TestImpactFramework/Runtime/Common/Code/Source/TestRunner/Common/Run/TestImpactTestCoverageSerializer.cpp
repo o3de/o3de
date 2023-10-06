@@ -135,7 +135,7 @@ namespace TestImpact
             rootNode->append_node(packagesNode);
 
             // Individual modules covered
-            for (const auto moduleCovered : testCoverage.GetModuleCoverages())
+            for (const auto& moduleCovered : testCoverage.GetModuleCoverages())
             {
                 AZ::rapidxml::xml_node<>* packageNode = doc.allocate_node(AZ::rapidxml::node_element, Keys[PackageKey]);
 
