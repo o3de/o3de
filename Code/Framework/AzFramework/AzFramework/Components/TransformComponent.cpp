@@ -1296,6 +1296,10 @@ namespace AzFramework
 
     void TransformComponent::ComputeLocalTM()
     {
+#ifdef CARBONATED
+        // In CARBONATED the m_worldTM does not send permanently to the clients via NetBindings. Only m_localTM is sent permamently.
+        m_localTM = m_worldTM;
+#else
         if (m_parentTM)
         {
             m_localTM = m_parentTM->GetWorldTM().GetInverse() * m_worldTM;
@@ -1304,7 +1308,7 @@ namespace AzFramework
         {
             m_localTM = m_worldTM;
         }
-
+#endif
         AZ::TransformNotificationBus::Event(
             m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
         m_transformChangedEvent.Signal(m_localTM, m_worldTM);
