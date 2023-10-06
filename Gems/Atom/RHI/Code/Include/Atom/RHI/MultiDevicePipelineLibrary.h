@@ -29,7 +29,7 @@ namespace AZ::RHI
 
             for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
             {
-                if (CheckBit(AZStd::to_underlying(deviceMask), deviceIndex))
+                if (CheckBit(AZStd::to_underlying(deviceMask), static_cast<u8>(deviceIndex)))
                 {
                     m_devicePipelineLibraryDescriptors[deviceIndex] = descriptor;
                 }
