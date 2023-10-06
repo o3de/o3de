@@ -14,15 +14,6 @@
 
 namespace AZ::RHI
 {
-    //! This custom allocator class is used to provide runtime type information
-    //! so we can differentiate this allocator from other SystemAllocators
-    class RHISystemAllocator final
-        : public AZ::SystemAllocator
-    {
-    public:
-        AZ_RTTI(RHISystemAllocator, "{C5F84DB9-AD7E-4846-AC4D-409F61F7DA84}", AZ::SystemAllocator);
-    };
-
     //! This class can be used to efficiently allocate small chunks of memory from an externally
     //! managed source (DMA / Gpu memory). It will recycle freed blocks by deferring for a configurable
     //! number of ticks. If the memory is being used as GPU local memory, its common for the CPU to write
@@ -39,7 +30,7 @@ namespace AZ::RHI
             uint32_t m_elementSize = 0;
         };
 
-        AZ_CLASS_ALLOCATOR(PoolAllocator, RHISystemAllocator);
+        AZ_CLASS_ALLOCATOR(PoolAllocator, AZ::SystemAllocator);
 
         PoolAllocator() = default;
 
