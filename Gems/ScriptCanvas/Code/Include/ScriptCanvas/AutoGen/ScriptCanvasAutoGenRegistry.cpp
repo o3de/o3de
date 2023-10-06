@@ -20,11 +20,9 @@ static AZ::EnvironmentVariable<ScriptCanvasModel> s_scriptModel;
 
 ScriptCanvasModel& ScriptCanvasModel::Instance()
 {
-    static bool _initialized = false;
     if (!s_scriptModel)
     {
         s_scriptModel = AZ::Environment::CreateVariable<ScriptCanvasModel>(s_scriptCanvasModelName);
-        _initialized = true;
     }
 
     return s_scriptModel.Get();
@@ -56,7 +54,7 @@ void ScriptCanvasModel::Init()
 
             if (m_verbose)
             {
-                AZ_TracePrintf("ScriptCanvas", "Register Descriptor: %s\n", descriptor->GetName());
+                AZ_Info("ScriptCanvas", "Register Descriptor: %s", descriptor->GetName());
             }
 
         }
@@ -73,7 +71,7 @@ bool ScriptCanvasModel::RegisterReflection(const AZStd::string& name, ReflectFun
 
             if (m_verbose)
             {
-                AZ_TracePrintf("ScriptCanvas", "RegisterReflection Descriptor: %s\n", name.c_str());
+                AZ_Info("ScriptCanvas", "RegisterReflection Descriptor: %s", name.c_str());
             }
         }
         else
@@ -82,7 +80,7 @@ bool ScriptCanvasModel::RegisterReflection(const AZStd::string& name, ReflectFun
 
             if (m_verbose)
             {
-                AZ_TracePrintf("ScriptCanvas", "RegisterReflection Reflect: %s\n", name.c_str());
+                AZ_Info("ScriptCanvas", "RegisterReflection Reflect: %s", name.c_str());
             }
         }
 
@@ -92,7 +90,7 @@ bool ScriptCanvasModel::RegisterReflection(const AZStd::string& name, ReflectFun
 
     if (m_verbose)
     {
-        AZ_TracePrintf("ScriptCanvas", "RegisterReflection: %s FAILED\n", name.c_str());
+        AZ_Info("ScriptCanvas", "RegisterReflection: %s FAILED", name.c_str());
     }
     
     return false;
@@ -104,7 +102,7 @@ void ScriptCanvasModel::Reflect(AZ::ReflectContext* context)
     {
         if (m_verbose)
         {
-            AZ_TracePrintf("ScriptCanvas", "Reflecting: %s\n", reflection.first.c_str());
+            AZ_Info("ScriptCanvas", "Reflecting: %s", reflection.first.c_str());
         }
 
         reflection.second(context);

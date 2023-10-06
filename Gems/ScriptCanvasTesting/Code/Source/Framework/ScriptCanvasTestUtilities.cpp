@@ -57,7 +57,7 @@ namespace ScriptCanvasTests
     {
         using namespace ScriptCanvas;
 
-  //      AZ_TEST_START_TRACE_SUPPRESSION;
+        AZ_TEST_START_TRACE_SUPPRESSION;
         const AZStd::string filePath = AZStd::string::format("%s/%s.%s", ScriptCanvasTestUtilitiesCPP::k_unitTestDirPathRelative, graphPath.data(), ScriptCanvasTestUtilitiesCPP::k_defaultExtension);
         ScriptCanvasEditor::RunGraphSpec runGraphSpec;
         runGraphSpec.runSpec.processOnly = true;
@@ -67,7 +67,7 @@ namespace ScriptCanvasTests
         auto reporters = ScriptCanvasEditor::RunGraph(runGraphSpec);
         reporters.front().MarkExpectParseError();
         ScriptCanvasTests::VerifyReporter(reporters.front());
-   //     AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
     }
 
     AZStd::string_view GetGraphNameFromPath(AZStd::string_view graphPath)
