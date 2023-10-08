@@ -179,11 +179,17 @@ namespace GraphCanvas
 
             SceneRequestBus::EventResult(selectedElements, m_activeGraphId, &SceneRequests::GetSelectedNodes);
 
-            if (selectedElements.size() == 1)
+            for (const auto& selectedElement : selectedElements)
             {
-                AZ::EntityId selectedElement = selectedElements.front();
-
-                GraphCanvas::GraphUtils::UngroupGroup(m_activeGraphId, selectedElement);
+                AZStd::vector< NodeId > selectedNodes;
+                SceneRequestBus::EventResult(selectedNodes, m_activeGraphId, &SceneRequests::GetSelectedNodes);
+                for (const auto& nodeId : selectedNodes)
+                {
+                    if (GraphUtils::IsNodeGroup(nodeId))
+                    {
+                        GraphCanvas::GraphUtils::UngroupGroup(m_activeGraphId, selectedElement);
+                    }
+                }
             }
         }
     }
@@ -324,7 +330,20 @@ namespace GraphCanvas
 
         m_ui->addComment->setEnabled(hasScene && !m_viewDisabled);
         m_ui->groupNodes->setEnabled(hasScene && !m_viewDisabled);
-        m_ui->ungroupNodes->setEnabled(hasSelection && hasScene && !m_viewDisabled);
+
+        bool isGroup = false;
+
+        AZStd::vector< NodeId > selectedNodes;
+        SceneRequestBus::EventResult(selectedNodes, m_activeGraphId, &SceneRequests::GetSelectedNodes);
+        for (const auto& nodeId : selectedNodes)
+        {
+            if (GraphUtils::IsNodeGroup(nodeId))
+            {
+                isGroup = true;
+            }
+        }
+
+        m_ui->ungroupNodes->setEnabled(hasSelection && hasScene && !m_viewDisabled && isGroup);
     }
 
     void AssetEditorToolbar::OnCommentMenuAboutToShow()
