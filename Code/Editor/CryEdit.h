@@ -88,6 +88,7 @@ class SANDBOX_API CCryEditApp
     : public QObject
     , protected AzFramework::AssetSystemInfoBus::Handler
     , protected EditorIdleProcessingBus::Handler
+    , protected AzFramework::AssetSystemStatusBus::Handler
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -229,6 +230,10 @@ public:
 protected:
     // ------- AzFramework::AssetSystemInfoBus::Handler ------
     void OnError(AzFramework::AssetSystem::AssetSystemErrors error) override;
+    // -------------------------------------------
+
+    // ------- AzFramework::AssetSystemStatusBus::Handler ------
+    void AssetSystemWaiting() override;
     // -------------------------------------------
 
 private:

@@ -881,7 +881,8 @@ namespace AZ
     // Create a class builder that that can reflect fields and attributes to SerializeContext ClassData
     auto SerializeContext::ReflectClassInternal(const char* className, const AZ::TypeId& classTypeId,
         IObjectFactory* factory, const DeprecatedNameVisitWrapper& callback,
-        IRttiHelper* rttiHelper, CreateAnyFunc createAnyFunc) -> ClassBuilder
+        IRttiHelper* rttiHelper, CreateAnyFunc createAnyFunc,
+        CreateAnyActionHandler createAnyActionHandlerFunc) -> ClassBuilder
     {
         // Add any the deprecated type names to the deprecated type name to type id map
         auto AddDeprecatedNames = [this, &typeUuid = classTypeId](AZStd::string_view deprecatedName)
@@ -891,8 +892,9 @@ namespace AZ
         callback(AddDeprecatedNames);
 
         m_classNameToUuid.emplace(AZ::Crc32(className), classTypeId);
-        auto result = m_uuidMap.emplace(classTypeId,
-            ClassData::CreateImpl(className, classTypeId, factory, nullptr, nullptr, rttiHelper));
+        auto result = m_uuidMap.emplace(
+            classTypeId,
+            ClassData::CreateImpl(className, classTypeId, factory, nullptr, nullptr, rttiHelper, AZStd::move(createAnyActionHandlerFunc)));
         AZ_Assert(result.second, "This class type %s could not be registered with duplicated Uuid: %s.",
             className, classTypeId.ToString<AZStd::string>().c_str());
         m_uuidAnyCreationMap.emplace(classTypeId, createAnyFunc);
@@ -2393,6 +2395,7 @@ namespace AZ::Serialize
     AZ_TYPE_INFO_WITH_NAME_IMPL(ClassElement, "ClassElement", "{7D386902-A1D9-4525-8284-F68435FE1D05}");
     AZ_TYPE_INFO_WITH_NAME_IMPL(ClassData, "ClassData", "{20EB8E2E-D807-4039-84E2-CE37D7647CD4}");
     AZ_TYPE_INFO_WITH_NAME_IMPL(IDataContainer, "IDataContainer", "{8565CBEA-C077-4A49-927B-314533A6EDB1}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(IDataContainer);
     AZ_TYPE_INFO_WITH_NAME_IMPL(IDataContainer::IAssociativeDataContainer, "IAssociativeDataContainer", "{58CF6250-6B0F-4A25-9864-25A64EB55DB1}");
     AZ_TYPE_INFO_WITH_NAME_IMPL(EnumerateInstanceCallContext, "EnumerateInstanceCallContext", "{FCC1DB4B-72BD-4D78-9C23-C84B91589D33}");
     //=========================================================================
@@ -3381,7 +3384,7 @@ namespace AZ::Serialize
 
     auto ClassData::CreateImpl(const char* name, const Uuid& typeUuid,
         IObjectFactory* factory, IDataSerializer* serializer, IDataContainer* container,
-        IRttiHelper* rttiHelper) -> ClassData
+        IRttiHelper* rttiHelper, SerializeContext::CreateAnyActionHandler createAzStdAnyActionHandler) -> ClassData
     {
         ClassData cd;
         cd.m_name = name;
@@ -3397,6 +3400,8 @@ namespace AZ::Serialize
         cd.m_container = container;
         cd.m_azRtti = rttiHelper;
         cd.m_editData = nullptr;
+        // Store the action handler
+        cd.m_createAzStdAnyActionHandler = AZStd::move(createAzStdAnyActionHandler);
         return cd;
     }
 

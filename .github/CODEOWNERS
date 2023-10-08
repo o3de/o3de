@@ -25,6 +25,7 @@
 /Gems/LmbrCentral/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/Profiler/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Registry/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/scripts/lldb/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /scripts/o3de/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /scripts/o3de.* @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Templates/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
@@ -56,7 +57,7 @@
 /Code/Framework/AzCore/Tests/TestCatalog.* @o3de/sig-content-maintainers @o3de/sig-content-reviewers
 /Code/Framework/AzFramework/AzFramework/Asset @o3de/sig-content-maintainers @o3de/sig-content-reviewers
 /Code/Framework/AzFramework/Tests/Asset* @o3de/sig-content-maintainers @o3de/sig-content-reviewers
-  
+
 # SIG-Content Viewport ownership area
 /Code/Framework/AzFramework/AzFramework/Viewport/ @o3de/sig-content-maintainers
 /Code/Framework/AzFramework/AzFramework/Visibility/ @o3de/sig-content-maintainers

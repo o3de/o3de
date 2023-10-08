@@ -1543,6 +1543,14 @@ namespace UnitTest
         // Testing AZ_STRING_FORMATTER too
         result = AZStd::string::format("%s" AZ_STRING_FORMAT "%s", "[", AZ_STRING_ARG(view2), "]");
         EXPECT_EQ(AZStd::string{"[long]"}, result);
+
+        // Test the AZ_TRAIT_FORMAT_STRING_WPRINTF_* variants for wstrings
+        constexpr AZStd::wstring_view wideView = L"This is a long string";
+        AZStd::wstring wideResult = AZStd::wstring::format(AZ_TRAIT_FORMAT_STRING_WPRINTF_STRING_WITH_SIZE, AZ_STRING_ARG(view1));
+        EXPECT_EQ(wideView, wideResult);
+
+        wideResult = AZStd::wstring::format(AZ_TRAIT_FORMAT_STRING_WPRINTF_WSTRING_WITH_SIZE, AZ_STRING_ARG(wideView));
+        EXPECT_EQ(wideView, wideResult);
     }
 
     template<typename T>

@@ -361,7 +361,7 @@ namespace AtomToolsFramework
             }
 
             const auto& path = entry->GetFullPath();
-            return !AZ::StringFunc::Contains(path, "cache") &&
+            return !IsPathIgnored(path) &&
                 AZStd::any_of(
                     supportedExtensions.begin(),
                     supportedExtensions.end(),
@@ -445,7 +445,7 @@ namespace AtomToolsFramework
     {
         const auto& fullPath = GetPathWithoutAlias(path);
         const AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(fullPath).LexicallyNormal();
-        for (const auto& assetFolder : GetNonCacheSourceFolders())
+        for (const auto& assetFolder : GetSupportedSourceFolders())
         {
             // Check if the path is relative to the asset folder
             if (assetPath.IsRelativeTo(AZ::IO::PathView(assetFolder)))
@@ -664,7 +664,7 @@ namespace AtomToolsFramework
     void VisitFilesInFolder(
         const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse)
     {
-        if (!visitorFn || AZ::StringFunc::Contains(folder, "cache"))
+        if (!visitorFn || IsPathIgnored(folder))
         {
             return;
         }
@@ -703,20 +703,18 @@ namespace AtomToolsFramework
 
     void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn)
     {
-        if (!visitorFn)
+        if (visitorFn)
         {
-            return;
-        }
-
-        for (const AZStd::string& scanFolder : GetNonCacheSourceFolders())
-        {
-            VisitFilesInFolder(scanFolder, visitorFn, true);
+            for (const AZStd::string& scanFolder : GetSupportedSourceFolders())
+            {
+                VisitFilesInFolder(scanFolder, visitorFn, true);
+            }
         }
     }
 
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn)
     {
-        const auto& scanFolders = GetNonCacheSourceFolders();
+        const auto& scanFolders = GetSupportedSourceFolders();
 
         AZStd::vector<AZStd::string> results;
         results.reserve(scanFolders.size());
@@ -761,7 +759,31 @@ namespace AtomToolsFramework
             });
     }
 
-    AZStd::vector<AZStd::string> GetNonCacheSourceFolders()
+    bool IsPathIgnored(const AZStd::string& path)
+    {
+        // Ignoring the cache folder is currently the most common case for tools that want to ignore intermediate assets
+        const bool ignoreCacheFolder = GetSettingsValue("/O3DE/AtomToolsFramework/Application/IgnoreCacheFolder", true);
+        if (ignoreCacheFolder && AZ::StringFunc::Contains(path, "cache"))
+        {
+            return true;
+        }
+
+        // For more extensive customization, pattern matching is also supported via IgnoredPathRegexPatterns. This is empty by default.
+        for (const auto& patternStr : GetSettingsObject("/O3DE/AtomToolsFramework/Application/IgnoredPathRegexPatterns", AZStd::vector<AZStd::string>{}))
+        {
+            if (!patternStr.empty())
+            {
+                AZStd::regex patternRegex(patternStr, AZStd::regex::flag_type::icase);
+                if (AZStd::regex_match(path, patternRegex))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    AZStd::vector<AZStd::string> GetSupportedSourceFolders()
     {
         AZStd::vector<AZStd::string> scanFolders;
         scanFolders.reserve(100);
@@ -769,7 +791,7 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetSystemRequestBus::Broadcast(
             &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
 
-        AZStd::erase_if(scanFolders, [](const AZStd::string& path){ return AZ::StringFunc::Contains(path, "cache"); });
+        AZStd::erase_if(scanFolders, [](const AZStd::string& path){ return IsPathIgnored(path); });
         return scanFolders;
     }
 
@@ -864,7 +886,8 @@ namespace AtomToolsFramework
             addUtilFunc(behaviorContext->Method("GetPathWithoutAlias", GetPathWithoutAlias, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithAlias", GetPathWithAlias, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingExtension", GetPathsInSourceFoldersMatchingExtension, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetNonCacheSourceFolders", GetNonCacheSourceFolders, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("IsPathIgnored", IsPathIgnored, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSupportedSourceFolders", GetSupportedSourceFolders, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetSettingsValue_bool", GetSettingsValue<bool>, nullptr, ""));
             addUtilFunc(behaviorContext->Method("SetSettingsValue_bool", SetSettingsValue<bool>, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetSettingsValue_s64", GetSettingsValue<AZ::s64>, nullptr, ""));

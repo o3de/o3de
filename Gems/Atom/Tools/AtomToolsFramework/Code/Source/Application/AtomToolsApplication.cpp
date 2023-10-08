@@ -16,6 +16,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/AzFrameworkNativeUIModule.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -150,6 +151,7 @@ namespace AtomToolsFramework
                 azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
                 azrtti_typeid<AzToolsFramework::PerforceComponent>(),
                 azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
 
         return components;
@@ -370,7 +372,7 @@ namespace AtomToolsFramework
         }
 
         // Reload the assetcatalog.xml at this point again
-        // Start Monitoring Asset changes over the network and load the AssetCatalog
+        // Start monitoring asset changes over the network and load the AssetCatalog
         auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
         {
             if (AZ::IO::FixedMaxPath assetCatalogPath;

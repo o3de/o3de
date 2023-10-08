@@ -7,9 +7,19 @@
 #
 
 # Copy snapcraft file
-configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.in"
+
+set(snap_file_name "o3de_${CPACK_PACKAGE_VERSION}_amd64")
+
+if(CPACK_SNAP_DISTRO)
+  configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft_${CPACK_SNAP_DISTRO}.yaml.in"
     "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
-)
+  )
+  set(snap_file_name "o3de_${CPACK_PACKAGE_VERSION}_${CPACK_SNAP_DISTRO}_amd64")
+else()
+  configure_file("${LY_ROOT_FOLDER}/cmake/Platform/Linux/Packaging/snapcraft.yaml.in"
+    "${CPACK_TEMPORARY_DIRECTORY}/snapcraft.yaml"
+  )
+endif()
 
 execute_process (COMMAND lsb_release -a)
 
@@ -35,5 +45,5 @@ set(snap_file "${CPACK_TEMPORARY_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.
 # which is too late to be uploaded.
 file(COPY_FILE
                 ${snap_file}
-                "${CPACK_TOPLEVEL_DIRECTORY}/o3de_${CPACK_PACKAGE_VERSION}_amd64.snap"
+                "${CPACK_TOPLEVEL_DIRECTORY}/${snap_file_name}.snap"
             )

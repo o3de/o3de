@@ -11,6 +11,8 @@
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 
+#include <AzCore/std/containers/unordered_map.h>
+
 namespace AZ::RHI
 {
     struct ImageViewDescriptor;
@@ -125,6 +127,29 @@ namespace AZ::RHI
         uint32_t m_offset = 0;
     };
 
+    struct MultiDeviceImageSubresourceLayout
+    {
+        AZ_TYPE_INFO(MultiDeviceImageSubresourceLayout, "{8AD0DC97-5AAA-470F-8853-C8A55E023CD1}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        MultiDeviceImageSubresourceLayout() = default;
+
+        ImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex)
+        {
+            return m_deviceImageSubresourceLayout[deviceIndex];
+        }
+
+        const ImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex) const
+        {
+            AZ_Assert(
+                m_deviceImageSubresourceLayout.find(deviceIndex) != m_deviceImageSubresourceLayout.end(),
+                "No ImageSubresourceLayout found for device index %d\n",
+                deviceIndex);
+            return m_deviceImageSubresourceLayout.at(deviceIndex);
+        }
+
+        AZStd::unordered_map<int, ImageSubresourceLayout> m_deviceImageSubresourceLayout;
+    };
 
     //! This family of helper function provide a standard subresource layout suitable for
     //! the source of a copy from system memory to a destination RHI staging buffer. The results are

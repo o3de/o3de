@@ -47,17 +47,21 @@ namespace AzToolsFramework
         void RootAssetBrowserEntry::Update(const char* enginePath)
         {
             RemoveChildren();
-            EntryCache::GetInstance()->Clear();
+
+            auto entryCache = EntryCache::GetInstance();
+            entryCache->Clear();
 
             m_enginePath = AZ::IO::Path(enginePath).LexicallyNormal();
             m_projectPath = AZ::IO::Path(AZ::Utils::GetProjectPath()).LexicallyNormal();
             SetFullPath(m_enginePath);
+            m_gemNames.clear();
+
             AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
             if (settingsRegistry != nullptr)
             {
                 AZStd::vector<AzFramework::GemInfo> gemInfoList;
                 AzFramework::GetGemsInfo(gemInfoList, *settingsRegistry);
-                for (AzFramework::GemInfo gemInfo : gemInfoList)
+                for (const AzFramework::GemInfo& gemInfo : gemInfoList)
                 {
                     m_gemNames.insert(gemInfo.m_absoluteSourcePaths.begin(), gemInfo.m_absoluteSourcePaths.end());
                 }
@@ -74,16 +78,17 @@ namespace AzToolsFramework
             m_isInitialUpdate = newValue;
         }
 
-
         void RootAssetBrowserEntry::AddScanFolder(const AssetDatabase::ScanFolderDatabaseEntry& scanFolderDatabaseEntry)
         {
+            auto entryCache = EntryCache::GetInstance();
+
             // if it doesn't exist on disk yet, don't create it on the gui, yet.  We cache its info for later.
-            EntryCache::GetInstance()->m_knownScanFolders[scanFolderDatabaseEntry.m_scanFolderID] = scanFolderDatabaseEntry.m_scanFolder;
+            entryCache->m_knownScanFolders[scanFolderDatabaseEntry.m_scanFolderID] = scanFolderDatabaseEntry.m_scanFolder;
 
             if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(scanFolderDatabaseEntry.m_scanFolder.c_str()))
             {
-                const auto scanFolder = CreateFolders(scanFolderDatabaseEntry.m_scanFolder, this, true);
-                EntryCache::GetInstance()->m_scanFolderIdMap[scanFolderDatabaseEntry.m_scanFolderID] = scanFolder;
+                const auto& scanFolder = CreateFolders(scanFolderDatabaseEntry.m_scanFolder, this, true);
+                entryCache->m_scanFolderIdMap[scanFolderDatabaseEntry.m_scanFolderID] = scanFolder;
             }
         }
 
@@ -93,21 +98,22 @@ namespace AzToolsFramework
             
             AssetBrowserEntry* scanFolder = nullptr;
 
-            auto itScanFolder = EntryCache::GetInstance()->m_scanFolderIdMap.find(fileDatabaseEntry.m_scanFolderPK);
-            if (itScanFolder == EntryCache::GetInstance()->m_scanFolderIdMap.end())
+            auto entryCache = EntryCache::GetInstance();
+            auto itScanFolder = entryCache->m_scanFolderIdMap.find(fileDatabaseEntry.m_scanFolderPK);
+            if (itScanFolder == entryCache->m_scanFolderIdMap.end())
             {
-                // this scanfolder hasn't been created it, it probably just now popped into existence, so create the element now:
+                // this scanfolder hasn't been created. it probably just now popped into existence, so create the element now:
                 // the only thing we need to know is what the path to the scanfolder is.
-                auto scanFolderDetailsIt = EntryCache::GetInstance()->m_knownScanFolders.find(fileDatabaseEntry.m_scanFolderPK);
-                if (scanFolderDetailsIt == EntryCache::GetInstance()->m_knownScanFolders.end())
+                auto scanFolderDetailsIt = entryCache->m_knownScanFolders.find(fileDatabaseEntry.m_scanFolderPK);
+                if (scanFolderDetailsIt == entryCache->m_knownScanFolders.end())
                 {
                     // we can't even find the details.
-                    AZ_Assert(false, "No scan folder with id %d", fileDatabaseEntry.m_scanFolderPK);
+                    AZ_Warning("Asset Browser", false, "No scan folder with id %d", fileDatabaseEntry.m_scanFolderPK);
                     return;
                 }
 
                 scanFolder = CreateFolders(scanFolderDetailsIt->second.c_str(), this, true);
-                EntryCache::GetInstance()->m_scanFolderIdMap[fileDatabaseEntry.m_scanFolderPK] = scanFolder;
+                entryCache->m_scanFolderIdMap[fileDatabaseEntry.m_scanFolderPK] = scanFolder;
             }
             else
             {
@@ -115,17 +121,17 @@ namespace AzToolsFramework
             }
 
             // verify that file does not already exist
-            const auto itFile = EntryCache::GetInstance()->m_fileIdMap.find(fileDatabaseEntry.m_fileID);
-            if (itFile != EntryCache::GetInstance()->m_fileIdMap.end())
+            const auto itFile = entryCache->m_fileIdMap.find(fileDatabaseEntry.m_fileID);
+            if (itFile != entryCache->m_fileIdMap.end())
             {
-                AZ_Assert(false, "File %d already exists", fileDatabaseEntry.m_fileID);
+                AZ_Warning("Asset Browser", false, "File %d already exists", fileDatabaseEntry.m_fileID);
                 return;
             }
 
             AZ::IO::FixedMaxPath absoluteFilePath = AZ::IO::FixedMaxPath(AZStd::string_view{ scanFolder->GetFullPath() })
                 / fileDatabaseEntry.m_fileName.c_str();
 
-            AssetBrowserEntry* file;
+            AssetBrowserEntry* file{};
             // file can be either folder or actual file
             if (fileDatabaseEntry.m_isFolder)
             {
@@ -145,6 +151,7 @@ namespace AzToolsFramework
                 source->m_extension = absoluteFilePath.Extension().Native();
                 source->m_diskSize = AZ::IO::SystemFile::Length(absoluteFilePath.c_str());
                 source->m_modificationTime = AZ::IO::SystemFile::ModificationTime(absoluteFilePath.c_str());
+
                 AZ::IO::FixedMaxPath assetPath;
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
@@ -182,14 +189,16 @@ namespace AzToolsFramework
                 file = source;
             }
 
-            EntryCache::GetInstance()->m_fileIdMap[fileDatabaseEntry.m_fileID] = file;
-            AZStd::string filePath = AZ::IO::PathView(file->m_fullPath).LexicallyNormal().String();
-            EntryCache::GetInstance()->m_absolutePathToFileId[filePath] = fileDatabaseEntry.m_fileID;
+            entryCache->m_fileIdMap[fileDatabaseEntry.m_fileID] = file;
+
+            const AZStd::string filePath = AZ::IO::PathView(file->m_fullPath).LexicallyNormal().String();
+            entryCache->m_absolutePathToFileId[filePath] = fileDatabaseEntry.m_fileID;
         }
 
         bool RootAssetBrowserEntry::RemoveFile(const AZ::s64& fileId) const
         {
-            auto fileIdNodeHandle = EntryCache::GetInstance()->m_fileIdMap.extract(fileId);
+            auto entryCache = EntryCache::GetInstance();
+            auto fileIdNodeHandle = entryCache->m_fileIdMap.extract(fileId);
             if (fileIdNodeHandle.empty())
             {
                 // file may have previously been removed if its parent folder was deleted
@@ -212,14 +221,15 @@ namespace AzToolsFramework
             }
 
             AzFramework::StringFunc::Path::Normalize(fullPath);
-            EntryCache::GetInstance()->m_absolutePathToFileId.erase(fullPath);
+            entryCache->m_absolutePathToFileId.erase(fullPath);
             return true;
         }
 
         bool RootAssetBrowserEntry::AddSource(const SourceWithFileID& sourceWithFileIdEntry) const
         {
-            const auto itFile = EntryCache::GetInstance()->m_fileIdMap.find(sourceWithFileIdEntry.first);
-            if (itFile == EntryCache::GetInstance()->m_fileIdMap.end())
+            auto entryCache = EntryCache::GetInstance();
+            const auto itFile = entryCache->m_fileIdMap.find(sourceWithFileIdEntry.first);
+            if (itFile == entryCache->m_fileIdMap.end())
             {
                 AZ_Warning("Asset Browser", false, "Add source failed: file %d not found, retrying later", sourceWithFileIdEntry.first);
                 return false;
@@ -229,15 +239,16 @@ namespace AzToolsFramework
             source->m_sourceId = sourceWithFileIdEntry.second.m_sourceID;
             source->m_sourceUuid = sourceWithFileIdEntry.second.m_sourceGuid;
             source->PathsUpdated(); // update thumbnailkey to valid uuid
-            EntryCache::GetInstance()->m_sourceUuidMap[source->m_sourceUuid] = source;
-            EntryCache::GetInstance()->m_sourceIdMap[source->m_sourceId] = source;
+            entryCache->m_sourceUuidMap[source->m_sourceUuid] = source;
+            entryCache->m_sourceIdMap[source->m_sourceId] = source;
             return true;
         }
 
         void RootAssetBrowserEntry::RemoveSource(const AZ::Uuid& sourceUuid) const
         {
-            const auto itSource = EntryCache::GetInstance()->m_sourceUuidMap.find(sourceUuid);
-            if (itSource == EntryCache::GetInstance()->m_sourceUuidMap.end())
+            auto entryCache = EntryCache::GetInstance();
+            const auto itSource = entryCache->m_sourceUuidMap.find(sourceUuid);
+            if (itSource == entryCache->m_sourceUuidMap.end())
             {
                 return;
             }
@@ -249,17 +260,18 @@ namespace AzToolsFramework
                 RemoveProduct(product->m_assetId);
             }
 
-            EntryCache::GetInstance()->m_sourceIdMap.erase(itSource->second->m_sourceId);
+            entryCache->m_sourceIdMap.erase(itSource->second->m_sourceId);
             itSource->second->m_sourceId = -1;
             itSource->second->m_sourceUuid = AZ::Uuid::CreateNull();
 
-            EntryCache::GetInstance()->m_sourceUuidMap.erase(itSource);
+            entryCache->m_sourceUuidMap.erase(itSource);
         }
 
         bool RootAssetBrowserEntry::AddProduct(const ProductWithUuid& productWithUuidDatabaseEntry)
         {
-            auto itSource = EntryCache::GetInstance()->m_sourceUuidMap.find(productWithUuidDatabaseEntry.first);
-            if (itSource == EntryCache::GetInstance()->m_sourceUuidMap.end())
+            auto entryCache = EntryCache::GetInstance();
+            auto itSource = entryCache->m_sourceUuidMap.find(productWithUuidDatabaseEntry.first);
+            if (itSource == entryCache->m_sourceUuidMap.end())
             {
                 return false;
             }
@@ -274,9 +286,9 @@ namespace AzToolsFramework
 
             const AZ::Data::AssetId assetId(AZ::Data::AssetId(productWithUuidDatabaseEntry.first, productWithUuidDatabaseEntry.second.m_subID));
             ProductAssetBrowserEntry* product;
-            const auto itProduct = EntryCache::GetInstance()->m_productAssetIdMap.find(assetId);
+            const auto itProduct = entryCache->m_productAssetIdMap.find(assetId);
             bool needsAdd = false;
-            if (itProduct != EntryCache::GetInstance()->m_productAssetIdMap.end())
+            if (itProduct != entryCache->m_productAssetIdMap.end())
             {
                 product = itProduct->second;
             }
@@ -336,7 +348,7 @@ namespace AzToolsFramework
             }
             product->m_displayName = QString::fromUtf8(displayName.c_str());
             product->m_displayPath = QString::fromUtf8(AZ::IO::Path(cleanedRelative.ParentPath()).c_str());
-            EntryCache::GetInstance()->m_productAssetIdMap[assetId] = product;
+            entryCache->m_productAssetIdMap[assetId] = product;
 
             if (needsAdd)
             {
@@ -349,8 +361,9 @@ namespace AzToolsFramework
 
         void RootAssetBrowserEntry::RemoveProduct(const AZ::Data::AssetId& assetId) const
         {
-            const auto itProduct = EntryCache::GetInstance()->m_productAssetIdMap.find(assetId);
-            if (itProduct == EntryCache::GetInstance()->m_productAssetIdMap.end())
+            auto entryCache = EntryCache::GetInstance();
+            const auto itProduct = entryCache->m_productAssetIdMap.find(assetId);
+            if (itProduct == entryCache->m_productAssetIdMap.end())
             {
                 return;
             }
@@ -465,7 +478,7 @@ namespace AzToolsFramework
                 : AZ::IO::FixedMaxPath(absolutePathView);
 
             AZ::IO::FixedMaxPath constructor;
-            for (AZ::IO::FixedMaxPath scanFolderSegment : proximateToPath)
+            for (const AZ::IO::FixedMaxPath& scanFolderSegment : proximateToPath)
             {
                 constructor = constructor / scanFolderSegment;
                 // if this is the final segment, and we are in a scan folder, this represents the actual scan folder.

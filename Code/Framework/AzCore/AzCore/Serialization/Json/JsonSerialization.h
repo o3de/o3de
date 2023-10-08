@@ -34,6 +34,27 @@ namespace AZ
         Greater,
         Error
     };
+
+    //! Represents entries of which reflection context a type is registered
+    //!
+    //! Only one value is returned.
+    //! The values are NOT bitwise-ORed together if the type is registered with multiple context,
+    //! the JsonRegistrationContext is set before the SerializeContext
+    enum class RegisteredReflectionContext
+    {
+        None = 0,
+        JsonRegistrationContext = 1,
+        SerializeContext,
+    };
+    //! structure which stores the result of an operation to query if an AZ::TypeID
+    //! is registered with a reflection context
+    struct RegisteredReflectionContextResult
+    {
+        //! @return true if the type is reflected with any reflection context
+        explicit operator bool() const;
+
+        RegisteredReflectionContext m_reflectContextValue{ RegisteredReflectionContext::None };
+    };
     
     //! Core class to handle serialization to and from json documents.
     //! The Json Serialization works by taking a default constructed object and then apply the information found in the JSON document
@@ -302,6 +323,13 @@ namespace AZ
         //! @param settings Additional settings that control the way the imports are restored.
         static JsonSerializationResult::ResultCode RestoreImports(
             rapidjson::Value& jsonDoc, rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings);
+
+        //! Returns an result structure indicating if the type is reflected using either the SerializeContext or JsonRegistrationContext
+        //! If the type is reflected in both contexts, then the JsonRegistrationContext is given preference in that case
+        //! @param typeId AZ TypeInfo to query in the SerializeContext or JSON RegistrationContext
+        //! @return result structure which is convertible to bool. If the type is either reflected in SerializeContext or JsonRegistrationContext
+        //! then it converts to true, otherwise the result structure converts to false
+        static RegisteredReflectionContextResult IsTypeSerializable(const AZ::TypeId& typeId, JsonSerializerSettings settings = {});
 
     private:
         JsonSerialization() = delete;

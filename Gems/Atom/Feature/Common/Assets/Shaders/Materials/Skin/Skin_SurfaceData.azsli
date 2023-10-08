@@ -38,6 +38,13 @@ class SurfaceData_Skin
     real3 baseColor;
     real metallic;
 
+    //! Dual specular parameters
+
+    real dualSpecFactor;
+    real dualSpecRoughness;
+    real dualSpecRoughnessA2;
+    real dualSpecF0;
+
     //! Subsurface scattering parameters
     real subsurfaceScatteringFactor;
     real subsurfaceScatteringQuality;

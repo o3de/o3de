@@ -359,6 +359,7 @@ CCryEditApp::CCryEditApp()
     m_sPreviewFile[0] = 0;
 
     AzFramework::AssetSystemInfoBus::Handler::BusConnect();
+    AzFramework::AssetSystemStatusBus::Handler::BusConnect();
 
     m_disableIdleProcessingCounter = 0;
     EditorIdleProcessingBus::Handler::BusConnect();
@@ -368,6 +369,7 @@ CCryEditApp::CCryEditApp()
 CCryEditApp::~CCryEditApp()
 {
     EditorIdleProcessingBus::Handler::BusDisconnect();
+    AzFramework::AssetSystemStatusBus::Handler::BusDisconnect();
     AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
     s_currentInstance = nullptr;
 }
@@ -794,6 +796,11 @@ QString FormatRichTextCopyrightNotice()
     return copyrightString.arg(copyrightHtmlSymbol);
 }
 
+void CCryEditApp::AssetSystemWaiting()
+{
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 {
@@ -808,8 +815,6 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
     g_splashScreenStateLock.unlock();
 
     splashScreen->show();
-    // Make sure the initial paint of the splash screen occurs so we dont get stuck with a blank window
-    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
     QObject::connect(splashScreen, &QObject::destroyed, splashScreen, [=]
     {

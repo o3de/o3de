@@ -25,14 +25,6 @@
 
 AZ_CVAR(
     bool,
-    ed_enableDPE,
-    false,
-    nullptr,
-    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, enables experimental Document Property Editor support, replacing the Reflected Property Editor where possible");
-
-AZ_CVAR(
-    bool,
     ed_enableCVarDPE,
     true,
     nullptr,
@@ -63,9 +55,10 @@ namespace AzToolsFramework
     {
     }
 
-    void DPELayout::Init(int depth, [[maybe_unused]] QWidget* parentWidget)
+    void DPELayout::Init(int depth, bool enforceMinWidth, [[maybe_unused]] QWidget* parentWidget)
     {
         m_depth = depth;
+        m_enforceMinWidth = enforceMinWidth;
     }
 
     void DPELayout::Clear()
@@ -197,7 +190,7 @@ namespace AzToolsFramework
 
         m_cachedMinLayoutSize = QSize(cumulativeWidth, minimumHeight);
 
-        return { cumulativeWidth, minimumHeight };
+        return { (m_enforceMinWidth ? cumulativeWidth : 0), minimumHeight };
     }
 
     void DPELayout::setGeometry(const QRect& rect)
@@ -493,7 +486,7 @@ namespace AzToolsFramework
         : QFrame(nullptr) // parent will be set when the row is added to its layout
         , m_columnLayout(new DPELayout(this))
     {
-        m_columnLayout->Init(-1, this);
+        m_columnLayout->Init(-1, m_enforceMinWidth, this);
         // allow horizontal stretching, but use the vertical size hint exactly
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         QObject::connect(m_columnLayout, &DPELayout::expanderChanged, this, &DPERowWidget::onExpanderChanged);
@@ -1089,7 +1082,8 @@ namespace AzToolsFramework
         {
             rowWidget->m_parentRow = this;
             rowWidget->m_depth = m_depth + 1;
-            rowWidget->m_columnLayout->Init(rowWidget->m_depth, this);
+            rowWidget->m_enforceMinWidth = m_enforceMinWidth;
+            rowWidget->m_columnLayout->Init(rowWidget->m_depth, m_enforceMinWidth, this);
         }
 
         m_columnLayout->SetExpanderShown(true);
@@ -1326,6 +1320,7 @@ namespace AzToolsFramework
         {
             // only save our expander state if our expanse/collapse was user-driven
             dpe->SetSavedExpanderStateForRow(BuildDomPath(), isExpanded);
+            dpe->updateGeometry();
             dpe->ExpanderChangedByUser();
         }
     }
@@ -1357,7 +1352,7 @@ namespace AzToolsFramework
 
         m_spawnDebugView = AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled();
 
-        setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         // register as a co-owner of the recycled widgets lists if they exist; create if not
@@ -1420,8 +1415,7 @@ namespace AzToolsFramework
         // Free the settings ptr which saves any in-memory settings to disk and replace it
         // with a default in-memory only settings object until a saved state key is specified
         m_dpeSettings.reset();
-        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(
-            m_adapter->CreateExpanderSettings(m_adapter.get()));
+        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(m_adapter->CreateExpanderSettings(m_adapter.get()));
 
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
@@ -1436,13 +1430,22 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::SetAllowVerticalScroll(bool allowVerticalScroll)
     {
         m_allowVerticalScroll = allowVerticalScroll;
-
-        /* as a temporary work-around to https://github.com/o3de/o3de/issues/14863 , never prevent vertical scrollbars
-           setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
-         */
+        setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
 
         auto existingPolicy = sizePolicy();
         setSizePolicy(existingPolicy.horizontalPolicy(), (allowVerticalScroll ? existingPolicy.verticalPolicy() : QSizePolicy::Fixed));
+    }
+
+    void DocumentPropertyEditor::SetEnforceMinWidth(bool enforceMinWidth)
+    {
+        if (m_enforceMinWidth != enforceMinWidth)
+        {
+            m_enforceMinWidth = enforceMinWidth;
+            if (m_rootNode)
+            {
+                HandleReset();
+            }
+        }
     }
 
     QSize DocumentPropertyEditor::sizeHint() const
@@ -1601,16 +1604,6 @@ namespace AzToolsFramework
         m_spawnDebugView = shouldSpawn;
     }
 
-    bool DocumentPropertyEditor::ShouldReplaceRPE()
-    {
-        bool dpeEnabled = false;
-        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
-        {
-            console->GetCvarValue(GetEnableDPECVarName(), dpeEnabled);
-        }
-        return dpeEnabled;
-    }
-
     bool DocumentPropertyEditor::ShouldReplaceCVarEditor()
     {
         bool dpeCVarEditorEnabled = false;
@@ -1684,6 +1677,7 @@ namespace AzToolsFramework
 
         // invisible root node has a "depth" of -1; its children are all at indent 0
         m_rootNode = m_rowPool->GetInstance();
+        m_rootNode->m_enforceMinWidth = m_enforceMinWidth;
         m_rootNode->setParent(this);
         m_rootNode->hide();
 
@@ -1702,6 +1696,7 @@ namespace AzToolsFramework
             }
         }
         m_layout->addStretch();
+        updateGeometry();
         emit RequestSizeUpdate();
     }
 
@@ -1709,11 +1704,29 @@ namespace AzToolsFramework
     {
         if (m_rootNode)
         {
-            for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
+            bool needsReset = false;
+            for (auto operationIterator = patch.begin(), endIterator = patch.end(); !needsReset && operationIterator != endIterator;
+                 ++operationIterator)
             {
-                m_rootNode->HandleOperationAtPath(*operationIterator, 0);
+                if (operationIterator->GetDestinationPath().IsEmpty())
+                {
+                    needsReset = true;
+                }
+                else
+                {
+                    m_rootNode->HandleOperationAtPath(*operationIterator, 0);
+                }
             }
-            emit RequestSizeUpdate();
+
+            if (needsReset)
+            {
+                HandleReset();
+            }
+            else
+            {
+                updateGeometry();
+                emit RequestSizeUpdate();
+            }
         }
     }
 

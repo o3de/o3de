@@ -39,6 +39,8 @@ namespace MaterialCanvas
         void BuildDependencyTables();
         void BuildTemplatePathsForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
         bool LoadTemplatesForCurrentNode();
+        void DeleteExistingFilesForCurrentNode();
+        void ClearFingerprintsForCurrentNode();
         void PreprocessTemplatesForCurrentNode();
         void BuildInstructionsForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
         void BuildMaterialSrgForCurrentNode();

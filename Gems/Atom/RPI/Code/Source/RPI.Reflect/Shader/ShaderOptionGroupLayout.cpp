@@ -85,7 +85,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderOptionDescriptor>()
-                    ->Version(4)
+                    ->Version(5)  // 5: addition of m_costEstimate field
                     ->Field("m_name", &ShaderOptionDescriptor::m_name)
                     ->Field("m_type", &ShaderOptionDescriptor::m_type)
                     ->Field("m_defaultValue", &ShaderOptionDescriptor::m_defaultValue)
@@ -93,6 +93,8 @@ namespace AZ
                     ->Field("m_maxValue", &ShaderOptionDescriptor::m_maxValue)
                     ->Field("m_bitOffset", &ShaderOptionDescriptor::m_bitOffset)
                     ->Field("m_bitCount", &ShaderOptionDescriptor::m_bitCount)
+                    ->Field("m_order", &ShaderOptionDescriptor::m_order)
+                    ->Field("m_costEstimate", &ShaderOptionDescriptor::m_costEstimate)
                     ->Field("m_bitMask", &ShaderOptionDescriptor::m_bitMask)
                     ->Field("m_bitMaskNot", &ShaderOptionDescriptor::m_bitMaskNot)
                     ->Field("m_hash", &ShaderOptionDescriptor::m_hash)
@@ -116,21 +118,25 @@ namespace AZ
                     ->Method("GetValuesCount", &ShaderOptionDescriptor::GetValuesCount)
                     ->Method("GetType", &ShaderOptionDescriptor::GetType)
                     ->Method("GetValueNameByIndex", static_cast<Name (ShaderOptionDescriptor::*)(uint32_t) const>(&ShaderOptionDescriptor::GetValueName))
+                    ->Method("GetOrder", &ShaderOptionDescriptor::GetOrder)
+                    ->Method("GetCostEstimate", &ShaderOptionDescriptor::GetCostEstimate)
                     ;
             }   
         }
 
         ShaderOptionDescriptor::ShaderOptionDescriptor(const Name& name,            
                                                        const ShaderOptionType& optionType, 
-                                                       uint32_t bitOffset,                                      
+                                                       uint32_t bitOffset,
                                                        uint32_t order,
                                                        const ShaderOptionValues& nameIndexList,
-                                                       const Name& defaultValue)                        
+                                                       const Name& defaultValue,
+                                                       uint32_t cost)
 
             : m_name{name}
             , m_type{optionType}
             , m_bitOffset{bitOffset}
             , m_order{order}
+            , m_costEstimate{cost}
             , m_defaultValue{defaultValue}
         {
             for (auto pair : nameIndexList)
@@ -176,6 +182,10 @@ namespace AZ
             return m_order;
         }
 
+        uint32_t ShaderOptionDescriptor::GetCostEstimate() const
+        {
+            return m_costEstimate;
+        }
 
         ShaderVariantKey ShaderOptionDescriptor::GetBitMask() const
         {
