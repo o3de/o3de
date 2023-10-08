@@ -311,13 +311,69 @@ namespace AzToolsFramework
         else if (attrib == AZ::Edit::Attributes::GenericValueList)
         {
             ValueTypeContainer values;
-            if (attrReader->Read<ValueTypeContainer>(values))
+            bool readSuccess = attrReader->Read<ValueTypeContainer>(values);
+
+            if (!readSuccess)
+            {
+                // If the type is integral type
+                // try different combinations of pair<integral type, string>
+                if constexpr (AZStd::is_integral_v<T>)
+                {
+                    auto ReadIntegralStringVectorPair = [&values, attrReader](auto typeIdentity)
+                    {
+                        using IntegralType = typename decltype(typeIdentity)::type;
+
+                        // The AZStd::vector<T, AZStd::string> has been read in before the lambda was called and failed
+                        // so skip re-reading it again
+                        if constexpr (AZStd::is_same_v<T, IntegralType>)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            using IntegralValueType = AZStd::pair<IntegralType, AZStd::string>;
+                            using IntegralValueTypeContainer = AZStd::vector<IntegralValueType>;
+                            IntegralValueTypeContainer integralValues;
+                            bool readContainer{};
+                            if (readContainer = attrReader->Read<IntegralValueTypeContainer>(integralValues); readContainer)
+                            {
+                                for (auto&& [value, description] : integralValues)
+                                {
+                                    values.emplace_back(static_cast<T>(value), AZStd::move(description));
+                                }
+                            }
+
+                            return readContainer;
+                        }
+                    };
+
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<char>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<unsigned char>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<signed char>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<short>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<unsigned short>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<int>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<unsigned int>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<long>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<unsigned long>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<AZ::s64>{});
+                    readSuccess = readSuccess || ReadIntegralStringVectorPair(AZStd::type_identity<AZ::u64>{});
+                }
+            }
+
+            if (readSuccess)
             {
                 genericGUI->setElements(values);
             }
             else
             {
-                AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'GenericValueList' attribute from property '%s' into generic combo box. Expected a vector of pair<%s, string>.", debugName, AZ::AzTypeInfo<typename GenericComboBoxHandler::property_t>::Name());
+                AZ_WarningOnce(
+                    "AzToolsFramework",
+                    false,
+                    "Failed to read 'GenericValueList' attribute from property '%s' into generic combo box. Expected a vector of pair<%s, "
+                    "string>.",
+                    debugName,
+                    AZ::AzTypeInfo<typename GenericComboBoxHandler::property_t>::Name());
             }
         }
         else if (attrib == AZ::Edit::Attributes::PostChangeNotify)

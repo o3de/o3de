@@ -42,9 +42,9 @@ namespace AZ
                 Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
 
-                void GetVirtualTypes(AZStd::set<Crc32>& types, const Containers::Scene& scene,
+                void GetVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types, const Containers::Scene& scene,
                     Containers::SceneGraph::NodeIndex node) override;
-                void GetAllVirtualTypes(AZStd::set<Crc32>& types) override;
+                void GetAllVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types) override;
                 void GetVirtualTypeName(AZStd::string& name, Crc32 type) override;
                 void GetPolicyName(AZStd::string& result) const override
                 {

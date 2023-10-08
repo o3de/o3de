@@ -150,7 +150,9 @@ namespace AZ
             //! List of object SRGs used by meshes in this model 
             AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> m_objectSrgList;
             MeshFeatureProcessorInterface::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
-            AZStd::unique_ptr<MeshLoader> m_meshLoader;
+            // MeshLoader is a shared pointer because it can queue a reference to itself on the SystemTickBus. The reference
+            // needs to stay alive until the queued function is executed.
+            AZStd::shared_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
             RHI::DrawItemSortKey m_sortKey = 0;
 

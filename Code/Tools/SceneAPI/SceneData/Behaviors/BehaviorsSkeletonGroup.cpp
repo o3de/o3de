@@ -125,7 +125,7 @@ namespace AZ
 
                     // Check if this is a virtual type. There are no known virtual types supported by skeletons so this skeleton
                     //      pretends to be something that's not understood by this behavior, so skip it.
-                    AZStd::set<Crc32> virtualTypes;
+                    Events::GraphMetaInfo::VirtualTypesSet virtualTypes;
                     Events::GraphMetaInfoBus::Broadcast(&Events::GraphMetaInfoBus::Events::GetVirtualTypes, virtualTypes, 
                         scene, graph.ConvertToNodeIndex(it.GetFirstIterator()));
                     if (!virtualTypes.empty())

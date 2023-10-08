@@ -22,7 +22,8 @@
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
+#include <QObject>
 
 namespace AZ
 {
@@ -35,6 +36,7 @@ class QApplication;
 class QDockWidget;
 class QMainWindow;
 class QMenu;
+class QString;
 class QWidget;
 
 namespace AzToolsFramework
@@ -58,6 +60,17 @@ namespace AzToolsFramework
 
     //! Return true to accept this type of component.
     using ComponentFilter = AZStd::function<bool(const AZ::SerializeContext::ClassData&)>;
+
+    // when a property is modified, we attempt to retrieve the value that comes out in response to the Property Modification function that you may supply
+    // if you return anything other than Refresh_None, the tree may be queued for update:
+    enum PropertyModificationRefreshLevel : int
+    {
+        Refresh_None,
+        Refresh_Values,
+        Refresh_AttributesAndValues,
+        Refresh_EntireTree,
+        Refresh_EntireTree_NewContent,
+    };
 
     /**
      * Bus owned by the ToolsApplication. Listen for general ToolsApplication events.

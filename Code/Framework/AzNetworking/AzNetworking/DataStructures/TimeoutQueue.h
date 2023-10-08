@@ -86,6 +86,10 @@ namespace AzNetworking
         TimeoutId        m_nextTimeoutId = TimeoutId{ 0 };
         TimeoutItemMap   m_timeoutItemMap;
         TimeoutItemQueue m_timeoutItemQueue;
+
+        // TimeoutQueue is a shared resource among connections. A mutex (or a read-write sync object) is required with multi-threaded sends.
+        // See @sv_multithreadedConnectionUpdates cvar.
+        AZStd::recursive_mutex m_mutex;
     };
 }
 

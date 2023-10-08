@@ -178,6 +178,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
             RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
+            RHI::Ptr<RHI::XRDeviceDescriptor> BuildXRDescriptor() const override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);

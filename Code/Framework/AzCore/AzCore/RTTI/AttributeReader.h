@@ -48,7 +48,7 @@ namespace AZ
         template<class RetType, class InstType, typename ... Args>
         bool AttributeInvoke(Attribute* attr, InstType&& instance, Args&& ... args)
         {
-            // try a function 
+            // try a function
             if (auto func = azrtti_cast<AttributeFunction<RetType(Args...)>*>(attr); func != nullptr)
             {
                 func->Invoke(AZStd::forward<InstType>(instance), AZStd::forward<Args>(args)...);
@@ -108,6 +108,14 @@ namespace AZ
                         return true;
                     }
                     if (AttributeRead<unsigned int, Args..., DestType>(value, attr, AZStd::forward<InstType>(instance), args...))
+                    {
+                        return true;
+                    }
+                    if (AttributeRead<long, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
+                    {
+                        return true;
+                    }
+                    if (AttributeRead<unsigned long, DestType, Args...>(value, attr, AZStd::forward<InstType>(instance), args...))
                     {
                         return true;
                     }

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
@@ -26,8 +27,6 @@ namespace AZ::DocumentPropertyEditor
         AdapterBuilder m_builder;
         // Look-up table of onChanged callbacks for handling property changes
         AZ::Dom::DomPrefixTree<AZStd::function<Dom::Value(const Dom::Value&)>> m_onChangedCallbacks;
-
-        static constexpr AZStd::string_view InspectorOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement";
 
         //! This represents a container or associative container instance and has methods
         //! for interacting with the container.
@@ -330,7 +329,7 @@ namespace AZ::DocumentPropertyEditor
             attributes.ListAttributes(
                 [this](AZ::Name group, AZ::Name name, const Dom::Value& value)
                 {
-                    AZ_Warning("dpe", !name.IsEmpty(), "DPE: Received empty name in ListAttributes");
+                    AZ_Warning("ReflectionAdapter", !name.IsEmpty(), "Received empty name in ListAttributes");
                     // Skip non-default groups, we don't presently source any attributes from outside of the default group.
                     if (!group.IsEmpty())
                     {
@@ -383,7 +382,7 @@ namespace AZ::DocumentPropertyEditor
             {
                 m_builder.Attribute(
                     Nodes::PropertyEditor::ValueHashed,
-                    AZ::Uuid::CreateData(static_cast<AZStd::byte*>(instance), valueSize));
+                    static_cast<AZ::u64>(AZStd::hash<AZ::Uuid>{}((AZ::Uuid::CreateData(static_cast<AZStd::byte*>(instance), valueSize)))));
             }
             m_builder.EndPropertyEditor();
 
@@ -424,19 +423,64 @@ namespace AZ::DocumentPropertyEditor
                 attributes,
                 [valuePointer, valueType, this](const Dom::Value& newValue)
                 {
-                    void* marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
-                    rapidjson::Document serializedValue;
-                    JsonSerialization::Store(serializedValue, serializedValue.GetAllocator(), marshalledPointer, nullptr, valueType);
+                    AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::ReadField);
+                    // marshal this new value into a pointer for use by the Json serializer if a pointer is being stored
+                    if (auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType); marshalledPointer != nullptr)
+                    {
+                        rapidjson::Document buffer;
+                        JsonSerializerSettings serializeSettings;
+                        JsonDeserializerSettings deserializeSettings;
+                        serializeSettings.m_serializeContext = m_serializeContext;
+                        deserializeSettings.m_serializeContext = m_serializeContext;
 
-                    JsonDeserializerSettings deserializeSettings;
-                    deserializeSettings.m_serializeContext = m_serializeContext;
-                    // now deserialize that value into the original location
-                    JsonSerialization::Load(valuePointer, valueType, serializedValue, deserializeSettings);
+                        // serialize the new value to Json, using the original valuePointer as a reference object to generate a minimal
+                        // diff
+                        resultCode = JsonSerialization::Store(
+                            buffer, buffer.GetAllocator(), marshalledPointer, valuePointer, valueType, serializeSettings);
+
+                        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                        {
+                            AZ_Error(
+                                "ReflectionAdapter",
+                                false,
+                                "Storing new property editor value to JSON for copying to instance has failed with error %s",
+                                resultCode.ToString("").c_str());
+                            return newValue;
+                        }
+
+                        // now deserialize that value into the original location
+                        resultCode = JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+                        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                        {
+                            AZ_Error(
+                                "ReflectionAdapter",
+                                false,
+                                "Loading JSON value containing new property editor into instance has failed with error %s",
+                                resultCode.ToString("").c_str());
+                            return newValue;
+                        }
+
+                    }
+                    else
+                    {
+                        // Otherwise use Json Serialization to copy the Dom Value directly into the valuePointer address
+                        resultCode = AZ::Dom::Utils::LoadViaJsonSerialization(valuePointer, valueType, newValue);
+                        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                        {
+                            AZ_Error(
+                                "ReflectionAdapter",
+                                false,
+                                "Loading new DOMValue directly into instance has failed with error %s",
+                                resultCode.ToString("").c_str());
+                            return newValue;
+                        }
+                    }
 
                     AZ::Dom::Value newInstancePointerValue;
-                    auto outputWriter = newInstancePointerValue.GetWriteHandler();
-                    auto convertToAzDomResult =
-                        AZ::Dom::Json::VisitRapidJsonValue(serializedValue, *outputWriter, AZ::Dom::Lifetime::Temporary);
+                    AZ::JsonSerializerSettings storeSettings;
+                    // Defaults must be kept to make sure a complete object is written to the Dom::Value
+                    storeSettings.m_keepDefaults = true;
+                    AZ::Dom::Utils::StoreViaJsonSerialization(valuePointer, nullptr, valueType, newInstancePointerValue, storeSettings);
                     return newInstancePointerValue;
                 },
                 false,
@@ -446,12 +490,10 @@ namespace AZ::DocumentPropertyEditor
         bool IsInspectorOverrideManagementEnabled()
         {
             bool isInspectorOverrideManagementEnabled = false;
-
-            if (auto* registry = AZ::SettingsRegistry::Get())
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
             {
-                registry->Get(isInspectorOverrideManagementEnabled, InspectorOverrideManagementKey);
+                console->GetCvarValue("ed_enableInspectorOverrideManagement", isInspectorOverrideManagementEnabled);
             }
-
             return isInspectorOverrideManagementEnabled;
         }
 
@@ -477,7 +519,7 @@ namespace AZ::DocumentPropertyEditor
                 [&value](const Dom::Value& newValue)
                 {
                     AZStd::optional<T> extractedValue = Dom::Utils::ValueToType<T>(newValue);
-                    AZ_Warning("DPE", extractedValue.has_value(), "OnChanged failed, unable to extract value from DOM");
+                    AZ_Warning("ReflectionAdapter", extractedValue.has_value(), "OnChanged failed, unable to extract value from DOM");
                     if (extractedValue.has_value())
                     {
                         value = AZStd::move(extractedValue.value());
@@ -753,12 +795,9 @@ namespace AZ::DocumentPropertyEditor
                 }
 
                 AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
-                bool hashValue = false;
-                const AZ::Name PointerTypeFieldName = AZ::Dom::Utils::PointerTypeFieldName;
-                if (instancePointerValue.IsOpaqueValue() || instancePointerValue.FindMember(PointerTypeFieldName))
-                {
-                    hashValue = true;
-                }
+                // Only hash an opaque value
+                // A value that is not opaque, but is a pointer will have it's members visited in a recursive call to this method
+                const bool hashValue = instancePointerValue.IsOpaqueValue();
 
                 // The IsInspectorOverrideManagementEnabled() check is only temporary until the inspector override management feature set
                 // is fully developed. Since the original utils funtion is in AzToolsFramework and we can't access it from here, we are
@@ -780,18 +819,14 @@ namespace AZ::DocumentPropertyEditor
                             typeSize = rttiHelper->GetTypeSize();
                         }
                     }
-                    void* instance = access.Get();
-                    VisitValue(
-                        instancePointerValue,
-                        instance,
-                        typeSize,
-                        attributes,
-                        // this needs to write the value back into the reflected object via Json serialization
-                        [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
-                        {
-                            // marshal this new value into a pointer for use by the Json serializer
-                            auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
 
+                    // this needs to write the value back into the reflected object via Json serialization
+                    auto StoreValueIntoPointer = [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
+                    {
+                        AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::ReadField);
+                        // marshal this new value into a pointer for use by the Json serializer if a pointer is being stored
+                        if (auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType); marshalledPointer != nullptr)
+                        {
                             rapidjson::Document buffer;
                             JsonSerializerSettings serializeSettings;
                             JsonDeserializerSettings deserializeSettings;
@@ -800,23 +835,66 @@ namespace AZ::DocumentPropertyEditor
 
                             // serialize the new value to Json, using the original valuePointer as a reference object to generate a minimal
                             // diff
-                            JsonSerialization::Store(
+                            resultCode = JsonSerialization::Store(
                                 buffer, buffer.GetAllocator(), marshalledPointer, valuePointer, valueType, serializeSettings);
 
-                            // now deserialize that value into the original location
-                            JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+                            if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                            {
+                                AZ_Error(
+                                    "ReflectionAdapter",
+                                    false,
+                                    "Storing new property editor value to JSON for copying to instance has failed with error %s",
+                                    resultCode.ToString("").c_str());
+                                return newValue;
+                            }
 
-                            // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by
-                            // pointer, it will not actually detect a changed dom value. Since we are already writing directly to the DOM
-                            // before this step, it won't affect the calling DPE, however, other DPEs pointed at the same adapter would be
-                            // unaware of the change, and wouldn't update their UI. In future, to properly support multiple DPEs on one
-                            // adapter, we will need to solve this. One way would be to store the json serialized value (which is mostly
-                            // human-readable text) as an attribute, so any change to the Json would trigger an update. This would have the
-                            // advantage of allowing opaque and pointer types to be searchable by the string-based Filter adapter. Without
-                            // this, things like Vector3 will not have searchable values by text. These advantages would have to be measured
-                            // against the size changes in the DOM and the time taken to populate and parse them.
-                            return newValue;
-                        },
+                            // now deserialize that value into the original location
+                            resultCode = JsonSerialization::Load(valuePointer, valueType, buffer, deserializeSettings);
+                            if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                            {
+                                AZ_Error(
+                                    "ReflectionAdapter",
+                                    false,
+                                    "Loading JSON value containing new property editor into instance has failed with error %s",
+                                    resultCode.ToString("").c_str());
+                                return newValue;
+                            }
+
+                        }
+                        else
+                        {
+                            // Otherwise use Json Serialization to copy the Dom Value directly into the valuePointer address
+                            resultCode = AZ::Dom::Utils::LoadViaJsonSerialization(valuePointer, valueType, newValue);
+                            if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                            {
+                                AZ_Error(
+                                    "ReflectionAdapter",
+                                    false,
+                                    "Loading new DOMValue directly into instance has failed with error %s",
+                                    resultCode.ToString("").c_str());
+                                return newValue;
+                            }
+                        }
+
+
+                        // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by
+                        // pointer, it will not actually detect a changed dom value. Since we are already writing directly to the DOM
+                        // before this step, it won't affect the calling DPE, however, other DPEs pointed at the same adapter would be
+                        // unaware of the change, and wouldn't update their UI. In future, to properly support multiple DPEs on one
+                        // adapter, we will need to solve this. One way would be to store the json serialized value (which is mostly
+                        // human-readable text) as an attribute, so any change to the Json would trigger an update. This would have the
+                        // advantage of allowing opaque and pointer types to be searchable by the string-based Filter adapter. Without
+                        // this, things like Vector3 will not have searchable values by text. These advantages would have to be measured
+                        // against the size changes in the DOM and the time taken to populate and parse them.
+                        return newValue;
+                    };
+                    void* instance = access.Get();
+                    VisitValue(
+                        instancePointerValue,
+                        instance,
+                        typeSize,
+                        attributes,
+                        AZStd::move(StoreValueIntoPointer),
                         false,
                         hashValue);
                 }

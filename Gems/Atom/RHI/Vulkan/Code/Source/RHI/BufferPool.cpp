@@ -36,9 +36,6 @@ namespace AZ
         RHI::ResultCode BufferPool::InitInternal(RHI::Device& deviceBase, const RHI::BufferPoolDescriptor& descriptorBase) 
         {
             auto& device = static_cast<Device&>(deviceBase);
-
-
-
             if (descriptorBase.m_heapMemoryLevel == RHI::HeapMemoryLevel::Device)
             {
                 SetResolver(AZStd::make_unique<BufferPoolResolver>(device, descriptorBase));

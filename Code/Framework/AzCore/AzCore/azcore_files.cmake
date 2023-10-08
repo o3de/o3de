@@ -554,6 +554,8 @@ set(FILES
     Serialization/AZStdAnyDataContainer.inl
     Serialization/DynamicSerializableField.cpp
     Serialization/DynamicSerializableField.h
+    Serialization/EnumConstantJsonSerializer.cpp
+    Serialization/EnumConstantJsonSerializer.h
     Serialization/EditContext.cpp
     Serialization/EditContext.h
     Serialization/EditContext.inl

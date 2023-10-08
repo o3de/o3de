@@ -143,8 +143,6 @@ namespace AZ
                 m_systemInputAssemblyBufferPoolId = assetIdOutcome.GetValue();
             }
 
-            m_createdSubId.clear();
-
             m_modelName = context.m_group.GetName();
 
             const auto& scene = context.m_scene;

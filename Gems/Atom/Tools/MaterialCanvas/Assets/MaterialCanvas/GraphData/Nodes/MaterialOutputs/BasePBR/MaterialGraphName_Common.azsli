@@ -62,6 +62,9 @@ option bool o_normal_override_enabled = false;
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
+    // m_placeHolder keeps MaterialSrg from being compiled out, causing SRG mismatches while assets are processing when iterating on graphs
+    bool m_placeHolder;
+
     // O3DE_GENERATED_MATERIAL_SRG_BEGIN
     // O3DE_GENERATED_MATERIAL_SRG_END
 }

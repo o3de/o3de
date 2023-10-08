@@ -62,23 +62,43 @@ namespace AZ
                     EXPECT_CALL(m_testNodeSelectionList, GetUnselectedNodeCount())
                         .WillRepeatedly(Return(unselectedNodes.size()));
 
-                    for (size_t i = 0; i < selectedNodes.size(); ++i)
+                    auto enumerateSelectedNodesInvoke =
+                        [&selectedNodes](const DataTypes::ISceneNodeSelectionList::EnumerateNodesCallback& callback)
                     {
-                        EXPECT_CALL(m_testNodeSelectionList, GetSelectedNode(Eq(i)))
-                            .WillRepeatedly(ReturnRef(selectedNodes[i]));
-                    }
-
-                    for (size_t i = 0; i < unselectedNodes.size(); ++i)
-                    {
-                        EXPECT_CALL(m_testNodeSelectionList, GetUnselectedNode(Eq(i)))
-                            .WillRepeatedly(ReturnRef(unselectedNodes[i]));
-                    }
-
-                    auto selectedNodeInvoke = [&selectedNodes](const AZStd::string& name) -> size_t
+                        for (auto& node : selectedNodes)
                         {
-                            size_t index = selectedNodes.size();
+                            if (!callback(node))
+                            {
+                                break;
+                            }
+                        }
+                    };
+                    EXPECT_CALL(m_testNodeSelectionList, EnumerateSelectedNodes(_))
+                        .WillRepeatedly(Invoke(enumerateSelectedNodesInvoke));
+
+                    auto enumerateUnselectedNodesInvoke =
+                        [&unselectedNodes](const DataTypes::ISceneNodeSelectionList::EnumerateNodesCallback& callback)
+                    {
+                        for (auto& node : unselectedNodes)
+                        {
+                            if (!callback(node))
+                            {
+                                break;
+                            }
+                        }
+                    };
+                    EXPECT_CALL(m_testNodeSelectionList, EnumerateUnselectedNodes(_))
+                        .WillRepeatedly(Invoke(enumerateUnselectedNodesInvoke));
+
+                    auto isSelectedNodeInvoke = [&selectedNodes](const AZStd::string& name)
+                    {
+                        return (AZStd::find(selectedNodes.begin(), selectedNodes.end(), name) != selectedNodes.end());
+                    };
+                    EXPECT_CALL(m_testNodeSelectionList, IsSelectedNode(_)).WillRepeatedly(Invoke(isSelectedNodeInvoke));
+
+                    auto selectedNodeInvoke = [&selectedNodes](const AZStd::string& name)
+                        {
                             selectedNodes.push_back(name);
-                            return index;
                         };
                     EXPECT_CALL(m_testNodeSelectionList, AddSelectedNode(_))
                         .WillRepeatedly(Invoke(selectedNodeInvoke));

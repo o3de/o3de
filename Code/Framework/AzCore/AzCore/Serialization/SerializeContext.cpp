@@ -881,7 +881,8 @@ namespace AZ
     // Create a class builder that that can reflect fields and attributes to SerializeContext ClassData
     auto SerializeContext::ReflectClassInternal(const char* className, const AZ::TypeId& classTypeId,
         IObjectFactory* factory, const DeprecatedNameVisitWrapper& callback,
-        IRttiHelper* rttiHelper, CreateAnyFunc createAnyFunc) -> ClassBuilder
+        IRttiHelper* rttiHelper, CreateAnyFunc createAnyFunc,
+        CreateAnyActionHandler createAnyActionHandlerFunc) -> ClassBuilder
     {
         // Add any the deprecated type names to the deprecated type name to type id map
         auto AddDeprecatedNames = [this, &typeUuid = classTypeId](AZStd::string_view deprecatedName)
@@ -891,8 +892,9 @@ namespace AZ
         callback(AddDeprecatedNames);
 
         m_classNameToUuid.emplace(AZ::Crc32(className), classTypeId);
-        auto result = m_uuidMap.emplace(classTypeId,
-            ClassData::CreateImpl(className, classTypeId, factory, nullptr, nullptr, rttiHelper));
+        auto result = m_uuidMap.emplace(
+            classTypeId,
+            ClassData::CreateImpl(className, classTypeId, factory, nullptr, nullptr, rttiHelper, AZStd::move(createAnyActionHandlerFunc)));
         AZ_Assert(result.second, "This class type %s could not be registered with duplicated Uuid: %s.",
             className, classTypeId.ToString<AZStd::string>().c_str());
         m_uuidAnyCreationMap.emplace(classTypeId, createAnyFunc);
@@ -3381,7 +3383,7 @@ namespace AZ::Serialize
 
     auto ClassData::CreateImpl(const char* name, const Uuid& typeUuid,
         IObjectFactory* factory, IDataSerializer* serializer, IDataContainer* container,
-        IRttiHelper* rttiHelper) -> ClassData
+        IRttiHelper* rttiHelper, SerializeContext::CreateAnyActionHandler createAzStdAnyActionHandler) -> ClassData
     {
         ClassData cd;
         cd.m_name = name;
@@ -3397,6 +3399,8 @@ namespace AZ::Serialize
         cd.m_container = container;
         cd.m_azRtti = rttiHelper;
         cd.m_editData = nullptr;
+        // Store the action handler
+        cd.m_createAzStdAnyActionHandler = AZStd::move(createAzStdAnyActionHandler);
         return cd;
     }
 

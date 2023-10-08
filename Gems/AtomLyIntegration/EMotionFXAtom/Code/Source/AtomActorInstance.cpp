@@ -215,9 +215,9 @@ namespace AZ::Render
         return GetMaterialSlotIdFromModelAsset(GetModelAsset(), lod, label);
     }
 
-    MaterialAssignmentMap AtomActorInstance::GetDefautMaterialMap() const
+    MaterialAssignmentMap AtomActorInstance::GetDefaultMaterialMap() const
     {
-        return GetDefautMaterialMapFromModelAsset(GetModelAsset());
+        return GetDefaultMaterialMapFromModelAsset(GetModelAsset());
     }
 
     AZStd::unordered_set<AZ::Name> AtomActorInstance::GetModelUvNames() const

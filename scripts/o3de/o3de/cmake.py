@@ -13,12 +13,17 @@ import argparse
 import enum
 import json
 import logging
+import os
 import pathlib
 import string
 import sys
-from typing import Tuple
 
+# add the scripts/o3de directory to the front of the sys.path temporarily to import 
+# some o3de python modules
+sys.path.insert(0, os.path.dirname(pathlib.Path(__file__).parent))
 from o3de import manifest, utils, compatibility
+# Remove the temporarily added path
+sys.path = sys.path[1:]
 
 logger = logging.getLogger('o3de.cmake')
 logging.basicConfig(format=utils.LOG_FORMAT)
