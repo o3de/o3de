@@ -43,6 +43,31 @@ namespace AZ::RHI
         return static_cast<const ImageFrameAttachment*>(MultiDeviceResource::GetFrameAttachment());
     }
 
+    Ptr<MultiDeviceImageView> MultiDeviceImage::BuildImageView(const ImageViewDescriptor& imageViewDescriptor)
+    {
+        return aznew MultiDeviceImageView{ this, imageViewDescriptor };
+    }
+
+    uint32_t MultiDeviceImage::GetResidentMipLevel() const
+    {
+        auto minLevel{AZStd::numeric_limits<uint32_t>::max()};
+        IterateObjects<Image>([&minLevel]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        {
+            minLevel = AZStd::min(minLevel, deviceImage->GetResidentMipLevel());
+        });
+        return minLevel;
+    }
+
+    bool MultiDeviceImage::IsStreamable() const
+    {
+        bool isStreamable{true};
+        IterateObjects<Image>([&isStreamable]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        {
+            isStreamable &= deviceImage->IsStreamable();
+        });
+        return isStreamable;
+    }
+
     ImageAspectFlags MultiDeviceImage::GetAspectFlags() const
     {
         return m_aspectFlags;
@@ -73,5 +98,11 @@ namespace AZ::RHI
         {
             deviceImage->InvalidateViews();
         });
+    }
+
+    //! Given a device index, return the corresponding BufferView for the selected device
+    const RHI::Ptr<RHI::ImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
+    {
+        return m_image->GetDeviceImage(deviceIndex)->GetImageView(m_descriptor);
     }
 } // namespace AZ::RHI
