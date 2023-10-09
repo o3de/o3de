@@ -115,7 +115,7 @@ namespace Multiplayer
         switch (agentType)
         {
         case MultiplayerAgentType::Uninitialized:
-#if AZ_TRAIT_SERVER && !AZ_TRAIT_CLIENT
+#if AZ_DEDICATED_SERVER
             DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
             DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
 #endif
