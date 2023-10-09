@@ -25,8 +25,10 @@ namespace EditorInternal
         , public AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorToolsApplication, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR(EditorToolsApplication, AZ::SystemAllocator);
         EditorToolsApplication(int* argc, char*** argv);
+        explicit EditorToolsApplication(AZ::ComponentApplicationSettings componentAppSettings);
+        EditorToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
         ~EditorToolsApplication();
 
         bool IsStartupAborted() const;

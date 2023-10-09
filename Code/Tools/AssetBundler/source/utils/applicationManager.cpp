@@ -40,8 +40,17 @@ namespace AssetBundler
     const char compareVariablePrefix = '$';
 
     ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
+        : ApplicationManager(argc, argv, parent, {})
+    {
+    }
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : ApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
+
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
         : QObject(parent)
-        , AzToolsFramework::ToolsApplication(argc, argv)
+        , AzToolsFramework::ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
     {
     }
 
