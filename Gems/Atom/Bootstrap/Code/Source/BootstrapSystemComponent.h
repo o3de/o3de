@@ -99,6 +99,7 @@ namespace AZ
                 void RemoveRenderPipeline();
 
                 void CreateViewportContext();
+                void SetWindowResolution();
 
                 //! Load a render pipeline from disk and add it to the scene
                 RPI::RenderPipelinePtr LoadPipeline(
@@ -107,6 +108,8 @@ namespace AZ
                     AZStd::string_view xrPipelineName,
                     AZ::RPI::ViewType viewType,
                     AZ::RHI::MultisampleState& multisampleState);
+
+                AzFramework::WindowSize GetWindowResolution() const;
 
                 AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;
 

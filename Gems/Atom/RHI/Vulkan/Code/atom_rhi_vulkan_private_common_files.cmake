@@ -158,4 +158,5 @@ set(FILES
     Source/RHI/RayTracingShaderTable.h
     Source/RHI/Conversion.cpp
     Source/RHI/Conversion.h
+    Source/RHI/WindowSurfaceBus.h
 )

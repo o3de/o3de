@@ -124,14 +124,13 @@ namespace AzFramework
         void SetLocalTM(const AZ::Transform& t)
         {
             // Gruber patch begin // VMED -- missed ExtractScaleExact, CreateFromTransform are replaced
-            AZ::Transform copy = t;
-            const float uniformScale = copy.GetUniformScale();
+            const float uniformScale = t.GetUniformScale();
             m_localScale.Set(AZ::Vector3(uniformScale, uniformScale, uniformScale));
 #if defined(CARBONATED)
-            AZ_Assert(copy.GetTranslation().IsFinite(), "SetLocalTM: Transform is invalid");
+            AZ_Assert(t.GetTranslation().IsFinite(), "SetLocalTM: Transform is invalid");
 #endif
-            m_localTranslation.Set(copy.GetTranslation());
-            m_localRotation.Set(copy.GetRotation());
+            m_localTranslation.Set(t.GetTranslation());
+            m_localRotation.Set(t.GetRotation());
             // Gruber patch end // VMED
         }
 
@@ -140,7 +139,7 @@ namespace AzFramework
             AZ::Transform newXform = AZ::Transform::CreateFromQuaternionAndTranslation(m_localRotation.Get(), m_localTranslation.Get());
             // Gruber patch begin // VMED -- missed MultiplyByScale is replaced
             newXform.MultiplyByUniformScale(m_localScale.Get().GetX()); // local scale is setup as uniform scale
-            //  Gruber patch end // VMED
+            // Gruber patch end // VMED
             return newXform;
         }
 
@@ -179,6 +178,9 @@ namespace AzFramework
 
             void MarshalCtorData(ReplicaChunkBase* chunk, WriteBuffer& wb) override
             {
+#if defined(CARBONATED_LOG)
+                AZ_Printf("TransformReplicaChunk", "MarshalCtorData");
+#endif
                 TransformReplicaChunk* transformChunk = static_cast<TransformReplicaChunk*>(chunk);
                 TransformComponent* transformComponent = static_cast<TransformComponent*>(transformChunk->GetHandler());
                 if (transformComponent)
@@ -1073,12 +1075,9 @@ namespace AzFramework
         const AZ::Vector3 newTranslation = m_netTargetTranslation->GetInterpolatedValue(localTime);
         const AZ::Quaternion newRotation = m_netTargetRotation->GetInterpolatedValue(localTime);
         AZ::Transform newXform = AZ::Transform::CreateFromQuaternionAndTranslation(newRotation, newTranslation);
-        // Gruber patch begin // FIXME // AVK -- missed MultiplyByScale
-        AZ_Assert(false, "Must be fixed");
-#if 0
-        newXform.MultiplyByScale(m_netTargetScale);
-#endif
-        // Gruber patch end // FIXME // AVK
+        // Gruber patch begin // VMED -- missed MultiplyByScale is replaced
+        newXform.MultiplyByUniformScale(m_netTargetScale.GetX()); // local scale is setup as uniform scale
+        // Gruber patch end // VMED
 #if defined(CARBONATED)
         AZ_Assert(newXform.IsFinite(), "Interpolated Transform is invalid");
 #endif
@@ -1275,6 +1274,10 @@ namespace AzFramework
 
     void TransformComponent::ComputeLocalTM()
     {
+#ifdef CARBONATED
+        // In CARBONATED the m_worldTM does not send permanently to the clients via NetBindings. Only m_localTM is sent permamently.
+        m_localTM = m_worldTM;
+#else
         if (m_parentTM)
         {
             m_localTM = m_parentTM->GetWorldTM().GetInverse() * m_worldTM;
@@ -1283,7 +1286,7 @@ namespace AzFramework
         {
             m_localTM = m_worldTM;
         }
-
+#endif
         AZ::TransformNotificationBus::Event(
             m_notificationBus, &AZ::TransformNotificationBus::Events::OnTransformChanged, m_localTM, m_worldTM);
         m_transformChangedEvent.Signal(m_localTM, m_worldTM);

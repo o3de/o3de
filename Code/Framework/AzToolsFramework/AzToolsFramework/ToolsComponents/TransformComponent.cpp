@@ -162,12 +162,15 @@ namespace AzToolsFramework
                     classElement.RemoveElementByName(AZ_CRC("InterpolateScale", 0x9d00b831));
                 }
 
+                // carbonated begin (mp-438): Provide the Sync Enabled option to the TransformComponent
+#if !defined(CARBONATED)
                 if (classElement.GetVersion() < 10)
                 {
                     // The "Sync Enabled" flag is no longer needed.
                     classElement.RemoveElementByName(AZ_CRC_CE("Sync Enabled"));
                 }
-
+#endif
+                // carbonated end
                 return true;
             }
 
@@ -194,6 +197,11 @@ namespace AzToolsFramework
             , m_parentActivationTransformMode(AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform)
             , m_cachedWorldTransform(AZ::Transform::Identity())
             , m_suppressTransformChangedEvent(false)
+            // carbonated begin (mp-438): Provide the Sync Enabled option to the TransformComponent
+#if defined(CARBONATED)
+            , m_netSyncEnabled(false)
+#endif
+            // carbonated end
             , m_interpolatePosition(AZ::InterpolationMode::NoInterpolation)
             , m_interpolateRotation(AZ::InterpolationMode::NoInterpolation)
             , m_focusModeInterface(AZ::Interface<AzToolsFramework::FocusModeInterface>::Get())
@@ -1113,6 +1121,11 @@ namespace AzToolsFramework
         {
             AZ::TransformConfig configuration;
             configuration.m_parentId = m_parentEntityId;
+            // carbonated begin (mp-438): Provide the Sync Enabled option to the TransformComponent
+#if defined(CARBONATED)
+            configuration.m_netSyncEnabled = m_netSyncEnabled;
+#endif
+            // carbonated end
             configuration.m_worldTransform = GetWorldTM();
             configuration.m_localTransform = GetLocalTM();
             configuration.m_parentActivationTransformMode = m_parentActivationTransformMode;
@@ -1225,6 +1238,11 @@ namespace AzToolsFramework
                     Field("Cached World Transform Parent", &TransformComponent::m_cachedWorldTransformParent)->
                     Field("Parent Activation Transform Mode", &TransformComponent::m_parentActivationTransformMode)->
                     Field("IsStatic", &TransformComponent::m_isStatic)->
+                    // carbonated begin (mp-438): Provide the Sync Enabled option to the TransformComponent
+#if defined(CARBONATED)
+                    Field("Sync Enabled", &TransformComponent::m_netSyncEnabled)->
+#endif
+                    // carbonated end
                     Field("InterpolatePosition", &TransformComponent::m_interpolatePosition)->
                     Field("InterpolateRotation", &TransformComponent::m_interpolateRotation)->
                     Version(10, &Internal::TransformComponentDataConverter);
@@ -1261,8 +1279,25 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_cachedWorldTransform, "Cached World Transform", "")->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)->
-                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide);
+                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
+                        // carbonated begin (mp-438): Provide the Sync Enabled option to the TransformComponent
+#if defined(CARBONATED)
+                        ->
+                        ClassElement(AZ::Edit::ClassElements::Group, "Network Sync")->
+                            Attribute(AZ::Edit::Attributes::AutoExpand, true)->
+                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_netSyncEnabled, "Sync to network replicas", "")->
+                        DataElement(AZ::Edit::UIHandlers::ComboBox, &TransformComponent::m_interpolatePosition,
+                            "Position Interpolation", "Enable local interpolation of position.")->
+                            EnumAttribute(AZ::InterpolationMode::NoInterpolation, "None")->
+                            EnumAttribute(AZ::InterpolationMode::LinearInterpolation, "Linear")->
 
+                        DataElement(AZ::Edit::UIHandlers::ComboBox, &TransformComponent::m_interpolateRotation,
+                            "Rotation Interpolation", "Enable local interpolation of rotation.")->
+                            EnumAttribute(AZ::InterpolationMode::NoInterpolation, "None")->
+                            EnumAttribute(AZ::InterpolationMode::LinearInterpolation, "Linear")
+#endif
+                        ;
+                      // carbonated end
                     ptrEdit->Class<EditorTransform>("Values", "XYZ PYR")->
                         DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_translate, "Translate", "Local Position (Relative to parent) in meters.")->
                             Attribute(AZ::Edit::Attributes::Step, 0.1f)->

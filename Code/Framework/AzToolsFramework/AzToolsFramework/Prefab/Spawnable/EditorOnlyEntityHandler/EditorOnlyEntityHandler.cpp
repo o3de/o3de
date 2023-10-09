@@ -42,16 +42,18 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
             AZ::EntityUtils::EnumerateEntityIds<AZ::Entity>(
                 runtimeEntity,
-                [&editorOnlyEntityIds, &result, runtimeEntity](const AZ::EntityId& id, bool /*isEntityId*/, const AZ::SerializeContext::ClassElement* /*elementData*/)
+                [&editorOnlyEntityIds, &result, runtimeEntity, &entities](
+                    const AZ::EntityId& id, bool /*isEntityId*/, const AZ::SerializeContext::ClassElement* elementData)
                 {
                     if (editorOnlyEntityIds.end() != editorOnlyEntityIds.find(id))
                     {
-                        result = AZ::Failure(
-                            AZStd::string::format(
-                                "A runtime entity (%s) contains references to an entity marked as editor-only.",
-                                runtimeEntity->GetName().c_str()
-                            )
-                        );
+                        result = AZ::Failure(AZStd::string::format(
+                            "A runtime entity (%s) contains references to an entity marked as editor-only. id=%s, elementData->m_name=%s. "
+                            "entities.size=%lu",
+                            runtimeEntity->GetName().c_str(),
+                            id.ToString().c_str(),
+                            elementData ? elementData->m_name : "null",
+                            entities.size()));
 
                         return false;
                     }

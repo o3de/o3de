@@ -15,9 +15,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
-#ifdef CARBONATED
-#include <AzCore/Math/Uuid.h>       // Gruber patch. // LVB. // Support unique instances
-#endif
 
 namespace AZ
 {
@@ -71,10 +68,6 @@ namespace AzFramework
 
         using EntityList = AZStd::vector<AZStd::unique_ptr<AZ::Entity>>;
         using EntityAliasList = AZStd::vector<EntityAlias>;
-
-#ifdef CARBONATED
-        using SpawnableInstanceId = AZ::Uuid;   // Gruber patch. // LVB. // Support unique instances
-#endif
 
         class EntityAliasConstVisitor
         {
@@ -177,30 +170,28 @@ namespace AzFramework
         SpawnableMetaData& GetMetaData();
         const SpawnableMetaData& GetMetaData() const;
 
-// Gruber patch begin. // LVB. // Support unique instances
+// Gruber patch begin. // LVB. // Support dynamic instances
 #ifdef CARBONATED
-        /// Returns the instance's unique Id.
-        const SpawnableInstanceId& GetInstanceId() const
+        bool IsDynamic() const
         {
-            return m_instanceId;
+            return m_isDynamic;
         }
 
-        void SetInstanceId(const SpawnableInstanceId& id)
+        void SetIsDynamic(bool value)
         {
-            m_instanceId = id;
+            m_isDynamic = value;
         }
-
-        // Generate random InstanceId for this Spawnable
-        void GenerateInstanceId();
 #endif
-// Gruber patch end. // LVB. // Support unique instances
+// Gruber patch end. // LVB. // Support dynamic instances
 
         static void Reflect(AZ::ReflectContext* context);
 
     private:
+// Gruber patch begin. // LVB.
 #ifdef CARBONATED
-        SpawnableInstanceId m_instanceId; ///< Unique Id of the instance.   // Gruber patch. // LVB. // Support unique instances
+        bool m_isDynamic;
 #endif
+// Gruber patch end. // LVB.
 
         SpawnableMetaData m_metaData;
 
