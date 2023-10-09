@@ -132,8 +132,6 @@ namespace Multiplayer
     AZ_CVAR(bool, bg_parallelNotifyPreRender, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "If true, OnPreRender events will be sent in parallel from job threads. Please make sure the handlers of the event are thread safe.");
     
-    constexpr bool IsDedicatedServer = static_cast<bool>(AZ_TRAIT_CLIENT) == false && static_cast<bool>(AZ_TRAIT_SERVER);
-
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         NetworkSpawnable::Reflect(context);
@@ -311,27 +309,22 @@ namespace Multiplayer
                     // been registered with the AZ Console
                     console->ExecuteDeferredConsoleCommands();
 
-                    #if !AZ_TRAIT_CLIENT && AZ_TRAIT_SERVER
-                    const auto shouldHostDedicatedServerOnStartup = [&console]() -> bool
-                    {
-                        bool result{};
-                        if (console->GetCvarValue("sv_dedicated_host_onstartup", result) != AZ::GetValueResult::Success)
+                    #if AZ_DEDICATED_SERVER
+                        const auto shouldHostOnStartup = [&console]() -> bool
                         {
-                            AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_dedicated_host_onstartup).")
-                            return false;
-                        }
+                            bool result{};
+                            if (console->GetCvarValue("sv_dedicated_host_onstartup", result) != AZ::GetValueResult::Success)
+                            {
+                                AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_dedicated_host_onstartup).")
+                                return false;
+                            }
 
-                        return result;
-                    }();
+                            return result;
+                        }();
 
-                    // Dedicated servers will automatically begin hosting
-                    if (IsDedicatedServer && shouldHostDedicatedServerOnStartup)
-                    {
-                        this->StartHosting(sv_port, /*is dedicated*/ true);
-                    }
-                    shouldHostDedicatedServerOnStartup ? StartHosting(sv_port) : bool();
+                        // Dedicated servers will automatically begin hosting
+                        StartHosting(sv_port, shouldHostOnStartup);
                     #endif
-
                 },
                 "SystemComponentsActivated",
                 /*autoRegisterEvent*/ true);
@@ -1880,7 +1873,13 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::HostConsoleCommand([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        StartHosting(sv_port, IsDedicatedServer);
+        // Only servers should need the host command.
+        #if AZ_TRAIT_SERVER
+            constexpr bool isDedicated = static_cast<bool>(AZ_DEDICATED_SERVER);
+            StartHosting(sv_port, isDedicated);
+        #else
+            AZLOG_WARN("The 'host' command is only available on server builds.");
+        #endif
     }
 
     void sv_launch_local_client([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
