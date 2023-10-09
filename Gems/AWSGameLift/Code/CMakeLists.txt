@@ -7,4 +7,7 @@
 #
 
 add_subdirectory(AWSGameLiftClient)
+
+if(NOT CARBONATED_SKIP_AWSGAMELIFT_SERVER)
 add_subdirectory(AWSGameLiftServer)
+endif()
