@@ -10,7 +10,10 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+add_translation_module(${CMAKE_CURRENT_SOURCE_DIR} Editor)
+
 add_subdirectory(Plugins)
+add_subdirectory(Translations)
 
 ly_add_target(
     NAME EditorCore SHARED

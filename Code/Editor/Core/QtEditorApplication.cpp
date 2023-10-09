@@ -16,6 +16,7 @@
 #include <QScopedValueRollback>
 #include <QToolBar>
 #include <QLoggingCategory>
+#include <QTextCodec>
 
 
 #include <AzCore/Component/ComponentApplication.h>
@@ -31,6 +32,8 @@
 // Editor
 #include "Settings.h"
 #include "CryEdit.h"
+
+#include <AzToolsFramework/Translation/Translation.h>
 
 Q_LOGGING_CATEGORY(InputDebugging, "o3de.editor.input")
 
@@ -425,8 +428,16 @@ namespace Editor
 
     void EditorQtApplication::InstallEditorTranslators()
     {
-        m_editorTranslator =        CreateAndInitializeTranslator("editor_en-us.qm", ":/Translations");
-        m_assetBrowserTranslator =  CreateAndInitializeTranslator("assetbrowser_en-us.qm", ":/Translations");
+        QTextCodec::setCodecForLocale(QTextCodec::codecForName("utf-8"));
+
+        QStringList translatorNames = {
+            "Editor"
+        };
+
+        for (QString trans : translatorNames)
+        {
+            m_translators.append(AzToolsFramework::CreateAndLoadTranslator(trans));
+        }
     }
 
     void EditorQtApplication::DeleteTranslator(QTranslator*& translator)
@@ -438,8 +449,11 @@ namespace Editor
 
     void EditorQtApplication::UninstallEditorTranslators()
     {
-        DeleteTranslator(m_editorTranslator);
-        DeleteTranslator(m_assetBrowserTranslator);
+        for (int i = 0; i < m_translators.size(); i++)
+        {
+            AzToolsFramework::UnloadTranslator(m_translators.at(i));
+        }
+        m_translators.clear();
     }
 
     void EditorQtApplication::EnableOnIdle(bool enable)

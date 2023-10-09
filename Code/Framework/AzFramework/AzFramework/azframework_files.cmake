@@ -381,6 +381,7 @@ set(FILES
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Thermal/ThermalInfo.h
+    Translation/TranslationDef.h
     Platform/PlatformDefaults.h
     Windowing/WindowBus.h
     Windowing/NativeWindow.cpp
