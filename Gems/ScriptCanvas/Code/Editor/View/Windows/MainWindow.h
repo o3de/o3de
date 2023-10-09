@@ -519,6 +519,7 @@ namespace ScriptCanvasEditor
         AZ::EntityId FindAssetNodeIdByEditorNodeId(const SourceHandle& assetId, AZ::EntityId editorNodeId) const override;
 
     private:
+
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
 
@@ -636,10 +637,10 @@ namespace ScriptCanvasEditor
 
         void OpenNextFile();
 
-
         void DisableAssetView(const SourceHandle& memoryAssetId);
         void EnableAssetView(const SourceHandle& memoryAssetId);
 
+        void EnableOpenDocumentActions(bool enable);
 
         QWidget* m_host = nullptr;
 
