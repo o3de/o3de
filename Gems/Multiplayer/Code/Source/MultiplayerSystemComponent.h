@@ -34,6 +34,9 @@
     #endif
 #endif
 
+#define AZ_CLIENT_SERVER (AZ_TRAIT_CLIENT && AZ_TRAIT_SERVER)
+#define AZ_DEDICATED_SERVER (!AZ_TRAIT_CLIENT && AZ_TRAIT_SERVER)
+
 namespace AzFramework
 {
     struct SessionConfig;
