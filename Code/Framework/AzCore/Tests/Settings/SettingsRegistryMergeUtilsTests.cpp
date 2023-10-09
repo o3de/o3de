@@ -214,25 +214,6 @@ namespace SettingsRegistryMergeUtilsTests
     );
 
 
-    static bool CreateTestFile(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
-    {
-        AZ::IO::SystemFile file;
-        if (!file.Open(testPath.c_str(), AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
-            | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
-        {
-            AZ_Assert(false, "Unable to open test file for writing: %s", testPath.c_str());
-            return false;
-        }
-
-        if (file.Write(content.data(), content.size()) != content.size())
-        {
-            AZ_Assert(false, "Unable to write content to test file: %s", testPath.c_str());
-            return false;
-        }
-
-        return true;
-    }
-
     //! ConfigFile MergeUtils Test
     struct ConfigFileParams
     {
@@ -253,9 +234,8 @@ namespace SettingsRegistryMergeUtilsTests
         {
             m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
             auto configFileParam = GetParam();
-            auto testPath = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory()) / configFileParam.m_testConfigFileName;
             // Create the test config file
-            ASSERT_TRUE(CreateTestFile(testPath, configFileParam.m_testConfigContents));
+            ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, configFileParam.m_testConfigFileName, configFileParam.m_testConfigContents));
         }
 
         void TearDown() override
@@ -489,27 +469,26 @@ tags=tools,renderer,metal)"
             m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
             // Create the manifest json files
             const auto& gemVisitParams = GetParam();
-            auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
-            AZ::IO::FixedMaxPath o3deManifestFilePath = tempRootFolder / "o3de" / "o3de_manifest.json";
-            AZ::IO::FixedMaxPath engineManifestPath = tempRootFolder / "engine" / "engine.json";
-            AZ::IO::FixedMaxPath projectManifestPath = tempRootFolder / "project" / "project.json";
-            ASSERT_TRUE(CreateTestFile(o3deManifestFilePath, gemVisitParams.m_o3deManifestJson));
-            ASSERT_TRUE(CreateTestFile(engineManifestPath, gemVisitParams.m_engineManifestJson));
-            ASSERT_TRUE(CreateTestFile(projectManifestPath, gemVisitParams.m_projectManifestJson));
+            AZ::IO::PathView o3deManifestFilePath = "o3de/o3de_manifest.json";
+            AZ::IO::PathView engineManifestPath = "engine/engine.json";
+            AZ::IO::PathView projectManifestPath = "project/project.json";
+            ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, o3deManifestFilePath, gemVisitParams.m_o3deManifestJson));
+            ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, engineManifestPath, gemVisitParams.m_engineManifestJson));
+            ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, projectManifestPath, gemVisitParams.m_projectManifestJson));
 
             for (const auto& [gemRelativePath, gemManifestJson] : gemVisitParams.m_gemManifestJsons)
             {
-                AZ::IO::FixedMaxPath gemManifestPath = tempRootFolder / gemRelativePath / "gem.json";
-                ASSERT_TRUE(CreateTestFile(gemManifestPath, gemManifestJson));
+                AZ::IO::FixedMaxPath gemManifestPath = AZ::IO::FixedMaxPath(gemRelativePath) / "gem.json";
+                ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, gemManifestPath, gemManifestJson));
             }
 
             // Set the FilePathKeys for the o3de root, engine root and project root directories
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_O3deManifestRootFolder,
-                (tempRootFolder / "o3de").Native());
+                m_testFolder.Resolve("o3de").Native());
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder,
-                (tempRootFolder / "engine").Native());
+                m_testFolder.Resolve("engine").Native());
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath,
-                (tempRootFolder / "project").Native());
+                m_testFolder.Resolve("project").Native());
 
             // Merge the Active Gem Json data to the Settings Registry
             EXPECT_TRUE(m_registry->MergeSettings(gemVisitParams.m_activeGemJson, AZ::SettingsRegistryInterface::Format::JsonMergePatch));
@@ -753,7 +732,7 @@ tags=tools,renderer,metal)"
         EXPECT_FALSE(AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/Project/Settings/project_name"));
     }
 
-    
+
     struct SettingsRegistryFindEngineRootParams
     {
         AZStd::fixed_vector<const char*, 2> m_engineManifestsJson;
@@ -766,7 +745,7 @@ tags=tools,renderer,metal)"
     static auto MakeFindEngineRootTestingValues()
     {
         return AZStd::array{
-            // Selects correct engine based on name 
+            // Selects correct engine based on name
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -784,7 +763,7 @@ tags=tools,renderer,metal)"
                 ""
             },
 
-            // Selects engine with highest version when multiple of same name found 
+            // Selects engine with highest version when multiple of same name found
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -820,7 +799,7 @@ tags=tools,renderer,metal)"
                 ""
             },
 
-            // Fails to find engine with version that isn't registered 
+            // Fails to find engine with version that isn't registered
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -852,7 +831,7 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({})",
 
-                0, // o3de 
+                0, // o3de
                 ""
             },
 
@@ -942,11 +921,11 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({ "engine_path":"c:/path/not/found" })",
 
-                -1, // not found 
+                -1, // not found
                 ""
             },
 
-            // Uses scan up engine if all other methods fail 
+            // Uses scan up engine if all other methods fail
             SettingsRegistryFindEngineRootParams{
                 // engine.json files
                 {
@@ -960,7 +939,7 @@ tags=tools,renderer,metal)"
                 // project/user/project.json
                 R"({})",
 
-                -1,  
+                -1,
                 "engine"
             },
 
@@ -979,32 +958,31 @@ tags=tools,renderer,metal)"
 
             // Create the manifest json files
             const auto& params = GetParam();
-            auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
-            AZ::IO::FixedMaxPath o3deManifestFilePath = tempRootFolder / "o3de" / "o3de_manifest.json";
-            AZ::IO::FixedMaxPath projectPath = tempRootFolder / "project" ;
-            AZ::IO::FixedMaxPath projectManifestPath = projectPath / "project.json";
-            AZ::IO::FixedMaxPath projectUserPath = tempRootFolder / "project" /  "user";
-            AZ::IO::FixedMaxPath userProjectManifestPath = projectUserPath / "project.json";
+            AZ::IO::PathView o3deManifestFilePath = "o3de/o3de_manifest.json";
+            AZ::IO::PathView projectPath = "project";
+            AZ::IO::FixedMaxPath projectManifestPath = AZ::IO::FixedMaxPath(projectPath) / "project.json";
+            AZ::IO::PathView projectUserPath = "project/user";
+            AZ::IO::FixedMaxPath userProjectManifestPath = AZ::IO::FixedMaxPath(projectUserPath) / "project.json";
 
             for (size_t i = 0; i < params.m_engineManifestsJson.size(); ++i)
             {
-                const AZ::IO::FixedMaxPath enginePath = tempRootFolder / AZStd::string::format("engine%zu", i);
-                ASSERT_TRUE(CreateTestFile(enginePath / "engine.json", params.m_engineManifestsJson[i]));
+                const AZ::IO::FixedMaxPath enginePath = AZ::IO::FixedMaxPathString::format("engine%zu", i);
+                ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, enginePath / "engine.json", params.m_engineManifestsJson[i]));
 
-                m_enginePaths.emplace_back(AZStd::move(enginePath));
+                m_enginePaths.emplace_back(m_testFolder.GetDirectoryAsFixedMaxPath() / enginePath);
             }
 
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_O3deManifestRootFolder,
-                (tempRootFolder / "o3de").Native());
+                m_testFolder.Resolve("o3de").Native());
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath,
-                projectPath.Native());
+                (m_testFolder.GetDirectoryAsFixedMaxPath() / projectPath).Native());
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath,
-                projectUserPath.Native());
+                (m_testFolder.GetDirectoryAsFixedMaxPath() / projectUserPath).Native());
 
             if(!AZStd::string_view(params.m_scanUpEngineRoot).empty())
             {
                 // use an absolute path because that is what should be returned from FindEngineRoot
-                AZ::IO::FixedMaxPath scanUpEngineRootPath = tempRootFolder / params.m_scanUpEngineRoot;
+                AZ::IO::FixedMaxPath scanUpEngineRootPath = m_testFolder.GetDirectoryAsFixedMaxPath() / params.m_scanUpEngineRoot;
                 m_registry->Set(InternalScanUpEngineRootKey, scanUpEngineRootPath.Native());
             }
             else
@@ -1029,7 +1007,7 @@ tags=tools,renderer,metal)"
                 AZ::StringFunc::Json::ToEscapedString(enginePath);
                 AZ::StringFunc::Replace(contentString, AZStd::string::format("<engine_path%zu>", i).c_str(), enginePath.c_str());
             }
-            return CreateTestFile(testPath, contentString.c_str());
+            return AZ::Test::CreateTestFile(m_testFolder, testPath, contentString.c_str()).has_value();
         }
 
         void TearDown() override

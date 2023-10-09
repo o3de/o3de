@@ -183,11 +183,17 @@
    <property name="text">
     <string>&amp;Save</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_Save_As">
    <property name="text">
     <string>&amp;Save As...</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_Open">
    <property name="text">
@@ -229,8 +235,8 @@
     <iconset resource="ScriptCanvasEditorResources.qrc">
      <normaloff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_commandline.png</normaloff>:/ScriptCanvasEditorResources/Resources/scriptcanvas_commandline.png</iconset>
    </property>
-   <property name="text">
-    <string>Command Line</string>
+    <property name="text">
+    <string>Command Line (Experimental)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
@@ -239,7 +245,7 @@
     <bool>false</bool>
    </property>
    <property name="visible">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
   </action>
   <action name="action_ViewNodePalette">
@@ -680,6 +686,9 @@
    <property name="shortcut">
     <string>Shift+Left</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_AlignRight">
    <property name="text">
@@ -688,6 +697,9 @@
    <property name="shortcut">
     <string>Shift+Right</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_AlignTop">
    <property name="text">
@@ -696,6 +708,9 @@
    <property name="shortcut">
     <string>Shift+Up</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_AlignBottom">
    <property name="text">
@@ -704,6 +719,9 @@
    <property name="shortcut">
     <string>Shift+Down</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_SelectAll">
    <property name="text">
@@ -728,6 +746,9 @@
    <property name="shortcut">
     <string>Esc</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_GotoStartOfChain">
    <property name="text">
@@ -736,6 +757,9 @@
    <property name="shortcut">
     <string>Ctrl+Shift+Left</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_GotoEndOfChain">
    <property name="text">
@@ -744,6 +768,9 @@
    <property name="shortcut">
     <string>Ctrl+Shift+Right</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="actionZoom_To">
    <property name="text">
@@ -757,6 +784,9 @@
    <property name="shortcut">
     <string>Ctrl+Shift+Up</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_EnableSelection">
    <property name="text">
@@ -765,6 +795,9 @@
    <property name="shortcut">
     <string>Ctrl+K, Ctrl+U</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="action_DisableSelection">
    <property name="text">
@@ -773,6 +806,9 @@
    <property name="shortcut">
     <string>Ctrl+K, Ctrl+C</string>
    </property>
+    <property name="enabled">
+      <bool>false</bool>
+    </property>
   </action>
   <action name="actionEditor_Graph">
    <property name="text">
