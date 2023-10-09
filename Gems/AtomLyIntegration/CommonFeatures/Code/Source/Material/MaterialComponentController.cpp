@@ -36,7 +36,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
-                    ->Event("GetDefautMaterialMap", &MaterialComponentRequestBus::Events::GetDefautMaterialMap, "GetOriginalMaterialAssignments")
+                    ->Event("GetDefaultMaterialMap", &MaterialComponentRequestBus::Events::GetDefaultMaterialMap, "GetDefautMaterialMap")
                     ->Event("FindMaterialAssignmentId", &MaterialComponentRequestBus::Events::FindMaterialAssignmentId)
                     ->Event("GetActiveMaterialAssetId", &MaterialComponentRequestBus::Events::GetMaterialAssetId) // This function is now redundant but cannot be marked deprecated or removed in case it's still referenced in script
                     ->Event("GetDefaultMaterialAssetId", &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId)
@@ -238,7 +238,7 @@ namespace AZ
             ReleaseMaterials();
 
             MaterialConsumerRequestBus::EventResult(
-                m_defaultMaterialMap, m_entityId, &MaterialConsumerRequestBus::Events::GetDefautMaterialMap);
+                m_defaultMaterialMap, m_entityId, &MaterialConsumerRequestBus::Events::GetDefaultMaterialMap);
 
             // Build tables of all referenced materials so that we can load and look up defaults
             for (const auto& [materialAssignmentId, materialAssignment] : m_defaultMaterialMap)
@@ -344,7 +344,7 @@ namespace AZ
             }
         }
 
-        MaterialAssignmentMap MaterialComponentController::GetDefautMaterialMap() const
+        MaterialAssignmentMap MaterialComponentController::GetDefaultMaterialMap() const
         {
             return m_defaultMaterialMap;
         }

@@ -93,7 +93,7 @@ namespace AZ
                     ->Method("GetShaderAssetId", &Item::GetShaderAssetId)
                     ->Method("GetShaderVariantId", &Item::GetShaderVariantId)
                     ->Method("GetShaderOptionGroup", &Item::GetShaderOptionGroup)
-                ;
+                    ->Method("MaterialOwnsShaderOption", static_cast<bool (Item::*)(const Name&) const>(&Item::MaterialOwnsShaderOption));
             }
         }
 

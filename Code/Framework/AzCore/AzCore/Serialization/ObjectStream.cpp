@@ -1749,7 +1749,8 @@ namespace AZ
                     classData->m_serializer->DataToText(memStream, m_outStream, false);
 
                     char* rawText = static_cast<char*>(m_outStream.GetData()->data());
-                    char* xmlString = m_xmlDoc->allocate_string(rawText, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    char* xmlString = m_xmlDoc->allocate_string(nullptr, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    AZStd::copy(rawText, rawText + m_outStream.GetCurPos(), xmlString);
                     xmlString[m_outStream.GetCurPos()] = 0;
 
                     attr = m_xmlDoc->allocate_attribute(m_xmlDoc->allocate_string("value"), xmlString);

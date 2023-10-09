@@ -71,14 +71,6 @@ namespace AZ
             RHI::PipelineStateDescriptorForRayTracing closestHitShaderDescriptor;
             closestHitShaderVariant.ConfigurePipelineState(closestHitShaderDescriptor);
 
-            // any hit shader
-            AZStd::string anyHitShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingAnyHit.azshader";
-            m_anyHitShader = RPI::LoadCriticalShader(anyHitShaderFilePath);
-
-            auto anyHitShaderVariant = m_anyHitShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            RHI::PipelineStateDescriptorForRayTracing anyHitShaderDescriptor;
-            anyHitShaderVariant.ConfigurePipelineState(anyHitShaderDescriptor);
-
             // miss shader
             AZStd::string missShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingMiss.azshader";
             m_missShader = RPI::LoadCriticalShader(missShaderFilePath);
@@ -92,13 +84,13 @@ namespace AZ
             AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
 
             m_globalSrgLayout = m_rayTracingShader->FindShaderResourceGroupLayout(Name{ "RayTracingGlobalSrg" });
-            AZ_Error( "ReflectionProbeFeatureProcessor", m_globalSrgLayout != nullptr, "Failed to find RayTracingGlobalSrg layout for shader [%s]", shaderFilePath.c_str());
+            AZ_Error( "DiffuseProbeGridRayTracingPass", m_globalSrgLayout != nullptr, "Failed to find RayTracingGlobalSrg layout for shader [%s]", shaderFilePath.c_str());
 
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
                 ->PipelineState(m_globalPipelineState.get())
-                ->MaxPayloadSize(112)
+                ->MaxPayloadSize(96)
                 ->MaxAttributeSize(32)
                 ->MaxRecursionDepth(MaxRecursionDepth)
                 ->ShaderLibrary(rayGenerationShaderDescriptor)
@@ -107,16 +99,16 @@ namespace AZ
                     ->MissShaderName(AZ::Name("Miss"))
                 ->ShaderLibrary(closestHitShaderDescriptor)
                     ->ClosestHitShaderName(AZ::Name("ClosestHit"))
-                ->ShaderLibrary(anyHitShaderDescriptor)
-                    ->AnyHitShaderName(AZ::Name("AnyHit"))
                 ->HitGroup(AZ::Name("HitGroup"))
                     ->ClosestHitShaderName(AZ::Name("ClosestHit"))
-                    ->AnyHitShaderName(AZ::Name("AnyHit"))
             ;
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
             m_rayTracingPipelineState->Init(*device.get(), &descriptor);
+
+            // Since the ray tracing pipeline state changed, we need to rebuilt the shader table
+            m_rayTracingRevision = 0;
         }
 
         bool DiffuseProbeGridRayTracingPass::IsEnabled() const
@@ -148,16 +140,19 @@ namespace AZ
             return true;
         }
 
+        void DiffuseProbeGridRayTracingPass::BuildInternal()
+        {
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+            if (device->GetFeatures().m_rayTracing)
+            {
+                CreateRayTracingPipelineState();
+            }
+        }
+
         void DiffuseProbeGridRayTracingPass::FrameBeginInternal(FramePrepareParams params)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-
-            if (!m_initialized)
-            {
-                CreateRayTracingPipelineState();
-                m_initialized = true;
-            }
 
             if (!m_rayTracingShaderTable)
             {
@@ -222,7 +217,14 @@ namespace AZ
                     RHI::ImageScopeAttachmentDescriptor desc;
                     desc.m_attachmentId = diffuseProbeGrid->GetRayTraceImageAttachmentId();
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeRayTraceImageViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
+                    if (diffuseProbeGrid->GetTextureClearRequired())
+                    {
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Clear;
+                    }
+                    else
+                    {
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+                    }
 
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
                 }
@@ -330,7 +332,8 @@ namespace AZ
                     descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
                         ->RayGenerationRecord(AZ::Name("RayGen"))
                         ->MissRecord(AZ::Name("Miss"))
-                        ->HitGroupRecord(AZ::Name("HitGroup"));
+                        ->HitGroupRecord(AZ::Name("HitGroup"))
+                    ;
                 }
 
                 m_rayTracingShaderTable->Build(descriptor);
@@ -361,9 +364,9 @@ namespace AZ
                     };
 
                     RHI::DispatchRaysItem dispatchRaysItem;
-                    dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
-                    dispatchRaysItem.m_height = AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount());
-                    dispatchRaysItem.m_depth = 1;
+                    dispatchRaysItem.m_arguments.m_direct.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
+                    dispatchRaysItem.m_arguments.m_direct.m_height = AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount());
+                    dispatchRaysItem.m_arguments.m_direct.m_depth = 1;
                     dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState.get();
                     dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable.get();
                     dispatchRaysItem.m_shaderResourceGroupCount = RHI::ArraySize(shaderResourceGroups);

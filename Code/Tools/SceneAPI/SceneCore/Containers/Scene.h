@@ -33,6 +33,7 @@ namespace AZ
                 void SetSource(const AZStd::string& filename, const Uuid& guid);
                 void SetSource(AZStd::string&& filename, const Uuid& guid);
                 const AZStd::string& GetSourceFilename() const;
+                AZStd::string_view GetSourceExtension() const;
                 const Uuid& GetSourceGuid() const;
 
                 void SetWatchFolder(const AZStd::string& watchFolder);

@@ -75,7 +75,8 @@ namespace PhysX
         float GetFrictionCoefficient() const override;
         void SetMaxJointVelocity(float maxJointVelocity) override;
         float GetMaxJointVelocity() const override;
-
+        float GetJointPosition(ArticulationJointAxis jointAxis) const override;
+        float GetJointVelocity(ArticulationJointAxis jointAxis) const override;
         // ArticulationSensorRequestBus overrides ...
         AZ::Transform GetSensorTransform(AZ::u32 sensorIndex) const override;
         void SetSensorTransform(AZ::u32 sensorIndex, const AZ::Transform& sensorTransform) override;
@@ -86,6 +87,7 @@ namespace PhysX
         const AZStd::vector<AZ::u32> GetSensorIndices(const AZ::EntityId entityId);
         const physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
         physx::PxArticulationJointReducedCoordinate* GetDriveJoint();
+        AZStd::vector<AzPhysics::SimulatedBodyHandle> GetSimulatedBodyHandles() const;
         AZStd::shared_ptr<ArticulationLinkData> m_articulationLinkData;
         ArticulationLinkConfiguration m_config;
 

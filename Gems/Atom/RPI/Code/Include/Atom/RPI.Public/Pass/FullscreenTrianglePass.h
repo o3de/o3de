@@ -59,6 +59,11 @@ namespace AZ
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
+            // ShaderReloadNotificationBus overrides...
+            void OnShaderReinitialized(const Shader& shader) override;
+            void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
+            void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
+
             RHI::Viewport m_viewportState;
             RHI::Scissor m_scissorState;
 
@@ -77,13 +82,6 @@ namespace AZ
             Data::Instance<ShaderResourceGroup> m_drawShaderResourceGroup;
 
         private:
-
-            ///////////////////////////////////////////////////////////////////
-            // ShaderReloadNotificationBus overrides...
-            void OnShaderReinitialized(const Shader& shader) override;
-            void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
-            ///////////////////////////////////////////////////////////////////
-
             void LoadShader();
             void UpdateSrgs();
             void BuildDrawItem();

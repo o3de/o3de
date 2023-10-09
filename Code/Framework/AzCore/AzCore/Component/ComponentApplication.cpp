@@ -580,23 +580,20 @@ namespace AZ
         // 1. The 'project_path' key changes
         // 2. The project specialization when the 'project-name' key changes
         // 3. The ComponentApplication command line when the command line is stored to the registry
-        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{
-            *m_settingsRegistry });
-        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{
-            *m_settingsRegistry });
-        m_commandLineUpdatedHandler = m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{
-            *m_settingsRegistry, m_commandLine });
-
-        // Merge Command Line arguments
-        constexpr bool executeRegDumpCommands = false;
+        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{ *m_settingsRegistry });
+        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{ *m_settingsRegistry });
+        m_commandLineUpdatedHandler =
+            m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{ *m_settingsRegistry, m_commandLine });
 
         if constexpr (
             AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
         {
             // Only merge the Global User Registry (~/.o3de/Registry) if that override type is allowed by our compile settings.
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                *m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         }
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
+        // Merge Command Line arguments using the default CommandToParse instance
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, {});
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
     }
 
@@ -765,7 +762,8 @@ namespace AZ
         AZ_Assert(!m_isStarted, "Component application already started!");
 
         using Type = AZ::SettingsRegistryInterface::Type;
-        if (m_settingsRegistry->GetType(SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder) == Type::NoType)
+        if (m_startupParameters.m_loadSettingsRegistry &&
+            m_settingsRegistry->GetType(SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder) == Type::NoType)
         {
             ReportBadEngineRoot();
             return nullptr;
@@ -841,9 +839,12 @@ namespace AZ
         ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "GemsLoaded", R"({})");
 
         // Execute user.cfg after modules have been loaded but before processing any command-line overrides
-        AZ::IO::FixedMaxPath platformCachePath;
-        m_settingsRegistry->Get(platformCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
-        m_console->ExecuteConfigFile((platformCachePath / "user.cfg").Native());
+        if (m_startupParameters.m_loadSettingsRegistry)
+        {
+            AZ::IO::FixedMaxPath platformCachePath;
+            m_settingsRegistry->Get(platformCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+            m_console->ExecuteConfigFile((platformCachePath / "user.cfg").Native());
+        }
 
         // Parse the command line parameters for console commands after modules have loaded
         m_console->ExecuteCommandLine(m_commandLine);
@@ -974,7 +975,7 @@ namespace AZ
                 // values will be replaced by later loads, so this step will happen again at the end of loading.
                 SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
                     registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-                SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, {});
                 // Project User Registry is merged after the command line here to allow make sure the any command line override of the
                 // project path is used for merging the project's user registry
                 SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
@@ -982,7 +983,7 @@ namespace AZ
             }
 
             // Make sure the command line is merged at least once, before updating the runtime filepaths
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, {});
             SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
         }
 
@@ -1033,13 +1034,17 @@ namespace AZ
             {
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
                     registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, {});
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
                     registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
             }
 
             // The final merge of the command line should also execute any command-line commands.
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+            AZ::SettingsRegistryMergeUtils::CommandsToParse commandsToParse;
+            // The regdump and regset-file arguments are parsed in the final merge
+            commandsToParse.m_parseRegdumpCommands = true;
+            commandsToParse.m_parseRegsetFileCommands = true;
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, commandsToParse);
         }
 
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
@@ -1048,26 +1053,32 @@ namespace AZ
 
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
     {
-        SettingsRegistryInterface::Specializations specializations;
-        SetSettingsRegistrySpecializations(specializations);
+        if (m_startupParameters.m_loadSettingsRegistry)
+        {
+            SettingsRegistryInterface::Specializations specializations;
+            SetSettingsRegistrySpecializations(specializations);
 
-        AZStd::vector<char> scratchBuffer;
+            AZStd::vector<char> scratchBuffer;
 
-        MergeSharedSettings(registry, specializations, scratchBuffer);
-        MergeUserSettings(registry, specializations, scratchBuffer);
+            MergeSharedSettings(registry, specializations, scratchBuffer);
+            MergeUserSettings(registry, specializations, scratchBuffer);
+        }
     }
 
     void ComponentApplication::SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations)
     {
+        if (m_startupParameters.m_loadSettingsRegistry)
+        {
 #if defined(AZ_DEBUG_BUILD)
-        specializations.Append("debug");
+            specializations.Append("debug");
 #elif defined(AZ_PROFILE_BUILD)
-        specializations.Append("profile");
+            specializations.Append("profile");
 #else
-        specializations.Append("release");
+            specializations.Append("release");
 #endif
 
-        SettingsRegistryMergeUtils::QuerySpecializationsFromRegistry(*m_settingsRegistry, specializations);
+            SettingsRegistryMergeUtils::QuerySpecializationsFromRegistry(*m_settingsRegistry, specializations);
+        }
     }
 
     //=========================================================================
@@ -1620,12 +1631,7 @@ namespace AZ
         Name::Reflect(context);
         // reflect path
         IO::PathReflect(context);
-
-        // reflect the SettingsRegistryInterface, SettignsRegistryImpl and the global Settings Registry
-        // instance (AZ::SettingsRegistry::Get()) into the Behavior Context
-        if (auto behaviorContext{ azrtti_cast<AZ::BehaviorContext*>(context) }; behaviorContext != nullptr)
-        {
-            AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
-        }
+        // reflect the SettingsRegistryInterface and SettingsRegistryImpl
+        AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistry(context);
     }
 } // namespace AZ

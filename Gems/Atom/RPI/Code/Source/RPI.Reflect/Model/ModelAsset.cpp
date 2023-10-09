@@ -38,6 +38,7 @@ namespace AZ
                     ->Field("Aabb", &ModelAsset::m_aabb)
                     ->Field("MaterialSlots", &ModelAsset::m_materialSlots)
                     ->Field("LodAssets", &ModelAsset::m_lodAssets)
+                    ->Field("Tags", &ModelAsset::m_tags)
                     ;
 
                 // Note: This class needs to have edit context reflection so PropertyAssetCtrl::OnEditButtonClicked
@@ -132,6 +133,11 @@ namespace AZ
             }
 
             return BruteForceRayIntersect(rayStart, rayDir, distanceNormalized, normal);
+        }
+
+        const AZStd::vector<AZ::Name>& ModelAsset::GetTags() const
+        {
+            return m_tags;
         }
 
         void ModelAsset::BuildKdTree() const
@@ -344,7 +350,7 @@ namespace AZ
             AZStd::span<Data::Asset<ModelLodAsset>> lodAssets,
             const ModelMaterialSlotMap& materialSlots,
             const ModelMaterialSlot& fallbackSlot,
-            [[maybe_unused]] AZStd::span<AZ::Name> tags)
+            AZStd::span<AZ::Name> tags)
         {
             AZ_Assert(!m_isKdTreeCalculationRunning, "Overwriting a ModelAsset while it is calculating its kd tree.");
 
@@ -361,8 +367,9 @@ namespace AZ
             m_isKdTreeCalculationRunning = false;
             m_modelTriangleCount = {};
 
-            // Clear out LOD Assets, we'll set those individually.
+            // Clear out tags and LOD Assets, we'll set those individually.
             m_lodAssets.clear();
+            m_tags = {};
 
             for (const auto& lodAsset : lodAssets)
             {
@@ -373,6 +380,10 @@ namespace AZ
                 }
             }
 
+            for (const auto& tag : tags)
+            {
+                m_tags.push_back(tag);
+            }
         }
 
         // Create a stable ID for our default fallback model.

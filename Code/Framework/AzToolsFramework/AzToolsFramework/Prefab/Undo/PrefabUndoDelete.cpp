@@ -30,8 +30,6 @@ namespace AzToolsFramework
             Instance& focusedInstance)
         {
             m_templateId = focusedInstance.GetTemplateId();
-            m_redoPatch.SetArray();
-            m_undoPatch.SetArray();
 
             PrefabDom& focusedTempalteDom = m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
 
@@ -55,7 +53,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::RemoveValueInInstanceDom(cachedOwningInstanceDom, entityAliasPath);
+                    PrefabUndoUtils::RemoveValueInPrefabDom(cachedOwningInstanceDom, entityAliasPath);
                 }
             }
 
@@ -91,9 +89,9 @@ namespace AzToolsFramework
                         continue;
                     }
 
-                    PrefabUndoUtils::AppendUpdateEntityPatch(
+                    PrefabUndoUtils::GenerateAndAppendPatch(
                         m_redoPatch, parentEntityDomBeforeRemoving, parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
-                    PrefabUndoUtils::AppendUpdateEntityPatch(
+                    PrefabUndoUtils::GenerateAndAppendPatch(
                         m_undoPatch, parentEntityDomAfterRemovingChildren, parentEntityDomBeforeRemoving, parentEntityAliasPath);
                 }
                 else
@@ -113,9 +111,9 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        PrefabUndoUtils::AppendUpdateEntityPatch(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
-                        PrefabUndoUtils::AppendUpdateEntityPatch(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             m_undoPatch, parentEntityDomAfterRemovingChildren, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
                     }
                 }
@@ -123,7 +121,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateEntityInInstanceDom(
+                    PrefabUndoUtils::UpdateEntityInPrefabDom(
                         cachedOwningInstanceDom->get(), parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
                 }
             }

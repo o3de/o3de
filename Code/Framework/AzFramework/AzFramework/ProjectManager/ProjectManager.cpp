@@ -38,7 +38,7 @@ namespace AzFramework::ProjectManager
             // Retrieve Command Line from Settings Registry, it may have been updated by the call to FindEngineRoot()
             // in MergeSettingstoRegistry_ConfigFile
             AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(settingsRegistry, commandLine);
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, {});
             // Look for the engine first in case the project path is relative
             AZ::SettingsRegistryMergeUtils::FindEngineRoot(settingsRegistry);
             projectRootPath = AZ::SettingsRegistryMergeUtils::FindProjectRoot(settingsRegistry);

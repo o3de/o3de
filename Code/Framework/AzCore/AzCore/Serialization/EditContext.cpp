@@ -417,6 +417,15 @@ namespace AZ
 
 } // namespace AZ
 
+namespace AZ::Edit
+{
+    AZ::TemplateId GetO3deTemplateId(AZ::Adl, AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<EnumConstant>)
+    {
+        return AZ::TemplateId(EnumConstantTypeId);
+    }
+}
+
+
 // pre-instantiate the extremely common ones
 template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char *, AZ::Crc32);
 template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);

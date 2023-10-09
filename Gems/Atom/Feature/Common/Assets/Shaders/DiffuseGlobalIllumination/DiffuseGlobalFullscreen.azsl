@@ -22,8 +22,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2DMS<float>  m_depth;
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-
 // Vertex Shader
 VSOutput MainVS(VSInput input)
 {
@@ -74,7 +72,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float4 albedo = PassSrg::m_albedo.Load(screenCoords, sampleIndex);
 
     float3 irradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal);
-    float3 diffuse = albedo * irradiance;
+    float3 diffuse = albedo.rgb * irradiance;
 
     // adjust IBL lighting by exposure.
     float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);

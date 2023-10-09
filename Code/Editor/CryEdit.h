@@ -22,14 +22,10 @@
 #endif
 
 class CCryDocManager;
-class CQuickAccessBar;
 class CCryEditDoc;
 class CEditCommandLineInfo;
 class CMainFrame;
 class CConsoleDialog;
-struct mg_connection;
-struct mg_request_info;
-struct mg_context;
 class QAction;
 class MainWindow;
 class QSharedMemory;
@@ -57,9 +53,6 @@ public:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QSettings m_settings;
 };
-
-
-#define PROJECT_CONFIGURATOR_GEM_PAGE "Gems Settings"
 
 
 /**
@@ -95,6 +88,7 @@ class SANDBOX_API CCryEditApp
     : public QObject
     , protected AzFramework::AssetSystemInfoBus::Handler
     , protected EditorIdleProcessingBus::Handler
+    , protected AzFramework::AssetSystemStatusBus::Handler
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -164,8 +158,8 @@ public:
 
     QString GetRootEnginePath() const;
     void RedirectStdoutToNull();
+
     // Overrides
-    // ClassWizard generated virtual function overrides
 public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
@@ -196,7 +190,6 @@ public:
     void OnDocumentationAWSSupport();
     void OnCommercePublish();
     void OnCommerceMerch();
-    void OnExportSelectedObjects();
     void OnEditHold();
     void OnEditFetch();
     void OnFileExportToGameNoSurfaceTexture();
@@ -237,6 +230,10 @@ public:
 protected:
     // ------- AzFramework::AssetSystemInfoBus::Handler ------
     void OnError(AzFramework::AssetSystem::AssetSystemErrors error) override;
+    // -------------------------------------------
+
+    // ------- AzFramework::AssetSystemStatusBus::Handler ------
+    void AssetSystemWaiting() override;
     // -------------------------------------------
 
 private:
@@ -329,7 +326,6 @@ private:
     int m_numBeforeDisplayErrorFrames = 0;
 
     QString m_lastOpenLevelPath;
-    CQuickAccessBar* m_pQuickAccessBar = nullptr;
     QString m_rootEnginePath;
 
     int m_disableIdleProcessingCounter = 0; //!< Counts requests to disable idle processing. When non-zero, idle processing will be disabled.
@@ -387,7 +383,6 @@ private:
     void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
-    void OnOpenQuickAccessBar();
 
     // @param files: A list of file paths, separated by '|';
     void OpenExternalLuaDebugger(AZStd::string_view luaDebuggerUri, AZStd::string_view enginePath, AZStd::string_view projectPath, const char * files);
@@ -395,8 +390,6 @@ private:
 public:
     void ExportLevel(bool bExportToGame, bool bExportTexture, bool bAutoExport);
     static bool Command_ExportToEngine();
-
-    void OnFileExportOcclusionMesh();
 };
 
 //////////////////////////////////////////////////////////////////////////

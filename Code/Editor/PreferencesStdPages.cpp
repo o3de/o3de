@@ -20,7 +20,6 @@
 #include "EditorPreferencesPageViewportManipulator.h"
 #include "EditorPreferencesPageViewportCamera.h"
 #include "EditorPreferencesPageViewportDebug.h"
-#include "EditorPreferencesPageExperimentalLighting.h"
 #include "EditorPreferencesPageAWS.h"
 
 
@@ -39,8 +38,6 @@ CStdPreferencesClassDesc::CStdPreferencesClassDesc()
         [](){ return new CEditorPreferencesPage_ViewportManipulator(); },
         [](){ return new CEditorPreferencesPage_ViewportDebug(); }
     };
-
-    m_pageCreators.push_back([]() { return new CEditorPreferencesPage_ExperimentalLighting(); });
 
     if (AzToolsFramework::IsComponentWithServiceRegistered(AZ_CRC_CE("AWSCoreEditorService")))
     {

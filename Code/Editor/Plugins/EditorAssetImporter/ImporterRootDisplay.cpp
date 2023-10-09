@@ -72,32 +72,25 @@ ImporterRootDisplayWidget::ImporterRootDisplayWidget(AZ::SerializeContext* seria
     , ui(new Ui::ImporterRootDisplay())
     , m_manifestWidget(new AZ::SceneAPI::UI::ManifestWidget(serializeContext))
     , m_hasUnsavedChanges(false)
+    , m_filePath("")
 {
     ui->setupUi(this);
     ui->m_manifestWidgetAreaLayout->addWidget(m_manifestWidget.data());
 
-    ui->m_saveButton->setVisible(false);
-    ui->m_saveButton->setProperty("class", "Primary");
-    ui->m_saveButton->setDefault(true);
-
     ui->m_timeStamp->setVisible(false);
     ui->m_timeStampTitle->setVisible(false);
-    ui->locationLabel->setVisible(false);
-    ui->nameLabel->setVisible(false);
-
-    ui->headerFrame->setVisible(false);
-
-    ui->HeaderPythonBuilderLayoutWidget->setVisible(false);
-
-    ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
-
-    connect(ui->m_saveButton, &QPushButton::clicked, this, &ImporterRootDisplayWidget::SaveClicked);
-
-    ui->m_showInExplorer->setEnabled(false);
 
     AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusConnect();
     m_requestHandler = AZStd::make_shared<SceneSettingsRootDisplayScriptRequestHandler>();
     m_requestHandler->SetRootDisplay(this);
+
+    connect(
+        this,
+        &ImporterRootDisplayWidget::AppendUnsavedChangesToTitle,
+        m_manifestWidget.data(),
+        &AZ::SceneAPI::UI::ManifestWidget::AppendUnsavedChangesToTitle);
+
+    connect(ui->m_closeButton, &QPushButton::clicked, this, [this]{ ui->m_pythonBuilderLayout->hide(); });
 }
 
 ImporterRootDisplayWidget::~ImporterRootDisplayWidget()
@@ -114,27 +107,18 @@ AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplayWidget::GetManifestWidget()
 void ImporterRootDisplayWidget::SetSceneHeaderText(const QString& headerText)
 {
     QFileInfo fileInfo(headerText);
-    ui->m_filePathText->setText(QString("<b>%1</b>").arg(fileInfo.fileName()));
-    QString fullPath(QString("%1%2").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator()));
-    ui->m_fullPathText->setText(QString("<b>%1</b>").arg(fullPath));
-    
-    ui->m_showInExplorer->setEnabled(true);
-    ui->m_showInExplorer->disconnect();
-    connect(ui->m_showInExplorer, &QPushButton::clicked, this, [fullPath]()
-    {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath));
-    });
+    m_filePath = fileInfo.fileName();
 }
 
 void ImporterRootDisplayWidget::SetPythonBuilderText(QString pythonBuilderText)
 {
-    ui->m_pythonBuilderScript->setText(pythonBuilderText);
-    ui->HeaderPythonBuilderLayoutWidget->setVisible(!pythonBuilderText.isEmpty());
+    ui->m_pythonBuilder->setText(QString("<b>Assigned Python Builder Script:</b> %1").arg(pythonBuilderText));
+    ui->m_pythonBuilderLayout->setVisible(!pythonBuilderText.isEmpty());
 }
 
 QString ImporterRootDisplayWidget::GetHeaderFileName() const
 {
-    return ui->m_filePathText->text();
+    return m_filePath;
 }
 
 void ImporterRootDisplayWidget::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
@@ -147,10 +131,6 @@ void ImporterRootDisplayWidget::SetSceneDisplay(const QString& headerText, const
     }
 
     SetSceneHeaderText(headerText);
-    ui->locationLabel->setVisible(true);
-    ui->nameLabel->setVisible(true);
-    ui->headerFrame->setVisible(true);
-
     HandleSceneWasReset(scene);
     SetUnsavedChanges(false);
 }
@@ -189,7 +169,7 @@ void ImporterRootDisplayWidget::ObjectUpdated(
     }
 }
 
-void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath)
+void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath, bool enableInspector)
 {
     const QFileInfo info(manifestFilePath);
     if (info.exists())
@@ -197,6 +177,7 @@ void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath)
         const QDateTime lastModifiedTime(info.lastModified());
         QString lastModifiedDisplay(lastModifiedTime.toString(Qt::TextDate));
         ui->m_timeStampTitle->setVisible(true);
+        ui->m_timeStamp->setVisible(true);
         ui->m_timeStamp->setText(lastModifiedDisplay);
     }
     else
@@ -205,10 +186,9 @@ void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath)
         // Don't mark this as dirty, because standard dirty workflows (popup "Would you like to save changes?" on closing, for example)
         // shouldn't be applied to unsaved, unmodified scene settings.
         ui->m_timeStampTitle->setVisible(false);
-        ui->m_timeStamp->setText(tr("Unsaved file"));
+        ui->m_timeStamp->setVisible(false);
     }
-    ui->m_saveButton->setVisible(true);
-    ui->m_timeStamp->setVisible(true);
+    m_manifestWidget->SetInspectButtonVisibility(enableInspector);
 }
 
 void ImporterRootDisplayWidget::SetUnsavedChanges(bool hasUnsavedChanges)
@@ -222,38 +202,7 @@ void ImporterRootDisplayWidget::SetUnsavedChanges(bool hasUnsavedChanges)
 
     if (refreshTitle)
     {
-        // Include a marker on the save button to help content creators track if there are unsaved changes.
-        QWidget* dock = parentWidget();
-        while (dock)
-        {
-            // This is how AssetImporterWindow::SetTitle finds the title to set it.
-            QDockWidget* dockWidget = qobject_cast<QDockWidget*>(dock);
-            if (dockWidget)
-            {
-                AppendUnsaveChangesToTitle(*dockWidget);
-                break;
-            }
-            else
-            {
-                dock = dock->parentWidget();
-            }
-        }
+       emit AppendUnsavedChangesToTitle(m_hasUnsavedChanges);
     }
 }
-
-void ImporterRootDisplayWidget::AppendUnsaveChangesToTitle(QDockWidget& dockWidget)
-{
-    QString title(dockWidget.windowTitle());
-
-    if(m_hasUnsavedChanges && title.front() != "*")
-    {
-        title.push_front("*");
-    }
-    else if (!m_hasUnsavedChanges && title.front() == "*")
-    {
-        title.remove(0,1);
-    }
-    dockWidget.setWindowTitle(title);
-}
-
 #include <moc_ImporterRootDisplay.cpp>

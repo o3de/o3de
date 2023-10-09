@@ -21,7 +21,6 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-windows                              TARGETS expat                       PACKAGE_HASH 748d08f21f5339757059a7887e72b52d15e954c549245c638b0b05bd5961e307)
 ly_associate_package(PACKAGE_NAME assimp-5.2.5-rev1-windows                             TARGETS assimplib                   PACKAGE_HASH a75ef3cdd0c880e990eee0afd1a40c1100ef34e757d0d5f59109be3439eb88c0)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev5-windows                            TARGETS OpenEXR Imath               PACKAGE_HASH bff6dc78412bb1b04ded243753bee36e9229fdaf9a9e1fa85b1059238fba4c9b)
-ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.2-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH 9d30eb265adc8b46a7f6a9ad122c2d3c8820ca16961533a3cc994734e264969a)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2112-o3de-rev1-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH fdcdc081e67abcfdc8172866258a9c36f1fd0d7b963ba5378ca01cb4fcdbf9c7)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-windows                    TARGETS SPIRVCross                  PACKAGE_HASH 7d601ea9d625b1d509d38bd132a1f433d7e895b16adab76bac6103567a7a6817)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-windows                            TARGETS TIFF                        PACKAGE_HASH c6000a906e6d2a0816b652e93dfbeab41c9ed73cdd5a613acd53e553d0510b60)
@@ -50,7 +49,7 @@ ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev1-windows                        
 ly_associate_package(PACKAGE_NAME azslc-1.8.15-rev2-windows                             TARGETS azslc                       PACKAGE_HASH 9925acaf99d1eed65d99c13d5d31cae9f72b1d04a7bd21624a77bc0cfbb33f8b)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-windows        	                TARGETS SQLite                      PACKAGE_HASH c1658c8ed5cf0e45d4a5da940c6a6d770b76e0f4f57313b70d0fd306885f015e)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-windows                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH b03475a9f0f7a7e7c90619fba35f1a74fb2b8f4cd33fa07af99f2ae9e0c079dd)
-ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-rev1-windows          TARGETS vulkan-validationlayers     PACKAGE_HASH 4c617b83611f9f990b7e6ff21f2e2d22bda154591bff7e0e39610e319a3e5a53)
+ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.3.261-rev1-windows         TARGETS vulkan-validationlayers     PACKAGE_HASH 79132c6379e0d167c7a2f5a8e251861759a71d92f1fb8cc3b873df821d83ae51)
 
 set(AZ_USE_PHYSX5 OFF CACHE BOOL "When ON PhysX Gem will use PhysX 5 SDK")
 if(AZ_USE_PHYSX5)

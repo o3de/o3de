@@ -105,6 +105,15 @@ namespace AZ
 
             //! Optional list of supervariants.
             AZStd::vector<SupervariantInfo> m_supervariants;
+
+            //! Typically the AssetProcessor always removes the Temp folder when
+            //! an asset compiles successfully.
+            //! By setting this flag to true, the Temp folder used to compile this shader won't be deleted
+            //! if the shader compiles successfully.
+            //! Also, if the ShaderBuildArguments enables shader debug symbols, the Temp
+            //! folder won't be removed so it becomes easier to debug shaders with tools like
+            //! RenderDoc or Pix. 
+            bool m_keepTempFolder = false;
         };
         
     } // namespace RPI

@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/PassSystemBus.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
@@ -229,6 +230,10 @@ namespace AZ
                     "Pass template alias [%s] is different than its name [%s]", name.GetCStr(), passTemplate->m_name.GetCStr());
                 passTemplate->m_name = name;
             }
+
+            // Signal that the pass template is being added in case somebody wants to add attachments.
+            PassSystemTemplateNotificationsBus::Event(
+                name, &PassSystemTemplateNotificationsBus::Events::OnAddingPassTemplate, passTemplate);
 
             ValidateDeviceFormats(passTemplate);
 

@@ -19,6 +19,7 @@
 #include <native/utilities/AssetBuilderInfo.h>
 #include <native/utilities/BuilderManager.h>
 #include <native/utilities/UuidManager.h>
+#include <QtGui/qwindowdefs.h>
 #endif
 
 namespace AzToolsFramework
@@ -136,6 +137,8 @@ public:
         const char* m_switch;
         const char* m_helpText;
     };
+
+    virtual WId GetWindowId() const;
 
 Q_SIGNALS:
     void CheckAssetProcessorManagerIdleState();

@@ -173,7 +173,7 @@ namespace AZ
                 return;
             }
 
-            AZ_Warning("DiffuseProbeGridFeatureProcessor", m_diffuseProbeGrids.size() == 0, 
+            AZ_Warning("DiffuseProbeGridFeatureProcessor", m_diffuseProbeGrids.size() == 0,
                 "Deactivating the DiffuseProbeGridFeatureProcessor, but there are still outstanding probe grids probes. Components\n"
                 "using DiffuseProbeGridHandles should free them before the DiffuseProbeGridFeatureProcessor is deactivated.\n"
             );
@@ -462,6 +462,12 @@ namespace AZ
         {
             AZ_Assert(probeGrid.get(), "SetUseDiffuseIbl called with an invalid handle");
             probeGrid->SetUseDiffuseIbl(useDiffuseIbl);
+        }
+
+        bool DiffuseProbeGridFeatureProcessor::CanBakeTextures()
+        {
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+            return device->GetFeatures().m_rayTracing;
         }
 
         void DiffuseProbeGridFeatureProcessor::BakeTextures(
@@ -769,7 +775,7 @@ namespace AZ
 
             AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_probeGridRenderData.m_boxPositionBufferView);
         }
-        
+
         void DiffuseProbeGridFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
                 RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
@@ -795,7 +801,7 @@ namespace AZ
             }
             m_needUpdatePipelineStates = true;
         }
-                
+
         void DiffuseProbeGridFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
         {
             // only add to this pipeline if it contains the DiffuseGlobalFullscreen pass
@@ -834,7 +840,7 @@ namespace AZ
             UpdatePasses();
             m_needUpdatePipelineStates = true;
         }
-        
+
         void DiffuseProbeGridFeatureProcessor::AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName)
         {
             auto passRequestAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(passRequestAssetFilePath, RPI::AssetUtils::TraceLevel::Warning);
@@ -925,7 +931,8 @@ namespace AZ
                 return;
             }
 
-            const RPI::ModelLod::Mesh& mesh = modelLod->GetMeshes()[0];
+            const auto meshes = modelLod->GetMeshes();
+            const RPI::ModelLod::Mesh& mesh = meshes[0];
 
             // setup a stream layout and shader input contract for the position vertex stream
             static const char* PositionSemantic = "POSITION";

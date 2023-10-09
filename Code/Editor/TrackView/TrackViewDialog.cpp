@@ -1018,21 +1018,6 @@ void CTrackViewDialog::OnSyncSelectedTracksFromBase()
     }
 }
 
-void CTrackViewDialog::OnExportFBXSequence()
-{
-    SaveCurrentSequenceToFBX();
-}
-
-void CTrackViewDialog::OnExportNodeKeysGlobalTime()
-{
-    CExportManager* pExportManager = static_cast<CExportManager*>(GetIEditor()->GetExportManager());
-
-    if (pExportManager)
-    {
-        pExportManager->SaveNodeKeysTimeToXML();
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::OnAddSequence()
 {
@@ -2319,40 +2304,6 @@ void CTrackViewDialog::BeginUndoTransaction()
 void CTrackViewDialog::EndUndoTransaction()
 {
     m_bDoingUndoOperation = false;
-}
-
-void CTrackViewDialog::SaveCurrentSequenceToFBX()
-{
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-    if (!sequence)
-    {
-        return;
-    }
-
-    QString selectedSequenceFBXStr = QString::fromUtf8(sequence->GetName().c_str()) + ".fbx";
-    CExportManager* pExportManager = static_cast<CExportManager*>(GetIEditor()->GetExportManager());
-    const char szFilters[] = "FBX Files (*.fbx)";
-
-    CFBXExporterDialog fpsDialog;
-
-    CTrackViewTrackBundle allTracks = sequence->GetAllTracks();
-
-    for (unsigned int trackID = 0; trackID < allTracks.GetCount(); ++trackID)
-    {
-        CTrackViewTrack* pCurrentTrack = allTracks.GetTrack(trackID);
-
-        if (!pCurrentTrack->GetParentNode()->IsSelected())
-        {
-            continue;
-        }
-    }
-
-    QString filename = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Export Selected Nodes To FBX File"), selectedSequenceFBXStr, szFilters);
-    if (!filename.isEmpty())
-    {
-        pExportManager->SetBakedKeysSequenceExport(true);
-        pExportManager->Export(filename.toUtf8().data(), "", "", false, false, false, true);
-    }
 }
 
 void CTrackViewDialog::AfterEntitySelectionChanged(

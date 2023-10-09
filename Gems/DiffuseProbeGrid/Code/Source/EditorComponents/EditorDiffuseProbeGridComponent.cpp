@@ -20,6 +20,7 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QMessageBox>
+#include <QProgressDialog>
 AZ_POP_DISABLE_WARNING
 
 namespace AZ
@@ -33,7 +34,7 @@ namespace AZ
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorDiffuseProbeGridComponent, BaseClass>()
-                    ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
+                    ->Version(3, ConvertToEditorRenderComponentAdapter<1>) // added emissive multiplier
                     ->Field("probeSpacingX", &EditorDiffuseProbeGridComponent::m_probeSpacingX)
                     ->Field("probeSpacingY", &EditorDiffuseProbeGridComponent::m_probeSpacingY)
                     ->Field("probeSpacingZ", &EditorDiffuseProbeGridComponent::m_probeSpacingZ)
@@ -153,13 +154,12 @@ namespace AZ
                                 ->EnumAttribute(DiffuseProbeGridMode::RealTime, "Real Time (Ray-Traced)")
                                 ->EnumAttribute(DiffuseProbeGridMode::Baked, "Baked")
                                 ->EnumAttribute(DiffuseProbeGridMode::AutoSelect, "Auto Select")
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Bake Textures")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Textures", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked")
-                                ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                                ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Textures")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid)
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting)
+                        ->EndGroup()
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Textures", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked")
+                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Textures")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting)
                         ;
 
                     editContext->Class<DiffuseProbeGridComponentController>(
@@ -518,6 +518,17 @@ namespace AZ
                 return AZ::Edit::PropertyRefreshLevels::None;
             }
 
+            if (!m_controller.CanBakeTextures())
+            {
+                QMessageBox::information(
+                    QApplication::activeWindow(),
+                    "Diffuse Probe Grid",
+                    "Can't bake the textures. Diffuse probe calculations require GPU raytracing support",
+                    QMessageBox::Ok);
+
+                return AZ::Edit::PropertyRefreshLevels::None;
+            }
+
             DiffuseProbeGridComponentConfig& configuration = m_controller.m_configuration;
 
             // retrieve the source image paths from the configuration
@@ -587,8 +598,25 @@ namespace AZ
             m_bakeInProgress = true;
             m_controller.BakeTextures(bakeTexturesCallback);
 
+            QProgressDialog bakeDialog;
+            bakeDialog.setWindowFlags(bakeDialog.windowFlags() & ~Qt::WindowCloseButtonHint);
+            bakeDialog.setLabelText(QObject::tr("Baking Diffuse Probe Grid..."));
+            bakeDialog.setWindowModality(Qt::WindowModal);
+            bakeDialog.setMaximumSize(QSize(256, 96));
+            bakeDialog.setMaximum(0);
+            bakeDialog.setMinimumDuration(0);
+            bakeDialog.setAutoClose(false);
+            bakeDialog.setCancelButton(nullptr);
+            bakeDialog.show();
+
             while (m_bakeInProgress)
             {
+                if (bakeDialog.wasCanceled())
+                {
+                    m_bakeInProgress = false;
+                    break;
+                }
+
                 QApplication::processEvents();
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
             }

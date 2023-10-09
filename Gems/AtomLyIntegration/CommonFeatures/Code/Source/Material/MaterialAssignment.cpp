@@ -105,14 +105,16 @@ namespace AZ
 
             if (m_materialAsset.GetId().IsValid() && m_materialAsset.IsReady())
             {
-                m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
+                const bool createUniqueInstance = m_materialInstanceMustBeUnique || !m_propertyOverrides.empty();
+                m_materialInstance = createUniqueInstance ? RPI::Material::Create(m_materialAsset) : RPI::Material::FindOrCreate(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
                 return;
             }
 
             if (m_defaultMaterialAsset.GetId().IsValid() && m_defaultMaterialAsset.IsReady())
             {
-                m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
+                const bool createUniqueInstance = m_materialInstanceMustBeUnique || !m_propertyOverrides.empty();
+                m_materialInstance = createUniqueInstance ? RPI::Material::Create(m_defaultMaterialAsset) : RPI::Material::FindOrCreate(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
                 return;
             }
@@ -214,8 +216,12 @@ namespace AZ
                 return lodAssignment;
             }
 
+            // GCC is incorrectly flagging the const reference returned from GetMaterialAssignmentFromMap
+            // as a dangling reference, despite the function returning a const reference.
+        AZ_PUSH_DISABLE_WARNING_GCC("-Wdangling-reference")
             const MaterialAssignment& assetAssignment =
                 GetMaterialAssignmentFromMap(materials, MaterialAssignmentId::CreateFromStableIdOnly(id.m_materialSlotStableId));
+        AZ_POP_DISABLE_WARNING_GCC
             if (assetAssignment.m_materialInstance.get())
             {
                 return assetAssignment;
@@ -230,7 +236,7 @@ namespace AZ
             return DefaultMaterialAssignment;
         }
 
-        MaterialAssignmentMap GetDefautMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
+        MaterialAssignmentMap GetDefaultMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
         {
             MaterialAssignmentMap materials;
             materials[DefaultMaterialAssignmentId] = MaterialAssignment();

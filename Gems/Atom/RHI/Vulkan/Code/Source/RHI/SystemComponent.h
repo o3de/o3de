@@ -25,6 +25,8 @@ namespace AZ
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required);
+            static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent);
+
             static void Reflect(AZ::ReflectContext* context);
 
             SystemComponent() = default;

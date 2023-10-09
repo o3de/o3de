@@ -10,6 +10,7 @@
 #include <AzFramework/Physics/Utils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 #include <Editor/ColliderComponentMode.h>
 #include <System/PhysXSystem.h>

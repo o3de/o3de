@@ -15,10 +15,14 @@ namespace UnitTest
     void PrefabInspectorOverrideTestFixture::SetUpEditorFixtureImpl()
     {
         // Enable feature flags for DPE and InspectorOverrideManagement
-        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-        registry->Set(InspectorOverrideManagementKey, true);
-        registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableDPE", true);
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_enableInspectorOverrideManagement", m_ed_enableInspectorOverrideManagement);
+            console->GetCvarValue("ed_enableDPEInspector", m_ed_enableDPEInspector);
+            console->PerformCommand("ed_enableInspectorOverrideManagement true");
+            console->PerformCommand("ed_enableDPEInspector true");
 
+        }
         PrefabOverrideTestFixture::SetUpEditorFixtureImpl();
 
         m_testEntityPropertyEditor = AZStd::make_unique<AzToolsFramework::EntityPropertyEditor>(nullptr, Qt::WindowFlags(), false);
@@ -28,6 +32,9 @@ namespace UnitTest
     {
         m_testEntityPropertyEditor.reset();
         PrefabOverrideTestFixture::TearDownEditorFixtureImpl();
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableDPEInspector", m_ed_enableDPEInspector);
+        registry->Set("/O3DE/Autoexec/ConsoleCommands/ed_enableInspectorOverrideManagement", m_ed_enableInspectorOverrideManagement);
     }
 
     void PrefabInspectorOverrideTestFixture::GenerateComponentAdapterDoms(AZ::EntityId entityId)

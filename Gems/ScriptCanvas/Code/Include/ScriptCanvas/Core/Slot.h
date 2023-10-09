@@ -152,6 +152,10 @@ namespace ScriptCanvas
 
         bool CanHaveInputField() const;
 
+        bool CreatesImplicitConnections() const;
+
+        bool IsNameHidden() const;
+
         bool CanConvertTypes() const;
 
         bool CanConvertToValue() const;
@@ -229,6 +233,7 @@ namespace ScriptCanvas
         bool m_isOverload = false;
         bool m_isVisible = true;
         bool m_isUserAdded = false;
+        bool m_createsImplicitConnections = false;
 
         void SetDynamicGroup(const AZ::Crc32& dynamicGroup);
 
@@ -238,6 +243,8 @@ namespace ScriptCanvas
         AZ::Crc32 m_dynamicGroup;
 
         bool m_canHaveInputField = true;
+
+        bool m_isNameHidden = false;
 
         bool               m_isLatentSlot  = false;
         SlotDescriptor     m_descriptor;

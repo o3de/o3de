@@ -30,7 +30,7 @@ namespace AZ
 
             // load visualization plane model and material
             m_visualizationModelAsset = AZ::RPI::AssetUtils::LoadCriticalAsset<AZ::RPI::ModelAsset>(
-                "Models/OcclusionCullingPlane.azmodel",
+                "Models/OcclusionCullingPlane.fbx.azmodel",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
 
             m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(MeshHandleDescriptor{ m_visualizationModelAsset });

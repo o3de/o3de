@@ -14,7 +14,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserListModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
@@ -22,6 +22,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesManager.h>
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
@@ -75,7 +76,7 @@ namespace UnitTest
 
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserModel> m_assetBrowserModel;
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
-        AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
+        AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserListModel> m_tableModel;
 
         AZStd::unique_ptr<::testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
         AZ::IO::FileIOBase* m_prevFileIO = nullptr;
@@ -95,7 +96,7 @@ namespace UnitTest
 
         m_assetBrowserModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserModel>();
         m_filterModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel>();
-        m_tableModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserTableModel>();
+        m_tableModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserListModel>();
 
         m_rootEntry = AZStd::make_shared<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry>();
         m_assetBrowserModel->SetRootEntry(m_rootEntry);
@@ -116,6 +117,7 @@ namespace UnitTest
     void AssetBrowserTest::TearDownEditorFixtureImpl()
     {
         AzToolsFramework::AssetBrowser::EntryCache::DestroyInstance();
+        AzToolsFramework::AssetBrowser::AssetBrowserFavoritesManager::DestroyInstance();
         EXPECT_EQ(m_fileIOMock.get(), AZ::IO::FileIOBase::GetInstance());
         AZ::IO::FileIOBase::SetInstance(nullptr);
         AZ::IO::FileIOBase::SetInstance(m_prevFileIO);

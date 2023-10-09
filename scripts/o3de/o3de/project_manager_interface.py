@@ -308,7 +308,15 @@ def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
     # it's easier to determine which gems are engine gems here rather than in c++
     # because the project might be using a different engine than the one Project Manager is
     # running out of
-    engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
+
+    # Attempt to get the engine path from the project path if possible (except when the project path
+    # is a template). If not, then default to attempting to get engine path from the registered 
+    # '--this-engine' value from the manifest
+    engine_path = None
+    if project_path and utils.find_ancestor_dir_containing_file('template.json', project_path) is None:
+        engine_path = manifest.get_project_engine_path(project_path=project_path)
+    if not engine_path:
+        engine_path = manifest.get_this_engine_path()
     if not engine_path:
         logger.error("Failed to get engine path for gem info retrieval")
         return [] 
@@ -435,7 +443,14 @@ def get_gem_infos_from_all_repos(project_path:pathlib.Path = None, enabled_only:
     if not remote_gem_json_data_list:
         return list()
 
-    engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
+    # Attempt to get the engine path from the project path if possible (except when the project path
+    # is a template). If not, then default to attempting to get engine path from the registered 
+    # '--this-engine' value from the manifest
+    engine_path = None
+    if project_path and utils.find_ancestor_dir_containing_file('template.json', project_path) is None:
+        engine_path = manifest.get_project_engine_path(project_path=project_path)
+    if not engine_path:
+        engine_path = manifest.get_this_engine_path()
     if not engine_path:
         logger.error("Failed to get engine path for remote gem compatibility checks")
         return list() 
@@ -456,6 +471,9 @@ def get_gem_infos_from_all_repos(project_path:pathlib.Path = None, enabled_only:
     for i, gem_json_data in enumerate(remote_gem_json_data_list):
         all_gem_json_data[i] = gem_json_data
     
+    # convert all_gem_json_data to have gem names as keys with values that are gem version lists
+    utils.replace_dict_keys_with_value_key(all_gem_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
+
     # do general compatibility checks - dependency resolution is too slow for now
     for i, gem_json_data in enumerate(remote_gem_json_data_list):
         incompatible_engine =  compatibility.get_incompatible_objects_for_engine(gem_json_data, engine_json_data)

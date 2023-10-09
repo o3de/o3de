@@ -91,6 +91,7 @@ namespace AZ
             const static AZ::Crc32 PostChangeNotify = AZ_CRC("PostChangeNotify", 0x456e84c8);
 
             const static AZ::Crc32 ValueText = AZ_CRC_CE("ValueText");
+            const static AZ::Crc32 PlaceholderText = AZ_CRC_CE("PlaceholderText");
 
             const static AZ::Crc32 TrueText = AZ_CRC("TrueText", 0x263d9d95);
             const static AZ::Crc32 FalseText = AZ_CRC("FalseText", 0x5f8c95bd);

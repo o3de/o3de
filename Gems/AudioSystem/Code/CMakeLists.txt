@@ -74,9 +74,11 @@ ly_add_target(
             Gem::${gem_name}.Private.Object
 )
 
-# AudioSystem aliases for Clients (no Servers)
+# AudioSystem aliases for Clients and Unified launchers (no Servers)
 ly_create_alias(NAME ${gem_name}.Clients        NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Clients.API    NAMESPACE Gem TARGETS Gem::${gem_name}.API)
+ly_create_alias(NAME ${gem_name}.Unified        NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified.API    NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 
 ################################################################################
 # Tests
@@ -279,6 +281,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
         ly_add_googletest(
             NAME Gem::AudioSystem.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
 
     endif() # PAL_TRAIT_BUILD_TESTS_SUPPORTED

@@ -124,5 +124,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Add AWSGameLift.Client.Tests to googletest
     ly_add_googletest(
         NAME Gem::AWSGameLift.Client.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

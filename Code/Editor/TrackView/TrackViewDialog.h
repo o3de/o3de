@@ -101,8 +101,6 @@ protected slots:
     void OnSyncSelectedTracksToBase();
     void OnSyncSelectedTracksFromBase();
     void OnAddSequence();
-    void OnExportFBXSequence();
-    void OnExportNodeKeysGlobalTime();
     void OnDelSequence();
     void OnEditSequence();
     void OnSequenceComboBox();
@@ -211,7 +209,6 @@ private:
 
     void BeginUndoTransaction() override;
     void EndUndoTransaction() override;
-    void SaveCurrentSequenceToFBX();
     void SaveSequenceTimingToXML();
 
     // ToolsApplicationNotificationBus ...

@@ -307,7 +307,7 @@ namespace AzToolsFramework
                         PrefabDom reparentPatch;
                         m_instanceToTemplateInterface->GeneratePatch(
                             reparentPatch, nestedContainerEntityDomBefore, nestedContainerEntityDomAfter);
-                        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(reparentPatch, topLevelEntityId);
+                        m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(reparentPatch, topLevelEntityId);
 
                         // We won't parent this undo node to the undo batch so that the newly created template and link will remain
                         // unaffected by undo actions. This is needed so that any future instantiations of the template will work.
@@ -354,7 +354,7 @@ namespace AzToolsFramework
                 PrefabDom childSortOrderUpdatePatches;
                 m_instanceToTemplateInterface->GeneratePatch(childSortOrderUpdatePatches,
                     newContainerEntityDomInitialStateWithTransform, newContainerEntityDomWithTransformAndChildSortOrder);
-                m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(childSortOrderUpdatePatches, newContainerEntityId);
+                m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(childSortOrderUpdatePatches, newContainerEntityId);
                 m_instanceToTemplateInterface->PatchTemplate(childSortOrderUpdatePatches, newInstanceTemplateId);
 
                 // Create a link between the new prefab template and its parent template with undo/redo support.
@@ -450,7 +450,7 @@ namespace AzToolsFramework
 
             PrefabDom patch;
             m_instanceToTemplateInterface->GeneratePatch(patch, containerEntityDomBefore, containerEntityDomAfter);
-            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
+            m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patch, containerEntityId);
 
             return AZStd::move(patch);
         }
@@ -562,9 +562,23 @@ namespace AzToolsFramework
                 // Generate patch to be stored in the link
                 PrefabDom patch;
                 m_instanceToTemplateInterface->GeneratePatch(patch, containerEntityDomBefore, containerEntityDomAfter);
-                m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
+                m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patch, containerEntityId);
 
                 CreateLink(instanceToCreate->get(), instanceToParentUnder->get().GetTemplateId(), undoBatch.GetUndoBatch(), AZStd::move(patch));
+
+                // Update the parent instance cache so that the new instance doesn't get recreated during propagation
+                if (PrefabDomReference cachedOwningInstanceDom = instanceToParentUnder->get().GetCachedInstanceDom();
+                    cachedOwningInstanceDom.has_value())
+                {
+                    const PrefabDom& targetTemplatePrefabDom = m_prefabSystemComponentInterface->FindTemplateDom(instanceToParentUnder->get().GetTemplateId());
+                    PrefabDomPath instancePath = PrefabDomUtils::GetPrefabDomInstancePath(instanceToCreate->get().GetInstanceAlias().c_str());
+                    const PrefabDomValue* instanceValue = instancePath.Get(targetTemplatePrefabDom);
+                    if (instanceValue)
+                    {
+                        PrefabDomUtils::AddNestedInstance(
+                            cachedOwningInstanceDom->get(), instanceToCreate->get().GetInstanceAlias(), *instanceValue);
+                    }
+                }
 
                 // Update parent entity DOM
                 PrefabDom parentEntityDomAfterAdding;
@@ -851,7 +865,7 @@ namespace AzToolsFramework
 
             PrefabDom patch;
             m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
-            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
+            m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patch, entityId);
 
             if (patch.IsArray() && !patch.Empty())
             {
@@ -927,7 +941,7 @@ namespace AzToolsFramework
 
                         PrefabDom newPatch;
                         m_instanceToTemplateInterface->GeneratePatch(newPatch, afterState, afterStateafterReparenting);
-                        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(newPatch, entityId);
+                        m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(newPatch, entityId);
 
                         InstanceOptionalReference owningInstanceAfterReparenting =
                             m_instanceEntityMapperInterface->FindOwningInstance(entityId);

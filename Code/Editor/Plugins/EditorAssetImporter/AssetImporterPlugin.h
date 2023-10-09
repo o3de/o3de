@@ -19,6 +19,7 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AssetBrowserContextProvider.h>
 #include <SceneSerializationHandler.h>
+#include <QPointer>
 
 class AssetImporterWindow;
 
@@ -106,12 +107,17 @@ public:
     /////////////////////////////////////////////////////////////////////////////
 
     QMainWindow* EditImportSettings(const AZStd::string& sourceFilePath);
+    QMainWindow* OpenImportSettings();
+    bool SaveBeforeClosing();
 
 private:
     AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadSceneLibrary(const char* name, bool explicitInit);
     
     // Singleton instance
     static AssetImporterPlugin* s_instance;
+
+    // The asset importer window
+    QPointer<QMainWindow> m_assetImporterWindow;
 
     // Dependency DLL Handles
     AZStd::unique_ptr<AZ::DynamicModuleHandle> m_sceneUIModule;

@@ -17,6 +17,10 @@ namespace AZ
 {
     namespace Vulkan
     {
+        [[maybe_unused]] static constexpr uint32_t VendorID_Nvidia = 0x10DE;
+        [[maybe_unused]] static constexpr uint32_t VendorID_AMD = 0x1002;
+        [[maybe_unused]] static constexpr uint32_t VendorID_Intel = 0x8086;
+
         RHI::PhysicalDeviceList PhysicalDevice::Enumerate()
         {
             RHI::PhysicalDeviceList physicalDeviceList;
@@ -284,6 +288,11 @@ namespace AZ
                 (m_vulkan12Features.separateDepthStencilLayouts));
             m_features.set(static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_descriptor_indexing));
             m_features.set(static_cast<size_t>(DeviceFeature::BufferDeviceAddress), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_buffer_device_address));
+            // Disable memory budget extension for now since it's crashing the driver when the VkPhysicalDeviceMemoryBudgetPropertiesEXT structure
+            // is included in the pNext chain of VkPhysicalDeviceMemoryProperties2
+            m_features.set(
+                static_cast<size_t>(DeviceFeature::MemoryBudget),
+                VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget) && m_deviceProperties.vendorID != VendorID_Intel);
             m_features.set(static_cast<size_t>(DeviceFeature::SubgroupOperation), (majorVersion >= 1 && minorVersion >= 1));
         }
 
@@ -341,30 +350,6 @@ namespace AZ
             }
 
             return filteredOptionalExtensions;
-        }
-
-        void PhysicalDevice::CompileMemoryStatistics(const GladVulkanContext& context, RHI::MemoryStatisticsBuilder& builder) const
-        {
-            if (VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_get_physical_device_properties2) && VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget))
-            {
-                VkPhysicalDeviceMemoryBudgetPropertiesEXT budget = {};
-                budget.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
-
-                VkPhysicalDeviceMemoryProperties2 properties = {};
-                properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
-                properties.pNext = &budget;
-                Instance::GetInstance().GetContext().GetPhysicalDeviceMemoryProperties2KHR(m_vkPhysicalDevice, &properties);
-
-                for (uint32_t i = 0; i < properties.memoryProperties.memoryHeapCount; ++i)
-                {
-                    RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
-                    heapStats->m_name = AZStd::string::format("Heap %d", static_cast<int>(i));
-                    heapStats->m_heapMemoryType = RHI::CheckBitsAll(properties.memoryProperties.memoryHeaps[i].flags, static_cast<VkMemoryHeapFlags>(VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
-                    heapStats->m_memoryUsage.m_budgetInBytes = budget.heapBudget[i];
-                    heapStats->m_memoryUsage.m_totalResidentInBytes = budget.heapUsage[i];
-                    heapStats->m_memoryUsage.m_usedResidentInBytes = 0;
-                }
-            }
         }
 
         void PhysicalDevice::Init(VkPhysicalDevice vkPhysicalDevice)
@@ -561,6 +546,13 @@ namespace AZ
             uint32_t index = static_cast<uint32_t>(optionalDeviceExtension);
             AZ_Assert(index < m_optionalExtensions.size(), "Invalid feature %d", index);
             return m_optionalExtensions.test(index);
+        }
+
+        void PhysicalDevice::DisableOptionalDeviceExtension(OptionalDeviceExtension optionalDeviceExtension)
+        {
+            uint32_t index = static_cast<uint32_t>(optionalDeviceExtension);
+            AZ_Assert(index < m_optionalExtensions.size(), "Invalid feature %d", index);
+            m_optionalExtensions.set(index, false);
         }
     }
 }

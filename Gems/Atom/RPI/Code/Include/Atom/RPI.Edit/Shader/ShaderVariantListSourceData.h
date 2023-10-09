@@ -28,6 +28,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ShaderVariantListSourceData, AZ::SystemAllocator);
 
             static constexpr const char* Extension = "shadervariantlist";
+            static constexpr const char* DefaultTarget = "gfx1035";
 
             static void Reflect(ReflectContext* context);
 
@@ -35,6 +36,22 @@ namespace AZ
             struct VariantInfo
             {
                 AZ_TYPE_INFO(AZ::RPI::ShaderVariantListSourceData::VariantInfo, "{C0E1DF8C-D1BE-4AF4-8100-5D71788399BA}");
+
+                VariantInfo() = default;
+
+                VariantInfo(AZ::u32 id, ShaderOptionValuesSourceData options)
+                    : m_stableId(id)
+                    , m_options(options)
+                    , m_enableRegisterAnalysis(false)
+                    , m_asic(DefaultTarget)
+                {}
+
+                VariantInfo(AZ::u32 id, ShaderOptionValuesSourceData options, bool enableAnalysis, AZStd::string asic)
+                    : m_stableId(id)
+                    , m_options(options)
+                    , m_enableRegisterAnalysis(enableAnalysis)
+                    , m_asic(asic)
+                {}
 
                 // See ShaderVariantStableId.
                 AZ::u32 m_stableId = 0;
@@ -54,7 +71,7 @@ namespace AZ
                 // The value depends on the version of RGA we use
                 // Current RGA is 2.6.2
                 // Supported values: gfx900 gfx902 gfx906 gfx90c gfx1010 gfx1011 gfx1012 gfx1030 gfx1031 gfx1032 gfx1034 gfx1035 
-                AZStd::string m_asic = AZStd::string("gfx1035");
+                AZStd::string m_asic = AZStd::string(DefaultTarget);
             };
 
             AZStd::string m_shaderFilePath; // .shader file.

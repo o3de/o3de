@@ -258,20 +258,12 @@ namespace MCore
         MCORE_INLINE operator           float*()                                            { return (float*)&m_r; }
         MCORE_INLINE operator           const float*() const                                { return (const float*)&m_r; }
 
-        static uint32 s_colorTable[128];
-
         // attributes
         float   m_r;  /**< Red component. */
         float   m_g;  /**< Green component. */
         float   m_b;  /**< Blue component. */
         float   m_a;  /**< Alpha component. */
     };
-
-    /**
-     * Picks a random color from a table of 128 different colors.
-     * @result The generated color.
-     */
-    MCORE_INLINE uint32 GenerateColor()                                                         { return RGBAColor::s_colorTable[rand() % 128]; }
 
     // operators
     MCORE_INLINE RGBAColor operator*(const RGBAColor& colA, const RGBAColor& colB)              { return RGBAColor(colA.m_r * colB.m_r, colA.m_g * colB.m_g, colA.m_b * colB.m_b, colA.m_a * colB.m_a); }

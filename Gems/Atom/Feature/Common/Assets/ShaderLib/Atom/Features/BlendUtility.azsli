@@ -13,13 +13,13 @@
 enum class TextureBlendMode { Multiply, LinearLight, Lerp, Overlay };
 
 // See https://en.wikipedia.org/wiki/Blend_modes#Dodge_and_burn
-float3 TextureBlend_LinearLight(float3 base, float3 mask)
+real3 TextureBlend_LinearLight(real3 base, real3 mask)
 {
     return saturate(base + 2 * mask - 1);
 }
 
 // See http://www.deepskycolors.com/archive/2010/04/21/formulas-for-Photoshop-blending-modes.html
-float3 TextureBlend_Overlay(float3 target, float3 blend)
+real3 TextureBlend_Overlay(real3 target, real3 blend)
 {
     return (target > 0.5) * (1.0 - (1.0 - 2.0 * (target - 0.5)) * (1.0 - blend)) +
            (target <= 0.5) * ((2.0 * target) * blend);
@@ -31,7 +31,7 @@ float3 TextureBlend_Overlay(float3 target, float3 blend)
 //! @param factor - A factor that controls the blend. The specific behavior depends on the blend mode.
 //! @param blendMode - Indicates the type of blend to perform
 //! @return the resulting blended color
-float3 ApplyTextureBlend(float3 color, float3 blendColor, float factor, TextureBlendMode blendMode)
+real3 ApplyTextureBlend(real3 color, real3 blendColor, real factor, TextureBlendMode blendMode)
 {
     if(blendMode == TextureBlendMode::Multiply)
     {
@@ -45,10 +45,11 @@ float3 ApplyTextureBlend(float3 color, float3 blendColor, float factor, TextureB
     {
         // [GFX TODO][ATOM-3237] See if we can avoid these extra color space conversions...
         // To get blend behavior that mimics photoshop, convert to sRGB
-        float3 blendColorSRGB = TransformColor(blendColor, ColorSpaceId::ACEScg, ColorSpaceId::SRGB);
-        float3 colorSRGB = TransformColor(color, ColorSpaceId::ACEScg, ColorSpaceId::SRGB);
+        //Acessg -> srgb
+        real3 blendColorSRGB = TransformColorAcesToSRGB(blendColor);
+        real3 colorSRGB = TransformColorAcesToSRGB(color);
                  
-        float3 finalColor = colorSRGB;
+        real3 finalColor = colorSRGB;
 
         if(blendMode == TextureBlendMode::LinearLight)
         {
@@ -60,8 +61,8 @@ float3 ApplyTextureBlend(float3 color, float3 blendColor, float factor, TextureB
         }
         
         // Convert back to ACEScg
-        finalColor = TransformColor(finalColor, ColorSpaceId::SRGB, ColorSpaceId::ACEScg);
-        
+        finalColor = TransformColorSRGBToAces(finalColor);
+
         // Apply factor
         finalColor = lerp(color, finalColor, factor);
 

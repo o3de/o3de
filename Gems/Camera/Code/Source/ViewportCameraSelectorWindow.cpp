@@ -277,7 +277,7 @@ namespace Camera
             m_cameraList->ConnectCameraNotificationBus();
         }
 
-        void ViewportCameraSelectorWindow::PrepareForContextReset()
+        void ViewportCameraSelectorWindow::OnPrepareForContextReset()
         {
             EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
         }

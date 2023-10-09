@@ -80,23 +80,8 @@ namespace AZ
 
         void RPISystem::Initialize(const RPISystemDescriptor& rpiSystemDescriptor)
         {
-            //If xr system is registered with RPI init xr instance
-            if (m_xrSystem)
-            {
-                AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
-                // UnRegister xr system if a Fail ResultCode is returned
-                if (resultCode == AZ::RHI::ResultCode::Fail)
-                {
-                    UnregisterXRSystem();
-                    AZ_Error(
-                        "RPISystem",
-                        resultCode == AZ::RHI::ResultCode::Success,
-                        "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled.");
-                }
-            }
-
-            //Init RHI device
-            m_rhiSystem.InitDevice();
+            // Init RHI device(s)
+            m_rhiSystem.InitDevices(AzFramework::StringFunc::Equal(RHI::GetCommandLineValue("enableMultipleDevices").c_str(), "enable") ? RHI::InitDevicesFlags::MultiDevice : RHI::InitDevicesFlags::SingleDevice);
 
             // Gather asset handlers from sub-systems.
             ImageSystem::GetAssetHandlers(m_assetHandlers);
@@ -114,6 +99,7 @@ namespace AZ
             m_passSystem.Init();
             m_featureProcessorFactory.Init();
             m_querySystem.Init(m_descriptor.m_gpuQuerySystemDescriptor);
+            InitXRSystem();
 
             Interface<RPISystemInterface>::Register(this);
 
@@ -297,6 +283,29 @@ namespace AZ
             return AZ::TimeUsToSeconds(currentSimulationTimeUs);
         }
 
+        void RPISystem::InitXRSystem()
+        {
+            if (!m_xrSystem)
+            {
+                return;
+            }
+
+            auto xrRender = m_xrSystem->GetRHIXRRenderingInterface();
+            if (!xrRender)
+            {
+                return;
+            }
+
+            RHI::Ptr<RHI::XRDeviceDescriptor> xrDescriptor = m_rhiSystem.GetDevice()->BuildXRDescriptor();
+            auto result = xrRender->CreateDevice(xrDescriptor.get());
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR device");
+            AZ::RHI::XRSessionDescriptor sessionDescriptor;
+            result = xrRender->CreateSession(&sessionDescriptor);
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR session");
+            result = xrRender->CreateSwapChain();
+            AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR swapchain");
+        }
+
         void RPISystem::RenderTick()
         {
             if (!m_systemAssetsInitialized || IsNullRenderer())
@@ -411,8 +420,19 @@ namespace AZ
                     m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Bindless);
+            if (!bindlessSrgLayout)
+            {
+                AZ_Error(
+                    "RPISystem",
+                    false,
+                    "Failed to find BindlessSrg by slot=<%u> from shader asset at path <%s>",
+                    SrgBindingSlot::Bindless,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+                return;
+            }
 
-            m_rhiSystem.Init();
+            m_rhiSystem.Init(bindlessSrgLayout);
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);

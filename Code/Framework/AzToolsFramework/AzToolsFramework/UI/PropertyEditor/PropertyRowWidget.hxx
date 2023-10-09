@@ -236,6 +236,7 @@ namespace AzToolsFramework
         bool m_isMultiSizeContainer = false;
         bool m_isFixedSizeOrSmartPtrContainer = false;
         bool m_custom = false;
+        bool m_isSceneSetting = false;
 
         bool m_isSelected = false;
         bool m_selectionEnabled = false;

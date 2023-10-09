@@ -6,8 +6,11 @@
  *
  */
 
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 #include <Editor/ColliderComponentMode.h>
 #include <System/PhysXSystem.h>

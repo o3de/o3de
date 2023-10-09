@@ -263,7 +263,7 @@ namespace AZ
              * \param memberVariable - reference to the member variable so we can bind to serialization data.
              */
             template<class T>
-            ClassBuilder* GroupElementToggle(const char* description, T memberVariable);
+            ClassBuilder* GroupElementToggle(const char* description, bool(T::*memberVariable));
 
 
             /**
@@ -583,7 +583,7 @@ namespace AZ
     // ClassElement
     //=========================================================================
     template<class T>
-    inline EditContext::ClassBuilder* EditContext::ClassBuilder::GroupElementToggle(const char* name, T memberVariable)
+    inline EditContext::ClassBuilder* EditContext::ClassBuilder::GroupElementToggle(const char* name, bool(T::*memberVariable))
     {
         return DataElement(AZ::Edit::ClassElements::Group, memberVariable, name, name, "");
     }
@@ -805,29 +805,38 @@ namespace AZ
     //=========================================================================
     namespace Edit
     {
+        struct EnumConstantBase
+        {
+            // Store using a u64 under the hood so this can be safely cast to any valid enum-range value
+            AZ::u64 m_value{};
+            AZStd::string m_description;
+        };
+
+        constexpr const char* EnumConstantTypeId = "{4CDFEE70-7271-4B27-833B-F8F72AA64C40}";
+
         template <class EnumType>
         struct EnumConstant
+            : EnumConstantBase
         {
-            AZ_TYPE_INFO(EnumConstant, "{4CDFEE70-7271-4B27-833B-F8F72AA64C40}");
+            AZ_TYPE_INFO(EnumConstant, EnumConstantTypeId);
 
-            using UnderlyingType = AZStd::RemoveEnumT<EnumType>;
+            // Bring the base class constructors into scope
+            using EnumConstantBase::EnumConstantBase;
 
-            EnumConstant() {}
             EnumConstant(EnumType first, AZStd::string_view description)
-                : m_value(static_cast<AZ::u64>(first))
-                , m_description(description)
+                : EnumConstantBase{ static_cast<AZ::u64>(first), description }
             {
             }
+            using UnderlyingType = AZStd::RemoveEnumT<EnumType>;
 
             AZStd::pair<UnderlyingType, AZStd::string> operator()() const
             {
                 return { static_cast<UnderlyingType>(m_value), m_description };
             }
-
-            // Store using a u64 under the hood so this can be safely cast to any valid enum-range value
-            AZ::u64 m_value;
-            AZStd::string m_description;
         };
+
+        // Overload to allow querying TypeInfo when specifying the EnumConstant class template
+        AZ::TemplateId GetO3deTemplateId(AZ::Adl, AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<EnumConstant>);
 
         // Automatically generate a list of EnumConstant from AzEnumTraits
         template<typename EnumType, typename UnderlyingType = AZStd::underlying_type_t<EnumType>>

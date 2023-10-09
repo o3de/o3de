@@ -489,6 +489,7 @@ namespace ScriptCanvas
 
         AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}", SerializationListener);
         static void Reflect(AZ::ReflectContext* reflection);
+        static int GetNodeVersion();
 
         Node();
         ~Node() override;
@@ -590,6 +591,8 @@ namespace ScriptCanvas
         const ScriptCanvasId& GetOwningScriptCanvasId() const override { return m_scriptCanvasId; }
         AZ::Outcome<void, AZStd::string> SlotAcceptsType(const SlotId&, const Data::Type&) const override;
         Data::Type GetSlotDataType(const SlotId& slotId) const override;
+
+        Data::Type GetUnderlyingSlotDataType(const SlotId& slotId) const;
 
         VariableId GetSlotVariableId(const SlotId& slotId) const override;
         void SetSlotVariableId(const SlotId& slotId, const VariableId& variableId) override;
@@ -831,6 +834,12 @@ namespace ScriptCanvas
         AZ::Outcome<AZStd::string> GetInternalOutKey(const SlotExecution::Map& map, const Slot& slot) const;
 
         AZ::Outcome<AZStd::string> GetLatentOutKey(const SlotExecution::Map& map, const Slot& slot) const;
+
+        // Returns the provided slot's corresponding execution slot
+        const Slot* GetCorrespondingExecutionSlot(const Slot* slot) const;
+
+        // Returns the provided slot's corresponding data slots
+        AZStd::vector<const Slot*> GetCorrespondingDataSlots(const Slot* slot) const;
 
         void ClearDisplayType(const SlotId& slotId);
         void SetDisplayType(const SlotId& slotId, const Data::Type& dataType);

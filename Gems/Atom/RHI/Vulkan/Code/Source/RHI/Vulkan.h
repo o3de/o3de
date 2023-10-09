@@ -14,6 +14,8 @@
 #include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 
+#include <vma/vk_mem_alloc.h>
+
 #if !defined(_RELEASE)
     #define AZ_VULKAN_USE_DEBUG_LABELS
 #endif
@@ -62,7 +64,11 @@ namespace AZ
             /// Shuts down the debug callback system.
             void ShutdownDebugMessages(const GladVulkanContext& context, VkInstance instance);
 
+            /// Returns the instance layers used for Vulkan validation.
             RawStringList GetValidationLayers();
+
+            /// Returns the instance extensions used for Vulkan validation.
+            RawStringList GetValidationExtensions();
 
             /// Set the debug name of an object.
             void SetNameToObject(uint64_t objectHandle, const char* name, VkObjectType objectType, const Device& device);
@@ -105,6 +111,9 @@ namespace AZ
 
         /// Converts from a vector of AZStd::string to a vector of raw const char* pointers.
         void ToRawStringList(const StringList& source, RawStringList& dest);
+
+        /// Removes items from a RawStringList that are contained in another RawStringList.
+        void RemoveRawStringList(RawStringList& removeFrom, const RawStringList& toRemove);
 
         RawStringList FilterList(const RawStringList& source, const StringList& filter);
 

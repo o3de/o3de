@@ -203,7 +203,7 @@ namespace ShaderManagementConsole
             return;
         }
 
-        // Update the cedar reenlist from the table data
+        // Update the shader variant list from the table data
         auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
 
         const auto optionItem = horizontalHeaderItem(column);
