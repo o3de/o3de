@@ -33,6 +33,7 @@ namespace AZ::Reflection
         const Name ParentContainerCanBeModified =
             Name::FromStringLiteral("ParentContainerCanBeModified", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ContainerElementOverride = Name::FromStringLiteral("ContainerElementOverride", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ContainerIndex = Name::FromStringLiteral("ContainerIndex", AZ::Interface<AZ::NameDictionary>::Get());
     } // namespace DescriptorAttributes
 
     // attempts to stringify the passed instance; useful for things like maps where the key element should not be user editable
@@ -1206,6 +1207,13 @@ namespace AZ::Reflection
                         nodeData.m_cachedAttributes.push_back({ group,
                                                                 DescriptorAttributes::ParentContainerInstance,
                                                                 Dom::Utils::ValueFromType<void*>(parentContainerInstance) });
+
+                        if (parentContainerInfo->IsSequenceContainer())
+                        {
+                            nodeData.m_cachedAttributes.push_back({ group,
+                                                                    DescriptorAttributes::ContainerIndex,
+                                                                    AZ::Dom::Value(parentNode.m_childElementIndex) });
+                        }
 
                         if (parentNode.m_containerElementOverride)
                         {
