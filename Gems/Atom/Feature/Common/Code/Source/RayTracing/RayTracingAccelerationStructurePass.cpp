@@ -219,21 +219,5 @@ namespace AZ
 
             ++m_frameCount;
         }
-
-        AZ::RHI::RayTracingAccelerationStructureBuildFlags RayTracingAccelerationStructurePass::CreateRayTracingAccelerationStructureBuildFlags(bool isSkinnedMesh)
-        {
-            AZ::RHI::RayTracingAccelerationStructureBuildFlags buildFlags;
-            if (isSkinnedMesh)
-            {
-                // If we have a skinned mesh, we would like to indicate to the API that we want to enable the following options for faster AS updates
-                buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_UPDATE | AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_BUILD;
-            }
-            else
-            {
-                buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
-            }
-
-            return buildFlags;
-        }
     }   // namespace RPI
 }   // namespace AZ

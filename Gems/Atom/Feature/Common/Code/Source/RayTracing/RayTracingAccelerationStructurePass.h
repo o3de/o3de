@@ -43,9 +43,6 @@ namespace AZ
             void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
-            // Used to set some build options for the TLASes
-            static AZ::RHI::RayTracingAccelerationStructureBuildFlags CreateRayTracingAccelerationStructureBuildFlags(bool isSkinnedMesh);
-
             // buffer view descriptor for the TLAS
             RHI::BufferViewDescriptor m_tlasBufferViewDescriptor;
 
