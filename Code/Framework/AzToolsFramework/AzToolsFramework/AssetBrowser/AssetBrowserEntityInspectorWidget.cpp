@@ -18,7 +18,7 @@
 #include <QPushButton>
 #include <QSplitter>
 #include <QUrl>
-#pragma optimize("",off)
+
 static constexpr int MinimumPopulatedWidth = 328;
 
 namespace AzToolsFramework
@@ -616,4 +616,3 @@ namespace AzToolsFramework
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-#pragma optimize("", on)
