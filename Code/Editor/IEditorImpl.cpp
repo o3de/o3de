@@ -23,6 +23,10 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
+#if defined(AZ_PLATFORM_MAC)
+#include <AzCore/Utils/SystemUtilsApple_Platform.h>
+#endif
+
 // AzFramework
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
@@ -229,33 +233,45 @@ void CEditorImpl::LoadPlugins()
 {
     AZStd::scoped_lock lock(m_pluginMutex);
 
-    static const QString editor_plugins_folder("EditorPlugins");
+    constexpr const char* editorPluginFolder = "EditorPlugins";
 
-    // Build, verify, and set the engine root's editor plugin folder
+    // Build, verify, and set the editor plugin path
     QString editorPluginPathStr;
 
+#if defined(AZ_PLATFORM_MAC)
+    char maxPathBuffer[AZ::IO::MaxPathLength];
+    if (auto appBundlePathOutcome = AZ::SystemUtilsApple::GetPathToApplicationBundle(maxPathBuffer);
+       appBundlePathOutcome)
+    {
+        AZ::IO::FixedMaxPath bundleRootDirectory = appBundlePathOutcome.GetValue();
+
+        // the bundle directory includes Editor.app so we want the parent directory
+        bundleRootDirectory = (bundleRootDirectory / "..").LexicallyNormal();
+        if (AZ::IO::SystemFile::Exists((bundleRootDirectory / editorPluginFolder).c_str()))
+        {
+            editorPluginPathStr = QString::fromUtf8(bundleRootDirectory.c_str(), int(bundleRootDirectory.Native().size()));
+        }
+    }
+ #else
     AZStd::string_view exeFolder;
     AZ::ComponentApplicationBus::BroadcastResult(exeFolder, &AZ::ComponentApplicationRequests::GetExecutableFolder);
 
     QDir testDir;
-#if defined(AZ_PLATFORM_MAC)
-     AZ::IO::FixedMaxPath binaryPath{ exeFolder };
-     // In Mac the Editor is within a bundle, so the path to the sibling app
-     // has to go up from the Contents/MacOS folder the binary is in
-     binaryPath /= "../../../";
-     testDir.setPath(binaryPath.LexicallyNormal().c_str());
- #else
-     testDir.setPath(AZStd::string(exeFolder).c_str());
- #endif
-    if (testDir.exists() && testDir.cd(editor_plugins_folder))
+    testDir.setPath(AZStd::string(exeFolder).c_str());
+    if (testDir.exists() && testDir.cd(editorPluginFolder))
     {
         editorPluginPathStr = testDir.absolutePath();
     }
-
-    // If no editor plugin path was found based on the root engine path, then fallback to the current editor.exe path
+#endif
+    
+    // If no editor plugin path was found fallback to the current editor.exe path
     if (editorPluginPathStr.isEmpty())
     {
-        editorPluginPathStr = QString("%1/%2").arg(qApp->applicationDirPath(), editor_plugins_folder);
+        AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+        if (AZ::IO::SystemFile::Exists((executableDirectory / editorPluginFolder).c_str()))
+        {
+            editorPluginPathStr = QString::fromUtf8(executableDirectory.c_str(), int(executableDirectory.Native().size()));
+        }
     }
 
     QString pluginSearchPath = QDir::toNativeSeparators(QString("%1/*" AZ_DYNAMIC_LIBRARY_EXTENSION).arg(editorPluginPathStr));
