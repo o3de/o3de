@@ -61,7 +61,9 @@ namespace AZ
                                                                          offset : m_memoryView.GetOffset()
                                                                     bytesPerRow : (viewDescriptor.m_elementCount * bytesPerPixel)];
                 AZ_Assert(mtlTexture, "Failed to create texture");
-
+                [mtlTextureDesc release];
+                mtlTextureDesc = nil;
+                
                 RHI::Ptr<MetalResource> textureViewResource = MetalResource::Create(MetalResourceDescriptor{ mtlTexture, ResourceType::MtlTextureType });
                 m_imageBufferMemoryView = MemoryView(textureViewResource, 0, (viewDescriptor.m_elementCount * bytesPerPixel), 0);
             }

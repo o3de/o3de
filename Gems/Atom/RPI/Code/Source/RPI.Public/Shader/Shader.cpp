@@ -183,8 +183,11 @@ namespace AZ
 
             if (m_pipelineLibraryHandle.IsValid())
             {
-                SavePipelineLibrary();
-
+                if (r_enablePsoCaching)
+                {
+                    SavePipelineLibrary();
+                }
+                
                 m_pipelineStateCache->ReleaseLibrary(m_pipelineLibraryHandle);
                 m_pipelineStateCache = nullptr;
                 m_pipelineLibraryHandle = {};
