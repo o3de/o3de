@@ -11,12 +11,15 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <ShaderManagementConsoleApplication.h>
 
 #include <Document/ShaderManagementConsoleDocument.h>
 #include <Window/ShaderManagementConsoleTableView.h>
 #include <Window/ShaderManagementConsoleWindow.h>
+
+#include <QMenu>
 
 void InitShaderManagementConsoleResources()
 {
@@ -72,7 +75,9 @@ namespace ShaderManagementConsole
                 ->Event("GetMaterialInstanceShaderItems", &ShaderManagementConsoleRequestBus::Events::GetMaterialInstanceShaderItems)
                 ->Event("GetAllMaterialAssetIds", &ShaderManagementConsoleRequestBus::Events::GetAllMaterialAssetIds)
                 ->Event("GetFullSourcePathFromRelativeProductPath", &ShaderManagementConsoleRequestBus::Events::GetFullSourcePathFromRelativeProductPath)
-                ->Event("GenerateRelativeSourcePath", &ShaderManagementConsoleRequestBus::Events::GenerateRelativeSourcePath);
+                ->Event("GenerateRelativeSourcePath", &ShaderManagementConsoleRequestBus::Events::GenerateRelativeSourcePath)
+                ->Event("MakeShaderOptionValueFromInt", &ShaderManagementConsoleRequestBus::Events::MakeShaderOptionValueFromInt)
+                ;
         }
     }
 
@@ -93,14 +98,52 @@ namespace ShaderManagementConsole
 
         // Overriding default document type info to provide a custom view
         auto documentTypeInfo = ShaderManagementConsoleDocument::BuildDocumentTypeInfo();
-        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
-            return m_window->AddDocumentTab(documentId, new ShaderManagementConsoleTableView(toolId, documentId, m_window.get()));
+        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
+        {
+            // Generic widget here serves to adapt the expected pointer type that AddDocumenTab takes.
+            // ShaderManagementConsoleContainer derives from Layout* so it wouldn't be compatible without using this dummy intermediary.
+            auto* container = new QWidget;
+            new ShaderManagementConsoleContainer(container, toolId, documentId, m_window.get());
+            return m_window->AddDocumentTab(documentId, container);
         };
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
         m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
         m_window->show();
+
+        using namespace AtomToolsFramework;
+        using namespace AzToolsFramework;
+        m_assetBrowserInteractions->RegisterContextMenuActions(
+            [](const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                return entries.front()->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
+            },
+            [this]([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
+            {
+                const auto* entry = entries.empty() ? nullptr : entries.front();
+                if (!entry)
+                {
+                    return;
+                }
+                QFileInfo fileInfo(entry->GetFullPath().c_str());
+                QString extension = fileInfo.completeSuffix();
+                if (extension == "shader")
+                {
+                    AZStd::string savePath = entry->GetFullPath();
+                    AzFramework::StringFunc::Path::ReplaceExtension(savePath, AZ::RPI::ShaderVariantListSourceData::Extension);
+                    menu->addAction(
+                        "Create New Variant List (side by side to source)",
+                        [entry, savePath, this]()
+                        {
+                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+                                m_toolId,
+                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromFilePath,
+                                entry->GetFullPath().c_str(),
+                                savePath);
+                        });
+                }
+             });
     }
 
     void ShaderManagementConsoleApplication::Destroy()
@@ -319,5 +362,10 @@ namespace ShaderManagementConsole
             AZ_Error("GenerateRelativeSourcePath", false, "Can not find a relative path from the shader: '%s'.", fullShaderPath.c_str());
             return "";
         }
+    }
+
+    AZ::RPI::ShaderOptionValue ShaderManagementConsoleApplication::MakeShaderOptionValueFromInt(int value)
+    {
+        return AZ::RPI::ShaderOptionValue(value);
     }
 } // namespace ShaderManagementConsole

@@ -192,8 +192,16 @@ set(FILES
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.h
     Source/PostProcess/ExposureControl/ExposureControlSettings.cpp
     Source/PostProcess/ExposureControl/ExposureControlSettings.h
+    Source/PostProcess/FilmGrain/FilmGrainSettings.cpp
+    Source/PostProcess/FilmGrain/FilmGrainSettings.h
+    Source/PostProcess/PaniniProjection/PaniniProjectionSettings.cpp
+    Source/PostProcess/PaniniProjection/PaniniProjectionSettings.h
     Source/PostProcess/Ssao/SsaoSettings.cpp
     Source/PostProcess/Ssao/SsaoSettings.h
+    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
+    Source/PostProcess/Vignette/VignetteSettings.cpp
+    Source/PostProcess/Vignette/VignetteSettings.h
     Source/PostProcess/LookModification/LookModificationSettings.cpp
     Source/PostProcess/LookModification/LookModificationSettings.h
     Source/PostProcessing/BlendColorGradingLutsPass.h
@@ -210,6 +218,12 @@ set(FILES
     Source/PostProcessing/BloomParentPass.cpp
     Source/PostProcessing/ChromaticAberrationPass.h
     Source/PostProcessing/ChromaticAberrationPass.cpp
+    Source/PostProcessing/FilmGrainPass.h
+    Source/PostProcessing/FilmGrainPass.cpp
+    Source/PostProcessing/PaniniProjectionPass.h
+    Source/PostProcessing/PaniniProjectionPass.cpp
+    Source/PostProcessing/VignettePass.h
+    Source/PostProcessing/VignettePass.cpp
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h
@@ -261,6 +275,8 @@ set(FILES
     Source/PostProcessing/SubsurfaceScatteringPass.h
     Source/PostProcessing/TaaPass.h
     Source/PostProcessing/TaaPass.cpp
+    Source/PostProcessing/WhiteBalancePass.h
+    Source/PostProcessing/WhiteBalancePass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
     Source/RayTracing/RayTracingResourceList.h

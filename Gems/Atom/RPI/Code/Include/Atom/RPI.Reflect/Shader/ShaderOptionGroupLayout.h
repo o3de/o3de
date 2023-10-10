@@ -79,6 +79,7 @@ namespace AZ
             //! @param optionType     Type hint for the option - bool, enum, integer range, etc.
             //! @param bitOffset      Bit offset must match the ShaderOptionGroupLayout where this Option will be added
             //! @param order          The order (rank) of the shader option. Must be unique within a group. Lower order is higher priority.
+            //! @param cost           The cost is the statically-analyzed estimated performance impact
             //! @param nameIndexList  List of valid (valueName, value) pairs for this Option. See "Create*ShaderOptionValues" utility functions above.
             //! @param defaultValue   Default value name, which must also be in the nameIndexList. In the cases where the list
             //!                       defines a range (IntegerRange for instance) defaultValue must be within the range instead.
@@ -88,7 +89,8 @@ namespace AZ
                                    uint32_t bitOffset,
                                    uint32_t order,
                                    const ShaderOptionValues& nameIndexList,
-                                   const Name& defaultValue = {});
+                                   const Name& defaultValue = {},
+                                   uint32_t cost = 0);
 
             AZ_DEFAULT_COPY_MOVE(ShaderOptionDescriptor);
 
@@ -100,6 +102,8 @@ namespace AZ
 
             //! Returns the order (rank) for this option. Lower order means higher priority.
             uint32_t GetOrder() const;
+
+            uint32_t GetCostEstimate() const;
 
             //! Returns the mask comprising bits specific to this option.
             ShaderVariantKey GetBitMask() const;
@@ -187,6 +191,7 @@ namespace AZ
             uint32_t m_bitOffset = 0;
             uint32_t m_bitCount = 0;
             uint32_t m_order = 0;          //!< The order (or rank) of the shader option dictates its priority. Lower order (rank) is higher priority.
+            uint32_t m_costEstimate = 0;
             ShaderVariantKey m_bitMask;
             ShaderVariantKey m_bitMaskNot;
 

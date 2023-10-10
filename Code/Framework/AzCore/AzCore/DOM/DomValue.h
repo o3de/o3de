@@ -20,6 +20,7 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/utility/to_underlying.h>
 
 namespace AZ::Dom
 {
@@ -212,6 +213,10 @@ namespace AZ::Dom
         explicit Value(bool value);
 
         explicit Value(Type type);
+
+        // Stores the enum type as it's underlying type
+        template<class EnumType, class = AZStd::enable_if_t<AZStd::is_enum_v<EnumType>>>
+        explicit Value(EnumType enumType);
 
         // Disable accidental calls to Value(bool) with pointer types
         template<class T>
@@ -409,4 +414,10 @@ namespace AZ::Dom
 
         ValueType m_value;
     };
+
+    template<class EnumType, class>
+    Value::Value(EnumType enumType)
+        : Value(AZStd::to_underlying(enumType))
+    {
+    }
 } // namespace AZ::Dom

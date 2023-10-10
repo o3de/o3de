@@ -30,6 +30,7 @@
 #include <RHI/Pipeline.h>
 #include <RHI/SwapChain.h>
 #include <RHI/WSISurface.h>
+#include <RHI/WindowSurfaceBus.h>
 #include <Vulkan_Traits_Platform.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
@@ -346,18 +347,6 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
-            if (xrSystem)
-            {
-                // Pass the native device to the XR system.
-                XRDeviceDescriptor xrDeviceDescriptor;
-                xrDeviceDescriptor.m_inputData.m_xrVkDevice = m_nativeDevice;
-                xrDeviceDescriptor.m_inputData.m_xrVkPhysicalDevice = physicalDevice.GetNativePhysicalDevice();
-                AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDeviceDescriptor);
-                AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }
-
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
                 delete[] queueInfo.pQueuePriorities;
@@ -444,23 +433,7 @@ namespace AZ
                 bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }
-
-            // Create XR session and XR swapchain if XR system is active
-            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
-            if (xrSystem)
-            {
-                XRSessionDescriptor xrSessionDescriptor;
-                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueFamilyIndex =
-                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_familyIndex;
-                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueIndex =
-                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_queueIndex;
-                result = xrSystem->CreateSession(&xrSessionDescriptor);
-                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
-
-                result = xrSystem->CreateSwapChain();
-                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
-            }
+            }           
 
             SetName(GetName());
             return result;
@@ -826,17 +799,32 @@ namespace AZ
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             AZStd::vector<RHI::Format> formatsList;
-            WSISurface::Descriptor surfaceDescriptor{windowHandle};
-            RHI::Ptr<WSISurface> surface = WSISurface::Create();
-            const RHI::ResultCode result = surface->Init(surfaceDescriptor);
-            if (result != RHI::ResultCode::Success)
+            // On some platforms (e.g. Android) we cannot create a new WSISurface if the window is already connected to one, so we first
+            // check if the window is connected to one.
+            VkSurfaceKHR vkSurface = VK_NULL_HANDLE;
+            WindowSurfaceRequestsBus::EventResult(vkSurface, windowHandle, &WindowSurfaceRequestsBus::Events::GetNativeSurface);
+            RHI::Ptr<WSISurface> surface;
+            if (vkSurface == VK_NULL_HANDLE)
+            {
+                // Window is not connected to a WSISurface, so we create a temporary one to be able to get the valid device surface formats.
+                WSISurface::Descriptor surfaceDescriptor{ windowHandle };
+                surface = WSISurface::Create();
+                const RHI::ResultCode result = surface->Init(surfaceDescriptor);
+                if (result == RHI::ResultCode::Success)
+                {
+                    vkSurface = surface->GetNativeSurface();
+                }
+            }
+
+            if (vkSurface == VK_NULL_HANDLE)
             {
                 return formatsList;
             }
+
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             uint32_t surfaceFormatCount = 0;
             AssertSuccess(GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
-                physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
+                physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, nullptr));
             if (surfaceFormatCount == 0)
             {
                 AZ_Assert(false, "Surface support no format.");
@@ -845,7 +833,7 @@ namespace AZ
 
             AZStd::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
             AssertSuccess(GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
-                physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
+                physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, surfaceFormats.data()));
 
             AZStd::set<RHI::Format> formats;
             for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
@@ -1057,6 +1045,21 @@ namespace AZ
             return RHI::ShadingRateImageValue{};
         }
 
+        RHI::Ptr<RHI::XRDeviceDescriptor> Device::BuildXRDescriptor() const
+        {
+            XRDeviceDescriptor* xrDeviceDescriptor = aznew XRDeviceDescriptor;
+            xrDeviceDescriptor->m_inputData.m_xrVkDevice = m_nativeDevice;
+            xrDeviceDescriptor->m_inputData.m_xrVkPhysicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice()).GetNativePhysicalDevice();
+            for (int i = 0; i < RHI::HardwareQueueClassCount; ++i)
+            {
+                const auto& queueDescriptor =
+                    m_commandQueueContext.GetCommandQueue(static_cast<RHI::HardwareQueueClass>(i)).GetQueueDescriptor();
+                xrDeviceDescriptor->m_inputData.m_xrQueueBinding[i].m_queueFamilyIndex = queueDescriptor.m_familyIndex;
+                xrDeviceDescriptor->m_inputData.m_xrQueueBinding[i].m_queueIndex = queueDescriptor.m_queueIndex;
+            }
+            return xrDeviceDescriptor;
+        }
+
         void Device::InitFeaturesAndLimits(const PhysicalDevice& physicalDevice)
         {
             m_features.m_tessellationShader = (m_enabledDeviceFeatures.tessellationShader == VK_TRUE);
@@ -1180,6 +1183,7 @@ namespace AZ
                     }
                 }
             }
+            m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

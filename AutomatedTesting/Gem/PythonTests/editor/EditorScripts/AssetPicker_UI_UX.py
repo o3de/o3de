@@ -230,8 +230,7 @@ def AssetPicker_UI_UX():
         # 4) Click on Asset Picker (Model Asset)
         general.select_object("TestEntity")
         general.idle_wait(0.5)
-        model_asset = component_list_widget.findChildren(QtWidgets.QFrame, "Model Asset")[0]
-        attached_button = model_asset.findChildren(QtWidgets.QPushButton, "attached-button")[0]
+        attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 
         # Assign Model Asset via OK button
         pyside_utils.click_button_async(attached_button)
@@ -254,8 +253,7 @@ def AssetPicker_UI_UX():
         hydra.get_set_test(entity, 0, "Controller|Configuration|Model Asset", None)
         general.select_object("TestEntity")
         general.idle_wait(0.5)
-        model_asset = component_list_widget.findChildren(QtWidgets.QFrame, "Model Asset")[0]
-        attached_button = model_asset.findChildren(QtWidgets.QPushButton, "attached-button")[0]
+        attached_button = component_list_widget.findChildren(QtWidgets.QPushButton, "attached-button")[0]
 
         # Assign Model Asset via Enter
         pyside_utils.click_button_async(attached_button)

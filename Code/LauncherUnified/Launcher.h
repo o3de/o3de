@@ -107,4 +107,7 @@ namespace O3DELauncher
     //! Returns the SettingsRegistry specialization tag
     //! that can be used to load settings for the specific launcher
     const char* GetLauncherTypeSpecialization();
+
+    //! Indicates if the application is running completely headless (no GUI)
+    bool IsHeadless();
 }

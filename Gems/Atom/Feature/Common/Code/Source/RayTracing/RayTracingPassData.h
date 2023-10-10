@@ -9,6 +9,7 @@
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {

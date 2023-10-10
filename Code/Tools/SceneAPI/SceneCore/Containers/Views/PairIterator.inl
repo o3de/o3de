@@ -291,24 +291,21 @@ namespace AZ
                 {
                     return MakePairView(firstView.begin(), firstView.end(), secondView.begin(), secondView.end());
                 }
+
+                // iterator swap
+                template<typename First, typename Second, typename Category>
+                void iter_swap(const PairIterator<First, Second, Category>& lhs, const PairIterator<First, Second, Category>& rhs)
+                {
+                    auto tmpFirst = AZStd::move(lhs->first);
+                    auto tmpSecond = AZStd::move(lhs->second);
+
+                    lhs->first = AZStd::move(rhs->first);
+                    lhs->second = AZStd::move(rhs->second);
+
+                    rhs->first = AZStd::move(tmpFirst);
+                    rhs->second = AZStd::move(tmpSecond);
+                }
             } // Views
         } // Containers
     } // SceneAPI
 } // AZ
-
-namespace AZStd
-{
-    // iterator swap
-    template<typename First, typename Second>
-    void iter_swap(AZ::SceneAPI::Containers::Views::PairIterator<First, Second> lhs, AZ::SceneAPI::Containers::Views::PairIterator<First, Second> rhs)
-    {
-        typename remove_pointer<typename remove_reference<First>::type>::type tmpFirst = (*lhs).first;
-        typename remove_pointer<typename remove_reference<Second>::type>::type tmpSecond = (*lhs).second;
-
-        (*lhs).first = (*rhs).first;
-        (*lhs).second = (*rhs).second;
-
-        (*rhs).first = tmpFirst;
-        (*rhs).second = tmpSecond;
-    }
-}

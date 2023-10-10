@@ -11,6 +11,7 @@
 #include <Atom/RHI/MultiDeviceObject.h>
 #include <Atom/RHI/PipelineLibrary.h>
 
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PipelineLibraryData.h>
 
 namespace AZ::RHI
@@ -22,6 +23,19 @@ namespace AZ::RHI
     //! MultiDevicePipelineLibrary
     struct MultiDevicePipelineLibraryDescriptor
     {
+        void Init(MultiDevice::DeviceMask deviceMask, const PipelineLibraryDescriptor& descriptor)
+        {
+            int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+            for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                if (CheckBit(AZStd::to_underlying(deviceMask), static_cast<u8>(deviceIndex)))
+                {
+                    m_devicePipelineLibraryDescriptors[deviceIndex] = descriptor;
+                }
+            }
+        }
+
         //! Returns the device-specific PipelineLibraryDescriptor for the given index
         inline PipelineLibraryDescriptor GetDevicePipelineLibraryDescriptor(int deviceIndex) const
         {
@@ -57,20 +71,9 @@ namespace AZ::RHI
     public:
         AZ_CLASS_ALLOCATOR(MultiDevicePipelineLibrary, AZ::SystemAllocator, 0);
         AZ_RTTI(MultiDevicePipelineLibrary, "{B48B6A46-5976-4D7D-AA14-2179D871C567}");
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(PipelineLibrary);
         MultiDevicePipelineLibrary() = default;
         virtual ~MultiDevicePipelineLibrary() = default;
-
-        //! Returns the device-specific PipelineLibrary for the given index
-        inline Ptr<PipelineLibrary> GetDevicePipelineLibrary(int deviceIndex) const
-        {
-            AZ_Error(
-                "MultiDevicePipelineLibrary",
-                m_devicePipelineLibraries.find(deviceIndex) != m_devicePipelineLibraries.end(),
-                "No DevicePipelineLibrary found for device index %d\n",
-                deviceIndex);
-
-            return m_devicePipelineLibraries.at(deviceIndex);
-        }
 
         //! For all devices selected via the deviceMask, a PipelineLibrary is initialized and stored internally
         //! in a map (mapping from device index to a device-specific PipelineLibrary).
@@ -90,8 +93,10 @@ namespace AZ::RHI
         //! @param deviceIndex Denotes from which device the serialized data should be retrieved
         ConstPtr<PipelineLibraryData> GetSerializedData(int deviceIndex = RHI::MultiDevice::DefaultDeviceIndex) const
         {
-            if (m_devicePipelineLibraries.contains(deviceIndex))
-                return m_devicePipelineLibraries.at(deviceIndex)->GetSerializedData();
+            if (m_deviceObjects.contains(deviceIndex))
+            {
+                return GetDevicePipelineLibrary(deviceIndex)->GetSerializedData();
+            }
             else
             {
                 AZ_Error(
@@ -111,8 +116,5 @@ namespace AZ::RHI
 
         //! Explicit shutdown is not allowed for this type.
         void Shutdown() override final;
-
-        //! A map of all device-specific PipelineLibrary, indexed by the device index
-        AZStd::unordered_map<int, Ptr<PipelineLibrary>> m_devicePipelineLibraries;
     };
 } // namespace AZ::RHI

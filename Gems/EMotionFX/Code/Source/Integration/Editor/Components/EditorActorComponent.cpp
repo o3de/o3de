@@ -736,7 +736,7 @@ namespace EMotionFX
             return GetWorldBounds();
         }
 
-        AZ::Aabb EditorActorComponent::GetWorldBounds()
+        AZ::Aabb EditorActorComponent::GetWorldBounds() const
         {
             if (m_renderActorInstance)
             {
@@ -746,7 +746,7 @@ namespace EMotionFX
             return AZ::Aabb::CreateNull();
         }
 
-        AZ::Aabb EditorActorComponent::GetLocalBounds()
+        AZ::Aabb EditorActorComponent::GetLocalBounds() const
         {
             if (m_renderActorInstance)
             {

@@ -293,8 +293,11 @@ namespace AtomToolsFramework
     //! Collect a set of file paths from all project safe folders matching an extension
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingExtension(const AZStd::string& extension);
 
-    //! Return a list of all asset safe folders except for those underneath the cache folder, usually intermediate asset folders.
-    AZStd::vector<AZStd::string> GetNonCacheSourceFolders();
+    //! Returns true if settings are configured to ignore the input path
+    bool IsPathIgnored(const AZStd::string& path);
+
+    //! Returns a list of all asset safe folders except for those set to be ignored, cache and intermediate asset folders.
+    AZStd::vector<AZStd::string> GetSupportedSourceFolders();
 
     //! Add menu actions for scripts specified in the settings registry
     //! @param menu The menu where the actions will be inserted

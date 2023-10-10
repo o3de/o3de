@@ -163,7 +163,6 @@ def create_shadervariantlist_for_shader(filename):
         shaderAssetInfo.relativePath
     )
 
-    
     shaderVariantList = azlmbr.shader.ShaderVariantListSourceData()
     shaderVariantList.shaderFilePath = shaderAssetInfo.relativePath
 
@@ -255,6 +254,8 @@ def create_shadervariantlist_for_shader(filename):
             variantInfo.options = options
             shaderVariants.append(variantInfo)
             stableId += 1
+
+    shaderVariantList.materialOptionsHint = set(options.keys()) - set(systemOptionDict.keys())
 
     # Expand the unset system option
     for systemOptionName in systemOptionDescriptor:

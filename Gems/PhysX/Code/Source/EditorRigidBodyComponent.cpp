@@ -685,12 +685,12 @@ namespace PhysX
         }
     }
 
-    AZ::Aabb EditorRigidBodyComponent::GetWorldBounds()
+    AZ::Aabb EditorRigidBodyComponent::GetWorldBounds() const
     {
         return GetAabb();
     }
 
-    AZ::Aabb EditorRigidBodyComponent::GetLocalBounds()
+    AZ::Aabb EditorRigidBodyComponent::GetLocalBounds() const
     {
         AZ::Aabb worldBounds = GetWorldBounds();
         if (worldBounds.IsValid())

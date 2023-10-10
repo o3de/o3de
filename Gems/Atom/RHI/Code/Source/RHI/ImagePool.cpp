@@ -9,15 +9,6 @@
 
 namespace AZ::RHI
 {
-    ImageInitRequest::ImageInitRequest(
-        Image& image,
-        const ImageDescriptor& descriptor,
-        const ClearValue* optimizedClearValue)
-        : m_image{&image}
-        , m_descriptor{descriptor}
-        , m_optimizedClearValue{optimizedClearValue}
-    {}
-
     ResultCode ImagePool::Init(Device& device, const ImagePoolDescriptor& descriptor)
     {
         return ResourcePool::Init(

@@ -15,15 +15,16 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
+#include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Jobs/Job.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/ShapeIntersection.h>
-#include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/std/parallel/lock.h>
-#include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Jobs/JobFunction.h>
-#include <AzCore/Jobs/Job.h>
 #include <AzCore/Task/TaskGraph.h>
+#include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzFramework/Visibility/OcclusionBus.h>
+
 #include <Atom_RPI_Traits_Platform.h>
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -152,20 +153,67 @@ namespace AZ
             return m_visScene->GetEntryCount();
         }
 
+        CullingDebugContext& CullingScene::GetDebugContext()
+        {
+            return m_debugCtx;
+        }
+
+        const AzFramework::IVisibilityScene* CullingScene::GetVisibilityScene() const
+        {
+            return m_visScene;
+        }
+
+        // Search for and return the entity context ID associated with the scene and connected to OcclusionRequestBus. If there is no
+        // matching scene, return a null ID.
+        static AzFramework::EntityContextId GetEntityContextIdForOcclusion(const AZ::RPI::Scene* scene)
+        {
+            // Active RPI scenes are registered with the AzFramework::SceneSystem using unique names.
+            auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+            AZ_Assert(sceneSystem, "Attempting to retrieve the entity context ID for a scene before the scene system interface is ready.");
+
+            AzFramework::EntityContextId resultId = AzFramework::EntityContextId::CreateNull();
+
+            // Enumerate all scenes registered with the AzFramework::SceneSystem
+            sceneSystem->IterateActiveScenes(
+                [&](const AZStd::shared_ptr<AzFramework::Scene>& azScene)
+                {
+                    // AzFramework::Scene uses "subsystems" bind arbitrary data. This is generally used to maintain an association between
+                    // AzFramework::Scene and AZ::RPI::Scene. We search for the AzFramework::Scene scene with a subsystem matching the input
+                    // scene pointer.
+                    AZ::RPI::ScenePtr* rpiScene = azScene->FindSubsystemInScene<AZ::RPI::ScenePtr>();
+                    if (rpiScene && (*rpiScene).get() == scene)
+                    {
+                        // Each scene should only be bound to one entity context for entities that will appear in the scene.
+                        AzFramework::EntityContext** entityContext =
+                            azScene->FindSubsystemInScene<AzFramework::EntityContext::SceneStorageType>();
+                        if (entityContext)
+                        {
+                            // Return if the entity context is valid and connected to OcclusionRequestBus
+                            const AzFramework::EntityContextId contextId = (*entityContext)->GetContextId();
+                            if (AzFramework::OcclusionRequestBus::HasHandlers(contextId))
+                            {
+                                resultId = contextId;
+                                return false; // Result found, returning
+                            }
+                        }
+                    }
+
+                    return true; // No match, continuing to search for containing scene.
+                });
+            return resultId;
+        }
 
         struct WorklistData
         {
             CullingDebugContext* m_debugCtx = nullptr;
             const Scene* m_scene = nullptr;
+            AzFramework::EntityContextId m_sceneEntityContextId;
             View* m_view = nullptr;
             Frustum m_frustum;
             Frustum m_cameraFrustum;
             Frustum m_excludeFrustum;
             AZ::Job* m_parentJob = nullptr;
             AZ::TaskGraphEvent* m_taskGraphEvent = nullptr;
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-            MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
-#endif
             bool m_hasExcludeFrustum = false;
             bool m_applyCameraFrustumIntersectionTest = false;
 #ifdef AZ_CULL_DEBUG_ENABLED
@@ -186,20 +234,17 @@ namespace AZ
             const Scene& scene,
             View& view,
             Frustum& frustum,
-            [[maybe_unused]] void* maskedOcclusionCulling,
             AZ::Job* parentJob,
             AZ::TaskGraphEvent* taskGraphEvent)
         {
             AZStd::shared_ptr<WorklistData> worklistData = AZStd::make_shared<WorklistData>();
             worklistData->m_debugCtx = &debugCtx;
             worklistData->m_scene = &scene;
+            worklistData->m_sceneEntityContextId = GetEntityContextIdForOcclusion(&scene);
             worklistData->m_view = &view;
             worklistData->m_frustum = frustum;
             worklistData->m_parentJob = parentJob;
             worklistData->m_taskGraphEvent = taskGraphEvent;
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-            worklistData->m_maskedOcclusionCulling = static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling);
-#endif
             return worklistData;
         }
 
@@ -223,13 +268,15 @@ namespace AZ
             AZStd::vector<AzFramework::VisibilityEntry*> m_entries;
         };
 
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-        static MaskedOcclusionCulling::CullingResult TestOcclusionCulling(
-                    const AZStd::shared_ptr<WorklistData>& worklistData,
-                    AzFramework::VisibilityEntry* visibleEntry);
-#endif
+        static bool TestOcclusionCulling(
+            const AZStd::shared_ptr<WorklistData>& worklistData, const AzFramework::VisibilityEntry* visibleEntry);
 
-        static void ProcessEntrylist(const AZStd::shared_ptr<WorklistData>& worklistData, const AZStd::vector<AzFramework::VisibilityEntry*>& entries, bool parentNodeContainedInFrustum = false, s32 startIdx = 0, s32 endIdx = -1)
+        static void ProcessEntrylist(
+            const AZStd::shared_ptr<WorklistData>& worklistData,
+            const AZStd::vector<AzFramework::VisibilityEntry*>& entries,
+            bool parentNodeContainedInFrustum = false,
+            s32 startIdx = 0,
+            s32 endIdx = -1)
         {
 #ifdef AZ_CULL_DEBUG_ENABLED
             // These variable are only used for the gathering of debug information.
@@ -271,9 +318,7 @@ namespace AZ
                         continue;
                     }
 
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-                    if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
-#endif
+                    if (TestOcclusionCulling(worklistData, visibleEntry))
                     {
                         // There are ways to write this without [[maybe_unused]], but they are brittle.
                         // For example, using #else could cause a bug where the function's parameter
@@ -422,16 +467,9 @@ namespace AZ
             }
         }
 
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-        static MaskedOcclusionCulling::CullingResult TestOcclusionCulling(
-            const AZStd::shared_ptr<WorklistData>& worklistData,
-            AzFramework::VisibilityEntry* visibleEntry)
+        static bool TestOcclusionCulling(
+            const AZStd::shared_ptr<WorklistData>& worklistData, const AzFramework::VisibilityEntry* visibleEntry)
         {
-            if (!worklistData->m_maskedOcclusionCulling)
-            {
-                return MaskedOcclusionCulling::CullingResult::VISIBLE;
-            }
-
 #ifdef AZ_CULL_PROFILE_VERBOSE
             AZ_PROFILE_SCOPE(RPI, "TestOcclusionCulling");
 #endif
@@ -439,7 +477,29 @@ namespace AZ
             if (visibleEntry->m_boundingVolume.Contains(worklistData->m_view->GetCameraTransform().GetTranslation()))
             {
                 // camera is inside bounding volume
-                return MaskedOcclusionCulling::CullingResult::VISIBLE;
+                return true;
+            }
+
+            // Perform occlusion tests using OcclusionRequestBus if it is connected to the entity context ID for this scene.
+            if (!worklistData->m_sceneEntityContextId.IsNull())
+            {
+                bool result = true;
+                AzFramework::OcclusionRequestBus::EventResult(
+                    result,
+                    worklistData->m_sceneEntityContextId,
+                    &AzFramework::OcclusionRequestBus::Events::IsAabbVisibleInOcclusionView,
+                    worklistData->m_view->GetName(),
+                    visibleEntry->m_boundingVolume);
+
+                // Return immediately to bypass MaskedOcclusionCulling
+                return result;
+            }
+
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+            MaskedOcclusionCulling* maskedOcclusionCulling = worklistData->m_view->GetMaskedOcclusionCulling();
+            if (!maskedOcclusionCulling)
+            {
+                return true;
             }
 
             const Vector3& minBound = visibleEntry->m_boundingVolume.GetMin();
@@ -467,9 +527,8 @@ namespace AZ
                 minDepth = AZStd::min(minDepth, corners[index].GetW());
                 if (minDepth < 0.00000001f)
                 {
-                    return MaskedOcclusionCulling::CullingResult::VISIBLE;
+                    return true;
                 }
-
 
                 // convert to NDC
                 corners[index] /= corners[index].GetW();
@@ -481,15 +540,19 @@ namespace AZ
             }
 
             // test against the occlusion buffer, which contains only the manually placed occlusion planes
-            return worklistData->m_maskedOcclusionCulling->TestRect(ndcMinX, ndcMinY, ndcMaxX, ndcMaxY, minDepth);
-        }
+            if (maskedOcclusionCulling->TestRect(ndcMinX, ndcMinY, ndcMaxX, ndcMaxY, minDepth) !=
+                MaskedOcclusionCulling::CullingResult::VISIBLE)
+            {
+                return false;
+            }
 #endif
+            return true;
+        }
 
         void CullingScene::ProcessCullablesCommon(
-            const Scene& scene [[maybe_unused]],
+            const Scene& scene,
             View& view,
-            AZ::Frustum& frustum [[maybe_unused]],
-            void*& maskedOcclusionCulling [[maybe_unused]])
+            AZ::Frustum& frustum [[maybe_unused]])
         {
             AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullablesCommon() - %s", view.GetName().GetCStr());
 
@@ -519,10 +582,25 @@ namespace AZ
                 cullStats.m_cameraViewToWorld = view.GetViewToWorldMatrix();
             }
 #endif //AZ_CULL_DEBUG_ENABLED
+
+            // If connected, update the occlusion views for this scene and view combination.
+            if (const auto& entityContextId = GetEntityContextIdForOcclusion(&scene); !entityContextId.IsNull())
+            {
+                AzFramework::OcclusionRequestBus::Event(
+                    entityContextId,
+                    &AzFramework::OcclusionRequestBus::Events::UpdateOcclusionView,
+                    view.GetName(),
+                    view.GetCameraTransform().GetTranslation(),
+                    view.GetWorldToClipMatrix());
+
+                // Return immediately to bypass MaskedOcclusionCulling
+                return;
+            }
+
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             // setup occlusion culling, if necessary
-            maskedOcclusionCulling = m_occlusionPlanes.empty() ? nullptr : view.GetMaskedOcclusionCulling();
-            if (maskedOcclusionCulling)
+            MaskedOcclusionCulling* maskedOcclusionCulling = view.GetMaskedOcclusionCulling();
+            if (maskedOcclusionCulling && !m_occlusionPlanes.empty())
             {
                 // frustum cull occlusion planes
                 using VisibleOcclusionPlane = AZStd::pair<OcclusionPlane, float>;
@@ -563,7 +641,7 @@ namespace AZ
                     static uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 
                     // render into the occlusion buffer, specifying BACKFACE_NONE so it functions as a double-sided occluder
-                    static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling)->RenderTriangles(verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE);
+                    maskedOcclusionCulling->RenderTriangles(verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE);
                 }
             }
 #endif
@@ -578,12 +656,11 @@ namespace AZ
             const Matrix4x4& worldToClip = view.GetWorldToClipMatrix();
             AZ::Frustum frustum = Frustum::CreateFromMatrixColumnMajor(worldToClip);
 
-            void* maskedOcclusionCulling = nullptr;
-            ProcessCullablesCommon(scene, view, frustum, maskedOcclusionCulling);
+            ProcessCullablesCommon(scene, view, frustum);
 
             AZStd::shared_ptr<WorkListType> worklist = AZStd::make_shared<WorkListType>();
             worklist->Init();
-            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling, parentJob, taskGraphEvent);
+            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, parentJob, taskGraphEvent);
             static const AZ::TaskDescriptor descriptor{ "AZ::RPI::ProcessWorklist", "Graphics" };
 
             if (const Matrix4x4* worldToClipExclude = view.GetWorldToClipExcludeMatrix())
@@ -721,8 +798,7 @@ namespace AZ
             const Matrix4x4& worldToClip = view.GetWorldToClipMatrix();
             AZ::Frustum frustum = Frustum::CreateFromMatrixColumnMajor(worldToClip);
 
-            void* maskedOcclusionCulling = nullptr;
-            ProcessCullablesCommon(scene, view, frustum, maskedOcclusionCulling);
+            ProcessCullablesCommon(scene, view, frustum);
 
             // Note 1: Cannot do unique_ptr here because compilation error (auto-deletes function from lambda which the job code complains about) 
             // Note 2: Having this be a pointer (even a shared pointer) is faster than just having this live on the stack like:
@@ -731,7 +807,7 @@ namespace AZ
             // increases the runtime for this function, which runs on a single thread and spawns other jobs).
             AZStd::shared_ptr<EntryListType> entryList = AZStd::make_shared<EntryListType>();
             entryList->m_entries.reserve(r_numEntriesPerCullingJob);
-            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling, parentJob, nullptr);
+            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, parentJob, nullptr);
 
             if (const Matrix4x4* worldToClipExclude = view.GetWorldToClipExcludeMatrix())
             {
@@ -914,18 +990,22 @@ namespace AZ
             m_visScene = nullptr;
         }
 
-        void CullingScene::BeginCullingTaskGraph(const AZStd::vector<ViewPtr>& views)
+        void CullingScene::BeginCullingTaskGraph(const Scene& scene, AZStd::span<const ViewPtr> views)
         {
             AZ::TaskGraph taskGraph{ "RPI::Culling" };
-            AZ::TaskDescriptor beginCullingDescriptor{"RPI_CullingScene_BeginCullingView", "Graphics"};
+            AZ::TaskDescriptor beginCullingDescriptor{ "RPI_CullingScene_BeginCullingView", "Graphics" };
+
+            const auto& entityContextId = GetEntityContextIdForOcclusion(&scene);
             for (auto& view : views)
             {
                 taskGraph.AddTask(
                     beginCullingDescriptor,
-                    [&view]()
+                    [&]()
                     {
                         AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCullingTaskGraph");
                         view->BeginCulling();
+                        AzFramework::OcclusionRequestBus::Event(
+                            entityContextId, &AzFramework::OcclusionRequestBus::Events::CreateOcclusionView, view->GetName());
                     });
             }
 
@@ -937,16 +1017,19 @@ namespace AZ
             }
         }
 
-        void CullingScene::BeginCullingJobs(const AZStd::vector<ViewPtr>& views)
+        void CullingScene::BeginCullingJobs(const Scene& scene, AZStd::span<const ViewPtr> views)
         {
             AZ::JobCompletion beginCullingCompletion;
 
+            const auto& entityContextId = GetEntityContextIdForOcclusion(&scene);
             for (auto& view : views)
             {
-                const auto cullingLambda = [&view]()
+                const auto cullingLambda = [&]()
                 {
                     AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCullingJob");
                     view->BeginCulling();
+                    AzFramework::OcclusionRequestBus::Event(
+                        entityContextId, &AzFramework::OcclusionRequestBus::Events::CreateOcclusionView, view->GetName());
                 };
 
                 AZ::Job* cullingJob = AZ::CreateJobFunction(AZStd::move(cullingLambda), true, nullptr);
@@ -957,7 +1040,7 @@ namespace AZ
             beginCullingCompletion.StartAndWaitForCompletion();
         }
 
-        void CullingScene::BeginCulling(const AZStd::vector<ViewPtr>& views)
+        void CullingScene::BeginCulling(const Scene& scene, AZStd::span<const ViewPtr> views)
         {
             AZ_PROFILE_SCOPE(RPI, "CullingScene: BeginCulling");
             m_cullDataConcurrencyCheck.soft_lock();
@@ -967,17 +1050,24 @@ namespace AZ
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
 
-            if(views.size() == 1) // avoid job overhead when only 1 job
+            // Remove any debug artifacts from the previous occlusion culling session.
+            const auto& entityContextId = GetEntityContextIdForOcclusion(&scene);
+            AzFramework::OcclusionRequestBus::Event(
+                entityContextId, &AzFramework::OcclusionRequestBus::Events::ClearOcclusionViewDebugInfo);
+
+            if (views.size() == 1) // avoid job overhead when only 1 job
             {
                 views[0]->BeginCulling();
+                AzFramework::OcclusionRequestBus::Event(
+                    entityContextId, &AzFramework::OcclusionRequestBus::Events::CreateOcclusionView, views[0]->GetName());
             }
             else if (m_taskGraphActive && m_taskGraphActive->IsTaskGraphActive())
             {
-                BeginCullingTaskGraph(views);
+                BeginCullingTaskGraph(scene, views);
             }
             else
             {
-                BeginCullingJobs(views);
+                BeginCullingJobs(scene, views);
             }
 
 #ifdef AZ_CULL_DEBUG_ENABLED
@@ -1016,9 +1106,19 @@ namespace AZ
 #endif
         }
 
-        void CullingScene::EndCulling()
+        void CullingScene::EndCulling(const Scene& scene, AZStd::span<const ViewPtr> views)
         {
             m_cullDataConcurrencyCheck.soft_unlock();
+
+            // When culling has completed, destroy all of the occlusion views.
+            if (const auto& entityContextId = GetEntityContextIdForOcclusion(&scene); !entityContextId.IsNull())
+            {
+                for (auto& view : views)
+                {
+                    AzFramework::OcclusionRequestBus::Event(
+                        entityContextId, &AzFramework::OcclusionRequestBus::Events::DestroyOcclusionView, view->GetName());
+                }
+            }
         }
 
         size_t CullingScene::CountObjectsInScene()

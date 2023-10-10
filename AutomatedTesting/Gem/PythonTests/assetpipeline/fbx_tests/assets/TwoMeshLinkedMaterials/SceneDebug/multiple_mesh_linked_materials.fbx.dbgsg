@@ -1,0 +1,428 @@
+ProductName: multiple_mesh_linked_materials.fbx.dbgsg
+debugSceneGraphVersion: 1
+multiple_mesh_linked_materials
+Node Name: RootNode
+Node Path: RootNode
+Node Type: RootBoneData
+	WorldTransform:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: Cube
+Node Path: RootNode.Cube
+Node Type: MeshData
+	Positions: Count 24. Hash: 8661923109306356285
+	Normals: Count 24. Hash: 5807525742165000561
+	FaceList: Count 12. Hash: 9888799799190757436
+	FaceMaterialIds: Count 12. Hash: 7113802799051126666
+
+Node Name: Cone
+Node Path: RootNode.Cone
+Node Type: MeshData
+	Positions: Count 128. Hash: 12506421592104186200
+	Normals: Count 128. Hash: 367461522682321485
+	FaceList: Count 62. Hash: 5910399941817424750
+	FaceMaterialIds: Count 62. Hash: 15454348664434923102
+
+Node Name: Cube_multiple_mesh_linked_materials_optimized
+Node Path: RootNode.Cube_multiple_mesh_linked_materials_optimized
+Node Type: MeshData
+	Positions: Count 24. Hash: 8661923109306356285
+	Normals: Count 24. Hash: 5807525742165000561
+	FaceList: Count 12. Hash: 9888799799190757436
+	FaceMaterialIds: Count 12. Hash: 7113802799051126666
+
+Node Name: Cone_multiple_mesh_linked_materials_optimized
+Node Path: RootNode.Cone_multiple_mesh_linked_materials_optimized
+Node Type: MeshData
+	Positions: Count 128. Hash: 14946490408303214595
+	Normals: Count 128. Hash: 367461522682321485
+	FaceList: Count 62. Hash: 17210030509394354449
+	FaceMaterialIds: Count 62. Hash: 15454348664434923102
+
+Node Name: transform
+Node Path: RootNode.Cube.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.Cube.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UV0
+Node Path: RootNode.Cube.UV0
+Node Type: MeshVertexUVData
+	UVs: Count 24. Hash: 1622169145591646736
+	UVCustomName: UV0
+
+Node Name: SharedBlack
+Node Path: RootNode.Cube.SharedBlack
+Node Type: MaterialData
+	MaterialName: SharedBlack
+	UniqueId: 5248829540156873090
+	IsNoDraw: false
+	DiffuseColor: < 0.000000,  0.000000,  0.000000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: SharedOrange
+Node Path: RootNode.Cube.SharedOrange
+Node Type: MaterialData
+	MaterialName: SharedOrange
+	UniqueId: 9470651048605569128
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.139382,  0.014429>
+	SpecularColor: < 0.800000,  0.139382,  0.014429>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: TangentSet_0
+Node Path: RootNode.Cube.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 24. Hash: 13438447437797057049
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Cube.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 24. Hash: 11372562338897179017
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.Cone.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  2.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.Cone.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UV0
+Node Path: RootNode.Cone.UV0
+Node Type: MeshVertexUVData
+	UVs: Count 128. Hash: 10291654057525777310
+	UVCustomName: UV0
+
+Node Name: SharedOrange
+Node Path: RootNode.Cone.SharedOrange
+Node Type: MaterialData
+	MaterialName: SharedOrange
+	UniqueId: 9470651048605569128
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.139382,  0.014429>
+	SpecularColor: < 0.800000,  0.139382,  0.014429>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: SharedBlack
+Node Path: RootNode.Cone.SharedBlack
+Node Type: MaterialData
+	MaterialName: SharedBlack
+	UniqueId: 5248829540156873090
+	IsNoDraw: false
+	DiffuseColor: < 0.000000,  0.000000,  0.000000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: TangentSet_0
+Node Path: RootNode.Cone.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 128. Hash: 11574815809363656385
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Cone.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 128. Hash: 1026129762512670051
+	GenerationMethod: 1
+
+Node Name: custom_properties
+Node Path: RootNode.Cube_multiple_mesh_linked_materials_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UV0
+Node Path: RootNode.Cube_multiple_mesh_linked_materials_optimized.UV0
+Node Type: MeshVertexUVData
+	UVs: Count 24. Hash: 1622169145591646736
+	UVCustomName: UV0
+
+Node Name: TangentSet_0
+Node Path: RootNode.Cube_multiple_mesh_linked_materials_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 24. Hash: 13438447437797057049
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Cube_multiple_mesh_linked_materials_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 24. Hash: 11372562338897179017
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.Cube_multiple_mesh_linked_materials_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: SharedBlack
+Node Path: RootNode.Cube_multiple_mesh_linked_materials_optimized.SharedBlack
+Node Type: MaterialData
+	MaterialName: SharedBlack
+	UniqueId: 5248829540156873090
+	IsNoDraw: false
+	DiffuseColor: < 0.000000,  0.000000,  0.000000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: SharedOrange
+Node Path: RootNode.Cube_multiple_mesh_linked_materials_optimized.SharedOrange
+Node Type: MaterialData
+	MaterialName: SharedOrange
+	UniqueId: 9470651048605569128
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.139382,  0.014429>
+	SpecularColor: < 0.800000,  0.139382,  0.014429>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: custom_properties
+Node Path: RootNode.Cone_multiple_mesh_linked_materials_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UV0
+Node Path: RootNode.Cone_multiple_mesh_linked_materials_optimized.UV0
+Node Type: MeshVertexUVData
+	UVs: Count 128. Hash: 7173974213247584731
+	UVCustomName: UV0
+
+Node Name: TangentSet_0
+Node Path: RootNode.Cone_multiple_mesh_linked_materials_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 128. Hash: 5198081677141836233
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Cone_multiple_mesh_linked_materials_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 128. Hash: 6948605204859680167
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.Cone_multiple_mesh_linked_materials_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  2.000000>
+
+Node Name: SharedOrange
+Node Path: RootNode.Cone_multiple_mesh_linked_materials_optimized.SharedOrange
+Node Type: MaterialData
+	MaterialName: SharedOrange
+	UniqueId: 9470651048605569128
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.139382,  0.014429>
+	SpecularColor: < 0.800000,  0.139382,  0.014429>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: SharedBlack
+Node Path: RootNode.Cone_multiple_mesh_linked_materials_optimized.SharedBlack
+Node Type: MaterialData
+	MaterialName: SharedBlack
+	UniqueId: 5248829540156873090
+	IsNoDraw: false
+	DiffuseColor: < 0.000000,  0.000000,  0.000000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 25.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.500000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+

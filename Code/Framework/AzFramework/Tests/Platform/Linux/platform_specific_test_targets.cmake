@@ -23,6 +23,7 @@ if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzFramework
+                AZ::AzFramework.NativeUI
                 AZ::AzTest
                 AZ::AzTestShared
                 AZ::AzFrameworkTestShared

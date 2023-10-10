@@ -45,23 +45,23 @@ namespace AZ
                     template<typename FirstIterator, typename SecondIterator>
                     struct PairIteratorCategory
                     {
-                        static const bool s_sameCategory = AZStd::is_same<
-                                typename AZStd::iterator_traits<FirstIterator>::iterator_category,
-                                typename AZStd::iterator_traits<SecondIterator>::iterator_category>::value;
+                        static constexpr bool s_sameCategory = AZStd::is_same<
+                            typename AZStd::iterator_traits<FirstIterator>::iterator_category,
+                            typename AZStd::iterator_traits<SecondIterator>::iterator_category>::value;
 
                         // True if both categories are the same.
                         // True if FirstIterator has the lower category in the hierarchy
                         // False if ValueItator has the lower category or is unrelated.
-                        static const bool s_firstIteratorCategoryIsBaseOfSecondIterator = AZStd::is_base_of<
-                                typename AZStd::iterator_traits<FirstIterator>::iterator_category,
-                                typename AZStd::iterator_traits<SecondIterator>::iterator_category>::value;
+                        static constexpr bool s_firstIteratorCategoryIsBaseOfSecondIterator = AZStd::is_base_of<
+                            typename AZStd::iterator_traits<FirstIterator>::iterator_category,
+                            typename AZStd::iterator_traits<SecondIterator>::iterator_category>::value;
 
                         // True if both categories are the same.
                         // True if SecondIterator has the lower category in the hierarchy
                         // False if FirstItator has the lower category or is unrelated.
-                        static const bool s_SecondIteratorCategoryIsBaseOfFirstIterator = AZStd::is_base_of<
-                                typename AZStd::iterator_traits<SecondIterator>::iterator_category,
-                                typename AZStd::iterator_traits<FirstIterator>::iterator_category>::value;
+                        static constexpr bool s_SecondIteratorCategoryIsBaseOfFirstIterator = AZStd::is_base_of<
+                            typename AZStd::iterator_traits<SecondIterator>::iterator_category,
+                            typename AZStd::iterator_traits<FirstIterator>::iterator_category>::value;
 
                         static_assert(s_sameCategory || (s_firstIteratorCategoryIsBaseOfSecondIterator != s_SecondIteratorCategoryIsBaseOfFirstIterator),
                             "The iterator categories for the first and second in the PairIterator are unrelated categories.");
@@ -85,9 +85,9 @@ namespace AZ
                 class PairIterator<FirstIterator, SecondIterator, void>
                 {
                 public:
-                    using value_type = AZStd::pair<typename AZStd::iterator_traits<FirstIterator>::value_type, typename AZStd::iterator_traits<SecondIterator>::value_type>;
+                    using value_type = AZStd::pair<AZStd::iter_value_t<FirstIterator>, AZStd::iter_value_t<SecondIterator>>;
                     using difference_type = AZStd::ptrdiff_t;
-                    using reference = AZStd::pair<typename AZStd::iterator_traits<FirstIterator>::reference, typename AZStd::iterator_traits<SecondIterator>::reference>;
+                    using reference = AZStd::pair<AZStd::iter_reference_t<FirstIterator>, AZStd::iter_reference_t<SecondIterator>>;
                     using pointer = ProxyPointer<reference>;
                     using iterator_category = typename Internal::PairIteratorCategory<FirstIterator, SecondIterator>::Category;
 
@@ -230,16 +230,12 @@ namespace AZ
                 template<typename FirstView, typename SecondView>
                 View<PairIterator<typename FirstView::const_iterator, typename SecondView::const_iterator>>
                 MakePairView(const FirstView& firstView, const SecondView& secondView);
+
+                template<typename First, typename Second, typename Category>
+                void iter_swap(const PairIterator<First, Second, Category>& lhs, const PairIterator<First, Second, Category>& rhs);
             } // Views
         } // Containers
     } // SceneAPI
 } // AZ
-
-namespace AZStd
-{
-    // iterator swap
-    template<typename First, typename Second>
-    void iter_swap(AZ::SceneAPI::Containers::Views::PairIterator<First, Second> lhs, AZ::SceneAPI::Containers::Views::PairIterator<First, Second> rhs);
-}
 
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.inl>

@@ -99,10 +99,10 @@ namespace AZ
             void ClearAllFlags();
 
             //! Returns the boolean & combination of all flags provided with ApplyFlags() since the last frame.
-            uint32_t GetAndFlags();
+            uint32_t GetAndFlags() const;
 
             //! Returns the boolean | combination of all flags provided with ApplyFlags() since the last frame.
-            uint32_t GetOrFlags();
+            uint32_t GetOrFlags() const;
 
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);
@@ -158,10 +158,10 @@ namespace AZ
             //! Value returned is 1.0f when an area equal to the viewport height squared is covered. Useful for accurate LOD decisions.
             float CalculateSphereAreaInClipSpace(const AZ::Vector3& sphereWorldPosition, float sphereRadius) const;
 
-            const AZ::Name& GetName() const { return m_name; }
-            const UsageFlags GetUsageFlags() { return m_usageFlags; }
+            const AZ::Name& GetName() const;
+            UsageFlags GetUsageFlags() const;
 
-            void SetPassesByDrawList(PassesByDrawList* passes) { m_passesByDrawList = passes; }
+            void SetPassesByDrawList(PassesByDrawList* passes);
 
             //! Update View's SRG values and compile. This should only be called once per frame before execute command lists.
             void UpdateSrg();

@@ -6,14 +6,29 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
+
+AZ_CVAR(
+    bool,
+    ed_enableInspectorOverrideManagement,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, enables experimental prefab override support in the Entity Inspector");
+
+AZ_CVAR(
+    bool,
+    ed_enableOutlinerOverrideManagement,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+    "If set, enables experimental prefab override support in the Outliner");
 
 namespace AzToolsFramework::Prefab
 {
     const AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
-    const AZStd::string_view InspectorOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement";
-    const AZStd::string_view OutlinerOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableOutlinerOverrideManagement";
 
     bool IsHotReloadingEnabled()
     {
@@ -30,23 +45,20 @@ namespace AzToolsFramework::Prefab
     bool IsOutlinerOverrideManagementEnabled()
     {
         bool isOutlinerOverrideManagementEnabled = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            registry->Get(isOutlinerOverrideManagementEnabled, OutlinerOverrideManagementKey);
+            console->GetCvarValue("ed_enableOutlinerOverrideManagement", isOutlinerOverrideManagementEnabled);
         }
-
         return isOutlinerOverrideManagementEnabled;
     }
 
     bool IsInspectorOverrideManagementEnabled()
     {
         bool isInspectorOverrideManagementEnabled = false;
-
-        if (auto* registry = AZ::SettingsRegistry::Get())
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            registry->Get(isInspectorOverrideManagementEnabled, InspectorOverrideManagementKey);
+            console->GetCvarValue("ed_enableInspectorOverrideManagement", isInspectorOverrideManagementEnabled);
         }
-
         return isInspectorOverrideManagementEnabled;
     }
 

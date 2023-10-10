@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 #include <LmbrCentral/Shape/EditorTubeShapeComponentBus.h>

@@ -31,9 +31,18 @@
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent)
-        : Base(toolId, "ShaderManagementConsoleWindow",  parent)
+        : Base(toolId, "ShaderManagementConsoleWindow", parent)
     {
-        m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->ClearTypeFilter();
+        m_assetBrowser->GetSearchWidget()->SetTypeFilterVisible(false);
+        m_assetBrowser->SetFileTypeFilters({
+            { "Material", { "material" }, true },
+            { "Material Type", { "materialtype" }, true },
+            { "Shader", { "shader" }, true },
+            { "Shader Template", { "shader.template" }, true },
+            { "Shader Variant List", { "shadervariantlist" }, true },
+            { "AZSL", { "azsl", "azsli", "srgi" }, true },
+        });
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/ShaderManagementConsole/DocumentInspector");
@@ -41,6 +50,16 @@ namespace ShaderManagementConsole
         SetDockWidgetVisible("Inspector", false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
+        this->setContextMenuPolicy(Qt::CustomContextMenu);
+        this->connect(this, &QTableWidget::customContextMenuRequested, this, &ShaderManagementConsoleWindow::ShowContextMenu);
+    }
+
+    void ShaderManagementConsoleWindow::ShowContextMenu(const QPoint& pos)
+    {
+        QMenu contextMenu(tr("Context menu"), this);
+        UpdateRecentFileMenu();
+        contextMenu.insertMenu(0, m_menuOpenRecent);
+        contextMenu.exec(mapToGlobal(pos));
     }
 
     void ShaderManagementConsoleWindow::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -104,8 +123,8 @@ namespace ShaderManagementConsole
     {
         Base::CreateMenus(menuBar);
 
-        // Add statistic button
-        QAction* action = new QAction(tr("Generate Shader Variant Statistic..."), m_menuFile);
+        // Add statistics button
+        QAction* action = new QAction(tr("Generate Shader Variant Statistics..."), m_menuFile);
         QObject::connect(action, &QAction::triggered, this, &ShaderManagementConsoleWindow::GenerateStatisticView);
         m_menuFile->insertAction(m_menuFile->actions().back(), action);
     }
@@ -139,7 +158,7 @@ namespace ShaderManagementConsole
                 {
                     if (statisticData.m_shaderVariantUsage.find(shaderVariantId) == statisticData.m_shaderVariantUsage.end())
                     {
-                        // Varient not found
+                        // Variant not found
                         statisticData.m_shaderVariantUsage[shaderVariantId].m_count = 1;
                     }
                     else

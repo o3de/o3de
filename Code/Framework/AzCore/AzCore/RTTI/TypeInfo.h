@@ -459,7 +459,8 @@ namespace AZ
     inline AZ::TypeId GetO3deTypeId(AZ::Adl, AZStd::type_identity<std::reference_wrapper<T>>)
     {
         // Return the type id of the non-reference type for the reference wrapper
-        return AZ::AzTypeInfo<T>::Uuid();
+        constexpr TemplateId referenceWrapperId{ "{49A51B21-8302-4E63-8EE8-A4BF51B72FFC}" };
+        return referenceWrapperId + AZ::AzTypeInfo<T>::Uuid();
     }
 } // namespace AZ
 

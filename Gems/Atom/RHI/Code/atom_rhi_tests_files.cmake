@@ -54,6 +54,10 @@ set(FILES
     Tests/IntervalMapTests.cpp
     Tests/MultiDevicePipelineStateTests.cpp
     Tests/MultiDeviceQueryTests.cpp
+    Tests/MultiDeviceBufferTests.cpp
+    Tests/MultiDeviceImageTests.cpp
+    Tests/MultiDeviceIndirectBufferTests.cpp
+    Tests/MultiDeviceShaderResourceGroupTests.cpp
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
