@@ -252,19 +252,9 @@ void CEditorImpl::LoadPlugins()
             editorPluginPathStr = QString::fromUtf8(bundleRootDirectory.c_str(), int(bundleRootDirectory.Native().size()));
         }
     }
- #else
-    AZStd::string_view exeFolder;
-    AZ::ComponentApplicationBus::BroadcastResult(exeFolder, &AZ::ComponentApplicationRequests::GetExecutableFolder);
-
-    QDir testDir;
-    testDir.setPath(AZStd::string(exeFolder).c_str());
-    if (testDir.exists() && testDir.cd(editorPluginFolder))
-    {
-        editorPluginPathStr = testDir.absolutePath();
-    }
 #endif
     
-    // If no editor plugin path was found fallback to the current editor.exe path
+    // Use the executable directory as the starting point for the EditorPlugins path
     if (editorPluginPathStr.isEmpty())
     {
         AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
