@@ -36,6 +36,8 @@ namespace AZ
                     MTLCommandBufferDescriptor* mtlCommandBufferDesc = [[MTLCommandBufferDescriptor alloc] init];
                     mtlCommandBufferDesc.errorOptions = MTLCommandBufferErrorOptionEncoderExecutionStatus;
                     m_mtlCommandBuffer = [m_hwQueue commandBufferWithDescriptor:mtlCommandBufferDesc];
+                    [mtlCommandBufferDesc release];
+                    mtlCommandBufferDesc = nil;
                 }
             }
 #endif

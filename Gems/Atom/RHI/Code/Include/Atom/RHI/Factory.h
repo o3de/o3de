@@ -18,6 +18,7 @@
 #endif
 
 AZ_CVAR_EXTERNED(bool, r_gpuMarkersMergeGroups);
+AZ_CVAR_EXTERNED(bool, r_enablePsoCaching);
 
 namespace AZ::RHI
 {
