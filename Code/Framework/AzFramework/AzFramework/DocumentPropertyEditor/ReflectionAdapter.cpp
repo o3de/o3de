@@ -589,6 +589,31 @@ namespace AZ::DocumentPropertyEditor
             VisitPrimitive(value, attributes);
         }
 
+        void CreateContainerButton(
+            Nodes::ContainerAction action,
+            bool disabled = false,
+            bool ancestorDisabled = false,
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Align alignment = Nodes::PropertyEditor::Align::AlignRight)
+        {
+            m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+            m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+            m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+            m_builder.Attribute(Nodes::PropertyEditor::Alignment, alignment);
+            m_builder.Attribute(Nodes::ContainerActionButton::Action, action);
+
+            if (ancestorDisabled)
+            {
+                m_builder.Attribute(Nodes::PropertyEditor::AncestorDisabled, true);
+            }
+            if (disabled)
+            {
+                m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+            }
+
+            m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
+            m_builder.EndPropertyEditor();
+        }
+
         void CheckContainerElement(void* instance, const Reflection::IAttributes& attributes)
         {
             auto parentContainerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
@@ -609,6 +634,7 @@ namespace AZ::DocumentPropertyEditor
                 }
 
                 auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerAttribute);
+                auto parentContainerInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*parentContainerInstanceAttribute);
 
                 bool parentCanBeModified = true;
                 if (auto parentCanBeModifiedValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerCanBeModified);
@@ -619,12 +645,6 @@ namespace AZ::DocumentPropertyEditor
 
                 if (!parentContainer->IsFixedSize() && parentCanBeModified)
                 {
-                    m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                    m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
-                    m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
-                    m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
-                    m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
-
                     bool isAncestorDisabledValue = false;
                     if (auto ancestorDisabledValue = attributes.Find(Nodes::NodeWithVisiblityControl::AncestorDisabled.GetName());
                         ancestorDisabledValue && ancestorDisabledValue->IsBool())
@@ -632,12 +652,15 @@ namespace AZ::DocumentPropertyEditor
                         isAncestorDisabledValue = ancestorDisabledValue->GetBool();
                     }
 
-                    if (isAncestorDisabledValue)
+                    if (parentContainer->IsSequenceContainer())
                     {
-                        m_builder.Attribute(Nodes::PropertyEditor::AncestorDisabled, true);
+                        auto containerSize = parentContainer->Size(parentContainerInstance);
+
+                        // <apm> also disable if already first/last
+                        CreateContainerButton(Nodes::ContainerAction::MoveUp, containerSize < 2, isAncestorDisabledValue); 
+                        CreateContainerButton(Nodes::ContainerAction::MoveDown, containerSize < 2, isAncestorDisabledValue);
                     }
-                    m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
-                    m_builder.EndPropertyEditor();
+                    CreateContainerButton(Nodes::ContainerAction::RemoveElement, false, isAncestorDisabledValue);
                 }
             }
         }
@@ -755,38 +778,14 @@ namespace AZ::DocumentPropertyEditor
                         {
                             isDisabled = disabledValue->IsBool() && disabledValue->GetBool();
                         }
+                        CreateContainerButton(Nodes::ContainerAction::AddElement, isDisabled);
 
-                        bool shouldPromptOnClear = true;
-                        if (auto promptOnClearValue = attributes.Find(Nodes::Container::PromptOnContainerClear.GetName()); promptOnClearValue)
+                        if (!isDisabled)
                         {
-                            shouldPromptOnClear = promptOnClearValue->IsBool() && promptOnClearValue->GetBool();
+                            // disable the clear button if the container is already empty
+                            isDisabled = (container->Size(access.Get()) == 0);
                         }
-
-                        m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                        m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
-                        m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
-                        if (isDisabled)
-                        {
-                            m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
-                        }
-                        m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
-                        m_builder.EndPropertyEditor();
-
-                        m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                        m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
-                        m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
-                        m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
-                        m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::Clear);
-                        if (isDisabled)
-                        {
-                            m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
-                        }
-                        if (!shouldPromptOnClear)
-                        {
-                            m_builder.Attribute(Nodes::Container::PromptOnContainerClear, false);
-                        }
-                        m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
-                        m_builder.EndPropertyEditor();
+                        CreateContainerButton(Nodes::ContainerAction::Clear, isDisabled);
                     }
                 }
                 else
