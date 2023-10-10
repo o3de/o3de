@@ -38,15 +38,15 @@ namespace AZ
 
             /**
              * Creates an instance id from an asset. The GUID will be copied from the asset id. The first sub id will be the asset id sub
-             * id. The second sub id will be the asset creation token, or 0 if it is not available. Any additional sub IDs will be added
-             * after that.
+             * id. The second sub id will be the asset creation token, or AZ::Data::s_defaultCreationToken if it is not available. Any
+             * additional sub IDs will be added after that.
              */
             static InstanceId CreateFromAsset(const Asset<AssetData>& asset, const SubIdContainer& subIds = {});
 
             /**
              * Creates an instance id from an asset id. The GUID will be copied from the asset id. The first sub id will be the asset id sub
-             * id. The second sub id will be Zero so that it is uniform with CreateFromAsset. Any additional sub IDs will be added after
-             * that.
+             * id. The second sub id will be AZ::Data::s_defaultCreationToken so that it is uniform with CreateFromAsset. Any additional sub
+             * IDs will be added after that.
              */
             static InstanceId CreateFromAssetId(const AssetId& assetId, const SubIdContainer& subIds = {});
 
@@ -63,16 +63,18 @@ namespace AZ
             static InstanceId CreateData(const void* data, size_t dataSize, const SubIdContainer& subIds = {});
 
             /**
+             * Creates an InstanceId with a GUID constructed from the UUID. Additional sub IDs can be provided by the system creating
+             * the instances.
+             */
+            static InstanceId CreateUuid(const AZ::Uuid& guid, const SubIdContainer& subIds = {});
+
+            /**
              * Creates a random InstanceId.
              */
             static InstanceId CreateRandom();
 
             // Create a null id by default.
             InstanceId() = default;
-
-            explicit InstanceId(const Uuid& guid);
-            explicit InstanceId(const Uuid& guid, uint32_t subId);
-            explicit InstanceId(const Uuid& guid, const SubIdContainer& subIds);
 
             bool IsValid() const;
 
@@ -89,6 +91,8 @@ namespace AZ
             const Uuid& GetGuid() const;
 
         private:
+            explicit InstanceId(const Uuid& guid, const SubIdContainer& subIds);
+
             Uuid m_guid = Uuid::CreateNull();
 
             SubIdContainer m_subIds;

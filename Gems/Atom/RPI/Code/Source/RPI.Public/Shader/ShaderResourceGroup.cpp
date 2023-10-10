@@ -51,7 +51,7 @@ namespace AZ
             hashUnion.hash64 = srgLayout->GetHash();
 
             // Use the supervariantIndex and layout hash as the subIds for the InstanceId
-            return Data::InstanceId(instanceUuid, { supervariantIndex.GetIndex(), hashUnion.x, hashUnion.y });
+            return Data::InstanceId::CreateUuid(instanceUuid, { supervariantIndex.GetIndex(), hashUnion.x, hashUnion.y });
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
