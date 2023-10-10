@@ -41,10 +41,7 @@
                 },
                 {
                     "Name": "RayTracingAccelerationStructurePass",
-                    "TemplateName": "RayTracingAccelerationStructurePassTemplate",
-                    "ExecuteAfter": [
-                        "SkinningPass"
-                    ]
+                    "TemplateName": "RayTracingAccelerationStructurePassTemplate"
                 },
                 {
                     "Name": "DepthPrePass",
