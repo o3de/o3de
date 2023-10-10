@@ -23,6 +23,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Document/ShaderManagementConsoleDocument.h>
+#include <../../../../../Asset/Shader/Code/Source/Editor/HashedVariantListSourceData.h>
 
 namespace ShaderManagementConsole
 {
@@ -45,6 +46,7 @@ namespace ShaderManagementConsole
                 ->Event("GetShaderOptionDescriptorCount", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptorCount)
                 ->Event("GetShaderOptionDescriptor", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptor)
                 ->Event("AppendSparseVariantSet", &ShaderManagementConsoleDocumentRequestBus::Events::AppendSparseVariantSet)
+                ->Event("DefragmentVariantList", &ShaderManagementConsoleDocumentRequestBus::Events::DefragmentVariantList)
                 ->Event("AddOneVariantRow", &ShaderManagementConsoleDocumentRequestBus::Events::AddOneVariantRow)
                 ;
         }
@@ -129,6 +131,68 @@ namespace ShaderManagementConsole
             }
             AZ::RPI::ShaderVariantListSourceData::VariantInfo newLine{ stableId++, mapOfOptionNameToValues };
             newSourceData.m_shaderVariants.emplace_back(std::move(newLine));
+        }
+        SetShaderVariantListSourceData(newSourceData);
+    }
+
+    void ShaderManagementConsoleDocument::DefragmentVariantList()
+    {
+        struct VariantCompacterKey
+        {
+            AZ::RPI::ShaderVariantListSourceData::VariantInfo* info;
+            size_t hash;
+
+            bool operator==(VariantCompacterKey const& rhs) const
+            {
+                return hash == rhs.hash && info->m_options == rhs.info->m_options;  // first part of expression for short circuit
+            }
+
+            static VariantCompacterKey Make(AZ::RPI::ShaderVariantListSourceData::VariantInfo* source)
+            {
+                VariantCompacterKey newKey;
+                newKey.info = source;
+                newKey.hash = AZ::ShaderBuilder::HashedVariantInfoSourceData::HashCombineShaderOptionValues(0, source->m_options);
+                return newKey;
+            }
+        };
+
+        struct KeyHasher
+        {
+            std::size_t operator()(VariantCompacterKey const& key) const
+            {
+                return key.hash;
+            }
+        };
+        // Use a set for uniquification process
+        AZStd::unordered_set<VariantCompacterKey, KeyHasher> compacter;
+        for (auto& variantInfo : m_shaderVariantListSourceData.m_shaderVariants)
+        {
+            compacter.insert(VariantCompacterKey::Make(&variantInfo));
+        }
+        // Prepare a whole new source data
+        AZ::RPI::ShaderVariantListSourceData newSourceData;
+        // partial copy
+        newSourceData.m_materialOptionsHint = m_shaderVariantListSourceData.m_materialOptionsHint;
+        newSourceData.m_shaderFilePath = m_shaderVariantListSourceData.m_shaderFilePath;
+        // variants are prepared from the compacted set
+        newSourceData.m_shaderVariants.reserve(compacter.size());
+        for (VariantCompacterKey& compactedKey : compacter)
+        {
+            newSourceData.m_shaderVariants.emplace_back(std::move(*compactedKey.info));
+        }
+        // sort by old stable id
+        AZStd::sort(newSourceData.m_shaderVariants.begin(),
+                    newSourceData.m_shaderVariants.end(),
+                    [&](const AZ::RPI::ShaderVariantListSourceData::VariantInfo& a,
+                        const AZ::RPI::ShaderVariantListSourceData::VariantInfo& b)
+                    {
+                        return a.m_stableId < b.m_stableId;
+                    });
+        // reassign stable ids completely, but based on old order
+        AZ::u32 idCounter = 1;
+        for (auto& variantInfo : newSourceData.m_shaderVariants)
+        {
+            variantInfo.m_stableId = idCounter++;
         }
         SetShaderVariantListSourceData(newSourceData);
     }
