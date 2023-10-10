@@ -374,8 +374,6 @@ namespace O3DELauncher
         // Non-host platforms cannot use the project path that is #defined within the launcher.
         // In this case the the result of AZ::Utils::GetDefaultAppRoot is used instead
 #if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        FixedValueString projectPathOptionOverride;
-        FixedValueString enginePathOptionOverride;
         AZStd::string_view projectPath;
         // Make sure the defaultAppRootPath variable is in scope long enough until the projectPath string_view is used below
         AZStd::optional<AZ::IO::FixedMaxPathString> defaultAppRootPath = AZ::Utils::GetDefaultAppRootPath();
