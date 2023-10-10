@@ -73,7 +73,7 @@ namespace AZ
 
     //! Settings used to customize the constructor calls for the ComponentApplications
     //! This differs from the ComponentApplication::StartupParameters and ComponentApplication::Descriptor structs
-    //! This settings are only used at construction time of the ComponentApplication and not in ComponentApplication::Create()
+    //! These settings are only used at construction time of the ComponentApplication and not in ComponentApplication::Create()
     struct ComponentApplicationSettings
     {
         //! JSON string that will be merged to the Settings Registry right after construction
