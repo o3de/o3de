@@ -198,6 +198,7 @@ namespace AZ
             lua_rawgeti(m_lua, LUA_REGISTRYINDEX, m_lambdaRegistryIndex);
             // Lua: lambda
 // Gruber patch begin. // LVB. // "success" is used to analyze "bool" result of ExposedLambda::StackPush
+#if defined(CARBONATED)
             bool success = true;
             for (int i = 0; i < numArguments; ++i)
             {
@@ -209,6 +210,15 @@ namespace AZ
             {
                 Internal::LuaSafeCall(m_lua, numArguments, 0);
             }
+#else
+            for (int i = 0; i < numArguments; ++i)
+            {
+                ExposedLambda::StackPush(m_lua, behaviorContext, argsBVPs[i]);
+            }
+
+            // Lua: lambda, args...
+            Internal::LuaSafeCall(m_lua, numArguments, 0);
+#endif
         }
 // Gruber patch end. // LVB. // "success" is used to analyze "bool" result of ExposedLambda::StackPush
 
