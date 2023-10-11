@@ -358,7 +358,7 @@ namespace AzToolsFramework
             virtual void PreviewSceneSettings([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry){};
 
             //! Check if the source asset can be opened in the scene settings
-            virtual bool HandleSource([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry){ return false; };
+            virtual bool HandleSource([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const { return false; };
 
             //! Opens and returns the scene settings window
             virtual QMainWindow* GetSceneSettings() { return nullptr; }

@@ -93,7 +93,7 @@ namespace AZ
         }
     }
 
-    bool AssetBrowserContextProvider::HandleSource(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry)
+    bool AssetBrowserContextProvider::HandleSource(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const
     {
         using namespace AzToolsFramework;
 
