@@ -1890,10 +1890,6 @@ namespace ScriptCanvasEditor
     {
         ui->action_Save->setEnabled(enable);
         ui->action_Save_As->setEnabled(enable);
-        ui->action_AlignTop->setEnabled(enable);
-        ui->action_AlignLeft->setEnabled(enable);
-        ui->action_AlignRight->setEnabled(enable);
-        ui->action_AlignBottom->setEnabled(enable);
         ui->action_EnableSelection->setEnabled(enable);
         ui->action_DisableSelection->setEnabled(enable);
         ui->action_ClearSelection->setEnabled(enable);
@@ -1902,6 +1898,14 @@ namespace ScriptCanvasEditor
         ui->action_GotoEndOfChain->setEnabled(enable);
     }
 
+    void MainWindow::EnableAlignmentActions(bool enable)
+    {
+        ui->menuAlign->setEnabled(enable);
+        ui->action_AlignTop->setEnabled(enable);
+        ui->action_AlignBottom->setEnabled(enable);
+        ui->action_AlignLeft->setEnabled(enable);
+        ui->action_AlignRight->setEnabled(enable);
+    }
 
     void MainWindow::SetupEditMenu()
     {
@@ -2001,7 +2005,6 @@ namespace ScriptCanvasEditor
         ui->action_Screenshot->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
         ui->menuSelect->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
         ui->action_ClearSelection->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
-        ui->menuAlign->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
     }
 
     void MainWindow::RefreshPasteAction()
@@ -2852,14 +2855,18 @@ namespace ScriptCanvasEditor
             {
                 hasSelection = true;
                 m_propertyGrid->SetSelection(selection);
+
+                EnableAlignmentActions((selection.size() > 1));
             }
             else
             {
+                EnableAlignmentActions(false);
                 m_propertyGrid->ClearSelection();
             }
         }
         else
         {
+            EnableAlignmentActions(false);
             m_propertyGrid->ClearSelection();
         }
 
