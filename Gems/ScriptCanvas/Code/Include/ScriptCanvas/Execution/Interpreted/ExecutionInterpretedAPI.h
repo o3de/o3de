@@ -65,7 +65,7 @@ namespace ScriptCanvas
 
         void SetInterpretedExecutionModeRelease();
 
-        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& param);
+        bool StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& param);  // Gruber patch. // LVB. // Was "void". Now it returns "bool"
 
         bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* allocator);
 

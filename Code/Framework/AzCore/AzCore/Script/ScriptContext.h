@@ -955,8 +955,8 @@ namespace AZ
     LuaLoadFromStack FromLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, AZ::BehaviorClass*& behaviorClass);
     LuaPushToStack ToLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, LuaPrepareValue* prepareParamOut, AZ::BehaviorClass*& behaviorClass);
 
-    void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& param);
-    void StackPush(lua_State* lua, AZ::BehaviorArgument& param);
+    bool StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& param);  // Gruber patch. // LVB. // Was "void". Now it returns "bool"
+    bool StackPush(lua_State* lua, AZ::BehaviorArgument& param);                                // Gruber patch. // LVB. // Was "void". Now it returns "bool"
     bool StackRead(lua_State* lua, int index, AZ::BehaviorContext* context,  AZ::BehaviorArgument& param, AZ::StackVariableAllocator*);
     bool StackRead(lua_State* lua, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* = nullptr);
 
