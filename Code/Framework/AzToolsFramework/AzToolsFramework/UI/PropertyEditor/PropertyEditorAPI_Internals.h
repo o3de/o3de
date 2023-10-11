@@ -250,7 +250,19 @@ namespace AzToolsFramework
                     auto parentValue = PropertyEditor::ParentValue.ExtractFromDomNode(node);
                     if (parentValue.has_value())
                     {
-                        auto parentValuePtr = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(parentValue.value());
+                        // Retrieve memory address of parent value
+                        void* parentValuePtr{};
+                        // First check if the parent value is a PointerObject
+                        if (auto parentValuePointerObjectOpt = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(parentValue.value());
+                            parentValuePointerObjectOpt && parentValuePointerObjectOpt->IsValid())
+                        {
+                            parentValuePtr = parentValuePointerObjectOpt->m_address;
+                        }
+                        else if (auto parentValueVoidOpt = AZ::Dom::Utils::ValueToType<void*>(parentValue.value());
+                            parentValueVoidOpt)
+                        {
+                            parentValuePtr = *parentValueVoidOpt;
+                        }
                         AZ_Assert(parentValuePtr, "Parent instance was nullptr when attempting to add to instance list.");
 
                         // Only add parent instance if it has not been added previously
