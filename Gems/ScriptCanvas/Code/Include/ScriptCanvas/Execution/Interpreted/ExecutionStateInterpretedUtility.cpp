@@ -32,7 +32,8 @@ namespace ExecutionStateInterpretedUtilityCpp
                 AZ::BehaviorParameter param;
                 param.m_typeId = debugDataSource.m_slotDatumType.GetAZType();
                 debugDataSource.m_fromStack = FromLuaStack(behaviorContext, &param, behaviorClassUnused);
-                SC_RUNTIME_CHECK(debugDataSource.m_fromStack, "LuaLoadFromStack function not found")
+                // Gruber patch. // LVB. // Adding the type of the function that can't be found
+                SC_RUNTIME_CHECK(debugDataSource.m_fromStack, "LuaLoadFromStack function not found for type %s", param.m_typeId.ToString<AZStd::string>().data())
             }            
         }
     }

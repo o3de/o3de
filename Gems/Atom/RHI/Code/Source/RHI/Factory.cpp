@@ -32,6 +32,14 @@ static bool s_pixGpuMarkersEnabled = true;
 static bool s_usingWarpDevice = false;
 AZ_CVAR(bool, r_gpuMarkersMergeGroups, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable merging of gpu markers in order to track payload (i.e all the scopes) per command list.");
 
+AZ_CVAR(
+    bool,
+    r_enablePsoCaching,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "If true the active RHI backend will try to write out PSO cache (as long as it is able to). By default it is false.");
+
 
 namespace AZ::RHI
 {

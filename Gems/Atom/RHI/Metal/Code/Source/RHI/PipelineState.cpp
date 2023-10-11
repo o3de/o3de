@@ -10,6 +10,7 @@
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/Metal/ShaderStageFunction.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/Factory.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineState.h>
@@ -78,6 +79,7 @@ namespace AZ
             {
                 dispatch_data_t dispatchByteCodeData = dispatch_data_create(shaderByteCode, byteCodeLength, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
                 lib = [mtlDevice newLibraryWithData:dispatchByteCodeData error:&error];
+                dispatch_release(dispatchByteCodeData);
             }
             else
             {
@@ -195,7 +197,16 @@ namespace AZ
                 }
                 AZ_Assert(false, "Could not create Pipeline object!.");
             }
+            AZ_Assert(m_graphicsPipelineState, "Could not create Pipeline object!.");
             
+            //We keep the descriptors alive in case we want to build the PSO cache. Delete them otherwise.
+            if (!r_enablePsoCaching)
+            {
+                [m_renderPipelineDesc release];
+                m_renderPipelineDesc = nil;
+            }
+            
+             
             m_pipelineStateMultiSampleState = descriptor.m_renderStates.m_multisampleState;
             
             //Cache the rasterizer state
@@ -241,6 +252,13 @@ namespace AZ
             }
             
             AZ_Assert(m_computePipelineState, "Could not create Pipeline object!.");
+            
+            //We keep the descriptors alive in case we want to build the PSO cache. Delete them otherwise.
+            if (!r_enablePsoCaching)
+            {
+                [m_computePipelineDesc release];
+                m_computePipelineDesc = nil;
+            }
             
             if (m_computePipelineState)
             {
