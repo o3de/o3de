@@ -284,6 +284,20 @@ namespace AZ
             /// Returns true if elements can be retrieved by index.
             bool    CanAccessElementsByIndex() const override   { return false; }
 
+            bool SwapElements(void* instance, size_t firstIndex, size_t secondIndex) override
+            {
+                T* arrayPtr = reinterpret_cast<T*>(instance);
+                size_t containerSize = Size(instance);
+                // Make sure the indices to swap are in range of the container
+                if (firstIndex >= containerSize || secondIndex >= containerSize)
+                {
+                    return false;
+                }
+
+                AZStd::ranges::iter_swap(AZStd::next(arrayPtr->begin(), firstIndex), AZStd::next(arrayPtr->begin(), secondIndex));
+                return true;
+            }
+
             bool IsSequenceContainer() const override { return true; }
 
             /// Reserve element

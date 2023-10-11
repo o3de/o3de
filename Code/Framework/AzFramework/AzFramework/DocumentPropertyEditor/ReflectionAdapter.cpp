@@ -265,6 +265,14 @@ namespace AZ::DocumentPropertyEditor
                 impl->m_adapter->NotifyResetDocument();
             }
 
+            void OnMoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path, AZ::s64 containerIndex, bool moveForward)
+            {
+                m_container->SwapElements(m_containerInstance, containerIndex, (moveForward ? containerIndex + 1 : containerIndex - 1));
+                auto containerNode = GetContainerNode(impl, path);
+                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
+                impl->m_adapter->NotifyResetDocument();
+            }
+
             AZ::SerializeContext::IDataContainer* m_container = nullptr;
             void* m_containerInstance = nullptr;
             void* m_elementInstance = nullptr;
@@ -594,6 +602,7 @@ namespace AZ::DocumentPropertyEditor
             Nodes::ContainerAction action,
             bool disabled = false,
             bool ancestorDisabled = false,
+            AZ::s64 containerIndex = -1,
             AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Align alignment = Nodes::PropertyEditor::Align::AlignRight)
         {
             m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
@@ -609,6 +618,10 @@ namespace AZ::DocumentPropertyEditor
             if (disabled)
             {
                 m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+            }
+            if (containerIndex != -1)
+            {
+                m_builder.Attribute(Nodes::ContainerActionButton::ContainerIndex, containerIndex);
             }
 
             m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
@@ -653,14 +666,14 @@ namespace AZ::DocumentPropertyEditor
                         isAncestorDisabledValue = ancestorDisabledValue->GetBool();
                     }
 
-                    auto containerSize = parentContainer->Size(parentContainerInstance);
+                    auto containerSize = static_cast<AZ::s64>(parentContainer->Size(parentContainerInstance));
                     if (containerSize > 1 && parentContainer->IsSequenceContainer())
                     {
                         auto containerIndexAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerIndex);
                         AZ_Assert(!containerIndexAttribute->IsNull(), "children of a sequenced container should have a ContainerIndex!");
-                        auto containerIndex = containerIndexAttribute->GetUint64();
-                        CreateContainerButton(Nodes::ContainerAction::MoveUp, !containerIndex, isAncestorDisabledValue);
-                        CreateContainerButton(Nodes::ContainerAction::MoveDown, containerIndex == containerSize - 1, isAncestorDisabledValue);
+                        auto containerIndex = containerIndexAttribute->GetInt64();
+                        CreateContainerButton(Nodes::ContainerAction::MoveUp, !containerIndex, isAncestorDisabledValue, containerIndex);
+                        CreateContainerButton(Nodes::ContainerAction::MoveDown, containerIndex == containerSize - 1, isAncestorDisabledValue, containerIndex);
                     }
                     CreateContainerButton(Nodes::ContainerAction::RemoveElement, false, isAncestorDisabledValue);
                 }
@@ -1230,6 +1243,16 @@ namespace AZ::DocumentPropertyEditor
                     if (containerEntry->m_container)
                     {
                         containerEntry->m_container->OnClear(m_impl.get(), message.m_messageOrigin);
+                    }
+                    break;
+                case ContainerAction::MoveUp:
+                case ContainerAction::MoveDown:
+                    if (containerEntry->m_element)
+                    {
+                        auto containerIndex = Nodes::ContainerActionButton::ContainerIndex.ExtractFromDomNode(node);
+                        AZ_Assert(containerIndex.has_value(), "MoveUp and MoveDown actions must have a ContainerIndex!");
+                        containerEntry->m_element->OnMoveElement(
+                            m_impl.get(), message.m_messageOrigin, containerIndex.value(), action.value() == ContainerAction::MoveDown);
                     }
                     break;
                 }
