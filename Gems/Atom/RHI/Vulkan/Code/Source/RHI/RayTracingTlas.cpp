@@ -100,7 +100,6 @@ namespace AZ
                     mappedData[i].accelerationStructureReference =
                         device.GetContext().GetAccelerationStructureDeviceAddressKHR(device.GetNativeDevice(), &addressInfo);
 
-                    // [GFX TODO][ATOM-5270] Add ray tracing TLAS instance mask support
                     mappedData[i].mask = instance.m_instanceMask;
                     mappedData[i].flags = instance.m_transparent ? VK_GEOMETRY_INSTANCE_FORCE_NO_OPAQUE_BIT_KHR : 0;
                 }
