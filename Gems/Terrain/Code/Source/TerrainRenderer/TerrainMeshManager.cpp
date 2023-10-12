@@ -172,9 +172,12 @@ namespace Terrain
     {
         for (RayTracedItem& item : m_rayTracedItems)
         {
-            RtSector::MeshGroup& meshGroup = item.m_sector->m_rtData->m_meshGroups.at(item.m_meshGroupIndex);
-            meshGroup.m_isVisible = false;
-            m_rayTracingFeatureProcessor->RemoveMesh(meshGroup.m_id);
+            if (auto& rtData = item.m_sector->m_rtData; rtData)
+            {
+                RtSector::MeshGroup& meshGroup = rtData->m_meshGroups.at(item.m_meshGroupIndex);
+                meshGroup.m_isVisible = false;
+                m_rayTracingFeatureProcessor->RemoveMesh(meshGroup.m_id);
+            }
         }
         m_rayTracedItems.clear();
     }
