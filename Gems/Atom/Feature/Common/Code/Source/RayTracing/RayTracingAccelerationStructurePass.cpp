@@ -112,29 +112,12 @@ namespace AZ
                         frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
                     }
 
-                    RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
-                    for (auto& blasInstance : blasInstances)
+                    // Import and attach skinned mesh output stream
+                    if (rayTracingFeatureProcessor->GetSkinnedMeshCount() > 0)
                     {
-                        if (blasInstance.second.m_isSkinnedMesh)
-                        {
-                            for (auto& blasInstanceSubMesh : blasInstance.second.m_subMeshes)
-                            {
-                                for (auto& geometry : blasInstanceSubMesh.m_blas->GetGeometries())
-                                {
-                                    auto* frameAttachment = geometry.m_vertexBuffer.GetBuffer()->GetFrameAttachment();
-                                    if (frameAttachment)
-                                    {
-                                        auto* scopeAttachment = frameAttachment->GetFirstScopeAttachment();
-                                        if (scopeAttachment)
-                                        {
-                                            RHI::BufferScopeAttachmentDescriptor desc = scopeAttachment->GetDescriptor();
-                                            frameGraph.UseAttachment(
-                                                desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        auto skinningPass = FindAdjacentPass(AZ::Name("SkinningPass"));
+                        auto* skinnedMeshOutputStreamBinding = skinningPass->FindAttachmentBinding(AZ::Name("SkinnedMeshOutputStream"));
+                        frameGraph.UseShaderAttachment(skinnedMeshOutputStreamBinding->m_unifiedScopeDesc.GetAsBuffer(), RHI::ScopeAttachmentAccess::Read);
                     }
                 }
 
