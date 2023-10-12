@@ -31,6 +31,11 @@ namespace AZ::RHI
         return static_cast<const BufferFrameAttachment*>(MultiDeviceResource::GetFrameAttachment());
     }
 
+    Ptr<MultiDeviceBufferView> MultiDeviceBuffer::BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor)
+    {
+        return aznew MultiDeviceBufferView{ this, bufferViewDescriptor };
+    }
+
     const HashValue64 MultiDeviceBuffer::GetHash() const
     {
         HashValue64 hash = HashValue64{ 0 };
@@ -54,5 +59,11 @@ namespace AZ::RHI
         {
             deviceBuffer->InvalidateViews();
         });
+    }
+
+    //! Given a device index, return the corresponding BufferView for the selected device
+    const RHI::Ptr<RHI::BufferView> MultiDeviceBufferView::GetDeviceBufferView(int deviceIndex) const
+    {
+        return m_buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(m_descriptor);
     }
 } // namespace AZ::RHI

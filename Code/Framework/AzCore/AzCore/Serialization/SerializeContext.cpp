@@ -2395,6 +2395,7 @@ namespace AZ::Serialize
     AZ_TYPE_INFO_WITH_NAME_IMPL(ClassElement, "ClassElement", "{7D386902-A1D9-4525-8284-F68435FE1D05}");
     AZ_TYPE_INFO_WITH_NAME_IMPL(ClassData, "ClassData", "{20EB8E2E-D807-4039-84E2-CE37D7647CD4}");
     AZ_TYPE_INFO_WITH_NAME_IMPL(IDataContainer, "IDataContainer", "{8565CBEA-C077-4A49-927B-314533A6EDB1}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(IDataContainer);
     AZ_TYPE_INFO_WITH_NAME_IMPL(IDataContainer::IAssociativeDataContainer, "IAssociativeDataContainer", "{58CF6250-6B0F-4A25-9864-25A64EB55DB1}");
     AZ_TYPE_INFO_WITH_NAME_IMPL(EnumerateInstanceCallContext, "EnumerateInstanceCallContext", "{FCC1DB4B-72BD-4D78-9C23-C84B91589D33}");
     //=========================================================================

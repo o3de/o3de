@@ -81,6 +81,10 @@ namespace AzFramework
          */
         Application(int* argc, char*** argv);  ///< recommended:  supply &argc and &argv from void main(...) here.
         Application(); ///< for backward compatibility.  If you call this, GetArgC and GetArgV will return nullptr.
+        // Allows passing in a JSON Merge Patch string that can bootstrap
+        // the settings registry with an initial set of settings
+        explicit Application(AZ::ComponentApplicationSettings componentAppSettings);
+        Application(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
         ~Application();
 
         /**

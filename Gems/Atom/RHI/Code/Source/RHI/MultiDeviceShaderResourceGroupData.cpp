@@ -136,8 +136,7 @@ namespace AZ::RHI
 
                 for (int imageIndex = 0; imageIndex < imageViews.size(); ++imageIndex)
                 {
-                    auto [image, imageViewDescriptor]{ *imageViews[imageIndex] };
-                    deviceImageViews[imageIndex] = image->GetDeviceImage(deviceIndex)->GetImageView(imageViewDescriptor).get();
+                    deviceImageViews[imageIndex] = imageViews[imageIndex]->GetDeviceImageView(deviceIndex).get();
                 }
 
                 isValidAll &= deviceShaderResourceGroupData.SetImageViewArray(inputIndex, deviceImageViews, arrayIndex);
@@ -166,8 +165,7 @@ namespace AZ::RHI
 
                 for (int i = 0; i < imageViews.size(); ++i)
                 {
-                    auto [image, imageViewDescriptor]{ *imageViews[i] };
-                    deviceImageViews[i] = image->GetDeviceImage(deviceIndex)->GetImageView(imageViewDescriptor).get();
+                    deviceImageViews[i] = imageViews[i]->GetDeviceImageView(deviceIndex).get();
                 }
 
                 isValidAll &= deviceShaderResourceGroupData.SetImageViewUnboundedArray(inputIndex, deviceImageViews);
@@ -214,8 +212,7 @@ namespace AZ::RHI
 
                 for (int bufferIndex = 0; bufferIndex < bufferViews.size(); ++bufferIndex)
                 {
-                    auto [buffer, bufferViewDescriptor]{ *bufferViews[bufferIndex] };
-                    deviceBufferViews[bufferIndex] = buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(bufferViewDescriptor).get();
+                    deviceBufferViews[bufferIndex] = bufferViews[bufferIndex]->GetDeviceBufferView(deviceIndex).get();
                 }
 
                 isValidAll &= deviceShaderResourceGroupData.SetBufferViewArray(inputIndex, deviceBufferViews, arrayIndex);
@@ -243,8 +240,7 @@ namespace AZ::RHI
 
                 for (int bufferIndex = 0; bufferIndex < bufferViews.size(); ++bufferIndex)
                 {
-                    auto [buffer, bufferViewDescriptor]{ *bufferViews[bufferIndex] };
-                    deviceBufferViews[bufferIndex] = buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(bufferViewDescriptor).get();
+                    deviceBufferViews[bufferIndex] = bufferViews[bufferIndex]->GetDeviceBufferView(deviceIndex).get();
                 }
 
                 isValidAll &= deviceShaderResourceGroupData.SetBufferViewUnboundedArray(inputIndex, deviceBufferViews);
@@ -372,15 +368,12 @@ namespace AZ::RHI
 
             for (int imageIndex = 0; imageIndex < imageViews.size(); ++imageIndex)
             {
-                auto [image, imageViewDescriptor]{ *imageViews[imageIndex] };
-                deviceImageViews[imageIndex] = image->GetDeviceImage(deviceIndex)->GetImageView(imageViewDescriptor).get();
+                deviceImageViews[imageIndex] = imageViews[imageIndex]->GetDeviceImageView(deviceIndex).get();
             }
-
-            auto [buffer, bufferViewDescriptor]{ *indirectResourceBufferView };
 
             deviceShaderResourceGroupData.SetBindlessViews(
                 indirectResourceBufferIndex,
-                buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(bufferViewDescriptor).get(),
+                indirectResourceBufferView->GetDeviceBufferView(deviceIndex).get(),
                 deviceImageViews,
                 outIndices,
                 isViewReadOnly,
@@ -404,15 +397,12 @@ namespace AZ::RHI
 
             for (int bufferIndex = 0; bufferIndex < bufferViews.size(); ++bufferIndex)
             {
-                auto [buffer, bufferViewDescriptor]{ *bufferViews[bufferIndex] };
-                deviceBufferViews[bufferIndex] = buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(bufferViewDescriptor).get();
+                deviceBufferViews[bufferIndex] = bufferViews[bufferIndex]->GetDeviceBufferView(deviceIndex).get();
             }
-
-            auto [buffer, bufferViewDescriptor]{ *indirectResourceBufferView };
 
             deviceShaderResourceGroupData.SetBindlessViews(
                 indirectResourceBufferIndex,
-                buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(bufferViewDescriptor).get(),
+                indirectResourceBufferView->GetDeviceBufferView(deviceIndex).get(),
                 deviceBufferViews,
                 outIndices,
                 isViewReadOnly,

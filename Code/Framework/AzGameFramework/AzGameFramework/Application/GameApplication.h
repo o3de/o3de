@@ -21,6 +21,10 @@ namespace AzGameFramework
 
         GameApplication();
         GameApplication(int argc, char** argvS);
+        // Allows passing in a JSON Merge Patch string that can bootstrap
+        // the settings registry with an initial set of settings
+        explicit GameApplication(AZ::ComponentApplicationSettings componentAppSettings);
+        GameApplication(int argc, char** argvS, AZ::ComponentApplicationSettings componentAppSettings);
         ~GameApplication();
 
         //////////////////////////////////////////////////////////////////////////

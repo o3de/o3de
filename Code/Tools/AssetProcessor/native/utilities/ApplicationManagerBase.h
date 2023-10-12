@@ -64,7 +64,9 @@ class ApplicationManagerBase
 {
     Q_OBJECT
 public:
-    explicit ApplicationManagerBase(int* argc, char*** argv, QObject* parent = 0);
+    ApplicationManagerBase(int* argc, char*** argv, QObject* parent = nullptr);
+    ApplicationManagerBase(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
+    ApplicationManagerBase(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
     virtual ~ApplicationManagerBase();
     ApplicationManager::BeforeRunStatus BeforeRun() override;
     void Destroy() override;

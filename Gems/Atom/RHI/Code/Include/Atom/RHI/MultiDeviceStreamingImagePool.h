@@ -51,6 +51,26 @@ namespace AZ
 
             const StreamingImagePoolDescriptor& GetDescriptor() const override final;
 
+            //! Set a callback function that is called when the pool is out of memory for new allocations
+            //! User could provide such a callback function which releases some resources from the pool
+            //! If some resources are released, the function may return true.
+            //! If nothing is released, the function should return false.
+            using LowMemoryCallback = StreamingImagePool::LowMemoryCallback;
+            void SetLowMemoryCallback(LowMemoryCallback callback);
+
+            //! Set memory budget for all device pools
+            //! Return true if the pool was set to new memory budget successfully
+            bool SetMemoryBudget(size_t newBudget);
+
+            //! Iterates through all device-specific image pools and returns the HeapMemoryUsage
+            //! from the pool with the maximum memory budget.
+            const HeapMemoryUsage& GetHeapMemoryUsage(HeapMemoryLevel heapMemoryLevel) const;
+
+            //! Return if it supports tiled image feature
+            bool SupportTiledImage() const;
+
+            void Shutdown() override final;
+
         private:
             using MultiDeviceImagePoolBase::InitImage;
             using MultiDeviceResourcePool::Init;

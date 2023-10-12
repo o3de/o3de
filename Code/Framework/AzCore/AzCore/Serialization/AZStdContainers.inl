@@ -49,6 +49,12 @@ namespace AZStd
     template<class T>
     class shared_ptr;
 
+    template<class T, class = void>
+    inline constexpr bool HasToString_v = false;
+    template<class T>
+    inline constexpr bool HasToString_v<T, AZStd::enable_if_t<
+        AZStd::is_void_v<decltype(AZStd::to_string(AZStd::declval<AZStd::string&>(), AZStd::declval<T>()), void())>> > = true;
+
     inline namespace AssociativeInternal
     {
         // SFINAE expression to determine whether an associative container is an actual map with a corresponding value for each key,
@@ -57,7 +63,55 @@ namespace AZStd
         constexpr bool IsMapType_v = false;
         template<class T>
         constexpr bool IsMapType_v<T, enable_if_t<Internal::sfinae_trigger_v<typename T::mapped_type>>> = true;
+
+        template <class T>
+        constexpr bool IsOrderedSetImpl_v = false;
+
+        template<class K, class C, class A>
+        constexpr bool IsOrderedSetImpl_v<AZStd::set<K, C, A>> = true;
+
+        template<class K, class C, class A>
+        constexpr bool IsOrderedSetImpl_v<AZStd::multimap<K, C, A>> = true;
+
+        template <class T>
+        constexpr bool IsOrderedMapImpl_v = false;
+
+        template<class K, class M, class C, class A>
+        constexpr bool IsOrderedMapImpl_v<AZStd::map<K, M, C, A>> = true;
+
+        template<class K, class M, class C, class A>
+        constexpr bool IsOrderedMapImpl_v<AZStd::multimap<K, M, C, A>> = true;
+
+        template <class T>
+        constexpr bool IsUnorderedSetImpl_v = false;
+
+        template <class K, class H, class E, class A>
+        constexpr bool IsUnorderedSetImpl_v<AZStd::unordered_set<K, H, E, A>> = true;
+
+        template <class K, class H, class E, class A>
+        constexpr bool IsUnorderedSetImpl_v<AZStd::unordered_multiset<K, H, E, A>> = true;
+
+        template <class T>
+        constexpr bool IsUnorderedMapImpl_v = false;
+
+        template <class K, class M, class H, class E, class A>
+        constexpr bool IsUnorderedMapImpl_v<AZStd::unordered_map<K, M, H, E, A>> = true;
+
+        template <class K, class M, class H, class E, class A>
+        constexpr bool IsUnorderedMapImpl_v<AZStd::unordered_multimap<K, M, H, E, A>> = true;
     }
+
+    template <class T>
+    constexpr bool IsOrderedSet_v = AssociativeInternal::IsOrderedSetImpl_v<AZStd::remove_cvref_t<T>>;
+
+    template <class T>
+    constexpr bool IsOrderedMap_v = AssociativeInternal::IsOrderedMapImpl_v<AZStd::remove_cvref_t<T>>;
+
+    template <class T>
+    constexpr bool IsUnorderedSet_v = AssociativeInternal::IsUnorderedSetImpl_v<AZStd::remove_cvref_t<T>>;
+
+    template <class T>
+    constexpr bool IsUnorderedMap_v = AssociativeInternal::IsUnorderedMapImpl_v<AZStd::remove_cvref_t<T>>;
 }
 
 namespace AZ
@@ -235,6 +289,8 @@ namespace AZ
 
             /// Returns true if elements can be retrieved by index.
             bool    CanAccessElementsByIndex() const override   { return false; }
+
+            bool IsSequenceContainer() const override { return true; }
 
             /// Reserve element
             void*   ReserveElement(void* instance, const SerializeContext::ClassElement* classElement) override
@@ -645,8 +701,8 @@ namespace AZ
 
         template<class T>
         class AZStdAssociativeContainer
-            : public SerializeContext::IDataContainer
-            , public SerializeContext::IDataContainer::IAssociativeDataContainer
+            : public Serialize::IDataContainer
+            , public Serialize::IDataContainer::IAssociativeDataContainer
         {
             using ValueType = typename T::value_type;
             using ValueClass = AZStd::remove_pointer_t<ValueType>;
@@ -777,6 +833,11 @@ namespace AZ
                 return this;
             }
 
+            const SerializeContext::IDataContainer::IAssociativeDataContainer* GetAssociativeContainerInterface() const override
+            {
+                return this;
+            }
+
             /// Reserve element
             void*   ReserveElement(void* instance, const  SerializeContext::ClassElement* classElement) override
             {
@@ -803,6 +864,31 @@ namespace AZ
             }
 
         public:
+            Serialize::IDataContainer::IAssociativeDataContainer::AssociativeType GetAssociativeType() const override
+            {
+                using AssociativeType = Serialize::IDataContainer::IAssociativeDataContainer::AssociativeType;
+                if constexpr (AZStd::IsOrderedSet_v<T>)
+                {
+                    return AssociativeType::Set;
+                }
+                else if constexpr (AZStd::IsOrderedMap_v<T>)
+                {
+                    return AssociativeType::Map;
+                }
+                else if constexpr (AZStd::IsUnorderedSet_v<T>)
+                {
+                    return AssociativeType::UnorderedSet;
+                }
+                else if constexpr (AZStd::IsUnorderedMap_v<T>)
+                {
+                    return AssociativeType::UnorderedMap;
+                }
+                else
+                {
+                    return AssociativeType::Unknown;
+                }
+            }
+
             /// Get an element's address by its index (called before the element is loaded).
             void*   GetElementByIndex(void* instance, const SerializeContext::ClassElement* classElement, size_t index) override
             {
@@ -813,7 +899,7 @@ namespace AZ
             }
 
             /// Get an element's address by its key. Not used for serialization.
-            void*   GetElementByKey(void* instance, const SerializeContext::ClassElement* classElement, const void* key) override
+            void*   GetElementByKey(void* instance, const SerializeContext::ClassElement* classElement, const void* key) const override
             {
                 (void)classElement;
                 T* containerPtr = reinterpret_cast<T*>(instance);
@@ -823,7 +909,7 @@ namespace AZ
 
             /// Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is
             /// the key itself
-            virtual void* GetValueByKey(void* instance, const void* key) override
+            virtual void* GetValueByKey(void* instance, const void* key) const override
             {
                 void* value = nullptr;
                 T* containerPtr = reinterpret_cast<T*>(instance);
@@ -898,7 +984,7 @@ namespace AZ
             }
 
             /// Inserts an entry at key in the container (for keyed containers only). Not used for serialization.
-            void    SetElementKey(void* element, void* key) override
+            void    SetElementKey(void* element, void* key) const override
             {
                 KeyHelper<ValueType>::SetElementKey(reinterpret_cast<ValueType*>(element), *reinterpret_cast<KeyType*>(key));
             }
@@ -2830,6 +2916,27 @@ namespace AZ
             GenericClassPair()
                 : m_classData{ SerializeContext::ClassData::Create<PairType>(AZ::AzTypeInfo<PairType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_pairContainer) }
             {
+                // Convert a pair to a string, if both types of the pair
+                // supports the AZStd::to_string function
+                auto PairToString = [](const void* pairInst) -> AZStd::string
+                {
+                    auto pairElement = reinterpret_cast<const PairType*>(pairInst);
+                    AZStd::string result;
+                    if constexpr (AZStd::HasToString_v<T1> && AZStd::HasToString_v<T2>)
+                    {
+                        AZStd::string value;
+                        AZStd::to_string(value, pairElement->first);
+                        result += "<";
+                        result += value;
+                        result += ", ";
+                        AZStd::to_string(value, pairElement->second);
+                        result += value;
+                        result += ">";
+                    }
+
+                    return result;
+                };
+                m_classData.m_attributes.emplace_back(AZ::Crc32("ToString"), CreateModuleAttribute(AZStd::move(PairToString)));
             }
 
             SerializeContext::ClassData* GetClassData() override
