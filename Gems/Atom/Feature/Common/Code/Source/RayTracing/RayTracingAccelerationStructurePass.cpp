@@ -59,8 +59,7 @@ namespace AZ
 
             if (rayTracingFeatureProcessor)
             {
-                if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision ||
-                    rayTracingFeatureProcessor->GetSkinnedMeshCount() != 0)
+                if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision)
                 {
                     RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
                     RayTracingFeatureProcessor::SubMeshVector& subMeshes = rayTracingFeatureProcessor->GetSubMeshes();
