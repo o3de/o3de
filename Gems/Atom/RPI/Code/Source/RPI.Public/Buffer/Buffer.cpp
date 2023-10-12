@@ -9,9 +9,8 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceFence.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/MultiDeviceFence.h>
+#include <Atom/RHI/MultiDeviceBufferPool.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RPI.Public/Buffer/BufferPool.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
@@ -42,8 +41,7 @@ namespace AZ
              * pointer around at all times, and then only initialize the buffer view once.
              */
 
-            auto& factory = RHI::Factory::Get();
-            m_rhiBuffer = factory.CreateBuffer();
+            m_rhiBuffer = aznew RHI::MultiDeviceBuffer;
             AZ_Assert(m_rhiBuffer, "Failed to acquire an buffer instance from the RHI. Is the RHI initialized?");
         }
 
@@ -52,17 +50,17 @@ namespace AZ
             WaitForUpload();
         }
 
-        RHI::SingleDeviceBuffer* Buffer::GetRHIBuffer()
+        RHI::MultiDeviceBuffer* Buffer::GetRHIBuffer()
         {
             return m_rhiBuffer.get();
         }
 
-        const RHI::SingleDeviceBuffer* Buffer::GetRHIBuffer() const
+        const RHI::MultiDeviceBuffer* Buffer::GetRHIBuffer() const
         {
             return m_rhiBuffer.get();
         }
 
-        const RHI::SingleDeviceBufferView* Buffer::GetBufferView() const
+        const RHI::MultiDeviceBufferView* Buffer::GetBufferView() const
         {
             if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly ||
                 m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::DynamicInputAssembly)
@@ -125,7 +123,7 @@ namespace AZ
 
             bool initWithData = (bufferAsset.GetBuffer().size() > 0 && bufferAsset.GetBuffer().size() <= MinStreamSize);
 
-            RHI::SingleDeviceBufferInitRequest request;
+            RHI::MultiDeviceBufferInitRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_descriptor = bufferAsset.GetBufferDescriptor();
             request.m_initialData = initWithData ? bufferAsset.GetBuffer().data() : nullptr;
@@ -139,15 +137,16 @@ namespace AZ
                 if (bufferAsset.GetBuffer().size() > 0 && !initWithData)
                 {
                     AZ_PROFILE_SCOPE(RPI, "Stream Upload");
-                    m_streamFence = RHI::Factory::Get().CreateFence();
+                    m_streamFence = aznew RHI::MultiDeviceFence;
                     if (m_streamFence)
                     {
-                        m_streamFence->Init(m_rhiBufferPool->GetDevice(), RHI::FenceState::Reset);
+                        //? TODO: What should be done here?
+                        m_streamFence->Init(m_rhiBufferPool->GetDeviceMask(), RHI::FenceState::Reset);
                     }
 
                     RHI::BufferDescriptor bufferDescriptor = bufferAsset.GetBufferDescriptor();
 
-                    RHI::SingleDeviceBufferStreamRequest request2;
+                    RHI::MultiDeviceBufferStreamRequest request2;
                     request2.m_buffer = m_rhiBuffer.get();
                     request2.m_fenceToSignal = m_streamFence.get();
                     request2.m_byteCount = bufferDescriptor.m_byteCount;
@@ -181,11 +180,11 @@ namespace AZ
         void Buffer::Resize(uint64_t bufferSize)
         {
             RHI::BufferDescriptor desc = m_rhiBuffer->GetDescriptor();            
-            m_rhiBuffer = RHI::Factory::Get().CreateBuffer();
+            m_rhiBuffer = aznew RHI::MultiDeviceBuffer;
             AZ_Assert(m_rhiBuffer, "Failed to acquire an buffer instance from the RHI. Is the RHI initialized?");
             
             desc.m_byteCount = bufferSize;
-            RHI::SingleDeviceBufferInitRequest request;
+            RHI::MultiDeviceBufferInitRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_descriptor = desc;
 
@@ -209,8 +208,8 @@ namespace AZ
             {
                 return;
             }
-               
-            m_bufferView = m_rhiBuffer->GetBufferView(m_bufferViewDescriptor);
+
+            m_bufferView = aznew RHI::MultiDeviceBufferView{ m_rhiBuffer.get(), m_bufferViewDescriptor };
 
             if(!m_bufferView.get())
             {
@@ -218,20 +217,20 @@ namespace AZ
             }
         }
 
-        void* Buffer::Map(size_t byteCount, uint64_t byteOffset)
+        AZStd::vector<void*> Buffer::Map(size_t byteCount, uint64_t byteOffset)
         {
             if (byteOffset + byteCount > m_rhiBuffer->GetDescriptor().m_byteCount)
             {
                 AZ_Error("Buffer", false, "Map out of range");
-                return nullptr;
+                return {};
             }
 
-            RHI::SingleDeviceBufferMapRequest request;
+            RHI::MultiDeviceBufferMapRequest request;
             request.m_buffer = m_rhiBuffer.get();
             request.m_byteCount = byteCount;
             request.m_byteOffset = byteOffset;
 
-            RHI::SingleDeviceBufferMapResponse response;
+            RHI::MultiDeviceBufferMapResponse response;
             RHI::ResultCode result = m_rhiBufferPool->MapBuffer(request, response);
 
             if (result == RHI::ResultCode::Success)
@@ -241,7 +240,7 @@ namespace AZ
             else
             {
                 AZ_Error("RPI::Buffer", false, "Failed to update RHI buffer. Error code: %d", result);
-                return nullptr;
+                return {};
             }
         }
 
@@ -286,7 +285,7 @@ namespace AZ
 
             return UpdateData(sourceData, sourceDataSize, 0);
         }
-        
+
         bool Buffer::UpdateData(const void* sourceData, uint64_t sourceDataSize, uint64_t bufferByteOffset)
         {
             if (sourceDataSize == 0)
@@ -294,9 +293,12 @@ namespace AZ
                 return true;
             }
 
-            if (void* buf = Map(sourceDataSize, bufferByteOffset))
+            if (auto buf = Map(sourceDataSize, bufferByteOffset); buf.size())
             {
-                memcpy(buf, sourceData, sourceDataSize);
+                for (auto index{ 0u }; index < buf.size(); ++index)
+                {
+                    memcpy(buf[index], sourceData, sourceDataSize);
+                }
                 Unmap();
                 return true;
             }

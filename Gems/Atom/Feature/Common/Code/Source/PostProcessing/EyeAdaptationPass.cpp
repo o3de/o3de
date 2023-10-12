@@ -116,7 +116,7 @@ namespace AZ
                         if (settings)
                         {
                             settings->UpdateBuffer();
-                            view->GetShaderResourceGroup()->SetBufferView(m_exposureControlBufferInputIndex, settings->GetBufferView());
+                            view->GetShaderResourceGroup()->SetBufferView(m_exposureControlBufferInputIndex, settings->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
                         }
                     }
                 }

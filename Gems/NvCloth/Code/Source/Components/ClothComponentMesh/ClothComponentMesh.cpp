@@ -92,7 +92,7 @@ namespace NvCloth
         const uint64_t byteCount = aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementCount) * aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementSize);
         const uint64_t byteOffset = aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementSize);
 
-        m_buffer = static_cast<T*>(m_rpiBuffer->Map(byteCount, byteOffset));
+        m_buffer = static_cast<T*>(m_rpiBuffer->Map(byteCount, byteOffset)[0]); //? Do we want to convert this?
     }
 
     template<typename T>

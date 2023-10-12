@@ -83,7 +83,7 @@ namespace AZ
                     }
 
                     meshInstance.m_indexBufferView = RHI::SingleDeviceIndexBufferView(
-                        *indexBuffer->GetRHIBuffer(),
+                        *indexBuffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get(),
                         bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
                         bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize,
                         indexFormat);
@@ -328,7 +328,7 @@ namespace AZ
                         // Note, don't use iter->m_semantic as it can be a UV name matching.
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, iter->m_format);
 
-                        RHI::SingleDeviceStreamBufferView bufferView(*m_buffers[iter->m_bufferIndex]->GetRHIBuffer(), iter->m_byteOffset, iter->m_byteCount, iter->m_stride);
+                        RHI::SingleDeviceStreamBufferView bufferView(*m_buffers[iter->m_bufferIndex]->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get(), iter->m_byteOffset, iter->m_byteCount, iter->m_stride);
                         streamBufferViewsOut.push_back(bufferView);
                     }
                 }

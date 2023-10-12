@@ -38,10 +38,11 @@ namespace AZ
             float depth = 0.0f;
             if (m_readbackBuffer)
             {
-                void* buf = m_readbackBuffer->Map(m_copyDescriptor.m_size, 0);
-                if (buf)
+                auto buf = m_readbackBuffer->Map(m_copyDescriptor.m_size, 0);
+                if (buf.size())
                 {
-                    memcpy(&depth, buf, sizeof(depth));
+                    //? TODO: Take first here?
+                    memcpy(&depth, buf[0], sizeof(depth));
                     m_readbackBuffer->Unmap();
                 }
             }
@@ -67,9 +68,9 @@ namespace AZ
                 desc.m_bufferData = nullptr;
                 m_readbackBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
-                m_copyDescriptor.m_sourceBuffer = m_bufferRef->GetRHIBuffer();
+                m_copyDescriptor.m_mdSourceBuffer = m_bufferRef->GetRHIBuffer();
                 m_copyDescriptor.m_sourceOffset = 0;
-                m_copyDescriptor.m_destinationBuffer = m_readbackBuffer->GetRHIBuffer();
+                m_copyDescriptor.m_mdDestinationBuffer = m_readbackBuffer->GetRHIBuffer();
                 m_copyDescriptor.m_destinationOffset = 0;
                 m_copyDescriptor.m_size = sizeof(float);
 
@@ -97,7 +98,7 @@ namespace AZ
 
         void DepthOfFieldCopyFocusDepthToCpuPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_copyDescriptor);
+            context.GetCommandList()->Submit(m_copyDescriptor.GetDeviceCopyBufferDescriptor(RHI::MultiDevice::DefaultDeviceIndex));
         }
 
     }   // namespace RPI
