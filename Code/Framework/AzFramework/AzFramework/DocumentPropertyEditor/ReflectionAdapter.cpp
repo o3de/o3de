@@ -27,7 +27,8 @@ namespace AZ::DocumentPropertyEditor
         ReflectionAdapter* m_adapter;
         AdapterBuilder m_builder;
         // Look-up table of onChanged callbacks for handling property changes
-        AZ::Dom::DomPrefixTree<AZStd::function<Dom::Value(const Dom::Value&)>> m_onChangedCallbacks;
+        using OnChangedCallbackPrefixTree = AZ::Dom::DomPrefixTree<AZStd::function<Dom::Value(const Dom::Value&)>>;
+        OnChangedCallbackPrefixTree m_onChangedCallbacks;
 
         //! This represents a container or associative container instance and has methods
         //! for interacting with the container.
@@ -672,6 +673,68 @@ namespace AZ::DocumentPropertyEditor
                     m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                     m_builder.EndPropertyEditor();
                 }
+            }
+        }
+
+        // Check if the KeyValue attribute is set and if so create a property Editor for that key
+        void CreatePropertyEditorForAssociativeContainerKey(
+            const Reflection::IAttributes& attributes, ReflectionAdapter& adapter, AdapterBuilder& builder)
+        {
+            auto keyValueAttribute = attributes.Find(Nodes::PropertyEditor::KeyValue.GetName());
+            // The element has no KeyValue attribute, so it is not part of an associative container therefore no work needs to be done
+            if (keyValueAttribute == nullptr)
+            {
+                return;
+            }
+
+            if (auto keyValueEntry = AZ::Dom::Utils::ValueToType<AZ::Reflection::LegacyReflectionInternal::KeyEntry>(*keyValueAttribute);
+                keyValueEntry&& keyValueEntry->IsValid())
+            {
+                AZ::PointerObject keyValuePointerObject = keyValueEntry->m_keyInstance;
+
+                const AZStd::vector<AZ::Reflection::LegacyReflectionInternal::AttributeData>& keyAttributes = keyValueEntry->m_keyAttributes;
+
+                // Create a lambda that can return a lambda that searches the keyAttributes vector for a specific attribute
+                auto FindAttributeCreator = [](AZ::Name group, AZ::Name name)
+                {
+                    return [group, name](const AZ::Reflection::LegacyReflectionInternal::AttributeData& attributeData) -> bool
+                    {
+                        return group == attributeData.m_group&& name == attributeData.m_name;
+                    };
+                };
+
+                AZStd::string_view keyPropertyHandlerName;
+                // First try to search for the Handler attribute to see if a custom property handler has been specified
+                if (auto handlerIt = AZStd::find_if(
+                    keyAttributes.begin(),
+                    keyAttributes.end(), FindAttributeCreator(AZ::Name{}, Reflection::DescriptorAttributes::Handler));
+                    handlerIt != keyAttributes.end())
+                {
+                    const AZ::Dom::Value& handler = handlerIt->m_value;
+                    if (handler.IsString())
+                    {
+                        keyPropertyHandlerName = handler.GetString();
+                    }
+                }
+
+                if (keyPropertyHandlerName.empty())
+                {
+                    // If the Key doesn't have a custom property handler
+                    // and it's type is an is represented by an enum use the combo box property handler
+                    if (auto enumTypeHandlerIt = AZStd::find_if(
+                        keyAttributes.begin(),
+                        keyAttributes.end(),
+                        FindAttributeCreator(AZ::Name{}, Nodes::PropertyEditor::EnumType.GetName()));
+                        enumTypeHandlerIt != keyAttributes.end() && !enumTypeHandlerIt->m_value.IsNull())
+                    {
+                        keyPropertyHandlerName = Nodes::ComboBox::Name;
+                    }
+                }
+                builder.BeginPropertyEditor(keyPropertyHandlerName, AZ::Dom::Utils::ValueFromType(keyValuePointerObject));
+                builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+                builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+                builder.AddMessageHandler(&adapter, Nodes::PropertyEditor::RequestTreeUpdate);
+                builder.EndPropertyEditor();
             }
         }
 
