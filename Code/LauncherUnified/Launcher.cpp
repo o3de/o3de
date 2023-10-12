@@ -354,28 +354,26 @@ namespace O3DELauncher
         ArgumentContainer argContainer(gameArgV, gameArgV + gameArgC);
 
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-        // Inject the Engine Path, Project Path and Project Name into the CommandLine parameters to the command line
-        // in order to be used in the Settings Registry
 
-        // The command line overrides are stored in the following fixed strings
-        // until the ComponentApplication constructor can parse the command line parameters
-        FixedValueString projectNameOptionOverride;
+        // Initialize the Settings Registry with the Engine Path, Project Path and Project Name settings
+        // Add the initial JSON object for "/O3DE/Runtime/Manifest/Project" and "/Amazon/AzCore/Bootstrap"
+        FixedValueString launcherJsonPatch = R"(
+            [
+                { "op": "add", "path": "/O3DE", "value": { "Runtime": { "Manifest": { "Project": {} } } } },
+                { "op": "add", "path": "/Amazon", "value": { "AzCore": { "Bootstrap": {} } } })";
 
-        // Insert the project_name option to the front
+        // Query the project_name baked into the launcher executable
         const AZStd::string_view launcherProjectName = GetProjectName();
         if (!launcherProjectName.empty())
         {
-            const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
-            projectNameOptionOverride = FixedValueString::format(R"(--regset="%s=%.*s")",
-                projectNameKey.c_str(), aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data());
-            argContainer.emplace_back(projectNameOptionOverride.data());
+            // Append the project name setting to the JSON Patch
+            launcherJsonPatch += FixedValueString::format(R"(,
+                { "op": "add", "path": "/O3DE/Runtime/Manifest/Project/project_name", "value": "%.*s" })", AZ_STRING_ARG(launcherProjectName));
         }
 
         // Non-host platforms cannot use the project path that is #defined within the launcher.
         // In this case the the result of AZ::Utils::GetDefaultAppRoot is used instead
 #if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        FixedValueString projectPathOptionOverride;
-        FixedValueString enginePathOptionOverride;
         AZStd::string_view projectPath;
         // Make sure the defaultAppRootPath variable is in scope long enough until the projectPath string_view is used below
         AZStd::optional<AZ::IO::FixedMaxPathString> defaultAppRootPath = AZ::Utils::GetDefaultAppRootPath();
@@ -385,24 +383,27 @@ namespace O3DELauncher
         }
         if (!projectPath.empty())
         {
-            const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                + "/project_path";
-            projectPathOptionOverride = FixedValueString::format(R"(--regset="%s=%.*s")",
-                projectPathKey.c_str(), aznumeric_cast<int>(projectPath.size()), projectPath.data());
-            argContainer.emplace_back(projectPathOptionOverride.data());
+            launcherJsonPatch += FixedValueString::format(R"(,
+                { "op": "add", "path": "/Amazon/AzCore/Bootstrap/project_path", "value": "%.*s" })", AZ_STRING_ARG(projectPath));
+
 
             // For non-host platforms set the engine root to be the project root
             // Since the directories available during execution are limited on those platforms
             AZStd::string_view enginePath = projectPath;
-            const auto enginePathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                + "/engine_path";
-            enginePathOptionOverride = FixedValueString ::format(R"(--regset="%s=%.*s")",
-                enginePathKey.c_str(), aznumeric_cast<int>(enginePath.size()), enginePath.data());
-            argContainer.emplace_back(enginePathOptionOverride.data());
+            launcherJsonPatch += FixedValueString::format(R"(,
+                { "op": "add", "path": "/Amazon/AzCore/Bootstrap/engine_path", "value": "%.*s" })", AZ_STRING_ARG(enginePath));
         }
 #endif
 
-        AzGameFramework::GameApplication gameApplication(aznumeric_cast<int>(argContainer.size()), argContainer.data());
+        // Now terminate the JSON Patch array with a trailing ']'
+        launcherJsonPatch += R"(
+            ])";
+
+        AZ::ComponentApplicationSettings componentAppSettings;
+        componentAppSettings.m_setregBootstrapJson = launcherJsonPatch;
+        // Treat the bootstrap JSON as being in JSON Patch format
+        componentAppSettings.m_setregFormat = AZ::SettingsRegistryInterface::Format::JsonPatch;
+        AzGameFramework::GameApplication gameApplication(aznumeric_cast<int>(argContainer.size()), argContainer.data(), AZStd::move(componentAppSettings));
         // The settings registry has been created by the AZ::ComponentApplication constructor at this point
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         if (settingsRegistry == nullptr)

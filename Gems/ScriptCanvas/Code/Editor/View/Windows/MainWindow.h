@@ -641,6 +641,7 @@ namespace ScriptCanvasEditor
         void EnableAssetView(const SourceHandle& memoryAssetId);
 
         void EnableOpenDocumentActions(bool enable);
+        void EnableAlignmentActions(bool enable);
 
         QWidget* m_host = nullptr;
 

@@ -31,8 +31,17 @@
 
 namespace EditorInternal
 {
+    EditorToolsApplication::EditorToolsApplication(AZ::ComponentApplicationSettings componentAppSettings)
+        : EditorToolsApplication(nullptr, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
     EditorToolsApplication::EditorToolsApplication(int* argc, char*** argv)
-        : ToolsApplication(argc, argv)
+        : EditorToolsApplication(argc, argv, {})
+    {
+    }
+
+    EditorToolsApplication::EditorToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
     {
         EditorToolsApplicationRequests::Bus::Handler::BusConnect();
         AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusConnect();
