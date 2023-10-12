@@ -235,8 +235,7 @@ void CEditorImpl::LoadPlugins()
 
     constexpr const char* editorPluginFolder = "EditorPlugins";
 
-    // Build, verify, and set the editor plugin path
-    QString editorPluginPathStr;
+    AZ::IO::FixedMaxPath pluginsPath;
 
 #if defined(AZ_PLATFORM_MAC)
     char maxPathBuffer[AZ::IO::MaxPathLength];
@@ -247,28 +246,19 @@ void CEditorImpl::LoadPlugins()
 
         // the bundle directory includes Editor.app so we want the parent directory
         bundleRootDirectory = (bundleRootDirectory / "..").LexicallyNormal();
-        if (AZ::IO::SystemFile::Exists((bundleRootDirectory / editorPluginFolder).c_str()))
-        {
-            bundleRootDirectory /= editorPluginFolder;
-            editorPluginPathStr = QString::fromUtf8(bundleRootDirectory.c_str(), int(bundleRootDirectory.Native().size()));
-        }
+        pluginsPath = bundleRootDirectory / editorPluginFolder;
     }
 #endif
-    
-    // Use the executable directory as the starting point for the EditorPlugins path
-    if (editorPluginPathStr.isEmpty())
+
+    if (pluginsPath.empty())
     {
+        // Use the executable directory as the starting point for the EditorPlugins path
         AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
-        if (AZ::IO::SystemFile::Exists((executableDirectory / editorPluginFolder).c_str()))
-        {
-            executableDirectory /= editorPluginFolder;
-            editorPluginPathStr = QString::fromUtf8(executableDirectory.c_str(), int(executableDirectory.Native().size()));
-        }
+        pluginsPath = executableDirectory / editorPluginFolder;
     }
 
-    QString pluginSearchPath = QDir::toNativeSeparators(QString("%1/*" AZ_DYNAMIC_LIBRARY_EXTENSION).arg(editorPluginPathStr));
-
-    GetPluginManager()->LoadPlugins(pluginSearchPath.toUtf8().data());
+    // error handling for invalid paths is handled in LoadPlugins
+    GetPluginManager()->LoadPlugins(pluginsPath.c_str());
 }
 
 CEditorImpl::~CEditorImpl()
