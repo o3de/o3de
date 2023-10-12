@@ -416,11 +416,20 @@ namespace AZ
     // [5/30/2012]
     //=========================================================================
     ComponentApplication::ComponentApplication()
-        : ComponentApplication(0, nullptr)
+        : ComponentApplication(0, nullptr, {})
     {
     }
 
+    ComponentApplication::ComponentApplication(ComponentApplicationSettings componentAppSettings)
+        : ComponentApplication(0, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
     ComponentApplication::ComponentApplication(int argC, char** argV)
+        : ComponentApplication(argC, argV, {})
+    {
+    }
+
+    ComponentApplication::ComponentApplication(int argC, char** argV, ComponentApplicationSettings componentAppSettings)
         : m_timeSystem(AZStd::make_unique<TimeSystem>())
     {
         if (Interface<ComponentApplicationRequests>::Get() == nullptr)
@@ -463,7 +472,7 @@ namespace AZ
             m_nameDictionary->LoadDeferredNames(AZ::Name::GetDeferredHead());
         }
 
-        InitializeSettingsRegistry();
+        InitializeSettingsRegistry(componentAppSettings);
 
         InitializeEventLoggerFactory();
 
@@ -550,7 +559,7 @@ namespace AZ
         AZ::Debug::Trace::Instance().Destroy();
     }
 
-    void ComponentApplication::InitializeSettingsRegistry()
+    void ComponentApplication::InitializeSettingsRegistry(const ComponentApplicationSettings& componentAppSettings)
     {
         SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
 
@@ -558,6 +567,8 @@ namespace AZ
         // This is done after the AppRoot has been calculated so that the Bootstrap.cfg
         // can be read to determine the Game folder and the asset platform
         m_settingsRegistry = AZStd::make_unique<SettingsRegistryImpl>();
+        // Merge the bootstrap settings to the root of the Settings Registry
+        m_settingsRegistry->MergeSettings(componentAppSettings.m_setregBootstrapJson, componentAppSettings.m_setregFormat);
 
         // Register the Settings Registry with the AZ Interface if there isn't one registered already
         if (SettingsRegistry::Get() == nullptr)

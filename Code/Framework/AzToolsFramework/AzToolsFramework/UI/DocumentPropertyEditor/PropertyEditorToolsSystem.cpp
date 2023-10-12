@@ -51,7 +51,16 @@ namespace AzToolsFramework
         else
         {
             AZ::Dom::Value value = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
-            typeId = AZ::Dom::Utils::GetValueTypeId(value);
+            // If the object is a pointer object extract the TypeId from it
+            if (auto pointerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(value);
+                pointerObject)
+            {
+                typeId = pointerObject->m_typeId;
+            }
+            else
+            {
+                typeId = AZ::Dom::Utils::GetValueTypeId(value);
+            }
         }
 
         AZStd::string_view typeName = PropertyEditor::Type.ExtractFromDomNode(node).value_or("");

@@ -37,6 +37,8 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(ToolsApplication, AZ::SystemAllocator);
 
         ToolsApplication(int* argc = nullptr, char*** argv = nullptr);
+        explicit ToolsApplication(AZ::ComponentApplicationSettings componentAppSettings);
+        ToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
         ~ToolsApplication();
 
         void Stop() override;

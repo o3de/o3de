@@ -732,7 +732,7 @@ namespace AzToolsFramework
                     priorColumnDomIndex = searchIndex;
                 }
             }
-            AZ_Assert(priorColumnDomIndex != -1, "Tried to share column with an out of bounds index!");
+            AZ_Error("DocumentPropertyEditor", priorColumnDomIndex != -1, "Tried to share column with an out of bounds index!");
             if (priorColumnDomIndex != -1)
             {
                 m_columnLayout->AddSharePriorColumn(priorColumnDomIndex, domIndex);
@@ -1736,7 +1736,7 @@ namespace AzToolsFramework
         // message match for QueryKey
         auto showKeyQueryDialog = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapter, AZ::Dom::Path containerPath)
         {
-            KeyQueryDPE keyQueryUi(adapter);
+            KeyQueryDPE keyQueryUi(*adapter);
             if (keyQueryUi.exec() == QDialog::Accepted)
             {
                 AZ::DocumentPropertyEditor::Nodes::Adapter::AddContainerKey.InvokeOnDomNode(
