@@ -322,12 +322,6 @@ namespace GraphCanvas
         bool hasSelection = false;
         SceneRequestBus::EventResult(hasSelection, m_activeGraphId, &SceneRequests::HasSelectedItems);
 
-        m_ui->topAlign->setEnabled(hasSelection && hasScene && !m_viewDisabled);
-        m_ui->bottomAlign->setEnabled(hasSelection && hasScene && !m_viewDisabled);
-
-        m_ui->leftAlign->setEnabled(hasSelection && hasScene && !m_viewDisabled);
-        m_ui->rightAlign->setEnabled(hasSelection && hasScene && !m_viewDisabled);
-
         m_ui->addComment->setEnabled(hasScene && !m_viewDisabled);
         m_ui->groupNodes->setEnabled(hasScene && !m_viewDisabled);
 
@@ -344,6 +338,15 @@ namespace GraphCanvas
         }
 
         m_ui->ungroupNodes->setEnabled(hasSelection && hasScene && !m_viewDisabled && isGroup);
+
+        bool multipleNodesSelected = selectedNodes.size() > 1;
+
+        bool enableAlignment = multipleNodesSelected && hasSelection && hasScene && !m_viewDisabled;
+        m_ui->topAlign->setEnabled(enableAlignment);
+        m_ui->bottomAlign->setEnabled(enableAlignment);
+        m_ui->leftAlign->setEnabled(enableAlignment);
+        m_ui->rightAlign->setEnabled(enableAlignment);
+
     }
 
     void AssetEditorToolbar::OnCommentMenuAboutToShow()
