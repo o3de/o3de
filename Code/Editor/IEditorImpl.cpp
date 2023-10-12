@@ -249,6 +249,7 @@ void CEditorImpl::LoadPlugins()
         bundleRootDirectory = (bundleRootDirectory / "..").LexicallyNormal();
         if (AZ::IO::SystemFile::Exists((bundleRootDirectory / editorPluginFolder).c_str()))
         {
+            bundleRootDirectory /= editorPluginFolder;
             editorPluginPathStr = QString::fromUtf8(bundleRootDirectory.c_str(), int(bundleRootDirectory.Native().size()));
         }
     }
@@ -260,6 +261,7 @@ void CEditorImpl::LoadPlugins()
         AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
         if (AZ::IO::SystemFile::Exists((executableDirectory / editorPluginFolder).c_str()))
         {
+            executableDirectory /= editorPluginFolder;
             editorPluginPathStr = QString::fromUtf8(executableDirectory.c_str(), int(executableDirectory.Native().size()));
         }
     }
