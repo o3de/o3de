@@ -131,6 +131,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
         static constexpr auto ValueHashed = AttributeDefinition<AZ::u64>("ValueHashed");
         static constexpr auto ParentValue = AttributeDefinition<AZ::Dom::Value>("ParentValue");
+        //! IF the associated value is mapped value of an associative container such as a map or unordered_map
+        //! `pair<const key_type, mapped_type>` element, then the KeyValue attribute stores
+        //! a pointer to the key type and the type id of the key type
+        static constexpr auto KeyValue = AttributeDefinition<AZ::Dom::Value>("KeyValue");
 
         //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead appended
         //! to the previous column in the layout, creating a SharedColumn that can hold many PropertyEditors.
