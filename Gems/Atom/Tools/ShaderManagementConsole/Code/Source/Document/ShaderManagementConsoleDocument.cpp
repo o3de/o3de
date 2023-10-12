@@ -80,7 +80,7 @@ namespace ShaderManagementConsole
                 variantInfo.m_options[optionDescriptor.GetName()] = ""; // all unset
             }
             variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
-                ? 0
+                ? 1
                 : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
             m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
             return variantInfo.m_stableId;
