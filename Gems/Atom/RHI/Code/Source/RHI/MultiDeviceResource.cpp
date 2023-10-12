@@ -7,9 +7,9 @@
  */
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 #include <Atom/RHI/MultiDeviceResourcePool.h>
 #include <Atom/RHI/ResourceView.h>

@@ -9,8 +9,8 @@
 
 #include <RHI/CommandQueue.h>
 
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
 #include <AzCore/std/containers/span.h>
 
 namespace AZ
@@ -46,12 +46,12 @@ namespace AZ
 
             // Queue copy commands to upload buffer resource
             // @return queue id which can be use to check whether upload finished or wait for upload finish
-            uint64_t QueueUpload(const RHI::BufferStreamRequest& request);
+            uint64_t QueueUpload(const RHI::SingleDeviceBufferStreamRequest& request);
 
             // Queue copy commands to upload image subresources.
             // @param residentMip is the resident mip level the expand request starts from. 
             // @return queue id which can be use to check whether upload finished or wait for upload finish
-            uint64_t QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
+            uint64_t QueueUpload(const RHI::SingleDeviceStreamingImageExpandRequest& request, uint32_t residentMip);
             
             // Queue tile mapping to map tiles from allocate heap for reserved resource. This is usually required before upload data to 
             // reserved resource in this copy queue

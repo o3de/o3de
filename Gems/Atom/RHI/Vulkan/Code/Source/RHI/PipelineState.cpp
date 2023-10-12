@@ -48,7 +48,7 @@ namespace AZ
             return m_pipeline->GetPipelineLibrary();
         }
 
-        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::PipelineLibrary* pipelineLibrary)
+        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary)
         {
             Pipeline::Descriptor pipelineDescriptor;
             pipelineDescriptor.m_pipelineDescritor = &descriptor;
@@ -62,7 +62,7 @@ namespace AZ
             return result;
         }
 
-        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::PipelineLibrary* pipelineLibrary)
+        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary)
         {
             Pipeline::Descriptor pipelineDescriptor;
             pipelineDescriptor.m_pipelineDescritor = &descriptor;
@@ -76,7 +76,7 @@ namespace AZ
             return result;
         }
 
-        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::PipelineLibrary* pipelineLibrary)
+        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::SingleDevicePipelineLibrary* pipelineLibrary)
         {
             Pipeline::Descriptor pipelineDescriptor;
             pipelineDescriptor.m_pipelineDescritor = &descriptor;

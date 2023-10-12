@@ -16,7 +16,7 @@ namespace AZ::RHI
 {
     class Scope;
     class FrameAttachment;
-    class SwapChain;
+    class SingleDeviceSwapChain;
     
     struct ScopeAttachmentUsageAndAccess
     {

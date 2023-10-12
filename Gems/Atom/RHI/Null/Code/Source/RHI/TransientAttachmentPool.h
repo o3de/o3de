@@ -7,16 +7,16 @@
  */
 #pragma once
 
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 
 namespace AZ
 {
     namespace Null
     {
         class TransientAttachmentPool final
-            : public RHI::TransientAttachmentPool
+            : public RHI::SingleDeviceTransientAttachmentPool
         {
-            using Base = RHI::TransientAttachmentPool;
+            using Base = RHI::SingleDeviceTransientAttachmentPool;
         public:
             AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
             AZ_RTTI(TransientAttachmentPool, "{37FCCF38-52D0-46E4-B4D1-1CB2B063422D}", Base);
@@ -27,12 +27,12 @@ namespace AZ
             TransientAttachmentPool() = default;
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::TransientAttachmentPool
+            // RHI::SingleDeviceTransientAttachmentPool
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::TransientAttachmentPoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
             void BeginInternal([[maybe_unused]] const RHI::TransientAttachmentPoolCompileFlags flags, [[maybe_unused]] const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override {}
             void EndInternal() override {}
-            RHI::Image* ActivateImage([[maybe_unused]] const RHI::TransientImageDescriptor& descriptor) override { return nullptr;}
-            RHI::Buffer* ActivateBuffer([[maybe_unused]] const RHI::TransientBufferDescriptor& descriptor) override { return nullptr;}
+            RHI::SingleDeviceImage* ActivateImage([[maybe_unused]] const RHI::TransientImageDescriptor& descriptor) override { return nullptr;}
+            RHI::SingleDeviceBuffer* ActivateBuffer([[maybe_unused]] const RHI::TransientBufferDescriptor& descriptor) override { return nullptr;}
             void DeactivateBuffer([[maybe_unused]] const RHI::AttachmentId& attachmentId) override {}
             void DeactivateImage([[maybe_unused]] const RHI::AttachmentId& attachmentId) override {}
             void ShutdownInternal() override {}

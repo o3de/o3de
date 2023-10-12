@@ -9,7 +9,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 
 namespace AZ
 {
@@ -18,22 +18,22 @@ namespace AZ
         class Buffer;
 
         class RayTracingTlas final
-            : public RHI::RayTracingTlas
+            : public RHI::SingleDeviceRayTracingTlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingTlas, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingTlas> Create();
             
-            // RHI::RayTracingTlas overrides...
-            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return nullptr; }
-            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return nullptr; }
+            // RHI::SingleDeviceRayTracingTlas overrides...
+            const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasBuffer() const override { return nullptr; }
+            const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasInstancesBuffer() const override { return nullptr; }
 
         private:
             RayTracingTlas() = default;
 
-            // RHI::RayTracingTlas overrides
-            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingTlasDescriptor* descriptor, [[maybe_unused]] const RHI::RayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
+            // RHI::SingleDeviceRayTracingTlas overrides
+            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SingleDeviceRayTracingTlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
 
         };
     }

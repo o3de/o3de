@@ -9,15 +9,15 @@
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 
 namespace AZ::RHI
 {
     class ImageFrameAttachment;
     class MultiDeviceShaderResourceGroup;
-    class ImageView;
+    class SingleDeviceImageView;
     class MultiDeviceImageView;
     struct ImageViewDescriptor;
 
@@ -29,7 +29,7 @@ namespace AZ::RHI
     //! Subresources are organized by a linear indexing scheme: mipSliceOffset + arraySliceOffset * arraySize. The total
     //! number of subresources is equal to mipLevels * arraySize. All subresources share the same pixel format.
     //!
-    //! @see ImageView on how to interpret contents of an image.
+    //! @see SingleDeviceImageView on how to interpret contents of an image.
     class MultiDeviceImage : public MultiDeviceResource
     {
         friend class MultiDeviceImagePoolBase;
@@ -50,7 +50,7 @@ namespace AZ::RHI
         //! are considered undefined.
         const ImageDescriptor& GetDescriptor() const;
 
-        //! Returns the multi-device ImageView
+        //! Returns the multi-device SingleDeviceImageView
         Ptr<MultiDeviceImageView> BuildImageView(const ImageViewDescriptor& imageViewDescriptor);
 
         //! Computes the subresource layouts and total size of the image contents, if represented linearly. Effectively,
@@ -125,8 +125,8 @@ namespace AZ::RHI
         {
         }
 
-        //! Given a device index, return the corresponding ImageView for the selected device
-        const RHI::Ptr<RHI::ImageView> GetDeviceImageView(int deviceIndex) const;
+        //! Given a device index, return the corresponding SingleDeviceImageView for the selected device
+        const RHI::Ptr<RHI::SingleDeviceImageView> GetDeviceImageView(int deviceIndex) const;
 
         //! Return the contained multi-device image
         const RHI::MultiDeviceImage* GetImage() const

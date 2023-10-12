@@ -9,8 +9,8 @@
 
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 
 namespace AZ::RHI
@@ -77,8 +77,8 @@ namespace AZ::RHI
         {
         }
 
-        //! Given a device index, return the corresponding BufferView for the selected device
-        const RHI::Ptr<RHI::BufferView> GetDeviceBufferView(int deviceIndex) const;
+        //! Given a device index, return the corresponding SingleDeviceBufferView for the selected device
+        const RHI::Ptr<RHI::SingleDeviceBufferView> GetDeviceBufferView(int deviceIndex) const;
 
         //! Return the contained multi-device buffer
         const RHI::MultiDeviceBuffer* GetBuffer() const

@@ -31,14 +31,14 @@ namespace AZ
             m_workRequest.m_signalFenceValue = scope.GetSignalFenceValue();            
             m_workRequest.m_commandLists.resize(commandListCount);
             m_workRequest.m_swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-            for (RHI::SwapChain* swapChain : scope.GetSwapChainsToPresent())
+            for (RHI::SingleDeviceSwapChain* swapChain : scope.GetSwapChainsToPresent())
             {
                 m_workRequest.m_swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
             }
             
             auto& fencesToSignal = m_workRequest.m_scopeFencesToSignal;
             fencesToSignal.reserve(scope.GetFencesToSignal().size());
-            for (const RHI::Ptr<RHI::Fence>& fence : scope.GetFencesToSignal())
+            for (const RHI::Ptr<RHI::SingleDeviceFence>& fence : scope.GetFencesToSignal())
             {
                 fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
             }

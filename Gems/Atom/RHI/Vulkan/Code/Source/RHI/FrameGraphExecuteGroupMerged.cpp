@@ -37,7 +37,7 @@ namespace AZ
             {
                 scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
                 swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
-                for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
+                for (RHI::SingleDeviceSwapChain* swapChain : scope->GetSwapChainsToPresent())
                 {
                     swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
                 }

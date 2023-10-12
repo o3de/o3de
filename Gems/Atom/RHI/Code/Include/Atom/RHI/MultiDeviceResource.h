@@ -16,8 +16,8 @@ namespace AZ::RHI
     class FrameAttachment;
     class MemoryStatisticsBuilder;
     class ResourceView;
-    class ImageView;
-    class BufferView;
+    class SingleDeviceImageView;
+    class SingleDeviceBufferView;
     struct ImageViewDescriptor;
     struct BufferViewDescriptor;
 

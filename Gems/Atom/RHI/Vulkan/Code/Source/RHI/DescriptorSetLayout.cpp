@@ -169,8 +169,8 @@ namespace AZ
 
             // About VK_SHADER_STAGE_ALL...
             // We attempted to configure the descriptor set with the actual resource visibility but it was problematic...
-            // Vulkan requires that the visibility flags used to create the VkDescriptorSet (RHI::ShaderResourceGroup) must exactly match the ones
-            // used to create the VkPipelineLayout (RHI::PipelineState).
+            // Vulkan requires that the visibility flags used to create the VkDescriptorSet (RHI::SingleDeviceShaderResourceGroup) must exactly match the ones
+            // used to create the VkPipelineLayout (RHI::SingleDevicePipelineState).
             // See https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VUID-vkCmdBindDescriptorSets-pDescriptorSets-00358
             // But Atom currently expects to be able to use certain ShaderResourceGroup instances with many different pipeline states regardless of visibility.
             // - ShaderResourceGroupLayouts for "SceneSrg" and "ViewSrg" are defined in a special SceneAndViewSrgs.shader file. This shader has no entry points

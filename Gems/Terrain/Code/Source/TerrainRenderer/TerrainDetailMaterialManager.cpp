@@ -916,7 +916,7 @@ namespace Terrain
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;
 
-        AZ::RHI::ImageUpdateRequest imageUpdateRequest;
+        AZ::RHI::SingleDeviceImageUpdateRequest imageUpdateRequest;
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = aznumeric_cast<uint32_t>(left);
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = aznumeric_cast<uint32_t>(top);
         imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = width * sizeof(DetailMaterialPixel);

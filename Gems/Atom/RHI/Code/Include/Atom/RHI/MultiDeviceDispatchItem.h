@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/DispatchItem.h>
+#include <Atom/RHI/SingleDeviceDispatchItem.h>
 #include <Atom/RHI/MultiDeviceIndirectArguments.h>
 #include <Atom/RHI/MultiDevicePipelineState.h>
 #include <Atom/RHI/MultiDeviceShaderResourceGroup.h>
@@ -45,17 +45,17 @@ namespace AZ::RHI
         {
         }
 
-        //! Returns the device-specific DispatchArguments for the given index
-        DispatchArguments GetDeviceDispatchArguments(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceDispatchArguments for the given index
+        SingleDeviceDispatchArguments GetDeviceDispatchArguments(int deviceIndex) const
         {
             switch (m_type)
             {
             case DispatchType::Direct:
-                return DispatchArguments(m_direct);
+                return SingleDeviceDispatchArguments(m_direct);
             case DispatchType::Indirect:
-                return DispatchArguments(m_mdIndirect.GetDeviceIndirectArguments(deviceIndex));
+                return SingleDeviceDispatchArguments(m_mdIndirect.GetDeviceIndirectArguments(deviceIndex));
             default:
-                return DispatchArguments();
+                return SingleDeviceDispatchArguments();
             }
         }
 
@@ -83,13 +83,13 @@ namespace AZ::RHI
             {
                 if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
                 {
-                    m_deviceDispatchItems.emplace(deviceIndex, DispatchItem{});
+                    m_deviceDispatchItems.emplace(deviceIndex, SingleDeviceDispatchItem{});
                 }
             }
         }
 
-        //! Returns the device-specific DispatchItem for the given index
-        const DispatchItem& GetDeviceDispatchItem(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceDispatchItem for the given index
+        const SingleDeviceDispatchItem& GetDeviceDispatchItem(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceDispatchItem",
@@ -160,9 +160,9 @@ namespace AZ::RHI
         }
 
     private:
-        //! A DeviceMask denoting on which devices a device-specific DispatchItem should be generated
+        //! A DeviceMask denoting on which devices a device-specific SingleDeviceDispatchItem should be generated
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
-        //! A map of all device-specific DispatchItem, indexed by the device index
-        AZStd::unordered_map<int, DispatchItem> m_deviceDispatchItems;
+        //! A map of all device-specific SingleDeviceDispatchItem, indexed by the device index
+        AZStd::unordered_map<int, SingleDeviceDispatchItem> m_deviceDispatchItems;
     };
 } // namespace AZ::RHI

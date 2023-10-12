@@ -408,7 +408,7 @@ namespace AZ
                         uint8_t mappedIdx = uint8_t(ComputeStreamsSemantics::Indices);
                         bufferDesc.m_viewOffsetInBytes = meshRenderData.ComputeBuffersDescriptors[mappedIdx].m_viewOffsetInBytes;
 
-                        meshRenderData.IndexBufferView = RHI::IndexBufferView(
+                        meshRenderData.IndexBufferView = RHI::SingleDeviceIndexBufferView(
                             meshRenderData.ComputeBuffersViews[mappedIdx]->GetBuffer(),
                             bufferDesc.m_viewOffsetInBytes,
                             (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize,
@@ -417,7 +417,7 @@ namespace AZ
                 }
                 else
                 {   // Regular buffers creation - since they are read only, no need to use the shared buffer
-                    meshRenderData.RenderBuffersViews[stream] = Data::Instance<RHI::BufferView>();
+                    meshRenderData.RenderBuffersViews[stream] = Data::Instance<RHI::SingleDeviceBufferView>();
                     meshRenderData.RenderBuffers[stream] = UtilityClass::CreateBufferAndBindToSrg(
                         "Meshlets", bufferDesc, meshRenderData.RenderObjectSrg);
 
@@ -558,7 +558,7 @@ namespace AZ
                 else
                 {   // Regular buffers: since these buffers are read only and will not be altered there is no need to
                     // use the shared buffer. This also means that we bind using buffers instead of buffers views.
-                    meshRenderData.ComputeBuffersViews[stream] = Data::Instance<RHI::BufferView>();
+                    meshRenderData.ComputeBuffersViews[stream] = Data::Instance<RHI::SingleDeviceBufferView>();
                     meshRenderData.ComputeBuffers[stream] = UtilityClass::CreateBuffer("Meshlets", bufferDesc);
 
                     success &= (meshRenderData.ComputeBuffers[stream] ? true : false);

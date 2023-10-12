@@ -35,7 +35,7 @@ namespace AZ
 
             void LoadShader(AZStd::string shaderFilePath,
                             Data::Instance<RPI::Shader>& shader,
-                            const RHI::PipelineState*& pipelineState,
+                            const RHI::SingleDevicePipelineState*& pipelineState,
                             RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
                             RHI::DispatchDirect& dispatchArgs);
 
@@ -49,8 +49,8 @@ namespace AZ
             // the data for submits in this pass are pre-built to properly handle submitting on multiple threads
             struct SubmitItem
             {
-                RHI::ShaderResourceGroup* m_shaderResourceGroup = nullptr;
-                RHI::DispatchItem m_dispatchItem;
+                RHI::SingleDeviceShaderResourceGroup* m_shaderResourceGroup = nullptr;
+                RHI::SingleDeviceDispatchItem m_dispatchItem;
             };
 
             AZStd::vector<SubmitItem> m_submitItems;
@@ -58,8 +58,8 @@ namespace AZ
             // shader
             Data::Instance<RPI::Shader> m_rowShader;
             Data::Instance<RPI::Shader> m_columnShader;
-            const RHI::PipelineState* m_rowPipelineState = nullptr;
-            const RHI::PipelineState* m_columnPipelineState = nullptr;
+            const RHI::SingleDevicePipelineState* m_rowPipelineState = nullptr;
+            const RHI::SingleDevicePipelineState* m_columnPipelineState = nullptr;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_rowSrgLayout;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_columnSrgLayout;
             RHI::DispatchDirect m_rowDispatchArgs;

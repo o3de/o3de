@@ -639,7 +639,7 @@ namespace Terrain
 
         // Upload the image changes to the GPU.
         const uint32_t BytesPerPixel = 4;
-        AZ::RHI::ImageUpdateRequest imageUpdateRequest;
+        AZ::RHI::SingleDeviceImageUpdateRequest imageUpdateRequest;
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = updateLeftPixel;
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = updateTopPixel;
         imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = updateWidth * BytesPerPixel;

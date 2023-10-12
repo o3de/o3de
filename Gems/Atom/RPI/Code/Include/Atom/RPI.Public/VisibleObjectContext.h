@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
 #include <Atom/RHI/ThreadLocalContext.h>
 
 namespace AZ

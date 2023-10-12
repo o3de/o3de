@@ -64,7 +64,7 @@ namespace AZ
             return AZStd::span<const uint8_t>(reinterpret_cast<const uint8_t*>(m_subImageDatas[subImageIndex].m_data), dataSize);
         }
 
-        const RHI::ImageSubresourceLayout& ImageMipChainAsset::GetSubImageLayout(uint32_t mipSlice) const
+        const RHI::SingleDeviceImageSubresourceLayout& ImageMipChainAsset::GetSubImageLayout(uint32_t mipSlice) const
         {
             return m_subImageLayouts[mipSlice];
         }
