@@ -34,6 +34,22 @@ namespace AZ::RHI
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Bottom Level Acceleration Structure (BLAS)
 
+    //! RayTracingAccelerationStructureInstanceInclusionMask
+    //!
+    //! The following flags are set by the MeshFeatureProcessor to allow for more fine-grained control over which geometry instances are included
+    //! during ray intersection tests. We currently make two distinctions between static and dynamic (skinned) meshes.
+    //!
+    //! STATIC_MESH_INSTANCE: Default instance mask value and given to all static meshes
+    //! SKINNED_MESH_INSTANCE: Instance mask value given to skinned meshes. Currently only used for skinned meshes
+    //!
+    //! For more information on instance occlusion masks visit: https://learn.microsoft.com/en-us/windows/win32/direct3d12/traceray-function
+    enum RayTracingAccelerationStructureInstanceInclusionMask : uint32_t
+    {
+        STATIC_MESH_INSTANCE = 0x1,
+        SKINNED_MESH_INSTANCE = 0x2,
+    };
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask);
+
     //! RayTracingGeometry
     //!
     //! The geometry entry contains the vertex and index buffers associated with geometry in the
