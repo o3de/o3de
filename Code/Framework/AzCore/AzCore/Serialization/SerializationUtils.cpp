@@ -527,4 +527,75 @@ namespace AZ::Utils
         return ptr;
     }
 
+    AZ::Attribute* FindEditOrSerializeContextAttribute(AZ::AttributeId attributeId, const AZ::SerializeContext::ClassData* classData,
+        const AZ::SerializeContext::ClassElement* classElement, const AZ::Edit::ClassData* editClassData, const AZ::Edit::ElementData* elementEditData)
+    {
+        // Locates attributes by searching in the following order:
+        // 1) Class element edit data attributes (EditContext from the given row of a class)
+        // 2) Class element data attributes (SerializeContext from the given row of a class)
+        // 3) Edit Class data attributes (the attributes added to a EditContext reflected class "EditorData" element)
+        // 4) Class data attributes (the base attributes of a class)
+        if (elementEditData != nullptr)
+        {
+            if (AZ::Edit::Attribute* editAttribute = elementEditData->FindAttribute(attributeId);
+                editAttribute != nullptr)
+            {
+                return editAttribute;
+            }
+        }
+
+        if (classElement != nullptr)
+        {
+            if (auto classFieldAttribute = classElement->FindAttribute(attributeId);
+                classFieldAttribute != nullptr)
+            {
+                return classFieldAttribute;
+            }
+        }
+
+        if (classData != nullptr)
+        {
+            if (auto classDataAttribute = classData->FindAttribute(attributeId);
+                classDataAttribute != nullptr)
+            {
+                return classDataAttribute;
+            }
+        }
+        // Lastly, check the AZ::SerializeContext::ClassData -> AZ::Edit::ClassData -> EditorData for attributes
+        if (editClassData != nullptr)
+        {
+            if (const auto* classEditorData = editClassData->FindElementData(AZ::Edit::ClassElements::EditorData))
+            {
+                if (auto editClassAttribute = classEditorData->FindAttribute(attributeId);
+                    editClassAttribute != nullptr)
+                {
+                    return editClassAttribute;
+                }
+            }
+        }
+
+        return nullptr;
+    }
+
+    AZ::Attribute* FindEditOrSerializeContextAttribute(AZ::AttributeId attributeId, const AZ::SerializeContext::ClassData* classData,
+        const AZ::SerializeContext::ClassElement* classElement, const AZ::Edit::ElementData* elementEditData)
+    {
+        const AZ::Edit::ClassData* editClassData = classData != nullptr ? classData->m_editData : nullptr;
+        return FindEditOrSerializeContextAttribute(attributeId, classData, classElement, editClassData, elementEditData);
+    }
+
+    AZ::Attribute* FindEditOrSerializeContextAttribute(AZ::AttributeId attributeId, const AZ::SerializeContext::ClassData* classData,
+        const AZ::SerializeContext::ClassElement* classElement, const AZ::Edit::ClassData* editClassData)
+    {
+        const AZ::Edit::ElementData* elementEditData = classElement != nullptr ? classElement->m_editData : nullptr;
+        return FindEditOrSerializeContextAttribute(attributeId, classData, classElement, editClassData, elementEditData);
+    }
+
+    AZ::Attribute* FindEditOrSerializeContextAttribute(AZ::AttributeId attributeId, const AZ::SerializeContext::ClassData* classData,
+        const AZ::SerializeContext::ClassElement* classElement)
+    {
+        const AZ::Edit::ClassData* editClassData = classData != nullptr ? classData->m_editData : nullptr;
+        const AZ::Edit::ElementData* elementEditData = classElement != nullptr ? classElement->m_editData : nullptr;
+        return FindEditOrSerializeContextAttribute(attributeId, classData, classElement, editClassData, elementEditData);
+    }
 } // namespace AZ::Utils
