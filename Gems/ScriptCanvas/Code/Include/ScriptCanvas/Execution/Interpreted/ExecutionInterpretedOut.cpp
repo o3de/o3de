@@ -73,7 +73,30 @@ namespace ScriptCanvas
             // Lua:
             lua_rawgeti(m_lua, LUA_REGISTRYINDEX, m_lambdaRegistryIndex);
             // Lua: lambda
-
+// Gruber patch begin. // LVB. // "success" is used to anaylze result of Execution::StackPush
+#if defined(CARBONATED)
+            bool success = true;
+            for (int i = 0; i < numArguments; ++i)
+            {
+                success = Execution::StackPush(m_lua, behaviorContext, argsBVPs[i]);
+            }
+            if (success)
+            {
+                // Lua: lambda, args...
+                const int result = InterpretedSafeCall(m_lua, numArguments, 0);
+                // Lua: ?
+                if (result != LUA_OK)
+                {
+                    // Lua: error
+                    lua_pop(m_lua, 1);
+                }
+                // Lua:
+            }
+            else
+            {
+                lua_pop(m_lua, 1);  // Gruber patch. If something went wrong (for example "LuaPushToStack function not found") then make lua_pop
+            }
+#else
             for (int i = 0; i < numArguments; ++i)
             {
                 Execution::StackPush(m_lua, behaviorContext, argsBVPs[i]);
@@ -87,7 +110,9 @@ namespace ScriptCanvas
                 lua_pop(m_lua, 1);
             }
             // Lua:
+#endif
         }
+// Gruber patch end. // LVB. // "success" is used to anaylze result of Execution::StackPush
 
         OutInterpretedResult::OutInterpretedResult(lua_State* lua)
             : m_lambdaRegistryIndex(ExecutionStateInterpretedCpp::luaL_ref_Checked(lua))
