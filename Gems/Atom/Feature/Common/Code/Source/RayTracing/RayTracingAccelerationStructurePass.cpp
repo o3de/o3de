@@ -110,14 +110,16 @@ namespace AZ
 
                         frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
                     }
+                }
 
-                    // Import and attach skinned mesh output stream
-                    if (rayTracingFeatureProcessor->GetSkinnedMeshCount() > 0)
-                    {
-                        auto skinningPass = FindAdjacentPass(AZ::Name("SkinningPass"));
-                        auto* skinnedMeshOutputStreamBinding = skinningPass->FindAttachmentBinding(AZ::Name("SkinnedMeshOutputStream"));
-                        frameGraph.UseShaderAttachment(skinnedMeshOutputStreamBinding->m_unifiedScopeDesc.GetAsBuffer(), RHI::ScopeAttachmentAccess::Read);
-                    }
+                // Attach output data from the skinning pass. This is needed to ensure that this pass is executed after
+                // the skinning pass has finished. We assume that the pipeline has a skinning pass with this output available.
+                if (rayTracingFeatureProcessor->GetSkinnedMeshCount() > 0)
+                {
+                    auto skinningPassPtr = FindAdjacentPass(AZ::Name("SkinningPass"));
+                    auto skinnedMeshOutputStreamBindingPtr = skinningPassPtr->FindAttachmentBinding(AZ::Name("SkinnedMeshOutputStream"));
+                    [[maybe_unused]] auto result = frameGraph.UseShaderAttachment(skinnedMeshOutputStreamBindingPtr->m_unifiedScopeDesc.GetAsBuffer(), RHI::ScopeAttachmentAccess::Read);
+                    AZ_Assert(result == AZ::RHI::ResultCode::Success, "Failed to attach SkinnedMeshOutputStream buffer with error %d", result);
                 }
 
                 // update and compile the RayTracingSceneSrg and RayTracingMaterialSrg
