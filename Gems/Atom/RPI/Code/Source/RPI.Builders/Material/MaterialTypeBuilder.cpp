@@ -132,20 +132,6 @@ namespace AZ
             outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
             outputJobDescriptor.SetPlatformIdentifier(AssetBuilderSDK::CommonPlatformName);
 
-            const AZStd::string intermediateMaterialTypePath =
-                MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile);
-            if (!intermediateMaterialTypePath.empty())
-            {
-                MaterialBuilderUtils::AddPossibleDependencies(
-                    request.m_sourceFile,
-                    intermediateMaterialTypePath,
-                    MaterialTypeBuilder::FinalStageJobKey,
-                    outputJobDescriptor.m_jobDependencyList,
-                    response.m_sourceFileDependencyList,
-                    false,
-                    0);
-            }
-
             auto addPossibleDependencies = [&response](const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
                 AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath);
@@ -218,7 +204,7 @@ namespace AZ
                     "Shader Asset",
                     outputJobDescriptor.m_jobDependencyList,
                     response.m_sourceFileDependencyList,
-                    false,
+                    AssetBuilderSDK::JobDependencyType::Order,
                     0);
             }
 
@@ -235,7 +221,8 @@ namespace AZ
                             dependency.m_sourceFilePath,
                             dependency.m_jobKey.c_str(),
                             outputJobDescriptor.m_jobDependencyList,
-                            response.m_sourceFileDependencyList);
+                            response.m_sourceFileDependencyList,
+                            AssetBuilderSDK::JobDependencyType::Order);
                     }
                 }
             };
@@ -272,7 +259,7 @@ namespace AZ
                         "Shader Asset",
                         outputJobDescriptor.m_jobDependencyList,
                         response.m_sourceFileDependencyList,
-                        false,
+                        AssetBuilderSDK::JobDependencyType::Order,
                         0);
                 }
 
