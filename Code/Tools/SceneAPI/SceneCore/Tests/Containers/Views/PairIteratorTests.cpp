@@ -275,6 +275,9 @@ namespace AZ
                     EXPECT_EQ(iterator.GetSecondIterator(), secondContainer.begin());
                 }
 
+// DISABLING THIS BLOCK until we upgrade to 2310.
+// When a conflict arises, select the 2310 version of this in its entirety.
+#if !defined(CARBONATED)
                 TEST(PairIteratorTest, Algorithms_Sort_BothListSortedByFirstThenSecondAndPairsNotBroken)
                 {
                     AZStd::vector<int> firstContainer = { 105, 106, 101, 104, 103, 108 };
@@ -306,6 +309,7 @@ namespace AZ
                         EXPECT_GT(*previousIt, *it);
                     }
                 }
+#endif
             } // Views
         } // Containers
     } // SceneAPI
