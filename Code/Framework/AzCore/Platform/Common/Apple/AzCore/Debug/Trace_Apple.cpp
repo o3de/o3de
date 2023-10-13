@@ -81,7 +81,7 @@ namespace AZ
             {
                 AZStd::string strWindow(window);
                 AZStd::string strMessage(message);
-                fprintf(stdout, "%s: %s\n", strWindow.c_str(), strMessage.c_str());
+                fprintf(stdout, "%s: %s", strWindow.c_str(), strMessage.c_str());
             }
         }
     }
