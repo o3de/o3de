@@ -77,9 +77,11 @@ namespace AZ
                 _exit(exitCode);
             }
 
-            void OutputToDebugger(AZStd::string_view, AZStd::string_view)
+            void OutputToDebugger(AZStd::string_view window, AZStd::string_view message)
             {
-                // std::cout << title << ": " << message;
+                AZStd::string strWindow(window);
+                AZStd::string strMessage(message);
+                fprintf(stdout, "%s: %s", strWindow.c_str(), strMessage.c_str());
             }
         }
     }
