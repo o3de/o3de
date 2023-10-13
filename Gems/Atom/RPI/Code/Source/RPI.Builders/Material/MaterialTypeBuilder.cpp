@@ -44,7 +44,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 42; // shader defines from material pipelines
+            materialBuilderDescriptor.m_version = 43; // Switch from XML to binary assets
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -129,7 +129,7 @@ namespace AZ
         {
             AssetBuilderSDK::JobDescriptor outputJobDescriptor;
             outputJobDescriptor.m_jobKey = MaterialTypeBuilder::PipelineStageJobKey;
-            outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
+            outputJobDescriptor.m_additionalFingerprintInfo = "";
             outputJobDescriptor.SetPlatformIdentifier(AssetBuilderSDK::CommonPlatformName);
 
             auto addPossibleDependencies = [&response](const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
@@ -194,7 +194,7 @@ namespace AZ
             // We'll build up this one JobDescriptor and reuse it to register each of the platforms
             AssetBuilderSDK::JobDescriptor outputJobDescriptor;
             outputJobDescriptor.m_jobKey = FinalStageJobKey;
-            outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
+            outputJobDescriptor.m_additionalFingerprintInfo = "";
 
             for (auto& shader : materialTypeSourceData.m_shaderCollection)
             {
@@ -667,8 +667,7 @@ namespace AZ
                     return;
                 }
 
-                // [ATOM-13190] Change this back to ST_BINARY. It's ST_XML temporarily for debugging.
-                if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_XML, materialTypeAsset.Get()))
+                if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_BINARY, materialTypeAsset.Get()))
                 {
                     AZ_Error(MaterialTypeBuilderName, false, "Failed to save material type to file '%s'!", materialProductPath.c_str());
                     return;
