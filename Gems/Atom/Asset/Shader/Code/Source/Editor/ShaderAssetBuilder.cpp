@@ -179,7 +179,7 @@ namespace AZ
                 // Add the AZSL as source dependency
                 AssetBuilderSDK::SourceFileDependency azslFileDependency;
                 azslFileDependency.m_sourceFileDependencyPath = azslFullPath;
-                response.m_sourceFileDependencyList.emplace_back(azslFileDependency);
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(azslFileDependency));
             }
 
             if (!IO::FileIOBase::GetInstance()->Exists(azslFullPath.c_str()))
@@ -199,7 +199,7 @@ namespace AZ
             {
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
                 includeFileDependency.m_sourceFileDependencyPath = includePath;
-                response.m_sourceFileDependencyList.emplace_back(includeFileDependency);
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
             }
 
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
