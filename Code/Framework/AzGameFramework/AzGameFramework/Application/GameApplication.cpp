@@ -82,6 +82,11 @@ namespace AzGameFramework
         m_headless = headless;
     }
 
+    void GameApplication::SetDedicatedServer(bool dedicated)
+    {
+        m_dedicatedServer = dedicated;
+    }
+
     void GameApplication::StartCommon(AZ::Entity* systemEntity)
     {
         AzFramework::Application::StartCommon(systemEntity);
@@ -137,6 +142,10 @@ namespace AzGameFramework
         if (m_headless)
         {
             appType.m_maskValue |= AZ::ApplicationTypeQuery::Masks::Headless;
+        }
+        if (m_dedicatedServer)
+        {
+            appType.m_maskValue |= AZ::ApplicationTypeQuery::Masks::DedicatedServer;
         }
     };
 

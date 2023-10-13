@@ -30,6 +30,7 @@ namespace AzGameFramework
 
 
         void SetHeadless(bool headless);
+        void SetDedicatedServer(bool dedicated);
 
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
 
@@ -50,6 +51,7 @@ namespace AzGameFramework
         //////////////////////////////////////////////////////////////////////////
 
         bool m_headless{ false };
+        bool m_dedicatedServer{ false };
     };
 } // namespace AzGameFramework
 
