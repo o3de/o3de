@@ -37,12 +37,11 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 138; // Updated invalid texture UUID + error message
+            materialBuilderDescriptor.m_version = 139; // Switch from XML to binary assets
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
             materialBuilderDescriptor.m_processJobFunction = AZStd::bind(&MaterialBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-
             materialBuilderDescriptor.m_analysisFingerprint = GetBuilderSettingsFingerprint();
 
             BusConnect(materialBuilderDescriptor.m_busId);
@@ -76,7 +75,7 @@ namespace AZ
             // We'll build up this one JobDescriptor and reuse it to register each of the platforms
             AssetBuilderSDK::JobDescriptor outputJobDescriptor;
             outputJobDescriptor.m_jobKey = JobKey;
-            outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
+            outputJobDescriptor.m_additionalFingerprintInfo = "";
 
             AZStd::string fullSourcePath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
@@ -297,8 +296,7 @@ namespace AZ
                 return;
             }
 
-            // [ATOM-13190] Change this back to ST_BINARY. It's ST_XML temporarily for debugging.
-            if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_XML, materialAsset.Get()))
+            if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_BINARY, materialAsset.Get()))
             {
                 AZ_Error(MaterialBuilderName, false, "Failed to save material to file '%s'!", materialProductPath.c_str());
                 return;
