@@ -6,6 +6,10 @@
  *
  */
 
+// note that this is the only file pulled into a launcher target that has the
+// defines set such as LY_CMAKE_TARGET, and LY_PROJECT_NAME, other files come from a static library
+// which do not provide those defines.
+
 #include <AzCore/std/string/string_view.h>
 
 #if defined(AZ_MONOLITHIC_BUILD)
@@ -31,5 +35,13 @@ namespace O3DELauncher
 #error "LY_PROJECT_NAME must be defined in order to for the Launcher to run using a Game Project"
 #endif
         return { LY_PROJECT_NAME };
+    }
+
+    bool IsGenericLauncher()
+    {
+        #if defined(O3DE_IS_GENERIC_LAUNCHER)
+            return true;
+        #endif
+        return false;
     }
 }

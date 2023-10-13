@@ -362,13 +362,20 @@ namespace O3DELauncher
                 { "op": "add", "path": "/O3DE", "value": { "Runtime": { "Manifest": { "Project": {} } } } },
                 { "op": "add", "path": "/Amazon", "value": { "AzCore": { "Bootstrap": {} } } })";
 
-        // Query the project_name baked into the launcher executable
-        const AZStd::string_view launcherProjectName = GetProjectName();
-        if (!launcherProjectName.empty())
+        if (!IsGenericLauncher())
         {
-            // Append the project name setting to the JSON Patch
-            launcherJsonPatch += FixedValueString::format(R"(,
-                { "op": "add", "path": "/O3DE/Runtime/Manifest/Project/project_name", "value": "%.*s" })", AZ_STRING_ARG(launcherProjectName));
+            // Insert the project_name option to the front.
+            // note that this comes directly from the burned-in project name during build
+            // and not the project.json file, which is read and updated when we create the Application instance, below.
+            // the generic launcher will instead read it from the project.json
+            const AZStd::string_view launcherProjectName = GetProjectName();
+            if (!launcherProjectName.empty())
+            {
+                const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
+                projectNameOptionOverride = FixedValueString::format(R"(--regset="%s=%.*s")",
+                    projectNameKey.c_str(), aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data());
+                argContainer.emplace_back(projectNameOptionOverride.data());
+            }
         }
 
         // Non-host platforms cannot use the project path that is #defined within the launcher.
@@ -411,7 +418,22 @@ namespace O3DELauncher
             // Settings registry must be available at this point in order to continue
             return ReturnCode::ErrValidation;
         }
-        const AZStd::string_view buildTargetName = GetBuildTargetName();
+
+        // retriebve the project name as specified by the actual project.json (or updated from command line)
+        AZ::SettingsRegistryInterface::FixedValueString updatedProjectName = AZ::Utils::GetProjectName();
+
+
+        // Save the build target name (usually myprojectname_gamelauncher, or myprojectname_serverlauncher, etc)
+        // into the specialization list, so that the regset files for xxxxx.myprojectname_gamelauncher are included in the loaded set.
+        // in generic mode, this needs to be updated to a name based on the project name.
+        AZStd::string buildTargetName = GetBuildTargetName();
+        if (IsGenericLauncher())
+        {
+            // this will always be the value O3DE_xxxxx where xxxxx is the type of target ("GameLauncher/ServerLauncher/UnifiedLauncher/etc")
+            // and O3DE is a placeholder for the project name.
+            AZStd::string replacementName = AZStd::string::format("%.*s_", aznumeric_cast<int>(updatedProjectName.size()), updatedProjectName.data());
+            AZ::StringFunc::Replace(buildTargetName, "O3DE_", replacementName.c_str());
+        }
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 
         //Store the launcher type to the Settings Registry
@@ -432,7 +454,7 @@ namespace O3DELauncher
         AZ_TracePrintf("Launcher", R"(Running project "%.*s")" "\n"
             R"(The project name has been successfully set in the Settings Registry at key "%s/project_name")"
             R"( for Launcher target "%.*s")" "\n",
-            aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data(),
+            aznumeric_cast<int>(updatedProjectName.size()), updatedProjectName.data(),
             AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
             aznumeric_cast<int>(buildTargetName.size()), buildTargetName.data());
 
