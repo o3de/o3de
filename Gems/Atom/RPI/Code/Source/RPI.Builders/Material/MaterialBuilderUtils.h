@@ -34,7 +34,7 @@ namespace AZ
                 const char* jobKey,
                 AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
                 AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies,
-                bool forceOrderOnce = false,
+                AssetBuilderSDK::JobDependencyType jobDependencyType = AssetBuilderSDK::JobDependencyType::Order,
                 AZStd::optional<AZ::u32> productSubId = AZStd::nullopt);
 
 

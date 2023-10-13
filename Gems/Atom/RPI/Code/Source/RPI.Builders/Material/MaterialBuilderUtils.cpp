@@ -20,59 +20,47 @@ namespace AZ::RPI::MaterialBuilderUtils
         const char* jobKey,
         AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
         AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies,
-        bool forceOrderOnce,
+        AssetBuilderSDK::JobDependencyType jobDependencyType,
         AZStd::optional<AZ::u32> productSubId)
     {
-        bool dependencyFileFound = false;
-
-        AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(currentFilePath, referencedParentPath);
-        for (auto& file : possibleDependencies)
+        const auto& possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(currentFilePath, referencedParentPath);
+        for (const auto& file : possibleDependencies)
         {
             // The first path found is the highest priority, and will have a job dependency, as this is the one
             // the builder will actually use
-            if (!dependencyFileFound)
+            AZ::Data::AssetInfo sourceInfo;
+            AZStd::string watchFolder;
+            bool dependencyFileFound = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                dependencyFileFound,
+                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+                file.c_str(),
+                sourceInfo,
+                watchFolder);
+
+            if (dependencyFileFound)
             {
-                AZ::Data::AssetInfo sourceInfo;
-                AZStd::string watchFolder;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                    dependencyFileFound,
-                    &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
-                    file.c_str(),
-                    sourceInfo,
-                    watchFolder);
+                AssetBuilderSDK::JobDependency jobDependency;
+                jobDependency.m_jobKey = jobKey;
+                jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
+                jobDependency.m_type = jobDependencyType;
 
-                if (dependencyFileFound)
+                if (productSubId)
                 {
-                    AssetBuilderSDK::JobDependency jobDependency;
-                    jobDependency.m_jobKey = jobKey;
-                    jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
-                    jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-
-                    if (productSubId)
-                    {
-                        jobDependency.m_productSubIds.push_back(productSubId.value());
-                    }
-
-                    if (forceOrderOnce)
-                    {
-                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
-                    }
-
-                    jobDependencies.push_back(jobDependency);
-
-                    // If the file was found, there is no need to add other possible path for the same dependency file.
-                    return;
+                    jobDependency.m_productSubIds.push_back(productSubId.value());
                 }
-                else
-                {
-                    // The file was not found so we can't add a job dependency. But we add a source dependency instead so if a file
-                    // shows up later at this location, it will wake up the builder to try again.
 
-                    AssetBuilderSDK::SourceFileDependency sourceDependency;
-                    sourceDependency.m_sourceFileDependencyPath = file;
-                    sourceDependencies.push_back(sourceDependency);
-                }
+                jobDependencies.emplace_back(AZStd::move(jobDependency));
+
+                // If the file was found, there is no need to add other possible path for the same dependency file.
+                return;
             }
+
+            // The file was not found so we can't add a job dependency. But we add a source dependency instead so if a file
+            // shows up later at this location, it will wake up the builder to try again.
+            AssetBuilderSDK::SourceFileDependency sourceDependency;
+            sourceDependency.m_sourceFileDependencyPath = file;
+            sourceDependencies.emplace_back(AZStd::move(sourceDependency));
         }
     }
 
@@ -97,12 +85,11 @@ namespace AZ::RPI::MaterialBuilderUtils
             return;
         }
 
-        bool forceOrderOnce = true;
         AddPossibleDependencies(currentFilePath,
             imageFilePath,
             jobKey.c_str(),
             jobDependencies,
             sourceDependencies,
-            forceOrderOnce);
+            AssetBuilderSDK::JobDependencyType::OrderOnce);
     }
 }

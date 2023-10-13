@@ -121,7 +121,7 @@ namespace AZ
                     JobKey,
                     outputJobDescriptor.m_jobDependencyList,
                     response.m_sourceFileDependencyList,
-                    false,
+                    AssetBuilderSDK::JobDependencyType::Order,
                     0);
             }
 
@@ -156,7 +156,7 @@ namespace AZ
                         MaterialTypeBuilder::FinalStageJobKey,
                         outputJobDescriptor.m_jobDependencyList,
                         response.m_sourceFileDependencyList,
-                        false,
+                        AssetBuilderSDK::JobDependencyType::Order,
                         0);
                 }
                 else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
@@ -167,7 +167,7 @@ namespace AZ
                         MaterialTypeBuilder::PipelineStageJobKey,
                         outputJobDescriptor.m_jobDependencyList,
                         response.m_sourceFileDependencyList,
-                        false,
+                        AssetBuilderSDK::JobDependencyType::Order,
                         0);
 
                     const AZStd::string intermediateMaterialTypePath =
@@ -180,7 +180,7 @@ namespace AZ
                             MaterialTypeBuilder::FinalStageJobKey,
                             outputJobDescriptor.m_jobDependencyList,
                             response.m_sourceFileDependencyList,
-                            false,
+                            AssetBuilderSDK::JobDependencyType::Order,
                             0);
                     }
                 }
@@ -258,6 +258,7 @@ namespace AZ
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
                 return;
             }
+
             if (m_isShuttingDown)
             {
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
@@ -289,9 +290,7 @@ namespace AZ
             // Then when it appears later, reprocess the job, and then the material asset should show up without every reporting a failure (I think).
 
             // Load the material file and create the MaterialAsset object
-            AZ::Data::Asset<MaterialAsset> materialAsset;
-            materialAsset = CreateMaterialAsset(request.m_sourceFile, document);
-
+            AZ::Data::Asset<MaterialAsset> materialAsset = CreateMaterialAsset(request.m_sourceFile, document);
             if (!materialAsset)
             {
                 // Errors will have been reported above
@@ -312,7 +311,7 @@ namespace AZ
                 return;
             }
 
-            response.m_outputProducts.push_back(AZStd::move(jobProduct));
+            response.m_outputProducts.emplace_back(AZStd::move(jobProduct));
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
