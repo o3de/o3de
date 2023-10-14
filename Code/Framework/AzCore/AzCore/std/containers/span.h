@@ -112,9 +112,9 @@ namespace AZStd
         template<size_t N, class = enable_if_t<extent == dynamic_extent || N == Extent>>
         constexpr span(type_identity_t<element_type> (&arr)[N]) noexcept;
 
-        template <class U, size_t N, class = enable_if_t<extent == dynamic_extent || N == Extent>>
+        template <class U, size_t N, class = enable_if_t<(extent == dynamic_extent || N == Extent) && is_convertible_v<U, T>>>
         constexpr span(array<U, N>& data) noexcept;
-        template <class U, size_t N, class = enable_if_t<extent == dynamic_extent || N == Extent>>
+        template <class U, size_t N, class = enable_if_t<(extent == dynamic_extent || N == Extent) && is_convertible_v<U, T>>>
         constexpr span(const array<U, N>& data) noexcept;
 
         template <class R, class = enable_if_t<ranges::contiguous_range<R> &&

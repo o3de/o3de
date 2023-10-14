@@ -36,6 +36,7 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponentSerializer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 

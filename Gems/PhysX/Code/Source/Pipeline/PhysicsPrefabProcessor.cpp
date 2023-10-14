@@ -33,21 +33,15 @@ namespace PhysX
         linkData->m_localTransform = transformComponent->GetLocalTM();
 
         const auto& components = entity->GetComponents();
-        auto baseColliderComponentIt = AZStd::find_if(
-            components.begin(),
-            components.end(),
-            [](AZ::Component* component)
-            {
-                return azdynamic_cast<BaseColliderComponent*>(component) != nullptr;
-            });
-
-        if (baseColliderComponentIt != components.end())
+        for (const auto& component : components)
         {
-            auto* baseColliderComponent = azdynamic_cast<BaseColliderComponent*>(*baseColliderComponentIt);
-            AzPhysics::ShapeColliderPairList shapeColliderPairList = baseColliderComponent->GetShapeConfigurations();
-            AZ_Assert(!shapeColliderPairList.empty(), "Collider component with no shape configurations");
-
-            linkData->m_shapeColliderConfiguration = shapeColliderPairList[0];
+            if (auto* baseColliderComponent = azdynamic_cast<BaseColliderComponent*>(component))
+            {
+                AzPhysics::ShapeColliderPairList shapeColliderPairList = baseColliderComponent->GetShapeConfigurations();
+                AZ_Assert(!shapeColliderPairList.empty(), "Collider component with no shape configurations");
+                linkData->m_shapeColliderConfigurationList.insert(
+                    linkData->m_shapeColliderConfigurationList.end(), shapeColliderPairList.begin(), shapeColliderPairList.end());
+            }
         }
 
         auto* articulationLinkComponent = entity->FindComponent<ArticulationLinkComponent>();

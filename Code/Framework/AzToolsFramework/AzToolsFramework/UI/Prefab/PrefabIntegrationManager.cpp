@@ -44,6 +44,7 @@
 #include <AzToolsFramework/UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 

@@ -9,6 +9,7 @@
  */
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/JSON/document.h>
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
@@ -44,24 +45,26 @@ namespace AZ
                 SCENE_CORE_API PatternMatcher(const char* pattern, MatchApproach matcher);
                 SCENE_CORE_API PatternMatcher(const AZStd::string& pattern, MatchApproach matcher);
                 SCENE_CORE_API PatternMatcher(AZStd::string&& pattern, MatchApproach matcher);
-                SCENE_CORE_API PatternMatcher(const PatternMatcher& rhs) = default;
+                SCENE_CORE_API PatternMatcher(const AZStd::span<const AZStd::string_view> patterns, MatchApproach matcher);
+                SCENE_CORE_API PatternMatcher(const PatternMatcher& rhs);
                 SCENE_CORE_API PatternMatcher(PatternMatcher&& rhs);
 
-                SCENE_CORE_API PatternMatcher& operator=(const PatternMatcher& rhs) = default;
+                SCENE_CORE_API PatternMatcher& operator=(const PatternMatcher& rhs);
                 SCENE_CORE_API PatternMatcher& operator=(PatternMatcher&& rhs);
 
                 SCENE_CORE_API bool LoadFromJson(rapidjson::Document::ConstMemberIterator member);
 
                 SCENE_CORE_API bool MatchesPattern(const char* name, size_t nameLength) const;
-                SCENE_CORE_API bool MatchesPattern(const AZStd::string& name) const;
+                SCENE_CORE_API bool MatchesPattern(AZStd::string_view name) const;
 
                 SCENE_CORE_API const AZStd::string& GetPattern() const;
                 SCENE_CORE_API MatchApproach GetMatchApproach() const;
 
                 static void Reflect(AZ::ReflectContext* context);
             private:
-                AZStd::string m_pattern;
+                AZStd::vector<AZStd::string> m_patterns;
                 MatchApproach m_matcher = MatchApproach::PostFix;
+                mutable AZStd::vector<AZStd::unique_ptr<AZStd::regex>> m_regexMatchers;
             };
         } // SceneCore
     } // SceneAPI

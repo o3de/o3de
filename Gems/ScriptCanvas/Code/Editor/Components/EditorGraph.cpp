@@ -1142,7 +1142,14 @@ namespace ScriptCanvasEditor
 
     void EditorGraph::UpdateCorrespondingImplicitConnection(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint)
     {
-        if (FindSlot(sourceEndpoint)->IsExecution() || FindSlot(targetEndpoint)->IsExecution())
+        auto sourceSlot = FindSlot(sourceEndpoint);
+        auto targetSlot = FindSlot(targetEndpoint);
+        if (!sourceSlot || !targetSlot)
+        {
+            return;
+        }
+
+        if (sourceSlot->IsExecution() || targetSlot->IsExecution())
         {
             return;
         }
@@ -1186,11 +1193,11 @@ namespace ScriptCanvasEditor
                 int numDataConnectionsBetween = 0;
 
                 // Count the number of data connections between the nodes
-                for (const ScriptCanvas::Slot* sourceSlot : sourceNodeDataSlots)
+                for (const ScriptCanvas::Slot* sourceDataSlot : sourceNodeDataSlots)
                 {
-                    for (const ScriptCanvas::Slot* targetSlot : targetNodeDataSlots)
+                    for (const ScriptCanvas::Slot* targetDataSlot : targetNodeDataSlots)
                     {
-                        if (FindConnection(sourceSlot->GetEndpoint(), targetSlot->GetEndpoint()))
+                        if (FindConnection(sourceDataSlot->GetEndpoint(), targetDataSlot->GetEndpoint()))
                         {
                             numDataConnectionsBetween++;
                         }

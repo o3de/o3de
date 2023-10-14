@@ -41,6 +41,8 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 
 #include <cmath>
+#include <AzCore/Jobs/JobCompletion.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <System/PhysXSystem.h>
 
 #include <AzCore/Jobs/JobCompletion.h>
@@ -126,6 +128,8 @@ namespace Multiplayer
     AZ_CVAR(AZ::TimeMs, bg_captureTransportPeriod, AZ::TimeMs{1000}, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "How often in milliseconds to record transport metrics.");
 
+    AZ_CVAR(bool, sv_multithreadedConnectionUpdates, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, the server will send updates to clients on different threads, which improves performance with large number of clients");
     AZ_CVAR(bool, bg_parallelNotifyPreRender, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "If true, OnPreRender events will be sent in parallel from job threads. Please make sure the handlers of the event are thread safe.");
     
@@ -582,30 +586,12 @@ namespace Multiplayer
         stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
         stats.m_serverConnectionCount = 0;
         stats.m_clientConnectionCount = 0;
+        
+        // Metrics calculation, as update calls are threaded.
+        UpdatedMetricsConnectionCount();
 
         // Send out the game state update to all connections
-        {            
-            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendOutGameStateUpdate");
-
-            auto sendNetworkUpdates = [&stats](IConnection& connection)
-            {
-                if (connection.GetUserData() != nullptr)
-                {
-                    IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
-                    connectionData->Update();
-                    if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
-                    {
-                        stats.m_clientConnectionCount++;
-                    }
-                    else
-                    {
-                        stats.m_serverConnectionCount++;
-                    }
-                }
-            };
-
-            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
-        }
+        UpdateConnections();
 
         MultiplayerPackets::SyncConsole packet;
         AZ::ThreadSafeDeque<AZStd::string>::DequeType cvarUpdates;
@@ -639,6 +625,72 @@ namespace Multiplayer
         const auto duration =
             AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - startMultiplayerTickTime);
         stats.RecordFrameTime(AZ::TimeUs{ duration.count() });
+    }
+
+    void MultiplayerSystemComponent::UpdatedMetricsConnectionCount()
+    {
+        MultiplayerStats& stats = GetStats();
+        auto updateMetrics = [&stats](IConnection& connection)
+        {
+            if (connection.GetUserData() != nullptr)
+            {
+                IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
+                if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
+                {
+                    stats.m_clientConnectionCount++;
+                }
+                else
+                {
+                    stats.m_serverConnectionCount++;
+                }
+            }
+        };
+        m_networkInterface->GetConnectionSet().VisitConnections(updateMetrics);
+    }
+
+    void MultiplayerSystemComponent::UpdateConnections()
+    {
+        if (sv_multithreadedConnectionUpdates && (GetAgentType() == MultiplayerAgentType::ClientServer ||
+                                                  GetAgentType() == MultiplayerAgentType::DedicatedServer))
+        {
+            // Threaded update calls.
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: UpdateConnections");
+
+            AZ::JobCompletion jobCompletion;
+
+            auto sendNetworkUpdates = [&jobCompletion](IConnection& connection)
+            {
+                AZ::Job* job = AZ::CreateJobFunction([&connection]()
+                    {
+                        if (connection.GetUserData() != nullptr)
+                        {
+                            IConnectionData* connectionData = static_cast<IConnectionData*>(connection.GetUserData());
+                            connectionData->Update();
+                        }
+                    }, true /*auto delete*/, nullptr);
+
+                job->SetDependent(&jobCompletion);
+                job->Start();
+            };
+
+            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+            jobCompletion.StartAndWaitForCompletion();
+        }
+        else // On clients (including the Editor) run in a single threaded mode to avoid issues in UI asset loading
+        {
+            AZ_PROFILE_SCOPE(MULTIPLAYER, "MultiplayerSystemComponent: OnTick - SendOutGameStateUpdate");
+
+            auto sendNetworkUpdates = [](IConnection& connection)
+            {
+                if (connection.GetUserData() != nullptr)
+                {
+                    IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
+                    connectionData->Update();
+                }
+            };
+
+            m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+        }
     }
 
     int MultiplayerSystemComponent::GetTickOrder()

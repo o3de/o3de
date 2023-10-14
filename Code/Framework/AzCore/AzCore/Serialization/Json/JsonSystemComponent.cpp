@@ -22,6 +22,8 @@
 #include <AzCore/Serialization/Json/TupleSerializer.h>
 #include <AzCore/Serialization/Json/UnorderedSetSerializer.h>
 #include <AzCore/Serialization/Json/UnsupportedTypesSerializer.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/EnumConstantJsonSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/ConfigurableStack.h>
 #include <AzCore/std/any.h>
@@ -41,6 +43,7 @@
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+
 
 namespace AZ
 {
@@ -110,6 +113,8 @@ namespace AZ
                 ->HandlesType<AZStd::optional>();
             jsonContext->Serializer<JsonBitsetSerializer>()
                 ->HandlesType<AZStd::bitset>();
+            jsonContext->Serializer<EnumConstantJsonSerializer>()
+                ->HandlesType<AZ::Edit::EnumConstant>();
 
             MathReflect(jsonContext);
         }

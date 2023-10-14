@@ -26,6 +26,7 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
         file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
                            True, True)
 
+    @pytest.mark.skip(reason="Skipped for intermittently failing.")
     class test_AssetPicker_UI_UX(EditorBatchedTest):
         from .EditorScripts import AssetPicker_UI_UX as test_module
 

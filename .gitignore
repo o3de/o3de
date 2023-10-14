@@ -14,6 +14,7 @@ CMakeUserPresets.json
 [Uu]ser/
 FrameCapture/**
 .DS_Store
+.automatedtesting.json
 user*.cfg
 client*.cfg
 server*.cfg

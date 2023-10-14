@@ -152,6 +152,11 @@ namespace AZ
             virtual bool IsEnabled() const { return m_flags.m_enabled; }
 
             bool HasDrawListTag() const { return m_flags.m_hasDrawListTag; }
+            
+            [[deprecated( "Use BindViewSrg() instead." )]]
+            bool HasPipelineViewTag() const { return BindViewSrg(); }
+            
+            // The shader needs a View-Srg. Use GetPipelineViewTag() to find out which one.
             bool BindViewSrg() const
             {
                 return m_flags.m_bindViewSrg;

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AtomToolsFramework/Graph/AssetStatusReporterSystemRequestBus.h>
 #include <AtomToolsFramework/Graph/GraphCompiler.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
@@ -34,6 +35,9 @@ namespace AtomToolsFramework
 
     GraphCompiler::~GraphCompiler()
     {
+        // Stop monitoring assets from prior requests since the graph compiler is being destroyed.
+        AssetStatusReporterSystemRequestBus::Event(
+            m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
     }
 
     bool GraphCompiler::IsCompileLoggingEnabled()
@@ -90,6 +94,9 @@ namespace AtomToolsFramework
             m_graph.reset();
             break;
         }
+
+        AssetStatusReporterSystemRequestBus::Event(
+            m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
 
         // Invoke the optional state change handler function if provided
         if (m_stateChangeHandler)
@@ -151,57 +158,31 @@ namespace AtomToolsFramework
     {
         SetState(State::Processing);
 
-        AZStd::vector<AZStd::string> generatedFiles(m_generatedFiles.rbegin(), m_generatedFiles.rend());
-
-        // Check asset processor status of each generated file
-        while (!generatedFiles.empty())
+        // Start monitoring and reporting AP status for any files generated during this compile.
+        if (!m_generatedFiles.empty())
         {
-            if (m_state != State::Processing)
-            {
-                return false;
-            }
+            // Begin requesting status from the asset reporting system, which manages a queue of requests from multiple graphs.
+            AssetStatusReporterSystemRequestBus::Event(
+                m_toolId, &AssetStatusReporterSystemRequestBus::Events::StartReporting, m_assetReportRequestId, m_generatedFiles);
 
-            // Forcing the string to be copied before it's captured and since to the main thread.
-            const AZStd::string generatedFile = generatedFiles.back();
-            AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
-            AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
-                jobOutcome, &AzToolsFramework::AssetSystemJobRequestBus::Events::GetAssetJobsInfo, generatedFile, false);
-
-            bool jobsComplete = true;
-            if (jobOutcome.IsSuccess())
+            while (m_state == State::Processing)
             {
-                for (const auto& job : jobOutcome.GetValue())
+                AssetStatusReporterState status = AssetStatusReporterState::Failed;
+                AssetStatusReporterSystemRequestBus::EventResult(
+                    status, m_toolId, &AssetStatusReporterSystemRequestBus::Events::GetStatus, m_assetReportRequestId);
+
+                if (status != AssetStatusReporterState::Processing)
                 {
-                    if (m_state != State::Processing)
-                    {
-                        return false;
-                    }
-
-                    ReportStatus(AZStd::string::format(
-                        "%s (Processing: %s)", generatedFile.c_str(), AzToolsFramework::AssetSystem::JobStatusString(job.m_status)));
-
-                    switch (job.m_status)
-                    {
-                    case AzToolsFramework::AssetSystem::JobStatus::Queued:
-                    case AzToolsFramework::AssetSystem::JobStatus::InProgress:
-                        // If any of the asset jobs are still processing then return early instead of allowing the completion
-                        // notification to be sent.
-                        jobsComplete = false;
-                        break;
-                    case AzToolsFramework::AssetSystem::JobStatus::Failed:
-                    case AzToolsFramework::AssetSystem::JobStatus::Failed_InvalidSourceNameExceedsMaxLimit:
-                        // If any of the asset jobs failed, cancel compilation.
-                        return false;
-                    }
+                    AssetStatusReporterSystemRequestBus::Event(
+                        m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
+                    return status == AssetStatusReporterState::Succeeded;
                 }
+
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
             }
 
-            if (jobsComplete)
-            {
-                generatedFiles.pop_back();
-            }
-
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
+            AssetStatusReporterSystemRequestBus::Event(
+                m_toolId, &AssetStatusReporterSystemRequestBus::Events::StopReporting, m_assetReportRequestId);
         }
 
         return true;
@@ -213,7 +194,6 @@ namespace AtomToolsFramework
         if (m_lastStatusMessage != statusMessage)
         {
             m_lastStatusMessage = statusMessage;
-            AZ_TracePrintf_IfTrue("GraphCompiler", IsCompileLoggingEnabled(), "%s\n", m_lastStatusMessage.c_str());
             AZ::SystemTickBus::QueueFunction([toolId = m_toolId, statusMessage]() {
                 AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::SetStatusMessage, statusMessage);
             });

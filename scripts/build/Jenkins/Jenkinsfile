@@ -384,49 +384,49 @@ def NoControlFile(repoName, processed_repos, o3de_project, defer_enable_gems) {
 
         //a singular object repo will have one of these o3de json files in the root
         if(fileExists("engine.json")) {
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --engine-path ${workspace}/${repoName} || dir>nul", "Registering engine in ${workspace}/${repoName}")
-        }
-        else if(fileExists("project.json")) {
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --project-path ${workspace}/${repoName} || dir>nul", "Registering project in ${workspace}/${repoName}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --engine-path ${workspace}/${repoName} || echo>nul", "Registering engine in ${workspace}/${repoName}")
         }
         else if(fileExists("gem.json")) {
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || dir>nul", "Registering gem in ${workspace}/${repoName}")
-            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project} || dir>nul", ECHO: "Enabling ${gemName} in ${o3de_project}"])
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName} || echo>nul", "Registering gem in ${workspace}/${repoName}")
+            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName} --project-name ${o3de_project} || echo>nul", ECHO: "Enabling ${gemName} in ${o3de_project}"])
+        }
+        else if(fileExists("project.json")) {
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --project-path ${workspace}/${repoName} || echo>nul", "Registering project in ${workspace}/${repoName}")
         }
         else if(fileExists("template.json")) {
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName} || dir>nul", "Registering template in ${workspace}/${repoName}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName} || echo>nul", "Registering template in ${workspace}/${repoName}")
         }
         else if(fileExists("restricted.json")) {
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName} || dir>nul", "Registering restricted in ${workspace}/${repoName}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName} || echo>nul", "Registering restricted in ${workspace}/${repoName}")
         }
         else {
             //A standard composite repo has the form
             //root
             //  Engines
-            //  Projects
             //  Gems
+            //  Projects
             //  Templates
             //  Restricted
             def found = false
             if(fileExists("Engines")) {
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-engines-path ${workspace}/${repoName}/Engines || dir>nul", "Registering all engines in ${workspace}/${repoName}/Engines")
-                found = true
-            }
-            if(fileExists("Projects")) {
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-projects-path ${workspace}/${repoName}/Projects || dir>nul", "Registering all projects in ${workspace}/${repoName}/Projects")
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-engines-path ${workspace}/${repoName}/Engines || echo>nul", "Registering all engines in ${workspace}/${repoName}/Engines")
                 found = true
             }
             if(fileExists("Gems")) {
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || dir>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-gems-path ${workspace}/${repoName}/Gems || echo>nul", "Registering all gems in ${workspace}/${repoName}/Gems")
                 defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repoName}/Gems --project-name ${o3de_project} || dir>nul", ECHO: "Enabling all gems in ${o3de_project}"])
                 found = true
             }
+            if(fileExists("Projects")) {
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-projects-path ${workspace}/${repoName}/Projects || echo>nul", "Registering all projects in ${workspace}/${repoName}/Projects")
+                found = true
+            }
             if(fileExists("Templates")) {
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-templates-path ${workspace}/${repoName}/Templates || dir>nul", "Registering all templates in ${workspace}/${repoName}/Templates")
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-templates-path ${workspace}/${repoName}/Templates || echo>nul", "Registering all templates in ${workspace}/${repoName}/Templates")
                 found = true
             }
             if(fileExists("Restricted")) {
-                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-restricted-path ${workspace}/${repoName}/Restricted || dir>nul", "Registering all restricted in ${workspace}/${repoName}/Restricted")
+                PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --all-restricted-path ${workspace}/${repoName}/Restricted || echo>nul", "Registering all restricted in ${workspace}/${repoName}/Restricted")
                 found = true
             }
             if(!found) {
@@ -453,37 +453,37 @@ def ExecuteControlFile(controlFile, repoName, processed_repos, o3de_project, def
     if(controlFile.REGISTER_ENGINES) {
         echo 'REGISTER_ENGINES'
         controlFile.REGISTER_ENGINES.each { engineName ->
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --engine-path ${workspace}/${repoName}/${engineName} || dir>nul", "Registering engine in ${workspace}/${repoName}/${engineName}")
-        }
-    }
-    if(controlFile.REGISTER_PROJECTS) {
-        echo 'REGISTER_PROJECTS'
-        controlFile.REGISTER_PROJECTS.each { projectName ->
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --project-path ${workspace}/${repoName}/${projectName} || dir>nul", "Registering project in ${workspace}/${repoName}/${projectName}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --engine-path ${workspace}/${repoName}/${engineName} || echo>nul", "Registering engine in ${workspace}/${repoName}/${engineName}")
         }
     }
     if(controlFile.REGISTER_GEMS) {
         echo 'REGISTER_GEMS'
         controlFile.REGISTER_GEMS.each { gemName ->
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName}/${gemName} || dir>nul", "Registering gem in ${workspace}/${repoName}/${gemName}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --gem-path ${workspace}/${repoName}/${gemName} || echo>nul", "Registering gem in ${workspace}/${repoName}/${gemName}")
+        }
+    }
+    if(controlFile.REGISTER_PROJECTS) {
+        echo 'REGISTER_PROJECTS'
+        controlFile.REGISTER_PROJECTS.each { projectName ->
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --project-path ${workspace}/${repoName}/${projectName} || echo>nul", "Registering project in ${workspace}/${repoName}/${projectName}")
         }
     }
     if(controlFile.REGISTER_TEMPLATES) {
         echo 'REGISTER_TEMPLATES'
         controlFile.REGISTER_TEMPLATES.each { templateName ->
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName}/${templateName} || dir>nul", "Registering template in ${workspace}/${repoName}/${templateName}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --template-path ${workspace}/${repoName}/${templateName} || echo>nul", "Registering template in ${workspace}/${repoName}/${templateName}")
         }
     }
     if(controlFile.REGISTER_RESTRICTED) {
         echo 'REGISTER_RESTRICTED'
         controlFile.REGISTER_RESTRICTED.each { restrictedName ->
-            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName}/${restrictedName} || dir>nul", "Registering restricted in ${workspace}/${repoName}/${restrictedName}")
+            PlatformSh("${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} register --restricted-path ${workspace}/${repoName}/${restrictedName} || echo>nul", "Registering restricted in ${workspace}/${repoName}/${restrictedName}")
         }
     }
     //queue enable all gems specified in the control file
     if(controlFile.ENABLE_GEMS) {
         controlFile.ENABLE_GEMS.each { gemName ->
-            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || dir>nul", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
+            defer_enable_gems.add([COMMAND: "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repoName}/${gemName} --project-name ${o3de_project} || echo>nul", ECHO: "Enabling ${workspace}/${repoName}/${gemName} for ${o3de_project}"])
         }
     }
 

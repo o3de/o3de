@@ -126,7 +126,7 @@ namespace AZ
             MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             MaterialAssignmentLabelMap GetMaterialLabels() const override;
-            MaterialAssignmentMap GetDefautMaterialMap() const override;
+            MaterialAssignmentMap GetDefaultMaterialMap() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

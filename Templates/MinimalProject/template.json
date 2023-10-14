@@ -23,10 +23,6 @@
             "isTemplated": false
         },
         {
-            "file": "ExportScripts/export_standalone_monolithic.py",
-            "isTemplated": false
-        },
-        {
             "file": "CMakeLists.txt",
             "isTemplated": true
         },
