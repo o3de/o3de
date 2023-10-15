@@ -116,10 +116,20 @@ namespace Multiplayer
         switch (agentType)
         {
         case MultiplayerAgentType::Uninitialized:
-            #if AZ_DEDICATED_SERVER
-                DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
-                DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
-            #endif
+            {
+                const auto isDedicated = []() -> bool
+                {
+                    AZ::ApplicationTypeQuery appTypeResult{};
+                    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appTypeResult);
+                    return appTypeResult.IsDedicatedServer();
+                }();
+                if (isDedicated)
+                {
+                    DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
+                    DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
+                }
+            }
+
             break;
         case MultiplayerAgentType::Client:
             {

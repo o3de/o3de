@@ -493,13 +493,15 @@ namespace Multiplayer
             }
         }
 
-#if !AZ_TRAIT_CLIENT && AZ_TRAIT_SERVER
-        InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-#elif AZ_TRAIT_CLIENT && AZ_TRAIT_SERVER
-        InitializeMultiplayer(MultiplayerAgentType::ClientServer);
-#elif AZ_TRAIT_CLIENT && !AZ_TRAIT_SERVER
-        InitializeMultiplayer(MultiplayerAgentType::Client);
-#endif
+        const auto isDedicated = []() -> bool
+        {
+            AZ::ApplicationTypeQuery appTypeResult{};
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appTypeResult);
+            return appTypeResult.IsDedicatedServer();
+        }();
+        
+        const Multiplayer::MultiplayerAgentType serverType = isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
+        InitializeMultiplayer(serverType);
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
 
@@ -1873,13 +1875,14 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::HostConsoleCommand([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        // Only servers should need the host command.
-        #if AZ_TRAIT_SERVER
-            constexpr bool isDedicated = static_cast<bool>(AZ_DEDICATED_SERVER);
-            StartHosting(sv_port, isDedicated);
-        #else
-            AZLOG_WARN("The 'host' command is only available on server builds.");
-        #endif
+        const auto isDedicated = []() -> bool
+        {
+            AZ::ApplicationTypeQuery appTypeResult{};
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appTypeResult);
+            return appTypeResult.IsDedicatedServer();
+        }();
+
+        StartHosting(sv_port, isDedicated);
     }
 
     void sv_launch_local_client([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
