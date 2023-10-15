@@ -425,6 +425,8 @@ namespace O3DELauncher
         gameApplication.SetHeadless(false);
 #endif // O3DE_HEADLESS_SERVER
 
+        gameApplication.SetDedicatedServer(IsDedicatedServer());
+
         // Finally add the "launcher" specialization tag into the Settings Registry
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, LauncherFilenameTag);
 
