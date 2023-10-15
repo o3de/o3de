@@ -309,7 +309,7 @@ namespace Multiplayer
                     // been registered with the AZ Console
                     console->ExecuteDeferredConsoleCommands();
 
-                    #if AZ_DEDICATED_SERVER
+                    #if AZ_TRAIT_SERVER
                         const auto shouldHostOnStartup = [&console]() -> bool
                         {
                             bool result{};
