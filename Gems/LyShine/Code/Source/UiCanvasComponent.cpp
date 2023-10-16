@@ -68,13 +68,32 @@ class UiCanvasNotificationBusBehaviorHandler
     , public AZ::BehaviorEBusHandler
 {
 public:
+#if defined(CARBONATED)
+    AZ_EBUS_BEHAVIOR_BINDER(UiCanvasNotificationBusBehaviorHandler, "{64014B4F-E12F-4839-99B0-426B5717DB44}", AZ::SystemAllocator,
+        OnAction,
+        OnActionMultitouch,
+        OnEnableStateChanged);
+#else
     AZ_EBUS_BEHAVIOR_BINDER(UiCanvasNotificationBusBehaviorHandler, "{64014B4F-E12F-4839-99B0-426B5717DB44}", AZ::SystemAllocator,
         OnAction);
+#endif
 
     void OnAction(AZ::EntityId entityId, const LyShine::ActionName& actionName) override
     {
         Call(FN_OnAction, entityId, actionName);
     }
+	
+#if defined(CARBONATED)
+    void OnActionMultitouch(AZ::EntityId entityId, const LyShine::ActionName& actionName, const AZ::Vector2& position, int multitouchIndex) override
+    {
+        Call(FN_OnActionMultitouch, entityId, actionName, position, multitouchIndex);
+    }
+
+    void OnEnableStateChanged(AZ::EntityId canvasEntityId, bool enabled) override
+    {
+        Call(FN_OnEnableStateChanged, canvasEntityId, enabled);
+    }
+#endif
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,7 +184,24 @@ public:
     }
 };
 
+#if defined(CARBONATED)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+//! UiCanvasEnabledStateNotificationBus Behavior context handler class
+class UiCanvasEnabledStateNotificationBusBehaviorHandler
+    : public UiCanvasEnabledStateNotificationBus::Handler
+    , public AZ::BehaviorEBusHandler
+{
+public:
+    AZ_EBUS_BEHAVIOR_BINDER(UiCanvasEnabledStateNotificationBusBehaviorHandler, "{CF010D8C-AC69-4F2A-BE87-03432E68A304}", AZ::SystemAllocator,
+        OnCanvasEnabledStateChanged);
+
+    void OnCanvasEnabledStateChanged(AZ::EntityId canvasEntityId, bool enabled) override
+    {
+        Call(FN_OnCanvasEnabledStateChanged, canvasEntityId, enabled);
+    }
+};
+#endif
+
 // Anonymous namespace
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -975,6 +1011,9 @@ void UiCanvasComponent::SetEnabled(bool enabled)
     {
         m_enabled = enabled;
         MarkRenderGraphDirty();
+#if defined(CARBONATED)
+        EBUS_EVENT(UiCanvasNotificationBus, OnEnableStateChanged, GetEntityId(), m_enabled);
+#endif
 
         UiCanvasEnabledStateNotificationBus::Broadcast(
             &UiCanvasEnabledStateNotificationBus::Events::OnCanvasEnabledStateChanged, GetEntityId(), m_enabled);
@@ -1193,6 +1232,17 @@ bool UiCanvasComponent::HandleInputPositionalEvent(const AzFramework::InputChann
             m_lastMousePosition = viewportPos;
         }
     }
+
+#if defined CARBONATED
+    //Well treat the first finger input as the 'mouse position'
+    if (inputSnapshot.m_channelId == AzFramework::InputDeviceTouch::Touch::Index0)
+    {
+        if (m_lastMousePosition != viewportPos)
+        {
+            m_lastMousePosition = viewportPos;
+        }
+    }
+#endif
 
     // Currently we are just interested in mouse events and the primary touch for hover events
     if (AzFramework::InputDeviceMouse::IsMouseDevice(inputSnapshot.m_deviceId) ||
@@ -2456,6 +2506,9 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
             ->Event("SetTooltipDisplayElement", &UiCanvasBus::Events::SetTooltipDisplayElement)
             ->Event("GetHoverInteractable", &UiCanvasBus::Events::GetHoverInteractable)
             ->Event("ForceHoverInteractable", &UiCanvasBus::Events::ForceHoverInteractable)
+#if defined CARBONATED
+            ->Event("GetMousePosition", &UiCanvasBus::Events::GetMousePosition)
+#endif
             ->Event("ForceEnterInputEventOnInteractable", &UiCanvasBus::Events::ForceEnterInputEventOnInteractable);
 
 
@@ -2494,6 +2547,11 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
 
         behaviorContext->EBus<UiCanvasInputNotificationBus>("UiCanvasInputNotificationBus")
             ->Handler<UiCanvasInputNotificationBusBehaviorHandler>();
+
+#if defined(CARBONATED)
+        behaviorContext->EBus<UiCanvasEnabledStateNotificationBus>("UiCanvasEnabledStateNotificationBus")
+            ->Handler<UiCanvasEnabledStateNotificationBusBehaviorHandler>();
+#endif
     }
 }
 

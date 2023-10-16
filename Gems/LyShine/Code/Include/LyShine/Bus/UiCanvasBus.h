@@ -366,6 +366,16 @@ public: // member functions
 
     //! Called when the canvas sends an action to the listener
     virtual void OnAction(AZ::EntityId entityId, const LyShine::ActionName& actionName) = 0;
+#if defined(CARBONATED)
+    //! Called when the canvas sends an action to the listener (With bonus multitouch info)
+    virtual void OnActionMultitouch(
+        [[maybe_unused]] AZ::EntityId entityId,
+        [[maybe_unused]] const LyShine::ActionName& actionName,
+        [[maybe_unused]] const AZ::Vector2& actionPosition,
+        [[maybe_unused]] int multiTouchIndex){};
+    //! Called when the canvas's enabled state changed
+    virtual void OnEnableStateChanged([[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] bool state){};
+#endif
 };
 
 typedef AZ::EBus<UiCanvasActionNotification> UiCanvasNotificationBus;
