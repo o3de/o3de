@@ -34,5 +34,7 @@ namespace AZ
             const void* defaultValue,
             const Uuid& valueTypeId,
             JsonSerializerContext& context) override;
+
+        BaseJsonSerializer::OperationFlags GetOperationsFlags() const override;
     };
 } // namespace AZ
