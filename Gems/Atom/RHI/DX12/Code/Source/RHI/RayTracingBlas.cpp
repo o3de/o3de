@@ -104,9 +104,9 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+#ifdef AZ_DX12_DXR_SUPPORT
         D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS RayTracingBlas::GetAccelerationStructureBuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
         {
-#ifdef AZ_DX12_DXR_SUPPORT
             D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS dxBuildFlags = {};
             if (RHI::CheckBitsAny(buildFlags, RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE))
             {
