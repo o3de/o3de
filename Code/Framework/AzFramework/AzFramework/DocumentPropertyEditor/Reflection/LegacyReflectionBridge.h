@@ -48,6 +48,9 @@ namespace AZ::Reflection
         //! If specified, an override for the instance of the element referenced in a container operation.
         //! Type: void*
         extern const Name ContainerElementOverride;
+        //! the index of the element, if it is a member of a sequenced container
+        //! Type: size_t
+        extern const Name ContainerIndex;
     } // namespace DescriptorAttributes
 
     AZStd::shared_ptr<AZ::Attribute> WriteDomValueToGenericAttribute(const AZ::Dom::Value& value);

@@ -1139,6 +1139,10 @@ namespace AZ::Serialize
         /// Returns true if elements can be retrieved by index.
         virtual bool    CanAccessElementsByIndex() const = 0;
         /// Returns the associative interface for this container (e.g. the container itself if it inherits it) if available, otherwise null.
+        virtual bool SwapElements([[maybe_unused]] void* instance, [[maybe_unused]] size_t firstIndex, [[maybe_unused]] size_t secondIndex)
+        {
+            return false;
+        }
         virtual IAssociativeDataContainer* GetAssociativeContainerInterface() { return nullptr; }
         /// Reserve an element and get its address (called before the element is loaded).
         virtual void* ReserveElement(void* instance, const ClassElement* classElement) = 0;

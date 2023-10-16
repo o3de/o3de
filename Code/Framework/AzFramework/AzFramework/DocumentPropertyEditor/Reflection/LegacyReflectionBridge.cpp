@@ -33,6 +33,7 @@ namespace AZ::Reflection
         const Name ParentContainerCanBeModified =
             Name::FromStringLiteral("ParentContainerCanBeModified", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ContainerElementOverride = Name::FromStringLiteral("ContainerElementOverride", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ContainerIndex = Name::FromStringLiteral("ContainerIndex", AZ::Interface<AZ::NameDictionary>::Get());
     } // namespace DescriptorAttributes
 
 
@@ -1354,10 +1355,10 @@ namespace AZ::Reflection
 
                     if (parentNode.m_classData && parentNode.m_classData->m_container)
                     {
-                        AZ::PointerObject parentDataContainerObject;
-                        parentDataContainerObject.m_address =
+                        auto parentContainerInfo =
                             (parentNode.m_parentContainerInfo ? parentNode.m_parentContainerInfo : parentNode.m_classData->m_container);
-                        parentDataContainerObject.m_typeId = azrtti_typeid<AZ::Serialize::IDataContainer>();
+                        AZ::PointerObject parentDataContainerObject = { parentContainerInfo,
+                                                                        azrtti_typeid<AZ::Serialize::IDataContainer>() };
 
                         nodeData.m_cachedAttributes.push_back(
                             { group, DescriptorAttributes::ParentContainer, Dom::Utils::ValueFromType(parentDataContainerObject) });
@@ -1368,6 +1369,13 @@ namespace AZ::Reflection
                         nodeData.m_cachedAttributes.push_back({ group,
                                                                 DescriptorAttributes::ParentContainerInstance,
                                                                 Dom::Utils::ValueFromType(parentContainerObject) });
+
+                        if (parentContainerInfo->IsSequenceContainer())
+                        {
+                            nodeData.m_cachedAttributes.push_back({ group,
+                                                                    DescriptorAttributes::ContainerIndex,
+                                                                    AZ::Dom::Value(parentNode.m_childElementIndex) });
+                        }
 
                         if (parentNode.m_containerElementOverride.IsValid())
                         {
