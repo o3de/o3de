@@ -56,6 +56,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = false;
             features.m_supportsInjection = false;
             features.m_defaultIsEqualToEmpty = false;
+            features.m_mandatoryFields = { "$address", "$type" };
         }
 
         bool AreEqual(const AZ::PointerObject& lhs, const AZ::PointerObject& rhs) override
