@@ -112,10 +112,19 @@ namespace AssetProcessorBuildTarget
     AZStd::string_view GetBuildTargetName();
 }
 
-
 AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent)
+    : AssetProcessorAZApplication(argc, argv, parent, {})
+{
+}
+
+AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : AssetProcessorAZApplication(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
     : QObject(parent)
-    , AzToolsFramework::ToolsApplication(argc, argv)
+    , AzToolsFramework::ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
 {
     // The settings registry has been created at this point, so add the CMake target
     // specialization to the settings
@@ -187,8 +196,18 @@ void AssetProcessorAZApplication::SetSettingsRegistrySpecializations(AZ::Setting
 }
 
 ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
+    : ApplicationManager(argc, argv, parent, {})
+{
+}
+
+ApplicationManager::ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
     : QObject(parent)
-    , m_frameworkApp(argc, argv)
+    , m_frameworkApp(argc, argv, AZStd::move(componentAppSettings))
 {
     qInstallMessageHandler(&AssetProcessor::MessageHandler);
 }

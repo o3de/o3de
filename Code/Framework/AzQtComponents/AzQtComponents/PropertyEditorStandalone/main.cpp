@@ -153,7 +153,7 @@ namespace StandaloneRPE
 class RPEApplication : public AzToolsFramework::ToolsApplication
 {
 public:
-    RPEApplication(int* argc = nullptr, char*** argv = nullptr) : AzToolsFramework::ToolsApplication(argc, argv) {}
+    using AzToolsFramework::ToolsApplication::ToolsApplication;
 
     void Reflect(AZ::ReflectContext* context) override
     {

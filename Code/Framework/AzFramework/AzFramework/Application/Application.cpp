@@ -100,14 +100,25 @@ namespace AzFramework
     }
 
     Application::Application()
-        : Application(nullptr, nullptr)
+        : Application(nullptr, nullptr, {})
+    {
+    }
+
+    Application::Application(AZ::ComponentApplicationSettings componentAppSettings)
+        : Application(nullptr, nullptr, AZStd::move(componentAppSettings))
     {
     }
 
     Application::Application(int* argc, char*** argv)
+        : Application(argc, argv, {})
+    {
+    }
+
+    Application::Application(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
         : ComponentApplication(
             argc ? *argc : 0,
-            argv ? *argv : nullptr
+            argv ? *argv : nullptr,
+            AZStd::move(componentAppSettings)
         )
     {
         // Startup default local FileIO (hits OSAllocator) if not already setup.

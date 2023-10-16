@@ -37,10 +37,6 @@ namespace AZ::RHI
     //! NOTE [SRG Constants]: The ConstantsData class is used for efficiently setting/getting the constants values of the SRG.
     class MultiDeviceShaderResourceGroupData
     {
-        //! Local abstraction for multi-device views to images and buffers, consisting of an image/buffer and a corresponding descriptor
-        using MultiDeviceBufferView = AZStd::pair<const MultiDeviceBuffer*, BufferViewDescriptor>;
-        using MultiDeviceImageView = AZStd::pair<const MultiDeviceImage*, ImageViewDescriptor>;
-
     public:
         //! By default creates an empty data structure. Must be initialized before use.
         MultiDeviceShaderResourceGroupData() = default;
@@ -274,8 +270,8 @@ namespace AZ::RHI
             return false;
         }
 
-        const ImageViewDescriptor& imageViewDescriptor = imageView->second;
-        const MultiDeviceImage& image = *(imageView->first);
+        const ImageViewDescriptor& imageViewDescriptor = imageView->GetDescriptor();
+        const MultiDeviceImage& image = *(imageView->GetImage());
         const ImageDescriptor& imageDescriptor = image.GetDescriptor();
         const ImageFrameAttachment* frameAttachment = image.GetFrameAttachment();
 
@@ -440,8 +436,8 @@ namespace AZ::RHI
         }
 
         const TShaderInputDescriptor& shaderInputBuffer = GetLayout()->GetShaderInput(inputIndex);
-        const BufferViewDescriptor& bufferViewDescriptor = bufferView->second;
-        const MultiDeviceBuffer& buffer = *(bufferView->first);
+        const BufferViewDescriptor& bufferViewDescriptor = bufferView->GetDescriptor();
+        const MultiDeviceBuffer& buffer = *(bufferView->GetBuffer());
         const BufferDescriptor& bufferDescriptor = buffer.GetDescriptor();
         const BufferFrameAttachment* frameAttachment = buffer.GetFrameAttachment();
 

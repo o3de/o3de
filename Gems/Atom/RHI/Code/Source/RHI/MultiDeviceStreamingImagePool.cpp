@@ -197,4 +197,59 @@ namespace AZ::RHI
     {
         return m_descriptor;
     }
+
+    bool MultiDeviceStreamingImagePool::SetMemoryBudget(size_t newBudget)
+    {
+        bool success{true};
+        IterateObjects<StreamingImagePool>([&success, newBudget]([[maybe_unused]] auto deviceIndex, auto deviceStreamingImagePool)
+        {
+            success &= deviceStreamingImagePool->SetMemoryBudget(newBudget);
+        });
+        return success;
+    }
+
+    const HeapMemoryUsage& MultiDeviceStreamingImagePool::GetHeapMemoryUsage(HeapMemoryLevel heapMemoryLevel) const
+    {
+        auto maxUsageIndex{-1};
+        auto maxBudget{0ull};
+        IterateObjects<StreamingImagePool>([&maxUsageIndex, &maxBudget, heapMemoryLevel](auto deviceIndex, auto deviceStreamingImagePool)
+        {
+            const auto& deviceHeapMemoryUsage{deviceStreamingImagePool->GetHeapMemoryUsage(heapMemoryLevel)};
+            if(deviceHeapMemoryUsage.m_budgetInBytes > maxBudget)
+            {
+                maxBudget = deviceHeapMemoryUsage.m_budgetInBytes;
+                maxUsageIndex = deviceIndex;
+            }
+        });
+
+        return GetDeviceStreamingImagePool(maxUsageIndex)->GetHeapMemoryUsage(heapMemoryLevel);
+    }
+
+    void MultiDeviceStreamingImagePool::SetLowMemoryCallback(LowMemoryCallback callback)
+    {
+        IterateObjects<StreamingImagePool>([&callback]([[maybe_unused]] auto deviceIndex, auto deviceStreamingImagePool)
+        {
+            deviceStreamingImagePool->SetLowMemoryCallback(callback);
+        });
+    }
+
+    bool MultiDeviceStreamingImagePool::SupportTiledImage() const
+    {
+        bool supportsTiledImage{true};
+        IterateObjects<StreamingImagePool>([&supportsTiledImage]([[maybe_unused]] auto deviceIndex, auto deviceStreamingImagePool)
+        {
+            supportsTiledImage &= deviceStreamingImagePool->SupportTiledImage();
+        });
+        return supportsTiledImage;
+    }
+
+    void MultiDeviceStreamingImagePool::Shutdown()
+    {
+        IterateObjects<StreamingImagePool>([]([[maybe_unused]] auto deviceIndex, auto deviceStreamingImagePool)
+        {
+            deviceStreamingImagePool->Shutdown();
+        });
+
+        MultiDeviceResourcePool::Shutdown();
+    }
 } // namespace AZ::RHI

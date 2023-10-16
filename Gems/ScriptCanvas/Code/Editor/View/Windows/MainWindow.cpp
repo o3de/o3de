@@ -1356,6 +1356,7 @@ namespace ScriptCanvasEditor
             RunGraphValidation(false);
             SetActiveAsset(activeGraph);
             SetRecentAssetId(activeGraph);
+            EnableOpenDocumentActions(true);
         }
         else
         {
@@ -1880,6 +1881,30 @@ namespace ScriptCanvasEditor
 
             OpenNextFile();
         }
+
+        EnableOpenDocumentActions(true);
+
+    }
+
+    void MainWindow::EnableOpenDocumentActions(bool enable)
+    {
+        ui->action_Save->setEnabled(enable);
+        ui->action_Save_As->setEnabled(enable);
+        ui->action_EnableSelection->setEnabled(enable);
+        ui->action_DisableSelection->setEnabled(enable);
+        ui->action_ClearSelection->setEnabled(enable);
+        ui->action_ZoomSelection->setEnabled(enable);
+        ui->action_GotoStartOfChain->setEnabled(enable);
+        ui->action_GotoEndOfChain->setEnabled(enable);
+    }
+
+    void MainWindow::EnableAlignmentActions(bool enable)
+    {
+        ui->menuAlign->setEnabled(enable);
+        ui->action_AlignTop->setEnabled(enable);
+        ui->action_AlignBottom->setEnabled(enable);
+        ui->action_AlignLeft->setEnabled(enable);
+        ui->action_AlignRight->setEnabled(enable);
     }
 
     void MainWindow::SetupEditMenu()
@@ -1980,7 +2005,6 @@ namespace ScriptCanvasEditor
         ui->action_Screenshot->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
         ui->menuSelect->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
         ui->action_ClearSelection->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
-        ui->menuAlign->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
     }
 
     void MainWindow::RefreshPasteAction()
@@ -2477,6 +2501,7 @@ namespace ScriptCanvasEditor
     {
         m_tabBar->CloseAllTabs();
         SetActiveAsset({});
+        EnableOpenDocumentActions(false);
     }
 
     void MainWindow::OnTabCloseButtonPressed(int index)
@@ -2573,6 +2598,7 @@ namespace ScriptCanvasEditor
             {
                 m_isClosingTabs = false;
                 m_skipTabOnClose.Clear();
+                EnableOpenDocumentActions(false);
                 return;
             }
 
@@ -2627,6 +2653,11 @@ namespace ScriptCanvasEditor
             {
                 // The last tab has been removed.
                 SetActiveAsset({});
+            }
+
+            if (m_tabBar->count() == 0)
+            {
+                EnableOpenDocumentActions(false);
             }
 
             // Handling various close all events because the save is async need to deal with this in a bunch of different ways
@@ -2824,14 +2855,18 @@ namespace ScriptCanvasEditor
             {
                 hasSelection = true;
                 m_propertyGrid->SetSelection(selection);
+
+                EnableAlignmentActions((selection.size() > 1));
             }
             else
             {
+                EnableAlignmentActions(false);
                 m_propertyGrid->ClearSelection();
             }
         }
         else
         {
+            EnableAlignmentActions(false);
             m_propertyGrid->ClearSelection();
         }
 
@@ -4411,6 +4446,7 @@ namespace ScriptCanvasEditor
         m_createScriptCanvas->setEnabled(false);
 
         UpdateMenuState(false);
+        EnableOpenDocumentActions(false);
 
         ui->action_New_Script->setEnabled(false);
 

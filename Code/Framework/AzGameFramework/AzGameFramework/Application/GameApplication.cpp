@@ -22,11 +22,22 @@
 namespace AzGameFramework
 {
     GameApplication::GameApplication()
+        : GameApplication(0, nullptr, {})
+    {
+    }
+
+    GameApplication::GameApplication(AZ::ComponentApplicationSettings componentAppSettings)
+        : GameApplication(0, nullptr, AZStd::move(componentAppSettings))
     {
     }
 
     GameApplication::GameApplication(int argc, char** argv)
-        : Application(&argc, &argv)
+        : GameApplication(argc, argv, {})
+    {
+    }
+
+    GameApplication::GameApplication(int argc, char** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : Application(&argc, &argv, AZStd::move(componentAppSettings))
     {
         // In the Launcher Applications the Settings Registry
         // can read from the FileIOBase instance if available

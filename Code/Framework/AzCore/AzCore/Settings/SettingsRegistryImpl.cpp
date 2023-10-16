@@ -1264,6 +1264,15 @@ namespace AZ
         AZ::IO::PathView filePath)
         -> MergeSettingsResult
     {
+        // There is no work to be done for an empty JSON string
+        if (jsonData.empty())
+        {
+            MergeSettingsResult mergeResult;
+            mergeResult.m_returnCode = MergeSettingsReturnCode::Failure;
+            mergeResult.m_operationMessages = "JSON String is empty. No merging to be done";
+            return mergeResult;
+        }
+
         rapidjson::Document jsonPatch;
         constexpr int flags = rapidjson::kParseStopWhenDoneFlag | rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag;
         jsonPatch.ParseInsitu<flags>(jsonData.data());
@@ -1272,9 +1281,10 @@ namespace AZ
             MergeSettingsResult mergeResult;
             mergeResult.m_returnCode = MergeSettingsReturnCode::Failure;
             mergeResult.m_operationMessages = "Unable to parse ";
-            mergeResult.m_operationMessages += filePath.empty() ? "data"
-                : AZStd::string::format(R"(registry file "%.*s")", AZ_PATH_ARG(filePath));
-            mergeResult.m_operationMessages += " at offset %zu.";
+            mergeResult.m_operationMessages +=
+                filePath.empty() ? "data" : AZStd::string::format(R"(registry file "%.*s")", AZ_PATH_ARG(filePath));
+            mergeResult.m_operationMessages += AZStd::string::format(
+                " at offset %zu.\nError: %s", jsonPatch.GetErrorOffset(), rapidjson::GetParseError_En(jsonPatch.GetParseError()));
             return mergeResult;
         }
 

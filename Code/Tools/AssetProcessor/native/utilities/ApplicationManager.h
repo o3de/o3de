@@ -40,7 +40,9 @@ class AssetProcessorAZApplication
     Q_OBJECT
 public:
     AZ_CLASS_ALLOCATOR(AssetProcessorAZApplication, AZ::SystemAllocator)
-    explicit AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent = nullptr);
+    AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent = nullptr);
+    AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
+    AssetProcessorAZApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
 
     ~AssetProcessorAZApplication() override = default;
     /////////////////////////////////////////////////////////
@@ -85,7 +87,9 @@ public:
         Status_Restarting,
         Status_Failure,
     };
-    explicit ApplicationManager(int* argc, char*** argv, QObject* parent = 0);
+    ApplicationManager(int* argc, char*** argv, QObject* parent = nullptr);
+    ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
+    ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
     virtual ~ApplicationManager();
     //! Prepares all the prerequisite needed for the main application functionality
     //! For eg Starts the AZ Framework,Activates logging ,Initialize Qt etc
