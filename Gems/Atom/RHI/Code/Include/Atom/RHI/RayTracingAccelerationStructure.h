@@ -47,10 +47,10 @@ namespace AZ::RHI
     //! SKINNED_MESH_INSTANCE: Instance mask value given to skinned meshes. Currently only used for skinned meshes
     //!
     //! For more information on instance occlusion masks visit: https://learn.microsoft.com/en-us/windows/win32/direct3d12/traceray-function
-    enum RayTracingAccelerationStructureInstanceInclusionMask : uint32_t
+    enum class RayTracingAccelerationStructureInstanceInclusionMask : uint32_t
     {
-        STATIC_MESH_INSTANCE = 0x1,
-        SKINNED_MESH_INSTANCE = 0x2,
+        STATIC_MESH = AZ_BIT(0),
+        SKINNED_MESH = AZ_BIT(1),
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask);
 

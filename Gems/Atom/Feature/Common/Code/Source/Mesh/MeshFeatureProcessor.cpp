@@ -2371,8 +2371,8 @@ namespace AZ
             rayTracingMesh.m_transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
             rayTracingMesh.m_nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
             rayTracingMesh.m_isSkinnedMesh = m_descriptor.m_isSkinnedMesh;
-            rayTracingMesh.m_instanceMask |= (rayTracingMesh.m_isSkinnedMesh) ? AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::SKINNED_MESH_INSTANCE :
-                                                                                AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH_INSTANCE;
+            rayTracingMesh.m_instanceMask |= (rayTracingMesh.m_isSkinnedMesh) ? static_cast<uint32_t>(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::SKINNED_MESH) :
+                                                                                static_cast<uint32_t>(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH);
 
             // setup the reflection probe data, and track if this mesh is currently affected by a reflection probe
             SetRayTracingReflectionProbeData(meshFeatureProcessor, rayTracingMesh.m_reflectionProbe);
