@@ -82,7 +82,7 @@ public:
     {
         Call(FN_OnAction, entityId, actionName);
     }
-	
+    
 #if defined(CARBONATED)
     void OnActionMultitouch(AZ::EntityId entityId, const LyShine::ActionName& actionName, const AZ::Vector2& position, int multitouchIndex) override
     {
