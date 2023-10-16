@@ -141,7 +141,7 @@ namespace UnitTest
 
             for (size_t i = 0; i < m_drawItemDatas.size(); ++i)
             {
-                ValidateDrawItem(m_drawItemDatas[i], drawPacket->GetDrawItem(i));
+                ValidateDrawItem(m_drawItemDatas[i], drawPacket->GetDrawItemProperties(i));
             }
 
             return drawPacket;
@@ -367,7 +367,7 @@ namespace UnitTest
             {
                 RHI::DrawListTag tag = drawPacket->GetDrawListTag(i);
 
-                listsByTag[tag.GetIndex()].push_back(drawPacket->GetDrawItem(i));
+                listsByTag[tag.GetIndex()].push_back(drawPacket->GetDrawItemProperties(i));
             }
 
             size_t tagIndex = 0;

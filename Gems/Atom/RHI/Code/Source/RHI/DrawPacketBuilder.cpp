@@ -90,7 +90,7 @@ namespace AZ::RHI
         }
     }
 
-    const DrawPacket* DrawPacketBuilder::End()
+    DrawPacket* DrawPacketBuilder::End()
     {
         if (m_drawRequests.empty())
         {
@@ -232,6 +232,7 @@ namespace AZ::RHI
             drawItemSortKeys[i] = drawRequest.m_sortKey;
 
             DrawItem& drawItem = drawItems[i];
+            drawItem.m_enabled = true;
             drawItem.m_arguments = m_drawArguments;
             drawItem.m_stencilRef = drawRequest.m_stencilRef;
             drawItem.m_streamBufferViewCount = 0;
@@ -294,7 +295,7 @@ namespace AZ::RHI
     const DrawPacket* DrawPacketBuilder::Clone(const DrawPacket* original)
     {
         Begin(original->m_allocator);
-        SetDrawArguments(original->GetDrawItem(0).m_item->m_arguments);
+        SetDrawArguments(original->GetDrawItemProperties(0).m_item->m_arguments);
         SetIndexBufferView(original->m_indexBufferView);
         SetRootConstants(AZStd::span<const uint8_t>(original->m_rootConstants, original->m_rootConstantSize));
         SetScissors(AZStd::span<const Scissor>(original->m_scissors, original->m_scissorsCount));
