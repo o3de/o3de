@@ -379,7 +379,7 @@ namespace AzToolsFramework
                     m_proxyValue = *valueToType;
                     typeId = m_proxyClassData.m_typeId;
                 }
-                else if (auto valueToPointerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(value.value()); valueToPointerObject)
+                else if (auto valueToPointerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(value.value()); valueToPointerObject && valueToPointerObject->IsValid())
                 {
                     if (valueToPointerObject->m_typeId == m_proxyClassData.m_typeId)
                     {
@@ -390,7 +390,21 @@ namespace AzToolsFramework
                     {
                         const AZ::SerializeContext::ClassData* pointerClassData =
                             serializeContext != nullptr ? serializeContext->FindClassData(valueToPointerObject->m_typeId) : nullptr;
-                        if (pointerClassData != nullptr && pointerClassData->m_azRtti != nullptr)
+
+                        auto proxyClassData = serializeContext->FindClassData(m_proxyClassData.m_typeId);
+
+                        void* proxyAddress{};
+                        if constexpr (AZStd::is_pointer_v<WrappedType>)
+                        {
+                            proxyAddress = m_proxyValue;
+                        }
+                        else
+                        {
+                            proxyAddress = &m_proxyValue;
+                        }
+
+                        if (pointerClassData != nullptr && pointerClassData->m_azRtti != nullptr &&
+                            pointerClassData->m_azRtti->IsTypeOf<WrappedType>())
                         {
                             if (auto castInstance = pointerClassData->m_azRtti->Cast<WrappedType>(valueToPointerObject->m_address); castInstance != nullptr)
                             {
@@ -398,6 +412,13 @@ namespace AzToolsFramework
                                 // Set the type ID to the derived class ID
                                 typeId = valueToPointerObject->m_typeId;
                             }
+                        }
+                        else if (proxyClassData != nullptr && proxyClassData->CanConvertFromType(valueToPointerObject->m_typeId, *serializeContext))
+                        {
+                            // Otherwise attempt to check if the proxy value is convertible to the TypeId type
+                            // such as for the case of an AZ::Data::Asset<T> from an AZ::Data::Asset<AZ::Data::AssetData>
+                            typeId = valueToPointerObject->m_typeId;
+                            m_proxyValue = *reinterpret_cast<WrappedType*>(valueToPointerObject->m_address);
                         }
                     }
                 }

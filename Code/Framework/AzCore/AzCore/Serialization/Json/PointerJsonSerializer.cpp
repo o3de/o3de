@@ -98,6 +98,16 @@ namespace AZ
                             result, ReporterString::format("Failed to read pointer address for %s.", PointerObjectTypeName)));
                     }
                 }
+                else
+                {
+                    result.Combine(context.Report(
+                        JSR::Tasks::ReadField,
+                        JSR::Outcomes::Missing,
+                        ReporterString::format(
+                            R"(Field "%s" is required for reading a %s.)",
+                            PointerJsonSerializerInternal::AddressField,
+                            PointerObjectTypeName)));
+                }
                 if (auto typeIt = inputValue.FindMember(PointerJsonSerializerInternal::TypeField); typeIt != inputValue.MemberEnd())
                 {
                     result.Combine(ContinueLoading(&pointerObject->m_typeId, azrtti_typeid<AZ::TypeId>(), typeIt->value, context));
@@ -107,6 +117,16 @@ namespace AZ
                         result.Combine(
                             context.Report(result, ReporterString::format("Failed to read type id for %s.", PointerObjectTypeName)));
                     }
+                }
+                else
+                {
+                    result.Combine(context.Report(
+                        JSR::Tasks::ReadField,
+                        JSR::Outcomes::Missing,
+                        ReporterString::format(
+                            R"(Field "%s" is required for reading a %s.)",
+                            PointerJsonSerializerInternal::TypeField,
+                            PointerObjectTypeName)));
                 }
 
                 return context.Report(
@@ -123,7 +143,7 @@ namespace AZ
         case rapidjson::kNumberType:
             return context.Report(
                 JSR::Tasks::ReadField,
-                JSR::Outcomes::Unsupported,
+                JSR::Outcomes::TypeMismatch,
                 ReporterString::format("Unsupported type. %s can only be read from an object.", PointerObjectTypeName));
 
         default:
