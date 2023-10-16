@@ -41,8 +41,8 @@ namespace AZ
                 auto buf = m_readbackBuffer->Map(m_copyDescriptor.m_size, 0);
                 if (buf.size())
                 {
-                    //? TODO: Take first here?
-                    memcpy(&depth, buf[0], sizeof(depth));
+                    AZ_Assert(RHI::CheckBitsAny(m_readbackBuffer->GetRHIBuffer()->GetDeviceMask(), RHI::MultiDevice::DefaultDevice), "DepthOfFieldFocusDepthToCpuPass currently only supports the default device.");
+                    memcpy(&depth, buf[RHI::MultiDevice::DefaultDeviceIndex], sizeof(depth));
                     m_readbackBuffer->Unmap();
                 }
             }

@@ -580,7 +580,8 @@ namespace AZ
                 auto bufferSize = readbackBufferCurrent->GetBufferSize();
                 readbackItem.m_dataBuffer = AZStd::make_shared<AZStd::vector<uint8_t>>();
 
-                void* buf = readbackBufferCurrent->Map(bufferSize, 0)[0]; //? Take element 0 here
+                AZ_Assert(RHI::CheckBitsAny(readbackBufferCurrent->GetRHIBuffer()->GetDeviceMask(), RHI::MultiDevice::DefaultDevice), "AttachmentReadback currently only supports the default device for now as long as passes have no device index yet.");
+                void* buf = readbackBufferCurrent->Map(bufferSize, 0)[RHI::MultiDevice::DefaultDeviceIndex];
                 if (buf)
                 {
                     if (m_attachmentType == RHI::AttachmentType::Buffer)

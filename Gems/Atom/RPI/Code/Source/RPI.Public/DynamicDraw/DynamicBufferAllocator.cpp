@@ -38,7 +38,9 @@ namespace AZ
             }
             
             m_ringBufferSize = ringBufferSize;
-            m_ringBufferStartAddress = m_ringBuffer->Map(m_ringBufferSize, 0)[0]; //? TODO take the first
+
+            AZ_Assert(RHI::CheckBitsAny(m_ringBuffer->GetRHIBuffer()->GetDeviceMask(), RHI::MultiDevice::DefaultDevice), "DynamicBufferAllocator currently only supports the default device.");
+            m_ringBufferStartAddress = m_ringBuffer->Map(m_ringBufferSize, 0)[RHI::MultiDevice::DefaultDeviceIndex];
             
             m_currentPosition = 0;
             m_endPositionLimit = 0;

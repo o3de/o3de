@@ -140,7 +140,6 @@ namespace AZ
                     m_streamFence = aznew RHI::MultiDeviceFence;
                     if (m_streamFence)
                     {
-                        //? TODO: What should be done here?
                         m_streamFence->Init(m_rhiBufferPool->GetDeviceMask(), RHI::FenceState::Reset);
                     }
 

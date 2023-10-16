@@ -65,6 +65,8 @@ namespace AZ
             //! This function is only used for buffer created in host such as dynamic buffer which content is rewritten every frame
             bool OrphanAndUpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes);
 
+            //! Maps all buffers in the underlying multi-device buffer and returns a vector
+            //! with mapped addresses, one per device.
             AZStd::vector<void*> Map(size_t byteCount, uint64_t byteOffset);
             void Unmap();
 
