@@ -873,11 +873,25 @@ namespace AzToolsFramework
             const AZ::Uuid& actualUUID = node->GetClassMetadata()->m_typeId;
             const AZ::Uuid& desiredUUID = GetHandledType();
 
+            auto serializeContext = node->GetSerializeContext();
+            auto desiredClassData = serializeContext->FindClassData(desiredUUID);
+
             for (size_t idx = 0; idx < node->GetNumInstances(); ++idx)
             {
                 void* instanceData = node->GetInstance(idx);
 
-                PropertyType* actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
+                PropertyType* actualCast{};
+                if (serializeContext->CanDowncast(actualUUID, desiredUUID, node->GetClassMetadata()->m_azRtti))
+                {
+                    actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
+                }
+                // Covert the cast of Asset<T> property handling
+                else if (desiredClassData != nullptr && desiredClassData->CanConvertFromType(actualUUID, *serializeContext))
+                {
+                    void* convertibleInstance{};
+                    desiredClassData->ConvertFromType(convertibleInstance, actualUUID, instanceData, *serializeContext);
+                    actualCast = reinterpret_cast<PropertyType*>(convertibleInstance);
+                }
                 AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
                 if (!ReadValuesIntoGUI(idx, wid, *actualCast, node))
                 {
