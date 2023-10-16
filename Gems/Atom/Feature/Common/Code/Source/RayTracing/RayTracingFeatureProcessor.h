@@ -159,7 +159,7 @@ namespace AZ
                 // non-uniform scale
                 AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
 
-                // instance mask
+                // instance mask. Used to include/exclude mesh instances from TraceRay() calls
                 uint32_t m_instanceMask = 0;
 
                 bool m_isSkinnedMesh = false;

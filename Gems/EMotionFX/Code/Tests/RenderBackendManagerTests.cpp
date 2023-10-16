@@ -164,7 +164,7 @@ namespace EMotionFX
                     m_actorAsset,
                     SkinningMethod::Linear,
                     /*transform=*/{},
-                    true));
+                    /*rayTracingEnabled*/true));
             }
 
             void Deactivate() override
