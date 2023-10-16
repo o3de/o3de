@@ -116,7 +116,6 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t index)>("RemoveNotify");
         static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
         static constexpr auto ContainerCanBeModified = AttributeDefinition<bool>("ContainerCanBeModified");
-        static constexpr auto PromptOnContainerClear = AttributeDefinition<bool>("PromptOnContainerClear");
     };
 
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
@@ -149,10 +148,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
         //! Specifies the alignment options for a PropertyEditor that has the Alignment attribute.
         enum class Align : AZ::u8
         {
+            UseDefaultAlignment = 0,
             AlignLeft,
             AlignRight,
             AlignCenter,
-            UseDefaultAlignment
         };
         //! Specifies that this PropertyEditor should have a specific alignment within its own column. The alignment of ALL
         //! PropertyEditors inside of a SharedColumn will be the alignment of the last PropertyEditor with a valid alignment attribute.
@@ -225,13 +224,16 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         AddElement,
         RemoveElement,
-        Clear
+        Clear,
+        MoveUp,
+        MoveDown
     };
 
     struct ContainerActionButton : GenericButton
     {
         static constexpr AZStd::string_view Name = "ContainerActionButton";
         static constexpr auto Action = AttributeDefinition<ContainerAction>("Action");
+        static constexpr auto ContainerIndex = AttributeDefinition<AZ::s64>("ContainerIndex");
     };
 
     struct CheckBox : PropertyEditorDefinition

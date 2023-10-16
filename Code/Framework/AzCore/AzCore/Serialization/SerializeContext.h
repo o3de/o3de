@@ -1152,6 +1152,10 @@ namespace AZ::Serialize
         /// Returns true if elements can be retrieved by index.
         virtual bool    CanAccessElementsByIndex() const = 0;
         /// Returns the associative interface for this container (e.g. the container itself if it inherits it) if available, otherwise null.
+        virtual bool SwapElements([[maybe_unused]] void* instance, [[maybe_unused]] size_t firstIndex, [[maybe_unused]] size_t secondIndex)
+        {
+            return false;
+        }
         virtual IAssociativeDataContainer* GetAssociativeContainerInterface() { return nullptr; }
         virtual const IAssociativeDataContainer* GetAssociativeContainerInterface() const { return nullptr; }
         //! Returns true if the IDataContainer represents a reflected sequence type(AZStd array, (fixed)vector, list)
