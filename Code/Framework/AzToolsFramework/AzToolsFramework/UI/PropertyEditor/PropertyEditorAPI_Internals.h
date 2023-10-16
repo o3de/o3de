@@ -424,8 +424,6 @@ namespace AzToolsFramework
                 }
             }
 
-            // Set the m_genericClassInfo (if any) for our type in case the property handler needs to access it
-            // when downcasting to the generic type (e.g. for asset property downcasting to the generic AZ::Data::Asset<AZ::Data::AssetData>)
             if (typeId.IsNull())
             {
                 auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
@@ -437,10 +435,13 @@ namespace AzToolsFramework
                 {
                     typeId = AZ::Dom::Utils::GetValueTypeId(value.value());
                 }
-                if (!typeId.IsNull())
-                {
-                    m_proxyClassElement.m_genericClassInfo = serializeContext->FindGenericClassInfo(typeId);
-                }
+            }
+
+            // Set the m_genericClassInfo (if any) for our type in case the property handler needs to access it
+            // when downcasting to the generic type (e.g. for asset property downcasting to the generic AZ::Data::Asset<AZ::Data::AssetData>)
+            if (!typeId.IsNull())
+            {
+                m_proxyClassElement.m_genericClassInfo = serializeContext->FindGenericClassInfo(typeId);
             }
 
             if (m_widget)
@@ -873,13 +874,36 @@ namespace AzToolsFramework
             const AZ::Uuid& actualUUID = node->GetClassMetadata()->m_typeId;
             const AZ::Uuid& desiredUUID = GetHandledType();
 
+            AZ::SerializeContext* serializeContext{};
+            if (auto componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+                componentApplicationRequests != nullptr)
+            {
+                serializeContext = componentApplicationRequests->GetSerializeContext();
+            }
+
+            if (serializeContext == nullptr)
+            {
+                return;
+            }
+
+            auto desiredClassData = serializeContext->FindClassData(desiredUUID);
+
             for (size_t idx = 0; idx < node->GetNumInstances(); ++idx)
             {
                 void* instanceData = node->GetInstance(idx);
 
                 PropertyType* actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
+
+                // Check to see if the type supports an IDataConverter for Asset<T> types
+                // in case CastTo fails
+                if (actualCast == nullptr && desiredClassData != nullptr && desiredClassData->CanConvertFromType(actualUUID, *serializeContext))
+                {
+                    void* convertibleInstance{};
+                    desiredClassData->ConvertFromType(convertibleInstance, actualUUID, instanceData, *serializeContext);
+                    actualCast = reinterpret_cast<PropertyType*>(convertibleInstance);
+                }
                 AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
-                if (!ReadValuesIntoGUI(idx, wid, *actualCast, node))
+                if (actualCast == nullptr || !ReadValuesIntoGUI(idx, wid, *actualCast, node))
                 {
                     return;
                 }
