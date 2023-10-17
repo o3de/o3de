@@ -362,20 +362,13 @@ namespace O3DELauncher
                 { "op": "add", "path": "/O3DE", "value": { "Runtime": { "Manifest": { "Project": {} } } } },
                 { "op": "add", "path": "/Amazon", "value": { "AzCore": { "Bootstrap": {} } } })";
 
-        if (!IsGenericLauncher())
+        // Query the project_name baked into the launcher executable
+        const AZStd::string_view launcherProjectName = GetProjectName();
+        if (!launcherProjectName.empty())
         {
-            // Insert the project_name option to the front.
-            // note that this comes directly from the burned-in project name during build
-            // and not the project.json file, which is read and updated when we create the Application instance, below.
-            // the generic launcher will instead read it from the project.json
-            const AZStd::string_view launcherProjectName = GetProjectName();
-            if (!launcherProjectName.empty())
-            {
-                const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
-                projectNameOptionOverride = FixedValueString::format(R"(--regset="%s=%.*s")",
-                    projectNameKey.c_str(), aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data());
-                argContainer.emplace_back(projectNameOptionOverride.data());
-            }
+            // Append the project name setting to the JSON Patch
+            launcherJsonPatch += FixedValueString::format(R"(,
+                { "op": "add", "path": "/O3DE/Runtime/Manifest/Project/project_name", "value": "%.*s" })", AZ_STRING_ARG(launcherProjectName));
         }
 
         // Non-host platforms cannot use the project path that is #defined within the launcher.
@@ -419,14 +412,13 @@ namespace O3DELauncher
             return ReturnCode::ErrValidation;
         }
 
-        // retriebve the project name as specified by the actual project.json (or updated from command line)
-        AZ::SettingsRegistryInterface::FixedValueString updatedProjectName = AZ::Utils::GetProjectName();
-
-
         // Save the build target name (usually myprojectname_gamelauncher, or myprojectname_serverlauncher, etc)
         // into the specialization list, so that the regset files for xxxxx.myprojectname_gamelauncher are included in the loaded set.
-        // in generic mode, this needs to be updated to a name based on the project name.
+        // in generic mode, this needs to be updated to a name based on the project name, so it is not a string view, here.
         AZStd::string buildTargetName = GetBuildTargetName();
+
+        // retrieve the project name as specified by the actual project.json (or updated from command line)
+        AZ::SettingsRegistryInterface::FixedValueString updatedProjectName = AZ::Utils::GetProjectName();
         if (IsGenericLauncher())
         {
             // this will always be the value O3DE_xxxxx where xxxxx is the type of target ("GameLauncher/ServerLauncher/UnifiedLauncher/etc")
