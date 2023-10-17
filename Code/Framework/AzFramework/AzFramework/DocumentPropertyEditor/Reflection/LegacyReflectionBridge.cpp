@@ -761,8 +761,6 @@ namespace AZ::Reflection
                         {
                             parentData.m_childMappedValueLabelOverride = AZStd::move(*stringKey);
                         }
-                        CacheAttributes();
-                        parentData.m_childKeyEntry.m_keyAttributes = AZStd::move(nodeData.m_cachedAttributes);
 
                         // Do not enumerate the key elements itself
                         // Instead let the mapped type in the else block add a DOM Editor for the key
