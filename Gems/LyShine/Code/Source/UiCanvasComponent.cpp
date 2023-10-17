@@ -68,6 +68,7 @@ class UiCanvasNotificationBusBehaviorHandler
     , public AZ::BehaviorEBusHandler
 {
 public:
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
 #if defined(CARBONATED)
     AZ_EBUS_BEHAVIOR_BINDER(UiCanvasNotificationBusBehaviorHandler, "{64014B4F-E12F-4839-99B0-426B5717DB44}", AZ::SystemAllocator,
         OnAction,
@@ -77,12 +78,12 @@ public:
     AZ_EBUS_BEHAVIOR_BINDER(UiCanvasNotificationBusBehaviorHandler, "{64014B4F-E12F-4839-99B0-426B5717DB44}", AZ::SystemAllocator,
         OnAction);
 #endif
-
+// Carbonated end
     void OnAction(AZ::EntityId entityId, const LyShine::ActionName& actionName) override
     {
         Call(FN_OnAction, entityId, actionName);
     }
-    
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
 #if defined(CARBONATED)
     void OnActionMultitouch(AZ::EntityId entityId, const LyShine::ActionName& actionName, const AZ::Vector2& position, int multitouchIndex) override
     {
@@ -94,6 +95,7 @@ public:
         Call(FN_OnEnableStateChanged, canvasEntityId, enabled);
     }
 #endif
+// Carbonated end
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,6 +186,7 @@ public:
     }
 };
 
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
 #if defined(CARBONATED)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasEnabledStateNotificationBus Behavior context handler class
@@ -201,7 +204,7 @@ public:
     }
 };
 #endif
-
+// Carbonated end
 // Anonymous namespace
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -1011,10 +1014,11 @@ void UiCanvasComponent::SetEnabled(bool enabled)
     {
         m_enabled = enabled;
         MarkRenderGraphDirty();
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
 #if defined(CARBONATED)
         EBUS_EVENT(UiCanvasNotificationBus, OnEnableStateChanged, GetEntityId(), m_enabled);
 #endif
-
+// Carbonated end
         UiCanvasEnabledStateNotificationBus::Broadcast(
             &UiCanvasEnabledStateNotificationBus::Events::OnCanvasEnabledStateChanged, GetEntityId(), m_enabled);
     }
@@ -1232,8 +1236,8 @@ bool UiCanvasComponent::HandleInputPositionalEvent(const AzFramework::InputChann
             m_lastMousePosition = viewportPos;
         }
     }
-
-#if defined CARBONATED
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
+#if defined(CARBONATED)
     //Well treat the first finger input as the 'mouse position'
     if (inputSnapshot.m_channelId == AzFramework::InputDeviceTouch::Touch::Index0)
     {
@@ -1243,7 +1247,7 @@ bool UiCanvasComponent::HandleInputPositionalEvent(const AzFramework::InputChann
         }
     }
 #endif
-
+// Carbonated end
     // Currently we are just interested in mouse events and the primary touch for hover events
     if (AzFramework::InputDeviceMouse::IsMouseDevice(inputSnapshot.m_deviceId) ||
         inputSnapshot.m_channelId == AzFramework::InputDeviceTouch::Touch::Index0)
@@ -2547,11 +2551,12 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
 
         behaviorContext->EBus<UiCanvasInputNotificationBus>("UiCanvasInputNotificationBus")
             ->Handler<UiCanvasInputNotificationBusBehaviorHandler>();
-
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
 #if defined(CARBONATED)
         behaviorContext->EBus<UiCanvasEnabledStateNotificationBus>("UiCanvasEnabledStateNotificationBus")
             ->Handler<UiCanvasEnabledStateNotificationBusBehaviorHandler>();
 #endif
+// Carbonated end
     }
 }
 
