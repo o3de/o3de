@@ -11,12 +11,6 @@
                     "Name": "RayTracingTLAS",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "Shader"
-                },
-                {
-                    "Name": "SkinnedMeshes",
-                    "ShaderInputName": "NoBind",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
                 }
             ]
         }

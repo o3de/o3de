@@ -41,16 +41,7 @@
                 },
                 {
                     "Name": "RayTracingAccelerationStructurePass",
-                    "TemplateName": "RayTracingAccelerationStructurePassTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "SkinnedMeshes",
-                            "AttachmentRef": {
-                                "Pass": "SkinningPass",
-                                "Attachment": "SkinnedMeshOutputStream"
-                            }
-                        }
-                    ]
+                    "TemplateName": "RayTracingAccelerationStructurePassTemplate"
                 },
                 {
                     "Name": "DepthPrePass",
