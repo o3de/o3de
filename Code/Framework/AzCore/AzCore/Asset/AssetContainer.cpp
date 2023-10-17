@@ -10,9 +10,14 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace AZ::Data
 {
+    AZ_CVAR(bool, bg_trackHandledAssetDependencies, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Set to true if to track handled asset dependencies in order to troubleshoot when a dependent asset hasn't loaded.");
+
     AssetContainer::AssetContainer(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams, bool isReload)
     {
         m_rootAsset = AssetInternal::WeakAsset<AssetData>(rootAsset);
@@ -112,6 +117,14 @@ namespace AZ::Data
                 preloadDependencies[rootAssetId].insert(thisAsset.m_assetId);
             }
         }
+
+        // Determine if the Handled Asset Dependencies should be tracked to troubleshoot when asset dependencies are not loaded
+        bool trackHandledAssetDependencies = false;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("bg_trackHandledAssetDependencies", trackHandledAssetDependencies);
+        }
+
         // Do as much validation of dependencies as we can before the AddWaitingAssets and GetAsset calls for dependencies below
         if (getDependenciesResult.IsSuccess())
         {
@@ -123,7 +136,12 @@ namespace AZ::Data
                 // No matter whether or not the asset dependency is valid, loaded, or filtered out, mark it as successfully handled.
                 // When we encounter the asset reference during serialization, we will know that it should intentionally be skipped.
                 // Otherwise, it would be treated as a missing dependency and assert.
-                handledAssetDependencyList.emplace_back(thisAsset.m_assetId);
+                // This logic only triggers if the "bg_trackHandledAssetDependencies" Console Variable is true
+                // Tracking of handled Asset Dependencies can be heavily for a large spawnable, as an AssetId is 32 bytes
+                if (trackHandledAssetDependencies)
+                {
+                    handledAssetDependencyList.emplace_back(thisAsset.m_assetId);
+                }
 
                 if (!assetInfo.m_assetId.IsValid())
                 {
@@ -159,6 +177,8 @@ namespace AZ::Data
                 dependencyInfoList.push_back(assetInfo);
             }
         }
+
+        waitingList.reserve(waitingList.size() + dependencyInfoList.size());
         for (auto& thisInfo : dependencyInfoList)
         {
             waitingList.push_back(thisInfo.m_assetId);
@@ -173,7 +193,8 @@ namespace AZ::Data
         // All asset dependencies below the root asset should be provided by the asset catalog, and therefore should *not*
         // get triggered to load when the asset reference is serialized in.  However, it's useful to detect, warn, and handle
         // the case where the asset dependencies are NOT set up correctly.
-        loadParamsCopyWithNoLoadingFilter.m_assetLoadFilterCB = [handledAssetDependencyList](const AssetFilterInfo& filterInfo)
+        loadParamsCopyWithNoLoadingFilter.m_assetLoadFilterCB = [handledAssetDependencyList = AZStd::move(handledAssetDependencyList),
+                                                                 trackHandledAssetDependencies](const AssetFilterInfo& filterInfo)
         {
             // NoLoad dependencies should always get filtered out and not loaded.
             if (filterInfo.m_loadBehavior == AZ::Data::AssetLoadBehavior::NoLoad)
@@ -192,12 +213,15 @@ namespace AZ::Data
             // behavior, we would need to rework the way filters work as well as the code in AssetSerializer.cpp to pass down
             // the loadParams.m_assetLoadFilterCB that was passed into the AddDependentAssets() methods to use as the dependent
             // asset filter instead of this lambda function.
-            AZ_UNUSED(handledAssetDependencyList); // Prevent unused warning in release builds
-            AZ_Assert(AZStd::find(handledAssetDependencyList.begin(), handledAssetDependencyList.end(), filterInfo.m_assetId) !=
-                handledAssetDependencyList.end(),
-                "Dependent Asset ID (%s) is expected to load, but the Asset Catalog has no dependency recorded. "
-                "Examine the asset builder for the asset relying on this to ensure it is generating the correct dependencies.",
-                filterInfo.m_assetId.ToString<AZStd::string>().c_str());
+            if (trackHandledAssetDependencies)
+            {
+                AZ_UNUSED(handledAssetDependencyList); // Prevent unused warning in release builds
+                AZ_Assert(AZStd::find(handledAssetDependencyList.begin(), handledAssetDependencyList.end(), filterInfo.m_assetId) !=
+                    handledAssetDependencyList.end(),
+                    "Dependent Asset ID (%s) is expected to load, but the Asset Catalog has no dependency recorded. "
+                    "Examine the asset builder for the asset relying on this to ensure it is generating the correct dependencies.",
+                    filterInfo.m_assetId.ToString<AZStd::string>().c_str());
+            }
 
             // The dependent asset should have already been created and at least queued to load prior to reaching this point.
             // The asset serializer needs to get a successful result from FindAsset(), or else our asset reference will fail
