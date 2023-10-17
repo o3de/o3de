@@ -24,26 +24,27 @@ namespace AZ
             //! @param currentFilePath The path of the .material or .materialtype file being processed
             //! @param referencedParentPath The path to the referenced file as it appears in the current file
             //! @param jobKey The job key for the job that is expected to process the referenced file
-            //! @param jobDependencies Dependencies may be added to this list
-            //! @param sourceDependencies Dependencies may be added to this list
-            //! @param forceOrderOnce If true, any job dependencies will use JobDependencyType::OrderOnce. Use this if the builder will only ever need to get the AssetId
-            //!                       of the referenced file but will not need to load the asset.
+            //! @param outputJobDescriptor Used to update job dependencies
+            //! @param response Used to update source dependencies
+            //! @param jobDependencyType Assigns the job dependency type for any added dependencies.
             void AddPossibleDependencies(
                 const AZStd::string& currentFilePath,
                 const AZStd::string& referencedParentPath,
                 const char* jobKey,
-                AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies,
-                AssetBuilderSDK::JobDependencyType jobDependencyType = AssetBuilderSDK::JobDependencyType::Order,
+                AssetBuilderSDK::JobDescriptor& outputJobDescriptor,
+                AssetBuilderSDK::CreateJobsResponse& response,
+                AssetBuilderSDK::JobDependencyType jobDependencyType,
                 AZStd::optional<AZ::u32> productSubId = AZStd::nullopt);
-
 
             void AddPossibleImageDependencies(
                 const AZStd::string& currentFilePath,
                 const AZStd::string& imageFilePath,
-                AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies);
-        }
+                AssetBuilderSDK::JobDescriptor& outputJobDescriptor,
+                AssetBuilderSDK::CreateJobsResponse& response);
 
+            void AddFingerprintForDependency(
+                const AZStd::string& filePath,
+                AssetBuilderSDK::JobDescriptor& outputJobDescriptor);
+        } // namespace MaterialBuilderUtils
     } // namespace RPI
 } // namespace AZ
