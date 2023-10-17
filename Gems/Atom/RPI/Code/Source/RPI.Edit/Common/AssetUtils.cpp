@@ -130,30 +130,38 @@ namespace AZ
             {
                 AZStd::vector<AZStd::string> results;
 
-                // Convert incoming paths containing aliases into absolute paths
+                // If the reference path already resolves to an absolute path then return it as the only possible option.
                 AZ::IO::FixedMaxPath referencedPath;
                 AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencedPath, AZ::IO::PathView{ referencedSourceFilePath });
-
-                if (referencedPath.IsRelative())
+                if (referencedPath.IsAbsolute())
                 {
-                    // if the referencedPath exists under project path, then we can skip constructing a new path based on source file path
-                    AZ::IO::FixedMaxPath fullPath = AZ::Utils::GetProjectPath();
-                    fullPath /= referencedPath;
-                    if (!AZ::IO::SystemFile::Exists(fullPath.c_str()))
-                    {
-                        AZ::IO::FixedMaxPath originatingPath;
-                        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
-                        // Use the referencedSourceFilePath as a relative path starting at originatingSourceFilePath
-                        AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
-                        combinedPath /= referencedPath;
-
-                        results.push_back(combinedPath.LexicallyNormal().String());
-                    }
+                    results.push_back(referencedPath.LexicallyNormal().String());
+                    return results;
                 }
 
-                // Use the referencedSourceFilePath as a standard asset path
-                results.push_back(referencedPath.LexicallyNormal().String());
+                // If the reference path can be resolved relative to the originating source path then return it immediately.
+                if (const AZ::IO::FixedMaxPath resolvedPath(ResolvePathReference(originatingSourceFilePath, referencedSourceFilePath));
+                    resolvedPath.IsAbsolute())
+                {
+                    results.push_back(resolvedPath.LexicallyNormal().String());
+                    return results;
+                }
 
+                // If the reference path exists relative to the project path then return it.
+                AZ::IO::FixedMaxPath fullPath = AZ::Utils::GetProjectPath();
+                fullPath /= referencedPath;
+                results.push_back(fullPath.LexicallyNormal().String());
+                if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
+                {
+                    return results;
+                }
+
+                // If none of the other cases returned, add the reference path relative to the originating source path.
+                AZ::IO::FixedMaxPath originatingPath;
+                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
+                AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
+                combinedPath /= referencedPath;
+                results.push_back(combinedPath.LexicallyNormal().String());
                 return results;
             }
 
