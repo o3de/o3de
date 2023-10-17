@@ -30,6 +30,8 @@ namespace AZ
     {
         namespace JSR = JsonSerializationResult;
 
+        AZ::PointerObject localInstance;
+
         JSR::ResultCode result(JSR::Tasks::ReadField);
 
         const char* PointerObjectTypeName = AZ::AzTypeInfo<PointerObject>::Name();
@@ -90,7 +92,7 @@ namespace AZ
                     if (result.GetProcessing() == JSR::Processing::Completed)
                     {
                         // If the value pointer address was successfully read, store it in the address member
-                        pointerObject->m_address = reinterpret_cast<void*>(pointerAddressIntPtr);
+                        localInstance.m_address = reinterpret_cast<void*>(pointerAddressIntPtr);
                     }
                     else
                     {
@@ -98,15 +100,42 @@ namespace AZ
                             result, ReporterString::format("Failed to read pointer address for %s.", PointerObjectTypeName)));
                     }
                 }
+                else
+                {
+                    result.Combine(context.Report(
+                        JSR::Tasks::ReadField,
+                        JSR::Outcomes::Missing,
+                        ReporterString::format(
+                            R"(Field "%s" is required for reading a %s.)",
+                            PointerJsonSerializerInternal::AddressField,
+                            PointerObjectTypeName)));
+                }
                 if (auto typeIt = inputValue.FindMember(PointerJsonSerializerInternal::TypeField); typeIt != inputValue.MemberEnd())
                 {
-                    result.Combine(ContinueLoading(&pointerObject->m_typeId, azrtti_typeid<AZ::TypeId>(), typeIt->value, context));
+                    result.Combine(ContinueLoading(&localInstance.m_typeId, azrtti_typeid<AZ::TypeId>(), typeIt->value, context));
 
                     if (result.GetProcessing() != JSR::Processing::Completed)
                     {
                         result.Combine(
                             context.Report(result, ReporterString::format("Failed to read type id for %s.", PointerObjectTypeName)));
                     }
+                }
+                else
+                {
+                    result.Combine(context.Report(
+                        JSR::Tasks::ReadField,
+                        JSR::Outcomes::Missing,
+                        ReporterString::format(
+                            R"(Field "%s" is required for reading a %s.)",
+                            PointerJsonSerializerInternal::TypeField,
+                            PointerObjectTypeName)));
+                }
+
+                // All fields have been succesfully loaded into the local instance
+                // so copy it over to the outputValue address
+                if (result.GetProcessing() == JSR::Processing::Completed)
+                {
+                    *pointerObject = AZStd::move(localInstance);
                 }
 
                 return context.Report(
@@ -123,7 +152,7 @@ namespace AZ
         case rapidjson::kNumberType:
             return context.Report(
                 JSR::Tasks::ReadField,
-                JSR::Outcomes::Unsupported,
+                JSR::Outcomes::Invalid,
                 ReporterString::format("Unsupported type. %s can only be read from an object.", PointerObjectTypeName));
 
         default:
@@ -175,5 +204,10 @@ namespace AZ
             result,
             result.GetProcessing() == JSR::Processing::Completed ? ReporterString::format("%s stored successfully.", PointerObjectTypeName)
                                                                  : ReporterString::format("Failed to store %s.", PointerObjectTypeName));
+    }
+
+    auto PointerJsonSerializer::GetOperationsFlags() const -> BaseJsonSerializer::OperationFlags
+    {
+        return BaseJsonSerializer::OperationFlags::ManualDefault;
     }
 } // namespace AZ
