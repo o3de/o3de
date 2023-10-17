@@ -170,7 +170,12 @@ protected: // data members
 
     //! the viewport position at which the press event occured (only valid if m_isPressed is true)
     AZ::Vector2 m_pressedPoint;
-
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
+#if defined(CARBONATED)
+    //! the multitouch position at which the press event occured (only valid if m_isPressed is true)
+    int m_pressedMultiTouchIndex;
+#endif
+// Carbonated end
     //! The current interactable state. This is stored so that we can detect state changes.
     UiInteractableStatesInterface::State m_state;
 
