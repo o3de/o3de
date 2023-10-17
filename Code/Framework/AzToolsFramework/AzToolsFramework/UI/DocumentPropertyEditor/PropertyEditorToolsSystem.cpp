@@ -53,7 +53,7 @@ namespace AzToolsFramework
             AZ::Dom::Value value = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
             // If the object is a pointer object extract the TypeId from it
             if (auto pointerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(value);
-                pointerObject)
+                pointerObject && pointerObject->IsValid())
             {
                 typeId = pointerObject->m_typeId;
             }
