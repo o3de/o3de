@@ -2510,9 +2510,11 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
             ->Event("SetTooltipDisplayElement", &UiCanvasBus::Events::SetTooltipDisplayElement)
             ->Event("GetHoverInteractable", &UiCanvasBus::Events::GetHoverInteractable)
             ->Event("ForceHoverInteractable", &UiCanvasBus::Events::ForceHoverInteractable)
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
 #if defined CARBONATED
             ->Event("GetMousePosition", &UiCanvasBus::Events::GetMousePosition)
 #endif
+// Carbonated end
             ->Event("ForceEnterInputEventOnInteractable", &UiCanvasBus::Events::ForceEnterInputEventOnInteractable);
 
 
