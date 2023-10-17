@@ -69,7 +69,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptCanvas.Shared STATIC
+    NAME ScriptCanvas.API STATIC
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvasgem_autogen_files.cmake
@@ -127,7 +127,7 @@ ly_add_target(
             ${SCRIPT_CANVAS_COMMON_DEFINES}
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::ScriptCanvas.Shared
+            Gem::ScriptCanvas.API
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
@@ -174,7 +174,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AssetBuilderSDK
                 ${additional_dependencies}
-                Gem::ScriptCanvas.Shared
+                Gem::ScriptCanvas.API
                 Gem::ScriptEvents.Static
                 Gem::GraphCanvasWidgets
                 Gem::ExpressionEvaluation.Static
@@ -243,7 +243,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzCoreTestCommon
                 AZ::AzFramework
                 AZ::AzTest
-                Gem::ScriptCanvas
+                Gem::ScriptCanvas.API
     )
     ly_add_googletest(
         NAME Gem::ScriptCanvas.Tests
@@ -263,7 +263,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzCoreTestCommon
                     AZ::AzTest
-                    Gem::ScriptCanvas.Shared
+                    Gem::ScriptCanvas.API
                     Gem::ScriptCanvas.Editor.Static
         )
         ly_add_googletest(

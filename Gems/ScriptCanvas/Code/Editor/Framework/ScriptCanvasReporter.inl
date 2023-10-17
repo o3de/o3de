@@ -127,9 +127,9 @@ namespace ScriptCanvasEditor
         return m_translationDuration;
     }
 
-    AZ_INLINE const AZStd::string Reporter::GetFilePath() const
+    AZ_INLINE const AZ::IO::Path& Reporter::GetFilePath() const
     {
-        return m_filePath.String();
+        return m_filePath;
     }
 
     AZ_INLINE bool Reporter::IsActivated() const
@@ -295,7 +295,7 @@ namespace ScriptCanvasEditor
         m_processOnly = processOnly;
     }
 
-    AZ_INLINE void Reporter::SetFilePath(const AZStd::string& filePath)
+    AZ_INLINE void Reporter::SetFilePath(const AZ::IO::PathView& filePath)
     {
         m_filePath = filePath;
     }

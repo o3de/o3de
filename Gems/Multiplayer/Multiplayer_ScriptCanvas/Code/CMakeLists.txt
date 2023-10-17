@@ -18,7 +18,7 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::ScriptCanvas.Shared
+            Gem::ScriptCanvas.API
             Gem::Multiplayer.Common.Static
     AUTOGEN_RULES
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h

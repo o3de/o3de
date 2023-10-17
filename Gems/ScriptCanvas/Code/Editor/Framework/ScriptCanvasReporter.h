@@ -94,7 +94,7 @@ namespace ScriptCanvasEditor
 
         AZStd::sys_time_t GetTranslateDuration() const;
 
-        const AZStd::string GetFilePath() const;
+        const AZ::IO::Path& GetFilePath() const;
 
         bool IsActivated() const;
 
@@ -138,7 +138,7 @@ namespace ScriptCanvasEditor
 
         void SetProcessOnly(bool processOnly);
 
-        void SetFilePath(const AZStd::string& filePath);
+        void SetFilePath(const AZ::IO::PathView& filePath);
 
         // Bus::Handler
         void AddFailure(const Report& report) override;
