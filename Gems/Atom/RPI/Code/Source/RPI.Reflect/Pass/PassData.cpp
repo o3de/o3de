@@ -62,13 +62,14 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<RasterPassData, RenderPassData>()
-                    ->Version(4) // antonmic: added m_viewportAndScissorOutputTargetIndex
+                    ->Version(5) // antonmic: added m_enableDrawItemsByDefault
                     ->Field("DrawListTag", &RasterPassData::m_drawListTag)
                     ->Field("PassSrgShaderAsset", &RasterPassData::m_passSrgShaderReference)
                     ->Field("Viewport", &RasterPassData::m_overrideViewport)
                     ->Field("Scissor", &RasterPassData::m_overrideScissor)
                     ->Field("DrawListSortType", &RasterPassData::m_drawListSortType)
                     ->Field("ViewportScissorTargetOutputIndex", &RasterPassData::m_viewportAndScissorTargetOutputIndex)
+                    ->Field("EnableDrawItemsByDefault", &RasterPassData::m_enableDrawItemsByDefault)
                     ;
             }
         }

@@ -47,6 +47,8 @@ namespace AZ
             SetDrawListTag(rasterData->m_drawListTag);
             m_drawListSortType = rasterData->m_drawListSortType;
 
+            RHI::RHISystemInterface::Get()->SetDrawListTagEnabledByDefault(m_drawListTag, rasterData->m_enableDrawItemsByDefault);
+
             // Get the shader asset that contains the SRG Layout.
             Data::Asset<ShaderAsset> shaderAsset;
             if (rasterData->m_passSrgShaderReference.m_assetId.IsValid())

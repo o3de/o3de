@@ -338,6 +338,26 @@ namespace AZ::RHI
         return m_xrSystem;
     }
 
+    void RHISystem::SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled)
+    {
+        if (enabled)
+        {
+            AZStd::remove(m_drawItemsDisabledByDefault.begin(),
+                          m_drawItemsDisabledByDefault.end(),
+                          drawListTag);
+        }
+        else
+        {
+            m_drawItemsDisabledByDefault.push_back(drawListTag);
+        }
+    }
+
+    const AZStd::vector<DrawListTag>& RHISystem::GetDisabledByDefaultDrawListTags() const
+    {
+        return m_drawItemsDisabledByDefault;
+    }
+
+
     /////////////////////////////////////////////////////////////////////////////
     // RHIMemoryStatisticsInterface overrides
     const RHI::TransientAttachmentStatistics* RHISystem::GetTransientAttachmentStatistics() const

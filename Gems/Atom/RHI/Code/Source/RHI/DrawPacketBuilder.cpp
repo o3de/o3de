@@ -8,6 +8,7 @@
 
 
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/LinearAllocator.h>
 
 #include <AzCore/Casting/numeric_cast.h>
@@ -223,6 +224,8 @@ namespace AZ::RHI
         drawPacket->m_drawListTags = drawListTags;
         drawPacket->m_drawFilterMasks = drawFilterMasks;
 
+        const AZStd::vector<DrawListTag>& disabledTags = RHISystemInterface::Get()->GetDisabledByDefaultDrawListTags();
+
         for (size_t i = 0; i < m_drawRequests.size(); ++i)
         {
             const DrawRequest& drawRequest = m_drawRequests[i];
@@ -231,8 +234,14 @@ namespace AZ::RHI
             drawFilterMasks[i] = drawRequest.m_drawFilterMask;
             drawItemSortKeys[i] = drawRequest.m_sortKey;
 
+            bool drawListTagDisabled = false;
+            for (const DrawListTag& disabledTag : disabledTags)
+            {
+                drawListTagDisabled = drawListTagDisabled || (drawRequest.m_listTag == disabledTag);
+            }
+
             DrawItem& drawItem = drawItems[i];
-            drawItem.m_enabled = true;
+            drawItem.m_enabled = !drawListTagDisabled;
             drawItem.m_arguments = m_drawArguments;
             drawItem.m_stencilRef = drawRequest.m_stencilRef;
             drawItem.m_streamBufferViewCount = 0;
