@@ -473,7 +473,7 @@ namespace ScriptCanvasEditor::Nodes
                     key << context << className << "methods" << updatedMethodName << direction << "name";
 
                     bool success = false;
-                    AZStd::string result = "";
+                    AZStd::string result;
                     GraphCanvas::TranslationRequestBus::BroadcastResult(success, &GraphCanvas::TranslationRequests::Get, key, result);
                     if (success)
                     {
