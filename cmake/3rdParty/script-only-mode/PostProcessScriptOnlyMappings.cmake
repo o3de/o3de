@@ -11,7 +11,7 @@
 # ARGV2 is the name of this script.
 # ARGV3 is the output folder name
 # ARGV4 and onwards are the names of input files, generated during the engine configure/generate
-# containing information about the 3p libraries avilable.
+# containing information about the 3p libraries available.
 
 #[[ there is 1 input file for each 3p library, and each input file contains a set of "set" commands in this format:
     set(target_name ${TARGET_NAME})
@@ -106,6 +106,6 @@ foreach(data_file IN LISTS file_list)
     endif()
 
     string(REPLACE "::" "__" CLEAN_TARGET_NAME "${target_name}")  
-    file(WRITE ${output_directory}/${CLEAN_TARGET_NAME}.cmake "${final_data}")
+    file(WRITE "${output_directory}/${CLEAN_TARGET_NAME}.cmake" "${final_data}")
 
 endforeach()

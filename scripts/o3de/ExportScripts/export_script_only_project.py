@@ -203,7 +203,7 @@ if "o3de_context" in globals():
         parser.add_argument('-a', '--archive-output',  type=str,
                             help="Option to create a compressed archive the output. "
                                  "Specify the format of archive to create from the output directory. If 'none' specified, no archiving will occur.",
-                            choices=["none", "zip", "gzip", "bz2", "xz"], default="none")
+                            choices=exp.ALL_AVAILABLE_ARCHIVE_FORMATS, default="none")
         parser.add_argument('-assets', '--should-build-assets', default=False, action='store_true',
                             help='Toggles building all assets for the bundle.')
         parser.add_argument('-foa', '--fail-on-asset-errors', default=False, action='store_true',
@@ -222,7 +222,7 @@ if "o3de_context" in globals():
                             help="When configuring cmake builds, this determines if the script allows for overriding registry settings from external sources.")
         parser.add_argument('-abp', '--asset-bundling-path', type=pathlib.Path, default=None,
                             help="Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, default is <o3de_project_path>/build/asset_bundling.")
-        parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=2048, help='Specify the maximum size of a given asset bundle.')
+        parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=2048, help='Specify the maximum size of a given asset bundle (in MiB).')
         parser.add_argument('-nogame', '--no-game-launcher', action='store_true', help='This flag skips building the Game Launcher on a platform if not needed.')
         parser.add_argument('-noserver', '--no-server-launcher', action='store_true', help='This flag skips building the Server Launcher on a platform if not needed.')
         parser.add_argument('-noheadless', '--no-headless-server-launcher', action='store_true', help='This flag skips building the Headless Server Launcher on a platform if not needed.')

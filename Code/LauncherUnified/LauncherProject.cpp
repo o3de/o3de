@@ -39,9 +39,9 @@ namespace O3DELauncher
 
     bool IsGenericLauncher()
     {
-        #if defined(O3DE_IS_GENERIC_LAUNCHER)
-            return true;
-        #endif
+#if defined(O3DE_IS_GENERIC_LAUNCHER)
+        return true;
+#endif
         return false;
     }
 }

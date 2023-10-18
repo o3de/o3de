@@ -415,16 +415,21 @@ namespace O3DELauncher
         // Save the build target name (usually myprojectname_gamelauncher, or myprojectname_serverlauncher, etc)
         // into the specialization list, so that the regset files for xxxxx.myprojectname_gamelauncher are included in the loaded set.
         // in generic mode, this needs to be updated to a name based on the project name, so it is not a string view, here.
-        AZStd::string buildTargetName = GetBuildTargetName();
+        AZ::SettingsRegistryInterface::FixedValueString buildTargetName(GetBuildTargetName());
 
         // retrieve the project name as specified by the actual project.json (or updated from command line)
         AZ::SettingsRegistryInterface::FixedValueString updatedProjectName = AZ::Utils::GetProjectName();
         if (IsGenericLauncher())
         {
+            constexpr AZStd::string_view O3DEPrefix = "O3DE_";
             // this will always be the value O3DE_xxxxx where xxxxx is the type of target ("GameLauncher/ServerLauncher/UnifiedLauncher/etc")
-            // and O3DE is a placeholder for the project name.
-            AZStd::string replacementName = AZStd::string::format("%.*s_", aznumeric_cast<int>(updatedProjectName.size()), updatedProjectName.data());
-            AZ::StringFunc::Replace(buildTargetName, "O3DE_", replacementName.c_str());
+            // and O3DE is a placeholder for the project name.  Replace the "O3DE_" part with "{ProjectName}_" (keeping the underscore).
+            if (buildTargetName.starts_with(O3DEPrefix))
+            {
+                auto replacementName = AZ::SettingsRegistryInterface::FixedValueString::format(
+                    "%.*s_", aznumeric_cast<int>(updatedProjectName.size()), updatedProjectName.data());
+                buildTargetName.replace(0, O3DEPrefix.size(), replacementName);
+            }
         }
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 

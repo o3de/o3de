@@ -12,4 +12,4 @@ O3DE_PROJECT_SEEDLIST=${O3DE_PROJECT_PATH}/AssetBundling/SeedLists/Example.seed
 OUTPUT_PATH=${O3DE_PROJECT_PATH}/ProjectPackages
 OUTPUT_CONFIGURATION=profile
 
-${O3DE_PATH}/scripts/o3de.sh export-project -es ExportScripts/export_script_only_project.py --project-path ${O3DE_PROJECT_PATH} --log-level INFO -assets --config ${OUTPUT_CONFIGURATION} --archive-output zip --seedlist ${O3DE_PROJECT_SEEDLIST} -out ${OUTPUT_PATH}
+${O3DE_PATH}/scripts/o3de.sh export-project -es ExportScripts/export_script_only_project.py --project-path ${O3DE_PROJECT_PATH} --log-level INFO -assets --config ${OUTPUT_CONFIGURATION} --archive-output gztar --seedlist ${O3DE_PROJECT_SEEDLIST} -out ${OUTPUT_PATH}

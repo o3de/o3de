@@ -44,7 +44,7 @@ set(launcher_generator_LY_PROJECTS ${LY_PROJECTS})
 # when building an installer from the o3de source code, or just compiling O3DE itself with no
 # project specified.
 if (NOT launcher_generator_LY_PROJECTS)
-    set(launcher_generator_LY_PROJECTS "O3DE")
+    set(launcher_generator_LY_PROJECTS ":PROJECT_PATH_ONLY_FOR_GENERIC_LAUNCHER")
     set(O3DE_PROJECTS_NAME "O3DE")
     set(launcher_generator_BUILD_GENERIC TRUE) # used to skip the asset processing step
     

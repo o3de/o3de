@@ -28,6 +28,8 @@ LOCAL_ENGINE_PATH  = pathlib.Path(__file__).parent.parent.parent.parent
 CURRENT_PLATFORM_NAME_WITH_CASE = platform.system()  # used to find the Installer binaries folder.
 CURRENT_PLATFORM = CURRENT_PLATFORM_NAME_WITH_CASE.lower()
 
+ALL_AVAILABLE_ARCHIVE_FORMATS = ["none"] + [name for name, description in shutil.get_archive_formats()]
+
 if CURRENT_PLATFORM == 'windows':
     EXECUTABLE_EXTENSION = '.exe'
     O3DE_SCRIPT_NAME = 'o3de.bat'

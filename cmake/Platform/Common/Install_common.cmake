@@ -436,7 +436,6 @@ function(ly_setup_3p_dependencies)
     unset(expected_output_files)
     set(final_3p_output_dir "${CMAKE_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}")
     get_property(o3de_all_3rdparty_targets GLOBAL PROPERTY O3DE_ALL_3RDPARTY_TARGETS)
-    list(REMOVE_DUPLICATES o3de_all_3rdparty_targets)
 
     # call the ly_setup_3p_target for each 3p target.  It will create a GENERATE step
     # that will output a file, and also return the file name of the generated file.
