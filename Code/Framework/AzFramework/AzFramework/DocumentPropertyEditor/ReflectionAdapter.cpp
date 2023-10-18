@@ -222,7 +222,7 @@ namespace AZ::DocumentPropertyEditor
                     auto parentContainerInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
                     void* parentContainerInstance{};
                     AZStd::optional<AZ::PointerObject> parentContainerInstanceObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerInstanceValue);
-                    if (parentContainerInstanceObject.has_value())
+                    if (parentContainerInstanceObject.has_value() && parentContainerInstanceObject->IsValid())
                     {
                         parentContainerInstance = parentContainerInstanceObject->m_address;
                     }
@@ -234,7 +234,7 @@ namespace AZ::DocumentPropertyEditor
                     if (containerElementOverrideValue)
                     {
                         AZStd::optional<AZ::PointerObject> containerElementOverrideObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerElementOverrideValue);
-                        if (containerElementOverrideObject.has_value())
+                        if (containerElementOverrideObject.has_value() && containerElementOverrideObject->IsValid())
                         {
                             instance = containerElementOverrideObject->m_address;
                         }
@@ -673,7 +673,7 @@ namespace AZ::DocumentPropertyEditor
             if (parentContainer != nullptr && parentContainerInstanceAttribute && !parentContainerInstanceAttribute->IsNull())
             {
                 if (auto parentContainerInstanceObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerInstanceAttribute);
-                    parentContainerInstanceObject)
+                    parentContainerInstanceObject && parentContainerInstanceObject->IsValid())
                 {
                     parentContainerInstance = reinterpret_cast<AZ::Serialize::IDataContainer*>(parentContainerInstanceObject->m_address);
                 }
