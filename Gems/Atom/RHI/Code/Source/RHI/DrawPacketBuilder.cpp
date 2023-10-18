@@ -224,7 +224,7 @@ namespace AZ::RHI
         drawPacket->m_drawListTags = drawListTags;
         drawPacket->m_drawFilterMasks = drawFilterMasks;
 
-        const AZStd::vector<DrawListTag>& disabledTags = RHISystemInterface::Get()->GetDisabledByDefaultDrawListTags();
+        const AZStd::vector<DrawListTag>& disabledTags = RHISystemInterface::Get()->GetDrawListTagsDisabledByDefault();
 
         for (size_t i = 0; i < m_drawRequests.size(); ++i)
         {

@@ -74,7 +74,7 @@ namespace AZ::RHI
         void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
         XRRenderingInterface* GetXRSystem() const override;
         void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) override;
-        const AZStd::vector<DrawListTag>& GetDisabledByDefaultDrawListTags() const override;
+        const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ namespace AZ::RHI
         //! Enumerates the Physical devices and picks one (or multiple) to be used to initialize the RHI::Device(s) with
         ResultCode InitInternalDevices(InitDevicesFlags initializationVariant);
 
-        AZStd::vector<DrawListTag> m_drawItemsDisabledByDefault;
+        AZStd::vector<DrawListTag> m_drawListTagsDisabledByDefault;
         AZStd::vector<RHI::Ptr<RHI::Device>> m_devices;
         RHI::FrameScheduler m_frameScheduler;
         RHI::FrameSchedulerCompileRequest m_compileRequest;

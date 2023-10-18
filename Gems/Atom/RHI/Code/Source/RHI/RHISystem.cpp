@@ -342,19 +342,19 @@ namespace AZ::RHI
     {
         if (enabled)
         {
-            AZStd::remove(m_drawItemsDisabledByDefault.begin(),
-                          m_drawItemsDisabledByDefault.end(),
+            AZStd::remove(m_drawListTagsDisabledByDefault.begin(),
+                          m_drawListTagsDisabledByDefault.end(),
                           drawListTag);
         }
         else
         {
-            m_drawItemsDisabledByDefault.push_back(drawListTag);
+            m_drawListTagsDisabledByDefault.push_back(drawListTag);
         }
     }
 
-    const AZStd::vector<DrawListTag>& RHISystem::GetDisabledByDefaultDrawListTags() const
+    const AZStd::vector<DrawListTag>& RHISystem::GetDrawListTagsDisabledByDefault() const
     {
-        return m_drawItemsDisabledByDefault;
+        return m_drawListTagsDisabledByDefault;
     }
 
 

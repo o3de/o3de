@@ -68,7 +68,7 @@ namespace AZ::RHI
 
         virtual void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) = 0;
 
-        virtual const AZStd::vector<DrawListTag>& GetDisabledByDefaultDrawListTags() const = 0;
+        virtual const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const = 0;
     };
 
     //! This bus exists to give RHI samples the ability to slot in scopes manually

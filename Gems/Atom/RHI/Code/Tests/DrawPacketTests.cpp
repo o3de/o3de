@@ -166,6 +166,7 @@ namespace UnitTest
         RHI::Ptr<RHI::DrawListTagRegistry> m_drawListTagRegistry;
         RHI::DrawListContext m_drawListContext;
 
+        AZStd::unique_ptr<AZ::RHI::RHISystem> m_rhiSystem;
         AZStd::unique_ptr<Factory> m_factory;
 
     public:
@@ -175,10 +176,17 @@ namespace UnitTest
 
             m_factory.reset(aznew Factory());
             m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
+
+            m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
+            m_rhiSystem->InitDevices(AZ::RHI::InitDevicesFlags::SingleDevice);
+            m_rhiSystem->Init();
         }
 
         void TearDown() override
         {
+            m_rhiSystem->Shutdown();
+            m_rhiSystem.reset();
+
             m_drawListTagRegistry = nullptr;
             m_factory.reset();
 
