@@ -3,13 +3,5 @@
         "Preferences": {
             "EnablePrefabSystem": true
         }
-    },
-"O3DE": {
-        "Autoexec": {
-            "ConsoleCommands": {
-                "ed_enableDPEInspector": true,
-                "ed_enableInspectorOverrideManagement": true
-            }
-        }
     }
 }
