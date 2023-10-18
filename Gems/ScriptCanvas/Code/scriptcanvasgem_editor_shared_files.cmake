@@ -7,5 +7,10 @@
 #
 
 set(FILES
+    Editor/ScriptCanvasEditorGem.cpp
     Include/ScriptCanvas/ScriptCanvasGem.h
+)
+
+set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    Editor/ScriptCanvasEditorGem.cpp
 )
