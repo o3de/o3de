@@ -55,17 +55,12 @@ namespace AZ
                                                                            usage : textureUsage];
                 mtlTextureDesc.textureType = MTLTextureTypeTextureBuffer;
 
-                uint32_t bytesPerRow = viewDescriptor.m_elementCount * bytesPerPixel;
+                [[maybe_unused]] uint32_t bytesPerRow = viewDescriptor.m_elementCount * bytesPerPixel;
                 AZ_Assert(bytesPerRow == (viewDescriptor.m_elementCount * viewDescriptor.m_elementSize), "Mismatch for bytesPerRow");
                 
-                id<MTLDevice> hwDevice = device.GetMtlDevice();
-                const NSUInteger rowAlignment = [hwDevice minimumLinearTextureAlignmentForPixelFormat: ConvertPixelFormat(viewDescriptor.m_elementFormat)];
-                const size_t rowAlignmentBytes = aznumeric_cast<size_t>(rowAlignment);
-                bytesPerRow = aznumeric_cast<uint32_t>(RHI::AlignUpNPOT(aznumeric_cast<size_t>(bytesPerRow), rowAlignmentBytes));
-
-                id<MTLTexture> mtlTexture = [mtlBuffer newTextureWithDescriptor : mtlTextureDesc
-                                                                         offset : m_memoryView.GetOffset()
-                                                                    bytesPerRow : bytesPerRow];
+                id<MTLTexture> mtlTexture = [mtlBuffer newTextureWithDescriptor:mtlTextureDesc
+                                                                         offset:m_memoryView.GetOffset()
+                                                                    bytesPerRow:(viewDescriptor.m_elementCount * bytesPerPixel)];
                 AZ_Assert(mtlTexture, "Failed to create texture");
                 [mtlTextureDesc release];
                 mtlTextureDesc = nil;

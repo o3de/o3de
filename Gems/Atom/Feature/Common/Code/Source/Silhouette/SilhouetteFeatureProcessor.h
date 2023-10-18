@@ -10,6 +10,12 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
+namespace AZ::RPI
+{
+    class Pass;
+    class RasterPass;
+}
+
 namespace AZ::Render
 {
     // Adds a silhouette gather pass and a silhouette full screen pass for drawing and
@@ -42,6 +48,14 @@ namespace AZ::Render
 
         //! RPI::SceneNotificationBus
         void OnEndPrepareRender() override;
+        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+
+    private:
+        void UpdatePasses(AZ::RPI::RenderPipeline* renderPipeline);
+
+        AZ::RPI::RasterPass* m_rasterPass = nullptr;
+        AZ::RPI::Pass* m_compositePass = nullptr;
+        AZ::RPI::RenderPipeline* m_renderPipeline = nullptr;
     };
 }
 
