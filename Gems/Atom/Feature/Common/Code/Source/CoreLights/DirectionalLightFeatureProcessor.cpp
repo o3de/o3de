@@ -358,7 +358,6 @@ namespace AZ
                 m_shadowProperties.GetData(index).m_cameraConfigurations[nullptr] = {};
 
                 const LightHandle handle(index);
-                m_shadowingLightHandle = handle; // only the recent light has shadows.
                 SetCascadeCount(handle, 1); // 1 cascade initially.
                 return handle;
             }
@@ -436,6 +435,22 @@ namespace AZ
         }
 
         // --- Cascade Shadows ---
+
+        void DirectionalLightFeatureProcessor::SetShadowEnabled(LightHandle handle, bool enable)
+        {
+            if (enable)
+            {
+                m_shadowingLightHandle = handle;
+                ShadowingDirectionalLightNotificationsBus::Broadcast(&ShadowingDirectionalLightNotifications::OnShadowingDirectinalLightChanged, handle);
+                m_shadowBufferNeedsUpdate = true;
+                
+            }
+        }
+
+        void DirectionalLightFeatureProcessor::SetShadowingHandle(LightHandle handle)
+        {
+            m_shadowingLightHandle = handle;
+        }
 
         void DirectionalLightFeatureProcessor::SetShadowmapSize(LightHandle handle, ShadowmapSize size)
         {
