@@ -326,7 +326,7 @@ namespace MaterialCanvas
 
     void MaterialGraphCompiler::ClearFingerprintsForCurrentNode()
     {
-        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/ForceClearAssetFingerprints", true))
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/ForceClearAssetFingerprints", false))
         {
             for (const auto& templatePath : m_templatePathsForCurrentNode)
             {

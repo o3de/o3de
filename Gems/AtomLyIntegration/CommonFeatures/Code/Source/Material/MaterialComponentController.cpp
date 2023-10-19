@@ -262,8 +262,10 @@ namespace AZ
             {
                 if (uniqueMaterial.GetId().IsValid())
                 {
-                    AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
-                    if (uniqueMaterial.QueueLoad())
+                    AZ::Data::AssetLoadParameters loadParams;
+                    loadParams.m_dependencyRules = AZ::Data::AssetDependencyLoadRules::LoadAll;
+                    loadParams.m_reloadMissingDependencies = true;
+                    if (uniqueMaterial.QueueLoad(loadParams))
                     {
                         anyQueued = true;
                     }
@@ -271,6 +273,8 @@ namespace AZ
                     {
                         DisplayMissingAssetWarning(uniqueMaterial);
                     }
+
+                    AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
                 }
             }
 
