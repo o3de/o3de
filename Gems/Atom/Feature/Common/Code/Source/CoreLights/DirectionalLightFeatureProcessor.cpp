@@ -443,7 +443,6 @@ namespace AZ
                 m_shadowingLightHandle = handle;
                 ShadowingDirectionalLightNotificationsBus::Broadcast(&ShadowingDirectionalLightNotifications::OnShadowingDirectinalLightChanged, handle);
                 m_shadowBufferNeedsUpdate = true;
-                
             }
         }
 
