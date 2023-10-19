@@ -441,14 +441,9 @@ namespace AZ
             if (enable)
             {
                 m_shadowingLightHandle = handle;
-                ShadowingDirectionalLightNotificationsBus::Broadcast(&ShadowingDirectionalLightNotifications::OnShadowingDirectinalLightChanged, handle);
+                ShadowingDirectionalLightNotificationsBus::Broadcast(&ShadowingDirectionalLightNotifications::OnShadowingDirectionalLightChanged, handle);
                 m_shadowBufferNeedsUpdate = true;
             }
-        }
-
-        void DirectionalLightFeatureProcessor::SetShadowingHandle(LightHandle handle)
-        {
-            m_shadowingLightHandle = handle;
         }
 
         void DirectionalLightFeatureProcessor::SetShadowmapSize(LightHandle handle, ShadowmapSize size)

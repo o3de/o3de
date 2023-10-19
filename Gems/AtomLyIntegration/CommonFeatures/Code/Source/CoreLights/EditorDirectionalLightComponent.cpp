@@ -281,7 +281,7 @@ namespace AZ
             debugDisplay.DrawDisk(origin, transform.TransformVector(forward), originScale);
         }
 
-        void EditorDirectionalLightComponent::OnShadowingDirectinalLightChanged(const DirectionalLightFeatureProcessorInterface::LightHandle& handle)
+        void EditorDirectionalLightComponent::OnShadowingDirectionalLightChanged(const DirectionalLightFeatureProcessorInterface::LightHandle& handle)
         {
             if (m_controller.m_lightHandle != handle)
             {

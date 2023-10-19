@@ -40,7 +40,7 @@ namespace AZ
             AZ::u32 OnConfigurationChanged() override;
 
             // ShadowingDirectionalLightNotificationsBus overrides
-            void OnShadowingDirectinalLightChanged(const DirectionalLightFeatureProcessorInterface::LightHandle& handle) override;
+            void OnShadowingDirectionalLightChanged(const DirectionalLightFeatureProcessorInterface::LightHandle& handle) override;
 
             //! AzFramework::EntityDebugDisplayEventBus::Handler overrides...
             void DisplayEntityViewport(

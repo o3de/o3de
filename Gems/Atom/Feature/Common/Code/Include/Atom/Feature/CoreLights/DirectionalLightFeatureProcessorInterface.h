@@ -74,7 +74,6 @@ namespace AZ
             ////////// shadow specific
             //! Sets wheter or not enabling shadow
             virtual void SetShadowEnabled(LightHandle handle, bool enable) = 0;
-            virtual void SetShadowingHandle(LightHandle handle) = 0;
 
             //! This sets the shadowmap size (width and height) of the light.
             //! @param handle the light handle.

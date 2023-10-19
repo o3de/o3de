@@ -223,7 +223,6 @@ namespace AZ
             void SetDirection(LightHandle handle, const Vector3& lightDirection) override;
             void SetAngularDiameter(LightHandle handle, float angularDiameter) override;
             void SetShadowEnabled(LightHandle handle, bool enable) override;
-            void SetShadowingHandle(LightHandle handle) override;
             void SetShadowmapSize(LightHandle handle, ShadowmapSize size) override;
             void SetCascadeCount(LightHandle handle, uint16_t cascadeCount) override;
             void SetShadowmapFrustumSplitSchemeRatio(LightHandle handle, float ratio) override;

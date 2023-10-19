@@ -21,7 +21,7 @@ namespace AZ
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-            virtual void OnShadowingDirectinalLightChanged(const DirectionalLightFeatureProcessorInterface::LightHandle& handle) = 0;
+            virtual void OnShadowingDirectionalLightChanged(const DirectionalLightFeatureProcessorInterface::LightHandle& handle) = 0;
         };
 
         typedef AZ::EBus<ShadowingDirectionalLightNotifications> ShadowingDirectionalLightNotificationsBus;
