@@ -38,6 +38,7 @@ namespace ExecutionStateInterpretedUtilityCpp
                 {
                     AZ_Warning("ExecutionStateInterpretedUtilityCpp", false, "LuaLoadFromStack function not found for type %s", param.m_typeId.ToString<AZStd::string>().data());
                 }
+                // Gruber patch end.
             }            
         }
     }
