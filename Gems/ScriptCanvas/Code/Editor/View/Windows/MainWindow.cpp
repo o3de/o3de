@@ -1501,6 +1501,8 @@ namespace ScriptCanvasEditor
         {
             AZ_Warning("Script Canvas", createOutcome, "%s", createOutcome.GetError().data());
         }
+
+        EnableOpenDocumentActions(true);
     }
 
     int MainWindow::InsertTabForAsset(AZStd::string_view assetPath, SourceHandle assetId, int tabIndex)
