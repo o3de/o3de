@@ -186,7 +186,7 @@ namespace MaterialCanvas
                   "material types or shaders are. This setting is most useful to ensure that other systems or applications are able to "
                   "recognize and not reload yeah materials after shaders are modified. Enabling this setting may affect the time it takes "
                   "for the viewport to reflect shader and material changes.",
-                  true),
+                  false),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen",
                   "Enable Compile On Open",
