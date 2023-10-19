@@ -23,8 +23,9 @@
     libraries as fake ones (which have the appropriate dependencies so that files get copied).
 ]]#
 
-if (${CMAKE_ARGC} LESS 3)
-    message(FATAL_ERROR "This command was invoked incorrectly, expected at least the first three args to be cmake itself, then -P, then outputfilename")
+if (${CMAKE_ARGC} LESS 5)
+    message(FATAL_ERROR "This command was invoked incorrectly.\nUsage:\n"
+                             "cmake -P (SCRIPT_NAME) (OUTPUT_DIR) (INPUT FILE) (INPUT FILE) ...")
     return()
 endif()
 
