@@ -464,6 +464,12 @@ namespace AZ
             probeGrid->SetUseDiffuseIbl(useDiffuseIbl);
         }
 
+        bool DiffuseProbeGridFeatureProcessor::CanBakeTextures()
+        {
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+            return device->GetFeatures().m_rayTracing;
+        }
+
         void DiffuseProbeGridFeatureProcessor::BakeTextures(
             const DiffuseProbeGridHandle& probeGrid,
             DiffuseProbeGridBakeTexturesCallback callback,

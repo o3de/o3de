@@ -202,6 +202,10 @@ namespace AZ
 
         //! Function Pointer which is used to construct an AZStd::any for a registered type using the Serialize Context
         using CreateAnyFunc = AZStd::any(*)(SerializeContext*);
+        //! Function object which is used to create an instance of an ActionHandler function which can be supplied
+        //! to the AZStd::any::type_info handler object to allow type erased operations such as construct/destruct, copy/move
+        using CreateAnyActionHandler = AZStd::function<AZStd::any::action_handler_for_t(SerializeContext* serializeContext)>;
+
         //! Allows registration of a TypeId without the need to supply a C++ type
         //! If the type is not already registered, then the ClassData is moved into the SerializeContext
         //! internal structure
@@ -457,7 +461,8 @@ namespace AZ
         using DeprecatedNameVisitWrapper = void(*)(const DeprecatedTypeNameCallback&);
         ClassBuilder ReflectClassInternal(const char* className, const AZ::TypeId& classId,
             IObjectFactory* factory, const DeprecatedNameVisitWrapper& callback,
-            IRttiHelper* rttiHelper, CreateAnyFunc createAnyFunc);
+            IRttiHelper* rttiHelper, CreateAnyFunc createAnyFunc,
+            CreateAnyActionHandler createAnyActionHandlerFunc);
 
         ClassBuilder UnreflectClassInternal(const char* className, const AZ::TypeId& classId,
             const DeprecatedNameVisitWrapper& callback
@@ -976,10 +981,18 @@ namespace AZ::Serialize
         /// which while it inherits from IAllocator, does not work as function pointers do not support covariant return types
         AZStd::vector<AttributeSharedPair, AZStdFunctorAllocator> m_attributes{ AZStdFunctorAllocator(&GetSystemAllocator) };
 
+        //! Functor object which can be used to initialize the AZStd::any::type_info in order
+        //! to allow it to construct, destruct, copy/move instances of the stored type
+        //! in a type-erased manner
+        //! This can be used with the `any(const void* pointer, const type_info& typeInfo)` extension constructor
+        //! to construct an AZStd::any without access to the C++ type at that point
+        //! @param pointer to SerializeContext which is used for type-erased operations for non-copyable types
+        SerializeContext::CreateAnyActionHandler m_createAzStdAnyActionHandler;
+
     private:
         static ClassData CreateImpl(const char* name, const Uuid& typeUuid, IObjectFactory* factory,
             IDataSerializer* serializer, IDataContainer* container,
-            IRttiHelper* rttiHelper);
+            IRttiHelper* rttiHelper, SerializeContext::CreateAnyActionHandler createAzStdAnyActionHandler);
         static IAllocator& GetSystemAllocator()
         {
             return AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
@@ -1497,6 +1510,11 @@ namespace AZ
         {
             return AZStd::any(ValueType());
         }
+
+        static AZStd::any::action_handler_for_t GetAnyActionHandler(SerializeContext*)
+        {
+            return AZStd::any::get_action_handler_for_t<ValueType>();
+        }
     };
 
     template<typename ValueType>
@@ -1532,7 +1550,7 @@ namespace AZ
             }
         }
         // The SerializeContext CloneObject function is used to copy data between Any
-        static AZStd::any::type_info::HandleFnT NonCopyableAnyHandler(SerializeContext* serializeContext)
+        static AZStd::any::action_handler_for_t NonCopyableAnyHandler(SerializeContext* serializeContext)
         {
             return [serializeContext](AZStd::any::Action action, AZStd::any* dest, const AZStd::any* source)
             {
@@ -1597,6 +1615,11 @@ namespace AZ
             };
         }
 
+        static AZStd::any::action_handler_for_t GetAnyActionHandler(SerializeContext* serializeContext)
+        {
+            return NonCopyableAnyHandler(serializeContext);
+        }
+
         static AZStd::any CreateAny(SerializeContext* serializeContext)
         {
             AZStd::any::type_info typeinfo;
@@ -1621,6 +1644,13 @@ namespace AZ
         static AZStd::any CreateAny(SerializeContext*)
         {
             return {};
+        }
+
+        static AZStd::any::action_handler_for_t GetAnyActionHandler(SerializeContext*)
+        {
+            return [](AZStd::any::Action, AZStd::any*, const AZStd::any*)
+            {
+            };
         }
     };
 
@@ -1927,8 +1957,7 @@ namespace AZ
     // [10/31/2012]
     //=========================================================================
     template<class T, class... TBaseClasses>
-    SerializeContext::ClassBuilder
-    SerializeContext::Class()
+    SerializeContext::ClassBuilder SerializeContext::Class()
     {
         return Class<T, TBaseClasses...>(&Serialize::StaticInstance<Serialize::InstanceFactory<T> >::s_instance);
     }
@@ -1938,8 +1967,7 @@ namespace AZ
     // [10/31/2012]
     //=========================================================================
     template<class T, class... TBaseClasses>
-    SerializeContext::ClassBuilder
-    SerializeContext::Class(IObjectFactory* factory)
+    SerializeContext::ClassBuilder SerializeContext::Class(IObjectFactory* factory)
     {
         static_assert((AZStd::negation_v<AZStd::disjunction<AZStd::is_same<T, TBaseClasses>...> >), "You cannot reflect a type as its own base");
         static_assert(sizeof...(TBaseClasses) <= c_serializeMaxNumBaseClasses, "Only " AZ_STRINGIZE(c_serializeMaxNumBaseClasses) " base classes are supported. You can add more in c_serializeBaseClassStrings.");
@@ -1958,9 +1986,13 @@ namespace AZ
         }
         else
         {
+            auto createAnyActionHandler = [](SerializeContext* serializeContext) -> AZStd::any::action_handler_for_t
+            {
+                return AnyTypeInfoConcept<T>::GetAnyActionHandler(serializeContext);
+            };
             ClassBuilder builder = ReflectClassInternal(name, typeUuid,
                 factory, deprecatedNameVisitor,
-                GetRttiHelper<T>(), &AnyTypeInfoConcept<T>::CreateAny);
+                GetRttiHelper<T>(), &AnyTypeInfoConcept<T>::CreateAny, AZStd::move(createAnyActionHandler));
             AddClassData<T, TBaseClasses...>(&builder.m_classData->second);
 
             return builder;
@@ -2061,7 +2093,7 @@ namespace AZ
                 AZ_Assert(element.m_typeId != AzTypeInfo<BaseType>::Uuid(),
                     "You can not reflect %s as base class of %s with Class<%s,%s> and then reflect the some of it's fields with FieldFromBase! Either use FieldFromBase or just reflect the entire base class!",
                     AzTypeInfo<BaseType>::Name(), AzTypeInfo<ClassType>::Name(), AzTypeInfo<ClassType>::Name(), AzTypeInfo<BaseType>::Name()
-                    );
+                );
             }
             else
             {
@@ -2523,7 +2555,12 @@ namespace AZ::Serialize
     template<class T>
     ClassData ClassData::Create(const char* name, const Uuid& typeUuid, IObjectFactory* factory, IDataSerializer* serializer, IDataContainer* container)
     {
-        return CreateImpl(name, typeUuid, factory, serializer, container, GetRttiHelper<T>());
+        ClassData createdClassData = CreateImpl(name, typeUuid, factory, serializer, container, GetRttiHelper<T>(),
+            [](SerializeContext* serializeContext) -> AZStd::any::action_handler_for_t
+        {
+            return AnyTypeInfoConcept<T>::GetAnyActionHandler(serializeContext);
+        });
+        return createdClassData;
     }
 }
 

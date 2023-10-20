@@ -64,6 +64,11 @@ UiInteractableComponent::UiInteractableComponent()
     , m_isHover(false)
     , m_isPressed(false)
     , m_pressedPoint(0.0f, 0.0f)
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
+#if defined(CARBONATED)
+    , m_pressedMultiTouchIndex(0)
+#endif
+// Carbonated end
     , m_state(UiInteractableStatesInterface::StateNormal)
     , m_hoverStartActionCallback(nullptr)
     , m_hoverEndActionCallback(nullptr)
@@ -125,7 +130,13 @@ bool UiInteractableComponent::HandleReleased([[maybe_unused]] AZ::Vector2 point)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiInteractableComponent::HandleMultiTouchPressed(AZ::Vector2 point, int multiTouchIndex)
 {
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
+#if defined(CARBONATED)
+    m_pressedMultiTouchIndex = multiTouchIndex;
+#else
     AZ_UNUSED(multiTouchIndex);
+#endif
+// Carbonated end
     bool shouldStayActive = false;
     return m_isHandlingMultiTouchEvents && HandlePressed(point, shouldStayActive);
 }
@@ -134,7 +145,15 @@ bool UiInteractableComponent::HandleMultiTouchPressed(AZ::Vector2 point, int mul
 bool UiInteractableComponent::HandleMultiTouchReleased(AZ::Vector2 point, int multiTouchIndex)
 {
     AZ_UNUSED(multiTouchIndex);
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
+#if defined(CARBONATED)
+    bool handled = m_isHandlingMultiTouchEvents && HandleReleased(point);
+    m_pressedMultiTouchIndex = 0;
+    return handled;
+#else
     return m_isHandlingMultiTouchEvents && HandleReleased(point);
+#endif
+// Carbonated end
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -511,6 +530,11 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
             ->Event("IsHandlingMultiTouchEvents", &UiInteractableBus::Events::IsHandlingMultiTouchEvents)
             ->Event("SetIsHandlingMultiTouchEvents", &UiInteractableBus::Events::SetIsHandlingMultiTouchEvents)
             ->Event("GetIsAutoActivationEnabled", &UiInteractableBus::Events::GetIsAutoActivationEnabled)
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
+#if defined(CARBONATED)
+            ->Event("LostActiveStatus", &UiInteractableBus::Events::LostActiveStatus)
+#endif
+// Carbonated end
             ->Event("SetIsAutoActivationEnabled", &UiInteractableBus::Events::SetIsAutoActivationEnabled);
 
         behaviorContext->EBus<UiInteractableActionsBus>("UiInteractableActionsBus")
@@ -707,6 +731,11 @@ void UiInteractableComponent::TriggerPressedAction()
         UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         // Queue the event to prevent deletions during the input event
         UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_pressedActionName);
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
+#if defined(CARBONATED)
+        UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnActionMultitouch, GetEntityId(), m_pressedActionName, m_pressedPoint, m_pressedMultiTouchIndex);
+#endif
+// Carbonated end
     }
 }
 
@@ -730,6 +759,11 @@ void UiInteractableComponent::TriggerReleasedAction()
         // Queue the event to prevent deletions during the input event
         UiCanvasNotificationBus::QueueEvent(
             canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_releasedActionName);
+// Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
+#if defined(CARBONATED)
+        UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnActionMultitouch, GetEntityId(), m_releasedActionName, m_pressedPoint, m_pressedMultiTouchIndex);
+#endif
+// Carbonated end
     }
 }
 

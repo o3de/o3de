@@ -328,6 +328,11 @@ set(FILES
     Process/ProcessUtils.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
+    Quality/QualityCVarGroup.cpp
+    Quality/QualityCVarGroup.h
+    Quality/QualitySystemComponent.cpp
+    Quality/QualitySystemComponent.h
+    Quality/QualitySystemBus.h
     Render/GameIntersectorComponent.h
     Render/GameIntersectorComponent.cpp
     Render/GeometryIntersectionBus.h
@@ -473,11 +478,13 @@ set(FILES
     Visibility/OctreeSystemComponent.cpp
     Visibility/BoundsBus.h
     Visibility/BoundsBus.cpp
-    Visibility/VisibilityDebug.h
-    Visibility/VisibilityDebug.cpp
     Visibility/EntityBoundsUnionBus.h
     Visibility/EntityVisibilityBoundsUnionSystem.h
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
     Visibility/EntityVisibilityQuery.h
     Visibility/EntityVisibilityQuery.cpp
+    Visibility/VisibilityDebug.h
+    Visibility/VisibilityDebug.cpp
+    Visibility/VisibleGeometryBus.h
+    Visibility/VisibleGeometryBus.cpp
 )

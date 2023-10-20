@@ -33,7 +33,16 @@ namespace ShaderManagementConsole
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent)
         : Base(toolId, "ShaderManagementConsoleWindow",  parent)
     {
-        m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->ClearTypeFilter();
+        m_assetBrowser->GetSearchWidget()->SetTypeFilterVisible(false);
+        m_assetBrowser->SetFileTypeFilters({
+            { "Material", { "material" }, true },
+            { "Material Type", { "materialtype" }, true },
+            { "Shader", { "shader" }, true },
+            { "Shader Template", { "shader.template" }, true },
+            { "Shader Variant List", { "shadervariantlist" }, true },
+            { "AZSL", { "azsl", "azsli", "srgi" }, true },
+        });
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/ShaderManagementConsole/DocumentInspector");

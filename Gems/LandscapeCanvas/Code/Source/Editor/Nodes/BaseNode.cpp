@@ -9,6 +9,7 @@
 // AZ
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 
 // Qt

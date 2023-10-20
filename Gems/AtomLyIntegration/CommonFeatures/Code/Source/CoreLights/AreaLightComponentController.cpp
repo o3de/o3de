@@ -56,6 +56,7 @@ namespace AZ::Render
                 ->Event("SetUseFastApproximation", &AreaLightRequestBus::Events::SetUseFastApproximation)
                 ->Event("GetIntensity", &AreaLightRequestBus::Events::GetIntensity)
                 ->Event("SetIntensity", static_cast<void(AreaLightRequestBus::Events::*)(float)>(&AreaLightRequestBus::Events::SetIntensity))
+                ->Event("SetIntensityAndMode", &AreaLightRequestBus::Events::SetIntensityAndMode)
                 ->Event("GetIntensityMode", &AreaLightRequestBus::Events::GetIntensityMode)
                 ->Event("ConvertToIntensityMode", &AreaLightRequestBus::Events::ConvertToIntensityMode)
 
@@ -388,8 +389,19 @@ namespace AZ::Render
         return m_configuration.m_intensity;
     }
 
+    void AreaLightComponentController::SetIntensityAndMode(float intensity, PhotometricUnit intensityMode)
+    {
+        m_configuration.m_intensityMode = intensityMode;
+        m_configuration.m_intensity = intensity;
+
+        AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnIntensityChanged, intensity, intensityMode);
+        IntensityChanged();
+    }
+
     void AreaLightComponentController::SetIntensity(float intensity, PhotometricUnit intensityMode)
     {
+        AZ_Warning("Main Window", false, "This verion of SetIntensity() is deprecated. Use SetIntensityMode() instead.");
+
         m_configuration.m_intensityMode = intensityMode;
         m_configuration.m_intensity = intensity;
 

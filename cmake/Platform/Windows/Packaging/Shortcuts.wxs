@@ -7,7 +7,7 @@
 
         <DirectoryRef Id="TARGETDIR">
             <Directory Id="ProgramMenuFolder">
-                <Directory Id="ApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_NAME) [Developer Preview]">
+                <Directory Id="ApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_NAME)">
                     <Directory Id="VersionedApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_VERSION)"/>
                 </Directory>
             </Directory>

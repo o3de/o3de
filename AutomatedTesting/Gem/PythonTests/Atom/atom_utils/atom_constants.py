@@ -452,7 +452,7 @@ class AtomComponentProperties:
         :return: Full property path OR component name if no property specified.
         """
         properties = {
-            'name': 'DepthOfField',
+            'name': 'Depth Of Field',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Camera Entity': 'Controller|Configuration|Camera Entity',
             'CameraEntityId Override': 'Controller|Configuration|Overrides|CameraEntityId Override',

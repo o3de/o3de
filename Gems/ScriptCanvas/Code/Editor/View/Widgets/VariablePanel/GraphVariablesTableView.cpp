@@ -38,6 +38,7 @@
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <ScriptCanvas/Variable/GraphVariable.h>
 
 namespace ScriptCanvasEditor

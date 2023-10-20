@@ -11,6 +11,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/IO/SystemFile.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>

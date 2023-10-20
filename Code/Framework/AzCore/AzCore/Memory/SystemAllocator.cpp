@@ -81,8 +81,8 @@ namespace AZ
         AZ_Assert((alignment & (alignment - 1)) == 0, "Alignment must be power of 2!");
 
         byteSize = MemorySizeAdjustedUp(byteSize);
-        SystemAllocator::pointer address =
-            m_subAllocator->allocate(byteSize, alignment);
+
+        SystemAllocator::pointer address = m_subAllocator->allocate(byteSize, alignment);
 
         if (address == nullptr)
         {
@@ -147,7 +147,6 @@ namespace AZ
     SystemAllocator::size_type SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const
     {
         size_type allocSize = MemorySizeAdjustedDown(m_subAllocator->get_allocated_size(ptr, alignment));
-
         return allocSize;
     }
 

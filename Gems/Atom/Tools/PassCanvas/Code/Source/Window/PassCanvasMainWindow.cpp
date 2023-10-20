@@ -23,8 +23,8 @@ namespace PassCanvas
         , m_graphViewSettingsPtr(graphViewSettingsPtr)
         , m_styleManager(toolId, graphViewSettingsPtr->m_styleManagerPath)
     {
-        m_assetBrowser->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
-        m_assetBrowser->SetFilterState("", AZ::RPI::PassAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->SetFilterState("", AZ::RPI::StreamingImageAsset::Group, true);
+        m_assetBrowser->GetSearchWidget()->SetFilterState("", AZ::RPI::PassAsset::Group, true);
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/PassCanvas/DocumentInspector");
