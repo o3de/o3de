@@ -124,6 +124,9 @@ namespace AZ
             bool RemoveDecalFromTextureArrays(const DecalLocation decalLocation);
             AZ::Data::AssetId GetMaterialUsedByDecal(const DecalHandle handle) const;
             void PackTexureArrays();
+            bool HasCulling(const RPI::ViewPtr& view) const;
+            void CullDecals(const RPI::ViewPtr& view);
+            GpuBufferHandler& GetOrCreateVisibleBuffer();
 
             IndexedDataVector<DecalData> m_decalData;
 
@@ -141,6 +144,9 @@ namespace AZ
             AZStd::unordered_map< AZ::Data::AssetId, DecalLocationAndUseCount> m_materialToTextureArrayLookupTable;
 
             bool m_deviceBufferNeedsUpdate = false;
+
+            AZStd::vector<GpuBufferHandler> m_visibleDecalBufferHandlers;
+            uint32_t m_visibleDecalBufferUsedCount = 0;
         };
     } // namespace Render
 } // namespace AZ
