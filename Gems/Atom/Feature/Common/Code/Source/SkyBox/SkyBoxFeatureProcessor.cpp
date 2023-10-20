@@ -210,7 +210,13 @@ namespace AZ
         {
             const constexpr char* DefaultCubeMapPath = "textures/default/default_skyboxcm.dds.streamingimage";
             m_defaultCubemapTexture = RPI::LoadStreamingTexture(DefaultCubeMapPath);
-            AZ_Assert(m_defaultCubemapTexture, "Failed to load default cubemap");
+            // Gruber patch. ivasilec : do not assert here
+            //AZ_Assert(m_defaultCubemapTexture, "Failed to load default cubemap");
+            if (!m_defaultCubemapTexture)
+            {
+                AZ_Warning("", false, "Failed to load default cubemap");
+            }
+            // Gruber end
         }
 
         void SkyBoxFeatureProcessor::Enable(bool enable)
