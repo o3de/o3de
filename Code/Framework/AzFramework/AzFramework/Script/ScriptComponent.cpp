@@ -523,13 +523,32 @@ namespace AzFramework
     void ScriptComponent::Activate()
     {
 #if defined(CARBONATED_LOG)
-        AZ_Printf("ScriptComponent", "Load: %s", m_script.GetHint().c_str());
+        if (!m_script.GetHint().empty())
+        {
+            AZ_Printf("ScriptComponent", "Load: %s", m_script.GetHint().c_str());
+        }
 #endif
 
         AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
         AZ_Error("LuaComponent", m_script.GetAutoLoadBehavior() == AZ::Data::AssetLoadBehavior::PreLoad, "Runtime LuaComponent script asset not set to Preload");
+#if defined(CARBONATED)
+// Gruber patch begin. More descriptive error report in case if there is the name of the script but it is not loaded
+        if (!m_script.Get() && !m_script.GetHint().empty())
+        {
+            if (GetEntity())
+            {
+                AZ_Error("LuaComponent", false, "Runtime LuaComponent script asset not preloaded and ready. Script: (%s). Entity: %s, '%s'",
+                    m_script.GetHint().c_str(), GetEntity()->GetId().ToString().c_str(), GetEntity()->GetName().c_str());
+            }
+            else 
+            {
+                AZ_Error("LuaComponent", false, "Runtime LuaComponent script asset not preloaded and ready. Script: (%s)", m_script.GetHint().c_str());
+            }
+        }
+// Gruber patch end
+#else
         AZ_Error("LuaComponent", m_script.Get(), "Runtime LuaComponent script asset not preloaded and ready. %s", m_script.GetHint().c_str());
-
+#endif
         // Load the script, find the base table...
         if (LoadInContext())
         {
