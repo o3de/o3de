@@ -11,7 +11,14 @@ set(WWISE_WINDOWS_LIB_NAMES
     SFLib
 )
 
-set(WWISE_VS_VER "vc160")
+# Current mapping of toolset to Wwise SDK folder name 
+if(MSVC_TOOLSET_VERSION VERSION_EQUAL 142)
+    set(WWISE_VS_VER "vc160")
+elseif(MSVC_TOOLSET_VERSION VERSION_EQUAL 143)
+    set(WWISE_VS_VER "vc170")
+else()
+    message(FATAL_ERROR "Unable to determine Wwise SDK library path.  Unknown MSVC toolset version: " ${MSVC_TOOLSET_VERSION})
+endif()
 
 set(WWISE_LIB_PATH ${BASE_PATH}/SDK/x64_${WWISE_VS_VER}/$<IF:$<CONFIG:Debug>,Debug,$<IF:$<CONFIG:Profile>,Profile,Release>>/lib)
 
