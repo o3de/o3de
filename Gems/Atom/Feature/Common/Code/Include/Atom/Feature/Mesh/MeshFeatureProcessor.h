@@ -244,7 +244,7 @@ namespace AZ
             bool GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const override;
             void SetIsAlwaysDynamic(const MeshHandle& meshHandle, bool isAlwaysDynamic) override;
             bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const override;
-            void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
+            void SetRayTracingEnabled(const MeshHandle& meshHandle, bool enabled) override;
             bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
             bool GetVisible(const MeshHandle& meshHandle) const override;

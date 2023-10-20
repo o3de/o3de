@@ -99,6 +99,7 @@ namespace AZ
             bool m_useForwardPassIblSpecular = false;
             bool m_isAlwaysDynamic = false;
             bool m_excludeFromReflectionCubeMaps = false;
+            bool m_isSkinnedMesh = false;
         };
 
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying
@@ -184,7 +185,7 @@ namespace AZ
             //! Gets if a mesh is considered to always be moving.
             virtual bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from raytracing
-            virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) = 0;
+            virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool enabled) = 0;
             //! Gets whether this mesh is excluded from raytracing
             virtual bool GetRayTracingEnabled(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.

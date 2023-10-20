@@ -896,6 +896,12 @@ namespace AZ
             AZ_Assert(false, "Not implemented");
         }
 
+        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+        }
+
         void CommandList::BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
