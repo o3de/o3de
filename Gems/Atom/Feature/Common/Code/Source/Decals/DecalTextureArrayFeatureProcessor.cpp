@@ -10,6 +10,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzCore/Math/Quaternion.h>
@@ -18,7 +19,12 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/ShapeIntersection.h>
 
+#include <numeric>
+
+AZ_CVAR(int, r_maxVisibleDecals, -1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximun number of visible decals to use when culling is not available. -1 means no limit");
 
 namespace AZ
 {
@@ -87,6 +93,11 @@ namespace AZ
 
             m_decalData.Clear();
             m_decalBufferHandler.Release();
+            for (auto& handler : m_visibleDecalBufferHandlers)
+            {
+                handler.Release();
+            }
+            m_visibleDecalBufferHandlers.clear();
         }
 
         DecalTextureArrayFeatureProcessor::DecalHandle DecalTextureArrayFeatureProcessor::AcquireDecal()
@@ -165,11 +176,12 @@ namespace AZ
         {
             // Note that decals are rendered as part of the forward shading pipeline. We only need to bind the decal buffers/textures in here.
             AZ_PROFILE_SCOPE(AzRender, "DecalTextureArrayFeatureProcessor: Render");
-
+            m_visibleDecalBufferUsedCount = 0;
             for (const RPI::ViewPtr& view : packet.m_views)
             {
                 m_decalBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
                 SetPackedTexturesToSrg(view);
+                CullDecals(view);
             }
         }
 
@@ -382,11 +394,11 @@ namespace AZ
             static constexpr AZStd::array<AZStd::string_view, DecalMapType_Num> ShaderNames = { "m_decalTextureArrayDiffuse",
                                                                                        "m_decalTextureArrayNormalMaps" };
 
+            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
             for (int mapType = 0; mapType < DecalMapType_Num; ++mapType)
             {
                 for (int texArrayIdx = 0; texArrayIdx < NumTextureArrays; ++texArrayIdx)
                 {
-                    const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
                     const AZStd::string baseName = AZStd::string(ShaderNames[mapType]) + AZStd::to_string(texArrayIdx);
 
                     m_decalTextureArrayIndices[texArrayIdx][mapType] = viewSrgLayout->FindShaderInputImageIndex(Name(baseName.c_str()));
@@ -535,6 +547,102 @@ namespace AZ
                 m_textureArrayList[iter].second.Pack();
                 iter = m_textureArrayList.next(iter);
             }
+        }
+
+        bool DecalTextureArrayFeatureProcessor::HasCulling(const RPI::ViewPtr& view) const
+        {
+            // First find if there's a render pipeline that is using the View
+            for (const auto& renderPipeline : GetParentScene()->GetRenderPipelines())
+            {
+                if (!renderPipeline->NeedsRender())
+                {
+                    continue;
+                }
+
+                for (const auto& pipelineView : renderPipeline->GetPipelineViews())
+                {
+                    auto findIt = AZStd::find(pipelineView.second.m_views.begin(), pipelineView.second.m_views.end(), view);
+                    if (findIt != pipelineView.second.m_views.end())
+                    {
+                        // Now check if the render pipeline has a pass that is already doing gpu culling for decals
+                        if (renderPipeline->FindFirstPass(AZ::Name("LightCullingPass")))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        void DecalTextureArrayFeatureProcessor::CullDecals(const RPI::ViewPtr& view)
+        {
+            if (!AZ::RHI::CheckBitsAll(view->GetUsageFlags(), RPI::View::UsageFlags::UsageCamera) ||
+                HasCulling(view))
+            {
+                return;
+            }
+
+            const auto& dataVector = m_decalData.GetDataVector();
+            size_t numVisibleDecals =
+                r_maxVisibleDecals < 0 ? dataVector.size() : AZStd::min(dataVector.size(), static_cast<size_t>(r_maxVisibleDecals));
+            AZStd::vector<uint32_t> sortedDecals(dataVector.size());
+            // Initialize with all the decals indices
+            std::iota(sortedDecals.begin(), sortedDecals.end(), 0);
+            // Only sort if we are going to limit the number of visible decals
+            if (numVisibleDecals < dataVector.size())
+            {
+                AZ::Vector3 viewPos = view->GetViewToWorldMatrix().GetTranslation();
+                AZStd::sort(
+                    sortedDecals.begin(),
+                    sortedDecals.end(),
+                    [&dataVector, &viewPos](uint32_t lhs, uint32_t rhs)
+                    {
+                        float d1 = (AZ::Vector3::CreateFromFloat3(dataVector[lhs].m_position.data()) - viewPos).GetLengthSq();
+                        float d2 = (AZ::Vector3::CreateFromFloat3(dataVector[rhs].m_position.data()) - viewPos).GetLengthSq();
+                        return d1 < d2;
+                    });
+            }
+
+            const AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
+            AZStd::vector<uint32_t> visibilityBuffer;
+            visibilityBuffer.reserve(numVisibleDecals);
+            for (uint32_t i = 0; i < sortedDecals.size() && visibilityBuffer.size() < numVisibleDecals; ++i)
+            {
+                uint32_t dataIndex = sortedDecals[i];
+                const auto& decalData = dataVector[dataIndex];
+                AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(
+                    AZ::Vector3::CreateFromFloat3(decalData.m_position.data()),
+                    AZ::Quaternion::CreateFromFloat4(decalData.m_quaternion.data()),
+                    AZ::Vector3::CreateFromFloat3(decalData.m_halfSize.data()));
+                // Do the actual culling per decal and only add the indices for the visible ones.
+                if (AZ::ShapeIntersection::Overlaps(viewFrustum, obb))
+                {
+                    visibilityBuffer.push_back(dataIndex);
+                }
+            }
+
+            // Update buffer and View SRG
+            GpuBufferHandler& bufferHandler = GetOrCreateVisibleBuffer();
+            bufferHandler.UpdateBuffer(visibilityBuffer);
+            bufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
+        }
+
+        GpuBufferHandler& DecalTextureArrayFeatureProcessor::GetOrCreateVisibleBuffer()
+        {
+            while (m_visibleDecalBufferUsedCount >= m_visibleDecalBufferHandlers.size())
+            {
+                GpuBufferHandler::Descriptor desc;
+                desc.m_bufferName = "DecalVisibilityBuffer";
+                desc.m_bufferSrgName = "m_visibleDecalIndices";
+                desc.m_elementCountSrgName = "m_visibleDecalCount";
+                desc.m_elementFormat = AZ::RHI::Format::R32_UINT;
+                desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
+
+                m_visibleDecalBufferHandlers.emplace_back(desc);
+            }
+            return m_visibleDecalBufferHandlers[m_visibleDecalBufferUsedCount++];
         }
 
         AZ::Data::AssetId DecalTextureArrayFeatureProcessor::GetMaterialUsedByDecal(const DecalHandle handle) const
