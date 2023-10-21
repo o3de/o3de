@@ -447,13 +447,12 @@ def sync_layout_non_vfs(mode, target_platform, project_path, asset_type, warning
                                target_platform=target_platform,
                                layout_target=layout_target)
 
-    # Reset the 'gems' junction if any in the layout (only in loose mode).
-    layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')
-
-    # The gems link only is valid in LOOSE mode. If in PAK, then dont re-link
-    if mode == ASSET_MODE_LOOSE and os.path.isdir(layout_gems_folder_src):
-        if os.path.isdir(layout_gems_folder_src):
-            create_link(layout_gems_folder_src, layout_gems_folder_target, copy)
+    # # Reset the 'gems' junction if any in the layout (only in loose mode).
+    # layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')
+    # # The gems link only is valid in LOOSE mode. If in PAK, then dont re-link
+    # if mode == ASSET_MODE_LOOSE and os.path.isdir(layout_gems_folder_src):
+    #     if os.path.isdir(layout_gems_folder_src):
+    #         create_link(layout_gems_folder_src, layout_gems_folder_target, copy)
 
 
 def sync_layout_pak(target_platform, project_path, asset_type, warning_on_missing_assets, layout_target,
