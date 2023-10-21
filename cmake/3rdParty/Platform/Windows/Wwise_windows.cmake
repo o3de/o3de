@@ -6,18 +6,28 @@
 #
 #
 
-set(WWISE_WINDOWS_LIB_NAMES
-    AkAutobahn
-    SFLib
-)
+if(WWISE_VERSION VERSION_LESS_EQUAL "2021.1.10.0")
+    set(WWISE_WINDOWS_LIB_NAMES
+        AkAutobahn
+        SFLib
+    )
+else()
+    # SFLib is no longer used
+    set(WWISE_WINDOWS_LIB_NAMES
+        AkAutobahn
+    )
+endif()
 
 # Current mapping of toolset to Wwise SDK folder name 
 if(MSVC_TOOLSET_VERSION VERSION_EQUAL 142)
     set(WWISE_VS_VER "vc160")
 elseif(MSVC_TOOLSET_VERSION VERSION_EQUAL 143)
+    if(WWISE_VERSION VERSION_LESS "2021.1.10.0")
+        message(FATAL_ERROR "Visual Studio 2022 is not supported in the current installed Wwise SDK: " ${WWISE_VERSION} " Please install Wwise version 2021.1.10 or higher.")
+    endif()
     set(WWISE_VS_VER "vc170")
 else()
-    message(FATAL_ERROR "Unable to determine Wwise SDK library path.  Unknown MSVC toolset version: " ${MSVC_TOOLSET_VERSION})
+    message(FATAL_ERROR "Unable to determine Wwise SDK library path for MSVC toolset version: " ${MSVC_TOOLSET_VERSION})
 endif()
 
 set(WWISE_LIB_PATH ${BASE_PATH}/SDK/x64_${WWISE_VS_VER}/$<IF:$<CONFIG:Debug>,Debug,$<IF:$<CONFIG:Profile>,Profile,Release>>/lib)
