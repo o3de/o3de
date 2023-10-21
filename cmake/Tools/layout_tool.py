@@ -375,12 +375,12 @@ def sync_layout_vfs(target_platform, project_path, asset_type, warning_on_missin
         shutil.copy2(os.path.join(project_asset_folder, root_asset), layout_target)
 
     # Reset the 'gems' junction if any in the layout
-    layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')
-    layout_gems_folder_target = os.path.join(layout_target, 'gems')
-    if os.path.isdir(layout_gems_folder_target):
-        remove_link(layout_gems_folder_target)
-    if os.path.isdir(layout_gems_folder_src):
-        create_link(layout_gems_folder_src, layout_gems_folder_target, copy)
+#    layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')
+#    layout_gems_folder_target = os.path.join(layout_target, 'gems')
+#    if os.path.isdir(layout_gems_folder_target):
+#        remove_link(layout_gems_folder_target)
+#    if os.path.isdir(layout_gems_folder_src):
+#        create_link(layout_gems_folder_src, layout_gems_folder_target, copy)
 
 
 
