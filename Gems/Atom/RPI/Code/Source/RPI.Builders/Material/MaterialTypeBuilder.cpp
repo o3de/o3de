@@ -130,7 +130,7 @@ namespace AZ
             for (const auto& importedJsonFile : importedJsonFiles)
             {
                 AssetBuilderSDK::SourceFileDependency sourceDependency;
-                sourceDependency.m_sourceFileDependencyPath = MaterialBuilderUtils::GetRelativeSourcePath(importedJsonFile.Native());
+                sourceDependency.m_sourceFileDependencyPath = importedJsonFile.Native();
                 response.m_sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
 
                 // Updating fingerprint to account for imported JSON dependencies.
@@ -161,7 +161,7 @@ namespace AZ
                 for (const AZStd::string& path : possibleDependencies)
                 {
                     response.m_sourceFileDependencyList.push_back({});
-                    response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = MaterialBuilderUtils::GetRelativeSourcePath(path);
+                    response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = path;
                     MaterialBuilderUtils::AddFingerprintForDependency(path, outputJobDescriptor);
                 }
             };

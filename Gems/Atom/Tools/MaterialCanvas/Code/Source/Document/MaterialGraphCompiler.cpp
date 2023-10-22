@@ -237,7 +237,7 @@ namespace MaterialCanvas
     {
         if (!m_graph)
         {
-            AZ_Assert(false, "Attempting to generate data from invalid graph object.");
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
             return;
         }
 
@@ -406,7 +406,7 @@ namespace MaterialCanvas
     {
         if (!m_graph)
         {
-            AZ_Assert(false, "Attempting to generate data from invalid graph object.");
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
             return;
         }
 
@@ -896,7 +896,7 @@ namespace MaterialCanvas
 
         if (!m_graph)
         {
-            AZ_Assert(false, "Attempting to generate data from invalid graph object.");
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
             return nodes;
         }
 
@@ -1051,7 +1051,7 @@ namespace MaterialCanvas
     {
         if (!m_graph)
         {
-            AZ_Assert(false, "Attempting to generate data from invalid graph object.");
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
             return {};
         }
 
@@ -1100,13 +1100,13 @@ namespace MaterialCanvas
 
         if (!m_graph)
         {
-            AZ_Assert(false, "Attempting to generate data from invalid graph object.");
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
             return false;
         }
 
         if (!templateNode)
         {
-            AZ_Assert(false, "Attempting to generate data from invalid template node.");
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid template node.");
             return false;
         }
 

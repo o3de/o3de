@@ -29,7 +29,7 @@ namespace AZ::RPI::MaterialBuilderUtils
             // the builder will actually use
             AssetBuilderSDK::JobDependency jobDependency;
             jobDependency.m_jobKey = jobKey;
-            jobDependency.m_sourceFile.m_sourceFileDependencyPath = GetRelativeSourcePath(path);
+            jobDependency.m_sourceFile.m_sourceFileDependencyPath = path;
             jobDependency.m_type = jobDependencyType;
             jobDependency.m_productSubIds = productSubIds;
             jobDependency.m_platformIdentifier = platformId;
