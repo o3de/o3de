@@ -78,6 +78,12 @@ class Surface
 
     //! Sets albedo, base color, specularF0, and metallic properties using metallic workflow
     void SetAlbedoAndSpecularF0(real3 baseColor, real specularF0Factor, real metallic);
+
+    real3 GetDiffuseNormal() { return normal; }
+    real3 GetSpecularNormal() { return normal; }
+    real3 GetDefaultNormal() { return normal; }
+    real3 GetVertexNormal() { return vertexNormal; }
+    real3 GetSpecularF0() { return specularF0; }
 };
 
 // Specular Anti-Aliasing technique from this paper:

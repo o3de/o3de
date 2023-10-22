@@ -101,13 +101,13 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseI
         
         if(useDiffuseIbl)
         {
-            real3 iblDiffuse = GetIblDiffuse(surface.normal, surface.albedo, lightingData.diffuseResponse);
+            real3 iblDiffuse = GetIblDiffuse(surface.GetDiffuseNormal(), surface.albedo, lightingData.diffuseResponse);
             lightingData.diffuseLighting += (iblDiffuse * globalIblExposure * lightingData.diffuseAmbientOcclusion);
         }
 
         if(useSpecularIbl)
         {
-            real3 iblSpecular = GetIblSpecular(surface.position, surface.normal, surface.specularF0, surface.roughnessLinear, lightingData.dirToCamera, lightingData.brdf, reflectionProbe, reflectionProbeCubemap);
+            real3 iblSpecular = GetIblSpecular(surface.position, surface.GetSpecularNormal(), surface.GetSpecularF0(), surface.roughnessLinear, lightingData.dirToCamera, lightingData.brdf, reflectionProbe, reflectionProbeCubemap);
             iblSpecular *= lightingData.multiScatterCompensation;
             
 #if ENABLE_CLEAR_COAT
@@ -133,8 +133,8 @@ void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseI
 #if ENABLE_DUAL_SPECULAR
             if(o_enableDualSpecular)
             {
-                real2 dualSpecularBrdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(surface.dualSpecRoughness, lightingData.NdotV)).rg);
-                real3 dualSpecular = GetIblSpecular(surface.position, surface.normal, surface.dualSpecF0.xxx, surface.dualSpecRoughness, lightingData.dirToCamera, dualSpecularBrdf, reflectionProbe, reflectionProbeCubemap);
+                real2 dualSpecularBrdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(surface.dualSpecRoughness, lightingData.GetSpecularNdotV())).rg);
+                real3 dualSpecular = GetIblSpecular(surface.position, surface.GetSpecularNormal(), surface.dualSpecF0.xxx, surface.dualSpecRoughness, lightingData.dirToCamera, dualSpecularBrdf, reflectionProbe, reflectionProbeCubemap);
                 iblSpecular = lerp(iblSpecular, dualSpecular, surface.dualSpecFactor);
             }
 #endif
