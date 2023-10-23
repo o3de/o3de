@@ -189,13 +189,13 @@ namespace AZ::SettingsRegistryMergeUtils
             UseFileIOOnly
         };
 
-// Gruber changes begin - alukyanov
-#ifdef AZ_PLATFORM_LINUX
+// Carbonated changes begin (alukyanov)
+#if defined(LINUX)
         FileReaderClass m_fileReaderClass = FileReaderClass::UseSystemFileOnly;
 #else
         FileReaderClass m_fileReaderClass = FileReaderClass::UseFileIOIfAvailableFallbackToSystemFile;
-#endif // AZ_PLATFORM_LINUX
-// Gruber changes end
+#endif // LINUX
+// Carbonated changes end
 
     };
     //! Loads basic configuration files which have structures similar to Windows INI files

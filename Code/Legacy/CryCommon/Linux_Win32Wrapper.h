@@ -12,9 +12,11 @@
 #include <vector>
 #include <AzCore/std/string/string.h>
 
-#ifdef LINUX64
+// carbonated begin (alukyanov)
+#if defined(LINUX64)
 #include <Linux64Specific.h>
 #endif
+// carbonated end
 
 /* Memory block identification */
 #define _FREE_BLOCK      0
