@@ -51,9 +51,12 @@ namespace AZ::RHI
 
                 if (m_drawListMask[drawListTag.GetIndex()])
                 {
-                    DrawItemProperties drawItem = drawPacket->GetDrawItem(i);
-                    drawItem.m_depth = depth;
-                    threadListsByTag[drawListTag.GetIndex()].push_back(drawItem);
+                    DrawItemProperties drawItem = drawPacket->GetDrawItemProperties(i);
+                    if (drawItem.m_item->m_enabled)
+                    {
+                        drawItem.m_depth = depth;
+                        threadListsByTag[drawListTag.GetIndex()].push_back(drawItem);
+                    }
                 }
             }
         }
@@ -68,6 +71,11 @@ namespace AZ::RHI
 
     void DrawListContext::AddDrawItem(DrawListTag drawListTag, DrawItemProperties drawItemProperties)
     {
+        if (!drawItemProperties.m_item->m_enabled)
+        {
+            return;
+        }
+
         if (Validation::IsEnabled())
         {
             if (drawListTag.IsNull())

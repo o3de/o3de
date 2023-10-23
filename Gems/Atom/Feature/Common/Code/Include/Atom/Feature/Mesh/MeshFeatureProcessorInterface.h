@@ -157,6 +157,8 @@ namespace AZ
             //! Connects a handler to ObjectSrg creation
             virtual void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) = 0;
 
+            //! Enables/Disables the mesh's DrawItem for the given drawListTag
+            virtual void SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled) = 0;
             //! Sets the transform for a given mesh handle.
             virtual void SetTransform(const MeshHandle& meshHandle, const Transform& transform,
                 const Vector3& nonUniformScale = Vector3::CreateOne()) = 0;
