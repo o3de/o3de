@@ -10,7 +10,7 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O
 
 add_subdirectory(XML)
 
-if(CARBONATED)
+if(CARBONATED_ENGINE_ADDONS)
 set(azcommonaddon_dependency Legacy::CryCommonAddon)
 set(aznetworkaddon_dependency Legacy::CryNetworkAddon)
 endif()
