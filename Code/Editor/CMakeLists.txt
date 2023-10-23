@@ -12,7 +12,7 @@ endif()
 
 add_subdirectory(Plugins)
 
-if(CARBONATED)
+if(CARBONATED_ENGINE_ADDONS)
 set(azcommonaddon_dependency Legacy::CryCommonAddon)
 endif()
 
