@@ -9,7 +9,7 @@
 #include <AzNetworking/UdpTransport/UdpHeartbeatThread.h>
 #include <AzNetworking/UdpTransport/UdpNetworkInterface.h>
 
-#pragma optimize("",off)
+
 namespace AzNetworking
 {
     // HeartbeatThreadUpdateRateMs is how often the timed thread's OnUpdate call will be executed.
@@ -90,4 +90,3 @@ namespace AzNetworking
         }
     }
 } // namespace AzNetworking
-#pragma optimize("", on)
