@@ -28,7 +28,6 @@ namespace AzNetworking
 
     private:
 
-        //! Helper to determine if a given socket is monitored by this reader thread instance
         void OnStart() override;
         void OnStop() override;
         void OnUpdate(AZ::TimeMs updateRateMs) override;
