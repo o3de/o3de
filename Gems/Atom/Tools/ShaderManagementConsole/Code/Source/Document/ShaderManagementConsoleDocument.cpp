@@ -139,10 +139,10 @@ namespace ShaderManagementConsole
     {
         struct VariantCompacterKey
         {
-            AZ::RPI::ShaderVariantListSourceData::VariantInfo* info;
-            size_t hash;
+            AZ::RPI::ShaderVariantListSourceData::VariantInfo* m_info{};
+            size_t m_hash{};
 
-            bool operator==(VariantCompacterKey const& rhs) const
+            bool operator==(const VariantCompacterKey& rhs) const
             {
                 return hash == rhs.hash && info->m_options == rhs.info->m_options;  // first part of expression for short circuit
             }
