@@ -461,7 +461,7 @@ namespace AZ
                     AZ_TracePrintf(ShaderAssetBuilderName, "Preprocessed AZSL File: %s \n", prependedAzslFilePath.c_str());
 
                     // Ready to transpile the azslin file into HLSL.
-                    ShaderBuilder::AzslCompiler azslc(azslinFullPath);
+                    ShaderBuilder::AzslCompiler azslc(azslinFullPath, request.m_tempDirPath);
                     AZStd::string hlslFullPath = AZStd::string::format("%s_%s.hlsl", superVariantAzslinStemName.c_str(), apiName.c_str());
                     AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), hlslFullPath.c_str(), hlslFullPath, true);
                     auto emitFullOutcome = azslc.EmitFullData(buildArgsManager.GetCurrentArguments().m_azslcArguments, hlslFullPath);
@@ -500,9 +500,8 @@ namespace AZ
                     RootConstantData rootConstantData;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
                         ShaderAssetBuilderName, subProductsPaths, azslData, srgLayoutList,
-                        shaderOptionGroupLayout, bindingDependencies, rootConstantData);
+                        shaderOptionGroupLayout, bindingDependencies, rootConstantData, request.m_tempDirPath);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
-
                     {
                         response.m_resultCode = azslJsonReadResult;
                         return;
@@ -587,7 +586,7 @@ namespace AZ
                         azslData, shaderEntryPoints, *shaderOptionGroupLayout.get(),
                         subProductsPaths[ShaderBuilderUtility::AzslSubProducts::om],
                         subProductsPaths[ShaderBuilderUtility::AzslSubProducts::ia],
-                        shaderInputContract, shaderOutputContract, colorAttachmentCount);
+                        shaderInputContract, shaderOutputContract, colorAttachmentCount, request.m_tempDirPath);
                     shaderAssetCreator.SetInputContract(shaderInputContract);
                     shaderAssetCreator.SetOutputContract(shaderOutputContract);
 

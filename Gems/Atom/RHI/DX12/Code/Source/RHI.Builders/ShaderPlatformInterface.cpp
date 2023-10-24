@@ -297,7 +297,7 @@ namespace AZ
                                                                  );
 
             // Run Shader Compiler
-            if (!RHI::ExecuteShaderCompiler(dxcRelativePath, dxcCommandOptions, shaderSourceFile, "DXC"))
+            if (!RHI::ExecuteShaderCompiler(dxcRelativePath, dxcCommandOptions, shaderSourceFile, tempFolder, "DXC"))
             {
                 return false;
             }
