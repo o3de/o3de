@@ -13,7 +13,9 @@
 namespace AzNetworking
 {
     // HeartbeatThreadUpdateRateMs is how often the timed thread's OnUpdate call will be executed.
-    // Heartbeats will also be sent this often while the mainthread is blocked (ex: loading a level)
+    // This controls how often heartbeats are sent on every active UDP connection.
+    // The heartbeat sends are offloaded to this heartbeat thread to ensure that they keep getting sent even
+    // while the main thread is blocked on time-consuming tasks like loading a level.
     static constexpr AZ::TimeMs HeartbeatThreadUpdateRateMs{ 500 };
 
     UdpHeartbeatThread::UdpHeartbeatThread()
