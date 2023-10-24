@@ -47,10 +47,10 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)
         {
-            m_timestampResult = AZ::RPI::TimestampResult();
+            m_timestampResult = RPI::TimestampResult();
             if(GetScopeId().IsEmpty())
             {
-                InitScope(AZ::RHI::ScopeId(GetPathName()), AZ::RHI::HardwareQueueClass::Graphics);
+                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Graphics);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
@@ -58,22 +58,22 @@ namespace AZ
             ReadbackScopeQueryResults();
         }
 
-        AZ::RHI::Ptr<AZ::RPI::Query> RayTracingAccelerationStructurePass::GetQuery(AZ::RPI::ScopeQueryType queryType)
+        RHI::Ptr<RPI::Query> RayTracingAccelerationStructurePass::GetQuery(RPI::ScopeQueryType queryType)
         {
             auto typeIndex{ static_cast<uint32_t>(queryType) };
             if (!m_scopeQueries[typeIndex])
             {
-                AZ::RHI::Ptr<AZ::RPI::Query> query;
+                RHI::Ptr<RPI::Query> query;
                 switch (queryType)
                 {
-                case AZ::RPI::ScopeQueryType::Timestamp:
-                    query = AZ::RPI::GpuQuerySystemInterface::Get()->CreateQuery(
-                        AZ::RHI::QueryType::Timestamp, AZ::RHI::QueryPoolScopeAttachmentType::Global, AZ::RHI::ScopeAttachmentAccess::Write);
+                case RPI::ScopeQueryType::Timestamp:
+                    query = RPI::GpuQuerySystemInterface::Get()->CreateQuery(
+                        RHI::QueryType::Timestamp, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
                     break;
-                case AZ::RPI::ScopeQueryType::PipelineStatistics:
-                    query = AZ::RPI::GpuQuerySystemInterface::Get()->CreateQuery(
-                        AZ::RHI::QueryType::PipelineStatistics, AZ::RHI::QueryPoolScopeAttachmentType::Global,
-                        AZ::RHI::ScopeAttachmentAccess::Write);
+                case RPI::ScopeQueryType::PipelineStatistics:
+                    query = RPI::GpuQuerySystemInterface::Get()->CreateQuery(
+                        RHI::QueryType::PipelineStatistics, RHI::QueryPoolScopeAttachmentType::Global,
+                        RHI::ScopeAttachmentAccess::Write);
                     break;
                 }
 
@@ -88,7 +88,7 @@ namespace AZ
         {
             if (IsTimestampQueryEnabled())
             {
-                auto query{ GetQuery(AZ::RPI::ScopeQueryType::Timestamp) };
+                auto query{ GetQuery(RPI::ScopeQueryType::Timestamp) };
                 if (query)
                 {
                     func(query);
@@ -101,7 +101,7 @@ namespace AZ
         {
             if (IsPipelineStatisticsQueryEnabled())
             {
-                auto query{ GetQuery(AZ::RPI::ScopeQueryType::PipelineStatistics) };
+                auto query{ GetQuery(RPI::ScopeQueryType::PipelineStatistics) };
                 if (query)
                 {
                     func(query);
@@ -279,9 +279,9 @@ namespace AZ
             EndScopeQuery(context);
         }
 
-        void RayTracingAccelerationStructurePass::AddScopeQueryToFrameGraph(AZ::RHI::FrameGraphInterface frameGraph)
+        void RayTracingAccelerationStructurePass::AddScopeQueryToFrameGraph(RHI::FrameGraphInterface frameGraph)
         {
-            const auto addToFrameGraph = [&frameGraph](AZ::RHI::Ptr<AZ::RPI::Query> query)
+            const auto addToFrameGraph = [&frameGraph](RHI::Ptr<RPI::Query> query)
             {
               query->AddToFrameGraph(frameGraph);
             };
@@ -290,11 +290,11 @@ namespace AZ
             ExecuteOnPipelineStatisticsQuery(addToFrameGraph);
         }
 
-        void RayTracingAccelerationStructurePass::BeginScopeQuery(const AZ::RHI::FrameGraphExecuteContext& context)
+        void RayTracingAccelerationStructurePass::BeginScopeQuery(const RHI::FrameGraphExecuteContext& context)
         {
-            const auto beginQuery = [&context, this](AZ::RHI::Ptr<AZ::RPI::Query> query)
+            const auto beginQuery = [&context, this](RHI::Ptr<RPI::Query> query)
             {
-              if (query->BeginQuery(context) == AZ::RPI::QueryResultCode::Fail)
+              if (query->BeginQuery(context) == RPI::QueryResultCode::Fail)
               {
                   AZ_UNUSED(this); // Prevent unused warning in release builds
                   AZ_WarningOnce(
@@ -305,54 +305,38 @@ namespace AZ
               }
             };
 
-            if (context.GetCommandListIndex() == 0)
-            {
-                ExecuteOnTimestampQuery(beginQuery);
-                ExecuteOnPipelineStatisticsQuery(beginQuery);
-            }
+            ExecuteOnTimestampQuery(beginQuery);
+            ExecuteOnPipelineStatisticsQuery(beginQuery);
         }
 
-        void RayTracingAccelerationStructurePass::EndScopeQuery(const AZ::RHI::FrameGraphExecuteContext& context)
+        void RayTracingAccelerationStructurePass::EndScopeQuery(const RHI::FrameGraphExecuteContext& context)
         {
-            const auto endQuery = [&context](AZ::RHI::Ptr<AZ::RPI::Query> query)
+            const auto endQuery = [&context](const RHI::Ptr<RPI::Query>& query)
             {
               query->EndQuery(context);
             };
 
-            // This scope query implementation should be replaced by
-            // [ATOM-5407] [RHI][Core] - Add GPU timestamp and pipeline statistic support for scopes
-
-            // For timestamp query, it's okay to execute across different command lists
-            if (context.GetCommandListIndex() == context.GetCommandListCount() - 1)
-            {
-                ExecuteOnTimestampQuery(endQuery);
-            }
-            // For all the other types of queries except timestamp, the query start and end has to be in the same command list
-            // Here only tracks the PipelineStatistics for the first command list due to that we don't know how many queries are
-            // needed when AddScopeQueryToFrameGraph is called.
-            // This implementation leads to an issue that we may not get accurate pipeline statistic data
-            // for passes which were executed with more than one command list
-            if (context.GetCommandListIndex() == 0)
-            {
-                ExecuteOnPipelineStatisticsQuery(endQuery);
-            }
+            // This scope query implementation should be replaced by the feature linked below on GitHub:
+            // [GHI-16945] Feature Request - Add GPU timestamp and pipeline statistic support for scopes
+            ExecuteOnTimestampQuery(endQuery);
+            ExecuteOnPipelineStatisticsQuery(endQuery);
         }
 
         void RayTracingAccelerationStructurePass::ReadbackScopeQueryResults()
         {
             ExecuteOnTimestampQuery(
-                [this](AZ::RHI::Ptr<AZ::RPI::Query> query)
+                [this](const RHI::Ptr<RPI::Query>& query)
                 {
                   const uint32_t TimestampResultQueryCount{ 2u };
                   uint64_t timestampResult[TimestampResultQueryCount] = { 0 };
                   query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
-                  m_timestampResult = AZ::RPI::TimestampResult(timestampResult[0], timestampResult[1], AZ::RHI::HardwareQueueClass::Graphics);
+                  m_timestampResult = RPI::TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
                 });
 
             ExecuteOnPipelineStatisticsQuery(
-                [this](AZ::RHI::Ptr<AZ::RPI::Query> query)
+                [this](const RHI::Ptr<RPI::Query>& query)
                 {
-                  query->GetLatestResult(&m_statisticsResult, sizeof(AZ::RPI::PipelineStatisticsResult));
+                  query->GetLatestResult(&m_statisticsResult, sizeof(RPI::PipelineStatisticsResult));
                 });
         }
     }   // namespace RPI
