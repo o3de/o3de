@@ -61,7 +61,7 @@ namespace AZ
         {
             if (mipLevel >= m_imageDescriptor.m_mipLevels)
             {
-                AZ_Assert(false, "Input mipLevel doesn't exist");
+                AZ_Error("StreamingImageAsset", false, "Input mipLevel doesn't exist"); // Gruber patch begin // VMED // error instead mipmap assert (MADPORT-459)
                 mipLevel = m_imageDescriptor.m_mipLevels - 1;
             }
             return m_mipLevelToChainIndex[mipLevel];

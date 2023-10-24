@@ -212,6 +212,16 @@ namespace AZ
                 }
 
                 const auto mipChainAsset = BuildPackedMipChainAsset(mapType, numTexturesToCreate);
+                
+                // Gruber patch begin // VMED // error for missing mipmap (MADPORT-459)
+                if (!mipChainAsset.GetData())
+                {
+                    AZ_Error("DecalTextureArray", false, "Missing decal texture mipmaps for %s. Please make sure all mipmaps of this type are present.\n", GetMapName(mapType).GetCStr());
+                    m_textureArrayPacked[i] = nullptr;
+                    continue;
+                }
+                // Gruber patch end // VMED
+                
                 RHI::ImageViewDescriptor imageViewDescriptor;
                 imageViewDescriptor.m_isArray = true;
 
