@@ -142,7 +142,7 @@ namespace ShaderManagementConsole
             AZ::RPI::ShaderVariantListSourceData::VariantInfo* info;
             size_t hash;
 
-            bool operator==(VariantCompacterKey const& rhs) const
+            bool operator==(const VariantCompacterKey& rhs) const
             {
                 return hash == rhs.hash && info->m_options == rhs.info->m_options;  // first part of expression for short circuit
             }
