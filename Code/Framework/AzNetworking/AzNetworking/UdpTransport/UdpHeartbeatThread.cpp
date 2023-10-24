@@ -29,12 +29,10 @@ namespace AzNetworking
 
     void UdpHeartbeatThread::OnStart()
     {
-        ;
     }
 
     void UdpHeartbeatThread::OnStop()
     {
-        ;
     }
 
     void UdpHeartbeatThread::OnUpdate([[maybe_unused]]AZ::TimeMs updateRateMs)
