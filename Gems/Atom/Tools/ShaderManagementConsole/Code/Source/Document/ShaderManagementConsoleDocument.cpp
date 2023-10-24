@@ -144,14 +144,14 @@ namespace ShaderManagementConsole
 
             bool operator==(const VariantCompacterKey& rhs) const
             {
-                return hash == rhs.hash && info->m_options == rhs.info->m_options;  // first part of expression for short circuit
+                return m_hash == rhs.m_hash && m_info->m_options == rhs.m_info->m_options;  // first part of expression for short circuit
             }
 
             static VariantCompacterKey Make(AZ::RPI::ShaderVariantListSourceData::VariantInfo* source)
             {
                 VariantCompacterKey newKey;
-                newKey.info = source;
-                newKey.hash = AZ::ShaderBuilder::HashedVariantInfoSourceData::HashCombineShaderOptionValues(0, source->m_options);
+                newKey.m_info = source;
+                newKey.m_hash = AZ::ShaderBuilder::HashedVariantInfoSourceData::HashCombineShaderOptionValues(0, source->m_options);
                 return newKey;
             }
         };
@@ -160,7 +160,7 @@ namespace ShaderManagementConsole
         {
             std::size_t operator()(VariantCompacterKey const& key) const
             {
-                return key.hash;
+                return key.m_hash;
             }
         };
         // Use a set for uniquification process
@@ -178,7 +178,7 @@ namespace ShaderManagementConsole
         newSourceData.m_shaderVariants.reserve(compacter.size());
         for (VariantCompacterKey& compactedKey : compacter)
         {
-            newSourceData.m_shaderVariants.emplace_back(std::move(*compactedKey.info));
+            newSourceData.m_shaderVariants.emplace_back(std::move(*compactedKey.m_info));
         }
         // sort by old stable id
         AZStd::sort(newSourceData.m_shaderVariants.begin(),
