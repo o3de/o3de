@@ -58,23 +58,10 @@ namespace AZ
         {
             // Gruber patch begin // VMED // error instead mipmap assert (MADPORT-459)
             // AZ_Assert(subImageIndex < m_subImageDataOffsets.size() && subImageIndex < m_subImageDatas.size(), "subImageIndex is out of range");
-            if (subImageIndex >= m_subImageDataOffsets.size() - 1 || subImageIndex >= m_subImageDatas.size())
+            if (subImageIndex + 1 >= m_subImageDataOffsets.size() || subImageIndex >= m_subImageDatas.size())
             {
                 AZ_Error("ImageMipChainAsset", false, "subImageIndex is out of range");
-                //verify valid sizes
-                if (m_subImageDatas.size() == 0 || m_subImageDataOffsets.size() <= 1)
-                {
-                    return AZStd::span<const uint8_t>();
-                }
-                // try to fallback to prev mipmap level
-                if (subImageIndex >= m_subImageDataOffsets.size() - 1) // size()-1, due to we use m_subImageDataOffsets[subImageIndex + 1] below
-                {
-                    subImageIndex = (uint32_t)(m_subImageDataOffsets.size() - 2);
-                }
-                if (subImageIndex >= m_subImageDatas.size())
-                {
-                    subImageIndex = (uint32_t)(m_subImageDatas.size() - 1);
-                }
+                return AZStd::span<const uint8_t>();
             }
             // Gruber patch end // VMED 
 
