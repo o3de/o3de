@@ -76,6 +76,7 @@ DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint li
     calc.SetWorldNormal(normalVector);
     calc.SetLightIndex(lightIndex);
     calc.SetFilterMode(o_directional_shadow_filtering_method);
+    calc.SetFilteringSampleCount(o_directional_shadow_filtering_sample_count);
     calc.SetWorldPos(worldPos);
     return calc;
 }

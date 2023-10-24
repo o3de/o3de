@@ -53,6 +53,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         float2 m_screenSize;
         int m_lightIndex;
         int m_filterMode;
+        int m_filteringSampleCountMode;
         int m_blendBetweenCascadesEnable;
         int m_receiverShadowPlaneBiasEnable;
         
@@ -163,11 +164,12 @@ void MainCS(uint3 thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupID, uin
     calc.SetWorldNormal(normalWS);
     calc.SetReceiverShadowPlaneBiasEnable(PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable);
     calc.SetFilterMode((ShadowFilterMethod)PassSrg::m_constantData.m_filterMode);
+    calc.SetFilteringSampleCount((ShadowFilterSampleCount)PassSrg::m_constantData.m_filteringSampleCountMode);
     calc.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
     calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
     calc.SetWorldPos(positionWS);
 
-   PassSrg::m_fullscreenShadowOutput[dispatch_id.xy] = calc.GetVisibility();
+    PassSrg::m_fullscreenShadowOutput[dispatch_id.xy] = calc.GetVisibility();
 }
 
 #else
@@ -183,6 +185,7 @@ PSOutput MainPS(VSOutput IN)
     calc.SetWorldNormal(normalWS);
     calc.SetReceiverShadowPlaneBiasEnable(PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable);
     calc.SetFilterMode((ShadowFilterMethod)PassSrg::m_constantData.m_filterMode);
+    calc.SetFilteringSampleCount((ShadowFilterSampleCount)PassSrg::m_constantData.m_filteringSampleCountMode);
     calc.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
     calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
     calc.SetWorldPos(positionWS);

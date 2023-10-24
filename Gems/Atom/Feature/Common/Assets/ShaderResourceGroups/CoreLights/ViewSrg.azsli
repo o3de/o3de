@@ -122,7 +122,7 @@ partial ShaderResourceGroup ViewSrg
         uint m_cascadeCount;
         float m_shadowBias; 
         float m_normalShadowBias; 
-        uint m_filteringSampleCount;
+        uint m_filteringSampleCountMode;
         uint m_debugFlags;
         uint m_shadowFilterMethod;
         float m_far_minus_near;
