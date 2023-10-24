@@ -11,6 +11,8 @@
 #endif
 
 enum class ShadowFilterMethod {None, Pcf, Esm, EsmPcf};
+enum class ShadowFilterSampleCount {PcfTap4, PcfTap9, PcfTap16};
+option ShadowFilterSampleCount o_directional_shadow_filtering_sample_count = ShadowFilterSampleCount::PcfTap16;
 
 // avoiding artifact between cascade levels.
 #define PIXEL_MARGIN (1.5)
@@ -59,6 +61,11 @@ class DirectionalShadowCalculator
         m_filterMode = filterMode;
     }
 
+    void SetFilteringSampleCount(const ShadowFilterSampleCount filteringSampleCountMode)
+    {
+        m_filteringSampleCountMode = filteringSampleCountMode;
+    }
+
     void GetShadowCascadeRange(float3 shadowCoords[ViewSrg::MaxCascadeCount], int cascadeCount, uint shadowmapSize, out int minShadowCascade, out int maxShadowCascade);
     float GetVisibility();
     float GetThickness();
@@ -87,6 +94,7 @@ class DirectionalShadowCalculator
     int m_maxCascade;
     int m_cascadeCount;
     ShadowFilterMethod m_filterMode;
+    ShadowFilterSampleCount m_filteringSampleCountMode;
 
     Texture2DArray<float> m_directionalLightShadowmap;   
     Texture2DArray<float> m_directionalLightExponentialShadowmap;        
@@ -281,7 +289,7 @@ float DirectionalShadowCalculator::GetVisibilityFromLightNoFilter()
 
 float DirectionalShadowCalculator::SamplePcfBicubic(const float3 shadowCoord, const int indexOfCascade)
 {
-    const uint filteringSampleCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_filteringSampleCount;
+    const ShadowFilterSampleCount filteringSampleCountMode = m_filteringSampleCountMode;
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
     
     SampleShadowMapBicubicParameters param;
@@ -298,19 +306,19 @@ float DirectionalShadowCalculator::SamplePcfBicubic(const float3 shadowCoord, co
     param.receiverPlaneDepthBias = m_receiverShadowPlaneBiasEnable ? ComputeReceiverPlaneDepthBias(m_shadowPosDX[indexOfCascade], m_shadowPosDY[indexOfCascade]) : 0;
 #endif
     
-    [branch]
-    if (filteringSampleCount <= 4)
+    switch(filteringSampleCountMode)
     {
-        return SampleShadowMapBicubic_4Tap(param);
+        case ShadowFilterSampleCount::PcfTap4:
+            return SampleShadowMapBicubic_4Tap(param);
+        case ShadowFilterSampleCount::PcfTap9:
+            return SampleShadowMapBicubic_9Tap(param);
+        case ShadowFilterSampleCount::PcfTap16:
+            return SampleShadowMapBicubic_16Tap(param);
+        default:
+            //Use 16 tap by default
+            return SampleShadowMapBicubic_16Tap(param);
     }
-    else if (filteringSampleCount <= 9)
-    {
-        return SampleShadowMapBicubic_9Tap(param);
-    }
-    else
-    {
-        return SampleShadowMapBicubic_16Tap(param);
-    }
+    return 0.0f;
 }
 
 float DirectionalShadowCalculator::GetVisibilityFromLightPcf()
