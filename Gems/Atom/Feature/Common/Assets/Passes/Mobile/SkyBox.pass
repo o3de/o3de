@@ -23,7 +23,15 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/SkyBox/SkyBox.shader"
                 },
-                "BindViewSrg": true
+                "BindViewSrg": true,
+                "ShaderDataMappings": {
+                    "FloatMappings": [
+                        {
+                            "Name": "m_sunIntensityMultiplier",
+                            "Value": 1.0
+                        }
+                    ]
+                }
             }
         }
     }
