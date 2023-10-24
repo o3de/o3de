@@ -73,7 +73,7 @@ namespace AzNetworking
         }
     }
 
-    void UdpHeartbeatThread::UnregisterNetworkInterface(UdpNetworkInterface* updNetworkInterface)
+    void UdpHeartbeatThread::UnregisterNetworkInterface(UdpNetworkInterface* udpNetworkInterface)
     {
         AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
 
