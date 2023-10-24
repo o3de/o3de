@@ -23,7 +23,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Document/ShaderManagementConsoleDocument.h>
-#include <../../../../../Asset/Shader/Code/Source/Editor/HashedVariantListSourceData.h>
+#include <HashedVariantListSourceData.h>
 
 namespace ShaderManagementConsole
 {
@@ -80,7 +80,7 @@ namespace ShaderManagementConsole
                 variantInfo.m_options[optionDescriptor.GetName()] = ""; // all unset
             }
             variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
-                ? 1
+                ? 1  // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
                 : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
             m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
             return variantInfo.m_stableId;
@@ -189,7 +189,7 @@ namespace ShaderManagementConsole
                         return a.m_stableId < b.m_stableId;
                     });
         // reassign stable ids completely, but based on old order
-        AZ::u32 idCounter = 1;
+        AZ::u32 idCounter = 1;  // start at 1 (0 is reserved as explained in ShaderVariantTreeAssetCreator)
         for (auto& variantInfo : newSourceData.m_shaderVariants)
         {
             variantInfo.m_stableId = idCounter++;
