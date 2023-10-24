@@ -139,8 +139,8 @@ namespace ShaderManagementConsole
     {
         struct VariantCompacterKey
         {
-            AZ::RPI::ShaderVariantListSourceData::VariantInfo* info;
-            size_t hash;
+            AZ::RPI::ShaderVariantListSourceData::VariantInfo* m_info{};
+            size_t m_hash{};
 
             bool operator==(const VariantCompacterKey& rhs) const
             {
