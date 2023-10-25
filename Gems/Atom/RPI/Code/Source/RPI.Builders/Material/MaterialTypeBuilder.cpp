@@ -221,12 +221,13 @@ namespace AZ
                 MaterialBuilderUtils::AddPossibleDependencies(
                     materialTypeSourcePath,
                     shader.m_shaderFilePath,
+                    response.m_sourceFileDependencyList,
                     "Shader Asset",
                     outputJobDescriptor,
                     AssetBuilderSDK::JobDependencyType::Order);
             }
 
-            auto addFunctorDependencies = [&outputJobDescriptor, &materialTypeSourcePath](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
+            auto addFunctorDependencies = [&response, &outputJobDescriptor, &materialTypeSourcePath](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
             {
                 for (const auto& functor : functors)
                 {
@@ -237,6 +238,7 @@ namespace AZ
                         MaterialBuilderUtils::AddPossibleDependencies(
                             materialTypeSourcePath,
                             dependency.m_sourceFilePath,
+                            response.m_sourceFileDependencyList,
                             dependency.m_jobKey,
                             outputJobDescriptor,
                             AssetBuilderSDK::JobDependencyType::Order);
@@ -253,7 +255,7 @@ namespace AZ
                 });
 
             materialTypeSourceData.EnumerateProperties(
-                [&outputJobDescriptor, &materialTypeSourcePath](
+                [&response, &outputJobDescriptor, &materialTypeSourcePath](
                     const MaterialPropertySourceData* property, const MaterialNameContext&)
                 {
                     if (property->m_dataType == MaterialPropertyDataType::Image && MaterialUtils::LooksLikeImageFileReference(property->m_value))
@@ -261,6 +263,7 @@ namespace AZ
                         MaterialBuilderUtils::AddPossibleImageDependencies(
                             materialTypeSourcePath,
                             property->m_value.GetValue<AZStd::string>(),
+                            response.m_sourceFileDependencyList,
                             outputJobDescriptor);
                     }
                     return true;
@@ -273,6 +276,7 @@ namespace AZ
                     MaterialBuilderUtils::AddPossibleDependencies(
                         materialTypeSourcePath,
                         shader.m_shaderFilePath,
+                        response.m_sourceFileDependencyList,
                         "Shader Asset",
                         outputJobDescriptor,
                         AssetBuilderSDK::JobDependencyType::Order);

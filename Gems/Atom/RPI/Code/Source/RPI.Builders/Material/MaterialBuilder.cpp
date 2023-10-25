@@ -104,6 +104,7 @@ namespace AZ
                 MaterialBuilderUtils::AddPossibleDependencies(
                     materialSourcePath,
                     resolvedParentMaterialPath,
+                    response.m_sourceFileDependencyList,
                     JobKey,
                     outputJobDescriptor,
                     AssetBuilderSDK::JobDependencyType::Order);
@@ -135,6 +136,7 @@ namespace AZ
                     MaterialBuilderUtils::AddPossibleDependencies(
                         materialSourcePath,
                         resolvedMaterialTypePath,
+                        response.m_sourceFileDependencyList,
                         MaterialTypeBuilder::FinalStageJobKey,
                         outputJobDescriptor,
                         AssetBuilderSDK::JobDependencyType::Order);
@@ -144,6 +146,7 @@ namespace AZ
                     MaterialBuilderUtils::AddPossibleDependencies(
                         materialSourcePath,
                         resolvedMaterialTypePath,
+                        response.m_sourceFileDependencyList,
                         MaterialTypeBuilder::PipelineStageJobKey,
                         outputJobDescriptor,
                         AssetBuilderSDK::JobDependencyType::Order,
@@ -157,6 +160,7 @@ namespace AZ
                         MaterialBuilderUtils::AddPossibleDependencies(
                             materialSourcePath,
                             intermediateMaterialTypePath,
+                            response.m_sourceFileDependencyList,
                             MaterialTypeBuilder::FinalStageJobKey,
                             outputJobDescriptor,
                             AssetBuilderSDK::JobDependencyType::Order);
@@ -174,6 +178,7 @@ namespace AZ
                     MaterialBuilderUtils::AddPossibleImageDependencies(
                         materialSourcePath,
                         propertyValue.GetValue<AZStd::string>(),
+                        response.m_sourceFileDependencyList,
                         outputJobDescriptor);
                 }
             }

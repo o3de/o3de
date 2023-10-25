@@ -25,6 +25,7 @@ namespace AZ
             void AddPossibleDependencies(
                 const AZStd::string& originatingSourceFilePath,
                 const AZStd::string& referencedSourceFilePath,
+                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencyList,
                 const AZStd::string& jobKey,
                 AssetBuilderSDK::JobDescriptor& outputJobDescriptor,
                 AssetBuilderSDK::JobDependencyType jobDependencyType,
@@ -34,6 +35,7 @@ namespace AZ
             void AddPossibleImageDependencies(
                 const AZStd::string& originatingSourceFilePath,
                 const AZStd::string& imageFilePath,
+                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencyList,
                 AssetBuilderSDK::JobDescriptor& outputJobDescriptor);
 
             void AddFingerprintForDependency(const AZStd::string& filePath, AssetBuilderSDK::JobDescriptor& outputJobDescriptor);
