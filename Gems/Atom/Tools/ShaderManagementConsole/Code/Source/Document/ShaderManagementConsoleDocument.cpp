@@ -165,7 +165,8 @@ namespace ShaderManagementConsole
         };
         // Use a set for uniquification process
         AZStd::unordered_set<VariantCompacterKey, KeyHasher> compacter;
-        for (auto& variantInfo : m_shaderVariantListSourceData.m_shaderVariants)
+        compacter.reserve(m_shaderVariantListSourceData.m_shaderVariants.size());
+        for (const auto& variantInfo : m_shaderVariantListSourceData.m_shaderVariants)
         {
             compacter.insert(VariantCompacterKey::Make(&variantInfo));
         }
