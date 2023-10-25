@@ -158,7 +158,7 @@ namespace ShaderManagementConsole
 
         struct KeyHasher
         {
-            std::size_t operator()(VariantCompacterKey const& key) const
+            std::size_t operator()(const VariantCompacterKey& key) const
             {
                 return key.m_hash;
             }
