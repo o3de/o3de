@@ -821,9 +821,10 @@ class AndroidProjectGenerator(object):
 
         gradle_build_env = dict()
 
-        engine_root_as_path= pathlib.Path(self.engine_root)
+        engine_root_as_path = pathlib.Path(self.engine_root)
+        project_path_as_path = pathlib.Path(self.project_path)
 
-        absolute_cmakelist_path = (engine_root_as_path / 'CMakeLists.txt').resolve().as_posix()
+        absolute_cmakelist_path = (project_path_as_path / 'CMakeLists.txt').resolve().as_posix()
         absolute_azandroid_path = (engine_root_as_path / 'Code/Framework/AzAndroid/java').resolve().as_posix()
 
         gradle_build_env['TARGET_TYPE'] = 'application'
@@ -843,7 +844,7 @@ class AndroidProjectGenerator(object):
             # Prepare the cmake argument list based on the collected android settings and each build config
             cmake_argument_list = [
                 '"-GNinja"',
-                f'"-S{template_engine_root}"',
+                f'"-S{project_path_as_path.as_posix()}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
                 f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_android.cmake"',
                 f'"-DLY_3RDPARTY_PATH={template_third_party_path}"',
@@ -853,7 +854,7 @@ class AndroidProjectGenerator(object):
                 cmake_argument_list.append(f'"-DLY_ANDROID_VULKAN_VALIDATION_PATH={pathlib.PurePath(self.vulkan_validation_path).as_posix()}"')
 
             if not self.is_test_project:
-                cmake_argument_list.append(f'"-DLY_PROJECTS={pathlib.PurePath(self.project_path).as_posix()}"')
+                cmake_argument_list.append(f'"-DLY_PROJECTS={project_path_as_path.as_posix()}"')
             else:
                 cmake_argument_list.append('"-DLY_TEST_PROJECT=1"')
 

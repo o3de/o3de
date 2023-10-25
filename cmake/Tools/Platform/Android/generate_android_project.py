@@ -33,7 +33,7 @@ from o3de import manifest
 
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
 GRADLE_MIN_VERSION = Version('6.5')
-GRADLE_MAX_VERSION = Version('7.5.1')
+GRADLE_MAX_VERSION = Version('7.6.3')
 GRADLE_VERSION_REGEX = re.compile(r"Gradle\s(\d+.\d+.?\d*)")
 GRADLE_EXECUTABLE = 'gradle.bat' if platform.system() == 'Windows' else 'gradle'
 
