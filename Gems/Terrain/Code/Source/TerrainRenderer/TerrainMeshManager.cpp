@@ -152,16 +152,22 @@ namespace Terrain
         return m_isInitialized;
     }
 
+    void TerrainMeshManager::ClearSectorBuffers()
+    {
+        // RemoveRayTracedMeshes() needs to be called first since it uses pointers into the sector data stored in m_sectorLods.
+        RemoveRayTracedMeshes();
+        m_candidateSectors.clear();
+        m_sectorsThatNeedSrgCompiled.clear();
+        m_sectorLods.clear();
+    }
+
     void TerrainMeshManager::Reset()
     {
         if (m_meshMovedFlag.IsValid())
         {
             m_parentScene->GetViewTagBitRegistry().ReleaseTag(m_meshMovedFlag);
         }
-        RemoveRayTracedMeshes();
-        m_candidateSectors.clear();
-        m_sectorsThatNeedSrgCompiled.clear();
-        m_sectorLods.clear();
+        ClearSectorBuffers();
         m_xyPositions.clear();
         m_cachedDrawData.clear();
 
@@ -442,10 +448,7 @@ namespace Terrain
         // Add one sector of wiggle room so to avoid thrashing updates when going back and forth over a boundary.
         m_1dSectorCount += 1;
 
-        RemoveRayTracedMeshes();
-        m_sectorLods.clear();
-        m_candidateSectors.clear();
-        m_sectorsThatNeedSrgCompiled.clear();
+        ClearSectorBuffers();
 
         const uint8_t lodCount = aznumeric_cast<uint8_t>(AZStd::ceilf(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
         m_sectorLods.reserve(lodCount);
@@ -655,10 +658,7 @@ namespace Terrain
 
     void TerrainMeshManager::OnTerrainDataDestroyBegin()
     {
-        RemoveRayTracedMeshes();
-        m_sectorLods.clear();
-        m_candidateSectors.clear();
-        m_sectorsThatNeedSrgCompiled.clear();
+        ClearSectorBuffers();
         m_rebuildSectors = true;
     }
 
