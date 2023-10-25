@@ -8216,3 +8216,65 @@ namespace UnitTest
         m_serializeContext->DisableRemoveReflection();
     }
 }
+
+namespace UnitTest
+{
+    class AssociativeContainerSerializationFixture
+        : public LeakDetectionFixture
+    {
+    public:
+        AssociativeContainerSerializationFixture()
+        {
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            m_serializeContext->RegisterGenericType<AZStd::set<int>>();
+            m_serializeContext->RegisterGenericType<AZStd::map<int, int>>();
+            m_serializeContext->RegisterGenericType<AZStd::unordered_set<int>>();
+            m_serializeContext->RegisterGenericType<AZStd::unordered_map<int, int>>();
+        }
+
+        ~AssociativeContainerSerializationFixture() override
+        {
+            m_serializeContext.reset();
+        }
+
+    protected:
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+    };
+
+    TEST_F(AssociativeContainerSerializationFixture, GetAssociativeType_ReturnsCorrectAssociativeStructure)
+    {
+        using AssociativeType = AZ::Serialize::IDataContainer::IAssociativeDataContainer::AssociativeType;
+
+        const auto setClassData = m_serializeContext->FindClassData(azrtti_typeid<AZStd::set<int>>());
+        ASSERT_NE(nullptr, setClassData);
+        const auto setDataContainer = setClassData->m_container;
+        ASSERT_NE(nullptr, setDataContainer);
+        const auto setAssociativeContainer = setClassData->m_container->GetAssociativeContainerInterface();
+        ASSERT_NE(nullptr, setClassData->m_container->GetAssociativeContainerInterface());
+        EXPECT_EQ(AssociativeType::Set, setAssociativeContainer->GetAssociativeType());
+
+        const auto mapClassData = m_serializeContext->FindClassData(azrtti_typeid<AZStd::map<int, int>>());
+        ASSERT_NE(nullptr, mapClassData);
+        const auto mapDataContainer = mapClassData->m_container;
+        ASSERT_NE(nullptr, mapDataContainer);
+        const auto mapAssociativeContainer = mapClassData->m_container->GetAssociativeContainerInterface();
+        ASSERT_NE(nullptr, mapClassData->m_container->GetAssociativeContainerInterface());
+        EXPECT_EQ(AssociativeType::Map, mapAssociativeContainer->GetAssociativeType());
+
+        const auto unorderedSetClassData = m_serializeContext->FindClassData(azrtti_typeid<AZStd::unordered_set<int>>());
+        ASSERT_NE(nullptr, unorderedSetClassData);
+        const auto unorderedSetDataContainer = unorderedSetClassData->m_container;
+        ASSERT_NE(nullptr, unorderedSetDataContainer);
+        const auto unorderedSetAssociativeContainer = unorderedSetClassData->m_container->GetAssociativeContainerInterface();
+        ASSERT_NE(nullptr, unorderedSetClassData->m_container->GetAssociativeContainerInterface());
+        EXPECT_EQ(AssociativeType::UnorderedSet, unorderedSetAssociativeContainer->GetAssociativeType());
+
+        const auto unorderedMapClassData = m_serializeContext->FindClassData(azrtti_typeid<AZStd::unordered_map<int, int>>());
+        ASSERT_NE(nullptr, unorderedMapClassData);
+        const auto unorderedMapDataContainer = unorderedMapClassData->m_container;
+        ASSERT_NE(nullptr, unorderedMapDataContainer);
+        const auto unorderedMapAssociativeContainer = unorderedMapClassData->m_container->GetAssociativeContainerInterface();
+        ASSERT_NE(nullptr, unorderedMapClassData->m_container->GetAssociativeContainerInterface());
+        EXPECT_EQ(AssociativeType::UnorderedMap, unorderedMapAssociativeContainer->GetAssociativeType());
+    }
+}

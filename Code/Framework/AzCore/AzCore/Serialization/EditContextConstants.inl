@@ -228,6 +228,9 @@ namespace AZ
 
             //! Attribute for making a slider have non-linear scale. The default is 0.5, which results in linear scale. Value can be shifted lower or higher to control more precision in the power curve at those ends (minimum = 0, maximum = 1)
             const static AZ::Crc32 SliderCurveMidpoint = AZ_CRC("SliderCurveMidpoint", 0x8c26aea2);
+
+            //! Attribute for binding a function that can convert the type being viewed to a string
+            inline constexpr AZ::Crc32 ToString{ "ToString" };
         }
 
 

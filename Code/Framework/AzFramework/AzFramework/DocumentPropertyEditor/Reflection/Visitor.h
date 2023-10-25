@@ -173,7 +173,7 @@ namespace AZ::Reflection
 
     struct IObjectAccess
     {
-        virtual const AZ::TypeId& GetType() const = 0;
+        virtual AZ::TypeId GetType() const = 0;
         virtual AZStd::string_view GetTypeName() const = 0;
 
         virtual void* Get() = 0;
