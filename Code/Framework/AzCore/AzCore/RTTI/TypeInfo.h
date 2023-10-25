@@ -510,7 +510,7 @@ namespace AZStd
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::function, "AZStd::function", "{C9F9C644-CCC3-4F77-A792-F5B5DBCA746E}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
 
     // GetO3deTypeName/GetO3deTypeId overload for AZStd::span<T, Extent>
-    // Note the Extent is not taking into account for template paramater is not taking into account and only the type T argument
+    // Note only the type T argument is taken into account as a template parameter, not the Extent
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::span, "AZStd::span", "{2FCDBAB3-45E0-4159-A91D-FD1D37056C0F}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
 
     // Add declarations of GetO3deTypeName and GetO3deTypeId for the basic string templates
