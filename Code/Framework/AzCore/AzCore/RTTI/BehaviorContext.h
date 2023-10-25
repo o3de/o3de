@@ -485,7 +485,11 @@ namespace AZ::Internal
     //! time within O3DE
     using BehaviorMethodFunctor = AZStd::function<void(BehaviorArgument*, AZStd::span<BehaviorArgument>)>;
     //! BehaviorMethod reflection will only support functions up to 32 parameters
+#ifndef CARBONATED // gruber patch
     constexpr size_t MaxBehaviorParameters = 32;
+#else
+    constexpr size_t MaxBehaviorParameters = 20;
+#endif
 
     class BehaviorMethodImpl : public BehaviorMethod
     {
