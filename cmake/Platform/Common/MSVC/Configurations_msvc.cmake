@@ -26,6 +26,7 @@ endif()
 ly_append_configurations_options(
     DEFINES
         _ENABLE_EXTENDED_ALIGNED_STORAGE # Enables support for extended alignment for the MSVC std::aligned_storage class
+        _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING # Prevents triggering of STL4043 when checked iterators are used in 3rdParty libraries(QT and AWSNativeSDK)
     COMPILATION
         /fp:fast        # allows the compiler to reorder, combine, or simplify floating-point operations to optimize floating-point code for speed and space
         /Gd             # Use _cdecl calling convention for all functions
