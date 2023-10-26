@@ -353,7 +353,7 @@ void UiInteractableComponent::SetOutsideReleasedActionName(const LyShine::Action
     m_outsideReleasedActionName = actionName;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-const LyShine::ActionName& UiInteractableComponent::GetOutsideReleasedActionName()
+const LyShine::ActionName& UiInteractableComponent::GetOutsideReleasedActionName() const
 {
     return m_outsideReleasedActionName;
 }

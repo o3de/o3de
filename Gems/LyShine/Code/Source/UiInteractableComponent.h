@@ -85,7 +85,7 @@ public: // member functions
 
 // Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
 #if defined(CARBONATED)
-    const LyShine::ActionName& GetOutsideReleasedActionName() override;
+    const LyShine::ActionName& GetOutsideReleasedActionName() const override;
     void SetOutsideReleasedActionName(const LyShine::ActionName& actionName) override;
 #endif
 // Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
