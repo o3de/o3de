@@ -100,7 +100,10 @@ namespace Audio
         {
             "Object", "Event", "Structure", "Media", "GameObject", "Processing", "ProcessingPlugin", "Streaming", "StreamingIO",
             "SpatialAudio", "SpatialAudioGeometry", "SpatialAudioPaths", "GameSim", "MonitorQueue", "Profiler", "FilePackage",
-            "SoundEngine", "Integration", "JobMgr"
+            "SoundEngine", "Integration"
+#if AK_WWISESDK_VERSION_MAJOR >= 2022
+            , "JobMgr"
+#endif // AK_WWISESDK_VERSION_MAJOR >= 2022
         };
 
         static_assert(AZ_ARRAY_SIZE(MemoryManagerCategories) == AkMemID_NUM,
