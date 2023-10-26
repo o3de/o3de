@@ -594,10 +594,11 @@ namespace AZ::Debug
             window = g_dbgSystemWnd;
         }
 
-
         // printf on Windows platforms seem to have a buffer length limit of 4096 characters
         // Therefore fwrite is used directly to write the window and message to stdout or stderr
-        AZStd::string_view windowView{ window };
+
+        // Wrapping the NoWindow constant in a string_view to allow use of string_view::operator== for string compare
+        AZStd::string_view windowView{ window != AZStd::string_view(AZ::Debug::Trace::GetNoWindow()) ? window : "" };
         AZStd::string_view messageView{ message };
         constexpr AZStd::string_view windowMessageSeparator{ ": " };
 
@@ -606,8 +607,11 @@ namespace AZ::Debug
         FILE* stdoutStream = stdout;
         if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdoutStream; rawOutputStream != nullptr)
         {
-            fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
-            fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
+            if (!windowView.empty())
+            {
+                fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
+                fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
+            }
             fwrite(messageView.data(), 1, messageView.size(), rawOutputStream);
         }
     }

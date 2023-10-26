@@ -94,6 +94,15 @@ public:
             return false; // allow AZCore to do its default behavior.
         }
         gEnv->pLog->LogError("(%s) - %s", window, message);
+        AZStd::string_view windowView = window != AZStd::string_view(AZ::Debug::Trace::GetNoWindow()) ? window : "";
+        if (!windowView.empty())
+        {
+            gEnv->pLog->LogError("(%s) - %s", window, message);
+        }
+        else
+        {
+            gEnv->pLog->LogError("%s", message);
+        }
         return m_suppressSystemOutput;
     }
 
@@ -108,7 +117,15 @@ public:
             return false; // allow AZCore to do its default behavior.
         }
 
-        CryWarning(VALIDATOR_MODULE_UNKNOWN, VALIDATOR_WARNING, "(%s) - %s", window, message);
+        AZStd::string_view windowView = window != AZStd::string_view(AZ::Debug::Trace::GetNoWindow()) ? window : "";
+        if (!windowView.empty())
+        {
+            CryWarning(VALIDATOR_MODULE_UNKNOWN, VALIDATOR_WARNING, "(%s) - %s", window, message);
+        }
+        else
+        {
+            CryWarning(VALIDATOR_MODULE_UNKNOWN, VALIDATOR_WARNING, "%s", message);
+        }
         return m_suppressSystemOutput;
     }
 
@@ -119,7 +136,11 @@ public:
             return false; // allow AZCore to do its default behavior.
         }
 
-        if (window == AZ::Debug::Trace::GetDefaultSystemWindow())
+        AZStd::string_view windowView = window != AZStd::string_view(AZ::Debug::Trace::GetNoWindow())
+            && window != AZStd::string_view(AZ::Debug::Trace::GetDefaultSystemWindow()) ? window : "";
+
+        // Only print out the window if it is not empty
+        if (windowView.empty())
         {
             [[maybe_unused]] auto WriteToStream = [message = AZStd::string_view(message)]
             (AZ::IO::GenericStream& stream)

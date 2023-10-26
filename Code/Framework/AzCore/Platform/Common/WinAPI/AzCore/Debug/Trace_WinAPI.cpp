@@ -99,7 +99,9 @@ namespace AZ::Debug
         void OutputToDebugger(AZStd::string_view window, AZStd::string_view message)
         {
             AZStd::fixed_wstring<g_maxMessageLength> tmpW;
-            if(!window.empty())
+            // Only print the window if it is not an empty string
+            // and not equal to the special "<no-window>" value
+            if(!window.empty() && window != NoWindow)
             {
                 while (window.size() > tmpW.max_size())
                 {
