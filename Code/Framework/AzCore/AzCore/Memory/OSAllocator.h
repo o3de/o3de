@@ -8,6 +8,7 @@
 #ifndef AZCORE_OS_ALLOCATOR_H
 #define AZCORE_OS_ALLOCATOR_H
 
+#include <AzCore/Memory/AllocatorBase.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/allocator.h>
 

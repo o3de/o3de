@@ -8,6 +8,8 @@
 
 #include <AzCore/Memory/OSAllocator.h>
 
+#include <AzCore/Debug/MemoryProfiler.h>
+
 namespace AZ
 {
     OSAllocator::OSAllocator()

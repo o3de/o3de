@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Memory/SimpleSchemaAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
@@ -155,19 +156,14 @@ namespace AZ::Internal
         PoolAllocatorHelper()
         {
             static_cast<Schema*>(this->m_schema)->Create();
-            this->PostCreate();
         }
 
         PoolAllocatorHelper(size_t pageSize, size_t minAllocationSize, size_t maxAllocationSize)
         {
             static_cast<Schema*>(this->m_schema)->Create(pageSize, minAllocationSize, maxAllocationSize);
-            this->PostCreate();
         }
 
-        ~PoolAllocatorHelper() override
-        {
-            this->PreDestroy();
-        }
+        ~PoolAllocatorHelper() override = default;
 
         //////////////////////////////////////////////////////////////////////////
         // IAllocator
