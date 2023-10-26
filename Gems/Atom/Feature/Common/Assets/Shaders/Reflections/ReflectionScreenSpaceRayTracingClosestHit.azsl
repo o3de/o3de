@@ -120,7 +120,7 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
         // store the fallback data for this hit
         float NdotV = saturate(dot(normalWS, hitToCamera));
         float3 albedo = GetAlbedo(textureData.m_baseColor.rgb, textureData.m_metallic);
-        float3 specularF0 = GetSpecularF0(textureData.m_baseColor.rgb, textureData.m_metallic, 1.0f);
+        float3 specularF0 = CalculateSpecularF0(textureData.m_baseColor.rgb, textureData.m_metallic, 1.0f);
         float roughnessLinear = textureData.m_roughness;
         float roughnessA = max(roughnessLinear * roughnessLinear, MinRoughnessA);
         float roughnessA2 = roughnessA * roughnessA;

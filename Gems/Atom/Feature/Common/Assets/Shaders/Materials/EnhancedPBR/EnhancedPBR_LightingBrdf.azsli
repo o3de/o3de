@@ -37,11 +37,11 @@ real3 GetDiffuseLighting_EnhancedPBR(Surface surface, LightingData lightingData,
     if(o_enableSubsurfaceScattering)
     {
         // Use diffuse brdf contains double Fresnel (enter/exit surface) terms if subsurface scattering is enabled
-        diffuse = NormalizedDisneyDiffuse(surface.albedo, surface.normal, lightingData.dirToCamera, dirToLight, surface.roughnessLinear);
+        diffuse = NormalizedDisneyDiffuse(surface.albedo, surface.GetDiffuseNormal(), lightingData.dirToCamera, dirToLight, surface.roughnessLinear);
     }
     else
     {
-        diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight, lightingData.diffuseResponse);
+        diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);
     }
 
 #if ENABLE_CLEAR_COAT
@@ -62,12 +62,12 @@ real3 GetSpecularLighting_EnhancedPBR(Surface surface, LightingData lightingData
     real3 specular;
     if (o_enableAnisotropy)
     {
-        specular = AnisotropicGGX( lightingData.dirToCamera, dirToLight, surface.normal, surface.anisotropy.tangent, surface.anisotropy.bitangent, surface.anisotropy.anisotropyFactors,
-                       surface.specularF0, lightingData.NdotV, lightingData.multiScatterCompensation );
+        specular = AnisotropicGGX( lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.anisotropy.tangent, surface.anisotropy.bitangent, surface.anisotropy.anisotropyFactors,
+                       surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), lightingData.multiScatterCompensation );
     }
     else
     {
-        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+        specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
     }
 
 #if ENABLE_CLEAR_COAT
