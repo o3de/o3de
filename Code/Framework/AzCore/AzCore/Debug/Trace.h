@@ -27,7 +27,7 @@ namespace AZ
     {
         // The NoWindow constant contains a special case string that can skip outputting the
         // "<window-name> :" portion of a trace message of the form "<window-name>: <message>"
-        inline constexpr const char* NoWindow = "<no-window>";
+        inline constexpr const char* NoWindow = "";
         namespace Platform
         {
             void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
@@ -124,7 +124,17 @@ namespace AZ
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
+
             virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
+
+            // Catch the cases when an explicit nullptr has been passed in to the Trace window parameter
+            // A valid c-string parameter must at least be passed in
+            void Error(const char* fileName, int line, const char* funcName, std::nullptr_t window, const char* format, ...) = delete;
+            void Warning(const char* fileName, int line, const char* funcName, std::nullptr_t window, const char* format, ...) = delete;
+            void Printf(std::nullptr_t, const char* format, ...) = delete;
+            void Output(std::nullptr_t, const char* message) = delete;
+            void RawOutput(std::nullptr_t, const char* message) = delete;
+            void PrintCallstack(std::nullptr_t, unsigned int suppressCount = 0, void* nativeContext = nullptr) = delete;
 
         private:
             inline static constexpr size_t s_maxMessageLength = 4096;
@@ -152,7 +162,7 @@ namespace AZ
             static const char* GetDefaultSystemWindow();
 
             //! Returns a Window string that indicates that the window
-            //! parameter and the separating ":" delimter should be skipped from the output
+            //! parameter and the separating ":" not be part of the output
             static constexpr const char* GetNoWindow() { return NoWindow; }
             bool IsDebuggerPresent() override;
             static bool AttachDebugger();

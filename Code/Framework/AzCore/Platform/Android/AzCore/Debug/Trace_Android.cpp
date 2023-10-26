@@ -17,11 +17,7 @@ namespace AZ::Debug::Platform
     void OutputToDebugger(AZStd::string_view window, AZStd::string_view message)
     {
         constexpr size_t MaxMessageBufferLength = 4096;
-        AZStd::fixed_string<MaxMessageBufferLength> windowBuffer;
-        if (window != NoWindow)
-        {
-            windowBuffer = window;
-        }
+        AZStd::fixed_string<MaxMessageBufferLength> windowBuffer(window);
         AZStd::fixed_string<MaxMessageBufferLength> messageBuffer;
         while (message.size() > messageBuffer.max_size())
         {
