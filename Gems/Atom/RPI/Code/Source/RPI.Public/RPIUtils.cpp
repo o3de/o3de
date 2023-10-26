@@ -18,6 +18,9 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/WindowContext.h>
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/std/containers/array.h>
@@ -537,6 +540,26 @@ namespace AZ
                 }
             }
         } // namespace Internal
+
+        ViewportContextPtr GetDefaultViewportContext()
+        {
+            RPI::ViewportContextRequestsInterface* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            if (viewportContextManager)
+            {
+                return viewportContextManager->GetDefaultViewportContext();
+            }
+            return nullptr;
+        }
+
+        WindowContextSharedPtr GetDefaultWindowContext()
+        {
+            ViewportContextPtr viewportContext = GetDefaultViewportContext();
+            if (viewportContext)
+            {
+                return viewportContext->GetWindowContext();
+            }
+            return nullptr;
+        }
 
         bool IsNullRenderer()
         {

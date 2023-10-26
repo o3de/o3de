@@ -35,7 +35,8 @@ namespace EMotionFX
                 const EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
                 const AZ::Data::Asset<ActorAsset>& asset,
                 SkinningMethod skinningMethod,
-                const AZ::Transform& worldTransform) = 0;
+                const AZ::Transform& worldTransform,
+                bool rayTracingEnabled) = 0;
         };
     } // namespace Integration
 } // namespace EMotionFX

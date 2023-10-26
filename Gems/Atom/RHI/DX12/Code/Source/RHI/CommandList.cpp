@@ -687,6 +687,32 @@ namespace AZ
 #endif
         }
 
+        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        {
+#ifdef AZ_DX12_DXR_SUPPORT
+            const RayTracingBlas& dx12RayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
+            const RayTracingBlas::BlasBuffers& blasBuffers = dx12RayTracingBlas.GetBuffers();
+
+            // create the BLAS
+            D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC blasDesc = {};
+            blasDesc.Inputs = dx12RayTracingBlas.GetInputs();
+            blasDesc.Inputs.Flags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;
+            blasDesc.ScratchAccelerationStructureData = static_cast<Buffer*>(blasBuffers.m_scratchBuffer.get())->GetMemoryView().GetGpuAddress();
+            blasDesc.SourceAccelerationStructureData = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetGpuAddress();
+            blasDesc.DestAccelerationStructureData = blasDesc.SourceAccelerationStructureData;
+            ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
+            commandList->BuildRaytracingAccelerationStructure(&blasDesc, 0, nullptr);
+
+            // create an immediate barrier for BLAS completion
+            // this is required since the buffer must be built prior to using it in the TLAS
+            D3D12_RESOURCE_BARRIER barrier;
+            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+            barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+            barrier.UAV.pResource = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetMemory();
+            commandList->ResourceBarrier(1, &barrier);
+#endif
+        }
+
         void CommandList::SetFragmentShadingRate(
             RHI::ShadingRate rate, const RHI::ShadingRateCombinators& combinators)
         {

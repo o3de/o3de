@@ -48,6 +48,12 @@ namespace AZ
 
             // revision number of the ray tracing data when the TLAS was built
             uint32_t m_rayTracingRevision = 0;
+
+            // keeps track of the current frame to determine updates or rebuilds of the skinned BLASes
+            uint64_t m_frameCount = 0;
+
+            // the bits of this constant are used to check if a skinned BLAS is going to be rebuilt in any given frame
+            static constexpr uint32_t SKINNED_BLAS_REBUILD_FRAME_INTERVAL = 8;
         };
     }   // namespace RPI
 }   // namespace AZ
