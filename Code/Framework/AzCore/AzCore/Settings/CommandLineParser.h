@@ -42,20 +42,19 @@ namespace AZ::Settings
         AZStd::string_view m_value;
     };
 
-    //! Settings structure which is used to how to parse CLI command line parameters
+    //! Settings structure which is used to parse CLI command line parameters
     //! It is setup to invoke an callback with each argument option name and value
-    //! to allow parsing of the command line with allocation of any heap memory
+    //! to allow parsing of the command line without allocating any heap memory
     //! This can be used to parse the command line in order to read in settings
     //! which can configure memory allocators before they are available without the need
     //! to allocate any heap memory as long as the user supplied callback itself is careful
-    //! and how it stores it's settings.
-    //! Suggestion: Using structures such as fixed_vector and fixed_string, allows arrays and string like structures
-    //! that uses stack memory to store the command line settings in a structure for further use which avoids
-    //! any heap allocations
+    //! in how it stores its settings.
+    //! Suggestion: Use structures such as fixed_vector and fixed_string to store the settings
+    //! in the user callback to avoid heap allocations and rely entirely on stack memory instead
     struct CommandLineParserSettings
     {
-
-        //! Callback invoked for each parsed argument.
+        //! Callback invoked for positional argument or a completed option argument.
+        //! A completed option argument will contain any value associated with the option name
         //! This is the the only member that is required to be set within this struct
         //! All other members are defaulted to work with command line arguments
         //! IMPORTANT: Any lambda functions or class instances that are larger than 16 bytes
@@ -63,12 +62,11 @@ namespace AZ::Settings
         //! So it is recommended that users binding a lambda bind at most 2 reference or pointer members
         //! to avoid dynamic heap allocations
         //!
-        //! NOTE: This function will not be called if the key is empty
         //! @return True should be returned from this function to indicate that parsing of the config entry
         //! has succeeded
         using ParseCommandLineEntryFunc = AZStd::function<bool(const CommandLineArgument&)>;
 
-        //! Function which is used to supplied the parsed command line argument entry
+        //! Callback function which is invoked with the parsed command line argument
         ParseCommandLineEntryFunc m_parseCommandLineEntryFunc;
 
         //! Determines what kind of action should be taken for the option flag that was parsed
@@ -114,9 +112,9 @@ namespace AZ::Settings
         //! For the "project-path" option, this function is NOT invoked since the value is gathered by spliting the CLI token on '='
         //! result: option="project-path", value="<project-path>"
         //! For the "force" option, this function IS invoked to determine how the next token should be treated
-        //! If the function returns `OptionAction::NextTokenIsValueIfNonOption`, then the following "--engine-path" token is read as an
-        //! option If the function returns `OptionAction::IsFlag`, then the following "--engine-path" token is read as an option If the
-        //! function returns `OptionAction::NextTokenIsValue`, then the following "--engine-path" token is treated as the value for the
+        //! If the function returns `OptionAction::NextTokenIsValueIfNonOption`, then the following "--engine-path" token is read as an option.
+        //! If the function returns `OptionAction::IsFlag`, then the following "--engine-path" token is read as an option.
+        //! If the function returns `OptionAction::NextTokenIsValue`, then the following "--engine-path" token is treated as the value for the
         //! "force" option
         OptionActionFunc m_optionActionFunc = &DefaultOptionAction;
 
@@ -137,7 +135,7 @@ namespace AZ::Settings
         //! By default the option prefixes are "--" and "-"
         //! NOTE: The order is important here as double dash is checked first before single dash
         //! to make sure an argument such as `--foo bar` parses both dashes before the option name.
-        //! Otherwise the option name would be parses as "-foo" which is incorrect.
+        //! Otherwise the option name would be parsed as "-foo" which is incorrect.
         //! The correct parsing is "foo" for the option name
         CommandLineOptionPrefixArray m_optionPrefixes{ Platform::GetDefaultOptionPrefixes() };
 
@@ -152,8 +150,9 @@ namespace AZ::Settings
     using CommandLineParseOutcome = AZStd::expected<void, CommandLineParseErrorString>;
 
     //! Parses a set of command line arguments
-    //! This function will NOT allocate any heap memory on its on
+    //! This function will NOT allocate any heap memory on its own
     //! It is safe to call without any AZ Allocators being initialized
+    //! NOTE: All arguments are parsed including the argument at index 0
     //!
     //! @param commandLine A contiguous range of string_view arguments pointing to each command line token
     //! @param configParseSettings struct defining how the command line arguments should be parsed
@@ -164,6 +163,7 @@ namespace AZ::Settings
 
     //! Parses a set of command line arguments using the defacto integer argument count parameter and char double pointer to the argument
     //! array
+    //! NOTE: All arguments are parsed including the argument at index 0, which is normally used for the executable name
     //! @param argc number of command line arguments
     //! @param argv pointer to the begining of array of c-strings pointing to each command line argument
     CommandLineParseOutcome ParseCommandLine(int argc, char** argv, const CommandLineParserSettings& commandLineParserSettings);

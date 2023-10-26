@@ -22,7 +22,7 @@ namespace AZ::Settings
         //! Set to true if the psuedo argument '--' has been parsed
         //! This indicates to the argument parser that the remaining
         //! arguments should be treated as positional arguments only
-        bool m_parseRemainAsPositional{};
+        bool m_parseRemainingArgsAsPositional{};
 
         //! A view of the option being parsed
         //! This is used for maintaining state for space separated options
@@ -187,14 +187,14 @@ namespace AZ::Settings
 
         // Determine if the argument should be parsed as positional argument or option
         bool tokenIsOption{};
-        if (!argumentParserState.m_parseRemainAsPositional)
+        if (!argumentParserState.m_parseRemainingArgsAsPositional)
         {
             // If the token matches the positional argument separator update the parser state
             // to indicate that future tokens should be parsed as positional arguments
             // and return to continue to the next token
             if (currentToken == commandLineParserSettings.m_positionalArgSeparator)
             {
-                argumentParserState.m_parseRemainAsPositional = true;
+                argumentParserState.m_parseRemainingArgsAsPositional = true;
                 argumentParserState.m_currentOption = {};
                 argumentParserState.m_currentOptionAction = CommandLineParserSettings::OptionAction::NextTokenIsValueIfNonOption;
                 return parseOutcome;
@@ -298,7 +298,7 @@ namespace AZ::Settings
                     parseOutcome = AZStd::unexpected(AZStd::move(argumentParseOutcome.error()));
                 }
                 {
-                    // Handles the case for the second and thereafter error by appending it to the failure string
+                    // Errors after the first one are appended to the failure string
                     parseOutcome.error() += AZStd::move(argumentParseOutcome.error());
                 }
             }
@@ -333,7 +333,7 @@ namespace AZ::Settings
                     parseOutcome = AZStd::unexpected(AZStd::move(argumentParseOutcome.error()));
                 }
                 {
-                    // Handles the case for the second and thereafter error by appending it to the failure string
+                    // Errors after the first one are appended to the failure string
                     parseOutcome.error() += AZStd::move(argumentParseOutcome.error());
                 }
             }

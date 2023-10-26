@@ -50,7 +50,7 @@ namespace AZ
         AZStd::string_view unquotedValue = Settings::UnquoteArgument(newValue);
 
         // If the option is an empty string, then a positional argument is being parsed
-        // store unwrap it from any double quotes, but don't perform tokenization to split on commas
+        // store it unwrapped from any double quotes, but don't perform tokenization to split on commas
         // or semicolons
         if (newOption.empty())
         {
@@ -97,7 +97,9 @@ namespace AZ
             return true;
         };
 
-        // Skip the zeroth argument for backwards compatibility
+        // For legacy reasons, the executable name argument(arg0) has not been parsed by this overload
+        // of the command line class
+        // So skip the first argument and continue parsing from the second argument(arg1)
         --argc;
         ++argv;
         Settings::ParseCommandLine(argc, argv, parserSettings);

@@ -10,8 +10,8 @@
 
 namespace AZ::Settings::Platform
 {
-    // The option prefix of --, - and / are used by default to indicate
-    // if a command line token is a option on Windows API compatible OS
+    // The option prefixes of `--`, `-` and `/` are used by default to indicate
+    // if a command line token should be parsed as an option on Windows
     // Ex. App.exe --foo -bar /baz positional_argument
     CommandLineOptionPrefixArray GetDefaultOptionPrefixes()
     {
