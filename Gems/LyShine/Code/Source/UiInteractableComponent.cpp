@@ -339,6 +339,21 @@ void UiInteractableComponent::SetReleasedActionName(const LyShine::ActionName& a
     m_releasedActionName = actionName;
 }
 
+// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+#if defined(CARBONATED)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiInteractableComponent::SetOutsideReleasedActionName(const LyShine::ActionName& actionName)
+{
+    m_outsideReleasedActionName = actionName;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const LyShine::ActionName& UiInteractableComponent::GetOutsideReleasedActionName()
+{
+    return m_outsideReleasedActionName;
+}
+#endif
+// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiInteractableActionsInterface::OnActionCallback UiInteractableComponent::GetHoverStartActionCallback()
 {
@@ -456,6 +471,13 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
 
             ->Field("HoverStartActionName", &UiInteractableComponent::m_hoverStartActionName)
             ->Field("HoverEndActionName", &UiInteractableComponent::m_hoverEndActionName)
+
+// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+#if defined(CARBONATED)
+            ->Field("OutsideReleasedActionName", &UiInteractableComponent::m_outsideReleasedActionName)
+#endif
+// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+
             ->Field("PressedActionName", &UiInteractableComponent::m_pressedActionName)
             ->Field("ReleasedActionName", &UiInteractableComponent::m_releasedActionName);
 
@@ -511,6 +533,11 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->DataElement(0, &UiInteractableComponent::m_hoverEndActionName, "Hover end", "Action triggered on hover end");
                 editInfo->DataElement(0, &UiInteractableComponent::m_pressedActionName, "Pressed", "Action triggered on press");
                 editInfo->DataElement(0, &UiInteractableComponent::m_releasedActionName, "Released", "Action triggered on release");
+// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+#if defined(CARBONATED)
+                editInfo->DataElement(0, &UiInteractableComponent::m_outsideReleasedActionName, "Outside Released", "Action triggered on release outside of element");
+#endif
+// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
             }
         }
     }
@@ -731,7 +758,13 @@ void UiInteractableComponent::TriggerPressedAction()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+#if defined(CARBONATED)
+void UiInteractableComponent::TriggerReleasedAction(bool releasedOutside)
+#else
 void UiInteractableComponent::TriggerReleasedAction()
+#endif
+// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
 {
     // if a C++ callback is registered for released then call it
     if (m_releasedActionCallback)
@@ -741,6 +774,21 @@ void UiInteractableComponent::TriggerReleasedAction()
 
     // Queue the event to prevent deletions during the input event
     UiInteractableNotificationBus::QueueEvent(GetEntityId(), &UiInteractableNotificationBus::Events::OnReleased);
+
+// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+#if defined(CARBONATED)
+    if (releasedOutside && !m_outsideReleasedActionName.empty())
+    {
+        AZ::EntityId canvasEntityId;
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        // Queue the event to prevent deletions during the input event
+
+        UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_outsideReleasedActionName);
+        UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnActionMultitouch, GetEntityId(), m_outsideReleasedActionName, m_pressedPoint, m_pressedMultiTouchIndex);
+        return;
+    }
+#endif
+// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
 
     // Tell any action listeners about the event
     if (!m_releasedActionName.empty())
