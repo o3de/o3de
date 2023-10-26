@@ -68,7 +68,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     // --- Roughness and Specular ---
 
-    OUT.m_specularF0.rgb = surface.specularF0;
+    OUT.m_specularF0.rgb = surface.GetSpecularF0();
     OUT.m_specularF0.a = surface.roughnessLinear;
 
     // --- Albedo ---
@@ -78,7 +78,7 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     // --- Normal ---
 
-    OUT.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
+    OUT.m_normal.rgb = EncodeNormalSignedOctahedron(surface.GetDefaultNormal());
 
     // --- Fullscreen Passes IBL & Multiscatter ---
 
