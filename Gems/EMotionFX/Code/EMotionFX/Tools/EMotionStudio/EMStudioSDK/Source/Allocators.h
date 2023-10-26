@@ -11,6 +11,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/ChildAllocatorSchema.h>
+#include <AzCore/Memory/SimpleSchemaAllocator.h>
 
 namespace EMStudio
 {
@@ -23,6 +24,6 @@ namespace EMStudio
     public:
         using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
 
-        AZ_RTTI(UIAllocator, "{98AED295-91AE-4598-B253-90A67FE4DABC}", Base)
+        AZ_RTTI(UIAllocator, "{98AED295-91AE-4598-B253-90A67FE4DABC}", Base);
     };
 }
