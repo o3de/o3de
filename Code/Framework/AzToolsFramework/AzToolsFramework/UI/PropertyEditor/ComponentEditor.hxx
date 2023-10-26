@@ -128,13 +128,13 @@ namespace AzToolsFramework
         void OnExpansionContractionDone();
         void OnSizeUpdateRequested();
         void OnDisplayComponentEditorMenu(const QPoint& position);
-        void OnRequestRemoveComponents(const AZStd::vector<AZ::Component*>& components);
-        void OnRequestDisableComponents(const AZStd::vector<AZ::Component*>& components);
+        void OnRequestRemoveComponents(AZStd::span<AZ::Component* const> components);
+        void OnRequestDisableComponents(AZStd::span<AZ::Component* const> components);
         void OnRequestRequiredComponents(
             const QPoint& position,
             const QSize& size,
-            const AZStd::vector<AZ::ComponentServiceType>& services,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
+            AZStd::span<const AZ::ComponentServiceType> services,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServices);
         void OnRequestSelectionChange(const QPoint& position);
         void OnComponentIconClicked(const QPoint& position);
     private:
@@ -155,8 +155,8 @@ namespace AzToolsFramework
         AzQtComponents::CardNotification* CreateNotificationForConflictingComponents(const QString& message, const AZ::Entity::ComponentArrayType& conflictingComponents);
         AzQtComponents::CardNotification* CreateNotificationForMissingComponents(
             const QString& message,
-            const AZStd::vector<AZ::ComponentServiceType>& services,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
+            AZStd::span<const AZ::ComponentServiceType> services,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServices);
 
         AzQtComponents::CardNotification* CreateNotificationForWarningComponents(const QString& message);
 
@@ -178,7 +178,7 @@ namespace AzToolsFramework
         /// Type of component being shown
         AZ::Uuid m_componentType = AZ::Uuid::CreateNull();
 
-        AZStd::vector<AZ::Component*> m_components;
+        AZ::Entity::ComponentArrayType m_components;
         AZ::Crc32 m_savedKeySeed;
 
         AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;

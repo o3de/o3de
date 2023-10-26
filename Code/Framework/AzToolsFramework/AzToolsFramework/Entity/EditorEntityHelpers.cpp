@@ -179,12 +179,46 @@ namespace AzToolsFramework
         return entities;
     }
 
+    EntityCompositionRequests::RemoveComponentsOutcome RemoveComponents(AZStd::span<AZ::Component* const> components)
+    {
+        EntityCompositionRequests::RemoveComponentsOutcome outcome = AZ::Failure(AZStd::string(""));
+        EntityCompositionRequestBus::BroadcastResult(outcome, &EntityCompositionRequests::RemoveComponents, components);
+        return outcome;
+    }
+
+    EntityCompositionRequests::RemoveComponentsOutcome RemoveComponents(AZStd::initializer_list<AZ::Component* const> components)
+    {
+        EntityCompositionRequests::RemoveComponentsOutcome outcome = AZ::Failure(AZStd::string(""));
+        EntityCompositionRequestBus::BroadcastResult(outcome, &EntityCompositionRequests::RemoveComponents, components);
+        return outcome;
+    }
+
+    void EnableComponents(AZStd::span<AZ::Component* const> components)
+    {
+        EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::EnableComponents, components);
+    }
+
+    void EnableComponents(AZStd::initializer_list<AZ::Component* const> components)
+    {
+        EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::EnableComponents, components);
+    }
+
+    void DisableComponents(AZStd::span<AZ::Component* const> components)
+    {
+        EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::DisableComponents, components);
+    }
+
+    void DisableComponents(AZStd::initializer_list<AZ::Component* const> components)
+    {
+        EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::DisableComponents, components);
+    }
+
     void GetAllComponentsForEntity(const AZ::Entity* entity, AZ::Entity::ComponentArrayType& componentsOnEntity)
     {
         if (entity)
         {
             //build a set of all active and pending components associated with the entity
-            componentsOnEntity.insert(componentsOnEntity.end(), entity->GetComponents().begin(), entity->GetComponents().end());
+            componentsOnEntity.append_range(entity->GetComponents());
             EditorPendingCompositionRequestBus::Event(entity->GetId(), &EditorPendingCompositionRequests::GetPendingComponents, componentsOnEntity);
             EditorDisabledCompositionRequestBus::Event(entity->GetId(), &EditorDisabledCompositionRequests::GetDisabledComponents, componentsOnEntity);
         }
@@ -288,8 +322,8 @@ namespace AzToolsFramework
 
     bool OffersRequiredServices(
         const AZ::SerializeContext::ClassData* componentClass,
-        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
+        const AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+        const AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter
     )
     {
         AZ_Assert(componentClass, "Component class must not be null");
@@ -341,10 +375,10 @@ namespace AzToolsFramework
 
     bool OffersRequiredServices(
         const AZ::SerializeContext::ClassData* componentClass,
-        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
+        const AZStd::span<const AZ::ComponentServiceType> serviceFilter
     )
     {
-        const AZStd::vector<AZ::ComponentServiceType> incompatibleServices;
+        const AZ::ComponentDescriptor::DependencyArrayType incompatibleServices;
         return OffersRequiredServices(componentClass, serviceFilter, incompatibleServices);
     }
 

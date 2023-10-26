@@ -66,14 +66,14 @@ namespace AzToolsFramework
         // AzToolsFramework::EditorEvents::Bus::Handler
         void OnEscape() override;
 
-        void SetRequiredServices(const AZStd::vector<AZ::ComponentServiceType>& requiredServices);
-        void SetIncompatibleServices(const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
+        void SetRequiredServices(AZStd::span<const AZ::ComponentServiceType> requiredServices);
+        void SetIncompatibleServices(AZStd::span<const AZ::ComponentServiceType> incompatibleServices);
         void SetMismatchedServices(bool mismatchedServices);
 
         void SetAcceptedEntityContext(AzFramework::EntityContextId contextId);
 
-        void SetHasClearButton(bool value){ m_hasClearButton = value; }
-        bool HasClearButton(){ return m_hasClearButton; }
+        void SetHasClearButton(bool value) { m_hasClearButton = value; }
+        bool HasClearButton() { return m_hasClearButton; }
 
     signals:
         void OnEntityIdChanged(AZ::EntityId newEntityId);
@@ -87,7 +87,7 @@ namespace AzToolsFramework
 
     protected:
         bool IsCorrectMimeData(const QMimeData* mimeData) const;
-        bool EntityIdsFromMimeData(const QMimeData &mimeData, AzToolsFramework::EditorEntityIdContainer* entityIdListContainer = nullptr) const;
+        bool EntityIdsFromMimeData(const QMimeData& mimeData, AzToolsFramework::EditorEntityIdContainer* entityIdListContainer = nullptr) const;
 
         // Move the editor into Pick Mode.
         void StartEntityPickMode();
@@ -97,8 +97,8 @@ namespace AzToolsFramework
 
         EntityIdQLineEdit* m_entityIdLineEdit;
         QToolButton* m_pickButton;
-        AZStd::vector<AZ::ComponentServiceType> m_requiredServices;
-        AZStd::vector<AZ::ComponentServiceType> m_incompatibleServices;
+        AZ::ComponentDescriptor::DependencyArrayType m_requiredServices;
+        AZ::ComponentDescriptor::DependencyArrayType m_incompatibleServices;
         AzFramework::EntityContextId m_acceptedEntityContextId;
         AZStd::list<AZStd::string> m_componentsSatisfyingServices;
 

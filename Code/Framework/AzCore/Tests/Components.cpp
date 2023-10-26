@@ -56,7 +56,7 @@ namespace UnitTest
         // Create application environment code driven
         ComponentApplication::Descriptor appDesc;
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-        appDesc.m_recordingMode = AllocationRecords::RECORD_FULL;
+        appDesc.m_recordingMode = AllocationRecords::Mode::RECORD_FULL;
         AZ::ComponentApplication::StartupParameters startupParameters;
         startupParameters.m_loadSettingsRegistry = false;
         Entity* systemEntity = app.Create(appDesc, startupParameters);
@@ -804,7 +804,7 @@ namespace UnitTest
 
         EXPECT_EQ(Entity::DependencySortResult::Success, m_entity->EvaluateDependencies());
 
-        const AZStd::vector<Component*>& components = m_entity->GetComponents();
+        const AZ::Entity::ComponentArrayType& components = m_entity->GetComponents();
         auto locationB = AZStd::find(components.begin(), components.end(), b);
         auto locationE = AZStd::find(components.begin(), components.end(), e);
         auto locationE2 = AZStd::find(components.begin(), components.end(), e2);
@@ -829,7 +829,7 @@ namespace UnitTest
 
         EXPECT_EQ(Entity::DependencySortResult::DSR_OK, m_entity->EvaluateDependencies());
 
-        const AZStd::vector<Component*>& components = m_entity->GetComponents();
+        const AZ::Entity::ComponentArrayType& components = m_entity->GetComponents();
         const ptrdiff_t numComponents = m_entity->GetComponents().size();
 
         ptrdiff_t maxIndexOfComponentProvidingServices = PTRDIFF_MIN;
@@ -939,13 +939,13 @@ namespace UnitTest
         // perform initial sort
         EXPECT_EQ(Entity::DependencySortResult::Success, m_entity->EvaluateDependencies());
 
-        const AZStd::vector<Component*> originalSortedOrder = m_entity->GetComponents();
+        const AZ::Entity::ComponentArrayType originalSortedOrder = m_entity->GetComponents();
 
         // try shuffling the components a bunch of times
         // we should always get the same sorted results
         for (int iteration = 0; iteration < 50; ++iteration)
         {
-            AZStd::vector<Component*> componentsToShuffle = m_entity->GetComponents();
+            AZ::Entity::ComponentArrayType componentsToShuffle = m_entity->GetComponents();
 
             // remove all components from entity
             for (Component* component : componentsToShuffle)
@@ -972,7 +972,7 @@ namespace UnitTest
             }
 
             EXPECT_EQ(Entity::DependencySortResult::Success, m_entity->EvaluateDependencies());
-            const AZStd::vector<Component*>& sorted = m_entity->GetComponents();
+            const AZ::Entity::ComponentArrayType& sorted = m_entity->GetComponents();
             EXPECT_EQ(originalSortedOrder, sorted);
 
             if (HasFailure())
@@ -2024,7 +2024,7 @@ namespace Benchmark
         {
             // create components to sort
             state.PauseTiming();
-            AZStd::vector<Component*> components;
+            AZ::Entity::ComponentArrayType components;
             AZ_Assert((state.range(0) % 6) == 0, "Multiple of 6 required");
             while ((int)components.size() < state.range(0))
             {

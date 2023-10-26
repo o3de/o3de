@@ -46,7 +46,7 @@ namespace AzToolsFramework
                     if (disabledComponentsIter->value.IsArray())
                     {
                         // If the serialized data is an array type, then convert the data to a map.
-                        AZStd::vector<AZ::Component*> componentVector;
+                        AZ::Entity::ComponentArrayType componentVector;
                         disabledComponentsResult = ContinueLoadingFromJsonObjectField(
                             &componentVector, azrtti_typeid<decltype(componentVector)>(), inputValue, "DisabledComponents", context);
 
@@ -123,7 +123,7 @@ namespace AzToolsFramework
             services.push_back(AZ_CRC("EditorDisabledCompositionService", 0x277e3445));
         }
 
-        void EditorDisabledCompositionComponent::GetDisabledComponents(AZStd::vector<AZ::Component*>& components)
+        void EditorDisabledCompositionComponent::GetDisabledComponents(AZ::Entity::ComponentArrayType& components)
         {
             for (auto const& pair : m_disabledComponents)
             {

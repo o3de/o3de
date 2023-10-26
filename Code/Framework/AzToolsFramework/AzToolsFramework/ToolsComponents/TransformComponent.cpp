@@ -1149,7 +1149,7 @@ namespace AzToolsFramework
             }
 
             // then check to see if there's a component pending because it's in an invalid state
-            AZStd::vector<AZ::Component*> pendingComponents;
+            AZ::Entity::ComponentArrayType pendingComponents;
             AzToolsFramework::EditorPendingCompositionRequestBus::Event(GetEntityId(),
                 &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
 
