@@ -15,6 +15,8 @@
 #include <QMenu>
 #include <QPushButton>
 
+#include <AzCore/std/ranges/ranges_algorithm.h>
+
 namespace AzQtComponents
 {
 
@@ -132,7 +134,24 @@ void PaletteCard::handleModelChanged()
     QString fileName = QStringLiteral("%1.pal").arg(m_title);
     bool loaded = loader.load(fileName);
 
-    setModified(!loaded || (loaded && loader.colors() != m_palette->colors()));
+    if (!loaded)
+    {
+        setModified(true);
+    }
+    else
+    {
+        QVector<AZ::Color> loadedColors = loader.colors();
+        QVector<AZ::Color> paletteColors = m_palette->colors();
+        // Avoid instantiating QT 5.15.2 QVector::operator== as that triggers
+        // STL warning 4043 when running Visual Studio 2022 17.8.x series
+        // warning C4996: 'stdext::checked_array_iterator<const T *>': warning STL4043: stdext::checked_array_iterator,
+        // stdext::unchecked_array_iterator, and related factory functions are non-Standard extensions and will be removed in the future.
+        // std::span (since C++20) and gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or
+        // _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.
+        // This is due to QVector in version 5.15.2 and below using the checked vector extension
+        // https://github.com/qt/qtbase/blob/5.15/src/corelib/tools/qvector.h#L958
+        setModified(!AZStd::ranges::equal(loadedColors, paletteColors));
+    }
 }
 
 void PaletteCard::updateHeader()
