@@ -52,6 +52,13 @@ public: // member functions
     //! Set the released action name
     virtual void SetReleasedActionName(const LyShine::ActionName& actionName) = 0;
 
+// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+#if defined(CARBONATED)
+    virtual const LyShine::ActionName& GetOutsideReleasedActionName() const = 0;
+    virtual void SetOutsideReleasedActionName(const LyShine::ActionName& actionName) = 0;
+#endif
+// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+
     //! Get the hover start callback
     virtual OnActionCallback GetHoverStartActionCallback() = 0;
 
