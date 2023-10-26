@@ -193,8 +193,8 @@ namespace LogFileInternal
         AZStd::string m_version;
     };
 
-    // This use the GetVersionEx API which was deprecated in Windows 10
-    // as fall back to query the version information for Windows
+    // This uses the GetVersionEx API which was deprecated in Windows 10
+    // as a fall back to query the version information for Windows
     // On Windows 10 and after, this always returns the version as 6.2
     OSInfo QueryOSInfoUsingGetVersionEx()
     {
@@ -205,12 +205,12 @@ namespace LogFileInternal
 
         AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
             GetVersionEx(&osVersionInfo);
-        AZ_POP_DISABLE_WARNING
+        AZ_POP_DISABLE_WARNING;
 
-            // Default the name of the operating system to just Windows as the version information
-            // is based on the manifest at the time application was built, which probably
-            // does not match the current version of wndows that is running
-            osInfo.m_name = "Windows";
+        // Default the name of the operating system to just Windows as the version information
+        // is based on the manifest at the time application was built, which probably
+        // does not match the current version of Windows that is running
+        osInfo.m_name = "Windows";
         osInfo.m_version = AZStd::string::format("%ld.%ld", osVersionInfo.dwMajorVersion, osVersionInfo.dwMinorVersion);
         return osInfo;
     }
