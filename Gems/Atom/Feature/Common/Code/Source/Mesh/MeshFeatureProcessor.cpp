@@ -988,6 +988,23 @@ namespace AZ
             return false;
         }
 
+        void MeshFeatureProcessor::SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled)
+        {
+            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+
+            for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
+            {
+                for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
+                {
+                    RHI::DrawItem* drawItem = meshDrawPacket.GetRHIDrawPacket()->GetDrawItem(drawListTag);
+                    if (drawItem)
+                    {
+                        drawItem->m_enabled = enabled;
+                    }
+                }
+            }
+        }
+
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::CloneMesh(const MeshHandle& meshHandle)
         {
             if (meshHandle.IsValid())
