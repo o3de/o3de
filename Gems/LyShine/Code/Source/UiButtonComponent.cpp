@@ -67,6 +67,15 @@ bool UiButtonComponent::HandleReleased(AZ::Vector2 point)
     }
     else
     {
+// Gruber patch begin // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+#if defined(CARBONATED)
+        if (m_isHandlingEvents)
+        {
+            UiInteractableComponent::TriggerReleasedAction(true);
+        }
+#endif
+// Gruber patch end // (vlagutin/Ui_ReleaseOutsideEvent) // Fire an event when the press is release outside of the UI element
+
         m_isPressed = false;
 
         return m_isHandlingEvents;
