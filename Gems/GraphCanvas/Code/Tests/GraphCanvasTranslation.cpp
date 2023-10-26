@@ -22,7 +22,7 @@ protected:
         {
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
+            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS;
 
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_loadSettingsRegistry = false;
