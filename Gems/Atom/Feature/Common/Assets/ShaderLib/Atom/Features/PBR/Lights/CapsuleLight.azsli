@@ -78,8 +78,8 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Light
 
         // Check if the capsule intersects the plane formed by the surface normal. If so, the capsule should be
         // truncated to just the portion above the plane.
-        float startProjection = dot(surface.normal, surfaceToStart);
-        float lengthProjection = dot(surface.normal, startToEnd);
+        float startProjection = dot(surface.GetDiffuseNormal(), surfaceToStart);
+        float lengthProjection = dot(surface.GetDiffuseNormal(), startToEnd);
         float startOverLength = startProjection / lengthProjection;
         float ratioVisible = 1.0;
 
@@ -116,8 +116,8 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Light
         
         // Integration of lambert reflectance of a line segment to get diffuse intensity
         // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
-        float NdotStart = dot(surface.normal, surfaceToStart) / distanceToStart;
-        float NdotEnd =  dot(surface.normal, surfaceToEnd) / distanceToEnd;
+        float NdotStart = dot(surface.GetDiffuseNormal(), surfaceToStart) / distanceToStart;
+        float NdotEnd =  dot(surface.GetDiffuseNormal(), surfaceToEnd) / distanceToEnd;
         float intensity = (NdotStart + NdotEnd) / (distanceToStart * distanceToEnd + dot(surfaceToStart, surfaceToEnd));
         intensity *= INV_PI; // normalize for lambert reflectance.
 
@@ -125,7 +125,7 @@ void ApplyCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Light
         lightingData.diffuseLighting += max(0.0, surface.albedo * lightIntensity);
 
         // Calculate the reflection of the normal from the view direction
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
 
         // Find closest point on light to reflection vector.
         // See https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf

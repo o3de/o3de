@@ -8,6 +8,7 @@
 
 
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/LinearAllocator.h>
 
 #include <AzCore/Casting/numeric_cast.h>
@@ -90,7 +91,7 @@ namespace AZ::RHI
         }
     }
 
-    const DrawPacket* DrawPacketBuilder::End()
+    DrawPacket* DrawPacketBuilder::End()
     {
         if (m_drawRequests.empty())
         {
@@ -223,6 +224,8 @@ namespace AZ::RHI
         drawPacket->m_drawListTags = drawListTags;
         drawPacket->m_drawFilterMasks = drawFilterMasks;
 
+        const AZStd::vector<DrawListTag>& disabledTags = RHISystemInterface::Get()->GetDrawListTagsDisabledByDefault();
+
         for (size_t i = 0; i < m_drawRequests.size(); ++i)
         {
             const DrawRequest& drawRequest = m_drawRequests[i];
@@ -231,7 +234,14 @@ namespace AZ::RHI
             drawFilterMasks[i] = drawRequest.m_drawFilterMask;
             drawItemSortKeys[i] = drawRequest.m_sortKey;
 
+            bool drawListTagDisabled = false;
+            for (const DrawListTag& disabledTag : disabledTags)
+            {
+                drawListTagDisabled = drawListTagDisabled || (drawRequest.m_listTag == disabledTag);
+            }
+
             DrawItem& drawItem = drawItems[i];
+            drawItem.m_enabled = !drawListTagDisabled;
             drawItem.m_arguments = m_drawArguments;
             drawItem.m_stencilRef = drawRequest.m_stencilRef;
             drawItem.m_streamBufferViewCount = 0;
@@ -294,7 +304,7 @@ namespace AZ::RHI
     const DrawPacket* DrawPacketBuilder::Clone(const DrawPacket* original)
     {
         Begin(original->m_allocator);
-        SetDrawArguments(original->GetDrawItem(0).m_item->m_arguments);
+        SetDrawArguments(original->GetDrawItemProperties(0).m_item->m_arguments);
         SetIndexBufferView(original->m_indexBufferView);
         SetRootConstants(AZStd::span<const uint8_t>(original->m_rootConstants, original->m_rootConstantSize));
         SetScissors(AZStd::span<const Scissor>(original->m_scissors, original->m_scissorsCount));
