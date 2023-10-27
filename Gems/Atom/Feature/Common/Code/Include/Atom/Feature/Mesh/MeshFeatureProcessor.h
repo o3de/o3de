@@ -215,6 +215,7 @@ namespace AZ
             bool ReleaseMesh(MeshHandle& meshHandle) override;
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
+            void SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled) override;
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
             const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
@@ -244,7 +245,7 @@ namespace AZ
             bool GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const override;
             void SetIsAlwaysDynamic(const MeshHandle& meshHandle, bool isAlwaysDynamic) override;
             bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const override;
-            void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
+            void SetRayTracingEnabled(const MeshHandle& meshHandle, bool enabled) override;
             bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
             bool GetVisible(const MeshHandle& meshHandle) const override;

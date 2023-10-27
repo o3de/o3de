@@ -126,6 +126,7 @@ namespace AZ
                 {
                     tlasDescriptorBuild->Instance()
                         ->InstanceID(index)
+                        ->InstanceMask(1)
                         ->HitGroupIndex(0)
                         ->Blas(diffuseProbeGridFeatureProcessor->GetVisualizationBlas())
                         ->Transform(transform)

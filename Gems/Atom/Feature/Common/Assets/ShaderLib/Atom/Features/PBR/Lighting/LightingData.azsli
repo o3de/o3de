@@ -59,6 +59,8 @@ class LightingData
     void CalculateMultiscatterCompensation(real3 specularF0, bool enabled);
     void FinalizeLighting();
     void FinalizeLighting(real3 transmissionTint);
+
+    real GetSpecularNdotV() { return NdotV; }
 };
 
 void LightingData::Init(real3 positionWS, real3 normal, real roughnessLinear)

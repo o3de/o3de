@@ -393,16 +393,6 @@ namespace AzToolsFramework
 
                         auto proxyClassData = serializeContext->FindClassData(m_proxyClassData.m_typeId);
 
-                        void* proxyAddress{};
-                        if constexpr (AZStd::is_pointer_v<WrappedType>)
-                        {
-                            proxyAddress = m_proxyValue;
-                        }
-                        else
-                        {
-                            proxyAddress = &m_proxyValue;
-                        }
-
                         if (pointerClassData != nullptr && pointerClassData->m_azRtti != nullptr &&
                             pointerClassData->m_azRtti->IsTypeOf<WrappedType>())
                         {

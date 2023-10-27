@@ -64,6 +64,7 @@ namespace EMotionFX
             SkinningMethod GetSkinningMethod() const override;
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
             void EnableInstanceUpdate(bool enable) override;
+            void SetRayTracingEnabled(bool enabled) override;
 
             // EditorActorComponentRequestBus overrides ...
             const AZ::Data::AssetId& GetActorAssetId() override;
@@ -118,6 +119,7 @@ namespace EMotionFX
             void OnMaterialChanged();
             void OnLODLevelChanged();
             void OnRenderFlagChanged();
+            void OnEnableRaytracingChanged();
             void OnSkinningMethodChanged();
             AZ::Crc32 OnAttachmentTypeChanged();
             AZ::Crc32 OnAttachmentTargetChanged();
@@ -171,6 +173,7 @@ namespace EMotionFX
             bool                                m_renderCharacter;          ///< Toggles rendering of character model.
             bool                                m_renderBounds;             ///< Toggles rendering of the world bounding box.
             bool                                m_entityVisible;            ///< Entity visible from the EditorVisibilityNotificationBus
+            bool                                m_rayTracingEnabled;        ///< Toggles adding this actor to the raytracing acceleration structure
             SkinningMethod                      m_skinningMethod;           ///< The skinning method for this actor
 
             AttachmentType                      m_attachmentType;           ///< Attachment type.

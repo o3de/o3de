@@ -99,6 +99,7 @@ namespace AZ
             bool m_useForwardPassIblSpecular = false;
             bool m_isAlwaysDynamic = false;
             bool m_excludeFromReflectionCubeMaps = false;
+            bool m_isSkinnedMesh = false;
         };
 
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying
@@ -156,6 +157,8 @@ namespace AZ
             //! Connects a handler to ObjectSrg creation
             virtual void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) = 0;
 
+            //! Enables/Disables the mesh's DrawItem for the given drawListTag
+            virtual void SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled) = 0;
             //! Sets the transform for a given mesh handle.
             virtual void SetTransform(const MeshHandle& meshHandle, const Transform& transform,
                 const Vector3& nonUniformScale = Vector3::CreateOne()) = 0;
@@ -184,7 +187,7 @@ namespace AZ
             //! Gets if a mesh is considered to always be moving.
             virtual bool GetIsAlwaysDynamic(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from raytracing
-            virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) = 0;
+            virtual void SetRayTracingEnabled(const MeshHandle& meshHandle, bool enabled) = 0;
             //! Gets whether this mesh is excluded from raytracing
             virtual bool GetRayTracingEnabled(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.

@@ -159,6 +159,11 @@ namespace AZ
                 // non-uniform scale
                 AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
 
+                // instance mask. Used to include/exclude mesh instances from TraceRay() calls
+                uint32_t m_instanceMask = 0;
+
+                bool m_isSkinnedMesh = false;
+
                 // reflection probe
                 struct ReflectionProbe
                 {
@@ -213,6 +218,11 @@ namespace AZ
             //! This is used to determine if the RayTracingShaderTable needs to be rebuilt.
             uint32_t GetRevision() const { return m_revision; }
 
+            uint32_t GetSkinnedMeshCount() const
+            {
+                return m_skinnedMeshCount;
+            }
+
             //! Retrieves the buffer pools used for ray tracing operations.
             RHI::RayTracingBufferPools& GetBufferPools() { return *m_bufferPools; }
 
@@ -243,6 +253,7 @@ namespace AZ
 
                 // flag indicating if the Blas objects in the sub-mesh list are built
                 bool m_blasBuilt = false;
+                bool m_isSkinnedMesh = false;
             };
 
             using BlasInstanceMap = AZStd::unordered_map<AZ::Data::AssetId, MeshBlasInstance>;
@@ -257,6 +268,8 @@ namespace AZ
             void UpdateIndexLists();
             void UpdateRayTracingSceneSrg();
             void UpdateRayTracingMaterialSrg();
+
+            static RHI::RayTracingAccelerationStructureBuildFlags CreateRayTracingAccelerationStructureBuildFlags(bool isSkinnedMesh);
 
             // flag indicating if RayTracing is enabled, currently based on device support
             bool m_rayTracingEnabled = false;
@@ -382,6 +395,8 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_meshBufferIndicesGpuBuffer[BufferFrameCount];
             Data::Instance<RPI::Buffer> m_materialTextureIndicesGpuBuffer[BufferFrameCount];
             uint32_t m_currentIndexListFrameIndex = 0;
+
+            uint32_t m_skinnedMeshCount = 0;
         };
     }
 }

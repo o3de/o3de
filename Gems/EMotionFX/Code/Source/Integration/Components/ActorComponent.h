@@ -86,6 +86,7 @@ namespace EMotionFX
                 SkinningMethod m_skinningMethod = SkinningMethod::DualQuat; ///< The skinning method for this actor
                 size_t m_lodLevel = 0;
                 ActorRenderFlags m_renderFlags = ActorRenderFlags::Default; ///< Actor render flag
+                bool m_rayTracingEnabled = true; ///< Enable raytracing for an actor's mesh
 
                 // Force updating the joints when it is out of camera view. By
                 // default, joints level update (beside the root joint) on
@@ -120,6 +121,7 @@ namespace EMotionFX
             bool GetRenderCharacter() const override;
             void SetRenderCharacter(bool enable) override;
             bool GetRenderActorVisible() const override;
+            void SetRayTracingEnabled(bool enabled) override;
             SkinningMethod GetSkinningMethod() const override;
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
             void EnableInstanceUpdate(bool enable) override;

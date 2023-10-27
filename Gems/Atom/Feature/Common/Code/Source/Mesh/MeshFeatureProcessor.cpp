@@ -988,6 +988,23 @@ namespace AZ
             return false;
         }
 
+        void MeshFeatureProcessor::SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled)
+        {
+            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+
+            for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
+            {
+                for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
+                {
+                    RHI::DrawItem* drawItem = meshDrawPacket.GetRHIDrawPacket()->GetDrawItem(drawListTag);
+                    if (drawItem)
+                    {
+                        drawItem->m_enabled = enabled;
+                    }
+                }
+            }
+        }
+
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::CloneMesh(const MeshHandle& meshHandle)
         {
             if (meshHandle.IsValid())
@@ -1256,17 +1273,17 @@ namespace AZ
             return false;
         }
 
-        void MeshFeatureProcessor::SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled)
+        void MeshFeatureProcessor::SetRayTracingEnabled(const MeshHandle& meshHandle, bool enabled)
         {
             if (meshHandle.IsValid())
             {
                 // update the ray tracing data based on the current state and the new state
-                if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
+                if (enabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
                     meshHandle->m_flags.m_needsSetRayTracingData = true;
                 }
-                else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
+                else if (!enabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // remove from ray tracing
                     if (m_rayTracingFeatureProcessor)
@@ -1276,7 +1293,7 @@ namespace AZ
                 }
 
                 // set new state
-                meshHandle->m_descriptor.m_isRayTracingEnabled = rayTracingEnabled;
+                meshHandle->m_descriptor.m_isRayTracingEnabled = enabled;
             }
         }
 
@@ -2370,6 +2387,9 @@ namespace AZ
             rayTracingMesh.m_assetId = m_model->GetModelAsset()->GetId();
             rayTracingMesh.m_transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
             rayTracingMesh.m_nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
+            rayTracingMesh.m_isSkinnedMesh = m_descriptor.m_isSkinnedMesh;
+            rayTracingMesh.m_instanceMask |= (rayTracingMesh.m_isSkinnedMesh) ? static_cast<uint32_t>(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::SKINNED_MESH) :
+                                                                                static_cast<uint32_t>(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask::STATIC_MESH);
 
             // setup the reflection probe data, and track if this mesh is currently affected by a reflection probe
             SetRayTracingReflectionProbeData(meshFeatureProcessor, rayTracingMesh.m_reflectionProbe);
