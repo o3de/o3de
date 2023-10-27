@@ -60,9 +60,20 @@ namespace AZ
 
         void Pipeline::SetNameInternal(const AZStd::string_view& name)
         {
-            if (IsInitialized() && !name.empty())
+            if (m_nativePipeline != VK_NULL_HANDLE && !name.empty())
             {
                 Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_nativePipeline), name.data(), VK_OBJECT_TYPE_PIPELINE, static_cast<Device&>(GetDevice()));
+            }
+
+            AZ::Name azName = AZ::Name(name);
+            if (m_pipelineLayout)
+            {
+                m_pipelineLayout->SetName(azName);
+            }
+
+            for (auto& shaderModule : m_shaderModules)
+            {
+                shaderModule->SetName(azName);
             }
         }
 

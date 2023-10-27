@@ -20,17 +20,21 @@ namespace AZ
         {
             // We first need to build the renderpass that will be used by all groups.
             RenderPassBuilder builder(device, static_cast<uint32_t>(executeGroups.size()));
+            AZStd::string name = executeGroups.size() > 1 ? "[Merged]" : "";
             for (auto executeGroupBase : executeGroups)
             {
                 const FrameGraphExecuteGroup* executeGroup = static_cast<const FrameGraphExecuteGroup*>(executeGroupBase);
                 AZ_Assert(executeGroup, "Invalid execute group on FrameGraphExecuteGroupHandler");
                 AZ_Assert(executeGroup->GetScopes().size() == 1, "Incorrect number of scopes (%d) in group on FrameGraphExecuteGroupHandler", executeGroup->GetScopes().size());
-                builder.AddScopeAttachments(*executeGroup->GetScopes()[0]);
+                auto* scope = executeGroup->GetScopes()[0];
+                builder.AddScopeAttachments(*scope);
+                name = AZStd::string::format("%s;%s", name.c_str(), scope->GetName().GetCStr());
             }
 
             // This will update the m_renderPassContext with the proper renderpass and framebuffer.
             RHI::ResultCode result = builder.End(m_renderPassContext);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            m_renderPassContext.SetName(AZ::Name(name));
 
             // Set the RenderPassContext for each group.
             for (uint32_t i = 0; i < executeGroups.size(); ++i)
