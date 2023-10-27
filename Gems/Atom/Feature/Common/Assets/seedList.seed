@@ -1,293 +1,271 @@
-<ObjectStream version="3">
-	<Class name="AZStd::vector&lt;SeedInfo, allocator&gt;" type="{82FC5264-88D0-57CD-9307-FC52E4DAD550}">
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{88B442CC-1F5B-5B8A-BC10-EDEB9998BEF9}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="passes/passtemplates.azasset" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{6B01EDAB-1951-5588-AB7B-DF2F703950D4}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="passes/smaaconfiguration.azasset" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{0302DBFA-309B-50F9-912A-F5EB9A3FFC89}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaderlib/atom/features/raytracing/raytracingsrgs.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{558ADDDC-9CF3-5EE9-9FE2-288A1F404072}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/auxgeom/auxgeomworld.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{920D0051-A477-555A-BA28-441D779DF7FE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/auxgeom/auxgeomobject.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{7DB9C0CD-EE20-5B1D-92E0-423B4832461E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/auxgeom/auxgeomobjectlit.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{B1E8CBB8-00F8-552B-AA3F-07F3DAA9C79C}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/imgui/imgui.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{72B3ED19-D85C-5674-B331-F1D8758EBC83}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/postprocessing/displaymapper.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{AAC80DB3-C758-5B36-864A-9AD9923387E1}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/postprocessing/acesoutputtransformlut.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{91F6209C-D41E-5F6A-9070-EEED973ED34A}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/postprocessing/bakeacesoutputtransformlutcs.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{BF6EC912-C8EB-56AF-A3A7-5FE2570465B9}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/postprocessing/fullscreencopy.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{CC4B44B0-1DCB-5A50-B2C0-6C8D778D60C6}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/postprocessing/applyshaperlookuptable.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{D24FDB86-AE3A-5AF3-8CF2-A398A7DE7ECD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/postprocessing/outputtransform.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{45485BD7-DFDD-5B8D-99C7-2464D2FEF506}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/reflections/reflectionprobestencil.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{2173DB42-64C3-5AB3-B394-CBC093258D01}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/reflections/reflectionprobeblendweight.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{6FD5B51E-51D8-54C2-B8B1-914C4D33950D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/reflections/reflectionproberenderouter.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{7C15D605-EAAD-5AF4-A5F7-AF2781156064}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/reflections/reflectionproberenderinner.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{FE7E2F65-2F34-5231-AF26-D0D836668294}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/reflections/reflectionscreenspaceblurvertical.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{27A231B1-F585-5D0E-AD1F-AD08D9C1E8F2}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/reflections/reflectionscreenspaceblurhorizontal.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{1AA24D31-66E5-52B6-8F21-ABADFECE661D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/cloudnoise_01.jpg.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{49F60E08-3BAF-5132-B6E7-0F4A32310B12}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="3000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/default/default_iblglobalcm_ibldiffuse.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{49F60E08-3BAF-5132-B6E7-0F4A32310B12}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="2000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/default/default_iblglobalcm_iblspecular.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{FDC3F4B9-5C6C-5D85-9628-892826185D85}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/default/default_skyboxcm.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{2BD005F4-D37A-59DD-9DDE-F5ADD4668B9B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/ltc/ltc_mat_lutrgba32f.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{F9E4A926-0E27-595A-B147-69822B4E1F98}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/ltc/ltc_amp_lutrg32f.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{8ECFB722-130A-55F8-9FD0-428ACEEA1EAF}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/postprocessing/depthoffield_pencilmap_35mmfilm.bmp.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{54023EDC-B393-544A-9C80-E8E2ACB1BE53}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/postprocessing/areatex.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{1553E50C-D99C-5CD1-BB5C-747FD47C354B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/postprocessing/searchtex.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{3C004E81-244A-51C1-B3BB-50EFFD1373C9}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="passes/mainrenderpipeline.azasset" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{06E16462-E7A0-5780-A87D-BA165F18C297}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/postprocessing/displaymappersrgb.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{3ED0319F-603A-59E3-83C7-3183649A9A94}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="shaders/shadow/clearshadow.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{7F053C3F-A21C-5801-88EE-56C62A4752E2}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="278992749" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="models/occlusioncullingplane.azmodel" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{C84BC230-53BF-53BB-A18D-060B6DDBDFE6}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="materials/occlusioncullingplane/occlusioncullingplanevisualization.azmaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{3F28138D-27D7-5B62-977E-F49C08B77B7D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="materials/occlusioncullingplane/occlusioncullingplanetransparentvisualization.azmaterial" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{8CC9B575-39D7-5914-AC42-92A77833E63A}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="268692035" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="models/diffuseprobesphere.azmodel" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{CE88A231-2B78-5107-9B6C-0A2051276E2C}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="255" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="passes/splashscreenpassrequest.azasset" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-	</Class>
-</ObjectStream>
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{88B442CC-1F5B-5B8A-BC10-EDEB9998BEF9}"
+            },
+            "platformFlags": 3,
+            "pathHint": "passes/passtemplates.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{6B01EDAB-1951-5588-AB7B-DF2F703950D4}"
+            },
+            "platformFlags": 3,
+            "pathHint": "passes/smaaconfiguration.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{0302DBFA-309B-50F9-912A-F5EB9A3FFC89}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaderlib/atom/features/raytracing/raytracingsrgs.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{558ADDDC-9CF3-5EE9-9FE2-288A1F404072}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/auxgeom/auxgeomworld.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{920D0051-A477-555A-BA28-441D779DF7FE}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/auxgeom/auxgeomobject.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{7DB9C0CD-EE20-5B1D-92E0-423B4832461E}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/auxgeom/auxgeomobjectlit.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{B1E8CBB8-00F8-552B-AA3F-07F3DAA9C79C}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/imgui/imgui.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{72B3ED19-D85C-5674-B331-F1D8758EBC83}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/postprocessing/displaymapper.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{AAC80DB3-C758-5B36-864A-9AD9923387E1}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/postprocessing/acesoutputtransformlut.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{91F6209C-D41E-5F6A-9070-EEED973ED34A}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/postprocessing/bakeacesoutputtransformlutcs.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{BF6EC912-C8EB-56AF-A3A7-5FE2570465B9}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/postprocessing/fullscreencopy.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{CC4B44B0-1DCB-5A50-B2C0-6C8D778D60C6}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/postprocessing/applyshaperlookuptable.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{D24FDB86-AE3A-5AF3-8CF2-A398A7DE7ECD}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/postprocessing/outputtransform.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{45485BD7-DFDD-5B8D-99C7-2464D2FEF506}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/reflections/reflectionprobestencil.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{2173DB42-64C3-5AB3-B394-CBC093258D01}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/reflections/reflectionprobeblendweight.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{6FD5B51E-51D8-54C2-B8B1-914C4D33950D}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/reflections/reflectionproberenderouter.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{7C15D605-EAAD-5AF4-A5F7-AF2781156064}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/reflections/reflectionproberenderinner.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{FE7E2F65-2F34-5231-AF26-D0D836668294}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/reflections/reflectionscreenspaceblurvertical.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{27A231B1-F585-5D0E-AD1F-AD08D9C1E8F2}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/reflections/reflectionscreenspaceblurhorizontal.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{1AA24D31-66E5-52B6-8F21-ABADFECE661D}",
+                "subId": 1000
+            },
+            "platformFlags": 3,
+            "pathHint": "textures/cloudnoise_01.jpg.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{49F60E08-3BAF-5132-B6E7-0F4A32310B12}",
+                "subId": 3000
+            },
+            "platformFlags": 3,
+            "pathHint": "textures/default/default_iblglobalcm_ibldiffuse.dds.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{49F60E08-3BAF-5132-B6E7-0F4A32310B12}",
+                "subId": 2000
+            },
+            "platformFlags": 3,
+            "pathHint": "textures/default/default_iblglobalcm_iblspecular.dds.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{FDC3F4B9-5C6C-5D85-9628-892826185D85}",
+                "subId": 1000
+            },
+            "platformFlags": 3,
+            "pathHint": "textures/default/default_skyboxcm.dds.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{2BD005F4-D37A-59DD-9DDE-F5ADD4668B9B}",
+                "subId": 1000
+            },
+            "platformFlags": 3,
+            "pathHint": "textures/ltc/ltc_mat_lutrgba32f.dds.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{F9E4A926-0E27-595A-B147-69822B4E1F98}",
+                "subId": 1000
+            },
+            "platformFlags": 3,
+            "pathHint": "textures/ltc/ltc_amp_lutrg32f.dds.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{8ECFB722-130A-55F8-9FD0-428ACEEA1EAF}",
+                "subId": 1000
+            },
+            "platformFlags": 3,
+            "pathHint": "textures/postprocessing/depthoffield_pencilmap_35mmfilm.bmp.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{54023EDC-B393-544A-9C80-E8E2ACB1BE53}",
+                "subId": 1000
+            },
+            "platformFlags": 3,
+            "pathHint": "textures/postprocessing/areatex.dds.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{1553E50C-D99C-5CD1-BB5C-747FD47C354B}",
+                "subId": 1000
+            },
+            "platformFlags": 3,
+            "pathHint": "textures/postprocessing/searchtex.dds.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{3C004E81-244A-51C1-B3BB-50EFFD1373C9}"
+            },
+            "platformFlags": 3,
+            "pathHint": "passes/mainrenderpipeline.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{06E16462-E7A0-5780-A87D-BA165F18C297}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/postprocessing/displaymappersrgb.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{3ED0319F-603A-59E3-83C7-3183649A9A94}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/shadow/clearshadow.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{7F053C3F-A21C-5801-88EE-56C62A4752E2}",
+                "subId": 278992749
+            },
+            "platformFlags": 3,
+            "pathHint": "models/occlusioncullingplane.azmodel"
+        },
+        {
+            "assetId": {
+                "guid": "{C84BC230-53BF-53BB-A18D-060B6DDBDFE6}"
+            },
+            "platformFlags": 3,
+            "pathHint": "materials/occlusioncullingplane/occlusioncullingplanevisualization.azmaterial"
+        },
+        {
+            "assetId": {
+                "guid": "{3F28138D-27D7-5B62-977E-F49C08B77B7D}"
+            },
+            "platformFlags": 3,
+            "pathHint": "materials/occlusioncullingplane/occlusioncullingplanetransparentvisualization.azmaterial"
+        },
+        {
+            "assetId": {
+                "guid": "{8CC9B575-39D7-5914-AC42-92A77833E63A}",
+                "subId": 268692035
+            },
+            "platformFlags": 3,
+            "pathHint": "models/diffuseprobesphere.azmodel"
+        },
+        {
+            "assetId": {
+                "guid": "{CE88A231-2B78-5107-9B6C-0A2051276E2C}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/splashscreenpassrequest.azasset"
+        }
+    ]
+}
 
