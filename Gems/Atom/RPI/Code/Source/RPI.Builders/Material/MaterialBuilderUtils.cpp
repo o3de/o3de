@@ -17,15 +17,21 @@ namespace AZ::RPI::MaterialBuilderUtils
     void AddPossibleDependencies(
         const AZStd::string& originatingSourceFilePath,
         const AZStd::string& referencedSourceFilePath,
-        AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencyList,
+        AssetBuilderSDK::CreateJobsResponse& response,
+        AssetBuilderSDK::JobDescriptor& jobDescriptor,
         const AZStd::string& jobKey,
-        AssetBuilderSDK::JobDescriptor& outputJobDescriptor,
         AssetBuilderSDK::JobDependencyType jobDependencyType,
         const AZStd::vector<AZ::u32>& productSubIds,
         const AZStd::string& platformId)
     {
         for (const auto& path : RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath))
         {
+            if (jobDependencyType != AssetBuilderSDK::JobDependencyType::OrderOnce &&
+                jobDependencyType != AssetBuilderSDK::JobDependencyType::OrderOnly)
+            {
+                MaterialBuilderUtils::AddFingerprintForDependency(path, jobDescriptor);
+            }
+
             // The first path is the highest priority, and will have a job dependency, as this is the one
             // the builder will actually use
             bool dependencyFileFound = false;
@@ -46,14 +52,7 @@ namespace AZ::RPI::MaterialBuilderUtils
                 jobDependency.m_type = jobDependencyType;
                 jobDependency.m_productSubIds = productSubIds;
                 jobDependency.m_platformIdentifier = platformId;
-
-                outputJobDescriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
-
-                if (jobDependencyType != AssetBuilderSDK::JobDependencyType::OrderOnce &&
-                    jobDependencyType != AssetBuilderSDK::JobDependencyType::OrderOnly)
-                {
-                    MaterialBuilderUtils::AddFingerprintForDependency(path, outputJobDescriptor);
-                }
+                jobDescriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
                 return;
             }
 
@@ -61,20 +60,20 @@ namespace AZ::RPI::MaterialBuilderUtils
             // shows up later at this location, it will wake up the builder to try again.
             AssetBuilderSDK::SourceFileDependency sourceDependency;
             sourceDependency.m_sourceFileDependencyPath = path;
-            sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
+            response.m_sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
         }
     }
 
     void AddPossibleImageDependencies(
         const AZStd::string& originatingSourceFilePath,
-        const AZStd::string& imageFilePath,
-        AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencyList,
-        AssetBuilderSDK::JobDescriptor& outputJobDescriptor)
+        const AZStd::string& referencedSourceFilePath,
+        AssetBuilderSDK::CreateJobsResponse& response,
+        AssetBuilderSDK::JobDescriptor& jobDescriptor)
     {
-        if (!imageFilePath.empty())
+        if (!referencedSourceFilePath.empty())
         {
             AZStd::string ext;
-            AzFramework::StringFunc::Path::GetExtension(imageFilePath.c_str(), ext, false);
+            AzFramework::StringFunc::Path::GetExtension(referencedSourceFilePath.c_str(), ext, false);
 
             if (!ext.empty())
             {
@@ -83,19 +82,19 @@ namespace AZ::RPI::MaterialBuilderUtils
 
                 AddPossibleDependencies(
                     originatingSourceFilePath,
-                    imageFilePath,
-                    sourceFileDependencyList,
+                    referencedSourceFilePath,
+                    response,
+                    jobDescriptor,
                     jobKey,
-                    outputJobDescriptor,
                     AssetBuilderSDK::JobDependencyType::OrderOnce);
             }
         }
     }
 
-    void AddFingerprintForDependency(const AZStd::string& filePath, AssetBuilderSDK::JobDescriptor& outputJobDescriptor)
+    void AddFingerprintForDependency(const AZStd::string& path, AssetBuilderSDK::JobDescriptor& jobDescriptor)
     {
-        outputJobDescriptor.m_additionalFingerprintInfo +=
-            AZStd::string::format("|%s:%llu", filePath.c_str(), AZ::IO::SystemFile::ModificationTime(filePath.c_str()));
+        jobDescriptor.m_additionalFingerprintInfo +=
+            AZStd::string::format("|%u:%llu", (AZ::u32)AZ::Crc32(path), AZ::IO::SystemFile::ModificationTime(path.c_str()));
     }
 
     AZStd::string GetRelativeSourcePath(const AZStd::string& path)

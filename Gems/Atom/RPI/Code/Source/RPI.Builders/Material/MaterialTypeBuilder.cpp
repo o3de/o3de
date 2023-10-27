@@ -44,7 +44,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 43; // Switch from XML to binary assets
+            materialBuilderDescriptor.m_version = 44; // Switch from XML to binary assets
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -149,7 +149,7 @@ namespace AZ
         {
             AssetBuilderSDK::JobDescriptor outputJobDescriptor;
             outputJobDescriptor.m_jobKey = PipelineStageJobKey;
-            outputJobDescriptor.m_additionalFingerprintInfo = "";
+            outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
             outputJobDescriptor.SetPlatformIdentifier(AssetBuilderSDK::CommonPlatformName);
 
             MaterialBuilderUtils::AddFingerprintForDependency(materialTypeSourcePath, outputJobDescriptor);
@@ -212,7 +212,7 @@ namespace AZ
             // We'll build up this one JobDescriptor and reuse it to register each of the platforms
             AssetBuilderSDK::JobDescriptor outputJobDescriptor;
             outputJobDescriptor.m_jobKey = FinalStageJobKey;
-            outputJobDescriptor.m_additionalFingerprintInfo = "";
+            outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
 
             MaterialBuilderUtils::AddFingerprintForDependency(materialTypeSourcePath, outputJobDescriptor);
 
@@ -221,10 +221,9 @@ namespace AZ
                 MaterialBuilderUtils::AddPossibleDependencies(
                     materialTypeSourcePath,
                     shader.m_shaderFilePath,
-                    response.m_sourceFileDependencyList,
-                    "Shader Asset",
+                    response,
                     outputJobDescriptor,
-                    AssetBuilderSDK::JobDependencyType::Order);
+                    "Shader Asset");
             }
 
             auto addFunctorDependencies = [&response, &outputJobDescriptor, &materialTypeSourcePath](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
@@ -238,10 +237,9 @@ namespace AZ
                         MaterialBuilderUtils::AddPossibleDependencies(
                             materialTypeSourcePath,
                             dependency.m_sourceFilePath,
-                            response.m_sourceFileDependencyList,
-                            dependency.m_jobKey,
+                            response,
                             outputJobDescriptor,
-                            AssetBuilderSDK::JobDependencyType::Order);
+                            dependency.m_jobKey);
                     }
                 }
             };
@@ -263,7 +261,7 @@ namespace AZ
                         MaterialBuilderUtils::AddPossibleImageDependencies(
                             materialTypeSourcePath,
                             property->m_value.GetValue<AZStd::string>(),
-                            response.m_sourceFileDependencyList,
+                            response,
                             outputJobDescriptor);
                     }
                     return true;
@@ -276,10 +274,9 @@ namespace AZ
                     MaterialBuilderUtils::AddPossibleDependencies(
                         materialTypeSourcePath,
                         shader.m_shaderFilePath,
-                        response.m_sourceFileDependencyList,
-                        "Shader Asset",
+                        response,
                         outputJobDescriptor,
-                        AssetBuilderSDK::JobDependencyType::Order);
+                        "Shader Asset");
                 }
 
                 addFunctorDependencies(pipelinePair.second.m_materialFunctorSourceData);
@@ -292,7 +289,10 @@ namespace AZ
 
                 for (auto& jobDependency : outputJobDescriptor.m_jobDependencyList)
                 {
-                    jobDependency.m_platformIdentifier = platformInfo.m_identifier;
+                    if (jobDependency.m_platformIdentifier.empty())
+                    {
+                        jobDependency.m_platformIdentifier = platformInfo.m_identifier;
+                    }
                 }
 
                 response.m_createJobOutputs.push_back(outputJobDescriptor);
