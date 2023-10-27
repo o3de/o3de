@@ -38,7 +38,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 139; // Switch from XML to binary assets
+            materialBuilderDescriptor.m_version = 140; // Switch from XML to binary assets
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -77,7 +77,7 @@ namespace AZ
             // We'll build up this one JobDescriptor and reuse it to register each of the platforms
             AssetBuilderSDK::JobDescriptor outputJobDescriptor;
             outputJobDescriptor.m_jobKey = JobKey;
-            outputJobDescriptor.m_additionalFingerprintInfo = "";
+            outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
 
             AZStd::string materialSourcePath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), materialSourcePath, true);
@@ -104,10 +104,9 @@ namespace AZ
                 MaterialBuilderUtils::AddPossibleDependencies(
                     materialSourcePath,
                     resolvedParentMaterialPath,
-                    response.m_sourceFileDependencyList,
-                    JobKey,
+                    response,
                     outputJobDescriptor,
-                    AssetBuilderSDK::JobDependencyType::Order);
+                    JobKey);
             }
 
             // Note that parentMaterialPath may have registered a dependency above, and the parent material reports dependency on the
@@ -136,22 +135,21 @@ namespace AZ
                     MaterialBuilderUtils::AddPossibleDependencies(
                         materialSourcePath,
                         resolvedMaterialTypePath,
-                        response.m_sourceFileDependencyList,
-                        MaterialTypeBuilder::FinalStageJobKey,
+                        response,
                         outputJobDescriptor,
-                        AssetBuilderSDK::JobDependencyType::Order);
+                        MaterialTypeBuilder::FinalStageJobKey);
                 }
                 else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
                 {
                     MaterialBuilderUtils::AddPossibleDependencies(
                         materialSourcePath,
                         resolvedMaterialTypePath,
-                        response.m_sourceFileDependencyList,
-                        MaterialTypeBuilder::PipelineStageJobKey,
+                        response,
                         outputJobDescriptor,
+                        MaterialTypeBuilder::PipelineStageJobKey,
                         AssetBuilderSDK::JobDependencyType::Order,
                         {},
-                        "common");
+                        AssetBuilderSDK::CommonPlatformName);
 
                     const AZStd::string intermediateMaterialTypePath =
                         MaterialUtils::PredictIntermediateMaterialTypeSourcePath(materialSourcePath, resolvedMaterialTypePath);
@@ -160,10 +158,9 @@ namespace AZ
                         MaterialBuilderUtils::AddPossibleDependencies(
                             materialSourcePath,
                             intermediateMaterialTypePath,
-                            response.m_sourceFileDependencyList,
-                            MaterialTypeBuilder::FinalStageJobKey,
+                            response,
                             outputJobDescriptor,
-                            AssetBuilderSDK::JobDependencyType::Order);
+                            MaterialTypeBuilder::FinalStageJobKey);
                     }
                 }
             }
@@ -178,7 +175,7 @@ namespace AZ
                     MaterialBuilderUtils::AddPossibleImageDependencies(
                         materialSourcePath,
                         propertyValue.GetValue<AZStd::string>(),
-                        response.m_sourceFileDependencyList,
+                        response,
                         outputJobDescriptor);
                 }
             }
@@ -186,6 +183,12 @@ namespace AZ
             // Create the output jobs for each platform
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
             {
+                // Skipping material asset processing on server builds
+                if (platformInfo.m_identifier == "server")
+                {
+                    continue;
+                }
+
                 outputJobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
 
                 for (auto& jobDependency : outputJobDescriptor.m_jobDependencyList)

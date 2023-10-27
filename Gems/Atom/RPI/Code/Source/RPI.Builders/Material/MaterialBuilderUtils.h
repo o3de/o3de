@@ -19,27 +19,37 @@ namespace AZ
             //! Resolves paths to source files, registers job dependencies, and updates the job fingerprint
             //! @param originatingSourceFilePath The path of the .material or .materialtype file being processed
             //! @param referencedSourceFilePath The path to the referenced file as it appears in the current file
+            //! @param response Used to update source dependencies
+            //! @param jobDescriptor Used to update job dependencies
             //! @param jobKey The job key for the job that is expected to process the referenced file
-            //! @param outputJobDescriptor Used to update job dependencies
             //! @param jobDependencyType Assigns the job dependency type for any added dependencies.
+            //! @param productSubIds Container for sub ids that should be considered when evaluating product dependencies
+            //! @param platformId Specific platform identifier for any added job dependencies
             void AddPossibleDependencies(
                 const AZStd::string& originatingSourceFilePath,
                 const AZStd::string& referencedSourceFilePath,
-                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencyList,
+                AssetBuilderSDK::CreateJobsResponse& response,
+                AssetBuilderSDK::JobDescriptor& jobDescriptor,
                 const AZStd::string& jobKey,
-                AssetBuilderSDK::JobDescriptor& outputJobDescriptor,
-                AssetBuilderSDK::JobDependencyType jobDependencyType,
+                AssetBuilderSDK::JobDependencyType jobDependencyType = AssetBuilderSDK::JobDependencyType::Order,
                 const AZStd::vector<AZ::u32>& productSubIds = {},
                 const AZStd::string& platformId = {});
 
+            //! Resolve potential paths and add source and job dependencies for image assets
+            //! @param originatingSourceFilePath The path of the .material or .materialtype file being processed
+            //! @param referencedSourceFilePath The path to the referenced file as it appears in the current file
+            //! @param response Used to update source dependencies
+            //! @param jobDescriptor Used to update job dependencies
             void AddPossibleImageDependencies(
                 const AZStd::string& originatingSourceFilePath,
-                const AZStd::string& imageFilePath,
-                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencyList,
-                AssetBuilderSDK::JobDescriptor& outputJobDescriptor);
+                const AZStd::string& referencedSourceFilePath,
+                AssetBuilderSDK::CreateJobsResponse& response,
+                AssetBuilderSDK::JobDescriptor& jobDescriptor);
 
-            void AddFingerprintForDependency(const AZStd::string& filePath, AssetBuilderSDK::JobDescriptor& outputJobDescriptor);
+            //! Append a fingerprint value to the job descriptor using the file modification time of the specified file path
+            void AddFingerprintForDependency(const AZStd::string& path, AssetBuilderSDK::JobDescriptor& jobDescriptor);
 
+            //! Generate a relative path from an absolute path
             AZStd::string GetRelativeSourcePath(const AZStd::string& path);
         } // namespace MaterialBuilderUtils
     } // namespace RPI
