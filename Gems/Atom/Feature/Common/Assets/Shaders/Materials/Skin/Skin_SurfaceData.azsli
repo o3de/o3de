@@ -38,6 +38,9 @@ class SurfaceData_Skin
     real3 baseColor;
     real metallic;
 
+    real diffuseAmbientOcclusion; //!< Diffuse ambient occlusion factor - [0, 1] :: [Dark, Bright]
+    real specularOcclusion;       //!< Specular occlusion factor - [0, 1] :: [Dark, Bright]
+
     //! Dual specular parameters
 
     real dualSpecFactor;
