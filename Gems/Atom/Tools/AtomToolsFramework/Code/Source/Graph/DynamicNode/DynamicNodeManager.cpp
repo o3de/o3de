@@ -60,8 +60,6 @@ namespace AtomToolsFramework
 
     DynamicNodeManager::~DynamicNodeManager()
     {
-        m_registeredDataTypes.clear();
-
         DynamicNodeManagerRequestBus::Handler::BusDisconnect();
     }
 
