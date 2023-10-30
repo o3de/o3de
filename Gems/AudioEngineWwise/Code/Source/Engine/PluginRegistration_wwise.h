@@ -12,7 +12,12 @@
 // Use this plugin registration helpers header to auto-register plugin libraries.
 // This will give a standard set of plugins, check <AK/Plugin/AllPluginFactories.h> for what it includes.
 //
+// AllPluginsRegistrationHelpers.h is deprecated in 2022 and when included will introduce linker errors
+// for missing plugins. See https://www.audiokinetic.com/en/library/edge/?source=SDK&id=soundengine_integration_plugins.html
+// for information on how to include plugins in your project
+#if AK_WWISESDK_VERSION_MAJOR < 2022
 #include <AK/Plugin/AllPluginsRegistrationHelpers.h>
+#endif // AK_WWISESDK_VERSION_MAJOR < 2022
 
 //
 // Prior to finalization of a game, it is recommended that you include only the plugin headers used by the game.
