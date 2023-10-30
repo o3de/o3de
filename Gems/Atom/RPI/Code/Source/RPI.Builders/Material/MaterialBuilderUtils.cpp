@@ -20,7 +20,7 @@ namespace AZ::RPI::MaterialBuilderUtils
         AssetBuilderSDK::CreateJobsResponse& response,
         AssetBuilderSDK::JobDescriptor& jobDescriptor,
         const AZStd::string& jobKey,
-        AssetBuilderSDK::JobDependencyType jobDependencyType,
+        const AssetBuilderSDK::JobDependencyType jobDependencyType,
         const AZStd::vector<AZ::u32>& productSubIds,
         const AZStd::string& platformId)
     {
