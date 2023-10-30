@@ -141,7 +141,9 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME launcher_gener
             )
 
             if (O3DE_SCRIPT_ONLY)
-                set(server_runtime_dependencies ${server_runtime_dependencies} O3DE.ServerLauncher)
+                foreach(server_launcher_type ${SERVER_LAUNCHER_TYPES})
+                    set(SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type} "${SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type}}" O3DE.${server_launcher_type})
+                endforeach()
             endif()
         endif()
 
@@ -245,7 +247,7 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME launcher_gener
                     ${LAUNCHER_TARGET_PROPERTY_TYPE}
                         ${SERVER_BUILD_DEPENDENCIES_${server_launcher_type}}
                 RUNTIME_DEPENDENCIES
-                    ${server_runtime_dependencies}
+                    ${SERVER_RUNTIME_DEPENDENCIES_${server_launcher_type}}
             )
             # Needs to be set manually after ly_add_target to prevent the default location overriding it
             set_target_properties(${project_name}.${server_launcher_type}
