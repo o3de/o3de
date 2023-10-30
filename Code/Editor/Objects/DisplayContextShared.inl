@@ -1086,7 +1086,7 @@ void DisplayContext::DrawTerrainLine(Vec3 worldPos1, Vec3 worldPos2)
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawTextLabel(const Vec3& pos, float size, const char* text, const bool bCenter, [[maybe_unused]] int srcOffsetX, [[maybe_unused]] int scrOffsetY)
 {
-    AZ_ErrorOnce(nullptr, false, "DisplayContext::DrawTextLabel needs to be removed/ported to use Atom");
+    AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "DisplayContext::DrawTextLabel needs to be removed/ported to use Atom");
 
 #if 0
       ColorF col(m_color4b.r * (1.0f / 255.0f), m_color4b.g * (1.0f / 255.0f), m_color4b.b * (1.0f / 255.0f), m_color4b.a * (1.0f / 255.0f));
@@ -1113,7 +1113,7 @@ void DisplayContext::DrawTextLabel(const Vec3& pos, float size, const char* text
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter)
 {
-    AZ_ErrorOnce(nullptr, false, "DisplayContext::Draw2dTextLabel needs to be removed/ported to use Atom");
+    AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "DisplayContext::Draw2dTextLabel needs to be removed/ported to use Atom");
 #if 0
     float col[4] = { m_color4b.r * (1.0f / 255.0f), m_color4b.g * (1.0f / 255.0f), m_color4b.b * (1.0f / 255.0f), m_color4b.a * (1.0f / 255.0f) };
     renderer->Draw2dLabel(x, y, size, col, bCenter, "%s", text);
@@ -1286,7 +1286,7 @@ void DisplayContext::Flush2D()
     int rcw, rch;
     view->GetDimensions(&rcw, &rch);
 
-    AZ_ErrorOnce(nullptr, false, "DisplayContext::Flush2D needs to be removed/ported to use Atom");
+    AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "DisplayContext::Flush2D needs to be removed/ported to use Atom");
 #if 0
 
     TransformationMatrices backupSceneMatrices;
