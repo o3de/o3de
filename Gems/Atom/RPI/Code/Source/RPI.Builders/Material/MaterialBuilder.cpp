@@ -97,7 +97,7 @@ namespace AZ
 
             if (!materialSourceData.m_parentMaterial.empty())
             {
-                const AZStd::string resolvedParentMaterialPath =
+                const auto& resolvedParentMaterialPath =
                     AssetUtils::ResolvePathReference(materialSourcePath, materialSourceData.m_parentMaterial);
 
                 // Register dependency on the parent material source file so we can load and use its data to build this material.
@@ -119,14 +119,18 @@ namespace AZ
             {
                 // We usually won't load file during CreateJob since we want to keep the function fast. But here we have to load the
                 // material type data to find the exact material type format so we could create an accurate source dependency.
-                const AZStd::string resolvedMaterialTypePath =
+                const auto& resolvedMaterialTypePath =
                     AssetUtils::ResolvePathReference(materialSourcePath, materialSourceData.m_materialType);
 
-                const auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialTypePath);
+                const auto& materialTypeSourceDataOutcome = MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialTypePath);
+                if (!materialTypeSourceDataOutcome)
+                {
+                    AZ_Error(MaterialBuilderName, false, "Failed to load material type source data: %s", resolvedMaterialTypePath.c_str());
+                    return;
+                }
 
-                const MaterialTypeSourceData::Format materialTypeFormat = materialTypeSourceData
-                    ? materialTypeSourceData.GetValue().GetFormat()
-                    : MaterialTypeSourceData::Format::Invalid;
+                const auto& materialTypeSourceData = materialTypeSourceDataOutcome.GetValue();
+                const MaterialTypeSourceData::Format materialTypeFormat = materialTypeSourceData.GetFormat();
 
                 // If the material uses the "Direct" format, then there will need to be a dependency on that file. If it uses the "Abstract"
                 // format, then there will be an intermediate .materialtype and there needs to be a dependency on that file instead.
@@ -183,12 +187,6 @@ namespace AZ
             // Create the output jobs for each platform
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
             {
-                // Skipping material asset processing on server builds
-                if (platformInfo.m_identifier == "server")
-                {
-                    continue;
-                }
-
                 outputJobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
 
                 for (auto& jobDependency : outputJobDescriptor.m_jobDependencyList)
@@ -205,7 +203,8 @@ namespace AZ
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }
 
-        void MaterialBuilder::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
+        void MaterialBuilder::ProcessJob(
+            const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
@@ -222,7 +221,8 @@ namespace AZ
             }
 
             AZStd::string materialSourcePath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), materialSourcePath, true);
+            AzFramework::StringFunc::Path::ConstructFull(
+                request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), materialSourcePath, true);
 
             const auto materialSourceDataOutcome = MaterialUtils::LoadMaterialSourceData(materialSourcePath);
             if (!materialSourceDataOutcome)
@@ -262,7 +262,8 @@ namespace AZ
             }
 
             AssetBuilderSDK::JobProduct jobProduct;
-            if (!AssetBuilderSDK::OutputObject(materialAsset.Get(), materialProductPath, azrtti_typeid<RPI::MaterialAsset>(), 0, jobProduct))
+            if (!AssetBuilderSDK::OutputObject(
+                    materialAsset.Get(), materialProductPath, azrtti_typeid<RPI::MaterialAsset>(), 0, jobProduct))
             {
                 AZ_Error(MaterialBuilderName, false, "Failed to output product dependencies.");
                 return;

@@ -23,7 +23,11 @@ namespace AZ
             //! @param jobDescriptor Used to update job dependencies
             //! @param jobKey The job key for the job that is expected to process the referenced file
             //! @param jobDependencyType Assigns the job dependency type for any added dependencies.
-            //! @param productSubIds Container for sub ids that should be considered when evaluating product dependencies
+            //! @param productSubIds Sub ids used to filter which product dependencies cause the job to be reprocessed. This should default
+            //! to an empty container so that all nested dependencies cause the job to be reprocessed. Leaving it empty results in the ideal
+            //! propagation and ordering for shaders and materials, where materials always get reprocessed last. However, this causes issues
+            //! if the platform ID is something other than PC. For example, if platform ID is set to server the asset system or streamer
+            //! will fail to correctly resolve products generated from intermediate assets with a correct asset id.
             //! @param platformId Specific platform identifier for any added job dependencies
             void AddPossibleDependencies(
                 const AZStd::string& originatingSourceFilePath,
@@ -31,8 +35,8 @@ namespace AZ
                 AssetBuilderSDK::CreateJobsResponse& response,
                 AssetBuilderSDK::JobDescriptor& jobDescriptor,
                 const AZStd::string& jobKey,
-                AssetBuilderSDK::JobDependencyType jobDependencyType = AssetBuilderSDK::JobDependencyType::Order,
-                const AZStd::vector<AZ::u32>& productSubIds = {},
+                const AssetBuilderSDK::JobDependencyType jobDependencyType = AssetBuilderSDK::JobDependencyType::Order,
+                const AZStd::vector<AZ::u32>& productSubIds = { 0 },
                 const AZStd::string& platformId = {});
 
             //! Resolve potential paths and add source and job dependencies for image assets

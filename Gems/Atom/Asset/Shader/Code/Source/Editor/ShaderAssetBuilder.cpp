@@ -72,7 +72,7 @@ namespace AZ
                 return fullPath;
             }
 
-            for (const auto &includeDir : includeDirectories)
+            for (const auto& includeDir : includeDirectories)
             {
                 AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
                 if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
@@ -93,7 +93,7 @@ namespace AZ
             AZStd::string fullPath;
             AzFramework::StringFunc::Path::Join(currentFolderPath.data(), normalizedRelativePath.data(), fullPath);
             includedFiles.insert(fullPath);
-            for (const auto &includeDir : includeDirectories)
+            for (const auto& includeDir : includeDirectories)
             {
                 AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
                 includedFiles.insert(fullPath);
@@ -126,7 +126,7 @@ namespace AZ
             }
 
             auto listOfRelativePaths = outcome.TakeValue();
-            for (auto relativePath : listOfRelativePaths)
+            for (const auto& relativePath : listOfRelativePaths)
             {
                 auto fullPath = DiscoverFullPath(relativePath, sourceFileFolderPath, includeDirectories);
                 if (fullPath.empty())
@@ -139,7 +139,7 @@ namespace AZ
                 }
 
                 // Add the file to the list and keep parsing recursively.
-                if (includedFiles.count(fullPath))
+                if (includedFiles.contains(fullPath))
                 {
                     continue;
                 }
@@ -195,7 +195,7 @@ namespace AZ
 
             AZStd::unordered_set<AZStd::string> includedFiles;
             GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
-            for (auto includePath : includedFiles)
+            for (const auto& includePath : includedFiles)
             {
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
                 includeFileDependency.m_sourceFileDependencyPath = includePath;
@@ -727,7 +727,7 @@ namespace AZ
 
                 } // end for the supervariant
 
-                for (auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
+                for (const auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
                 {
                     shaderAssetCreator.SetShaderOptionDefaultValue(shaderOptionName, value);
                 }
