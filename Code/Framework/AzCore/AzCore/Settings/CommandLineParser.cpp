@@ -19,6 +19,12 @@ namespace AZ::Settings
     //! be paired with a value
     struct CommandArgumentParserState
     {
+        //! The current argument is the final token in the command line token sequence
+        //! The reason this needs to be tracked is just in case an option argument
+        //! is the final token of a command line sequence, the callback function
+        //! for the user would still need to trigger in order to allow handling of
+        //! that argument
+        bool m_finalToken{};
         //! Set to true if the psuedo argument '--' has been parsed
         //! This indicates to the argument parser that the remaining
         //! arguments should be treated as positional arguments only
@@ -248,8 +254,17 @@ namespace AZ::Settings
                     CommandLineParserSettings::OptionAction optionAction = commandLineParserSettings.m_optionActionFunc
                         ? commandLineParserSettings.m_optionActionFunc(commandLineArgument.m_option)
                         : CommandLineParserSettings::OptionAction::NextTokenIsValueIfNonOption;
-                    if (optionAction == CommandLineParserSettings::OptionAction::NextTokenIsValueIfNonOption ||
-                        optionAction == CommandLineParserSettings::OptionAction::NextTokenIsValue)
+
+                    // Check if the option token is incomplete in that there would be no additional value token
+                    // afterwards that can be associated with it.
+                    // If the option token is the final token in the command line sequence, then it is always complete
+                    // This allows the command line entry callback to be inovked at the end of this function
+                    // in the scenario where the final token is an option
+                    // i.e `app.exe register --project-path <value> --force`
+                    const bool isOptionIncomplete = !argumentParserState.m_finalToken &&
+                        (optionAction == CommandLineParserSettings::OptionAction::NextTokenIsValueIfNonOption ||
+                         optionAction == CommandLineParserSettings::OptionAction::NextTokenIsValue);
+                    if (isOptionIncomplete)
                     {
                         // Store the current option in the argument parser state
                         // and the next iteration of this function will parse the value
@@ -289,6 +304,7 @@ namespace AZ::Settings
         CommandArgumentParserState argumentParserState;
         for (int i = 0; i < argc; ++i)
         {
+            argumentParserState.m_finalToken = i == argc - 1;
             if (auto argumentParseOutcome = ParseArgument(argumentParserState, argv[i], commandLineParserSettings); !argumentParseOutcome)
             {
                 // Aggregate failure messages together for the parseOutcome
@@ -323,6 +339,7 @@ namespace AZ::Settings
         CommandArgumentParserState argumentParserState;
         for (int i = 0; i < commandLine.size(); ++i)
         {
+            argumentParserState.m_finalToken = i == commandLine.size() - 1;
             if (auto argumentParseOutcome = ParseArgument(argumentParserState, commandLine[i], commandLineParserSettings);
                 !argumentParseOutcome)
             {
