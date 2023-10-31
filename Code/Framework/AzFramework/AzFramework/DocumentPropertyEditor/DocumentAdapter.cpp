@@ -118,11 +118,8 @@ namespace AZ::DocumentPropertyEditor
             // Generate denormalized paths instead of EndOfArray entries (this is required by ChangedEvent)
             patchGenerationParams.m_generateDenormalizedPaths = true;
             Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents, patchGenerationParams);
-
-            // Send out the change signal *before* updating cached contents so that nested updates don't try to apply
-            // the patch to the new data prematurely.
-            m_changedEvent.Signal(patches.m_forwardPatches);
             m_cachedContents = newContents;
+            m_changedEvent.Signal(patches.m_forwardPatches);
         }
     }
 
