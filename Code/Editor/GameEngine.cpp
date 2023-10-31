@@ -50,6 +50,11 @@
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
 
+#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
+#endif
+
 // Implementation of System Callback structure.
 struct SSystemUserCallback
     : public ISystemUserCallback
@@ -769,6 +774,18 @@ void CGameEngine::Update()
     {
         return;
     }
+
+#if defined(CARBONATED) && defined(AZ_PLATFORM_WINDOWS) // aefimov MAD-10299 assert modal dialog fix
+    if (gEnv->IsEditor())
+    {
+        bool result = false;
+        EBUS_EVENT_RESULT(result, AZ::NativeUI::NativeUIRequestBus, IsDisplayingBlockingDialog);
+        if (result)
+        {
+            return;
+        }
+    }
+#endif
 
     switch (m_ePendingGameMode)
     {
