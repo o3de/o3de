@@ -218,6 +218,15 @@ namespace AZ
 
         void BoneFollower::BindTargetBone()
         {
+            AZ::Entity* ownerEntity = nullptr;
+#if defined(CARBONATED)
+            AZ::ComponentApplicationBus::BroadcastResult(ownerEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_ownerId);
+            AZ_TracePrintf(
+                "BoneFollower",
+                "BoneFollower: Bind Target Bone %s :: %s",
+                m_targetBoneName.c_str(),
+                ownerEntity ? ownerEntity->GetName().c_str() : "");
+#endif
             m_targetBoneId = -1;
             LmbrCentral::SkeletalHierarchyRequestBus::EventResult(
                 m_targetBoneId, m_targetId, &LmbrCentral::SkeletalHierarchyRequests::GetJointIndexByName, m_targetBoneName.c_str());
