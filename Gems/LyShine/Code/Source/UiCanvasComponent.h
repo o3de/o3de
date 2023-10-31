@@ -114,6 +114,9 @@ public: // member functions
     const AZ::Matrix4x4& GetCanvasToViewportMatrix() override;
     void GetViewportToCanvasMatrix(AZ::Matrix4x4& matrix) override;
     AZ::Vector2 GetCanvasSize() override;
+#if defined(CARBONATED)
+    AZ::Vector2 GetAuthoredCanvasSize() override;
+#endif
     void SetCanvasSize(const AZ::Vector2& canvasSize) override;
     void SetTargetCanvasSize(bool isInGame, const AZ::Vector2& targetCanvasSize) override;
     AZ::Vector2 GetDeviceScale() override;
