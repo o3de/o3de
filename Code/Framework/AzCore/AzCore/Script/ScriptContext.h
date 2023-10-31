@@ -796,6 +796,9 @@ namespace AZ
             Log,
             Warning,
             Error,
+#if defined(CARBONATED)
+            LogAlways,
+#endif
         };
         using ErrorHook = AZStd::function<void(ScriptContext* context, ErrorType error, const char* message)>;
         // Note: Always use l over context->NativeContext(), as require may be called from a thread.

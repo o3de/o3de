@@ -26,6 +26,9 @@ namespace AZ::NativeUI
         ////////////////////////////////////////////////////////////////////////
         // NativeUIRequestBus interface implementation
         AZStd::string DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const override;
+#if defined(CARBONATED) && defined(AZ_PLATFORM_WINDOWS) // aefimov MAD-10299 assert modal dialog fix
+        bool IsDisplayingBlockingDialog() const override;
+#endif        
         AZStd::string DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
         AZStd::string DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
         AssertAction DisplayAssertDialog(const AZStd::string& message) const override;
