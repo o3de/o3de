@@ -136,7 +136,7 @@ namespace AWSCore
         auto provider = AwsApiJobConfig::GetCredentialsProvider();
         if (provider != nullptr)
         {
-            // Note: This constructor for AWS Client is marked for depreciation
+            // Note: This constructor for AWS Client is marked for deprecation
             return std::make_shared<Aws::S3::S3Client>(provider, GetClientConfiguration(), signPayloads, useVirtualAddressing);
         }
         else
