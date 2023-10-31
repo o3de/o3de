@@ -34,7 +34,7 @@ void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surf
         ApplyDecal(currDecalIndex, surface);
     }
 #else
-    // Since there's no GPU culling for decals, we relay on culling done by CPU
+    // Since there's no GPU culling for decals, we rely on culling done by CPU
     // Only apply visible decals
     for(uint decalIndex = 0; decalIndex < ViewSrg::m_visibleDecalCount; decalIndex++)
     {

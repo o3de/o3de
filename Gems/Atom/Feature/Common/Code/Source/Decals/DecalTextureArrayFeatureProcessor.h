@@ -90,6 +90,13 @@ namespace AZ
             //! Sets the material information for this decal
             void SetDecalMaterial(const DecalHandle handle, const AZ::Data::AssetId id) override;
 
+            // SceneNotificationBus::Handler overrides...
+            void OnRenderPipelinePersistentViewChanged(
+                RPI::RenderPipeline* renderPipeline,
+                RPI::PipelineViewTag viewTag,
+                RPI::ViewPtr newView,
+                RPI::ViewPtr previousView) override;
+
         private:
 
             // Number of size and format permutations
@@ -124,8 +131,11 @@ namespace AZ
             bool RemoveDecalFromTextureArrays(const DecalLocation decalLocation);
             AZ::Data::AssetId GetMaterialUsedByDecal(const DecalHandle handle) const;
             void PackTexureArrays();
-            bool HasCulling(const RPI::ViewPtr& view) const;
+            // Check if a view is being used by a pipeline that has a GPU culling pass.
+            bool HasGPUCulling(const RPI::ViewPtr& view) const;
+            // Cull the decals for a view using the CPU.
             void CullDecals(const RPI::ViewPtr& view);
+            // Get or create a buffer that will be used for visibility when doing CPU culling.
             GpuBufferHandler& GetOrCreateVisibleBuffer();
 
             IndexedDataVector<DecalData> m_decalData;
@@ -145,8 +155,12 @@ namespace AZ
 
             bool m_deviceBufferNeedsUpdate = false;
 
+            // Handlers to GPU buffer that are being used for CPU culling visibility.
             AZStd::vector<GpuBufferHandler> m_visibleDecalBufferHandlers;
+            // Number of buffers being used for visibility in the current frame.
             uint32_t m_visibleDecalBufferUsedCount = 0;
+            // Views that have a GPU culling pass per render pipeline.
+            AZStd::unordered_set<AZStd::pair<const RPI::RenderPipeline*, const RPI::View*>> m_hasGPUCulling;
         };
     } // namespace Render
 } // namespace AZ

@@ -24,7 +24,7 @@
 
 #include <numeric>
 
-AZ_CVAR(int, r_maxVisibleDecals, -1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximun number of visible decals to use when culling is not available. -1 means no limit");
+AZ_CVAR(int, r_maxVisibleDecals, -1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of visible decals to use when culling is not available. -1 means no limit");
 
 namespace AZ
 {
@@ -85,10 +85,13 @@ namespace AZ
             m_decalBufferHandler = GpuBufferHandler(desc);
 
             CacheShaderIndices();
+
+            EnableSceneNotification();
         }
 
         void DecalTextureArrayFeatureProcessor::Deactivate()
         {
+            DisableSceneNotification();
             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
             m_decalData.Clear();
@@ -366,6 +369,26 @@ namespace AZ
             QueueMaterialLoadForDecal(material, handle);
         }
 
+        void DecalTextureArrayFeatureProcessor::OnRenderPipelinePersistentViewChanged(
+            RPI::RenderPipeline* renderPipeline, [[maybe_unused]] RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView)
+        {
+            // Check if render pipeline is using GPU culling
+            if (!renderPipeline->FindFirstPass(AZ::Name("LightCullingPass")))
+            {
+                return;
+            }
+
+            if (previousView)
+            {
+                m_hasGPUCulling.erase(AZStd::make_pair(renderPipeline, previousView.get()));
+            }
+
+            if (newView)
+            {
+                m_hasGPUCulling.insert(AZStd::make_pair(renderPipeline, newView.get()));
+            }
+        }
+
         void DecalTextureArrayFeatureProcessor::RemoveMaterialFromDecal(const uint16_t decalIndex)
         {
             auto& decalData = m_decalData.GetData(decalIndex);
@@ -549,37 +572,22 @@ namespace AZ
             }
         }
 
-        bool DecalTextureArrayFeatureProcessor::HasCulling(const RPI::ViewPtr& view) const
+        bool DecalTextureArrayFeatureProcessor::HasGPUCulling(const RPI::ViewPtr& view) const
         {
-            // First find if there's a render pipeline that is using the View
             for (const auto& renderPipeline : GetParentScene()->GetRenderPipelines())
             {
-                if (!renderPipeline->NeedsRender())
+                if (renderPipeline->NeedsRender() &&
+                    m_hasGPUCulling.contains(AZStd::pair(renderPipeline.get(), view.get())))
                 {
-                    continue;
-                }
-
-                for (const auto& pipelineView : renderPipeline->GetPipelineViews())
-                {
-                    auto findIt = AZStd::find(pipelineView.second.m_views.begin(), pipelineView.second.m_views.end(), view);
-                    if (findIt != pipelineView.second.m_views.end())
-                    {
-                        // Now check if the render pipeline has a pass that is already doing gpu culling for decals
-                        if (renderPipeline->FindFirstPass(AZ::Name("LightCullingPass")))
-                        {
-                            return true;
-                        }
-                    }
+                    return true;
                 }
             }
-
             return false;
         }
 
         void DecalTextureArrayFeatureProcessor::CullDecals(const RPI::ViewPtr& view)
         {
-            if (!AZ::RHI::CheckBitsAll(view->GetUsageFlags(), RPI::View::UsageFlags::UsageCamera) ||
-                HasCulling(view))
+            if (!AZ::RHI::CheckBitsAll(view->GetUsageFlags(), RPI::View::UsageFlags::UsageCamera) || HasGPUCulling(view))
             {
                 return;
             }
