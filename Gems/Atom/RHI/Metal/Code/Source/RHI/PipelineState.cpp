@@ -83,14 +83,21 @@ namespace AZ
             }
             else
             {
-                //In case byte code was not generated try to create the lib with source code
-                MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
-                compileOptions.fastMathEnabled = YES;
-                compileOptions.languageVersion = MTLLanguageVersion2_2;
-                lib = [mtlDevice newLibraryWithSource:source
-                                               options:compileOptions
-                                                 error:&error];
-                [compileOptions release];
+                if(!sourceStr.empty())
+                {
+                    //In case byte code was not generated try to create the lib with source code
+                    MTLCompileOptions* compileOptions = [MTLCompileOptions alloc];
+                    compileOptions.fastMathEnabled = YES;
+                    compileOptions.languageVersion = MTLLanguageVersion2_2;
+                    lib = [mtlDevice newLibraryWithSource:source
+                                                  options:compileOptions
+                                                    error:&error];
+                    [compileOptions release];
+                }
+                else
+                {
+                    AZ_Assert(false, "Shader source is not added by default. It can be added by enabling /O3DE/Atom/RHI/GraphicsDevMode via settings registry and re-building the shader.");
+                }
             }
             
             if (error)
