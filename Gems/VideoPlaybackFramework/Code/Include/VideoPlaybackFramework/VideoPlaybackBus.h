@@ -43,6 +43,18 @@ namespace VideoPlaybackFramework
         */
         virtual void Stop() = 0;
 
+#if defined(CARBONATED)
+        /*
+        * Reset playback of a movie that is attached to the current entity to its first frame.
+        */
+        virtual void ResetPlayback() = 0;
+
+        /*
+        * Load the video with given path name, and play video if auto play is active
+        */
+        virtual void LoadVideo() = 0;
+#endif
+
         /*
         * Returns whether or not the video is currently playing
         * 
@@ -106,6 +118,18 @@ namespace VideoPlaybackFramework
         * @param speedFactor The speed modification factor to apply to playback speed
         */
         virtual void SetPlaybackSpeed(float speedFactor) = 0;
+
+        /* Sets current volume of the sound
+        *
+        * @param volume The volume of the sound between 0 and 1
+        */
+        virtual void SetSoundVolume(float volume) = 0;
+
+        /* Get the current volume of the sound
+        *
+        * @return Returns the volume as a float between 0 and 1
+        */
+        virtual float GetSoundVolume() = 0;
 
         /*
         * Get the source location of the video
