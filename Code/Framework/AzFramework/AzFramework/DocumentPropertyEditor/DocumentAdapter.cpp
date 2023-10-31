@@ -118,8 +118,11 @@ namespace AZ::DocumentPropertyEditor
             // Generate denormalized paths instead of EndOfArray entries (this is required by ChangedEvent)
             patchGenerationParams.m_generateDenormalizedPaths = true;
             Dom::PatchUndoRedoInfo patches = Dom::GenerateHierarchicalDeltaPatch(m_cachedContents, newContents, patchGenerationParams);
-            m_cachedContents = newContents;
+
+            // Send out the change signal *before* updating cached contents so that nested updates don't try to apply
+            // the patch to the new data prematurely.
             m_changedEvent.Signal(patches.m_forwardPatches);
+            m_cachedContents = newContents;
         }
     }
 
@@ -129,6 +132,10 @@ namespace AZ::DocumentPropertyEditor
         // This is used as a scratch buffer if we need to denormalize the path before we emit it.
         // This lets the DPE and proxy adapters listen for patches that have valid indices instead of EndOfArray entries.
         Dom::Patch tempDenormalizedPatch;
+
+        // Send out the change signal *before* updating any cached contents so that nested updates don't try to apply
+        // the patch to the new data prematurely.
+        m_changedEvent.Signal(*appliedPatch);
 
         if (!m_cachedContents.IsNull())
         {
@@ -159,7 +166,6 @@ namespace AZ::DocumentPropertyEditor
                 AZ_Warning("DPE", valuesMatch, "DocumentAdapter::NotifyContentsChanged: DOM patches applied, but the new model contents don't match the result of GenerateContents");
             }
         }
-        m_changedEvent.Signal(*appliedPatch);
     }
 
     Dom::Value DocumentAdapter::SendAdapterMessage(const AdapterMessage& message)
