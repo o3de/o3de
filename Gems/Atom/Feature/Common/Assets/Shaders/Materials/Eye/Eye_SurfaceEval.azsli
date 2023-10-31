@@ -61,18 +61,13 @@ Surface EvaluateSurface_Eye(
     real3x3 uvMatrix = CreateIdentity3x3(); // The eye material type doesn't support UV transforms
 
 #if USE_NORMALIZED_SPACE_ALGORITHM
-    // The most efficient way is to leverage the fact that the UV coordinate of the pupil
-    // is centered at 0.5, 0.5. So the distance to the center of the pupil can be calculated
-    // from the distance of the UV coordinate to the pupil center (0.5, 0.5)
-    #define UV_CENTER (real2(0.50, 0.50))
-    // const real distFromCenter = length(uvs[0] - UV_CENTER);
-
     real3 normalizedLocal = normalize(localPosition);
-    real projection = dot(normalizedLocal, real3(0.0, 1.0, 0.0)) * NORMALIZED_EYE_RADIUS;
+    real projection = dot(normalizedLocal, real3(0.0, 1.0, 0.0));
     // // If the localPosition of the vertex is at the center of the pupil, then the dot product
-    // // with the forward vector will be at maximum value = NORMALIZED_EYE_RADIUS.
-    // // But the iris is in the XZ plane. So we need to set the distance to center to be 0.0 in this case.
-    const real distFromCenter = NORMALIZED_EYE_RADIUS - projection;
+    // // with the forward vector will be at maximum value = 1.0.
+    // // But the iris is in the XZ plane.
+    real tempDistFactor = sqrt(1 - projection * projection);
+    const real distFromCenter = tempDistFactor * NORMALIZED_EYE_RADIUS;
 #else
     // This is the original equation used by the first developer of this shader.
     // This equation suffers issues when the vertex data coming from the FBX changes

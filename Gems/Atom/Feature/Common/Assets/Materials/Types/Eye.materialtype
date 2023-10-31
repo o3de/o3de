@@ -62,7 +62,7 @@
                         "displayName": "Iris Radius",
                         "description": "Radius of the iris. It extends the iris/sclera mask to get more samples from one or the other (no UV deformation/stretching).",
                         "type": "float",
-                        "defaultValue": 0.047,
+                        "defaultValue": 0.19,
                         "min": 0.0,
                         "softMax": 0.5,
                         "connection": {
