@@ -166,6 +166,9 @@ namespace EMotionFX
         bool                                                m_inPlace;
 
         void ReloadAndInvalidateUniqueDatas();
+#if defined(CARBONATED)
+        void ReloadAndInvalidateUniqueData(AnimGraphInstance* animGraphInstanceToReload);  // aefimov invalidate data for the specified instance only
+#endif
         MotionInstance* CreateMotionInstance(ActorInstance* actorInstance, UniqueData* uniqueData);
         void TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;
         void Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;

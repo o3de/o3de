@@ -138,6 +138,11 @@ namespace EMotionFX
         //! Restore the motion coordinates that are set to automatic mode back to the computed values.
         void RestoreMotionCoordinates(BlendSpaceMotion& motion, AnimGraphInstance* animGraphInstance) override;
 
+#if defined(CARBONATED)
+        // aefimov support motion set change
+        void RecursiveOnChangeMotionSet(AnimGraphInstance* animGraphInstance, MotionSet* newMotionSet) override;
+#endif
+
     protected:
         // AnimGraphNode overrides
         void Output(AnimGraphInstance* animGraphInstance) override;

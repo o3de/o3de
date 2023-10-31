@@ -680,6 +680,15 @@ namespace EMotionFX
         }
     }
 
+#if defined(CARBONATED)
+    // aefimov support motion set change
+    void BlendSpace2DNode::RecursiveOnChangeMotionSet(AnimGraphInstance* animGraphInstance, MotionSet* newMotionSet)
+    {
+        UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
+        uniqueData->Reset();
+        BlendSpaceNode::RecursiveOnChangeMotionSet(animGraphInstance, newMotionSet);
+    }
+#endif
 
     void BlendSpace2DNode::SetMotions(const AZStd::vector<BlendSpaceMotion>& motions)
     {
