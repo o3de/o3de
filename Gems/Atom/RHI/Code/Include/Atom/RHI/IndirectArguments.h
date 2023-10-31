@@ -13,15 +13,16 @@ namespace AZ::RHI
 {
     //! Encapsulates the arguments needed when doing an indirect call
     //! (draw or dispatch) into a command list.
-    struct IndirectArguments
+    template <typename BufferClass, typename IndirectBufferViewClass>
+    struct IndirectArgumentsTemplate
     {
-        IndirectArguments() = default;
+        IndirectArgumentsTemplate() = default;
 
-        IndirectArguments(
+        IndirectArgumentsTemplate(
             uint32_t maxSequenceCount,
             const IndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset)
-            : IndirectArguments(
+            : IndirectArgumentsTemplate(
                 maxSequenceCount,
                 indirectBuffer,
                 indirectBufferByteOffset,
@@ -29,7 +30,7 @@ namespace AZ::RHI
                 0)
         {}
 
-        IndirectArguments(
+        IndirectArgumentsTemplate(
             uint32_t maxSequenceCount,
             const IndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
@@ -55,9 +56,11 @@ namespace AZ::RHI
         uint64_t m_countBufferByteOffset = 0;
 
         //! View over the Indirect buffer that contains the commands.
-        const IndirectBufferView* m_indirectBufferView = nullptr;
+        const IndirectBufferViewClass* m_indirectBufferView = nullptr;
 
         //! Optional count buffer that contains the number of indirect commands in the indirect buffer.
-        const Buffer* m_countBuffer = nullptr;
+        const BufferClass* m_countBuffer = nullptr;
     };
+
+    using IndirectArguments = IndirectArgumentsTemplate<Buffer, IndirectBufferView>;
 }

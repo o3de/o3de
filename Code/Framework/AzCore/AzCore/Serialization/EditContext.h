@@ -16,120 +16,168 @@
 
 #include <AzCore/Serialization/EditContextConstants.inl>
 
+namespace AZ::Edit
+{
+    using AttributeId = AZ::AttributeId;
+    using AttributePair = AZ::AttributePair;
+    using AttributeArray = AZ::AttributeArray;
+
+    using Attribute = AZ::Attribute;
+    template<class T>
+    using AttributeData = AZ::AttributeData<T>;
+    template<class T>
+    using AttributeMemberData = AZ::AttributeMemberData<T>;
+    template<class F>
+    using AttributeFunction = AZ::AttributeFunction<F>;
+    template<class F>
+    using AttributeMemberFunction = AZ::AttributeMemberFunction<F>;
+
+    /**
+     * Enumerates the serialization context and inserts component Uuids which match at least one tag in requiredTags
+     * for the AZ::Edit::SystemComponentsTag attribute on the reflected class data
+     */
+    void GetComponentUuidsWithSystemComponentTag(
+        const SerializeContext* serializeContext,
+        const AZStd::vector<AZ::Crc32>& requiredTags,
+        AZStd::unordered_set<AZ::Uuid>& componentUuids);
+
+    /**
+     * Returns true if the given classData's AZ::Edit::SystemComponentsTag attribute matches at least one tag in requiredTags
+     * If the class data does not have the attribute, returns the value of defaultVal.
+     * Note that a defaultVal of true should generally only be used to maintain legacy behavior with non-tagged AZ::Components
+     */
+    template <typename TagContainer>
+    bool SystemComponentTagsMatchesAtLeastOneTag(
+        const AZ::SerializeContext::ClassData* classData,
+        const TagContainer& requiredTags,
+        bool defaultVal = false);
+
+    /**
+     * Signature of the dynamic edit data provider function.
+     * handlerPtr: pointer to the object whose edit data registered the handler
+     * elementPtr: pointer to the sub-member of handlePtr that we are querying edit data for.
+     * The function should return a pointer to the ElementData to use, or nullptr to use the
+     * default one.
+     */
+    typedef const ElementData* DynamicEditDataProvider(const void* /*handlerPtr*/, const void* /*elementPtr*/, const Uuid& /*elementType*/);
+
+    /**
+     * Edit data is assigned to each SerializeContext::ClassBuilder::Field. You can assign all kinds of
+     * generic attributes. You can have elements for class members called DataElements or Elements which define
+     * attributes for the class itself called ClassElement.
+     */
+    struct ElementData
+    {
+        ElementData()
+            : m_elementId(0)
+            , m_description(nullptr)
+            , m_name(nullptr)
+            , m_serializeClassElement(nullptr)
+        {}
+
+        void ClearAttributes();
+
+        bool IsClassElement() const { return m_serializeClassElement == nullptr; }
+        Edit::Attribute* FindAttribute(AttributeId attributeId) const;
+
+        AttributeId         m_elementId;
+        const char* m_description = nullptr;
+        const char* m_name = nullptr;
+        const char* m_deprecatedName = nullptr;
+        SerializeContext::ClassElement* m_serializeClassElement; ///< If nullptr this is class (logical) element, not physical element exists in the class
+        AttributeArray      m_attributes;
+    };
+
+    /**
+     * Class data is assigned to every Serialize::Class. Don't confuse m_elements with
+     * ElementData. Elements contains class Elements (like groups, etc.) while the ElementData
+     * contains attributes related to ehe SerializeContext::ClassBuilder::Field.
+     */
+    struct ClassData
+    {
+        ClassData()
+            : m_name(nullptr)
+            , m_description(nullptr)
+            , m_classData(nullptr)
+            , m_editDataProvider(nullptr)
+        {}
+
+        void ClearElements();
+        const ElementData* FindElementData(AttributeId elementId) const;
+
+        const char* m_name;
+        const char* m_description;
+        SerializeContext::ClassData* m_classData;
+        DynamicEditDataProvider* m_editDataProvider;
+        AZStd::list<ElementData>    m_elements;
+    };
+} // namespace AZ::Edit
+
+namespace AZ::SerializeInternal
+{
+    template<class T>
+    struct ElementInfo;
+
+    template<class T, class C>
+    struct ElementInfo<T C::*>
+    {
+        using ElementType = AZStd::RemoveEnumT<T>;
+        using ClassType = C;
+        using Type = T;
+        using ValueType = AZStd::remove_pointer_t<ElementType>;
+    };
+} // namespace AZ::SerializeInternal
+
+namespace AZ::Edit
+{
+    //! Visitor invoked when calling the EnumerateAll function
+    //! @return true from the visitor to indicate that visitation should continue,
+    //! otherwise false should be returned to halt visitation
+    struct TypeVisitor
+    {
+        //! Default constructs the TypeVisitor with a no-op function
+        TypeVisitor();
+
+        using ClassDataVisitor = AZStd::function<bool(const Edit::ClassData&)>;
+        using EnumDataVisitor = AZStd::function<bool(const TypeId&, const Edit::ElementData&)>;
+
+        ClassDataVisitor m_classDataVisitor;
+        EnumDataVisitor m_enumDataVisitor;
+    };
+
+    // Determines which of the reflected types categories should be visited
+    // Classes and/or Enums can be visited based on the value
+    enum class VisitFlags
+    {
+        Classes = 1,
+        Enums = 2,
+        All = Classes | Enums
+    };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(VisitFlags);
+} // namespace AZ::Edit
+
 namespace AZ
 {
-    namespace Edit
+    template <typename _TYPE, bool _REPLICATES_VALUE>
+    class ConsoleFunctor;
+} // namespace AZ
+
+namespace AZ::Edit::Internal
+{
+    struct ConsoleFunctorHandle
     {
-        using AttributeId = AZ::AttributeId;
-        using AttributePair = AZ::AttributePair;
-        using AttributeArray = AZ::AttributeArray;
+        ConsoleFunctorHandle();
+        ~ConsoleFunctorHandle();
+        using ConsoleFunctor = AZ::ConsoleFunctor<const EditContext, false>;
+        using ConsoleFunctorContainer = AZStd::vector<ConsoleFunctor>;
 
-        using Attribute = AZ::Attribute;
-        template<class T>
-        using AttributeData = AZ::AttributeData<T>;
-        template<class T>
-        using AttributeMemberData = AZ::AttributeMemberData<T>;
-        template<class F>
-        using AttributeFunction = AZ::AttributeFunction<F>;
-        template<class F>
-        using AttributeMemberFunction = AZ::AttributeMemberFunction<F>;
+        ConsoleFunctorContainer m_consoleFunctors;
+    };
+} // namespace AZ::Edit::Internal
 
-        /**
-         * Enumerates the serialization context and inserts component Uuids which match at least one tag in requiredTags
-         * for the AZ::Edit::SystemComponentsTag attribute on the reflected class data
-         */
-        void GetComponentUuidsWithSystemComponentTag(
-            const SerializeContext* serializeContext,
-            const AZStd::vector<AZ::Crc32>& requiredTags,
-            AZStd::unordered_set<AZ::Uuid>& componentUuids);
-
-        /**
-         * Returns true if the given classData's AZ::Edit::SystemComponentsTag attribute matches at least one tag in requiredTags
-         * If the class data does not have the attribute, returns the value of defaultVal.
-         * Note that a defaultVal of true should generally only be used to maintain legacy behavior with non-tagged AZ::Components
-         */
-        template <typename TagContainer>
-        bool SystemComponentTagsMatchesAtLeastOneTag(
-            const AZ::SerializeContext::ClassData* classData,
-            const TagContainer& requiredTags,
-            bool defaultVal = false);
-
-        /**
-         * Signature of the dynamic edit data provider function.
-         * handlerPtr: pointer to the object whose edit data registered the handler
-         * elementPtr: pointer to the sub-member of handlePtr that we are querying edit data for.
-         * The function should return a pointer to the ElementData to use, or nullptr to use the
-         * default one.
-         */
-        typedef const ElementData* DynamicEditDataProvider (const void* /*handlerPtr*/, const void* /*elementPtr*/, const Uuid& /*elementType*/);
-
-        /**
-         * Edit data is assigned to each SerializeContext::ClassBuilder::Field. You can assign all kinds of
-         * generic attributes. You can have elements for class members called DataElements or Elements which define
-         * attributes for the class itself called ClassElement.
-         */
-        struct ElementData
-        {
-            ElementData()
-                : m_elementId(0)
-                , m_description(nullptr)
-                , m_name(nullptr)
-                , m_serializeClassElement(nullptr)
-            {}
-
-            void ClearAttributes();
-
-            bool IsClassElement() const   { return m_serializeClassElement == nullptr; }
-            Edit::Attribute* FindAttribute(AttributeId attributeId) const;
-
-            AttributeId         m_elementId;
-            const char*         m_description = nullptr;
-            const char*         m_name = nullptr;
-            const char*         m_deprecatedName = nullptr;
-            SerializeContext::ClassElement* m_serializeClassElement; ///< If nullptr this is class (logical) element, not physical element exists in the class
-            AttributeArray      m_attributes;
-        };
-
-        /**
-         * Class data is assigned to every Serialize::Class. Don't confuse m_elements with
-         * ElementData. Elements contains class Elements (like groups, etc.) while the ElementData
-         * contains attributes related to ehe SerializeContext::ClassBuilder::Field.
-         */
-        struct ClassData
-        {
-            ClassData()
-                : m_name(nullptr)
-                , m_description(nullptr)
-                , m_classData(nullptr)
-                , m_editDataProvider(nullptr)
-            {}
-
-            void ClearElements();
-            const ElementData* FindElementData(AttributeId elementId) const;
-
-            const char*                 m_name;
-            const char*                 m_description;
-            SerializeContext::ClassData* m_classData;
-            DynamicEditDataProvider*    m_editDataProvider;
-            AZStd::list<ElementData>    m_elements;
-        };
-    }
-
-    namespace SerializeInternal
-    {
-        template<class T>
-        struct ElementInfo;
-
-        template<class T, class C>
-        struct ElementInfo<T C::*>
-        {
-            using ElementType = AZStd::RemoveEnumT<T>;
-            using ClassType = C;
-            using Type = T;
-            using ValueType = AZStd::remove_pointer_t<ElementType>;
-        };
-    }
-
+namespace AZ
+{
     /**
      * EditContext is bound to serialize context. It uses it for data manipulation.
      * It's role is to be an abstract way to generate and describe how a class should
@@ -165,6 +213,16 @@ namespace AZ
         void RemoveClassData(SerializeContext::ClassData* classData);
 
         const Edit::ElementData* GetEnumElementData(const AZ::Uuid& enumId) const;
+
+        //! Enumerates all classes and enums that have been reflected to the EditContext based on the VisitFlags
+        //! The TypeVisitor instance contains both a dedicated class Visitor and enum Visitor which is invoked
+        //! for each reflected class and enum class as long as the visitors return true
+        //! NOTE: All Classes are visited first before any Enums are visited
+        void EnumerateAll(const Edit::TypeVisitor& typeVisitor, Edit::VisitFlags = Edit::VisitFlags::All) const;
+
+        //! Returns the SerializeContext which is the parent of this EditContext
+        SerializeContext& GetSerializeContext();
+        const SerializeContext& GetSerializeContext() const;
 
     private:
         EditContext(const EditContext&);
@@ -469,6 +527,9 @@ namespace AZ
         ClassDataListType   m_classData;
         EnumDataMapType     m_enumData;
         SerializeContext&   m_serializeContext;
+        //! Structure which stores the registered console commands for the Edit Context
+        //! When it goes out of scope, it will unregister the console commands with the AZ::IConsole
+        Edit::Internal::ConsoleFunctorHandle m_consoleCommandHandle;
     };
 
     namespace Internal
@@ -805,29 +866,38 @@ namespace AZ
     //=========================================================================
     namespace Edit
     {
+        struct EnumConstantBase
+        {
+            // Store using a u64 under the hood so this can be safely cast to any valid enum-range value
+            AZ::u64 m_value{};
+            AZStd::string m_description;
+        };
+
+        constexpr const char* EnumConstantTypeId = "{4CDFEE70-7271-4B27-833B-F8F72AA64C40}";
+
         template <class EnumType>
         struct EnumConstant
+            : EnumConstantBase
         {
-            AZ_TYPE_INFO(EnumConstant, "{4CDFEE70-7271-4B27-833B-F8F72AA64C40}");
+            AZ_TYPE_INFO(EnumConstant, EnumConstantTypeId);
 
-            using UnderlyingType = AZStd::RemoveEnumT<EnumType>;
+            // Bring the base class constructors into scope
+            using EnumConstantBase::EnumConstantBase;
 
-            EnumConstant() {}
             EnumConstant(EnumType first, AZStd::string_view description)
-                : m_value(static_cast<AZ::u64>(first))
-                , m_description(description)
+                : EnumConstantBase{ static_cast<AZ::u64>(first), description }
             {
             }
+            using UnderlyingType = AZStd::RemoveEnumT<EnumType>;
 
             AZStd::pair<UnderlyingType, AZStd::string> operator()() const
             {
                 return { static_cast<UnderlyingType>(m_value), m_description };
             }
-
-            // Store using a u64 under the hood so this can be safely cast to any valid enum-range value
-            AZ::u64 m_value;
-            AZStd::string m_description;
         };
+
+        // Overload to allow querying TypeInfo when specifying the EnumConstant class template
+        AZ::TemplateId GetO3deTemplateId(AZ::Adl, AZ::AzGenericTypeInfo::Internal::TemplateIdentityTypes<EnumConstant>);
 
         // Automatically generate a list of EnumConstant from AzEnumTraits
         template<typename EnumType, typename UnderlyingType = AZStd::underlying_type_t<EnumType>>

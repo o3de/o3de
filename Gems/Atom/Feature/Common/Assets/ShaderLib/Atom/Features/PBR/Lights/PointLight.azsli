@@ -136,7 +136,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         // Adjust the light direcion for specular based on bulb size
 
         // Calculate the reflection off the normal from the view direction
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
 
         // Calculate a vector from the reflection vector to the light
         float3 reflectionPosToLight = posToLight - dot(posToLight, reflectionDir) * reflectionDir;

@@ -85,6 +85,7 @@ namespace AZ
                 {
                     mergedScopes.push_back(&scope);
                     FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
+                    multiScopeContextGroup->SetName(scope.GetName());
                     multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));
                 }
                 scopePrev = &scope;

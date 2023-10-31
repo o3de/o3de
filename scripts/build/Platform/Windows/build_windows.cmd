@@ -54,9 +54,12 @@ IF DEFINED RUN_CONFIGURE (
     ECHO !CONFIGURE_CMD!> %LAST_CONFIGURE_CMD_FILE%
 )
 
-call ECHO [ci_build] cmake --build . --target %CMAKE_TARGET% --config %CONFIGURATION% %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
-call cmake --build . --target %CMAKE_TARGET% --config %CONFIGURATION% %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
-IF NOT %ERRORLEVEL%==0 GOTO :error
+REM Split the configuration on semi-colon and use the cmake --build wrapper to run the underlying build command for each
+FOR %%C in (%CONFIGURATION%) do (
+    call ECHO [ci_build] cmake --build . --target %CMAKE_TARGET% --config %%C %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
+    call cmake --build . --target %CMAKE_TARGET% --config %%C %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
+    IF NOT %ERRORLEVEL%==0 GOTO :error
+)
 
 POPD
 EXIT /b 0

@@ -11,6 +11,7 @@
 #include <Atom/RHI/MultiDeviceObject.h>
 #include <Atom/RHI/PipelineLibrary.h>
 
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PipelineLibraryData.h>
 
 namespace AZ::RHI
@@ -22,6 +23,19 @@ namespace AZ::RHI
     //! MultiDevicePipelineLibrary
     struct MultiDevicePipelineLibraryDescriptor
     {
+        void Init(MultiDevice::DeviceMask deviceMask, const PipelineLibraryDescriptor& descriptor)
+        {
+            int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+            for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                if (CheckBit(AZStd::to_underlying(deviceMask), static_cast<u8>(deviceIndex)))
+                {
+                    m_devicePipelineLibraryDescriptors[deviceIndex] = descriptor;
+                }
+            }
+        }
+
         //! Returns the device-specific PipelineLibraryDescriptor for the given index
         inline PipelineLibraryDescriptor GetDevicePipelineLibraryDescriptor(int deviceIndex) const
         {

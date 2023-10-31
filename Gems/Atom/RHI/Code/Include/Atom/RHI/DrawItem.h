@@ -110,6 +110,11 @@ namespace AZ::RHI
         };
     };
 
+    // A DrawItem corresponds to one draw of one mesh in one pass. Multiple draw items are bundled
+    // in a DrawPacket, which corresponds to multiple draws of one mesh in multiple passes.
+    // NOTE: Do NOT use default member initialization here, as DrawItems are bulk allocated for
+    // DrawPackets and their memory aliased in DrawPacketBuilder. If you want to specify default values,
+    // do so in the DrawPacketBuilder::End() function (see DrawPacketBuilder.cpp)
     struct DrawItem
     {
         DrawItem() = default;
@@ -122,6 +127,15 @@ namespace AZ::RHI
         uint8_t m_rootConstantSize = 0;
         uint8_t m_scissorsCount = 0;
         uint8_t m_viewportsCount = 0;
+
+        union
+        {
+            struct
+            {
+                bool m_enabled : 1;    // Whether the Draw Item should render
+            };
+            uint8_t m_allFlags;
+        };
 
         const PipelineState* m_pipelineState = nullptr;
 

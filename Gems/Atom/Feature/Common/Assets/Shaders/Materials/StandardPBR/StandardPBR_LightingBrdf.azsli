@@ -33,7 +33,7 @@
 // Then define the Diffuse and Specular lighting functions
 real3 GetDiffuseLighting_StandardPBR(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
-    real3 diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight, lightingData.diffuseResponse);
+    real3 diffuse = DiffuseLambertian(surface.albedo, surface.GetDiffuseNormal(), dirToLight, lightingData.diffuseResponse);
 
 #if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)
@@ -50,7 +50,7 @@ real3 GetDiffuseLighting_StandardPBR(Surface surface, LightingData lightingData,
 
 real3 GetSpecularLighting_StandardPBR(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
 {
-    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
 
 #if ENABLE_CLEAR_COAT
     if(o_clearCoat_feature_enabled)

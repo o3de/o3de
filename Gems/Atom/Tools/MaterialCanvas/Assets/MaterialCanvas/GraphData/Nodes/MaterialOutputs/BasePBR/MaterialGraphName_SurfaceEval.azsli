@@ -38,6 +38,9 @@ Surface EvaluateSurface_MaterialGraphName(
     const float3 O3DE_MC_BITANGENT_WS = bitangents[0];
     #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
 
+    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
+    const bool placeHolder = MaterialSrg::m_placeHolder;
+
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor
     real3 inNormal = normalWS;
     real3 inBaseColor = {1.0, 1.0, 1.0};

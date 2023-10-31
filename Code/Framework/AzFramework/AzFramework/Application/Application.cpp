@@ -100,14 +100,25 @@ namespace AzFramework
     }
 
     Application::Application()
-        : Application(nullptr, nullptr)
+        : Application(nullptr, nullptr, {})
+    {
+    }
+
+    Application::Application(AZ::ComponentApplicationSettings componentAppSettings)
+        : Application(nullptr, nullptr, AZStd::move(componentAppSettings))
     {
     }
 
     Application::Application(int* argc, char*** argv)
+        : Application(argc, argv, {})
+    {
+    }
+
+    Application::Application(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
         : ComponentApplication(
             argc ? *argc : 0,
-            argv ? *argv : nullptr
+            argv ? *argv : nullptr,
+            AZStd::move(componentAppSettings)
         )
     {
         // Startup default local FileIO (hits OSAllocator) if not already setup.
@@ -622,7 +633,7 @@ namespace AzFramework
         constexpr const char* userCachePathFilename{ "Cache" };
         AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
 #if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
+        // The number of max attempts ultimately dictates the number of application instances that can run
         // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
         // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't
         // be set *infinitely* high - each cache folder is GBs in size, and finding a free directory is a

@@ -21,7 +21,34 @@ namespace AZ::RHI
         return m_drawItemCount;
     }
 
-    DrawItemProperties DrawPacket::GetDrawItem(size_t index) const
+    s32 DrawPacket::GetDrawListIndex(DrawListTag drawListTag) const
+    {
+        for (size_t i = 0; i < m_drawItemCount; ++i)
+        {
+            if (GetDrawListTag(i) == drawListTag)
+            {
+                return s32(i);
+            }
+        }
+        return -1;
+    }
+
+    DrawItem* DrawPacket::GetDrawItem(size_t index)
+    {
+        return (index < m_drawItemCount) ? &m_drawItems[index] : nullptr;
+    }
+
+    DrawItem* DrawPacket::GetDrawItem(DrawListTag drawListTag)
+    {
+        s32 index = GetDrawListIndex(drawListTag);
+        if (index > -1)
+        {
+            return GetDrawItem(index);
+        }
+        return nullptr;
+    }
+
+    DrawItemProperties DrawPacket::GetDrawItemProperties(size_t index) const
     {
         AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
         return DrawItemProperties(&m_drawItems[index], m_drawItemSortKeys[index], m_drawFilterMasks[index]);

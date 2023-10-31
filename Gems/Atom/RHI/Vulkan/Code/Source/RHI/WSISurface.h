@@ -10,6 +10,7 @@
 #include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
+#include <RHI/WindowSurfaceBus.h>
 
 namespace AZ
 {
@@ -19,6 +20,7 @@ namespace AZ
 
         class WSISurface 
             : public RHI::Object
+            , public WindowSurfaceRequestsBus::Handler
         {
             using Base = RHI::Object;
 
@@ -35,7 +37,8 @@ namespace AZ
             virtual RHI::ResultCode Init(const Descriptor& descriptor);
             ~WSISurface();
 
-            VkSurfaceKHR GetNativeSurface() const;
+            // WindowSurfaceRequestsBus::Handler overrides...
+            VkSurfaceKHR GetNativeSurface() const override;
 
         protected:
             WSISurface() = default;

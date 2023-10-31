@@ -8,7 +8,9 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
+#include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI/Image.h>
+#include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 
 namespace AZ::RHI
@@ -16,6 +18,7 @@ namespace AZ::RHI
     class ImageFrameAttachment;
     class MultiDeviceShaderResourceGroup;
     class ImageView;
+    class MultiDeviceImageView;
     struct ImageViewDescriptor;
 
     //! MultiDeviceImage represents a collection of MultiDeviceImage Subresources, where each subresource comprises a one to three
@@ -47,6 +50,9 @@ namespace AZ::RHI
         //! are considered undefined.
         const ImageDescriptor& GetDescriptor() const;
 
+        //! Returns the multi-device ImageView
+        Ptr<MultiDeviceImageView> BuildImageView(const ImageViewDescriptor& imageViewDescriptor);
+
         //! Computes the subresource layouts and total size of the image contents, if represented linearly. Effectively,
         //! this data represents how to store the image in a buffer resource. Naturally, if the image contents
         //! are swizzled in device memory, the layouts will differ from the actual physical memory footprint. Use this data
@@ -59,7 +65,7 @@ namespace AZ::RHI
         //!      number of array slices).
         //!  @param totalSizeInBytes
         //!      [Optional] If specified, will be filled with the total size necessary to contain all subresources.
-        void GetSubresourceLayout(MultiDeviceImageSubresourceLayout& subresourceLayout, ImageAspectFlags aspectFlags) const;
+        void GetSubresourceLayout(MultiDeviceImageSubresourceLayout& subresourceLayout, ImageAspectFlags aspectFlags = ImageAspectFlags::All) const;
 
         //! Returns the set of queue classes that are supported for usage as an attachment on the frame scheduler.
         //! Effectively, for a scope of a specific hardware class to use the image as an attachment, the queue must
@@ -70,6 +76,13 @@ namespace AZ::RHI
         //! is imported into the frame scheduler (which is reset every frame). This value will be null for non-attachment
         //! images.
         const ImageFrameAttachment* GetFrameAttachment() const;
+
+        //! Returns the most detailed mip level currently resident in memory on any device, where a value of 0
+        //! is the highest detailed mip.
+        uint32_t GetResidentMipLevel() const;
+
+        //! Returns whether the image has sub-resources which can be evicted from or streamed into the device memory
+        bool IsStreamable() const;
 
         //! Returns the aspects that are included in the image.
         ImageAspectFlags GetAspectFlags() const;
@@ -95,5 +108,42 @@ namespace AZ::RHI
 
         //! Aspects supported by the image
         ImageAspectFlags m_aspectFlags = ImageAspectFlags::None;
+    };
+
+    //! A MultiDeviceImageView is a light-weight representation of a view onto a multi-device image.
+    //! It holds a raw pointer to a multi-device image as well as an ImageViewDescriptor.
+    //! Using both, single-device ImageViews can be retrieved.
+    class MultiDeviceImageView : public Object
+    {
+    public:
+        AZ_RTTI(MultiDeviceImageView, "{C837818B-2A4D-49F2-A37E-349494A9C9B7}", Object);
+        virtual ~MultiDeviceImageView() = default;
+
+        MultiDeviceImageView(const RHI::MultiDeviceImage* image, ImageViewDescriptor descriptor)
+            : m_image{ image }
+            , m_descriptor{ descriptor }
+        {
+        }
+
+        //! Given a device index, return the corresponding ImageView for the selected device
+        const RHI::Ptr<RHI::ImageView> GetDeviceImageView(int deviceIndex) const;
+
+        //! Return the contained multi-device image
+        const RHI::MultiDeviceImage* GetImage() const
+        {
+            return m_image;
+        }
+
+        //! Return the contained ImageViewDescriptor
+        const ImageViewDescriptor& GetDescriptor() const
+        {
+            return m_descriptor;
+        }
+
+    private:
+        //! A raw pointer to a multi-device image
+        const RHI::MultiDeviceImage* m_image;
+        //! The corresponding ImageViewDescriptor for this view.
+        ImageViewDescriptor m_descriptor;
     };
 } // namespace AZ::RHI

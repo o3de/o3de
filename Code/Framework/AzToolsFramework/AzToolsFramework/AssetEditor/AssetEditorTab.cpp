@@ -57,10 +57,16 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr':
 AZ_POP_DISABLE_WARNING
 #include <QAction>
 
-AZ_CVAR_EXTERNED(bool, ed_enableDPE);
-
 namespace AzToolsFramework
 {
+    AZ_CVAR(
+        bool,
+        ed_enableDPEAssetEditor,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+        "If set, enables experimental Document Property Editor for the AssetEditor");
+
     namespace AssetEditor
     {
         // Amount to add on to the save confirm dialog text width to account for the icon etc when padding.
@@ -159,8 +165,13 @@ namespace AzToolsFramework
             setObjectName("AssetEditorTab");
 
             QWidget* propertyEditor = nullptr;
-            // TODO: Re-enable the DPE in the Asset Editor
-            //m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
+
+            // use the DPE version of the AssetEditor if ed_enableDPEAssetEditor is enabled
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                console->GetCvarValue("ed_enableDPEAssetEditor", m_useDPE);
+            }
+
             if (!m_useDPE)
             {
                 m_propertyEditor = new ReflectedPropertyEditor(this);

@@ -278,21 +278,17 @@ namespace AZStd::ranges
 
         // customization of iter_move and iter_swap
         friend constexpr auto iter_move(
-            iterator& i) noexcept(
+            const iterator& i) noexcept(
             noexcept(ZipViewInternal::tuple_transform(ranges::iter_move, i.m_current)))
         {
             return ZipViewInternal::tuple_transform(ranges::iter_move, i.m_current);
         }
 
         friend constexpr auto iter_swap(
-            iterator& l,
-            iterator& r) noexcept
+            const iterator& l,
+            const iterator& r) noexcept
         {
-            static_assert(!conjunction_v<
-                bool_constant<indirectly_swappable<iterator_t<::AZStd::ranges::Internal::maybe_const<Const, Views>>>>...>);
-
-            ZipViewInternal::tuple_zip(ranges::iter_swap, l.m_current, r.m_current,
-                AZStd::index_sequence_for<Views...>{});
+            ZipViewInternal::tuple_zip(ranges::iter_swap, AZStd::index_sequence_for<Views...>{}, l.m_current, r.m_current);
         }
 
     private:

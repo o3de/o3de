@@ -33,10 +33,14 @@ namespace AZ::Dom
         //! paths themselves. This is used by e.g. DocumentPropertyEditor so that systems can handle patches without introspecting
         //! the previous DOM to generate indices.
         bool m_generateDenormalizedPaths = false;
+
+        //! this specifies whether to allow generation of a delta replacement patch that replaces the entire tree, from the root on down
+        bool m_allowRootReplacement = true;
     };
 
     //! Generates a set of patches such that m_forwardPatches.Apply(beforeState) shall produce a document equivalent to afterState, and
     //! a subsequent m_inversePatches.Apply(beforeState) shall produce the original document. This patch generation strategy does a
     //! hierarchical comparison and is not guaranteed to create the minimal set of patches required to transform between the two states.
-    PatchUndoRedoInfo GenerateHierarchicalDeltaPatch(const Value& beforeState, const Value& afterState, const DeltaPatchGenerationParameters& params = {});
+    PatchUndoRedoInfo GenerateHierarchicalDeltaPatch(
+        const Value& beforeState, const Value& afterState, const DeltaPatchGenerationParameters& params = {});
 } // namespace AZ::Dom

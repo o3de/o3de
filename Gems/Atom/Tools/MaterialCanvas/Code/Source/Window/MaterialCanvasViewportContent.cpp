@@ -235,7 +235,16 @@ namespace MaterialCanvas
             }
         }
 
+        // When material canvas generates assets, material input property values are assigned as default values in the material type instead
+        // of overridden values in the material. The generated material asset is empty except for a single field referencing the material
+        // type. Because the material asset never changes, it won't be reprocessed by the AP or treated as a unique asset in the asset
+        // system. We force the viewport to create a unique material instance every time a change needs to be reflected in material canvas.
+        AZ::Render::MaterialAssignment materialAssignment;
+        materialAssignment.m_materialAsset.Create(assetId);
+        materialAssignment.m_materialInstanceMustBeUnique = true;
+        AZ::Render::MaterialAssignmentMap materialAssignmentMap;
+        materialAssignmentMap.emplace(AZ::Render::DefaultMaterialAssignmentId, materialAssignment);
         AZ::Render::MaterialComponentRequestBus::Event(
-            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetIdOnDefaultSlot, assetId);
+            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialMap, materialAssignmentMap);
     }
 } // namespace MaterialCanvas

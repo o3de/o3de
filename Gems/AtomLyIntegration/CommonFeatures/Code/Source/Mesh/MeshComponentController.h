@@ -103,7 +103,7 @@ namespace AZ
             // AtomImGuiTools::AtomImGuiMeshCallbackBus::Handler overrides ...
             const RPI::MeshDrawPacketLods* GetDrawPackets() const override;
 
-            // AtomMeshRequestBus overrides ...
+            // MeshHandleStateRequestBus overrides ...
             const MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
 
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
@@ -155,7 +155,7 @@ namespace AZ
             MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             MaterialAssignmentLabelMap GetMaterialLabels() const override;
-            MaterialAssignmentMap GetDefautMaterialMap() const override;
+            MaterialAssignmentMap GetDefaultMaterialMap() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
             // MaterialComponentNotificationBus::Handler overrides ...

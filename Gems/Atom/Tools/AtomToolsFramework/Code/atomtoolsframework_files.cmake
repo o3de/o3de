@@ -95,6 +95,10 @@ set(FILES
     Source/Graph/DynamicNode/DynamicNodeSlotConfig.cpp
     Source/Graph/DynamicNode/DynamicNodeUtil.cpp
 
+    Include/AtomToolsFramework/Graph/AssetStatusReporter.h
+    Include/AtomToolsFramework/Graph/AssetStatusReporterState.h
+    Include/AtomToolsFramework/Graph/AssetStatusReporterSystem.h
+    Include/AtomToolsFramework/Graph/AssetStatusReporterSystemRequestBus.h
     Include/AtomToolsFramework/Graph/GraphCompiler.h
     Include/AtomToolsFramework/Graph/GraphDocument.h
     Include/AtomToolsFramework/Graph/GraphDocumentNotificationBus.h
@@ -107,6 +111,8 @@ set(FILES
     Include/AtomToolsFramework/Graph/GraphView.h
     Include/AtomToolsFramework/Graph/GraphViewConstructPresets.h
     Include/AtomToolsFramework/Graph/GraphViewSettings.h
+    Source/Graph/AssetStatusReporter.cpp
+    Source/Graph/AssetStatusReporterSystem.cpp
     Source/Graph/GraphCompiler.cpp
     Source/Graph/GraphDocument.cpp
     Source/Graph/GraphDocumentView.cpp

@@ -347,7 +347,9 @@ namespace AzFramework
             // after enabling customized resolution, send notification if the customized resolution is different than client area size
             if (enable)
             {
-                if (m_customizedRenderResolution != GetClientAreaSize())
+                if (m_customizedRenderResolution.m_width > 0 &&
+                    m_customizedRenderResolution.m_height > 0 &&
+                    m_customizedRenderResolution != GetClientAreaSize())
                 {
                     WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnResolutionChanged, m_customizedRenderResolution.m_width, m_customizedRenderResolution.m_height);
                 }

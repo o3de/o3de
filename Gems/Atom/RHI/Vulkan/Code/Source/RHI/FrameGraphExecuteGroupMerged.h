@@ -34,6 +34,8 @@ namespace AZ
             void SetPrimaryCommandList(CommandList& commandList);
             //! Set the list of renderpasses that the group will use.
             void SetRenderPasscontexts(AZStd::span<const RenderPassContext> renderPassContexts);
+            //! Set the name of the commandlist the group will use
+            void SetName(const Name& name);
 
             //////////////////////////////////////////////////////////////////////////
             // FrameGraphExecuteGroupBase
@@ -62,7 +64,7 @@ namespace AZ
             // List of renderpasses and framebuffers used by the scopes in the group.
             AZStd::span<const RenderPassContext> m_renderPassContexts;
             // Name used by the command list encoding the work for this group
-            const AZ::Name m_mergedCommandListName{ "Merged" };
+            AZ::Name m_name{ "Merged" };
         };
     }
 }

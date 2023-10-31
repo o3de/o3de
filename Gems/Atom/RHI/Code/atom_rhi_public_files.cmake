@@ -41,16 +41,20 @@ set(FILES
     Include/Atom/RHI/CommandListValidator.h
     Include/Atom/RHI/CommandListStates.h
     Include/Atom/RHI/CopyItem.h
+    Include/Atom/RHI/MultiDeviceCopyItem.h
     Include/Atom/RHI/ConstantsData.h
     Include/Atom/RHI/DispatchItem.h
+    Include/Atom/RHI/MultiDeviceDispatchItem.h
     Include/Atom/RHI/DrawFilterTagRegistry.h
     Include/Atom/RHI/DrawItem.h
+    Include/Atom/RHI/MultiDeviceDrawItem.h
     Include/Atom/RHI/DrawList.h
     Include/Atom/RHI/DrawListTagRegistry.h
     Include/Atom/RHI/DrawListContext.h
     Include/Atom/RHI/DrawPacket.h
     Include/Atom/RHI/DrawPacketBuilder.h
     Include/Atom/RHI/IndirectArguments.h
+    Include/Atom/RHI/MultiDeviceIndirectArguments.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandListValidator.cpp
     Source/RHI/ConstantsData.cpp
@@ -125,11 +129,17 @@ set(FILES
     Source/RHI/StreamingImagePool.cpp
     Source/RHI/MultiDeviceStreamingImagePool.cpp
     Include/Atom/RHI/IndirectBufferSignature.h
+    Include/Atom/RHI/MultiDeviceIndirectBufferSignature.h
     Include/Atom/RHI/IndirectBufferView.h
+    Include/Atom/RHI/MultiDeviceIndirectBufferView.h
     Include/Atom/RHI/IndirectBufferWriter.h
+    Include/Atom/RHI/MultiDeviceIndirectBufferWriter.h
     Source/RHI/IndirectBufferSignature.cpp
+    Source/RHI/MultiDeviceIndirectBufferSignature.cpp
     Source/RHI/IndirectBufferView.cpp
+    Source/RHI/MultiDeviceIndirectBufferView.cpp
     Source/RHI/IndirectBufferWriter.cpp
+    Source/RHI/MultiDeviceIndirectBufferWriter.cpp
     Include/Atom/RHI/Object.h
     Include/Atom/RHI/ObjectCache.h
     Include/Atom/RHI/ObjectCollector.h
@@ -193,15 +203,21 @@ set(FILES
     Source/RHI/ResolveScopeAttachment.cpp
     Source/RHI/ScopeAttachment.cpp
     Include/Atom/RHI/ShaderResourceGroup.h    
+    Include/Atom/RHI/MultiDeviceShaderResourceGroup.h
     Include/Atom/RHI/ShaderResourceGroupData.h
+    Include/Atom/RHI/MultiDeviceShaderResourceGroupData.h
     Include/Atom/RHI/ShaderResourceGroupDebug.h
     Include/Atom/RHI/ShaderResourceGroupInvalidateRegistry.h
     Include/Atom/RHI/ShaderResourceGroupPool.h
+    Include/Atom/RHI/MultiDeviceShaderResourceGroupPool.h
     Source/RHI/ShaderResourceGroup.cpp
+    Source/RHI/MultiDeviceShaderResourceGroup.cpp
     Source/RHI/ShaderResourceGroupData.cpp
+    Source/RHI/MultiDeviceShaderResourceGroupData.cpp
     Source/RHI/ShaderResourceGroupDebug.cpp
     Source/RHI/ShaderResourceGroupInvalidateRegistry.cpp
     Source/RHI/ShaderResourceGroupPool.cpp
+    Source/RHI/MultiDeviceShaderResourceGroupPool.cpp
     Include/Atom/RHI/MemoryStatisticsBuilder.h
     Include/Atom/RHI/MemoryStatisticsBus.h
     Source/RHI/MemoryStatisticsBuilder.cpp
@@ -221,18 +237,29 @@ set(FILES
     Include/Atom/RHI/TileAllocator.h
     Include/Atom/RHI/TileAllocator.inl
     Include/Atom/RHI/TransientAttachmentPool.h
+    Include/Atom/RHI/MultiDeviceTransientAttachmentPool.h
     Source/RHI/TransientAttachmentPool.cpp
+    Source/RHI/MultiDeviceTransientAttachmentPool.cpp
     Include/Atom/RHI/RHIUtils.h
     Source/RHI/RHIUtils.cpp
     Include/Atom/RHI/RayTracingAccelerationStructure.h
+    Include/Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h
     Include/Atom/RHI/RayTracingPipelineState.h
+    Include/Atom/RHI/MultiDeviceRayTracingPipelineState.h
     Include/Atom/RHI/RayTracingShaderTable.h
+    Include/Atom/RHI/MultiDeviceRayTracingShaderTable.h
     Include/Atom/RHI/RayTracingBufferPools.h
+    Include/Atom/RHI/MultiDeviceRayTracingBufferPools.h
     Include/Atom/RHI/DispatchRaysItem.h
+    Include/Atom/RHI/MultiDeviceDispatchRaysItem.h
     Source/RHI/RayTracingAccelerationStructure.cpp
+    Source/RHI/MultiDeviceRayTracingAccelerationStructure.cpp
     Source/RHI/RayTracingPipelineState.cpp
+    Source/RHI/MultiDeviceRayTracingPipelineState.cpp
     Source/RHI/RayTracingShaderTable.cpp
+    Source/RHI/MultiDeviceRayTracingShaderTable.cpp
     Source/RHI/RayTracingBufferPools.cpp
+    Source/RHI/MultiDeviceRayTracingBufferPools.cpp
     Include/Atom/RHI/interval_map.h
     Include/Atom/RHI/ImageProperty.h
     Include/Atom/RHI/BufferProperty.h

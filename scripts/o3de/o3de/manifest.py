@@ -527,9 +527,8 @@ def get_project_engine_path(project_path: pathlib.Path,
                             user_project_json_data: dict = None, 
                             engines_json_data: dict = None) -> pathlib.Path or None:
     """
-    Returns the most compatible engine path for a project based on the project's 
-    'engine' field and taking into account <project_path>/user/project.json overrides
-    or the engine the project is registered with.
+    Returns the most compatible engine path for a project based on the project's 'engine' field and taking into account
+    <project_path>/user/project.json overrides or the engine the project is registered with.
     :param project_path: Path to the project
     :param project_json_data: Optional json data to use to avoid reloading project.json  
     :param user_project_json_data: Optional json data to use to avoid reloading <project_path>/user/project.json  

@@ -248,8 +248,16 @@ namespace AzToolsFramework
 
     } // Internal
 
+    ToolsApplication::ToolsApplication(AZ::ComponentApplicationSettings componentAppSettings)
+        : ToolsApplication(nullptr, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
     ToolsApplication::ToolsApplication(int* argc, char*** argv)
-        : AzFramework::Application(argc, argv)
+        : ToolsApplication(argc, argv, {})
+    {
+    }
+    ToolsApplication::ToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : AzFramework::Application(argc, argv, AZStd::move(componentAppSettings))
         , m_selectionBounds(AZ::Aabb())
         , m_undoStack(nullptr)
         , m_currentBatchUndo(nullptr)

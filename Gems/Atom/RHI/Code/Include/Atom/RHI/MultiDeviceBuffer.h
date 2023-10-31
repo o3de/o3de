@@ -8,14 +8,16 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 
 namespace AZ::RHI
 {
     class BufferFrameAttachment;
     struct BufferViewDescriptor;
+    class MultiDeviceBufferView;
 
     //! A MultiDeviceBuffer holds all Buffers across multiple devices.
     //! The buffer descriptor will be shared across all the buffers.
@@ -40,6 +42,8 @@ namespace AZ::RHI
         //! Returns the buffer frame attachment if the buffer is currently attached.
         const BufferFrameAttachment* GetFrameAttachment() const;
 
+        Ptr<MultiDeviceBufferView> BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+
         //! Get the hash associated with the MultiDeviceBuffer
         const HashValue64 GetHash() const;
 
@@ -56,5 +60,42 @@ namespace AZ::RHI
 
         //! The RHI descriptor for this MultiDeviceBuffer.
         BufferDescriptor m_descriptor;
+    };
+
+    //! A MultiDeviceBufferView is a light-weight representation of a view onto a multi-device buffer.
+    //! It holds a raw pointer to a multi-device buffer as well as a BufferViewDescriptor object.
+    //! Using both, single-device BufferViews can be retrieved.
+    class MultiDeviceBufferView : public Object
+    {
+    public:
+        AZ_RTTI(MultiDeviceBufferView, "{CD764967-6AC1-4B9D-9573-498FA61F8F84}", Object);
+        virtual ~MultiDeviceBufferView() = default;
+
+        MultiDeviceBufferView(const RHI::MultiDeviceBuffer* buffer, BufferViewDescriptor descriptor)
+            : m_buffer{ buffer }
+            , m_descriptor{ descriptor }
+        {
+        }
+
+        //! Given a device index, return the corresponding BufferView for the selected device
+        const RHI::Ptr<RHI::BufferView> GetDeviceBufferView(int deviceIndex) const;
+
+        //! Return the contained multi-device buffer
+        const RHI::MultiDeviceBuffer* GetBuffer() const
+        {
+            return m_buffer;
+        }
+
+        //! Return the contained BufferViewDescriptor
+        const BufferViewDescriptor& GetDescriptor() const
+        {
+            return m_descriptor;
+        }
+
+    private:
+        //! A raw pointer to a multi-device buffer
+        const RHI::MultiDeviceBuffer* m_buffer;
+        //! The corresponding BufferViewDescriptor for this view.
+        BufferViewDescriptor m_descriptor;
     };
 } // namespace AZ::RHI

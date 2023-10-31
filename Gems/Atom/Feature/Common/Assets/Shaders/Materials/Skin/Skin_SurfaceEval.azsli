@@ -201,7 +201,7 @@ Surface EvaluateSurface_Skin(
 
     // ------- Dual Specular -------
 
-    GetDualSpecularInput(surface.normal, surface.roughnessLinear, surface.specularF0.x, MaterialSrg::m_dualSpecFactor,
+    GetDualSpecularInput(surface.GetSpecularNormal(), surface.roughnessLinear, surface.specularF0.x, MaterialSrg::m_dualSpecFactor,
                           MaterialSrg::m_dualSpecF0Multiplier, MaterialSrg::m_dualSpecRoughnessExponent, MaterialSrg::m_dualSpecRoughnessMultiplier,
                           surface.dualSpecRoughness, surface.dualSpecRoughnessA2, surface.dualSpecF0, surface.dualSpecFactor);
 

@@ -21,7 +21,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-windows                              TARGETS expat                       PACKAGE_HASH 748d08f21f5339757059a7887e72b52d15e954c549245c638b0b05bd5961e307)
 ly_associate_package(PACKAGE_NAME assimp-5.2.5-rev1-windows                             TARGETS assimplib                   PACKAGE_HASH a75ef3cdd0c880e990eee0afd1a40c1100ef34e757d0d5f59109be3439eb88c0)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.1.3-rev5-windows                            TARGETS OpenEXR Imath               PACKAGE_HASH bff6dc78412bb1b04ded243753bee36e9229fdaf9a9e1fa85b1059238fba4c9b)
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2112-o3de-rev1-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH fdcdc081e67abcfdc8172866258a9c36f1fd0d7b963ba5378ca01cb4fcdbf9c7)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.7.2308-o3de-rev1-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH d25eab9f900f41cf77e746bd261fbe60101e0b1fdfca90eab96c956c574c96bd)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-windows                    TARGETS SPIRVCross                  PACKAGE_HASH 7d601ea9d625b1d509d38bd132a1f433d7e895b16adab76bac6103567a7a6817)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-windows                            TARGETS TIFF                        PACKAGE_HASH c6000a906e6d2a0816b652e93dfbeab41c9ed73cdd5a613acd53e553d0510b60)
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-windows                          TARGETS Freetype                    PACKAGE_HASH 861d059a5542cb8f58a5157f411eee2e78f69ac72e45117227ebe400efe49f61)

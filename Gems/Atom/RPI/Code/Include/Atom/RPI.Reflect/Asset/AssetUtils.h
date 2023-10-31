@@ -128,18 +128,19 @@ namespace AZ
             {
                 if (!assetId.IsValid())
                 {
-                    AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
+                    AssetUtilsInternal::ReportIssue(
+                        reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
                     return {};
                 }
 
-                Data::Asset<AssetDataT> asset = AZ::Data::AssetManager::Instance().GetAsset<AssetDataT>(
-                    assetId, AZ::Data::AssetLoadBehavior::PreLoad
-                    );
-                    asset.BlockUntilLoadComplete();
+                Data::Asset<AssetDataT> asset =
+                    AZ::Data::AssetManager::Instance().GetAsset<AssetDataT>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                asset.BlockUntilLoadComplete();
 
                 if (!asset.IsReady())
                 {
-                    AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
+                    AssetUtilsInternal::ReportIssue(
+                        reporting, AZStd::string::format("Could not load '%s'", assetId.ToString<AZStd::string>().c_str()).c_str());
                     return {};
                 }
 

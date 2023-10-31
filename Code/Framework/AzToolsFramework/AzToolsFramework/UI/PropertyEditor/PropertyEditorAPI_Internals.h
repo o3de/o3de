@@ -206,7 +206,7 @@ namespace AzToolsFramework
         {
             if (m_widget)
             {
-                delete m_widget;
+                m_widget->deleteLater();
             }
             IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
         }
@@ -250,7 +250,19 @@ namespace AzToolsFramework
                     auto parentValue = PropertyEditor::ParentValue.ExtractFromDomNode(node);
                     if (parentValue.has_value())
                     {
-                        auto parentValuePtr = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(parentValue.value());
+                        // Retrieve memory address of parent value
+                        void* parentValuePtr{};
+                        // First check if the parent value is a PointerObject
+                        if (auto parentValuePointerObjectOpt = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(parentValue.value());
+                            parentValuePointerObjectOpt && parentValuePointerObjectOpt->IsValid())
+                        {
+                            parentValuePtr = parentValuePointerObjectOpt->m_address;
+                        }
+                        else if (auto parentValueVoidOpt = AZ::Dom::Utils::ValueToType<void*>(parentValue.value());
+                            parentValueVoidOpt)
+                        {
+                            parentValuePtr = *parentValueVoidOpt;
+                        }
                         AZ_Assert(parentValuePtr, "Parent instance was nullptr when attempting to add to instance list.");
 
                         // Only add parent instance if it has not been added previously
@@ -354,66 +366,69 @@ namespace AzToolsFramework
                 }
             }
 
-            auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
-            if (value.has_value())
-            {
-                if (!Prefab::IsInspectorOverrideManagementEnabled())
-                {
-                    m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
-                }
-                else
-                {
-                    // Assign a custom reporting callback to ignore unregistered types
-                    AZ::JsonDeserializerSettings settings;
-                    AZStd::string scratchBuffer;
-                    settings.m_reporting = [&scratchBuffer](
-                        AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path) -> auto
-                    {
-                        // Unregistered types are acceptable and do not require a warning
-                        if (result.GetTask() != AZ::JsonSerializationResult::Tasks::RetrieveInfo ||
-                            result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Unknown)
-                        {
-                            // Default Json serialization issue reporting
-                            if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
-                            {
-                                scratchBuffer.append(message.begin(), message.end());
-                                scratchBuffer.append("\n    Reason: ");
-                                result.AppendToString(scratchBuffer, path);
-                                scratchBuffer.append(".");
-                                AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
-
-                                scratchBuffer.clear();
-                            }
-                        }
-
-                        return result;
-                    };
-
-                    AZ::JsonSerializationResult::ResultCode loadResult =
-                        AZ::Dom::Utils::LoadViaJsonSerialization(m_proxyValue, value.value(), settings);
-                    if (loadResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
-                    {
-                        m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
-                    }
-                }
-            }
-
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(serializeContext, "Serialization context not available");
 
+            AZ::TypeId typeId;
+            auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
+            if (value.has_value())
+            {
+                if (auto valueToType = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()); valueToType)
+                {
+                    m_proxyValue = *valueToType;
+                    typeId = m_proxyClassData.m_typeId;
+                }
+                else if (auto valueToPointerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(value.value()); valueToPointerObject && valueToPointerObject->IsValid())
+                {
+                    if (valueToPointerObject->m_typeId == m_proxyClassData.m_typeId)
+                    {
+                        m_proxyValue = *reinterpret_cast<WrappedType*>(valueToPointerObject->m_address);
+                        typeId = valueToPointerObject->m_typeId;
+                    }
+                    else
+                    {
+                        const AZ::SerializeContext::ClassData* pointerClassData =
+                            serializeContext != nullptr ? serializeContext->FindClassData(valueToPointerObject->m_typeId) : nullptr;
+
+                        auto proxyClassData = serializeContext->FindClassData(m_proxyClassData.m_typeId);
+
+                        if (pointerClassData != nullptr && pointerClassData->m_azRtti != nullptr &&
+                            pointerClassData->m_azRtti->IsTypeOf<WrappedType>())
+                        {
+                            if (auto castInstance = pointerClassData->m_azRtti->Cast<WrappedType>(valueToPointerObject->m_address); castInstance != nullptr)
+                            {
+                                m_proxyValue = *castInstance;
+                                // Set the type ID to the derived class ID
+                                typeId = valueToPointerObject->m_typeId;
+                            }
+                        }
+                        else if (proxyClassData != nullptr && proxyClassData->CanConvertFromType(valueToPointerObject->m_typeId, *serializeContext))
+                        {
+                            // Otherwise attempt to check if the proxy value is convertible to the TypeId type
+                            // such as for the case of an AZ::Data::Asset<T> from an AZ::Data::Asset<AZ::Data::AssetData>
+                            typeId = valueToPointerObject->m_typeId;
+                            m_proxyValue = *reinterpret_cast<WrappedType*>(valueToPointerObject->m_address);
+                        }
+                    }
+                }
+            }
+
+            if (typeId.IsNull())
+            {
+                auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
+                if (typeIdAttribute != node.MemberEnd())
+                {
+                    typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+                }
+                else if (value.has_value())
+                {
+                    typeId = AZ::Dom::Utils::GetValueTypeId(value.value());
+                }
+            }
+
             // Set the m_genericClassInfo (if any) for our type in case the property handler needs to access it
             // when downcasting to the generic type (e.g. for asset property downcasting to the generic AZ::Data::Asset<AZ::Data::AssetData>)
-            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
-            AZ::TypeId typeId = AZ::TypeId::CreateNull();
-            if (typeIdAttribute != node.MemberEnd())
-            {
-                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
-            }
-            else if (value.has_value())
-            {
-                typeId = AZ::Dom::Utils::GetValueTypeId(value.value());
-            }
             if (!typeId.IsNull())
             {
                 m_proxyClassElement.m_genericClassInfo = serializeContext->FindGenericClassInfo(typeId);
@@ -585,12 +600,16 @@ namespace AzToolsFramework
             if (newValueSet)
             {
                 PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
+            }
 
-                // Only trigger the ChangeNotify in response to PropertyEditorGUIMessages::RequestWrite
-                if (changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
-                {
-                    OnRequestPropertyNotify();
-                }
+            // Only trigger the ChangeNotify in response to PropertyEditorGUIMessages::RequestWrite.
+            // Also, we trigger this regardless of newValueSet, because of cases like a UIElement
+            // with no backing data element where there will be no value getting set but we still
+            // need to trigger the change notify in case the user has some logic that needs to
+            // be executed.
+            if (changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
+            {
+                OnRequestPropertyNotify();
             }
         }
 
@@ -607,7 +626,7 @@ namespace AzToolsFramework
         InstanceDataNode m_proxyParentNode;
         AZ::SerializeContext::ClassData m_proxyClassData;
         AZ::SerializeContext::ClassElement m_proxyClassElement;
-        WrappedType m_proxyValue;
+        WrappedType m_proxyValue{};
     };
 
     template <class WidgetType>
@@ -845,13 +864,36 @@ namespace AzToolsFramework
             const AZ::Uuid& actualUUID = node->GetClassMetadata()->m_typeId;
             const AZ::Uuid& desiredUUID = GetHandledType();
 
+            AZ::SerializeContext* serializeContext{};
+            if (auto componentApplicationRequests = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+                componentApplicationRequests != nullptr)
+            {
+                serializeContext = componentApplicationRequests->GetSerializeContext();
+            }
+
+            if (serializeContext == nullptr)
+            {
+                return;
+            }
+
+            auto desiredClassData = serializeContext->FindClassData(desiredUUID);
+
             for (size_t idx = 0; idx < node->GetNumInstances(); ++idx)
             {
                 void* instanceData = node->GetInstance(idx);
 
                 PropertyType* actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
+
+                // Check to see if the type supports an IDataConverter for Asset<T> types
+                // in case CastTo fails
+                if (actualCast == nullptr && desiredClassData != nullptr && desiredClassData->CanConvertFromType(actualUUID, *serializeContext))
+                {
+                    void* convertibleInstance{};
+                    desiredClassData->ConvertFromType(convertibleInstance, actualUUID, instanceData, *serializeContext);
+                    actualCast = reinterpret_cast<PropertyType*>(convertibleInstance);
+                }
                 AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
-                if (!ReadValuesIntoGUI(idx, wid, *actualCast, node))
+                if (actualCast == nullptr || !ReadValuesIntoGUI(idx, wid, *actualCast, node))
                 {
                     return;
                 }
