@@ -24,7 +24,6 @@
         "AudioSystem",
         "AWSCore",
         "CameraFramework",
-        "Compression",
         "DebugDraw",
         "DiffuseProbeGrid",
         "EditorPythonBindings",
