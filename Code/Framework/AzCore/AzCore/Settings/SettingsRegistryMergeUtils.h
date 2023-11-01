@@ -188,7 +188,15 @@ namespace AZ::SettingsRegistryMergeUtils
             UseSystemFileOnly,
             UseFileIOOnly
         };
+
+// Carbonated changes begin (alukyanov)
+#if defined(LINUX)
+        FileReaderClass m_fileReaderClass = FileReaderClass::UseSystemFileOnly;
+#else
         FileReaderClass m_fileReaderClass = FileReaderClass::UseFileIOIfAvailableFallbackToSystemFile;
+#endif // LINUX
+// Carbonated changes end
+
     };
     //! Loads basic configuration files which have structures similar to Windows INI files
     //! It is inspired by the Python configparser module: https://docs.python.org/3.10/library/configparser.html

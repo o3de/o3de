@@ -12,6 +12,12 @@
 #include <vector>
 #include <AzCore/std/string/string.h>
 
+// carbonated begin (alukyanov)
+#if defined(LINUX64)
+#include <Linux64Specific.h>
+#endif
+// carbonated end
+
 /* Memory block identification */
 #define _FREE_BLOCK      0
 #define _NORMAL_BLOCK    1
