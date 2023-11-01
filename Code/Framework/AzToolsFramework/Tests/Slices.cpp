@@ -437,7 +437,7 @@ namespace UnitTest
                     size_t liveAllocs = 0;
                     [[maybe_unused]] size_t totalAllocs = 0;
 
-                    // enumeration only needs to occur once to get the total number of records being enumeration
+                    // enumeration only needs to occur once to get the total number of records being enumerated
                     auto cb = [&liveAllocs](void*, const AZ::Debug::AllocationInfo&, unsigned char, size_t totalRecords)
                     {
                         liveAllocs = totalRecords;

@@ -90,8 +90,8 @@ namespace EMotionFX
 #define EMOTIONFX_ALLOCATOR_SEQ_GET_UUID(X) EMOTIONFX_SEQ_HEAD_3(X)
 
 // Helper macro which allows the EMOTIONFX_ALLOCATOR_SEQ_GET_* macros
-// to only need to expand a single time as a conforment the C preprocessor will
-// exapnd the same macro call multiple times in a single macro invocation
+// to only need to expand a single time as a conformant the C preprocessor will
+// expand the same macro call multiple times in a single macro invocation
 // i.e `EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE)` will only get
 // expanded the first time it processed in a macro
 // If it is repeated multiple times, it will be left unexpanded

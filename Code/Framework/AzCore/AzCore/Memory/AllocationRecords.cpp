@@ -542,12 +542,12 @@ namespace AZ::Debug
         if (m_includeNameAndFilename && info.m_name)
         {
             AZ_Printf(
-                "Memory", "Allocation Name: \"%s\" Addr: 0%p Size: %d Alignment: %d\n", info.m_name, address, info.m_byteSize,
+                "Memory", "Allocation Name: \"%s\" Addr: 0%p Size: %zu Alignment: %u\n", info.m_name, address, info.m_byteSize,
                 info.m_alignment);
         }
         else
         {
-            AZ_Printf("Memory", "Allocation Addr: 0%p Size: %d Alignment: %d\n", address, info.m_byteSize, info.m_alignment);
+            AZ_Printf("Memory", "Allocation Addr: 0%p Size: %zu Alignment: %u\n", address, info.m_byteSize, info.m_alignment);
         }
 
         if (m_isDetailed)
