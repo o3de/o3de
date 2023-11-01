@@ -40,6 +40,9 @@ namespace AZ
 
         void MaterialSystem::Init()
         {
+            m_luaMaterialBehaviorContext = aznew LuaMaterialBehaviorContext();
+            LuaMaterialBehaviorContext::SetInstance(m_luaMaterialBehaviorContext);
+
             AZ::Data::InstanceHandler<Material> handler;
             handler.m_createFunction = [](Data::AssetData* materialAsset)
             {
@@ -51,6 +54,10 @@ namespace AZ
         void MaterialSystem::Shutdown()
         {
             Data::InstanceDatabase<Material>::Destroy();
+
+            LuaMaterialBehaviorContext::SetInstance(nullptr);
+            delete m_luaMaterialBehaviorContext;
+            m_luaMaterialBehaviorContext = nullptr;
         }
 
     } // namespace RPI

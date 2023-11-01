@@ -74,14 +74,19 @@ namespace AZ
 
         RHI::ResultCode ShaderStageFunction::FinalizeInternal()
         {
-            if (m_sourceCode.empty())
+            if (m_byteCode.empty())
             {
-                AZ_Error("ShaderStageFunction", false, "Finalizing shader stage function with empty sourcecode.");
+                AZ_Error("ShaderStageFunction", false, "Finalizing shader stage function with empty bytecodes.");
                 return RHI::ResultCode::InvalidArgument;
             }
 
             HashValue64 hash = HashValue64{ 0 };
-            hash = TypeHash64(reinterpret_cast<const uint8_t*>(m_sourceCode.data()), m_sourceCode.size(), hash);
+            hash = TypeHash64(m_byteCode.data(), m_byteCode.size(), hash);
+            
+            if(!m_sourceCode.empty())
+            {
+                hash = TypeHash64(reinterpret_cast<const uint8_t*>(m_sourceCode.data()), m_sourceCode.size(), hash);
+            }
             SetHash(hash);
 
             return RHI::ResultCode::Success;
