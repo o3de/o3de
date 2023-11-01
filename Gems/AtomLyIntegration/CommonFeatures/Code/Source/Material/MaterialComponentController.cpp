@@ -23,14 +23,15 @@ namespace AZ
         {
             MaterialComponentConfig::Reflect(context);
 
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialComponentController>()
                     ->Version(1)
                     ->Field("Configuration", &MaterialComponentController::m_configuration)
                     ;
             }
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<MaterialComponentRequestBus>("MaterialComponentRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -232,7 +233,8 @@ namespace AZ
         void MaterialComponentController::LoadMaterials()
         {
             // Caching previously loaded unique materials to avoid unloading and reloading assets that have not changed
-            const auto uniqueMaterialMapBeforeLoad = m_uniqueMaterialMap;
+            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> uniqueMaterialMapBeforeLoad;
+            AZStd::swap(uniqueMaterialMapBeforeLoad, m_uniqueMaterialMap);
 
             // Clear any previously loaded or queued material assets, instances, or notifications
             ReleaseMaterials();
@@ -262,8 +264,10 @@ namespace AZ
             {
                 if (uniqueMaterial.GetId().IsValid())
                 {
-                    AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
-                    if (uniqueMaterial.QueueLoad())
+                    AZ::Data::AssetLoadParameters loadParams;
+                    loadParams.m_dependencyRules = AZ::Data::AssetDependencyLoadRules::LoadAll;
+                    loadParams.m_reloadMissingDependencies = true;
+                    if (uniqueMaterial.QueueLoad(loadParams))
                     {
                         anyQueued = true;
                     }
@@ -271,6 +275,8 @@ namespace AZ
                     {
                         DisplayMissingAssetWarning(uniqueMaterial);
                     }
+
+                    AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
                 }
             }
 

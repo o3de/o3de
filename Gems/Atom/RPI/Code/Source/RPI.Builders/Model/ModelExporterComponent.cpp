@@ -107,7 +107,7 @@ namespace AZ
                     relativeMaterialFileName,
                     MaterialAsset::Extension,
                     sourceSceneUuid,
-                    DataStream::ST_XML
+                    DataStream::ST_BINARY
                 };
 
                 if (!ExportAsset(asset, materialExportContext, exportEventContext, "Material"))
