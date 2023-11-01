@@ -41,6 +41,7 @@ namespace AzNetworking
     {
         AZ::TimeMs currentTime = AZ::GetElapsedTimeMs();
 
+        AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
         for (auto udpInterface : m_udpNetworkInterfaces)
         {
             AZ::TimeMs timeSinceSystemTick = currentTime - udpInterface->GetLastSystemTickUpdate();
@@ -64,7 +65,7 @@ namespace AzNetworking
     {
         {
             AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
-            m_udpNetworkInterfaces.push_back(updNetworkInterface);
+            m_udpNetworkInterfaces.push_back(udpNetworkInterface);
         }
 
         if (!IsRunning())
@@ -77,7 +78,7 @@ namespace AzNetworking
     {
         AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
 
-        auto it = AZStd::find(m_udpNetworkInterfaces.begin(), m_udpNetworkInterfaces.end(), updNetworkInterface);
+        auto it = AZStd::find(m_udpNetworkInterfaces.begin(), m_udpNetworkInterfaces.end(), udpNetworkInterface);
 
         if (it != m_udpNetworkInterfaces.end())
         {
