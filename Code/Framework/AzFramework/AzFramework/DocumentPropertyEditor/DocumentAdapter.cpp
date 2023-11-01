@@ -159,7 +159,6 @@ namespace AZ::DocumentPropertyEditor
                 AZ_Warning("DPE", valuesMatch, "DocumentAdapter::NotifyContentsChanged: DOM patches applied, but the new model contents don't match the result of GenerateContents");
             }
         }
-
         m_changedEvent.Signal(*appliedPatch);
     }
 
