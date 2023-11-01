@@ -105,7 +105,13 @@ namespace UnitTest
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create a dummy allocator so unit tests can leak it
-    AZ_ALLOCATOR_DEFAULT_GLOBAL_WRAPPER(LeakDetection_TestAllocator, AZ::SystemAllocator, "{186B6E32-344D-4322-820A-4C3E4F30650B}")
+    class LeakDetection_TestAllocator
+        : public AZ::ChildAllocatorSchema<AZ::SystemAllocator>
+    {
+        using Base = AZ::ChildAllocatorSchema<AZ::SystemAllocator>;
+    public:
+        AZ_RTTI(LeakDetection_TestAllocator, "{186B6E32-344D-4322-820A-4C3E4F30650B}", Base);
+    };
 
     // Dummy test class
     class TestClassLeakDetection_TestAllocator

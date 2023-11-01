@@ -7,7 +7,7 @@
  */
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Memory/AllocatorWrappers.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <AzCore/Script/ScriptContextDebug.h>
@@ -398,7 +398,13 @@ namespace AZ
         };
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_ALLOCATOR_DEFAULT_GLOBAL_WRAPPER(LuaSystemAllocator, AZ::SystemAllocator, "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}")
+        class LuaSystemAllocator
+            : public AZ::ChildAllocatorSchema<AZ::SystemAllocator>
+        {
+            using Base = AZ::ChildAllocatorSchema<AZ::SystemAllocator>;
+        public:
+            AZ_RTTI(LuaSystemAllocator, "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}", Base);
+        };
 
         //=========================================================================
         // azlua_setglobal - raw setglobal function (no metamethods called)
