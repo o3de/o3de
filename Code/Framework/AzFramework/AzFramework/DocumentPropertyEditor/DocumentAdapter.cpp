@@ -130,10 +130,6 @@ namespace AZ::DocumentPropertyEditor
         // This lets the DPE and proxy adapters listen for patches that have valid indices instead of EndOfArray entries.
         Dom::Patch tempDenormalizedPatch;
 
-        // Send out the change signal *before* updating any cached contents so that nested updates don't try to apply
-        // the patch to the new data prematurely.
-        m_changedEvent.Signal(*appliedPatch);
-
         if (!m_cachedContents.IsNull())
         {
             Dom::PatchOutcome outcome;
@@ -163,6 +159,8 @@ namespace AZ::DocumentPropertyEditor
                 AZ_Warning("DPE", valuesMatch, "DocumentAdapter::NotifyContentsChanged: DOM patches applied, but the new model contents don't match the result of GenerateContents");
             }
         }
+
+        m_changedEvent.Signal(*appliedPatch);
     }
 
     Dom::Value DocumentAdapter::SendAdapterMessage(const AdapterMessage& message)
