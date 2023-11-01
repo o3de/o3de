@@ -179,7 +179,6 @@ namespace AZ
         // This is based on empirical data of dumping the SystemAllocator in the Editor
         // About 10000 records can be printed per second
         constexpr size_t AllocationRecordsPerSecondEstimate = 10000;
-        using SecondsAsDouble = AZStd::chrono::duration<double>;
 
         // Iterate over each allocator to dump and print their allocation records
         for (AZ::IAllocator* allocator : allocatorsToDump)
@@ -192,36 +191,40 @@ namespace AZ
             // can change between this call and the next call to EnumerationAllocations to print the records
             records->EnumerateAllocations(GetAllocationCount);
 
-            auto allocationRecordsSecondsEstimate = SecondsAsDouble(estimateAllocationCount / double(AllocationRecordsPerSecondEstimate));
+            using SecondsAsDouble = AZStd::chrono::duration<double>;
+            auto allocationRecordsSecondsEstimate = AZStd::chrono::ceil<AZStd::chrono::seconds>(SecondsAsDouble(estimateAllocationCount / double(AllocationRecordsPerSecondEstimate)));
 
             AllocationString printString = AllocationString::format(
-                R"(Printing allocation records for allocator %s. Estimated time to print all records is %lf seconds)"
+                R"(Printing allocation records for allocator %s. Estimated time to print all records is %lld seconds)"
                 "\n",
                 allocator->GetName(),
-                allocationRecordsSecondsEstimate.count());
+                static_cast<AZ::s64>(allocationRecordsSecondsEstimate.count()));
             printStream.Write(printString.size(), printString.c_str());
             // Also write the print string above to the Trace system
             AZ::Debug::Trace::Instance().Output(MemoryTag, printString.c_str());
 
+            // Reset allocationCount and totalAllocationsCount to zero
+            // The PrintAllocations lambda is not called in the case where there are no recorded allocations
             allocationCount = 0;
+            totalAllocations = 0;
             auto startTime = AZStd::chrono::steady_clock::now();
             records->EnumerateAllocations(PrintAllocations);
             auto endTime = AZStd::chrono::steady_clock::now();
             auto durationInMilliseconds = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);
-            auto durationInSecondsAsDouble = AZStd::chrono::duration_cast<SecondsAsDouble>(durationInMilliseconds);
+            auto durationInSeconds = AZStd::chrono::ceil<AZStd::chrono::seconds>(durationInMilliseconds);
 
             AllocationString allocationsPerSecond = u8"\u221e";
-            if (durationInSecondsAsDouble.count() != 0)
+            if (durationInSeconds.count() != 0)
             {
                 // Use a double for the seconds duration in order to allow decimal values
-                AZStd::to_string(allocationsPerSecond, static_cast<AZ::s64>(totalAllocations / durationInSecondsAsDouble.count()));
+                AZStd::to_string(allocationsPerSecond, static_cast<AZ::s64>(totalAllocations / durationInSeconds.count()));
             }
 
             printString = AllocationString::format(
-                R"(Printed %zu allocations in %lf seconds for allocator "%s" (%s records per seconds))"
+                R"(Printed %zu allocations in %lld seconds for allocator "%s" (%s records per seconds))"
                 "\n",
                 totalAllocations,
-                durationInSecondsAsDouble.count(),
+                static_cast<AZ::s64>(durationInSeconds.count()),
                 allocator->GetName(),
                 allocationsPerSecond.c_str());
             printStream.Write(printString.size(), printString.c_str());
