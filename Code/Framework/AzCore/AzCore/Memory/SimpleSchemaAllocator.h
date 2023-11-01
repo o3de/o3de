@@ -69,10 +69,11 @@ namespace AZ
         //---------------------------------------------------------------------
         // IAllocator
         //---------------------------------------------------------------------
-        pointer allocate(size_type byteSize, size_type alignment) override
+        AllocateAddress allocate(size_type byteSize, size_type alignment) override
         {
             byteSize = MemorySizeAdjustedUp(byteSize);
-            pointer ptr = m_schema->allocate(byteSize, alignment);
+            const AllocateAddress ptr = m_schema->allocate(byteSize, alignment);
+            m_totalAllocatedBytes += ptr.GetAllocatedBytes();
 
             if constexpr (ProfileAllocations)
             {
@@ -90,7 +91,7 @@ namespace AZ
             return ptr;
         }
 
-        void deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override
+        size_type deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override
         {
             byteSize = MemorySizeAdjustedUp(byteSize);
 
@@ -100,10 +101,12 @@ namespace AZ
                 AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
             }
 
-            m_schema->deallocate(ptr, byteSize, alignment);
+            const size_type bytesDeallocated = m_schema->deallocate(ptr, byteSize, alignment);
+            m_totalAllocatedBytes -= bytesDeallocated;
+            return bytesDeallocated;
         }
 
-        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment = 1) override
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment = 1) override
         {
             if constexpr (ProfileAllocations)
             {
@@ -112,7 +115,9 @@ namespace AZ
 
             newSize = MemorySizeAdjustedUp(newSize);
 
-            pointer newPtr = m_schema->reallocate(ptr, newSize, newAlignment);
+            const size_type oldAllocatedSize = get_allocated_size(ptr, 1);
+            AllocateAddress newPtr = m_schema->reallocate(ptr, newSize, newAlignment);
+            m_totalAllocatedBytes += newPtr.GetAllocatedBytes() - oldAllocatedSize;
 
             if constexpr (ProfileAllocations)
             {
@@ -143,12 +148,18 @@ namespace AZ
 
         size_type NumAllocatedBytes() const override
         {
-            return m_schema->NumAllocatedBytes();
+            AZ_Assert(
+                m_totalAllocatedBytes >= 0,
+                "Total allocated bytes is less than zero with a value of %td. Was deallocate() invoked with an address "
+                "that is not associated with the allocator. This should never occur",
+                m_totalAllocatedBytes.load());
+            return static_cast<size_type>(m_totalAllocatedBytes);
         }
 
     protected:
         IAllocator* m_schema{};
     private:
-        typename AZStd::aligned_storage<sizeof(Schema), AZStd::alignment_of<Schema>::value>::type m_schemaStorage;
+        AZStd::aligned_storage_for_t<Schema> m_schemaStorage;
+        AZStd::atomic<ptrdiff_t> m_totalAllocatedBytes{};
     };
 }

@@ -66,31 +66,34 @@ namespace AZ
         //---------------------------------------------------------------------
         // IAllocator
         //---------------------------------------------------------------------
-        pointer allocate(size_type byteSize, size_type alignment) override
+        AllocateAddress allocate(size_type byteSize, size_type alignment) override
         {
-            pointer address = AZ::AllocatorInstance<Parent>::Get().allocate(byteSize, alignment);
-            // Record the allocation as well in the ChildAllocatorSchema
-            AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, 1));
-            return address;
+            const AllocateAddress allocateAddress = AZ::AllocatorInstance<Parent>::Get().allocate(byteSize, alignment);
+            m_totalAllocatedBytes += allocateAddress.GetAllocatedBytes();
+            AZ_MEMORY_PROFILE(ProfileAllocation(allocateAddress.GetAddress(), byteSize, alignment, 1));
+            return allocateAddress;
         }
 
-        void deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override
+        size_type deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override
         {
             // Record de-allocations in the ChildAllocatorSchema Allocations
             // before calling the parent allocator to make sure the allocation records
             // are up-to-date
             AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
 
-            AZ::AllocatorInstance<Parent>::Get().deallocate(ptr, byteSize, alignment);
+            const size_type bytesDeallocated = AZ::AllocatorInstance<Parent>::Get().deallocate(ptr, byteSize, alignment);
+            m_totalAllocatedBytes -= bytesDeallocated;
+            return bytesDeallocated;
         }
 
-        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
         {
-            pointer newAddress = AZ::AllocatorInstance<Parent>::Get().reallocate(ptr, newSize, newAlignment);
-            // The reallocation might have clamped the newSize to be least the minimum allocation size
+            const size_type oldAllocatedSize = get_allocated_size(ptr, 1);
+            AllocateAddress newAddress = AZ::AllocatorInstance<Parent>::Get().reallocate(ptr, newSize, newAlignment);
+            // The reallocation might have clamped the newSize to be at least the minimum allocation size
             // used by the parent schema. For example the HphaSchemaBase has a minimum allocation size of 8 bytes
-            [[maybe_unused]] const size_type allocatedSize = get_allocated_size(newAddress, 1);
-            AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, allocatedSize, newAlignment));
+            AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, newAddress.GetAllocatedBytes(), newAlignment));
+            m_totalAllocatedBytes += newAddress.GetAllocatedBytes() - oldAllocatedSize;
             return newAddress;
         }
 
@@ -106,7 +109,15 @@ namespace AZ
 
         size_type NumAllocatedBytes() const override
         {
-            return AZ::AllocatorInstance<Parent>::Get().NumAllocatedBytes();
+            AZ_Assert(
+                m_totalAllocatedBytes >= 0,
+                "Total allocated bytes is less than zero with a value of %td. Was deallocate() invoked with an address "
+                "that is not associated with this allocator. This should never occur",
+                m_totalAllocatedBytes.load());
+            return static_cast<size_type>(m_totalAllocatedBytes);
         }
+
+    private:
+        AZStd::atomic<ptrdiff_t> m_totalAllocatedBytes{};
     };
 }

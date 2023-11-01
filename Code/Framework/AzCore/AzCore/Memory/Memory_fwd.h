@@ -20,11 +20,11 @@
 #define aznewex(_Name)                                          new
 
 /// azmalloc(size)
-#define azmalloc_1(_1)                                          AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1)
+#define azmalloc_1(_1)                                          static_cast<void*>(AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1))
 /// azmalloc(size,alignment)
-#define azmalloc_2(_1, _2)                                      AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1, _2)
+#define azmalloc_2(_1, _2)                                      static_cast<void*>(AZ::AllocatorInstance< AZ::SystemAllocator >::Get().allocate(_1, _2))
 /// azmalloc(size,alignment,Allocator)
-#define azmalloc_3(_1, _2, _3)                                  AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2)
+#define azmalloc_3(_1, _2, _3)                                  static_cast<void*>(AZ::AllocatorInstance< _3 >::Get().allocate(_1, _2))
 
 /// azcreate(class)
 #define azcreate_1(_1)                                          new(azmalloc_3(sizeof(_1), alignof( _1 ), AZ::SystemAllocator)) _1()
