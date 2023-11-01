@@ -578,7 +578,7 @@ namespace AZ::Debug
                 }
             }
 
-            AZ_Printf("Memory", "Total number of allocations records %zu\n", numRecords);
+            AZ_Printf("Memory", "Total number of allocation records %zu\n", numRecords);
         }
         return true; // continue enumerating
     }

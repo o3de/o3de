@@ -33,7 +33,7 @@ namespace AZ
     AZ_CONSOLEFREEFUNC(sys_DumpAllocators, AZ::ConsoleFunctorFlags::Null, "Print memory allocator statistics.");
 
     // Provides a range of allocations to dump. The min value is inclusive and the max value is exclusive
-    // Theerefore the range is [min, max)
+    // Therefore the range is [min, max)
     struct AllocationDumpRange
     {
         size_t m_min = 0;
@@ -70,7 +70,7 @@ namespace AZ
                 // If the allocator has records and it matches the name of one of the allocators
                 auto IsAllocatorInNameSet = [allocator](AZStd::string_view searchName)
                 {
-                    return searchName == allocator->GetName();
+                    return AZ::StringFunc::Equal(searchName, allocator->GetName());
                 };
                 if (AZStd::any_of(allocatorNameArguments.begin(), allocatorNameArguments.end(), IsAllocatorInNameSet))
                 {
@@ -90,8 +90,8 @@ namespace AZ
         constexpr bool includeAllocatorNameAndSourceName = true;
         auto PrintAllocations =
             [&printStream,
-             includeAllocationLineAndCallstack,
-             includeAllocatorNameAndSourceName,
+             includeAllocationLineAndCallstack = includeAllocationLineAndCallstack,
+             includeAllocatorNameAndSourceName = includeAllocatorNameAndSourceName,
              &allocationDumpRange,
              &allocationCount,
              &totalAllocations](void* address, const Debug::AllocationInfo& info, unsigned int numStackLevels, size_t numRecords)
@@ -175,7 +175,7 @@ namespace AZ
             return false;
         };
 
-        // Stores an estimate of how many allocation records can be output per minute
+        // Stores an estimate of how many allocation records can be output per second
         // This is based on empirical data of dumping the SystemAllocator in the Editor
         // About 10000 records can be printed per second
         constexpr size_t AllocationRecordsPerSecondEstimate = 10000;
@@ -188,8 +188,8 @@ namespace AZ
 
             estimateAllocationCount = 0;
             // Get the allocation count at the time of the first EnumerateAllocations call
-            // NOTE: This is only an estimatation of the count as the number of allocation
-            // can change between this call and the next call EnumerationAllocations to print the records
+            // NOTE: This is only an estimation of the count as the number of allocations
+            // can change between this call and the next call to EnumerationAllocations to print the records
             records->EnumerateAllocations(GetAllocationCount);
 
             auto allocationRecordsSecondsEstimate = SecondsAsDouble(estimateAllocationCount / double(AllocationRecordsPerSecondEstimate));
@@ -340,7 +340,7 @@ namespace AZ
     AZ_CONSOLEFREEFUNC("sys_DumpAllocationRecordsToDevWriteStorage", DumpAllocationsForAllocatorToDevWriteStorage, AZ::ConsoleFunctorFlags::Null,
         "Write ALL individual allocations for the specified allocator to <dev-write-storage>/allocation_records/records.<iso8601-timestamp>.<process-id>.log.\n"
         "On host plaforms such as Windows/Linux/MacOS, <dev-write-storage> is equivalent to <project-root>/user directory.\n"
-        "On non-host platforms such as Android/iOS this folder is writable directory based on those operating systems Data container/storage API\n"
+        "On non-host platforms such as Android/iOS this folder is a writable directory based on those operating systems' Data container/storage APIs\n"
         "If no allocator is specified, then all allocations are dumped\n"
         "NOTE: This can be slow depending on the number of allocations\n"
         R"(For better control of which allocations get printed, use the "sys_DumpAllocationRecordInRange" command)" "\n"
@@ -375,7 +375,7 @@ namespace AZ
                 false,
                 AllocationString::format(
                     R"(Unable to convert the min argument of "%.*s" to an integer .)"
-                    "\n")
+                    "\n", AZ_STRING_ARG(arguments[0]))
                 .c_str());
             return;
         }
@@ -386,7 +386,7 @@ namespace AZ
                 false,
                 AllocationString::format(
                     R"(Unable to convert the max argument of "%.*s" to an integer .)"
-                    "\n")
+                    "\n", AZ_STRING_ARG(arguments[1]))
                 .c_str());
             return;
         }
@@ -509,9 +509,8 @@ namespace AZ
             records->SetMode(allocatorTrackingConfig.m_recordMode);
             if (allocatorTrackingConfig.m_recordMode != AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS)
             {
-                // The AllocatorBase::ProfileAllocation function requires that the allocator has profiling turned on to record
-                // allocations
-                // Profiling is on turned if Allocation Record mode is set to record any kind record
+                // The ProfileAllocation function requires that the allocator has profiling turned on to record allocations
+                // Therefore profiling is turned on if the Allocation Record mode is set to record any kind of records
                 constexpr bool profileAllocations = true;
                 alloc->SetProfilingActive(profileAllocations);
             }
