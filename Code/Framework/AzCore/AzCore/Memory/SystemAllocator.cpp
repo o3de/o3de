@@ -68,7 +68,7 @@ namespace AZ
     // Allocate
     // [9/2/2009]
     //=========================================================================
-    auto SystemAllocator::allocate(size_type byteSize, size_type alignment) -> AllocateAddress
+    AllocateAddress SystemAllocator::allocate(size_type byteSize, size_type alignment)
     {
         if (byteSize == 0)
         {
@@ -141,7 +141,7 @@ namespace AZ
     //
     // [8/12/2011]
     //=========================================================================
-    SystemAllocator::size_type SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const
+    auto SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
     {
         size_type allocSize = MemorySizeAdjustedDown(m_subAllocator->get_allocated_size(ptr, alignment));
 

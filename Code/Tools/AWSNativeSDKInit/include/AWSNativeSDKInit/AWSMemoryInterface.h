@@ -20,14 +20,7 @@
 
 namespace AWSNativeSDKInit
 {
-    class AWSNativeSDKAllocator
-        : public AZ::ChildAllocatorSchema<AZ::SystemAllocator>
-    {
-        using Base = AZ::ChildAllocatorSchema<AZ::SystemAllocator>;
-
-    public:
-        AZ_RTTI(AWSNativeSDKAllocator, "{8B4DA42F-2507-4A5B-B13C-4B2A72BC161E}", Base);
-    };
+    AZ_CHILD_ALLOCATOR_WITH_NAME(AWSNativeSDKAllocator, "AWSNativeSDKAllocator", "{8B4DA42F-2507-4A5B-B13C-4B2A72BC161E}", AZ::SystemAllocator);
 
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     class MemoryManager : public Aws::Utils::Memory::MemorySystemInterface

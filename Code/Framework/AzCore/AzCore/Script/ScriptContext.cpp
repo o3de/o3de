@@ -398,13 +398,7 @@ namespace AZ
         };
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        class LuaSystemAllocator
-            : public AZ::ChildAllocatorSchema<AZ::SystemAllocator>
-        {
-            using Base = AZ::ChildAllocatorSchema<AZ::SystemAllocator>;
-        public:
-            AZ_RTTI(LuaSystemAllocator, "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}", Base);
-        };
+        AZ_CHILD_ALLOCATOR_WITH_NAME(LuaSystemAllocator, "LuaSystemAllocator", "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}", AZ::SystemAllocator);
 
         //=========================================================================
         // azlua_setglobal - raw setglobal function (no metamethods called)

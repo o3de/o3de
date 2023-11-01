@@ -58,7 +58,7 @@ namespace AZ
     // Allocate
     // [9/2/2009]
     //=========================================================================
-    auto OSAllocator::allocate(size_type byteSize, size_type alignment) -> AllocateAddress
+    AllocateAddress OSAllocator::allocate(size_type byteSize, size_type alignment)
     {
         pointer address = AZ_OS_MALLOC(byteSize, alignment);
 
@@ -69,12 +69,11 @@ namespace AZ
             OnOutOfMemory(byteSize, alignment);
         }
 
-        size_type allocatedSize{};
-#if defined(AZ_ENABLE_TRACING)
         // We assume 1 alignment because alignment is sometimes not passed in deallocate. This does mean that we are under-reporting
         // for cases where alignment != 1 and the OS could not find a block specifically for that alignment (the OS will give use a
-        // block that is byteSize+(alignment-1) and place the ptr in the first address that satisfies the alignment).
-        allocatedSize = get_allocated_size(address, 1);
+        // block that is byteSize + (alignment - 1) and place the ptr in the first address that satisfies the alignment).
+        size_type allocatedSize = get_allocated_size(address, 1);
+#if defined(AZ_ENABLE_TRACING)
         m_numAllocatedBytes += allocatedSize;
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
         AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, 1));
@@ -90,11 +89,10 @@ namespace AZ
     auto OSAllocator::deallocate(pointer ptr, [[maybe_unused]] size_type byteSize, [[maybe_unused]] size_type alignment)
         -> size_type
     {
-        size_type allocatedSize{};
+        size_type allocatedSize = get_allocated_size(ptr, 1);
 #if defined(AZ_ENABLE_TRACING)
         if (ptr)
         {
-            allocatedSize = get_allocated_size(ptr, 1);
             m_numAllocatedBytes -= allocatedSize;
             AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
             AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
@@ -112,8 +110,8 @@ namespace AZ
 
         pointer newPtr = AZ_OS_REALLOC(ptr, newSize, static_cast<AZStd::size_t>(alignment));
 
-#if defined(AZ_ENABLE_TRACING)
         const size_type allocatedSize = get_allocated_size(newPtr, 1);
+#if defined(AZ_ENABLE_TRACING)
         m_numAllocatedBytes += (allocatedSize - previouslyAllocatedSize);
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
         AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newPtr, allocatedSize, 1));
@@ -122,7 +120,7 @@ namespace AZ
         return AllocateAddress{ newPtr, allocatedSize };
     }
 
-    OSAllocator::size_type OSAllocator::get_allocated_size(pointer ptr, align_type alignment) const
+    auto OSAllocator::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
     {
         return ptr ? AZ_OS_MSIZE(ptr, alignment) : 0;
     }

@@ -151,7 +151,7 @@ namespace AZ
             AZ_Assert(
                 m_totalAllocatedBytes >= 0,
                 "Total allocated bytes is less than zero with a value of %td. Was deallocate() invoked with an address "
-                "that is not associated with the allocator. This should never occur",
+                "that is not associated with the allocator? This should never occur",
                 m_totalAllocatedBytes.load());
             return static_cast<size_type>(m_totalAllocatedBytes);
         }

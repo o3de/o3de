@@ -14,13 +14,7 @@
 namespace PhysX
 {
     //! System allocator to be used for all PhysX gem persistent allocations.
-    class PhysXAllocator
-        : public AZ::ChildAllocatorSchema<AZ::SystemAllocator>
-    {
-        using Base = AZ::ChildAllocatorSchema<AZ::SystemAllocator>;
-    public:
-        AZ_RTTI(PhysXAllocator, "{C07BA28C-F6AF-4AFA-A45C-6747476DE07F}", Base);
-    };
+    AZ_CHILD_ALLOCATOR_WITH_NAME(PhysXAllocator, "PhysXAllocator", "{C07BA28C-F6AF-4AFA-A45C-6747476DE07F}", AZ::SystemAllocator);
 
     //! Implementation of the PhysX memory allocation callback interface using Open 3D Engine allocator.
     class PxAzAllocatorCallback

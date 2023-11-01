@@ -21,7 +21,7 @@
 
 #define AZ_ALLOCATOR_DEFAULT_TRAITS AZ_ALLOCATOR_TRAITS(void)
 
- //! Wraps an allocated memory address in a struct that is convertible to a void point
+ //! Wraps an allocated memory address in a struct that is convertible to a void pointer
  //! This is used to allow implicit conversion of the IAllocate::allocate function
  //! to a void pointer to maintain backwards compatibility, while providing
  //! the ability for newer code to get access to the actual amount of bytes allocated.
@@ -162,7 +162,7 @@ namespace AZ
         {
         }
 
-        const char* GetName() const
+        virtual const char* GetName() const
         {
             return RTTI_GetTypeName();
         }

@@ -27,15 +27,7 @@
 
 namespace AZ
 {
-    class ComponentAllocator final
-        : public AZ::ChildAllocatorSchema<AZ::SystemAllocator>
-    {
-        using Base = AZ::ChildAllocatorSchema<AZ::SystemAllocator>;
-    public:
-        AZ_RTTI(ComponentAllocator, "{1F0B962C-2D9D-414C-ABF1-E93E83C07A18}", Base);
-    };
-
-    using ComponentStdAllocator = AZ::AZStdAlloc<ComponentAllocator>;
+    AZ_CHILD_ALLOCATOR_WITH_NAME(ComponentAllocator, "ComponentAllocator", "{1F0B962C-2D9D-414C-ABF1-E93E83C07A18}", SystemAllocator);
 
     class Entity;
     class ComponentDescriptor;
@@ -531,12 +523,12 @@ namespace AZ
          * The type of array that components use to specify provided, required, dependent,
          * and incompatible services.
          */
-        using DependencyArrayType = AZStd::vector<ComponentServiceType, ComponentStdAllocator>;
+        using DependencyArrayType = AZStd::vector<ComponentServiceType, ComponentAllocator_for_std_t>;
 
         /**
         * This type of array is used by the warning
         */
-        using StringWarningArray = AZStd::vector<AZStd::string, ComponentStdAllocator>;
+        using StringWarningArray = AZStd::vector<AZStd::string, ComponentAllocator_for_std_t>;
 
          /**
           * Creates an instance of the component.

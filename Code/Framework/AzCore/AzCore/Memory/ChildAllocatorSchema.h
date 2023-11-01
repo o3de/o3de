@@ -13,6 +13,33 @@
 
 namespace AZ
 {
+    //! Helper macro to define a child allocator with a custom name for the allocator
+    //! It provides the following types
+    //! "<_ALLOCATOR_CLASS>" for use with the AZ::AllocatorInstance template and the AZ_CLASS_ALLOCATOR macro
+    //! "<_ALLOCATOR_CLASS>_for_std_t" for use with AZStd container types such as AZStd::vector, AZStd::basic_string, etc...
+    //! Ex. AZ_CHILD_ALLOCATOR_WITH_NAME(FooAllocator, "Foo", "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}", AZ::SystemAllocator)
+    //! Would create an allocator type which piggybacks off of the parent allocator schema named the following
+    //! `FooAllocator` and `FooAllocator_for_std_t`
+    //! The `FooAllocator` can be supplied as AZ_CLASS_ALLOCATOR for a class
+    //! Such as `class VoxelCoordinates { AZ_CLASS_ALLOCATOR(VoxelCoordinates, FooAllocator); };`
+    //!
+    //! The `FooAllocator_for_std_t` can be supplied as the allocator argument to AZStd container such as an AZStd::vector
+    //! Such as `AZStd::vector<AZ::Vector4, FooAllocator_for_std_t> m_var;`
+#define AZ_CHILD_ALLOCATOR_WITH_NAME(_ALLOCATOR_CLASS, _ALLOCATOR_NAME, _ALLOCATOR_UUID, _ALLOCATOR_BASE) \
+    class _ALLOCATOR_CLASS \
+        : public AZ::ChildAllocatorSchema<_ALLOCATOR_BASE> \
+    { \
+        friend class AZ::AllocatorInstance<_ALLOCATOR_CLASS>; \
+    public: \
+        AZ_TYPE_INFO_WITH_NAME_DECL(_ALLOCATOR_CLASS); \
+        using Base = AZ::ChildAllocatorSchema<_ALLOCATOR_BASE>; \
+        AZ_RTTI_NO_TYPE_INFO_DECL(); \
+    };\
+    \
+    using AZ_JOIN(_ALLOCATOR_CLASS, _for_std_t) = AZ::AZStdAlloc<_ALLOCATOR_CLASS>; \
+    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(_ALLOCATOR_CLASS, _ALLOCATOR_NAME, _ALLOCATOR_UUID); \
+    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(_ALLOCATOR_CLASS, _ALLOCATOR_CLASS ::Base);
+
     // Schema which acts as a pass through to another allocator. This allows for allocators
     // which exist purely to categorize/track memory separately, piggy backing on the
     // structure of another allocator
@@ -112,7 +139,7 @@ namespace AZ
             AZ_Assert(
                 m_totalAllocatedBytes >= 0,
                 "Total allocated bytes is less than zero with a value of %td. Was deallocate() invoked with an address "
-                "that is not associated with this allocator. This should never occur",
+                "that is not associated with this allocator? This should never occur",
                 m_totalAllocatedBytes.load());
             return static_cast<size_type>(m_totalAllocatedBytes);
         }

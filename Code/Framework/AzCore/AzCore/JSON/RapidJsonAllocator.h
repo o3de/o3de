@@ -13,13 +13,7 @@
 
 namespace AZ::JSON
 {
-    class RapidJSONAllocator
-        : public AZ::ChildAllocatorSchema<AZ::OSAllocator>
-    {
-        using Base = AZ::ChildAllocatorSchema<AZ::OSAllocator>;
-    public:
-        AZ_RTTI(RapidJSONAllocator, "{CCD24805-0E41-48CC-B92E-DB77F10FBEE3}", Base);
-    };
+    AZ_CHILD_ALLOCATOR_WITH_NAME(RapidJSONAllocator, "RapidJSONAllocator", "{CCD24805-0E41-48CC-B92E-DB77F10FBEE3}", AZ::OSAllocator);
 } // namespace AZ::JSON
 
 

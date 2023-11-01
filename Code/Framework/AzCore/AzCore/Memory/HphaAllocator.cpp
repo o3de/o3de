@@ -2078,8 +2078,7 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
-        -> AllocateAddress
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
     {
         AllocateAddress address = realloc(ptr, newSize, static_cast<size_t>(alignment));
         if (address.GetAddress() == nullptr && newSize > 0)
@@ -2427,8 +2426,7 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::allocate(size_type byteSize, size_type alignment)
-        -> AllocateAddress
+    AllocateAddress HphaSchemaBase<DebugAllocator>::allocate(size_type byteSize, size_type alignment)
     {
         return m_allocator->allocate(byteSize, alignment);
     }
@@ -2438,8 +2436,7 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
-        -> AllocateAddress
+    AllocateAddress HphaSchemaBase<DebugAllocator>::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
         return m_allocator->reallocate(ptr, newSize, newAlignment);
     }

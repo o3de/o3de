@@ -45,15 +45,7 @@ namespace AZ::Dom
 
     //! The allocator used by Value.
     //! Value heap allocates shared_ptrs for its container storage (Array / Object / Node) alongside
-    class ValueAllocator
-        : public AZ::ChildAllocatorSchema<AZ::SystemAllocator>
-    {
-        using Base = AZ::ChildAllocatorSchema<AZ::SystemAllocator>;
-    public:
-        AZ_RTTI(ValueAllocator, "{5BC8B389-72C7-459E-B502-12E74D61869F}", Base);
-    };
-
-    using StdValueAllocator = AZStdAlloc<ValueAllocator>;
+    AZ_CHILD_ALLOCATOR_WITH_NAME(ValueAllocator, "ValueAllocator", "{5BC8B389-72C7-459E-B502-12E74D61869F}", AZ::SystemAllocator);
 
     class Value;
 
@@ -61,11 +53,11 @@ namespace AZ::Dom
     class Array
     {
     public:
-        using ContainerType = AZStd::vector<Value, StdValueAllocator>;
+        using ContainerType = AZStd::vector<Value, ValueAllocator_for_std_t>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 4;
-        static_assert((ReserveIncrement & (ReserveIncrement - 1)) == 0, "ReserveIncremenet must be a power of 2");
+        static_assert((ReserveIncrement & (ReserveIncrement - 1)) == 0, "ReserveIncrement must be a power of 2");
 
         const ContainerType& GetValues() const;
 
@@ -83,7 +75,7 @@ namespace AZ::Dom
     {
     public:
         using EntryType = AZStd::pair<KeyType, Value>;
-        using ContainerType = AZStd::vector<EntryType, StdValueAllocator>;
+        using ContainerType = AZStd::vector<EntryType, ValueAllocator_for_std_t>;
         using Iterator = ContainerType::iterator;
         using ConstIterator = ContainerType::const_iterator;
         static constexpr const size_t ReserveIncrement = 8;

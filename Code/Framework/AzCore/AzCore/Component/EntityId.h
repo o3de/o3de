@@ -21,15 +21,7 @@
 
 namespace AZ
 {
-    class EntityAllocator final
-        : public AZ::ChildAllocatorSchema<AZ::SystemAllocator>
-    {
-        using Base = AZ::ChildAllocatorSchema<AZ::SystemAllocator>;
-    public:
-        AZ_RTTI(EntityAllocator, "{C3FA54B6-DAFC-44A8-98C2-7EB0ACF92BE8}", Base);
-    };
-
-    using EntityStdAllocator = AZ::AZStdAlloc<EntityAllocator>;
+    AZ_CHILD_ALLOCATOR_WITH_NAME(EntityAllocator, "EntityAllocator", "{C3FA54B6-DAFC-44A8-98C2-7EB0ACF92BE8}", SystemAllocator);
 
     /**
      * Entity ID type.

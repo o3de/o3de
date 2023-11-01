@@ -711,7 +711,7 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    auto PoolSchema::allocate(size_type byteSize, size_type alignment) -> AllocateAddress
+    AllocateAddress PoolSchema::allocate(size_type byteSize, size_type alignment)
     {
         return m_impl->Allocate(byteSize, alignment);
     }
@@ -745,7 +745,7 @@ namespace AZ
     // AllocationSize
     // [11/22/2010]
     //=========================================================================
-    PoolSchema::size_type PoolSchema::get_allocated_size(pointer ptr, align_type alignment) const
+    auto PoolSchema::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
     {
         return m_impl->get_allocated_size(ptr, alignment);
     }
@@ -766,7 +766,7 @@ namespace AZ
     // NumAllocatedBytes
     // [11/1/2010]
     //=========================================================================
-    PoolSchema::size_type PoolSchema::NumAllocatedBytes() const
+    auto PoolSchema::NumAllocatedBytes() const -> size_type
     {
         return m_impl->m_allocator.m_numBytesAllocated;
     }
