@@ -15,8 +15,6 @@ namespace AZ
 
     namespace RPI
     {
-        class LuaMaterialBehaviorContext;
-
         //! Manages system-wide initialization and support for material classes
         class MaterialSystem
         {
@@ -26,9 +24,6 @@ namespace AZ
 
             void Init();
             void Shutdown();
-
-        private:
-            LuaMaterialBehaviorContext* m_luaMaterialBehaviorContext = nullptr;
         };
 
     } // namespace RPI
