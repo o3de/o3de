@@ -250,13 +250,13 @@ namespace AZ
     {
 #if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
         static volatile unsigned int blockingDialogCounter = 0;
-        bool NativeUISystemComponent::IsDisplayingBlockingDialog() const
+        bool NativeUISystem::IsDisplayingBlockingDialog() const
         {
             return blockingDialogCounter > 0;
         }
 #endif
 
-        AZStd::string NativeUISystemComponent::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
+        AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
             if (options.size() >= MAX_ITEMS)
             {
