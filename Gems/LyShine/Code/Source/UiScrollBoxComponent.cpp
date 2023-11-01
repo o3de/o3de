@@ -1269,6 +1269,58 @@ void UiScrollBoxComponent::OnCanvasSpaceRectChanged([[maybe_unused]] AZ::EntityI
     }
 }
 
+#if defined(CARBONATED)
+void UiScrollBoxComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+{
+    if (!m_momentumIsActive && m_isDragging)
+    {
+        m_draggingTimeAccumulator += deltaTime;
+        // Detect if stopped by checking if immediate offset change falls below threshold
+        if ((m_lastOffsetChange/m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD)
+            m_stoppingTimeAccumulator += deltaTime;
+        else
+            m_stoppingTimeAccumulator = 0.0f;
+    }
+    
+    // Stop momentum if off or already ran the full momentum duration
+    if (!m_momentumIsActive ||
+        m_momentumDuration < m_momentumTimeAccumulator)
+        return;
+    
+    // Stop momentum if no dragging accumulator, or not enough drag, or if stopped for long enough
+    if (m_draggingTimeAccumulator == 0.0f ||
+        (m_offsetChangeAccumulator/m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD ||
+        m_stoppingTimeAccumulator > MAX_STOPPING_DELAY)
+        return;
+    
+    m_momentumTimeAccumulator += deltaTime;
+
+    float momentumRatio = AZ::GetClamp(m_momentumTimeAccumulator / m_momentumDuration, 0.0f, 1.0f);
+    float momentumEasing = 1.0f + (momentumRatio - 1.0f) * (momentumRatio - 1.0f) * (momentumRatio - 1.0f); // Ease Out Cubic decrease
+
+    // m_offsetChangeAccumulator is the aggregated unidirectional scrolling, inverse easing for deceleration
+    AZ::Vector2 momentumOffsetChange = m_offsetChangeAccumulator * ( deltaTime / m_draggingTimeAccumulator) * (1.0f - momentumEasing);
+    AZ::Vector2 newScrollOffset = m_scrollOffset + momentumOffsetChange;
+
+    // do constraining
+    if (m_isScrollingConstrained)
+    {
+        AZ::Entity* contentParentEntity = nullptr;
+        EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+        newScrollOffset = ConstrainOffset(newScrollOffset, contentParentEntity);
+    }
+
+    if (newScrollOffset != m_scrollOffset)
+    {
+        DoSetScrollOffset(newScrollOffset);
+
+        NotifyScrollersOnValueChanging();
+
+        DoChangingActions();
+    }
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PROTECTED MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
