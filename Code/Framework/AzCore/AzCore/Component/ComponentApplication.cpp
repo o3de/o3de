@@ -660,10 +660,6 @@ namespace AZ
         // in the OS and use that as the startup cfg path
         auto QueryStartupEnv = [](char* buffer, size_t size) -> size_t
         {
-            // 1024 is an arbitrary power of 2 size that we already have
-            // a template instantiation of(so therefore the symbol size of the library will not increase).
-            // It should be more than enough to store any reasonable environment variable name that the caller
-            // would want to query
             constexpr const char* StartupCfgEnvKey = "O3DE_STARTUP_CFG_FILE";
             auto getEnvOutcome = AZ::Utils::GetEnv(AZStd::span(buffer, size), StartupCfgEnvKey);
             return getEnvOutcome ? getEnvOutcome.GetValue().size() : 0;
@@ -730,14 +726,9 @@ namespace AZ
                     AZ::Debug::AllocationRecords::Mode mode = allocatorManager.GetDefaultTrackingMode();
                     if (!AZ::ConsoleTypeHelpers::ToValue(mode, configEntry.m_keyValuePair.m_value))
                     {
-                        // If the conversion from string to AllocationsRecords::Mode failed, then
-                        // try to parse the value as a bool and if the bool is true, set the AllocationRecords::Mode
-                        // to record full records
-                        if (bool boolMode{}; AZ::ConsoleTypeHelpers::ToValue(boolMode, configEntry.m_keyValuePair.m_value))
-                        {
-                            mode = boolMode ? AZ::Debug::AllocationRecords::Mode::RECORD_FULL
-                                            : AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS;
-                        }
+                        // The tracking value was unable to be converted to an enum, so return true
+                        // to parse the next command line entry
+                        return true;
                     }
 
                     allocatorManager.SetTrackingForAllocator(allocatorName, mode);
