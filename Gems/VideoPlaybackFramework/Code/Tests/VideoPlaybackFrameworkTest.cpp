@@ -19,7 +19,7 @@ TEST(VideoPlaybackFrameworkTest, ComponentsWithComponentApplication)
     AZ::ComponentApplication::Descriptor appDesc;
     appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
     appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-    appDesc.m_stackRecordLevels = 20;
+    // appDesc.m_stackRecordLevels = 20; // Gruber patch // VMED
 
     AZ::ComponentApplication app;
     AZ::Entity* systemEntity = app.Create(appDesc);
@@ -44,7 +44,7 @@ protected:
         AZ::ComponentApplication::Descriptor appDesc;
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
         appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-        appDesc.m_stackRecordLevels = 20;
+        // appDesc.m_stackRecordLevels = 20; // Gruber patch // VMED
 
         AZ::ComponentApplication::StartupParameters appStartup;
         appStartup.m_createStaticModulesCallback =
@@ -75,4 +75,4 @@ TEST_F(VideoPlaybackFrameworkTestApp, VideoPlaybackFramework_BasicApp)
     ASSERT_TRUE(true);
 }
 
-AZ_UNIT_TEST_HOOK();
+AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV); // Gruber patch // VMED
