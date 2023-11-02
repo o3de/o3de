@@ -438,6 +438,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetShadowEnabled(LightHandle handle, bool enable)
         {
+            m_shadowingLightHandle.Reset();
             if (enable)
             {
                 m_shadowingLightHandle = handle;

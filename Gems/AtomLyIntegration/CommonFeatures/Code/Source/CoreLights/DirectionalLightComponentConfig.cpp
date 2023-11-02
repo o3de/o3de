@@ -126,13 +126,12 @@ namespace AZ
 
         bool DirectionalLightComponentConfig::IsShadowPcfDisabled() const
         {
-            return !(!m_shadowEnabled || m_shadowFilterMethod == ShadowFilterMethod::Pcf);
+            return !m_shadowEnabled || m_shadowFilterMethod != ShadowFilterMethod::Pcf;
         }
 
         bool DirectionalLightComponentConfig::IsEsmDisabled() const
         {
-            return !(
-                !m_shadowEnabled || m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+            return !m_shadowEnabled || m_shadowFilterMethod != ShadowFilterMethod::Esm || m_shadowFilterMethod != ShadowFilterMethod::EsmPcf;
         }
 
         AZ::Crc32 DirectionalLightComponentConfig::UpdateCascadeFarDepths()
