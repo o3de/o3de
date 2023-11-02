@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/std/utility/tuple_fwd.h>
-
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/function/invoke.h>
 #include <AzCore/std/hash.h>
