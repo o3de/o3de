@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Script/ScriptAsset.h>
+#include <AzCore/Script/ScriptSystemBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 namespace AZ
@@ -163,10 +164,16 @@ namespace AZ
                 return Failure();
             }
 
-            AZ::ScriptContext scriptContext;
+            ScriptContext* scriptContext{};
+            ScriptSystemRequestBus::BroadcastResult(scriptContext, &ScriptSystemRequests::GetContext, ScriptContextIds::DefaultScriptContextId);
+            if (scriptContext == nullptr)
+            {
+                AZ_ErrorOnce("LuaMaterialFunctorSourceData", false, "Global script context is not available. Cannot execute script");
+                return Failure();
+            }
 
             auto scriptBuffer = functor->GetScriptBuffer();
-            if (!scriptContext.Execute(scriptBuffer.data(), functor->GetScriptDescription(), scriptBuffer.size()))
+            if (!scriptContext->Execute(scriptBuffer.data(), functor->GetScriptDescription(), scriptBuffer.size()))
             {
                 AZ_Error("LuaMaterialFunctorSourceData", false, "Error initializing script '%s'.", functor->m_scriptAsset.ToString<AZStd::string>().c_str());
                 return Failure();
@@ -174,8 +181,8 @@ namespace AZ
 
             // [GFX TODO][ATOM-6012]: Figure out how to make shader option dependencies and material property dependencies get automatically reported
 
-            auto materialPropertyDependencies = GetNameListFromLuaScript(scriptContext, "GetMaterialPropertyDependencies");
-            auto shaderOptionDependencies = GetNameListFromLuaScript(scriptContext, "GetShaderOptionDependencies");
+            auto materialPropertyDependencies = GetNameListFromLuaScript(*scriptContext, "GetMaterialPropertyDependencies");
+            auto shaderOptionDependencies = GetNameListFromLuaScript(*scriptContext, "GetShaderOptionDependencies");
 
             if (!materialPropertyDependencies.IsSuccess() || !shaderOptionDependencies.IsSuccess())
             {
