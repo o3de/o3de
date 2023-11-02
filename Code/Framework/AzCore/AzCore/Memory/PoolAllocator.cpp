@@ -1136,11 +1136,11 @@ namespace AZ
             // otherwise we will assert the node is in the list
             fakeLFNode->m_next = 0;
 #endif
+            // Query the allocated size of the ptr before pushing it on the freed element stack
+            const size_t allocatedSize = page->m_threadData->m_allocator.get_allocated_size(ptr);
             page->m_threadData->m_freedElements.push(*fakeLFNode);
 
-            // As the element is being deferred to its own thread
-            // return 0 as the amount of bytes that were deallocated
-            return 0;
+            return allocatedSize;
         }
     }
 
