@@ -58,7 +58,8 @@ namespace AZ
 
             bool Update(const Scene& parentScene, bool forceUpdate = false);
 
-            const RHI::DrawPacket* GetRHIDrawPacket() const;
+            RHI::DrawPacket* GetRHIDrawPacket() { return m_drawPacket.get(); }
+            const RHI::DrawPacket* GetRHIDrawPacket() const { return m_drawPacket.get(); }
             const RHI::ConstPtr<RHI::ConstantsLayout> GetRootConstantsLayout() const;
 
             void SetStencilRef(uint8_t stencilRef);
@@ -82,7 +83,7 @@ namespace AZ
             bool DoUpdate(const Scene& parentScene);
             void ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback);
 
-            ConstPtr<RHI::DrawPacket> m_drawPacket;
+            Ptr<RHI::DrawPacket> m_drawPacket;
 
             // Note, many of the following items are held locally in the MeshDrawPacket solely to keep them resident in memory as long as they are needed
             // for the m_drawPacket. RHI::DrawPacket uses raw pointers only, but we use smart pointers here to hold on to the data.

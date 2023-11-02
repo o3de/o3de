@@ -30,6 +30,7 @@
 #include <RHI/Pipeline.h>
 #include <RHI/SwapChain.h>
 #include <RHI/WSISurface.h>
+#include <RHI/WindowSurfaceBus.h>
 #include <Vulkan_Traits_Platform.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
@@ -798,17 +799,32 @@ namespace AZ
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             AZStd::vector<RHI::Format> formatsList;
-            WSISurface::Descriptor surfaceDescriptor{windowHandle};
-            RHI::Ptr<WSISurface> surface = WSISurface::Create();
-            const RHI::ResultCode result = surface->Init(surfaceDescriptor);
-            if (result != RHI::ResultCode::Success)
+            // On some platforms (e.g. Android) we cannot create a new WSISurface if the window is already connected to one, so we first
+            // check if the window is connected to one.
+            VkSurfaceKHR vkSurface = VK_NULL_HANDLE;
+            WindowSurfaceRequestsBus::EventResult(vkSurface, windowHandle, &WindowSurfaceRequestsBus::Events::GetNativeSurface);
+            RHI::Ptr<WSISurface> surface;
+            if (vkSurface == VK_NULL_HANDLE)
+            {
+                // Window is not connected to a WSISurface, so we create a temporary one to be able to get the valid device surface formats.
+                WSISurface::Descriptor surfaceDescriptor{ windowHandle };
+                surface = WSISurface::Create();
+                const RHI::ResultCode result = surface->Init(surfaceDescriptor);
+                if (result == RHI::ResultCode::Success)
+                {
+                    vkSurface = surface->GetNativeSurface();
+                }
+            }
+
+            if (vkSurface == VK_NULL_HANDLE)
             {
                 return formatsList;
             }
+
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             uint32_t surfaceFormatCount = 0;
             AssertSuccess(GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
-                physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
+                physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, nullptr));
             if (surfaceFormatCount == 0)
             {
                 AZ_Assert(false, "Surface support no format.");
@@ -817,7 +833,7 @@ namespace AZ
 
             AZStd::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
             AssertSuccess(GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
-                physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
+                physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, surfaceFormats.data()));
 
             AZStd::set<RHI::Format> formats;
             for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
@@ -1167,6 +1183,7 @@ namespace AZ
                     }
                 }
             }
+            m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

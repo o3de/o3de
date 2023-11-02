@@ -10,10 +10,10 @@
 
 namespace AzToolsFramework
 {
-    KeyQueryDPE::KeyQueryDPE(AZ::DocumentPropertyEditor::DocumentAdapterPtr* keyQueryAdatper, QWidget* parentWidget)
+    KeyQueryDPE::KeyQueryDPE(AZ::DocumentPropertyEditor::DocumentAdapterPtr keyQueryAdapter, QWidget* parentWidget)
         : QDialog(parentWidget)
     {
         setupUi(this);
-        dpe->SetAdapter(*keyQueryAdatper);
+        dpe->SetAdapter(keyQueryAdapter);
     }
 } // namespace AzToolsFramework

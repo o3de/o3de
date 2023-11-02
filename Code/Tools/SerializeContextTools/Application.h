@@ -24,6 +24,8 @@ namespace AZ::SerializeContextTools
     public:
         AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator)
         Application(int argc, char** argv, AZ::IO::FileDescriptorCapturer* stdoutCapturer = {});
+        Application(int argc, char** argv, ComponentApplicationSettings componentAppSettings);
+        Application(int argc, char** argv, AZ::IO::FileDescriptorCapturer* stdoutCapturer, ComponentApplicationSettings componentAppSettings);
         ~Application() override = default;
 
         const char* GetConfigFilePath() const;

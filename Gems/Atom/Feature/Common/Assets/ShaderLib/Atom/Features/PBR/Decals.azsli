@@ -107,7 +107,7 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
             break;            
         }
         
-        const float decalAttenuation = GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);
+        const float decalAttenuation = GetDecalAttenuation(surface.GetVertexNormal(), decalRot[2], decal.m_angleAttenuation);
         const float albedoOpacity = baseMap.a * decal.m_opacity * decalAttenuation;
         surface.albedo = lerp(surface.albedo, baseMap.rgb, albedoOpacity);      
 

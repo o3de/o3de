@@ -23,20 +23,21 @@ namespace AZ
         {
             MaterialComponentConfig::Reflect(context);
 
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialComponentController>()
                     ->Version(1)
                     ->Field("Configuration", &MaterialComponentController::m_configuration)
                     ;
             }
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<MaterialComponentRequestBus>("MaterialComponentRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
-                    ->Event("GetDefautMaterialMap", &MaterialComponentRequestBus::Events::GetDefautMaterialMap, "GetOriginalMaterialAssignments")
+                    ->Event("GetDefaultMaterialMap", &MaterialComponentRequestBus::Events::GetDefaultMaterialMap, "GetDefautMaterialMap")
                     ->Event("FindMaterialAssignmentId", &MaterialComponentRequestBus::Events::FindMaterialAssignmentId)
                     ->Event("GetActiveMaterialAssetId", &MaterialComponentRequestBus::Events::GetMaterialAssetId) // This function is now redundant but cannot be marked deprecated or removed in case it's still referenced in script
                     ->Event("GetDefaultMaterialAssetId", &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId)
@@ -232,13 +233,14 @@ namespace AZ
         void MaterialComponentController::LoadMaterials()
         {
             // Caching previously loaded unique materials to avoid unloading and reloading assets that have not changed
-            const auto uniqueMaterialMapBeforeLoad = m_uniqueMaterialMap;
+            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> uniqueMaterialMapBeforeLoad;
+            AZStd::swap(uniqueMaterialMapBeforeLoad, m_uniqueMaterialMap);
 
             // Clear any previously loaded or queued material assets, instances, or notifications
             ReleaseMaterials();
 
             MaterialConsumerRequestBus::EventResult(
-                m_defaultMaterialMap, m_entityId, &MaterialConsumerRequestBus::Events::GetDefautMaterialMap);
+                m_defaultMaterialMap, m_entityId, &MaterialConsumerRequestBus::Events::GetDefaultMaterialMap);
 
             // Build tables of all referenced materials so that we can load and look up defaults
             for (const auto& [materialAssignmentId, materialAssignment] : m_defaultMaterialMap)
@@ -262,8 +264,10 @@ namespace AZ
             {
                 if (uniqueMaterial.GetId().IsValid())
                 {
-                    AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
-                    if (uniqueMaterial.QueueLoad())
+                    AZ::Data::AssetLoadParameters loadParams;
+                    loadParams.m_dependencyRules = AZ::Data::AssetDependencyLoadRules::LoadAll;
+                    loadParams.m_reloadMissingDependencies = true;
+                    if (uniqueMaterial.QueueLoad(loadParams))
                     {
                         anyQueued = true;
                     }
@@ -271,6 +275,8 @@ namespace AZ
                     {
                         DisplayMissingAssetWarning(uniqueMaterial);
                     }
+
+                    AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
                 }
             }
 
@@ -344,7 +350,7 @@ namespace AZ
             }
         }
 
-        MaterialAssignmentMap MaterialComponentController::GetDefautMaterialMap() const
+        MaterialAssignmentMap MaterialComponentController::GetDefaultMaterialMap() const
         {
             return m_defaultMaterialMap;
         }

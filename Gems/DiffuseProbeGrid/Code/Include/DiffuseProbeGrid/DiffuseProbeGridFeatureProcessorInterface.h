@@ -151,6 +151,7 @@ namespace AZ
             virtual void SetVisualizationShowInactiveProbes(const DiffuseProbeGridHandle& probeGrid, bool visualizationShowInactiveProbes) = 0;
             virtual void SetVisualizationSphereRadius(const DiffuseProbeGridHandle& probeGrid, float visualizationSphereRadius) = 0;
 
+            virtual bool CanBakeTextures() = 0;
             virtual void BakeTextures(
                 const DiffuseProbeGridHandle& probeGrid,
                 DiffuseProbeGridBakeTexturesCallback callback,

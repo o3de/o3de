@@ -139,6 +139,7 @@ namespace AzToolsFramework
                     this,
                     [this]
                     {
+                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewSceneSettings, m_currentEntry);
                         m_settingsSwitcher->setCurrentIndex(1);
                         m_sceneSettingsButton->setChecked(true);
                         m_detailsButton->setChecked(false);
@@ -386,7 +387,7 @@ namespace AzToolsFramework
             {
                 bool validSceneSettings = false;
                 AssetBrowserPreviewRequestBus::BroadcastResult(
-                    validSceneSettings, &AssetBrowserPreviewRequest::PreviewSceneSettings, selectedEntry);
+                    validSceneSettings, &AssetBrowserPreviewRequest::HandleSource, selectedEntry);
                 if (validSceneSettings)
                 {
                     QString defaultSettings = fileType.isEmpty() ? "Scene" : fileType;

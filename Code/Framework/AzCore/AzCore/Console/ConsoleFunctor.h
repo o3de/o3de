@@ -126,9 +126,15 @@ namespace AZ
     };
 
     template<class T>
-    struct ConsoleCommandMemberFunctorSignature <T, AZStd::enable_if_t<AZStd::is_class_v<T>>>
+    struct ConsoleCommandMemberFunctorSignature<T, AZStd::enable_if_t<AZStd::is_class_v<T> && !AZStd::is_const_v<T>>>
     {
         using type = void (T::*)(const ConsoleCommandContainer&);
+    };
+
+    template<class T>
+    struct ConsoleCommandMemberFunctorSignature <T, AZStd::enable_if_t<AZStd::is_class_v<T> && AZStd::is_const_v<T>>>
+    {
+        using type = void (T::*)(const ConsoleCommandContainer&) const;
     };
 
     //! @class ConsoleFunctor

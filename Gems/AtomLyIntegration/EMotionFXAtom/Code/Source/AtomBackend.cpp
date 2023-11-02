@@ -28,9 +28,10 @@ namespace AZ
             const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
             const AZ::Data::Asset<EMotionFX::Integration::ActorAsset>& asset,
             [[maybe_unused]] EMotionFX::Integration::SkinningMethod skinningMethod,
-            const AZ::Transform& worldTransform)
+            const AZ::Transform& worldTransform,
+            bool rayTracingEnabled)
         {
-            return aznew AZ::Render::AtomActorInstance(entityId, actorInstance, asset, worldTransform, skinningMethod);
+            return aznew AZ::Render::AtomActorInstance(entityId, actorInstance, asset, worldTransform, skinningMethod, rayTracingEnabled);
         }
     } // namespace Render
 } // namespace AZ

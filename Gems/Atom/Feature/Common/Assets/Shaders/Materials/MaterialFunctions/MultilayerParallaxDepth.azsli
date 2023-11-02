@@ -54,7 +54,7 @@
 {
     // Dummy variables to call the above function
     float depthCS = 1.0;
-    bool isClipped;
-    
+    bool isClipped = false;
+
     MultilayerSetPixelDepth(vertexBlendMask, positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 }

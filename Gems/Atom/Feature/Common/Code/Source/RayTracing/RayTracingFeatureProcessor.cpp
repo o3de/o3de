@@ -139,7 +139,12 @@ namespace AZ
                 MeshBlasInstance meshBlasInstance;
                 meshBlasInstance.m_count = 1;
                 meshBlasInstance.m_subMeshes.reserve(mesh.m_subMeshIndices.size());
+                meshBlasInstance.m_isSkinnedMesh = mesh.m_isSkinnedMesh;
                 itMeshBlasInstance = m_blasInstanceMap.insert({ mesh.m_assetId, meshBlasInstance }).first;
+                if (mesh.m_isSkinnedMesh)
+                {
+                    ++m_skinnedMeshCount;
+                }
             }
             else
             {
@@ -149,6 +154,8 @@ namespace AZ
             // create the BLAS buffers for each sub-mesh, or re-use existing BLAS objects if they were already created.
             // Note: all sub-meshes must either create new BLAS objects or re-use existing ones, otherwise it's an error (it's the same model in both cases)
             // Note: the buffer is just reserved here, the BLAS is built in the RayTracingAccelerationStructurePass
+            // Note: the build flags are set to be the same for each BLAS created for the mesh
+            RHI::RayTracingAccelerationStructureBuildFlags buildFlags = CreateRayTracingAccelerationStructureBuildFlags(mesh.m_isSkinnedMesh);
             [[maybe_unused]] bool blasInstanceFound = false;
             for (uint32_t subMeshIndex = 0; subMeshIndex < mesh.m_subMeshIndices.size(); ++subMeshIndex)
             {
@@ -160,6 +167,7 @@ namespace AZ
                         ->VertexFormat(subMesh.m_positionFormat)
                         ->VertexBuffer(subMesh.m_positionVertexBufferView)
                         ->IndexBuffer(subMesh.m_indexBufferView)
+                        ->BuildFlags(buildFlags)
                 ;
 
                 // determine if we have an existing BLAS object for this subMesh
@@ -308,6 +316,10 @@ namespace AZ
                     itBlas->second.m_count--;
                     if (itBlas->second.m_count == 0)
                     {
+                        if (itBlas->second.m_isSkinnedMesh)
+                        {
+                            --m_skinnedMeshCount;
+                        }
                         m_blasInstanceMap.erase(itBlas);
                     }
                 }
@@ -797,5 +809,20 @@ namespace AZ
                     });
             }
         }
-    }        
+
+        AZ::RHI::RayTracingAccelerationStructureBuildFlags RayTracingFeatureProcessor::CreateRayTracingAccelerationStructureBuildFlags(bool isSkinnedMesh)
+        {
+            AZ::RHI::RayTracingAccelerationStructureBuildFlags buildFlags;
+            if (isSkinnedMesh)
+            {
+                buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_UPDATE | AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_BUILD;
+            }
+            else
+            {
+                buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
+            }
+
+            return buildFlags;
+        }
+    }
 }

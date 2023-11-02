@@ -23,6 +23,19 @@ set(SERVER_LAUNCHERTYPE_HeadlessServerLauncher EXECUTABLE)
 set(SERVER_BUILD_DEPENDENCIES_HeadlessServerLauncher AZ::Launcher.Headless.Static AZ::AzGameFramework.Headless AZ::Launcher.Server.Static)
 set(SERVER_VARIANT_HeadlessServerLauncher HeadlessServers)
 
+# the following controls what visibility the various target properties are set to
+# and allow them to be overridden to "INTERFACE" in script-only mode.
+set(LAUNCHER_TARGET_PROPERTY_TYPE "PRIVATE")
+
+# in script_only_mode, generate interface targets.  If a real 'generic launcher' is added, this would
+# also be an opportunity to add imported exectables.
+if (O3DE_SCRIPT_ONLY)
+    set(PAL_TRAIT_LAUNCHERUNIFIED_LAUNCHER_TYPE INTERFACE)
+    set(SERVER_LAUNCHERTYPE_ServerLauncher INTERFACE)
+    set(SERVER_LAUNCHERTYPE_HeadlessServerLauncher INTERFACE)
+    set(LAUNCHER_TARGET_PROPERTY_TYPE INTERFACE) # you can only set interface properties on interfaces.
+endif()
+
 # Launcher targets for a project need to be generated when configuring a project.
 # When building the engine source, this file will be included by LauncherUnified's CMakeLists.txt
 # When using an installed engine, this file will be included by the FindLauncherGenerator.cmake script
@@ -121,7 +134,7 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
         PLATFORM_INCLUDE_FILES
             ${pal_dir}/launcher_project_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         COMPILE_DEFINITIONS
-            PRIVATE
+            ${LAUNCHER_TARGET_PROPERTY_TYPE}
                 # Adds the name of the project/game
                 LY_PROJECT_NAME="${project_name}"
                 # Adds the ${project_name}_GameLauncher target as a define so for the Settings Registry to use
@@ -129,11 +142,11 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                 # This is needed so that only gems for the project game launcher are loaded
                 LY_CMAKE_TARGET="${project_name}_GameLauncher"
         INCLUDE_DIRECTORIES
-            PRIVATE
+            ${LAUNCHER_TARGET_PROPERTY_TYPE}
                 .
                 ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher/Includes # required for StaticModules.inl
         BUILD_DEPENDENCIES
-            PRIVATE
+            ${LAUNCHER_TARGET_PROPERTY_TYPE}
                 AZ::Launcher.Static
                 AZ::Launcher.Game.Static
                 ${game_build_dependencies}
@@ -181,7 +194,7 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                 PLATFORM_INCLUDE_FILES
                     ${pal_dir}/launcher_project_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
                 COMPILE_DEFINITIONS
-                    PRIVATE
+                    ${LAUNCHER_TARGET_PROPERTY_TYPE}
                         # Adds the name of the project/game
                         LY_PROJECT_NAME="${project_name}"
                         # Adds the ${project_name}_${server_launcher_type} target as a define so for the Settings Registry to use
@@ -190,11 +203,11 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                         LY_CMAKE_TARGET="${project_name}_${server_launcher_type}"
 
                 INCLUDE_DIRECTORIES
-                    PRIVATE
+                    ${LAUNCHER_TARGET_PROPERTY_TYPE}
                         .
                         ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.${server_launcher_type}/Includes # required for StaticModules.inl
                 BUILD_DEPENDENCIES
-                    PRIVATE
+                    ${LAUNCHER_TARGET_PROPERTY_TYPE}
                         ${SERVER_BUILD_DEPENDENCIES_${server_launcher_type}}
                 RUNTIME_DEPENDENCIES
                     ${server_runtime_dependencies}
@@ -238,14 +251,14 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
     ################################################################################
     if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
         ly_add_target(
-            NAME ${project_name}.UnifiedLauncher APPLICATION
+            NAME ${project_name}.UnifiedLauncher ${PAL_TRAIT_LAUNCHERUNIFIED_LAUNCHER_TYPE}
             NAMESPACE AZ
             FILES_CMAKE
                 ${CMAKE_CURRENT_LIST_DIR}/launcher_project_files.cmake
             PLATFORM_INCLUDE_FILES
                 ${pal_dir}/launcher_project_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
             COMPILE_DEFINITIONS
-                PRIVATE
+                ${LAUNCHER_TARGET_PROPERTY_TYPE}
                     # Adds the name of the project/game
                     LY_PROJECT_NAME="${project_name}"
                     # Adds the ${project_name}_UnifiedLauncher target as a define so for the Settings Registry to use
@@ -253,11 +266,11 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                     # This is needed so that only gems for the project unified launcher are loaded
                     LY_CMAKE_TARGET="${project_name}_UnifiedLauncher"
             INCLUDE_DIRECTORIES
-                PRIVATE
+                ${LAUNCHER_TARGET_PROPERTY_TYPE}
                     .
                     ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.UnifiedLauncher/Includes # required for StaticModules.inl
             BUILD_DEPENDENCIES
-                PRIVATE
+                ${LAUNCHER_TARGET_PROPERTY_TYPE}
                     AZ::Launcher.Static
                     AZ::Launcher.Unified.Static
                     ${unified_build_dependencies}

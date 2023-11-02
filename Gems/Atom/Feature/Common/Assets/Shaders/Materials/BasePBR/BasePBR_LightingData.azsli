@@ -58,12 +58,13 @@ class LightingData_BasePBR
     real diffuseAmbientOcclusion;
     real specularOcclusion;
 
-    void Init(float3 positionWS, real3 normal, real roughnessLinear);
+    void Init(float3 positionWS, real3 specularNormal, real roughnessLinear);
     void CalculateMultiscatterCompensation(real3 specularF0, bool enabled);
     void FinalizeLighting(Surface surface);
+    real GetSpecularNdotV() { return NdotV; }
 };
 
-void LightingData_BasePBR::Init(float3 positionWS, real3 normal, real roughnessLinear)
+void LightingData_BasePBR::Init(float3 positionWS, real3 specularNormal, real roughnessLinear)
 {
     diffuseLighting = real3(0.0, 0.0, 0.0);
     specularLighting = real3(0.0, 0.0, 0.0);
@@ -78,7 +79,7 @@ void LightingData_BasePBR::Init(float3 positionWS, real3 normal, real roughnessL
     dirToCamera = real3(normalize(ViewSrg::m_worldPosition.xyz - positionWS));
 
     // sample BRDF map (indexed by smoothness values rather than roughness)
-    NdotV = saturate(dot(normal, dirToCamera));
+    NdotV = saturate(dot(specularNormal, dirToCamera));
     real2 brdfUV = real2(NdotV, (1.0 - roughnessLinear));
     brdf = real2(PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg);
 }

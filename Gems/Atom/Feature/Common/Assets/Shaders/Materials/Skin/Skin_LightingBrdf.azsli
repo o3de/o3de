@@ -4,8 +4,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
- */
 
+ */
 #pragma once
 
 // This #define magic lets you use the GetDiffuseLighting & GetSpecularLighting functions in this file without making them the final functions
@@ -32,7 +32,7 @@
 // Then define the Diffuse and Specular lighting functions
 real3 GetDiffuseLighting_Skin(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
-    real3 diffuse = NormalizedDisneyDiffuse(surface.albedo, surface.normal, lightingData.dirToCamera, dirToLight, surface.roughnessLinear);
+    real3 diffuse = NormalizedDisneyDiffuse(surface.albedo, surface.GetDiffuseNormal(), lightingData.dirToCamera, dirToLight, surface.roughnessLinear);
     diffuse *= lightIntensity;
     return diffuse;
 }
@@ -40,11 +40,11 @@ real3 GetDiffuseLighting_Skin(Surface surface, LightingData lightingData, real3 
 
 real3 GetSpecularLighting_Skin(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
 {
-    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.GetSpecularF0(), lightingData.GetSpecularNdotV(), surface.roughnessA2, lightingData.multiScatterCompensation);
 
     if(o_enableDualSpecular)
     {
-        real3 dualSpecular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.dualSpecF0.xxx, lightingData.NdotV, surface.dualSpecRoughnessA2, lightingData.multiScatterCompensation);
+        real3 dualSpecular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.GetSpecularNormal(), surface.dualSpecF0.xxx, lightingData.GetSpecularNdotV(), surface.dualSpecRoughnessA2, lightingData.multiScatterCompensation);
         specular = lerp(specular, dualSpecular, surface.dualSpecFactor);
     }
 

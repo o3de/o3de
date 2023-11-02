@@ -20,7 +20,7 @@ namespace AZ
         const Data::Instance<Image> ShaderResourceGroup::s_nullImage;
         const Data::Instance<Buffer> ShaderResourceGroup::s_nullBuffer;
 
-        Data::InstanceId ShaderResourceGroup::MakeInstanceId(
+        Data::InstanceId ShaderResourceGroup::MakeSrgPoolInstanceId(
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
             AZ_Assert(!srgName.IsEmpty(), "Invalid ShaderResourceGroup name");
@@ -28,16 +28,30 @@ namespace AZ
             // Let's find the srg layout with the given name, because it contains the azsl file path of origin
             // which is essential to uniquely identify an SRG and avoid redundant copies in memory.
             auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(srgName, supervariantIndex);
-            AZ_Assert(srgLayout != nullptr, "Failed to find SRG with name %s, using supervariantIndex %u from shaderAsset %s", srgName.GetCStr(),
-                supervariantIndex.GetIndex(), shaderAsset.GetHint().c_str());
+            AZ_Assert(
+                srgLayout != nullptr,
+                "Failed to find SRG with name %s, using supervariantIndex %u from shaderAsset %s",
+                srgName.GetCStr(),
+                supervariantIndex.GetIndex(),
+                shaderAsset.GetHint().c_str());
 
-            // Create a uuid that combines string data for both the srgLayout and the srgName
-            AZ::Uuid instanceUuid =
-                AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(srgLayout->GetUniqueId().data()), srgLayout->GetUniqueId().size())
-                + AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(srgName.GetStringView().data()), srgName.GetStringView().size());
+            // Create the InstanceId by combining data from the SRG name and layout. This value does not need to be unique between
+            // asset IDs because the data can be shared as long as the names and layouts match.
+            const AZ::Uuid instanceUuid = AZ::Uuid::CreateName(srgLayout->GetUniqueId()) + AZ::Uuid::CreateName(srgName.GetStringView());
 
-            // Use the supervariantIndex as the subId for the InstanceId, since it is already an integer
-            return Data::InstanceId(instanceUuid, supervariantIndex.GetIndex());
+            // Create a union to split the 64 bit layout hash into 32 bit unsigned integers for use as instance ID sub IDs 
+            union {
+                AZ::HashValue64 hash64;
+                struct
+                {
+                    uint32_t x;
+                    uint32_t y;
+                };
+            } hashUnion;
+            hashUnion.hash64 = srgLayout->GetHash();
+
+            // Use the supervariantIndex and layout hash as the subIds for the InstanceId
+            return Data::InstanceId::CreateUuid(instanceUuid, { supervariantIndex.GetIndex(), hashUnion.x, hashUnion.y });
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(

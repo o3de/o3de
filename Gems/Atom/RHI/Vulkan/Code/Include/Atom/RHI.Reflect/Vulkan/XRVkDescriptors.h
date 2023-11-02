@@ -63,31 +63,6 @@ namespace AZ::Vulkan
         } m_inputData;
     };
 
-    class XRSessionDescriptor final
-        : public RHI::XRSessionDescriptor
-    {
-        using Base = RHI::XRSessionDescriptor;
-
-    public:
-        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator);
-        AZ_RTTI(XRSessionDescriptor, "{2859EB21-D013-496B-B922-7C903BC377CF}", Base);
-
-        XRSessionDescriptor() = default;
-        ~XRSessionDescriptor() = default;
-
-        struct GraphicsBinding
-        {
-            uint32_t m_queueFamilyIndex = 0;
-            uint32_t m_queueIndex = 0;
-        };
-
-        // Provided by the RHI::Vulkan backend
-        struct
-        {
-            GraphicsBinding m_graphicsBinding;
-        } m_inputData;
-    };
-
     class XRSwapChainDescriptor final
         : public RHI::XRSwapChainDescriptor
     {

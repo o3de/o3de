@@ -132,15 +132,6 @@ namespace AZ::RPI
 
         //! Return the X button state from the controller.
         virtual float GetTriggerState(const AZ::u32 handIndex) const = 0;
-
-        //! Initialize a shading rate image attachment of a pass template with contents suitable for a foveated level.
-        //! Returns the image that was created and initialized.
-        //! If no foveated level is specified, the value will be retrieved from the settings registry.
-        virtual AZ::Data::Instance<AZ::RPI::AttachmentImage> InitPassFoveatedAttachment(
-            [[maybe_unused]] const PassTemplate& passTemplate, [[maybe_unused]] const RHI::XRFoveatedLevel* level = nullptr) const
-        {
-            return nullptr;
-        };
     };
 
     //! This class contains the interface that will be used to register the XR system with RPI and RHI.

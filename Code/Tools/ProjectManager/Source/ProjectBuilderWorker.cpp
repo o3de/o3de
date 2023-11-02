@@ -145,8 +145,12 @@ namespace O3DE::ProjectManager
             logStream << configOutput;
             logStream.flush();
 
-            // Show last line of output
-            UpdateProgress(configOutput.split('\n', Qt::SkipEmptyParts).last());
+            // Show last line of output if any
+            auto configOutputLines = configOutput.split('\n', Qt::SkipEmptyParts);
+            if (configOutputLines.length() > 0)
+            {
+                UpdateProgress(configOutputLines.last());
+            }
 
             if (QThread::currentThread()->isInterruptionRequested())
             {

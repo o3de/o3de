@@ -49,8 +49,19 @@ static const qint64 s_ReservedDiskSpaceInBytes = 256 * 1024;
 //! Maximum number of temp folders allowed
 static const int s_MaximumTempFolders = 10000;
 
+
 ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject* parent)
-    : ApplicationManager(argc, argv, parent)
+    : ApplicationManagerBase(argc, argv, parent, {})
+{
+}
+
+ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManagerBase(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManager(argc, argv, parent, AZStd::move(componentAppSettings))
 {
     qRegisterMetaType<AZ::u32>("AZ::u32");
     qRegisterMetaType<AZ::Uuid>("AZ::Uuid");

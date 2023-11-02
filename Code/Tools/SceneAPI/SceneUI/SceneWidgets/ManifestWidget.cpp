@@ -166,7 +166,7 @@ namespace AZ
                 AZStd::sort(categories.begin(), categories.end(), 
                     [](const Events::ManifestMetaInfo::CategoryRegistration& lhs, const Events::ManifestMetaInfo::CategoryRegistration& rhs)
                     {
-                        return (rhs.m_preferredOrder - lhs.m_preferredOrder) > 0;
+                        return rhs.m_preferredOrder > lhs.m_preferredOrder;
                     }
                 );
 

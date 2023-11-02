@@ -518,6 +518,17 @@ namespace AZ
                 return AZ::Edit::PropertyRefreshLevels::None;
             }
 
+            if (!m_controller.CanBakeTextures())
+            {
+                QMessageBox::information(
+                    QApplication::activeWindow(),
+                    "Diffuse Probe Grid",
+                    "Can't bake the textures. Diffuse probe calculations require GPU raytracing support",
+                    QMessageBox::Ok);
+
+                return AZ::Edit::PropertyRefreshLevels::None;
+            }
+
             DiffuseProbeGridComponentConfig& configuration = m_controller.m_configuration;
 
             // retrieve the source image paths from the configuration

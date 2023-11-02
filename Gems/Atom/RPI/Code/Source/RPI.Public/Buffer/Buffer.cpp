@@ -26,10 +26,7 @@ namespace AZ
     {
         Data::Instance<Buffer> Buffer::FindOrCreate(const Data::Asset<BufferAsset>& bufferAsset)
         {
-            auto buffer = Data::InstanceDatabase<Buffer>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(bufferAsset.GetId()),
-                bufferAsset);
-            return buffer;
+            return Data::InstanceDatabase<Buffer>::Instance().FindOrCreate(Data::InstanceId::CreateFromAsset(bufferAsset), bufferAsset);
         }
         
         Buffer::Buffer()
