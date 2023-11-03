@@ -184,6 +184,9 @@ namespace AZ
                 reportError("Unable to query global script context. Is the ScriptSystemComponent active?");
                 return false;
             }
+
+            // Remove any MaterialTypeSetup functions from the lua global table before loading in new script
+            scriptContext->RemoveGlobal(MainFunctionName);
             if (!scriptContext->Execute(luaScriptContent.GetValue().data(), materialPipeline.m_pipelineScript.c_str(), luaScriptContent.GetValue().size()))
             {
                 reportError("Error initializing script.");

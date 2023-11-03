@@ -173,6 +173,9 @@ namespace AZ
             }
 
             auto scriptBuffer = functor->GetScriptBuffer();
+            // Remove any GetMaterialPropertyDependencies and GetShaderOptionDependencies functions on the global table
+            scriptContext->RemoveGlobal("GetMaterialPropertyDependencies");
+            scriptContext->RemoveGlobal("GetShaderOptionDependencies");
             if (!scriptContext->Execute(scriptBuffer.data(), functor->GetScriptDescription(), scriptBuffer.size()))
             {
                 AZ_Error("LuaMaterialFunctorSourceData", false, "Error initializing script '%s'.", functor->m_scriptAsset.ToString<AZStd::string>().c_str());

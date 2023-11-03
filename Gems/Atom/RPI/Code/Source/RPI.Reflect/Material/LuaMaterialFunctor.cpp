@@ -106,6 +106,12 @@ namespace AZ
             {
                 auto scriptBuffer = GetScriptBuffer();
 
+                // Remove any existing Process or ProcessEditor from the global table
+                // This prevents the case where the Lua ScriptContext could contain a Process/ProcessEditor
+                // from a previous call to ScriptContext::Execute, if current script doesn't provide those functions
+                scriptContext->RemoveGlobal("Process");
+                scriptContext->RemoveGlobal("ProcessEditor");
+
                 if (!scriptContext->Execute(scriptBuffer.data(), GetScriptDescription(), scriptBuffer.size()))
                 {
                     AZ_Error(LuaScriptUtilities::DebugName, false, "Error initializing script '%s'.", m_scriptAsset.ToString<AZStd::string>().c_str());
