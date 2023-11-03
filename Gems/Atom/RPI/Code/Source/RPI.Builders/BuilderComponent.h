@@ -19,6 +19,8 @@ namespace AZ
 {
     namespace RPI
     {
+        class LuaMaterialBehaviorContext;
+
         /**
          * This is a helper function for creating an asset builder unique_ptr instance and registering it.
          */
@@ -56,6 +58,7 @@ namespace AZ
             AZStd::vector< AZStd::unique_ptr<AZ::Data::AssetHandler> > m_assetHandlers;
 
             MaterialFunctorSourceDataRegistration m_materialFunctorRegistration;
+            LuaMaterialBehaviorContext* m_luaMaterialBehaviorContext = nullptr;
         };
     } // namespace RPI
 } // namespace AZ

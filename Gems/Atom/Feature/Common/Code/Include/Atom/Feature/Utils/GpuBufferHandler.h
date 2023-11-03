@@ -19,7 +19,7 @@ namespace AZ
     namespace Render
     {
 
-        // This helper class manages a re-sizable structured buffer which is (only) used for a shader's SRV
+        // This helper class manages a re-sizable structured or typed buffer which is (only) used for a shader's SRV
         class GpuBufferHandler
         {
         public:
@@ -31,6 +31,7 @@ namespace AZ
                 AZStd::string m_elementCountSrgName; // Name of the constant for buffer size in the SRG
                 const RHI::ShaderResourceGroupLayout* m_srgLayout = nullptr; // The srg to query for the buffer name and count.
                 uint32_t m_elementSize = 1; // The size of the elements stored in the buffer.
+                RHI::Format m_elementFormat = RHI::Format::Unknown; // Type of the elements (if typed)
             };
 
             GpuBufferHandler() = default;

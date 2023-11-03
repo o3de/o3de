@@ -25,6 +25,22 @@ namespace AZ
 
     namespace RPI
     {
+        class LuaMaterialBehaviorContext
+        {
+        public:
+            static LuaMaterialBehaviorContext* GetInstance();
+            static void SetInstance(LuaMaterialBehaviorContext* instance);
+
+            LuaMaterialBehaviorContext();
+
+            AZ::BehaviorContext* GetBehaviorContext();
+
+        private:
+            void ReflectScriptContext(AZ::BehaviorContext* behaviorContext);
+
+            AZStd::unique_ptr<AZ::BehaviorContext> m_sriptBehaviorContext;
+        };
+
         namespace LuaMaterialFunctorAPI
         {
             class CommonRuntimeConfiguration
@@ -418,9 +434,6 @@ namespace AZ
 
         private:
 
-            // Registers functions in a BehaviorContext so they can be exposed to Lua scripts.
-            static void ReflectScriptContext(AZ::BehaviorContext* context);
-
             void InitScriptContext();
 
             // Utility function that returns either m_scriptBuffer or the content of m_scriptAsset, depending on which as the data
@@ -432,7 +445,6 @@ namespace AZ
             Data::Asset<ScriptAsset> m_scriptAsset;
             AZStd::vector<char> m_scriptBuffer;
 
-            AZStd::unique_ptr<AZ::BehaviorContext> m_sriptBehaviorContext;
             AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext;
             
             MaterialNameContext m_materialNameContext;

@@ -22,6 +22,7 @@
 */Code/Framework/AzCore/AzCore/std/containers/variant.h
 */Code/Framework/AzCore/AzCore/std/parallel/binary_semaphore.h
 */Code/Framework/AzCore/AzCore/std/parallel/semaphore.h
+*/Code/Framework/AzCore/AzCore/Settings/SettingsRegistryMergeUtils.h
 */Code/Framework/AzCore/Platform/Android/AzCore/AzCore_Traits_Android.h
 */Code/Framework/AzCore/Platform/iOS/AzCore/AzCore_Traits_iOS.h
 */Code/Framework/AzCore/Platform/Jasper/AzCore/AzCore_Traits_Jasper.h
