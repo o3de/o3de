@@ -17,15 +17,23 @@
 
 namespace AZ
 {
-    /**
-    * A basic, default allocator implementation using a custom schema.
-    */
-    template <class Schema, bool ProfileAllocations=true, bool ReportOutOfMemory=true>
-    class SimpleSchemaAllocator
+    class SimpleSchemaAllocatorBase
         : public AllocatorBase
     {
     public:
-        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema), AllocatorBase);
+        AZ_RTTI(SimpleSchemaAllocatorBase, "{6B1DB724-B861-41A0-9FCF-6A5943007CA0}", AllocatorBase);
+        virtual IAllocator* GetSchema() const = 0;
+    };
+
+    /**
+    * A basic, default allocator implementation using a custom schema.
+    */
+    template<class Schema, bool ProfileAllocations = true, bool ReportOutOfMemory = true>
+    class SimpleSchemaAllocator
+        : public SimpleSchemaAllocatorBase
+    {
+    public:
+        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema), SimpleSchemaAllocatorBase);
 
         using pointer = typename Schema::pointer;
         using size_type = typename Schema::size_type;
@@ -154,6 +162,11 @@ namespace AZ
                 "that is not associated with the allocator? This should never occur",
                 m_totalAllocatedBytes.load());
             return static_cast<size_type>(m_totalAllocatedBytes);
+        }
+
+        IAllocator* GetSchema() const override
+        {
+            return m_schema;
         }
 
     protected:

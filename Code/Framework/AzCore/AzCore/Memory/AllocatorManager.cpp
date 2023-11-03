@@ -13,9 +13,11 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/AllocatorManager.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/IAllocator.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Memory/SimpleSchemaAllocator.h>
 
 #include <AzCore/Platform.h>
 
@@ -724,7 +726,7 @@ namespace AZ
 
         memset(m_dumpInfo, 0, sizeof(m_dumpInfo));
 
-        AZ_Printf(AZ::Debug::NoWindow, "Index,Name,Used kb,Reserved kb,Consumed kb\n");
+        AZ_Printf(AZ::Debug::NoWindow, "Index,Name,Used KiB,Reserved KiB,Consumed KiB,Parent Allocator\n");
 
         for (int i = 0; i < m_numAllocators; i++)
         {
@@ -733,6 +735,13 @@ namespace AZ
             size_t usedBytes = allocator->NumAllocatedBytes();
             size_t reservedBytes = allocator->Capacity();
             size_t consumedBytes = reservedBytes;
+            const char* parentName = "";
+            if (auto childAllocatorSchema = azrtti_cast<AZ::ChildAllocatorSchemaBase*>(allocator);
+                childAllocatorSchema != nullptr)
+            {
+                auto parentAllocator = childAllocatorSchema->GetParentAllocator();
+                parentName = parentAllocator != nullptr ? parentAllocator->GetName() : "";
+            }
 
             totalUsedBytes += usedBytes;
             totalReservedBytes += reservedBytes;
@@ -741,10 +750,18 @@ namespace AZ
             m_dumpInfo[i].m_used = usedBytes;
             m_dumpInfo[i].m_reserved = reservedBytes;
             m_dumpInfo[i].m_consumed = consumedBytes;
-            AZ_Printf(AZ::Debug::NoWindow, "%d,%s,%.2f,%.2f,%.2f\n", i, name, usedBytes / 1024.0f, reservedBytes / 1024.0f, consumedBytes / 1024.0f);
+            AZ_Printf(
+                AZ::Debug::NoWindow,
+                "%d,%s,%.2f,%.2f,%.2f,%s\n",
+                i,
+                name,
+                usedBytes / 1024.0f,
+                reservedBytes / 1024.0f,
+                consumedBytes / 1024.0f,
+                parentName);
         }
 
-        AZ_Printf(AZ::Debug::NoWindow, "-,Totals,%.2f,%.2f,%.2f\n", totalUsedBytes / 1024.0f, totalReservedBytes / 1024.0f, totalConsumedBytes / 1024.0f);
+        AZ_Printf(AZ::Debug::NoWindow, "-,Totals,%.2f,%.2f,%.2f,\n", totalUsedBytes / 1024.0f, totalReservedBytes / 1024.0f, totalConsumedBytes / 1024.0f);
         AZ_Printf(AZ::Debug::NoWindow, "%d allocators active\n", m_numAllocators);
     }
     void AllocatorManager::GetAllocatorStats(size_t& allocatedBytes, size_t& capacityBytes, AZStd::vector<AllocatorStats>* outStats)

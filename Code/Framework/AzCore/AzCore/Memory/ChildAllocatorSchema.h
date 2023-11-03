@@ -40,15 +40,26 @@ namespace AZ
     AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(_ALLOCATOR_CLASS, _ALLOCATOR_NAME, _ALLOCATOR_UUID); \
     AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(_ALLOCATOR_CLASS, _ALLOCATOR_CLASS ::Base);
 
+    // Base class for ChildAllocatorSchema template to allow
+    // rtti-cast to common type that indicates the allocator is a child allocator
+    // This classes exposes a method to get the parent allocator
+    class ChildAllocatorSchemaBase
+        : public AllocatorBase
+    {
+    public:
+        AZ_RTTI(ChildAllocatorSchemaBase, "{AF5C2C64-EED4-4BF7-BBD9-3328A81BBC00}", AllocatorBase);
+        virtual IAllocator* GetParentAllocator() const = 0;
+    };
+
     // Schema which acts as a pass through to another allocator. This allows for allocators
     // which exist purely to categorize/track memory separately, piggy backing on the
     // structure of another allocator
     template <class ParentAllocator>
     class ChildAllocatorSchema
-        : public AllocatorBase
+        : public ChildAllocatorSchemaBase
     {
     public:
-        AZ_RTTI((ChildAllocatorSchema, "{2A28BEF4-278A-4A98-AC7D-5C1D6D190A36}", ParentAllocator), AllocatorBase);
+        AZ_RTTI((ChildAllocatorSchema, "{2A28BEF4-278A-4A98-AC7D-5C1D6D190A36}", ParentAllocator), ChildAllocatorSchemaBase);
 
         using Parent = ParentAllocator;
 
@@ -142,6 +153,11 @@ namespace AZ
                 "that is not associated with this allocator? This should never occur",
                 m_totalAllocatedBytes.load());
             return static_cast<size_type>(m_totalAllocatedBytes);
+        }
+
+        IAllocator* GetParentAllocator() const override
+        {
+            return &AZ::AllocatorInstance<Parent>::Get();
         }
 
     private:
