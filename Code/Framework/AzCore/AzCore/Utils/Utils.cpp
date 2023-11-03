@@ -312,6 +312,24 @@ namespace AZ::Utils
         return {};
     }
 
+    AZ::IO::FixedMaxPathString GetDevWriteStoragePath(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_DevWriteStorage))
+            {
+                return settingsValue;
+            }
+        }
+        return {};
+    }
+
     AZ::IO::FixedMaxPathString GetProjectProductPathForPlatform(AZ::SettingsRegistryInterface* settingsRegistry)
     {
         if (settingsRegistry == nullptr)

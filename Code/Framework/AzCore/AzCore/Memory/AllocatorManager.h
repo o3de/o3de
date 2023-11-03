@@ -90,8 +90,11 @@ namespace AZ
         void SetDefaultProfilingState(bool newState) { m_defaultProfilingState = newState; }
         bool GetDefaultProfilingState() const { return m_defaultProfilingState; }
 
-        /// Outputs allocator useage to the console, and also stores the values in m_dumpInfo for viewing in the crash dump
+        /// Outputs allocator usage to the console, and also stores the values in m_dumpInfo for viewing in the crash dump
         void DumpAllocators();
+
+        void SetTrackingForAllocator(AZStd::string_view allocatorName, AZ::Debug::AllocationRecords::Mode recordMode);
+        bool RemoveTrackingForAllocator(AZStd::string_view allocatorName);
 
         struct DumpInfo
         {
@@ -149,7 +152,7 @@ namespace AZ
         AllocatorManager(const AllocatorManager&);
         AllocatorManager& operator=(const AllocatorManager&);
 
-        static const int m_maxNumAllocators = 100;
+        static constexpr int m_maxNumAllocators = 100;
         IAllocator*         m_allocators[m_maxNumAllocators];
         volatile int        m_numAllocators;
         OutOfMemoryCBType   m_outOfMemoryListener;
@@ -165,6 +168,18 @@ namespace AZ
 
         AZ::Debug::AllocationRecords::Mode m_defaultTrackingRecordMode;
 
+        using AllocatorName = AZStd::fixed_string<128>;
+        //! Stores the name
+        struct AllocatorTrackingConfig
+        {
+            AllocatorName m_allocatorName;
+            AZ::Debug::AllocationRecords::Mode m_recordMode{ AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS };
+        };
+        AZStd::fixed_vector<AllocatorTrackingConfig, m_maxNumAllocators> m_allocatorTrackingConfigs;
+
         static AllocatorManager g_allocMgr;    ///< The single instance of the allocator manager
+
+    private:
+        void ConfigureTrackingForAllocator(IAllocator* alloc, const AllocatorTrackingConfig& foundTrackingConfigIt);
     };
 }

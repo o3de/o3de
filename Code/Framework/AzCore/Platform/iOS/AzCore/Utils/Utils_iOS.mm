@@ -21,7 +21,7 @@ namespace AZ::Utils
         return AZ::IO::FixedMaxPathString::format("%s/assets", pathToResources);
     }
 
-    AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
+    AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultDevWriteStoragePath()
     {
         NSArray* appSupportDirectoryPaths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
         if ([appSupportDirectoryPaths count] == 0)

@@ -200,7 +200,7 @@ namespace AzToolsFramework
              *                        allow all components to be added at once, instead of deactivating and re-activating
              *                        the layer for each listener on this bus adding components.
              */
-            virtual void OnNewLayerEntity(const AZ::EntityId& entityId, AZStd::vector<AZ::Component*>& componentsToAdd) = 0;
+            virtual void OnNewLayerEntity(const AZ::EntityId& entityId, AZ::Entity::ComponentArrayType& componentsToAdd) = 0;
         };
         using EditorLayerCreationBus = AZ::EBus<EditorLayerCreationNotification>;
 

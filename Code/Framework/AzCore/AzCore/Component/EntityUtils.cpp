@@ -297,7 +297,7 @@ namespace AZ::EntityUtils
     }
 
     void ConvertComponentVectorToMap(
-        const AZ::Entity::ComponentArrayType& components, AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut)
+        AZStd::span<AZ::Component* const> components, AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut)
     {
         for (AZ::Component* component : components)
         {

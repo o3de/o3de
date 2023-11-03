@@ -431,9 +431,6 @@ namespace AZ
             // Only one of these will contain data, either an external asset or a built-in script buffer
             Data::Asset<ScriptAsset> m_scriptAsset;
             AZStd::vector<char> m_scriptBuffer;
-
-            AZStd::unique_ptr<AZ::BehaviorContext> m_sriptBehaviorContext;
-            AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext;
             
             MaterialNameContext m_materialNameContext;
             

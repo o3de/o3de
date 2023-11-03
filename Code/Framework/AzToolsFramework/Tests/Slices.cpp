@@ -437,11 +437,12 @@ namespace UnitTest
                     size_t liveAllocs = 0;
                     [[maybe_unused]] size_t totalAllocs = 0;
 
-                    auto cb = [&liveAllocs](void*, const AZ::Debug::AllocationInfo&, unsigned char)
-                        {
-                            ++liveAllocs;
-                            return true;
-                        };
+                    // enumeration only needs to occur once to get the total number of records being enumerated
+                    auto cb = [&liveAllocs](void*, const AZ::Debug::AllocationInfo&, unsigned char, size_t totalRecords)
+                    {
+                        liveAllocs = totalRecords;
+                        return false;
+                    };
 
                     AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords()->EnumerateAllocations(cb);
                     totalAllocs = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords()->RequestedAllocs();

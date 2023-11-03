@@ -1140,7 +1140,7 @@ namespace AZStd
     private:
         inline base_node_ptr_type create_node(const value_type& value)
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
             AZSTD_CONTAINER_ASSERT(newNode != NULL, "AZStd::rb_tree::create_node - failed to allocate node!");
 
             // copy construct
@@ -1155,7 +1155,7 @@ namespace AZStd
         template<class ... InputArguments>
         inline base_node_ptr_type create_node(InputArguments&& ... arguments)
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
             AZSTD_CONTAINER_ASSERT(newNode, "AZStd::rb_tree::create_node - failed to allocate node!");
 
             pointer ptr = &newNode->m_value;
