@@ -22,6 +22,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(SimpleSchemaAllocatorBase, "{6B1DB724-B861-41A0-9FCF-6A5943007CA0}", AllocatorBase);
+        using AllocatorBase::AllocatorBase;
         virtual IAllocator* GetSchema() const = 0;
     };
 

@@ -48,6 +48,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(ChildAllocatorSchemaBase, "{AF5C2C64-EED4-4BF7-BBD9-3328A81BBC00}", AllocatorBase);
+        using AllocatorBase::AllocatorBase;
         virtual IAllocator* GetParentAllocator() const = 0;
     };
 
@@ -75,7 +76,7 @@ namespace AZ
         //! @param enableProfiling determines whether the allocations should be recorded
         //! in an allocation records structure
         explicit ChildAllocatorSchema(bool enableProfiling)
-            : AllocatorBase{ enableProfiling }
+            : ChildAllocatorSchemaBase{ enableProfiling }
         {
             PostCreate();
         }
@@ -85,7 +86,7 @@ namespace AZ
         //! @param skipRegistration determines if this instance of the allocator
         //! should be registered with the allocator manager
         ChildAllocatorSchema(bool enableProfiling, bool skipRegistration)
-            : AllocatorBase{ enableProfiling }
+            : ChildAllocatorSchemaBase{ enableProfiling }
         {
             if (skipRegistration)
             {
