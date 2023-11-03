@@ -175,8 +175,17 @@ namespace MaterialCanvas
                   false),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/ForceDeleteGeneratedFiles",
-                  "Delete Files Before Compile",
+                  "Delete Files On Compile",
                   "This option forces files previously generated from the current graph to be deleted before creating new ones.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/Atom/MaterialCanvas/ForceClearAssetFingerprints",
+                  "Clear Asset Fingerprints On Compile",
+                  "This option forces the AP to reprocess generated files even if no differences were detected since last generated. This "
+                  "guarantees that notifications are sent for assets like materials that may not be changed even if their dependent "
+                  "material types or shaders are. This setting is most useful to ensure that other systems or applications are able to "
+                  "recognize and not reload yeah materials after shaders are modified. Enabling this setting may affect the time it takes "
+                  "for the viewport to reflect shader and material changes.",
                   false),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen",

@@ -7,7 +7,7 @@
     "version": "3.0.0",
     "api_versions": {
         "editor": "1.0.0",
-        "framework": "1.1.0",
+        "framework": "1.2.0",
         "launcher": "1.0.0",
         "tools": "1.1.0"
     },

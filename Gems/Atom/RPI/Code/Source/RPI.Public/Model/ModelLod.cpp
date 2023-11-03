@@ -23,7 +23,7 @@ namespace AZ
             AZStd::any modelAssetAny{&modelAsset};
 
             return Data::InstanceDatabase<ModelLod>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(lodAsset.GetId()),
+                Data::InstanceId::CreateFromAsset(lodAsset),
                 lodAsset,
                 &modelAssetAny);
         }

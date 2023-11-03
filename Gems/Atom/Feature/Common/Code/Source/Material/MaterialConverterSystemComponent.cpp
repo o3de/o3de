@@ -215,8 +215,7 @@ namespace AZ
 
         AZStd::string MaterialConverterSystemComponent::GetMaterialTypePath() const
         {
-            AZStd::string intermediateMaterialTypePath = AZ::RPI::MaterialUtils::PredictIntermediateMaterialTypeSourcePath("Materials/Types/StandardPBR.materialtype");
-            return intermediateMaterialTypePath;
+            return AZ::RPI::MaterialUtils::PredictIntermediateMaterialTypeSourcePath("Materials/Types/StandardPBR.materialtype");
         }
 
         AZStd::string MaterialConverterSystemComponent::GetDefaultMaterialPath() const

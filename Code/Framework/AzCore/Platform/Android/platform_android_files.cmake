@@ -53,6 +53,7 @@ set(FILES
     ../Common/UnixLike/AzCore/Module/DynamicModuleHandle_UnixLike.cpp
     AzCore/Module/DynamicModuleHandle_Android.cpp
     AzCore/NativeUI/NativeUISystemComponent_Android.cpp
+    ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.cpp
     ../Common/UnixLike/AzCore/Socket/AzSocket_fwd_UnixLike.h
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.cpp
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.h

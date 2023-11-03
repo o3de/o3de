@@ -444,7 +444,7 @@ namespace AZ
                 instanceItr->second == instance &&
                 instance->m_useCount.compare_exchange_strong(expectedRefCount, -1))
             {
-                m_database.erase(instance->GetId());
+                m_database.erase(instanceId);
                 m_instanceHandler.m_deleteFunction(static_cast<Type*>(instance));
             }
             else if (instance->m_isOrphaned && instance->m_useCount.compare_exchange_strong(expectedRefCount, -1))

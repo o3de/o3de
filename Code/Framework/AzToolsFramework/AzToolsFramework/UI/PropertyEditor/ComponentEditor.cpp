@@ -54,8 +54,8 @@ namespace AzToolsFramework
         static const int kAddComponentMenuHeight = 150;
     }
 
-    template<typename T>
-    void AddUniqueItemToContainer(AZStd::vector<T>& container, const T& element)
+    template<typename T, typename Alloc>
+    void AddUniqueItemToContainer(AZStd::vector<T, Alloc>& container, const T& element)
     {
         if (AZStd::find(container.begin(), container.end(), element) == container.end())
         {
@@ -131,7 +131,7 @@ namespace AzToolsFramework
 
 
     //generate a list of all valid or pending sibling components that are service-incompatible with the specified set of component
-    AZStd::unordered_set<AZ::Component*> GetRelatedIncompatibleComponents(const AZStd::vector<AZ::Component*>& components)
+    AZStd::unordered_set<AZ::Component*> GetRelatedIncompatibleComponents(AZStd::span<AZ::Component* const> components)
     {
         AZStd::unordered_set<AZ::Component*> allIncompatibleComponents;
         for (auto component : components)
@@ -335,7 +335,7 @@ namespace AzToolsFramework
             return;
         }
 
-        AZStd::map<QString, AZStd::vector<AZ::Component*> > uniqueMessages;
+        AZStd::map<QString, AZ::Entity::ComponentArrayType > uniqueMessages;
         //Go through all of the warnings and printing them as notifications.
         for (const auto& warning : forwardPendingComponentInfo.m_warnings)
         {
@@ -433,8 +433,8 @@ namespace AzToolsFramework
 
     AzQtComponents::CardNotification* ComponentEditor::CreateNotificationForMissingComponents(
         const QString& message, 
-        const AZStd::vector<AZ::ComponentServiceType>& services, 
-        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices)
+        AZStd::span<const AZ::ComponentServiceType> services,
+        AZStd::span<const AZ::ComponentServiceType> incompatibleServices)
     {
         auto notification = CreateNotification(message);
         auto featureButton = notification->addButtonFeature(tr("Add Required Component \342\226\276"));
@@ -727,7 +727,7 @@ namespace AzToolsFramework
             return QString();
         }
 
-        const AZStd::vector<AZ::Component*>& components = entity->GetComponents();
+        const auto& components = entity->GetComponents();
 
         // Gather required services for the component.
         AZ::ComponentDescriptor::DependencyArrayType requiredServices;

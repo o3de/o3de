@@ -107,8 +107,7 @@ namespace AzToolsFramework
                 auto scanFolderDetailsIt = entryCache->m_knownScanFolders.find(fileDatabaseEntry.m_scanFolderPK);
                 if (scanFolderDetailsIt == entryCache->m_knownScanFolders.end())
                 {
-                    // we can't even find the details.
-                    AZ_Warning("Asset Browser", false, "No scan folder with id %d", fileDatabaseEntry.m_scanFolderPK);
+                    // we can't find the details.
                     return;
                 }
 
@@ -124,7 +123,8 @@ namespace AzToolsFramework
             const auto itFile = entryCache->m_fileIdMap.find(fileDatabaseEntry.m_fileID);
             if (itFile != entryCache->m_fileIdMap.end())
             {
-                AZ_Warning("Asset Browser", false, "File %d already exists", fileDatabaseEntry.m_fileID);
+                // The file already exists. This might occur if the content creator or other user is iterating and resaving source files and
+                // assets.
                 return;
             }
 
