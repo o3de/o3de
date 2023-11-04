@@ -46,6 +46,7 @@ namespace GraphModel
                 ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
                 ->Constructor<const SlotName&>()
                 ->Constructor<const SlotName&, SlotSubId>()
+                ->Method("__repr__", &SlotId::ToString)
                 ->Method("IsValid", &SlotId::IsValid)
                 ->Method("GetHash", &SlotId::GetHash)
                 ->Property("name", BehaviorValueProperty(&SlotId::m_name))
