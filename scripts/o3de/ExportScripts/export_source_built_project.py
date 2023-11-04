@@ -219,7 +219,7 @@ if "o3de_context" in globals():
                                 help="Any additional file patterns located in the project directory. File patterns will be relative to the project path. Will be included in ServerLauncher.")
         parser.add_argument('-pfp', '--project-file-pattern-to-copy', type=str, dest='project_file_patterns_to_copy', action='append',
                                 help="Any additional file patterns located in the project directory. File patterns will be relative to the project path.")
-        parser.add_argument('-bt', '--build-tools', default=True, action='store_true',
+        parser.add_argument('-bt', '--build-tools', default=False, action='store_true',
                             help="Specifies whether to build O3DE toolchain executables. This will build AssetBundlerBatch, AssetProcessorBatch.")
         parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=None,
                             help='Designates where the build files for the O3DE toolchain are generated. If not specified, default is <o3de_project_path>/build/tools.')
