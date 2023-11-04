@@ -10,6 +10,7 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <Framework/AWSApiJobConfig.h>
+#include <aws/s3/S3Client.h>
 
 // Forward declarations
 namespace Aws
@@ -98,26 +99,54 @@ namespace AWSCore
             m_client = CreateClient();
         }
 
+
         /// Create a client configured using this object's settings. ClientType
         /// can be any of the AWS API service clients (e.g. LambdaClient, etc.).
-        std::shared_ptr<ClientType> CreateClient() const
-        {
-            auto provider = GetCredentialsProvider();
-            if (provider != nullptr)
-            {
-                return std::make_shared<ClientType>(provider, GetClientConfiguration());
-            }
-            else
-            {
-                // If no explicit credentials are provided then AWS C++ SDK will perform standard search
-                return std::make_shared<ClientType>(Aws::Auth::AWSCredentials(), GetClientConfiguration());
-            }
-        }
+        std::shared_ptr<ClientType> CreateClient() const;
+
 
     private:
         /// Set by ApplySettings
         std::shared_ptr<ClientType> m_client;
     };
+
+    template<class ClientType>
+    std::shared_ptr<ClientType> AwsApiClientJobConfig<ClientType>::CreateClient() const
+    {
+        auto provider = GetCredentialsProvider();
+        if (provider != nullptr)
+        {
+            // Note: This constructor for AWS Client is marked for depreciation
+            return std::make_shared<ClientType>(provider, GetClientConfiguration());
+        }
+        else
+        {
+            // If no explicit credentials are provided then AWS C++ SDK will perform standard search
+            // Note: This constructor for AWS Client is marked for depreciation
+            return std::make_shared<ClientType>(Aws::Auth::AWSCredentials(), GetClientConfiguration());
+        }
+    }
+
+    template<>
+    inline std::shared_ptr<Aws::S3::S3Client> AwsApiClientJobConfig<Aws::S3::S3Client>::CreateClient() const
+    {
+        auto signPayloads = Aws::Client::AWSAuthV4Signer::PayloadSigningPolicy::Never;
+        bool useVirtualAddressing = false;
+
+        auto provider = AwsApiJobConfig::GetCredentialsProvider();
+        if (provider != nullptr)
+        {
+            // Note: This constructor for AWS Client is marked for deprecation
+            return std::make_shared<Aws::S3::S3Client>(provider, GetClientConfiguration(), signPayloads, useVirtualAddressing);
+        }
+        else
+        {
+            // If no explicit credentials are provided then AWS C++ SDK will perform standard search
+            // Note: This constructor for AWS Client is marked for deprecation
+            return std::make_shared<Aws::S3::S3Client>(
+                Aws::Auth::AWSCredentials(), GetClientConfiguration(), signPayloads, useVirtualAddressing);
+        }
+    }
     AZ_POP_DISABLE_WARNING
 
 } // namespace AWSCore

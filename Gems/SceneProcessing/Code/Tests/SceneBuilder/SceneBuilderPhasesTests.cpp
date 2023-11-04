@@ -53,7 +53,8 @@ class TestLoadingComponent
 public:
     AZ_RTTI(TestLoadingComponent, "{19B714CA-6AEF-414D-A91C-54E73DF69625}", AZ::SceneAPI::SceneCore::LoadingComponent, AZ::Component)
     using DescriptorType = ComponentSingleton<TestLoadingComponent>;
-    AZ_COMPONENT_BASE(TestLoadingComponent, "{19B714CA-6AEF-414D-A91C-54E73DF69625}", AZ::SceneAPI::SceneCore::LoadingComponent)
+    AZ_COMPONENT_BASE(TestLoadingComponent);
+    AZ_CLASS_ALLOCATOR(TestLoadingComponent, AZ::ComponentAllocator);
 
     static void Reflect(AZ::ReflectContext* context)
     {
@@ -72,7 +73,8 @@ class TestGenerationComponent
 public:
     AZ_RTTI(TestGenerationComponent, "{3350BD61-2EB1-4F77-B1BD-D108795015EE}", AZ::SceneAPI::SceneCore::GenerationComponent, AZ::Component)
     using DescriptorType = ComponentSingleton<TestGenerationComponent>;
-    AZ_COMPONENT_BASE(TestGenerationComponent, "{3350BD61-2EB1-4F77-B1BD-D108795015EE}", AZ::SceneAPI::SceneCore::GenerationComponent)
+    AZ_COMPONENT_BASE(TestGenerationComponent);
+    AZ_CLASS_ALLOCATOR(TestGenerationComponent, AZ::ComponentAllocator);
 
     static void Reflect(AZ::ReflectContext* context)
     {
@@ -91,7 +93,8 @@ class TestExportingComponent
 public:
     AZ_RTTI(TestExportingComponent, "{EADA08AD-2068-4607-AA3D-8B17C59696D5}", AZ::SceneAPI::SceneCore::ExportingComponent, AZ::Component)
     using DescriptorType = ComponentSingleton<TestExportingComponent>;
-    AZ_COMPONENT_BASE(TestExportingComponent, "{EADA08AD-2068-4607-AA3D-8B17C59696D5}", AZ::SceneAPI::SceneCore::ExportingComponent)
+    AZ_COMPONENT_BASE(TestExportingComponent);
+    AZ_CLASS_ALLOCATOR(TestExportingComponent, AZ::ComponentAllocator);
 
     static void Reflect(AZ::ReflectContext* context)
     {

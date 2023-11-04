@@ -382,7 +382,9 @@ void LtcQuadEvaluate(
     out float diffuseOut,
     out float3 specularOut)
 {
-    
+    diffuseOut = 0.0f;
+    specularOut = 0.0f;
+
     // Initialize quad with dummy point at end in case one corner is clipped (resulting in 5 sided polygon)
     float3 polygon[5];
 
@@ -580,6 +582,9 @@ void LtcPolygonEvaluate(
     out float3 specularRgbOut
 )
 {
+    diffuseOut = 0.0f;
+    specularRgbOut = 0.0f;
+
     if (endIdx - startIdx < 3)
     {
         return; // Must have at least 3 points to form a polygon.

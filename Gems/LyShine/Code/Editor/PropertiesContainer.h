@@ -58,7 +58,7 @@ private:
         const AZ::SerializeContext::ClassData* m_classData;
 
         /// Components instanced (one from each entity).
-        AZStd::vector<AZ::Component*> m_instances;
+        AZ::Entity::ComponentArrayType m_instances;
 
         /// Canonical instance to compare others against
         AZ::Component* m_compareInstance;

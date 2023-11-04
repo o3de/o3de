@@ -128,7 +128,7 @@ namespace AZ
             bool            m_enableScriptReflection;   //!< True if we want to enable reflection to the script context.
 
             AZ::u64         m_memoryBlocksByteSize;     //!< Memory block size in bytes.
-            Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
+            Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::Mode::RECORD_STACK_IF_NO_FILE_LINE)
 
             ModuleDescriptorList m_modules;             //!< Dynamic modules used by the application.
                                                         //!< These will be loaded on startup.
@@ -293,6 +293,9 @@ namespace AZ
         void InitializeEventLoggerFactory();
         void InitializeLifecyleEvents(SettingsRegistryInterface& settingsRegistry);
         void InitializeConsole(SettingsRegistryInterface& settingsRegistry);
+        //! Reads any allocator settings from the either the <executable-directory>/startup.cfg
+        //! or a file specified by the last --startup-file-cfg=<path> option
+        void InitializeAllocatorSettings(int argc, char** argv);
 
         void RegisterCoreEventLogger();
 

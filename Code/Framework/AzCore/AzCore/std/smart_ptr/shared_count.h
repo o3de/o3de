@@ -218,7 +218,7 @@ namespace AZStd
             {
                 typedef sp_counted_impl_pa<Y, A> impl_type;
                 A a2(a);
-                pi_ = reinterpret_cast<impl_type*>(a2.allocate(sizeof(impl_type), AZStd::alignment_of<impl_type>::value));
+                pi_ = reinterpret_cast<impl_type*>(static_cast<void*>(a2.allocate(sizeof(impl_type), alignof(impl_type))));
                 if (pi_ != 0)
                 {
                     new(static_cast<void*>(pi_))impl_type(p, a);
@@ -234,7 +234,7 @@ namespace AZStd
             {
                 typedef sp_counted_impl_pda<P, D, A> impl_type;
                 A a2(a);
-                pi_ = reinterpret_cast<impl_type*>(a2.allocate(sizeof(impl_type), AZStd::alignment_of<impl_type>::value));
+                pi_ = reinterpret_cast<impl_type*>(static_cast<void*>(a2.allocate(sizeof(impl_type), alignof(impl_type))));
                 if (pi_ != 0)
                 {
                     new(static_cast< void* >(pi_))impl_type(p, d, a);
@@ -251,7 +251,7 @@ namespace AZStd
             {
                 typedef sp_counted_impl_pda<P, D, A> impl_type;
                 A a2(a);
-                pi_ = reinterpret_cast<impl_type*>(a2.allocate(sizeof(impl_type), AZStd::alignment_of<impl_type>::value));
+                pi_ = reinterpret_cast<impl_type*>(static_cast<void*>(a2.allocate(sizeof(impl_type), alignof(impl_type))));
                 if (pi_ != 0)
                 {
                     new(static_cast<void*>(pi_))impl_type(p, a);
@@ -273,7 +273,7 @@ namespace AZStd
             {
                 typedef sp_counted_impl_pa<Y, A> impl_type;
                 A a2(a);
-                pi_ = reinterpret_cast<impl_type*>(a2.allocate(sizeof(impl_type), AZStd::alignment_of<impl_type>::value));
+                pi_ = reinterpret_cast<impl_type*>(static_cast<void*>(a2.allocate(sizeof(impl_type), alignof(impl_type))));
                 if (pi_ != 0)
                 {
                     new(static_cast< void* >(pi_))impl_type(r.get(), a);

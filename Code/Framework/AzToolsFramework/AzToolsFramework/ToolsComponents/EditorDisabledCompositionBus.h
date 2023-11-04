@@ -16,7 +16,7 @@ namespace AzToolsFramework
         : public AZ::ComponentBus
     {
     public:
-        virtual void GetDisabledComponents(AZStd::vector<AZ::Component*>& components) = 0;
+        virtual void GetDisabledComponents(AZ::Entity::ComponentArrayType& components) = 0;
         virtual void AddDisabledComponent(AZ::Component* componentToAdd) = 0;
         virtual void RemoveDisabledComponent(AZ::Component* componentToRemove) = 0;
         virtual bool IsComponentDisabled(const AZ::Component* component) = 0;

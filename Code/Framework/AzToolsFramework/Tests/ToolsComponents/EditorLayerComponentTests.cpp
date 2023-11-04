@@ -175,7 +175,7 @@ namespace AzToolsFramework
         result.m_entity = CreateEditorReadyEntity(entityName);
 
         result.m_layer = aznew EditorLayerComponentTestHelper();
-        AZStd::vector<AZ::Component*> newComponents;
+        AZ::Entity::ComponentArrayType newComponents;
         newComponents.push_back(result.m_layer);
         Components::EditorEntityActionComponent::AddExistingComponentsOutcome componentAddResult(
             AZ::Failure(AZStd::string("No listener on AddExistingComponentsToEntity bus.")));

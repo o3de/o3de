@@ -36,20 +36,22 @@ namespace AZ
                 shaderAsset.GetHint().c_str());
 
             // Create the InstanceId by combining data from the SRG name and layout. This value does not need to be unique between
-            // asset IDs or versions because the data can be shared as long as the names and layouts match.
-            struct InstanceIdData
-            {
-                const AZ::Uuid m_srgNameUuid{};
-                const AZ::Uuid m_srgLayoutUuid{};
-            };
-            const InstanceIdData instanceIdData{ AZ::Uuid::CreateData(srgName.GetStringView()),
-                                                 AZ::Uuid::CreateData(srgLayout->GetUniqueId()) };
+            // asset IDs because the data can be shared as long as the names and layouts match.
+            const AZ::Uuid instanceUuid = AZ::Uuid::CreateName(srgLayout->GetUniqueId()) + AZ::Uuid::CreateName(srgName.GetStringView());
 
-            const AZ::Uuid instanceUuid =
-                AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(&instanceIdData), sizeof(instanceIdData));
+            // Create a union to split the 64 bit layout hash into 32 bit unsigned integers for use as instance ID sub IDs 
+            union {
+                AZ::HashValue64 hash64;
+                struct
+                {
+                    uint32_t x;
+                    uint32_t y;
+                };
+            } hashUnion;
+            hashUnion.hash64 = srgLayout->GetHash();
 
-            // Use the supervariantIndex as the subId for the InstanceId, since it is already an integer
-            return Data::InstanceId(instanceUuid, supervariantIndex.GetIndex());
+            // Use the supervariantIndex and layout hash as the subIds for the InstanceId
+            return Data::InstanceId::CreateUuid(instanceUuid, { supervariantIndex.GetIndex(), hashUnion.x, hashUnion.y });
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(

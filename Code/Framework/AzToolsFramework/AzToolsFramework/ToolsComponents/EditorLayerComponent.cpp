@@ -1398,7 +1398,7 @@ namespace AzToolsFramework
             newLayer->SetSaveFormat(saveFormat);
             newLayer->SetOverwriteFlag(true);
 
-            AZStd::vector<AZ::Component*> newComponents;
+            AZ::Entity::ComponentArrayType newComponents;
             newComponents.push_back(newLayer);
 
             AzToolsFramework::Layers::EditorLayerCreationBus::Broadcast(

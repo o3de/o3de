@@ -82,34 +82,34 @@ namespace AzToolsFramework
 
             // Defines the function to add existing serialized identifiers from a given component list.
             auto captureExistingIdentifiersFunc =
-                [&existingSerializedIdentifiers, this](const AZStd::vector<AZ::Component*>& componentsToCapture)
-            {
-                for (const AZ::Component* component : componentsToCapture)
-                {                    
-                    AZ_Assert(
-                        component != this,
-                        "GenerateComponentSerializedIdentifier - "
-                        "Attempting to generate an identifier for a component that is already owned by the entity. ");
-
-                    AZStd::string existingIdentifier = component->GetSerializedIdentifier();
-
-                    if (!existingIdentifier.empty() && RTTI_GetType() == component->RTTI_GetType())
+                [&existingSerializedIdentifiers, this](AZStd::span<AZ::Component* const> componentsToCapture)
+                {
+                    for (const AZ::Component* component : componentsToCapture)
                     {
-                        existingSerializedIdentifiers.emplace(AZStd::move(existingIdentifier));
+                        AZ_Assert(
+                            component != this,
+                            "GenerateComponentSerializedIdentifier - "
+                            "Attempting to generate an identifier for a component that is already owned by the entity. ");
+
+                        AZStd::string existingIdentifier = component->GetSerializedIdentifier();
+
+                        if (!existingIdentifier.empty() && RTTI_GetType() == component->RTTI_GetType())
+                        {
+                            existingSerializedIdentifiers.emplace(AZStd::move(existingIdentifier));
+                        }
                     }
-                }
-            };
+                };
 
             // Checks all components of the entity, including pending components and disabled components.
             captureExistingIdentifiersFunc(m_entity->GetComponents());
 
-            AZStd::vector<AZ::Component*> pendingComponents;
+            AZ::Entity::ComponentArrayType pendingComponents;
             AzToolsFramework::EditorPendingCompositionRequestBus::Event(
                 m_entity->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
 
             captureExistingIdentifiersFunc(pendingComponents);
 
-            AZStd::vector<AZ::Component*> disabledComponents;
+            AZ::Entity::ComponentArrayType disabledComponents;
             AzToolsFramework::EditorDisabledCompositionRequestBus::Event(
                 m_entity->GetId(), &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
 

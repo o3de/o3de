@@ -235,7 +235,7 @@ namespace LandscapeCanvasEditor
         AZ::ComponentId AddComponentTypeIdToEntity(
             const AZ::EntityId& entityId,
             AZ::TypeId componentToAddTypeId,
-            const AZ::ComponentDescriptor::DependencyArrayType& optionalServices = {});
+            AZStd::span<const AZ::ComponentServiceType> optionalServices = {});
         void AddComponentForNode(GraphModel::NodePtr node, const AZ::EntityId& entityId);
         void HandleNodeCreated(GraphModel::NodePtr node);
         void HandleNodeAdded(GraphModel::NodePtr node);

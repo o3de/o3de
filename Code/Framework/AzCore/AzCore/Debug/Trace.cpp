@@ -449,9 +449,9 @@ namespace AZ::Debug
         }
 
         using namespace DebugInternal;
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
 
         char message[g_maxMessageLength];
@@ -465,7 +465,7 @@ namespace AZ::Debug
 
         va_list mark;
         va_start(mark, format);
-        azvsnprintf(message, g_maxMessageLength-1, format, mark); // -1 to make room for the "/n" that will be appended below
+        azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below
         va_end(mark);
 
         TraceMessageResult result;
@@ -496,8 +496,7 @@ namespace AZ::Debug
     // Warning
     // [8/3/2009]
     //=========================================================================
-    void
-    Trace::Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+    void Trace::Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
     {
         if (!IsTraceLoggingEnabledForLevel(LogLevel::Warnings))
         {
@@ -533,12 +532,11 @@ namespace AZ::Debug
     // Printf
     // [8/3/2009]
     //=========================================================================
-    void
-    Trace::Printf(const char* window, const char* format, ...)
+    void Trace::Printf(const char* window, const char* format, ...)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
 
         char message[g_maxMessageLength];
@@ -564,9 +562,9 @@ namespace AZ::Debug
     //=========================================================================
     void Trace::Output(const char* window, const char* message)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
 
         Platform::OutputToDebugger(window, message);
@@ -589,14 +587,15 @@ namespace AZ::Debug
 
     void Trace::RawOutput(const char* window, const char* message)
     {
-        if (!window)
+        if (window == nullptr)
         {
-            window = g_dbgSystemWnd;
+            window = NoWindow;
         }
-
 
         // printf on Windows platforms seem to have a buffer length limit of 4096 characters
         // Therefore fwrite is used directly to write the window and message to stdout or stderr
+
+        // Wrapping the NoWindow constant in a string_view to allow use of string_view::operator== for string compare
         AZStd::string_view windowView{ window };
         AZStd::string_view messageView{ message };
         constexpr AZStd::string_view windowMessageSeparator{ ": " };
@@ -606,8 +605,11 @@ namespace AZ::Debug
         FILE* stdoutStream = stdout;
         if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdoutStream; rawOutputStream != nullptr)
         {
-            fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
-            fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
+            if (!windowView.empty())
+            {
+                fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
+                fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
+            }
             fwrite(messageView.data(), 1, messageView.size(), rawOutputStream);
         }
     }

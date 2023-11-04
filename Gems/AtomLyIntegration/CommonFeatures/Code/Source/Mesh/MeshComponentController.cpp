@@ -124,7 +124,8 @@ namespace AZ
                 else
                 {
                     // If the asset isn't loaded, it's still possible it exists in the instance database.
-                    Data::Instance<RPI::Model> model = Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAssetId(m_modelAsset.GetId()));
+                    Data::Instance<RPI::Model> model =
+                        Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAsset(m_modelAsset));
                     if (model)
                     {
                         lodCount = static_cast<uint32_t>(model->GetLodCount());

@@ -6,13 +6,12 @@
  *
  */
 
-#include <CoreLights/LtcCommon.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <CoreLights/LtcCommon.h>
 
 namespace AZ::Render
 {
-
     static const char* s_LtcGgxMatrixPath = "textures/ltc/ltc_mat_lutrgba32f.dds.streamingimage";
     static const char* s_LtcGgxAmplificationPath = "textures/ltc/ltc_amp_lutrg32f.dds.streamingimage";
 
@@ -44,15 +43,15 @@ namespace AZ::Render
                 srg->SetImage(index, streamingImageInstance);
             }
         };
-        
+
         // De-duplicate load requests by the srg's guid to avoid holding a refernce to the srg itself.
-        AZ::Uuid srgGuid = srg->GetId().m_guid;
+        const AZ::Uuid& srgGuid = srg->GetId().GetGuid();
         if (m_assetLoaders.find(srgGuid) == m_assetLoaders.end())
         {
-            m_assetLoaders[srgGuid].push_back(RPI::AssetUtils::AsyncAssetLoader::Create<RPI::StreamingImageAsset>(s_LtcGgxAmplificationPath, 0,
-                AZStd::bind(callback, AZStd::placeholders::_1, AZStd::placeholders::_2, "m_ltcAmplification")));
-            m_assetLoaders[srgGuid].push_back(RPI::AssetUtils::AsyncAssetLoader::Create<RPI::StreamingImageAsset>(s_LtcGgxMatrixPath, 0,
-                AZStd::bind(callback, AZStd::placeholders::_1, AZStd::placeholders::_2, "m_ltcMatrix")));
+            m_assetLoaders[srgGuid].push_back(RPI::AssetUtils::AsyncAssetLoader::Create<RPI::StreamingImageAsset>(
+                s_LtcGgxAmplificationPath, 0, AZStd::bind(callback, AZStd::placeholders::_1, AZStd::placeholders::_2, "m_ltcAmplification")));
+            m_assetLoaders[srgGuid].push_back(RPI::AssetUtils::AsyncAssetLoader::Create<RPI::StreamingImageAsset>(
+                s_LtcGgxMatrixPath, 0, AZStd::bind(callback, AZStd::placeholders::_1, AZStd::placeholders::_2, "m_ltcMatrix")));
         }
     }
-}
+} // namespace AZ::Render

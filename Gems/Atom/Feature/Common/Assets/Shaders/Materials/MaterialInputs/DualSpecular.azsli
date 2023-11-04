@@ -29,7 +29,6 @@ void GetDualSpecularInput(float3 normal, float roughnessLinear, float specularF0
         outDualSpecRoughness = pow(roughnessLinear, dualSpecRoughnessExponent) * dualSpecRoughnessMultiplier;
         CalculateRoughnessValues(normal, outDualSpecRoughness, dummyRoughnessA, outDualSpecRoughnessA2);
         outDualSpecF0 = specularF0 * dualSpecF0Multiplier;
-        outDualSpecFactor = 0;
     }
     else
     {

@@ -15,12 +15,12 @@
 #include <cstddef>
 #endif
 
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Memory/AllocatorWrappers.h>
 
 namespace AWSNativeSDKInit
 {
-    AZ_ALLOCATOR_DEFAULT_GLOBAL_WRAPPER(AWSNativeSDKAllocator, AZ::SystemAllocator, "{8B4DA42F-2507-4A5B-B13C-4B2A72BC161E}")
+    AZ_CHILD_ALLOCATOR_WITH_NAME(AWSNativeSDKAllocator, "AWSNativeSDKAllocator", "{8B4DA42F-2507-4A5B-B13C-4B2A72BC161E}", AZ::SystemAllocator);
 
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     class MemoryManager : public Aws::Utils::Memory::MemorySystemInterface
@@ -34,7 +34,7 @@ namespace AWSNativeSDKInit
         void* AllocateMemory(std::size_t blockSize, std::size_t alignment, const char* allocationTag = nullptr) override;
         void FreeMemory(void* memoryPtr) override;
 
-        AZ::AllocatorGlobalWrapper<AWSNativeSDKAllocator> m_allocator;
+        AWSNativeSDKAllocator m_allocator;
     };
 #else
 

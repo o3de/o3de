@@ -575,7 +575,7 @@ namespace UnitTest
         CreateDefaultEditorEntity(name, &entity);
 
         auto layer = aznew Layers::EditorLayerComponent();
-        AZStd::vector<AZ::Component*> newComponents{ layer };
+        AZ::Entity::ComponentArrayType newComponents{ layer };
 
         EntityCompositionRequests::AddExistingComponentsOutcome componentAddResult;
         EntityCompositionRequestBus::BroadcastResult(

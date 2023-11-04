@@ -10,18 +10,14 @@
 #include <Atom/RHI/Allocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/queue.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ::RHI
 {
     //! This custom allocator class is used to provide runtime type information
     //! so we can differentiate this allocator from other SystemAllocators
-    class RHISystemAllocator final
-        : public AZ::SystemAllocator
-    {
-    public:
-        AZ_RTTI(RHISystemAllocator, "{C5F84DB9-AD7E-4846-AC4D-409F61F7DA84}", AZ::SystemAllocator);
-    };
+    AZ_CHILD_ALLOCATOR_WITH_NAME(RHISystemAllocator, "RHISystemAllocator", "{C5F84DB9-AD7E-4846-AC4D-409F61F7DA84}", AZ::SystemAllocator);
 
     //! This class can be used to efficiently allocate small chunks of memory from an externally
     //! managed source (DMA / Gpu memory). It will recycle freed blocks by deferring for a configurable

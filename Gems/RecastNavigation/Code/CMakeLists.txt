@@ -38,6 +38,10 @@ get_property(
 )
 include(${pal_dir}/PAL_recast_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
+# Temporarily disable CMake deprecation warnings from Recast library having a lower
+# minimum required CMake version than us.
+set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+
 # Include compiler settings for Recast libraries
 set(common_platform_dir "${CMAKE_CURRENT_LIST_DIR}/Platform/Common")
 include(${common_platform_dir}/${PAL_TRAIT_COMPILER_ID}/PAL_recast_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake)
@@ -54,6 +58,9 @@ set_property(
     PROPERTY COMPILE_OPTIONS ${compile_options}
 )
 unset(compile_options)
+
+# Enable CMake deprecation warnings 
+set(CMAKE_WARN_DEPRECATED ON CACHE BOOL "" FORCE)
 
 # Place external recast libraries under RecastNavigation gem.
 get_property(recastnavigation_gem_root GLOBAL PROPERTY "@GEMROOT:RecastNavigation@")

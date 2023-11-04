@@ -1088,7 +1088,7 @@ namespace AZ
         AZStd::vector<ComponentInfo*> candidateComponents;
 
         // Components in final sorted order
-        AZStd::vector<Component*> sortedComponents;
+        ComponentArrayType sortedComponents;
 
         // Tmp vectors to re-use when querying services
         ComponentDescriptor::DependencyArrayType servicesTmp;

@@ -26,7 +26,7 @@ namespace AZ
         Data::Instance<Model> Model::FindOrCreate(const Data::Asset<ModelAsset>& modelAsset)
         {
             return Data::InstanceDatabase<Model>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(modelAsset.GetId()),
+                Data::InstanceId::CreateFromAsset(modelAsset),
                 modelAsset);
         }
 
@@ -35,21 +35,20 @@ namespace AZ
         {
             for (auto& modelLodAsset : modelAsset->GetLodAssets())
             {
-                for(auto& mesh : modelLodAsset->GetMeshes())
+                for (auto& mesh : modelLodAsset->GetMeshes())
                 {
                     for (auto& streamBufferInfo : mesh.GetStreamBufferInfoList())
                     {
                         Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
-                            Data::InstanceId::CreateFromAssetId(streamBufferInfo.m_bufferAssetView.GetBufferAsset().GetId()));
+                            Data::InstanceId::CreateFromAsset(streamBufferInfo.m_bufferAssetView.GetBufferAsset()));
                     }
                     Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
-                        Data::InstanceId::CreateFromAssetId(mesh.GetIndexBufferAssetView().GetBufferAsset().GetId()));
+                        Data::InstanceId::CreateFromAsset(mesh.GetIndexBufferAssetView().GetBufferAsset()));
                 }
-                Data::InstanceDatabase<ModelLod>::Instance().TEMPOrphan(Data::InstanceId::CreateFromAssetId(modelLodAsset.GetId()));
+                Data::InstanceDatabase<ModelLod>::Instance().TEMPOrphan(Data::InstanceId::CreateFromAsset(modelLodAsset));
             }
 
-            Data::InstanceDatabase<Model>::Instance().TEMPOrphan(
-                Data::InstanceId::CreateFromAssetId(modelAsset.GetId()));
+            Data::InstanceDatabase<Model>::Instance().TEMPOrphan(Data::InstanceId::CreateFromAsset(modelAsset));
         }
 
         size_t Model::GetLodCount() const
