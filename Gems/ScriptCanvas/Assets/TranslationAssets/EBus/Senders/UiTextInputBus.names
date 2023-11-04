@@ -186,6 +186,7 @@
                     },
                     "details": {
                         "name": "Set Text",
+                        "subtitle": "UI Text Input",
                         "tooltip": "Sets the text string being displayed or edited by the element"
                     },
                     "params": [
@@ -395,6 +396,7 @@
                     },
                     "details": {
                         "name": "Set Text Entity",
+                        "subtitle": "UI Text Input",
                         "tooltip": "Sets the text element"
                     },
                     "params": [
