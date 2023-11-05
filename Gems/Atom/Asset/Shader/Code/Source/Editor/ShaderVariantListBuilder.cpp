@@ -85,24 +85,32 @@ namespace AZ
         //! @param sourceFileDependencies - new source file dependencies will be added to this list
         //! @return absolute path of the shader file, if it exists, otherwise, an empty string.
         static AZStd::string GetSourceShaderAbsolutePath(
-            const AZStd::string& variantListFullpath, const AZStd::string& originalShaderPath,
+            const AZStd::string& variantListFullpath,
+            const AZStd::string& originalShaderPath,
             AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies)
         {
             AZStd::string sourceShaderAbsolutePath;
 
-            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(variantListFullpath, originalShaderPath);
-            for (auto& file : possibleDependencies)
+            for (const auto& path : RPI::AssetUtils::GetPossibleDependencyPaths(variantListFullpath, originalShaderPath))
             {
                 AssetBuilderSDK::SourceFileDependency sourceFileDependency;
-                sourceFileDependency.m_sourceFileDependencyPath = file;
-                sourceFileDependencies.push_back(sourceFileDependency);
+                sourceFileDependency.m_sourceFileDependencyPath = path;
+                sourceFileDependency.m_sourceDependencyType = path.contains('*')
+                    ? AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
+                    : AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
+                sourceFileDependencies.emplace_back(AZStd::move(sourceFileDependency));
 
-                if (sourceShaderAbsolutePath.empty())
+                if (sourceShaderAbsolutePath.empty() && !path.contains('*'))
                 {
                     AZ::Data::AssetInfo sourceInfo;
                     AZStd::string watchFolder;
                     bool found = false;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(found, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, file.c_str(), sourceInfo, watchFolder);
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                        found,
+                        &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+                        path.c_str(),
+                        sourceInfo,
+                        watchFolder);
                     if (found)
                     {
                         AZ::StringFunc::Path::Join(watchFolder.c_str(), sourceInfo.m_relativePath.c_str(), sourceShaderAbsolutePath);

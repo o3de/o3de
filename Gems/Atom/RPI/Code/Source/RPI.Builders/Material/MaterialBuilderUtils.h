@@ -36,7 +36,7 @@ namespace AZ
                 AssetBuilderSDK::JobDescriptor& jobDescriptor,
                 const AZStd::string& jobKey,
                 const AssetBuilderSDK::JobDependencyType jobDependencyType = AssetBuilderSDK::JobDependencyType::Order,
-                const AZStd::vector<AZ::u32>& productSubIds = { 0 },
+                const AZStd::vector<AZ::u32>& productSubIds = {},
                 const AZStd::string& platformId = {});
 
             //! Resolve potential paths and add source and job dependencies for image assets

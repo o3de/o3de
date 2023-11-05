@@ -150,12 +150,9 @@ namespace AZ
                         resolvedMaterialTypePath,
                         response,
                         outputJobDescriptor,
-                        MaterialTypeBuilder::PipelineStageJobKey,
-                        AssetBuilderSDK::JobDependencyType::Order,
-                        {},
-                        AssetBuilderSDK::CommonPlatformName);
+                        MaterialTypeBuilder::PipelineStageJobKey);
 
-                    const AZStd::string intermediateMaterialTypePath =
+                    const auto& intermediateMaterialTypePath =
                         MaterialUtils::PredictIntermediateMaterialTypeSourcePath(resolvedMaterialTypePath);
                     if (!intermediateMaterialTypePath.empty())
                     {
@@ -170,7 +167,7 @@ namespace AZ
             }
 
             // Assign dependencies from image properties
-            for (auto& [propertyId, propertyValue] : materialSourceData.GetPropertyValues())
+            for (const auto& [propertyId, propertyValue] : materialSourceData.GetPropertyValues())
             {
                 AZ_UNUSED(propertyId);
 
@@ -224,7 +221,7 @@ namespace AZ
             AzFramework::StringFunc::Path::ConstructFull(
                 request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), materialSourcePath, true);
 
-            const auto materialSourceDataOutcome = MaterialUtils::LoadMaterialSourceData(materialSourcePath);
+            const auto& materialSourceDataOutcome = MaterialUtils::LoadMaterialSourceData(materialSourcePath);
             if (!materialSourceDataOutcome)
             {
                 AZ_Error(MaterialBuilderName, false, "Failed to load material source data: %s", materialSourcePath.c_str());
@@ -234,7 +231,7 @@ namespace AZ
             const auto& materialSourceData = materialSourceDataOutcome.GetValue();
 
             // Load the material file and create the MaterialAsset object
-            auto materialAssetOutcome = materialSourceData.CreateMaterialAsset(
+            const auto& materialAssetOutcome = materialSourceData.CreateMaterialAsset(
                 Uuid::CreateRandom(), materialSourcePath, ShouldReportMaterialAssetWarningsAsErrors());
             if (!materialAssetOutcome)
             {
@@ -242,7 +239,7 @@ namespace AZ
                 return;
             }
 
-            AZ::Data::Asset<MaterialAsset> materialAsset = materialAssetOutcome.GetValue();
+            const auto& materialAsset = materialAssetOutcome.GetValue();
             if (!materialAsset)
             {
                 // Errors will have been reported above

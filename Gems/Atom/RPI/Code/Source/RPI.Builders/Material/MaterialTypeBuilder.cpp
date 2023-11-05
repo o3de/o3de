@@ -156,12 +156,14 @@ namespace AZ
 
             auto addPossibleDependencies = [&response, &outputJobDescriptor](const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
-                AZStd::vector<AZStd::string> possibleDependencies =
-                    RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath);
-                for (const AZStd::string& path : possibleDependencies)
+                for (const auto& path : RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath))
                 {
-                    response.m_sourceFileDependencyList.push_back({});
-                    response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = path;
+                    AssetBuilderSDK::SourceFileDependency sourceDependency;
+                    sourceDependency.m_sourceFileDependencyPath = path;
+                    sourceDependency.m_sourceDependencyType = path.contains('*')
+                        ? AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
+                        : AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
+                    response.m_sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
                     MaterialBuilderUtils::AddFingerprintForDependency(path, outputJobDescriptor);
                 }
             };
@@ -441,6 +443,13 @@ namespace AZ
 
                         shaderTemplateReferences[normalizedShaderTemplate].push_back(materialPipelineName);
                     }
+
+                    // Only include Object SRGs from material pipelines which have shader templates relevant to this material
+                    // This avoids adding extra SRG members in materials for MaterialPipelines it won't be rendered in
+                    if (!shaderTemplateList.empty())
+                    {
+                        objectSrgAdditionsFromMaterialPipelines.push_back(&materialPipeline.m_objectSrgAdditions);
+                    }
                 }
 
                 if (foundProblems)
@@ -544,6 +553,7 @@ namespace AZ
                 {
                     AssetBuilderSDK::JobProduct product;
                     product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                    product.m_dependenciesHandled = true;
                     product.m_productFileName = outputShaderFilePath.String();
                     product.m_productSubID = nextProductSubID++;
                     response.m_outputProducts.emplace_back(AZStd::move(product));
@@ -603,6 +613,7 @@ namespace AZ
             {
                 AssetBuilderSDK::JobProduct product;
                 product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                product.m_dependenciesHandled = true;
                 product.m_productFileName = outputMaterialTypeFilePath.String();
                 product.m_productAssetType = azrtti_typeid<RPI::MaterialTypeSourceData>();
                 product.m_productSubID = MaterialTypeSourceData::IntermediateMaterialTypeSubId;
