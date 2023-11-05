@@ -35,32 +35,41 @@ namespace AZ::RPI::MaterialBuilderUtils
             // The first path is the highest priority, and will have a job dependency, as this is the one
             // the builder will actually use
             bool dependencyFileFound = false;
-            AZ::Data::AssetInfo sourceInfo;
-            AZStd::string watchFolder;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                dependencyFileFound,
-                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
-                path.c_str(),
-                sourceInfo,
-                watchFolder);
+
+            if (!path.contains('*'))
+            {
+                AZ::Data::AssetInfo sourceInfo;
+                AZStd::string watchFolder;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    dependencyFileFound,
+                    &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+                    path.c_str(),
+                    sourceInfo,
+                    watchFolder);
+            }
+
+            AssetBuilderSDK::SourceFileDependency sourceDependency;
+            sourceDependency.m_sourceFileDependencyPath = path;
+            sourceDependency.m_sourceDependencyType = path.contains('*')
+                ? AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
+                : AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
 
             if (dependencyFileFound)
             {
                 AssetBuilderSDK::JobDependency jobDependency;
                 jobDependency.m_jobKey = jobKey;
-                jobDependency.m_sourceFile.m_sourceFileDependencyPath = path;
+                jobDependency.m_sourceFile = AZStd::move(sourceDependency);
                 jobDependency.m_type = jobDependencyType;
                 jobDependency.m_productSubIds = productSubIds;
                 jobDependency.m_platformIdentifier = platformId;
                 jobDescriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
-                return;
             }
-
-            // The file was not found so we can't add a job dependency. But we add a source dependency instead so if a file
-            // shows up later at this location, it will wake up the builder to try again.
-            AssetBuilderSDK::SourceFileDependency sourceDependency;
-            sourceDependency.m_sourceFileDependencyPath = path;
-            response.m_sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
+            else
+            {
+                // The file was not found so we can't add a job dependency. But we add a source dependency instead so if a file
+                // shows up later at this location, it will wake up the builder to try again.
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
+            }
         }
     }
 

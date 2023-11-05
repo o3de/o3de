@@ -131,8 +131,16 @@ namespace AZ
                 const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
                 AZStd::vector<AZStd::string> results;
+
                 if (referencedSourceFilePath.empty())
                 {
+                    return results;
+                }
+
+                AZ::IO::FixedMaxPath resolvedPath{ ResolvePathReference(originatingSourceFilePath, referencedSourceFilePath) };
+                if (resolvedPath.IsAbsolute())
+                {
+                    results.push_back(resolvedPath.String());
                     return results;
                 }
 
@@ -144,17 +152,16 @@ namespace AZ
                 AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencedPath, AZ::IO::PathView{ referencedSourceFilePath });
                 referencedPath = referencedPath.LexicallyNormal();
 
-                AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
+                AZ::IO::FixedMaxPath combinedPath;
+                combinedPath /= originatingPath.ParentPath();
+                combinedPath /= "*";
                 combinedPath /= referencedPath;
-                combinedPath = combinedPath.LexicallyNormal();
+                results.push_back(combinedPath.LexicallyNormal().String());
 
-                if (referencedPath.IsAbsolute())
-                {
-                    results.push_back(referencedPath.String());
-                }
-
-                results.push_back(combinedPath.String());
-                results.push_back(referencedPath.String());
+                combinedPath.clear();
+                combinedPath /= "*";
+                combinedPath /= referencedPath;
+                results.push_back(combinedPath.LexicallyNormal().String());
                 return results;
             }
 
