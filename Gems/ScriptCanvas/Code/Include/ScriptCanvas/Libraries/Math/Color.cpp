@@ -11,6 +11,10 @@
 #include <AzCore/Math/Color.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
 
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
+#include <Include/ScriptCanvas/Libraries/Math/Color.generated.h>
+
 namespace ScriptCanvas
 {
     namespace ColorFunctions

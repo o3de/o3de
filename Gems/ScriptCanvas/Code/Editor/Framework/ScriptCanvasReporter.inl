@@ -127,6 +127,11 @@ namespace ScriptCanvasEditor
         return m_translationDuration;
     }
 
+    AZ_INLINE const AZ::IO::Path& Reporter::GetFilePath() const
+    {
+        return m_filePath;
+    }
+
     AZ_INLINE bool Reporter::IsActivated() const
     {
         return m_graphIsActivated;
@@ -288,6 +293,11 @@ namespace ScriptCanvasEditor
     AZ_INLINE void Reporter::SetProcessOnly(bool processOnly)
     {
         m_processOnly = processOnly;
+    }
+
+    AZ_INLINE void Reporter::SetFilePath(const AZ::IO::PathView& filePath)
+    {
+        m_filePath = filePath;
     }
 
     // Handler

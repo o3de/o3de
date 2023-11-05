@@ -49,6 +49,7 @@ namespace GraphModel
                 ->Method("__repr__", &SlotId::ToString)
                 ->Method("IsValid", &SlotId::IsValid)
                 ->Method("GetHash", &SlotId::GetHash)
+                ->Method("__repr__", [](SlotId* self) { return self->GetRepr(); })
                 ->Property("name", BehaviorValueProperty(&SlotId::m_name))
                 ->Property("subId", BehaviorValueProperty(&SlotId::m_subId))
                 ;
