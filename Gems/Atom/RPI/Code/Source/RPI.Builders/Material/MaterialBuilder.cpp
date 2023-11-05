@@ -156,7 +156,7 @@ namespace AZ
                         AssetBuilderSDK::CommonPlatformName);
 
                     const AZStd::string intermediateMaterialTypePath =
-                        MaterialUtils::PredictIntermediateMaterialTypeSourcePath(materialSourcePath, resolvedMaterialTypePath);
+                        MaterialUtils::PredictIntermediateMaterialTypeSourcePath(resolvedMaterialTypePath);
                     if (!intermediateMaterialTypePath.empty())
                     {
                         MaterialBuilderUtils::AddPossibleDependencies(
