@@ -713,7 +713,8 @@ namespace AZ::DocumentPropertyEditor
                         {
                             auto containerIndexAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerIndex);
                             AZ_Assert(
-                                !containerIndexAttribute->IsNull(), "children of a sequenced container should have a ContainerIndex!");
+                                containerIndexAttribute && !containerIndexAttribute->IsNull(),
+                                "children of a sequenced container should have a ContainerIndex!");
                             auto containerIndex = containerIndexAttribute->GetInt64();
                             CreateContainerButton(Nodes::ContainerAction::MoveUp, !containerIndex, isAncestorDisabledValue, containerIndex);
                             CreateContainerButton(

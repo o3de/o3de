@@ -1404,11 +1404,16 @@ namespace AZ::Reflection
                     {
                         nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::ParentContainer, *parentContainer });
 
-                        auto parentContainerInstance = Find(group, DescriptorAttributes::ParentContainerInstance, parentNode);
-                        if (parentContainerInstance)
+                        const auto inheritedAttributes = { DescriptorAttributes::ParentContainerInstance,
+                                                               AZ::Reflection::DescriptorAttributes::ContainerIndex };
+
+                        for (const auto& attributeName : inheritedAttributes)
                         {
-                            nodeData.m_cachedAttributes.push_back(
-                                { group, DescriptorAttributes::ParentContainerInstance, *parentContainerInstance });
+                            auto inheritedAttribute = Find(group, attributeName, parentNode);
+                            if (inheritedAttribute)
+                            {
+                                nodeData.m_cachedAttributes.push_back({ group, attributeName, *inheritedAttribute });
+                            }
                         }
                     }
                 }
