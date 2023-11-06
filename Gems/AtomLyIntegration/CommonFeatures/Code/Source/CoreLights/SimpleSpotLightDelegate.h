@@ -36,6 +36,14 @@ namespace AZ::Render
         void SetAffectsGI(bool affectsGI) override;
         void SetAffectsGIFactor(float affectsGIFactor) override;
         Aabb GetLocalVisualizationBounds() const override;
+        void SetEnableShadow(bool enabled) override;
+        void SetShadowBias(float bias) override;
+        void SetShadowmapMaxSize(ShadowmapSize size) override;
+        void SetShadowFilterMethod(ShadowFilterMethod method) override;
+        void SetFilteringSampleCount(uint32_t count) override;
+        void SetEsmExponent(float exponent) override;
+        void SetNormalShadowBias(float bias) override;
+        void SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode) override;
 
     private:
         void HandleShapeChanged() override;

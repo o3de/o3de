@@ -10,6 +10,10 @@
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 
+#if ENABLE_SHADOWS
+#include <Atom/Features/Shadow/ProjectedShadow.azsli>
+#endif
+
 void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
     real3 posToLight = real3(light.m_position - surface.position);
@@ -39,6 +43,22 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
         real3 lightIntensity = (real3(light.m_rgbIntensityCandelas) / d2) * radiusAttenuation;
         real3 posToLightDir = normalize(posToLight);
 
+        // shadow
+        float litRatio = 1.0;
+
+#if ENABLE_SHADOWS
+        if (o_enableShadows && o_enableSimpleSpotLightShadows)
+        {
+            const float3 lightDir = normalize(light.m_position - surface.position);
+            litRatio = ProjectedShadow::GetVisibility(
+                light.m_shadowIndex,
+                light.m_position,
+                surface.position,
+                lightDir,
+                surface.vertexNormal);
+        }
+#endif
+
         if (dotWithDirection < cosInnerConeAngle) // in penumbra
         {   
             // Normalize into 0.0 - 1.0 space.
@@ -51,7 +71,7 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
         }
 
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir) * litRatio;
 
         // Specular contribution
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
