@@ -62,6 +62,9 @@ namespace AZ
             //! Far depth clips for shadows.
             float m_shadowFarClipDistance = 100.f;
 
+            //! Whether this light enables shadow
+            bool m_shadowEnabled = true;
+
             //! Width/Height of shadowmap images.
             ShadowmapSize m_shadowmapSize = ShadowmapSize::Size1024;
 
@@ -140,6 +143,7 @@ namespace AZ
 
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
+            bool IsShadowDisabled() const;
             bool IsCascadeCorrectionDisabled() const;
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
