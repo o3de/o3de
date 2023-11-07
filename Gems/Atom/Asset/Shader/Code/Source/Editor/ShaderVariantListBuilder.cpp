@@ -93,14 +93,14 @@ namespace AZ
 
             for (const auto& path : RPI::AssetUtils::GetPossibleDependencyPaths(variantListFullpath, originalShaderPath))
             {
-                AssetBuilderSDK::SourceFileDependency sourceFileDependency;
-                sourceFileDependency.m_sourceFileDependencyPath = path;
-                sourceFileDependency.m_sourceDependencyType = path.contains('*')
+                AssetBuilderSDK::SourceFileDependency sourceDependency;
+                sourceDependency.m_sourceFileDependencyPath = path;
+                sourceDependency.m_sourceDependencyType = path.contains('*')
                     ? AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
                     : AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
-                sourceFileDependencies.emplace_back(AZStd::move(sourceFileDependency));
+                sourceFileDependencies.emplace_back(AZStd::move(sourceDependency));
 
-                if (sourceShaderAbsolutePath.empty() && !path.contains('*'))
+                if (sourceShaderAbsolutePath.empty())
                 {
                     AZ::Data::AssetInfo sourceInfo;
                     AZStd::string watchFolder;

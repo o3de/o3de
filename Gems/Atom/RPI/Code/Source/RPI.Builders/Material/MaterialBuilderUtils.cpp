@@ -24,19 +24,29 @@ namespace AZ::RPI::MaterialBuilderUtils
         const AZStd::vector<AZ::u32>& productSubIds,
         const AZStd::string& platformId)
     {
+        // Only the first possible dependency with sorts intro will be added as a job dependency. The rest will be added as source
+        // dependencies. Job dependencies determine the order jobs are processed. Source dependencies cause jobs too be reprocessed whenever
+        // they are created, deleted, or modified.
+        bool dependencyFileFound = false;
         for (const auto& path : RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath))
         {
+            // Any of the dependencies added that require the file to be reprocessed will affect the fingerprint. For materials specifically,
+            // we want additional fingerprinting to cause certain file types to be reprocessed even if they are not modified but their
+            // dependencies are.
             if (jobDependencyType != AssetBuilderSDK::JobDependencyType::OrderOnce &&
                 jobDependencyType != AssetBuilderSDK::JobDependencyType::OrderOnly)
             {
                 MaterialBuilderUtils::AddFingerprintForDependency(path, jobDescriptor);
             }
 
-            // The first path is the highest priority, and will have a job dependency, as this is the one
-            // the builder will actually use
-            bool dependencyFileFound = false;
+            AssetBuilderSDK::SourceFileDependency sourceDependency;
+            sourceDependency.m_sourceFileDependencyPath = path;
+            sourceDependency.m_sourceDependencyType = path.contains('*')
+                ? AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
+                : AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
 
-            if (!path.contains('*'))
+            // We only need to check for source info if we have not already recorded a job dependency for this set of potential files.
+            if (!dependencyFileFound)
             {
                 AZ::Data::AssetInfo sourceInfo;
                 AZStd::string watchFolder;
@@ -46,30 +56,23 @@ namespace AZ::RPI::MaterialBuilderUtils
                     path.c_str(),
                     sourceInfo,
                     watchFolder);
+
+                if (dependencyFileFound)
+                {
+                    AssetBuilderSDK::JobDependency jobDependency;
+                    jobDependency.m_jobKey = jobKey;
+                    jobDependency.m_sourceFile = AZStd::move(sourceDependency);
+                    jobDependency.m_type = jobDependencyType;
+                    jobDependency.m_productSubIds = productSubIds;
+                    jobDependency.m_platformIdentifier = platformId;
+                    jobDescriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
+                    continue;
+                }
             }
 
-            AssetBuilderSDK::SourceFileDependency sourceDependency;
-            sourceDependency.m_sourceFileDependencyPath = path;
-            sourceDependency.m_sourceDependencyType = path.contains('*')
-                ? AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
-                : AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
-
-            if (dependencyFileFound)
-            {
-                AssetBuilderSDK::JobDependency jobDependency;
-                jobDependency.m_jobKey = jobKey;
-                jobDependency.m_sourceFile = AZStd::move(sourceDependency);
-                jobDependency.m_type = jobDependencyType;
-                jobDependency.m_productSubIds = productSubIds;
-                jobDependency.m_platformIdentifier = platformId;
-                jobDescriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
-            }
-            else
-            {
-                // The file was not found so we can't add a job dependency. But we add a source dependency instead so if a file
-                // shows up later at this location, it will wake up the builder to try again.
-                response.m_sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
-            }
+            // No source info was found. We add a source dependency so if a file shows up later at this location, it will wake up the
+            // builder to try again.
+            response.m_sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
         }
     }
 

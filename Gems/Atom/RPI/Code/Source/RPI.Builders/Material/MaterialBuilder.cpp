@@ -145,13 +145,22 @@ namespace AZ
                 }
                 else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
                 {
+                    // Create a dependency on the abstract, pipeline, version of the material type and its products. The pipeline based
+                    // material type builder uses the 'common' asset platform ID because it produces immediate assets. The sub ID filter
+                    // should remain empty to observe all produced intermediate assets.
                     MaterialBuilderUtils::AddPossibleDependencies(
                         materialSourcePath,
                         resolvedMaterialTypePath,
                         response,
                         outputJobDescriptor,
-                        MaterialTypeBuilder::PipelineStageJobKey);
+                        MaterialTypeBuilder::PipelineStageJobKey,
+                        AssetBuilderSDK::JobDependencyType::Order,
+                        {},
+                        AssetBuilderSDK::CommonPlatformName);
 
+                    // The abstract, pipeline material type will generate a direct material type as an intermediate source asset. This
+                    // attempts to predict where that source asset will be located in the intermediate asset folder then maps it as a
+                    // product dependency if it exists or a source dependency if it is to be created in the future.
                     const auto& intermediateMaterialTypePath =
                         MaterialUtils::PredictIntermediateMaterialTypeSourcePath(resolvedMaterialTypePath);
                     if (!intermediateMaterialTypePath.empty())
