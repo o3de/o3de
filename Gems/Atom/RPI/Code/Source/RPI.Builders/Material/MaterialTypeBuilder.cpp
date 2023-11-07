@@ -225,7 +225,9 @@ namespace AZ
                     shader.m_shaderFilePath,
                     response,
                     outputJobDescriptor,
-                    "Shader Asset");
+                    "Shader Asset",
+                    AssetBuilderSDK::JobDependencyType::Order,
+                    {});
             }
 
             auto addFunctorDependencies = [&response, &outputJobDescriptor, &materialTypeSourcePath](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
@@ -278,7 +280,9 @@ namespace AZ
                         shader.m_shaderFilePath,
                         response,
                         outputJobDescriptor,
-                        "Shader Asset");
+                        "Shader Asset",
+                        AssetBuilderSDK::JobDependencyType::Order,
+                        {});
                 }
 
                 addFunctorDependencies(pipelinePair.second.m_materialFunctorSourceData);

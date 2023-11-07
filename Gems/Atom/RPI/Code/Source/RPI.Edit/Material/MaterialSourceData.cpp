@@ -164,9 +164,8 @@ namespace AZ
 
             if (!m_parentMaterial.empty())
             {
-                constexpr uint32_t subId = 0;
                 const auto& parentMaterialAssetOutcome = AssetUtils::LoadAsset<MaterialAsset>(
-                    materialSourceFilePath, m_parentMaterial, subId, AssetUtils::TraceLevel::Error, dontLoadImageAssets);
+                    materialSourceFilePath, m_parentMaterial, 0, AssetUtils::TraceLevel::Error, dontLoadImageAssets);
                 if (!parentMaterialAssetOutcome.IsSuccess())
                 {
                     return Failure();
