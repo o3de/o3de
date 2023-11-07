@@ -493,6 +493,7 @@ namespace AZ
 
             DrawItemInfo drawItemInfo;
             RHI::DrawItem& drawItem = drawItemInfo.m_drawItem;
+            drawItem.m_enabled = true;
 
             // Draw argument
             RHI::DrawIndexed drawIndexed;
