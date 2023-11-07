@@ -217,14 +217,28 @@ def generate_android_project(args: argparse) -> int:
         if signconfig_store_file:
             if not signconfig_key_alias:
                 raise android_support.AndroidToolError(f"Missing required '--signconfig-key-alias' argument to accompany the provided '--signconfig-store-file' ({signconfig_store_file})")
-            signconfig_store_password = getpass(f"Please enter the key store password for {signconfig_store_file} : ")
-            signconfig_key_password = getpass(f"Please enter the password for key referenced by alias {signconfig_key_alias} : ")
+
+            stored_signconfig_store_password, _ = android_config.get_value('signconfig_store_password')
+            if stored_signconfig_store_password:
+                signconfig_store_password = stored_signconfig_store_password
+            else:
+                signconfig_store_password = getpass(f"Please enter the key store password for {signconfig_store_file} : ")
+
+            stored_signconfig_key_password, _ = android_config.get_value('signconfig_key_password')
+            if stored_signconfig_key_password:
+                signconfig_key_password = stored_signconfig_key_password
+            else:
+                signconfig_key_password = getpass(f"Please enter the password for key referenced by alias {signconfig_key_alias} : ")
+
             signing_config = android_support.AndroidSigningConfig(store_file=signconfig_store_file,
                                                                   store_password=signconfig_store_password,
                                                                   key_alias=signconfig_key_alias,
                                                                   key_password=signconfig_key_password)
         else:
             signing_config = None
+
+        # For now only support monolithic builds
+        monolithic_build = True
 
         apg = android_support.AndroidProjectGenerator(engine_root=engine_path,
                                                       android_build_dir=build_folder,
@@ -243,13 +257,14 @@ def generate_android_project(args: argparse) -> int:
                                                       android_gradle_plugin_version=android_gradle_plugin_ver,
                                                       ninja_path=ninja_path,
                                                       include_assets_in_apk=True,
-                                                      asset_mode=None,
+                                                      asset_mode=args.asset_mode,
                                                       asset_type=None,
                                                       signing_config=signing_config,
-                                                      native_build_path=None,
+                                                      native_build_path=args.native_build_path,
                                                       vulkan_validation_path=None,
                                                       extra_cmake_configure_args=None,
                                                       overwrite_existing=True,
+                                                      monolithic_build=monolithic_build,
                                                       oculus_project=False)
         apg.execute()
 
@@ -347,5 +362,27 @@ def add_args(subparsers) -> None:
     else:
         android_generate_subparser.add_argument('--signconfig-key-alias', type=str,
                                                 help="Specify the key alias for the configured jks keystore file if set.")
+
+    native_build_path, _ = android_config.get_value('native_build_path')
+    if not native_build_path:
+        native_build_path = '.'
+    if native_build_path:
+        android_generate_subparser.add_argument('--native-build-path', type=str,
+                                                help=f"Specify the optional intermediate build folder to use during the native c++ build process, relative to the main 'app' "
+                                                      "folder.\n"
+                                                     f"Default: {native_build_path}",
+                                                default=native_build_path)
+
+    asset_mode, _ = android_config.get_value('asset_mode')
+    if asset_mode:
+        android_generate_subparser.add_argument('--native-build-path', type=str,
+                                                help=f"The mode of asset deployment to use. ({','.join(android_support.ASSET_MODES)}).\n"
+                                                     f"Default: {asset_mode}",
+                                                default=native_build_path)
+    else:
+        android_generate_subparser.add_argument('--native-build-path', type=str,
+                                                help=f"The mode of asset deployment to use. ({','.join(android_support.ASSET_MODES)}).\n"
+                                                     f"Default: {android_support.ASSET_MODE_LOOSE}",
+                                                default=android_support.ASSET_MODE_LOOSE)
 
     android_generate_subparser.set_defaults(func=generate_android_project)
