@@ -193,7 +193,7 @@ def get_android_gradle_plugin_requirements(requested_agp_version:str) -> Android
         for agp_version in version_set:
             if agp_version == requested_agp_version:
                 return AndroidGradlePluginRequirements(requested_agp_version, compat_grid)
-    raise AndroidToolError(f"Unrecognized gradle version {gradle_version}. ")
+    raise AndroidToolError(f"Unrecognized gradle version {requested_agp_version}. ")
 
 
 def resolve_project_name_and_path(starting_path:str) -> Path:
