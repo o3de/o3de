@@ -130,10 +130,7 @@ namespace AZ::RHI
 
         union
         {
-            struct
-            {
-                bool m_enabled : 1;    // Whether the Draw Item should render
-            };
+            bool m_enabled = { 1 }; // Whether the Draw Item should render
             uint8_t m_allFlags;
         };
 
