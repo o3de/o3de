@@ -165,12 +165,34 @@ namespace AZ
                         MaterialUtils::PredictIntermediateMaterialTypeSourcePath(resolvedMaterialTypePath);
                     if (!intermediateMaterialTypePath.empty())
                     {
-                        MaterialBuilderUtils::AddPossibleDependencies(
-                            materialSourcePath,
-                            intermediateMaterialTypePath,
-                            response,
-                            outputJobDescriptor,
-                            MaterialTypeBuilder::FinalStageJobKey);
+                        // Record the fingerprint for the predicted and immediate material type source file
+                        MaterialBuilderUtils::AddFingerprintForDependency(intermediateMaterialTypePath, outputJobDescriptor);
+
+                        // Add the ordered product dependency for the intermediate material type source file so that the material cannot be
+                        // processed before it's complete
+                        AssetBuilderSDK::SourceFileDependency sourceDependency;
+                        sourceDependency.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
+                        sourceDependency.m_sourceFileDependencyPath = intermediateMaterialTypePath;
+
+                        AssetBuilderSDK::JobDependency jobDependency;
+                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                        jobDependency.m_sourceFile = sourceDependency;
+                        jobDependency.m_jobKey = MaterialTypeBuilder::FinalStageJobKey;
+                        jobDependency.m_productSubIds = { 0 };
+                        jobDependency.m_platformIdentifier.clear();
+                        outputJobDescriptor.m_jobDependencyList.emplace_back(jobDependency);
+
+                        // Add a wild card job dependency for any of the shaders generated with the material type so the material will only
+                        // be processed after they are complete
+                        sourceDependency.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards;
+                        sourceDependency.m_sourceFileDependencyPath = intermediateMaterialTypePath;
+                        AZ::StringFunc::Replace(sourceDependency.m_sourceFileDependencyPath , "_generated.materialtype", "*.shader");
+
+                        jobDependency.m_sourceFile = sourceDependency;
+                        jobDependency.m_jobKey = "Shader Asset";
+                        jobDependency.m_productSubIds.clear();
+                        jobDependency.m_platformIdentifier.clear();
+                        outputJobDescriptor.m_jobDependencyList.emplace_back(jobDependency);
                     }
                 }
             }
