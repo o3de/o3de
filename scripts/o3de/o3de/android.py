@@ -375,12 +375,12 @@ def add_args(subparsers) -> None:
 
     asset_mode, _ = android_config.get_value('asset_mode')
     if asset_mode:
-        android_generate_subparser.add_argument('--native-build-path', type=str,
+        android_generate_subparser.add_argument('--asset-mode', type=str,
                                                 help=f"The mode of asset deployment to use. ({','.join(android_support.ASSET_MODES)}).\n"
                                                      f"Default: {asset_mode}",
                                                 default=native_build_path)
     else:
-        android_generate_subparser.add_argument('--native-build-path', type=str,
+        android_generate_subparser.add_argument('--asset-mode', type=str,
                                                 help=f"The mode of asset deployment to use. ({','.join(android_support.ASSET_MODES)}).\n"
                                                      f"Default: {android_support.ASSET_MODE_LOOSE}",
                                                 default=android_support.ASSET_MODE_LOOSE)
