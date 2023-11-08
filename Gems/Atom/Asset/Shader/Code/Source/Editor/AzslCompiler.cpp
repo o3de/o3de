@@ -44,12 +44,14 @@ namespace AZ
 
         static const char* ShaderCompilerName = "AZSL Compiler";            
 
-        AzslCompiler::AzslCompiler(const AZStd::string& inputFilePath)
-            : m_inputFilePath(inputFilePath)
+        AzslCompiler::AzslCompiler(const AZStd::string& inputFilePath, const AZStd::string& tempFolder)
+            : m_inputFilePath(inputFilePath),
+            m_tempFolder(tempFolder)
         {
         }
 
-        bool AzslCompiler::Compile(const AZStd::string& compilerParams, const AZStd::string& outputFilePath) const
+        bool AzslCompiler::Compile(const AZStd::string& compilerParams,
+                                   const AZStd::string& outputFilePath) const
         {
             // Shader compiler executable
             AZStd::string azslcPath = "Builders/AZSLc/";
@@ -84,7 +86,7 @@ namespace AZ
             }
 
             // Run Shader Compiler
-            if (!RHI::ExecuteShaderCompiler(azslcPath, azslcCommandOptions, m_inputFilePath, "AZSLc"))
+            if (!RHI::ExecuteShaderCompiler(azslcPath, azslcCommandOptions, m_inputFilePath, m_tempFolder, "AZSLc"))
             {
                 return false;
             }
@@ -92,7 +94,8 @@ namespace AZ
             return true;
         }
 
-        bool AzslCompiler::EmitShader(AZ::IO::GenericStream& outputStream, const AZStd::string& compilerParams) const
+        bool AzslCompiler::EmitShader(AZ::IO::GenericStream& outputStream,
+                                      const AZStd::string& compilerParams) const
         {
             // .azslin for input and .azslout for output (in the same folder)
             AZStd::string hlslOutputFile = m_inputFilePath;
@@ -133,7 +136,8 @@ namespace AZ
 
         namespace SubProducts = ShaderBuilderUtility::AzslSubProducts;
 
-        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::vector<AZStd::string>& azslcArguments, const AZStd::string& outputFile /* = ""*/) const
+        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::vector<AZStd::string>& azslcArguments,
+                                                               const AZStd::string& outputFile) const
         {
             const auto azslArgsStr = RHI::ShaderBuildArguments::ListAsString(azslcArguments);
             bool success = Compile(azslArgsStr, outputFile);

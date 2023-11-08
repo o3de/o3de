@@ -75,10 +75,6 @@ namespace ShaderManagementConsole
             AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderAssetResult.GetValue();
             AZStd::vector<AZ::RPI::ShaderOptionDescriptor> options = shaderAsset->GetShaderOptionGroupLayout()->GetShaderOptions();
             AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-            for (auto& optionDescriptor : options)
-            {
-                variantInfo.m_options[optionDescriptor.GetName()] = ""; // all unset
-            }
             variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
                 ? 1  // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
                 : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
@@ -119,11 +115,7 @@ namespace ShaderManagementConsole
                 auto& descriptor = GetShaderOptionDescriptor(column);
                 auto& optionName = descriptor.GetName();
                 auto indexIt = nameToHeaderIndex.find(optionName);
-                if (indexIt == nameToHeaderIndex.end())
-                {
-                    mapOfOptionNameToValues[optionName] = ""; // unset
-                }
-                else
+                if (indexIt != nameToHeaderIndex.end())
                 {
                     int index = line * optionHeaders.size() + indexIt->second;
                     mapOfOptionNameToValues[optionName] = matrixOfValues[index];

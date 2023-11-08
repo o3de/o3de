@@ -471,7 +471,7 @@ namespace AZ
             // set the input file for eventual error messages, but the compiler won't be called on it.
             AZStd::string azslFullPath;
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderSourceFileFullPath, shaderSourceDescriptor.m_source, azslFullPath);
-            AzslCompiler azslc(azslFullPath);
+            AzslCompiler azslc(azslFullPath, request.m_tempDirPath);
 
             AZStd::string previousLoopApiName;
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
@@ -563,7 +563,7 @@ namespace AZ
             AZStd::shared_ptr<ShaderFiles> sources = ShaderBuilderUtility::PrepareSourceInput(ShaderVariantAssetBuilderName, shaderSourceFileFullPath, shaderSourceDescriptor);
 
             // set the input file for eventual error messages, but the compiler won't be called on it.
-            AzslCompiler azslc(sources->m_azslSourceFullPath);
+            AzslCompiler azslc(sources->m_azslSourceFullPath, request.m_tempDirPath);
 
             // Request the list of valid shader platform interfaces for the target platform.
             AZStd::vector<RHI::ShaderPlatformInterface*> platformInterfaces =
