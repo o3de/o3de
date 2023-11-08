@@ -156,16 +156,10 @@ namespace AZ
 
             auto addPossibleDependencies = [&response, &outputJobDescriptor](const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
-                for (const auto& path : RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath))
-                {
-                    AssetBuilderSDK::SourceFileDependency sourceDependency;
-                    sourceDependency.m_sourceFileDependencyPath = path;
-                    sourceDependency.m_sourceDependencyType = path.contains('*')
-                        ? AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
-                        : AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
-                    response.m_sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
-                    MaterialBuilderUtils::AddFingerprintForDependency(path, outputJobDescriptor);
-                }
+                auto& sourceDependency = response.m_sourceFileDependencyList.emplace_back();
+                sourceDependency.m_sourceFileDependencyPath =
+                    RPI::AssetUtils::ResolvePathReference(originatingSourceFilePath, referencedSourceFilePath);
+                MaterialBuilderUtils::AddFingerprintForDependency(sourceDependency.m_sourceFileDependencyPath, outputJobDescriptor);
             };
 
             // Add dependencies for the material type file
@@ -220,30 +214,30 @@ namespace AZ
 
             for (const auto& shader : materialTypeSourceData.GetShaderReferences())
             {
-                MaterialBuilderUtils::AddPossibleDependencies(
-                    materialTypeSourcePath,
-                    shader.m_shaderFilePath,
-                    response,
-                    outputJobDescriptor,
-                    "Shader Asset",
-                    AssetBuilderSDK::JobDependencyType::Order,
-                    {});
+                auto& shaderJobDependency = outputJobDescriptor.m_jobDependencyList.emplace_back();
+                shaderJobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                shaderJobDependency.m_sourceFile.m_sourceFileDependencyPath =
+                    AssetUtils::ResolvePathReference(materialTypeSourcePath, shader.m_shaderFilePath);
+                shaderJobDependency.m_jobKey = "Shader Asset";
+                MaterialBuilderUtils::AddFingerprintForDependency(
+                    shaderJobDependency.m_sourceFile.m_sourceFileDependencyPath, outputJobDescriptor);
             }
 
-            auto addFunctorDependencies = [&response, &outputJobDescriptor, &materialTypeSourcePath](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
+            auto addFunctorDependencies = [&outputJobDescriptor, &materialTypeSourcePath](
+                                              const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
             {
                 for (const auto& functor : functors)
                 {
-                    const auto& dependencies = functor->GetActualSourceData()->GetAssetDependencies();
-
-                    for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
+                    for (const MaterialFunctorSourceData::AssetDependency& dependency :
+                         functor->GetActualSourceData()->GetAssetDependencies())
                     {
-                        MaterialBuilderUtils::AddPossibleDependencies(
-                            materialTypeSourcePath,
-                            dependency.m_sourceFilePath,
-                            response,
-                            outputJobDescriptor,
-                            dependency.m_jobKey);
+                        auto& functorJobDependency = outputJobDescriptor.m_jobDependencyList.emplace_back();
+                        functorJobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                        functorJobDependency.m_sourceFile.m_sourceFileDependencyPath =
+                            AssetUtils::ResolvePathReference(materialTypeSourcePath, dependency.m_sourceFilePath);
+                        functorJobDependency.m_jobKey = dependency.m_jobKey;
+                        MaterialBuilderUtils::AddFingerprintForDependency(
+                            functorJobDependency.m_sourceFile.m_sourceFileDependencyPath, outputJobDescriptor);
                     }
                 }
             };
@@ -257,16 +251,13 @@ namespace AZ
                 });
 
             materialTypeSourceData.EnumerateProperties(
-                [&response, &outputJobDescriptor, &materialTypeSourcePath](
-                    const MaterialPropertySourceData* property, const MaterialNameContext&)
+                [&outputJobDescriptor, &materialTypeSourcePath](const MaterialPropertySourceData* property, const MaterialNameContext&)
                 {
-                    if (property->m_dataType == MaterialPropertyDataType::Image && MaterialUtils::LooksLikeImageFileReference(property->m_value))
+                    if (property->m_dataType == MaterialPropertyDataType::Image &&
+                        MaterialUtils::LooksLikeImageFileReference(property->m_value))
                     {
                         MaterialBuilderUtils::AddPossibleImageDependencies(
-                            materialTypeSourcePath,
-                            property->m_value.GetValue<AZStd::string>(),
-                            response,
-                            outputJobDescriptor);
+                            materialTypeSourcePath, property->m_value.GetValue<AZStd::string>(), outputJobDescriptor);
                     }
                     return true;
                 });

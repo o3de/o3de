@@ -206,10 +206,7 @@ namespace AZ
                 if (MaterialUtils::LooksLikeImageFileReference(propertyValue))
                 {
                     MaterialBuilderUtils::AddPossibleImageDependencies(
-                        materialSourcePath,
-                        propertyValue.GetValue<AZStd::string>(),
-                        response,
-                        outputJobDescriptor);
+                        materialSourcePath, propertyValue.GetValue<AZStd::string>(), outputJobDescriptor);
                 }
             }
 
