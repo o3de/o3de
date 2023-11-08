@@ -127,44 +127,6 @@ namespace AZ
                 return referencedPath.String();
             }
 
-            AZStd::vector<AZStd::string> GetPossibleDependencyPaths(
-                const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
-            {
-                AZStd::vector<AZStd::string> results;
-
-                if (referencedSourceFilePath.empty())
-                {
-                    return results;
-                }
-
-                AZ::IO::FixedMaxPath resolvedPath{ ResolvePathReference(originatingSourceFilePath, referencedSourceFilePath) };
-                if (resolvedPath.IsAbsolute())
-                {
-                    results.push_back(resolvedPath.String());
-                    return results;
-                }
-
-                AZ::IO::FixedMaxPath originatingPath;
-                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
-                originatingPath = originatingPath.LexicallyNormal();
-
-                AZ::IO::FixedMaxPath referencedPath;
-                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencedPath, AZ::IO::PathView{ referencedSourceFilePath });
-                referencedPath = referencedPath.LexicallyNormal();
-
-                AZ::IO::FixedMaxPath combinedPath;
-                combinedPath /= originatingPath.ParentPath();
-                combinedPath /= "*";
-                combinedPath /= referencedPath;
-                results.push_back(combinedPath.LexicallyNormal().String());
-
-                combinedPath.clear();
-                combinedPath /= "*";
-                combinedPath /= referencedPath;
-                results.push_back(combinedPath.LexicallyNormal().String());
-                return results;
-            }
-
             Outcome<Data::AssetId> MakeAssetId(const AZStd::string& sourcePath, uint32_t productSubId, TraceLevel reporting)
             {
                 AZ::IO::FixedMaxPath sourcePathNoAlias;

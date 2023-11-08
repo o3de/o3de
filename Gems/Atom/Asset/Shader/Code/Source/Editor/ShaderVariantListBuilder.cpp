@@ -89,33 +89,24 @@ namespace AZ
             const AZStd::string& originalShaderPath,
             AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies)
         {
+            auto& sourceDependency = sourceFileDependencies.emplace_back();
+            sourceDependency.m_sourceFileDependencyPath = RPI::AssetUtils::ResolvePathReference(variantListFullpath, originalShaderPath);
+
+            AZ::Data::AssetInfo sourceInfo;
+            AZStd::string watchFolder;
+            bool found = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+                sourceDependency.m_sourceFileDependencyPath.c_str(),
+                sourceInfo,
+                watchFolder);
+
             AZStd::string sourceShaderAbsolutePath;
 
-            for (const auto& path : RPI::AssetUtils::GetPossibleDependencyPaths(variantListFullpath, originalShaderPath))
+            if (found)
             {
-                AssetBuilderSDK::SourceFileDependency sourceDependency;
-                sourceDependency.m_sourceFileDependencyPath = path;
-                sourceDependency.m_sourceDependencyType = path.contains('*')
-                    ? AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards
-                    : AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
-                sourceFileDependencies.emplace_back(AZStd::move(sourceDependency));
-
-                if (sourceShaderAbsolutePath.empty())
-                {
-                    AZ::Data::AssetInfo sourceInfo;
-                    AZStd::string watchFolder;
-                    bool found = false;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                        found,
-                        &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
-                        path.c_str(),
-                        sourceInfo,
-                        watchFolder);
-                    if (found)
-                    {
-                        AZ::StringFunc::Path::Join(watchFolder.c_str(), sourceInfo.m_relativePath.c_str(), sourceShaderAbsolutePath);
-                    }
-                }
+                AZ::StringFunc::Path::Join(watchFolder.c_str(), sourceInfo.m_relativePath.c_str(), sourceShaderAbsolutePath);
             }
 
             return sourceShaderAbsolutePath;

@@ -299,7 +299,7 @@ namespace AZ
             //! See enum Format
             Format GetFormat() const;
 
-            //! Return a concatenated list of shader references from mall collections
+            //! Return a concatenated list of shader references from all collections
             AZStd::vector<ShaderVariantReferenceData> GetShaderReferences() const;
 
         private:
