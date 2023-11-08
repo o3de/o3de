@@ -28,6 +28,7 @@
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <AzQtComponents/Utilities/ColorUtilities.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
@@ -1181,13 +1182,19 @@ void ColorPicker::addPaletteCard(QSharedPointer<PaletteCard> card, ColorLibrary 
     QString fileName = colorLibrary.fileName;
     bool loaded = loader.load(fileName);
 
-    if (!loaded || (loaded && loader.colors() != card->palette()->colors()))
+    // If we can't load the palette file, then mark the palette as modified
+    // If we loaded the data and it was different to what we know OR
+    // Either way, we only mark it as modified if it's non-empty
+    if (!loaded)
     {
-        // If we loaded the data and it was different to what we know OR
-        // If we can't load the palette file, then mark the palette as modified
-        // Either way, we only mark it as modified if it's non-empty
 
         card->setModified(!card->palette()->colors().empty());
+    }
+    else
+    {
+        QVector<AZ::Color> loadedColors = loader.colors();
+        QVector<AZ::Color> paletteColors = card->palette()->colors();
+        card->setModified(!paletteColors.empty() && !AZStd::ranges::equal(loadedColors, paletteColors));
     }
 
     m_colorLibraries[card] = colorLibrary;

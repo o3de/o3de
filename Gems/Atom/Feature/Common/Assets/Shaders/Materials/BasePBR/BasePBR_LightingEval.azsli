@@ -23,14 +23,14 @@ void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition
 {
     // Light iterator
     lightingData.tileIterator.Init(screenPosition, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear);
     
     // Diffuse and Specular response (used in IBL calculations)
-    real3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    real3 specularResponse = FresnelSchlickWithRoughness(lightingData.GetSpecularNdotV(), surface.GetSpecularF0(), surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0 - specularResponse;
 
     // Multiscatter
-    lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
+    lightingData.CalculateMultiscatterCompensation(surface.GetSpecularF0(), o_specularF0_enableMultiScatterCompensation);
 }
 
 void CalculateLighting_BasePBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)

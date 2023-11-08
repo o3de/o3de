@@ -133,7 +133,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
         // Adjust the light direction for specular based on disk size
 
         // Calculate the reflection off the normal from the view direction
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
         float reflectionDotLight = dot(reflectionDir, -light.m_direction);
         
         // Let 'Intersection' denote the point where the reflection ray intersects the diskLight plane
