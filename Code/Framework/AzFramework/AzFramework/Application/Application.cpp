@@ -716,19 +716,51 @@ namespace AzFramework
             }
 
             AZ::IO::FixedMaxPath projectUserPath;
-            if (!m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+
+            // carbonated begin (mp-469): Add the ability to change the 'user' dir
+
+            bool hasCliUserDirOverride = false;
+
+            AZStd::string userDirName("user");
+#if defined(CARBONATED)
+            const int argC = GetArgC() ? *GetArgC() : 0;
+            char** argV = GetArgV() ? *GetArgV() : nullptr;            
+            // This isn't particularly elegant, but check for the user_dir override here.  Needs to be done early so that the aliases
+            // can be set correctly
+            if (argC > 2)
             {
-                projectUserPath = engineRootPath / "user";
+                for (int i = 0; i < (argC - 1); i++)
+                {
+                    if (AZStd::string(argV[i]) == "+user_dir")
+                    {
+                        userDirName = argV[i + 1];
+                        hasCliUserDirOverride = true;
+                        break;
+                    }
+                }
+            }
+#endif
+
+            if (hasCliUserDirOverride)
+            {
+                projectUserPath = projectRootPath.Append(userDirName);
+            }
+            else if (!m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            {
+                projectUserPath = engineRootPath.Append(userDirName);
             }
             fileIoBase->SetAlias("@user@", projectUserPath.c_str());
             fileIoBase->CreatePath(projectUserPath.c_str());
             CreateUserCache(projectUserPath, *fileIoBase);
 
             AZ::IO::FixedMaxPath projectLogPath;
-            if (!m_settingsRegistry->Get(projectLogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
+            if (hasCliUserDirOverride || !m_settingsRegistry->Get(projectLogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
             {
                 projectLogPath = projectUserPath / "log";
             }
+
+            // carbonated end
+
             fileIoBase->SetAlias("@log@", projectLogPath.c_str());
             fileIoBase->CreatePath(projectLogPath.c_str());
 
