@@ -44,7 +44,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 44; // Switch from XML to binary assets
+            materialBuilderDescriptor.m_version = 45; // Revising job dependencies
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -218,7 +218,7 @@ namespace AZ
 
             MaterialBuilderUtils::AddFingerprintForDependency(materialTypeSourcePath, outputJobDescriptor);
 
-            for (auto& shader : materialTypeSourceData.m_shaderCollection)
+            for (const auto& shader : materialTypeSourceData.GetShaderReferences())
             {
                 MaterialBuilderUtils::AddPossibleDependencies(
                     materialTypeSourcePath,
@@ -273,18 +273,6 @@ namespace AZ
 
             for (const auto& pipelinePair : materialTypeSourceData.m_pipelineData)
             {
-                for (const auto& shader : pipelinePair.second.m_shaderCollection)
-                {
-                    MaterialBuilderUtils::AddPossibleDependencies(
-                        materialTypeSourcePath,
-                        shader.m_shaderFilePath,
-                        response,
-                        outputJobDescriptor,
-                        "Shader Asset",
-                        AssetBuilderSDK::JobDependencyType::Order,
-                        {});
-                }
-
                 addFunctorDependencies(pipelinePair.second.m_materialFunctorSourceData);
             }
 
