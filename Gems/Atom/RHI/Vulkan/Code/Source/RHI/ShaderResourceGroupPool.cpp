@@ -84,7 +84,7 @@ namespace AZ
                 {
                     return RHI::ResultCode::OutOfMemory;
                 }
-                AZStd::string name = AZStd::string::format("%s_%d", GetName().GetCStr(), i);
+                AZStd::string name = AZStd::string::format("%s_%d", GetName().GetCStr(), static_cast<int>(i));
                 descriptorSet->SetName(AZ::Name(name));
                 group.m_compiledData.push_back(descriptorSet);
             }
