@@ -214,13 +214,8 @@ namespace AZ
 
             for (const auto& shader : materialTypeSourceData.GetShaderReferences())
             {
-                auto& shaderJobDependency = outputJobDescriptor.m_jobDependencyList.emplace_back();
-                shaderJobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                shaderJobDependency.m_sourceFile.m_sourceFileDependencyPath =
-                    AssetUtils::ResolvePathReference(materialTypeSourcePath, shader.m_shaderFilePath);
-                shaderJobDependency.m_jobKey = "Shader Asset";
-                MaterialBuilderUtils::AddFingerprintForDependency(
-                    shaderJobDependency.m_sourceFile.m_sourceFileDependencyPath, outputJobDescriptor);
+                MaterialBuilderUtils::AddJobDependency(
+                    outputJobDescriptor, AssetUtils::ResolvePathReference(materialTypeSourcePath, shader.m_shaderFilePath), "Shader Asset");
             }
 
             auto addFunctorDependencies = [&outputJobDescriptor, &materialTypeSourcePath](
@@ -231,13 +226,10 @@ namespace AZ
                     for (const MaterialFunctorSourceData::AssetDependency& dependency :
                          functor->GetActualSourceData()->GetAssetDependencies())
                     {
-                        auto& functorJobDependency = outputJobDescriptor.m_jobDependencyList.emplace_back();
-                        functorJobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                        functorJobDependency.m_sourceFile.m_sourceFileDependencyPath =
-                            AssetUtils::ResolvePathReference(materialTypeSourcePath, dependency.m_sourceFilePath);
-                        functorJobDependency.m_jobKey = dependency.m_jobKey;
-                        MaterialBuilderUtils::AddFingerprintForDependency(
-                            functorJobDependency.m_sourceFile.m_sourceFileDependencyPath, outputJobDescriptor);
+                        MaterialBuilderUtils::AddJobDependency(
+                            outputJobDescriptor,
+                            AssetUtils::ResolvePathReference(materialTypeSourcePath, dependency.m_sourceFilePath),
+                            dependency.m_jobKey);
                     }
                 }
             };
