@@ -73,37 +73,37 @@ SET PYTHON=python\python.cmd
 REM Regardless of whether or not we generate a signing key, apparently we must set variables outside of 
 REM an IF clause otherwise it will not work.
 
-REM First look for the JDK HOME in the environment variable
-IF EXIST "%JDK_HOME%" (
-    ECHO JDK Home found in Environment: !JDK_HOME!
-    GOTO JDK_FOUND
-)
-
-REM Next, look in the registry
+REM First look in the windowsregistry
 FOR /F "skip=2 tokens=1,2*" %%A IN ('REG QUERY "HKEY_LOCAL_MACHINE\SOFTWARE\JavaSoft\Java Development Kit\1.8" /v "JavaHome" 2^>nul') DO (
     SET JDK_REG_VALUE=%%C
 )
 IF EXIST "%JDK_REG_VALUE%" (
-    SET JDK_HOME=!JDK_REG_VALUE!
-    ECHO JDK Home found in registry: !JDK_HOME!
+    SET JAVA_HOME=!JDK_REG_VALUE!
+    ECHO JAVA_HOME found in registry: !JAVA_HOME!
     GOTO JDK_FOUND
+) ELSE (
+    REM Next, look for the JDK HOME in the environment variable
+    IF EXIST "%JAVA_HOME%" (
+        ECHO JDK Home found in Environment: !JAVA_HOME!
+        GOTO JDK_FOUND
+    )
 )
 
-ECHO Unable to locate JDK_HOME
+ECHO Unable to locate JAVA_HOME
 GOTO error
 
 :JDK_FOUND
 
-SET JDK_BIN=%JDK_HOME%\bin
-IF NOT EXIST "%JDK_BIN%" (
-    ECHO The environment variable JDK_HOME is not set to a valid JDK 1.8 folder %JDK_BIN%
+SET JAVA_BIN=%JAVA_HOME%\bin
+IF NOT EXIST "%JAVA_BIN%" (
+    ECHO The environment variable JAVA_HOME is not set to a valid JDK 1.8 folder %JAVA_BIN%
     ECHO Make sure the variable is set to your local JDK 1.8 installation
     GOTO error
 )
 
-SET KEYTOOL_PATH=%JDK_BIN%\keytool.exe
+SET KEYTOOL_PATH=%JAVA_BIN%\keytool.exe
 IF NOT EXIST "%KEYTOOL_PATH%" (
-    ECHO The environment variable JDK_HOME is not set to a valid JDK 1.8 folder. Cannot find keytool at %JDK_BIN%\keytool.exe
+    ECHO The environment variable JAVA_HOME is not set to a valid JDK 1.8 folder. Cannot find keytool at %JAVA_BIN%\keytool.exe
     ECHO Make sure the variable is set to your local JDK 1.8 installation
     GOTO error
 )

@@ -127,7 +127,7 @@ Surface EvaluateSurface_EnhancedPBR(
         // Convert the angle from [0..1] = [0 .. 180 degrees] to radians [0 .. PI]
         const real anisotropyAngle = real(MaterialSrg::m_anisotropicAngle) * PI;
         const real anisotropyFactor = real(MaterialSrg::m_anisotropicFactor);
-        surface.anisotropy.Init(surface.normal, tangents[0], bitangents[0], anisotropyAngle, anisotropyFactor, surface.roughnessA);
+        surface.anisotropy.Init(surface.GetSpecularNormal(), tangents[0], bitangents[0], anisotropyAngle, anisotropyFactor, surface.roughnessA);
     }
 
     // ------- Emissive -------

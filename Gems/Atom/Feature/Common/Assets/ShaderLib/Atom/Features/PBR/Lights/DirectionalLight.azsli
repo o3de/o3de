@@ -62,7 +62,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
         real3 dirToLight = normalize(real3(-light.m_direction));
 
         // Adjust the direction of the light based on its angular diameter.
-        real3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+        real3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
         real3 lightDirToReflectionDir = reflectionDir - dirToLight;
         real lightDirToReflectionDirLen = length(lightDirToReflectionDir);
         lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length

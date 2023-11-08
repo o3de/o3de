@@ -2934,7 +2934,7 @@ namespace AZ
                 // supports the AZStd::to_string function
                 auto PairToString = [](const void* pairInst) -> AZStd::string
                 {
-                    auto pairElement = reinterpret_cast<const PairType*>(pairInst);
+                    [[maybe_unused]] auto pairElement = reinterpret_cast<const PairType*>(pairInst);
                     AZStd::string result;
                     if constexpr (AZStd::HasToString_v<T1> && AZStd::HasToString_v<T2>)
                     {

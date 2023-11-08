@@ -73,7 +73,7 @@ namespace AZ::RHI
 
         void AddDrawItem(const DrawRequest& request);
 
-        const DrawPacket* End();
+        DrawPacket* End();
 
         //! Make a copy of an existing DrawPacket.
         //! Note: the copy will reference the same DrawSrg as the original, so it is not possible to vary the DrawSrg values between the

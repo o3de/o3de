@@ -58,8 +58,17 @@ namespace AZ::RHI
         //! Returns the number of draw items stored in the packet.
         size_t GetDrawItemCount() const;
 
+        //! Returns the index associated with the given DrawListTag
+        s32 GetDrawListIndex(DrawListTag drawListTag) const;
+
+        //! Returns the DrawItem at the given index
+        DrawItem* GetDrawItem(size_t index);
+
+        //! Returns the DrawItem associated with the given DrawListTag
+        DrawItem* GetDrawItem(DrawListTag drawListTag);
+
         //! Returns the draw item and its properties associated with the provided index.
-        DrawItemProperties GetDrawItem(size_t index) const;
+        DrawItemProperties GetDrawItemProperties(size_t index) const;
 
         //! Returns the draw list tag associated with the provided index, used to filter the draw item into an appropriate pass.
         DrawListTag GetDrawListTag(size_t index) const;
@@ -98,7 +107,7 @@ namespace AZ::RHI
         uint8_t m_viewportsCount = 0;
 
         // List of draw items.
-        const DrawItem* m_drawItems = nullptr;
+        DrawItem* m_drawItems = nullptr;
 
         // List of draw item sort keys associated with the draw item index.
         const DrawItemSortKey* m_drawItemSortKeys = nullptr;

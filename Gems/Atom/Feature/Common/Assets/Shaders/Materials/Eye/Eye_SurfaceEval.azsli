@@ -61,7 +61,7 @@ Surface EvaluateSurface_Eye(
     // Get refracted vector
     const real airIOR = 1.0;
     real refractionFactor = airIOR/real(MaterialSrg::m_innerEyeIOR);
-    real3 refractedDir = refract(viewDir, surface.normal, refractionFactor);
+    real3 refractedDir = refract(viewDir, surface.GetVertexNormal(), refractionFactor);
 
     // Get UV offset due to refraction (based on http://www.iryoku.com/stare-into-the-future)
     
@@ -133,7 +133,7 @@ Surface EvaluateSurface_Eye(
 
     // ------- Dual Specular -------
 
-    GetDualSpecularInput(surface.normal, surface.roughnessLinear, surface.specularF0.x, MaterialSrg::m_dualSpecFactor,
+    GetDualSpecularInput(surface.GetSpecularNormal(), surface.roughnessLinear, surface.specularF0.x, MaterialSrg::m_dualSpecFactor,
                           MaterialSrg::m_dualSpecF0Multiplier, MaterialSrg::m_dualSpecRoughnessExponent, MaterialSrg::m_dualSpecRoughnessMultiplier,
                           surface.dualSpecRoughness, surface.dualSpecRoughnessA2, surface.dualSpecF0, surface.dualSpecFactor);
 
