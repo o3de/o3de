@@ -117,6 +117,7 @@
                     },
                     "details": {
                         "name": "Set Text Element",
+                        "subtitle": "UI Dropdown Option",
                         "tooltip": "Sets the text element that is used to display the dropdown option’s text"
                     },
                     "params": [

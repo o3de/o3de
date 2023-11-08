@@ -37,7 +37,7 @@ namespace AZ::Render
         void LoadMatricesForSrg(Data::Instance<RPI::ShaderResourceGroup> srg) override;
 
     private:
-        AZStd::map<AZ::Uuid, AZStd::vector<RPI::AssetUtils::AsyncAssetLoader>> m_assetLoaders;
+        AZStd::unordered_map<AZ::Uuid, AZStd::vector<RPI::AssetUtils::AsyncAssetLoader>> m_assetLoaders;
 
     };
 }

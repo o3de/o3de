@@ -61,3 +61,5 @@ namespace ScriptCanvas
         NumberType ToScale(const TransformType& source);
     } // namespace TransformFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Transform.generated.h>

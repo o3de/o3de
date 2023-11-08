@@ -49,6 +49,12 @@ namespace AZStd
     template<class T>
     class shared_ptr;
 
+    template<class T, class = void>
+    inline constexpr bool HasToString_v = false;
+    template<class T>
+    inline constexpr bool HasToString_v<T, AZStd::enable_if_t<
+        AZStd::is_void_v<decltype(AZStd::to_string(AZStd::declval<AZStd::string&>(), AZStd::declval<T>()), void())>> > = true;
+
     inline namespace AssociativeInternal
     {
         // SFINAE expression to determine whether an associative container is an actual map with a corresponding value for each key,
@@ -283,6 +289,20 @@ namespace AZ
 
             /// Returns true if elements can be retrieved by index.
             bool    CanAccessElementsByIndex() const override   { return false; }
+
+            bool SwapElements(void* instance, size_t firstIndex, size_t secondIndex) override
+            {
+                T* arrayPtr = reinterpret_cast<T*>(instance);
+                size_t containerSize = Size(instance);
+                // Make sure the indices to swap are in range of the container
+                if (firstIndex >= containerSize || secondIndex >= containerSize)
+                {
+                    return false;
+                }
+
+                AZStd::ranges::iter_swap(AZStd::next(arrayPtr->begin(), firstIndex), AZStd::next(arrayPtr->begin(), secondIndex));
+                return true;
+            }
 
             bool IsSequenceContainer() const override { return true; }
 
@@ -2910,6 +2930,27 @@ namespace AZ
             GenericClassPair()
                 : m_classData{ SerializeContext::ClassData::Create<PairType>(AZ::AzTypeInfo<PairType>::Name(), GetSpecializedTypeId(), Internal::NullFactory::GetInstance(), nullptr, &m_pairContainer) }
             {
+                // Convert a pair to a string, if both types of the pair
+                // supports the AZStd::to_string function
+                auto PairToString = [](const void* pairInst) -> AZStd::string
+                {
+                    [[maybe_unused]] auto pairElement = reinterpret_cast<const PairType*>(pairInst);
+                    AZStd::string result;
+                    if constexpr (AZStd::HasToString_v<T1> && AZStd::HasToString_v<T2>)
+                    {
+                        AZStd::string value;
+                        AZStd::to_string(value, pairElement->first);
+                        result += "<";
+                        result += value;
+                        result += ", ";
+                        AZStd::to_string(value, pairElement->second);
+                        result += value;
+                        result += ">";
+                    }
+
+                    return result;
+                };
+                m_classData.m_attributes.emplace_back(AZ::Crc32("ToString"), CreateModuleAttribute(AZStd::move(PairToString)));
             }
 
             SerializeContext::ClassData* GetClassData() override

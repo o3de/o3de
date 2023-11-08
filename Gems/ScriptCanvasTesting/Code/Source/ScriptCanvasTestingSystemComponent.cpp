@@ -14,11 +14,10 @@
 #include "Framework/ScriptCanvasTestVerify.h"
 #include "Nodes/BehaviorContextObjectTestNode.h"
 
-#include <TestAutoGenFunctionRegistry.generated.h>
-#include <TestAutoGenNodeableRegistry.generated.h>
+#include "Nodes/Nodeables/SharedDataSlotExample.h"
+#include "Nodes/Nodeables/ValuePointerReferenceExample.h"
 
-REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
+#include "Nodes/TestAutoGenFunctions.h"
 
 namespace ScriptCanvasTestingNodes
 {

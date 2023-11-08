@@ -1,0 +1,5 @@
+<EngineDependencies versionnumber="1.0.0">
+    <Dependency path="sounds/wwise/*.bnk" optional="false" />
+    <Dependency path="libs/gameaudio/wwise/*.xml" optional="false" />
+    <Dependency path=":libs/gameaudio/wwise/levels/*.xml" optional="false" />
+</EngineDependencies>

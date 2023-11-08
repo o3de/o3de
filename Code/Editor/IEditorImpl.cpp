@@ -23,6 +23,10 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
+#if defined(AZ_PLATFORM_MAC)
+#include <AzCore/Utils/SystemUtilsApple_Platform.h>
+#endif
+
 // AzFramework
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
@@ -229,30 +233,32 @@ void CEditorImpl::LoadPlugins()
 {
     AZStd::scoped_lock lock(m_pluginMutex);
 
-    static const QString editor_plugins_folder("EditorPlugins");
+    constexpr const char* editorPluginFolder = "EditorPlugins";
 
-    // Build, verify, and set the engine root's editor plugin folder
-    QString editorPluginPathStr;
+    AZ::IO::FixedMaxPath pluginsPath;
 
-    AZStd::string_view exeFolder;
-    AZ::ComponentApplicationBus::BroadcastResult(exeFolder, &AZ::ComponentApplicationRequests::GetExecutableFolder);
-
-    QDir testDir;
-    testDir.setPath(AZStd::string(exeFolder).c_str());
-    if (testDir.exists() && testDir.cd(editor_plugins_folder))
+#if defined(AZ_PLATFORM_MAC)
+    char maxPathBuffer[AZ::IO::MaxPathLength];
+    if (auto appBundlePathOutcome = AZ::SystemUtilsApple::GetPathToApplicationBundle(maxPathBuffer);
+       appBundlePathOutcome)
     {
-        editorPluginPathStr = testDir.absolutePath();
+        AZ::IO::FixedMaxPath bundleRootDirectory = appBundlePathOutcome.GetValue();
+
+        // the bundle directory includes Editor.app so we want the parent directory
+        bundleRootDirectory = (bundleRootDirectory / "..").LexicallyNormal();
+        pluginsPath = bundleRootDirectory / editorPluginFolder;
+    }
+#endif
+
+    if (pluginsPath.empty())
+    {
+        // Use the executable directory as the starting point for the EditorPlugins path
+        AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+        pluginsPath = executableDirectory / editorPluginFolder;
     }
 
-    // If no editor plugin path was found based on the root engine path, then fallback to the current editor.exe path
-    if (editorPluginPathStr.isEmpty())
-    {
-        editorPluginPathStr = QString("%1/%2").arg(qApp->applicationDirPath(), editor_plugins_folder);
-    }
-
-    QString pluginSearchPath = QDir::toNativeSeparators(QString("%1/*" AZ_DYNAMIC_LIBRARY_EXTENSION).arg(editorPluginPathStr));
-
-    GetPluginManager()->LoadPlugins(pluginSearchPath.toUtf8().data());
+    // error handling for invalid paths is handled in LoadPlugins
+    GetPluginManager()->LoadPlugins(pluginsPath.c_str());
 }
 
 CEditorImpl::~CEditorImpl()

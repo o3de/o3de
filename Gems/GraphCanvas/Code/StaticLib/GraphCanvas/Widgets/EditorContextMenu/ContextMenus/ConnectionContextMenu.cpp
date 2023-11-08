@@ -29,5 +29,6 @@ namespace GraphCanvas
         m_editActionsGroup.SetCutEnabled(false);
         m_editActionsGroup.SetCopyEnabled(false);
         m_editActionsGroup.SetPasteEnabled(false);
+        m_editActionsGroup.SetDuplicateEnabled(false);
     }
 }

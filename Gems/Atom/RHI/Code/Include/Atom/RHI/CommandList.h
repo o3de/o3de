@@ -82,6 +82,9 @@ namespace AZ::RHI
         /// Builds a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of RayTracingGeometry entries
         virtual void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) = 0;
 
+        /// Updates a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of RayTracingGeometry entries
+        virtual void UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) = 0;
+
         /// Builds a Top Level Acceleration Structure (TLAS) for ray tracing operations, which is made up of RayTracingInstance entries that refer to a BLAS entry
         virtual void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) = 0;
 

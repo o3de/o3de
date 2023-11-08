@@ -21,6 +21,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Core/Node.h>
 
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
 {% for xml in dataFiles %}
 {%     for Class in xml.iter('Class') %}
 
@@ -47,9 +49,11 @@ namespace {{attribute_Namespace}}
 {%- set className = Class.attrib['Name'] %}
 
 {%- set baseClass = "ScriptCanvas::Node" %}
-{% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
-{%    set baseClass = Class.attrib['Base'] %}
+
+{% if Class.attrib['Base'] is defined %}
+{% set baseClass = Class.attrib['Base'] %}
 {% endif %}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -77,6 +81,8 @@ public: \
 {% endif %}
 public: \
     friend struct {% if attribute_Namespace is not defined %}::{% endif %}{{ className | replace(' ','') }}Property;
+
+
 
 // Helpers for easily accessing properties and slots
 struct {{ className | replace(' ','') }}Property
@@ -154,6 +160,21 @@ struct {{ className | replace(' ','') }}Property
 
 {%         endfor %}
 };
+
+
+
+class {{className}}_Reflection
+{
+public:
+
+    {{className}}_Reflection() = default;
+    virtual ~{{className}}_Reflection() {}
+
+};
+
+SCRIPTCANVAS_REGISTER_EXTERN({{className}}_Reflection);
+
+
 
 {% if attribute_Namespace is defined %}
 }

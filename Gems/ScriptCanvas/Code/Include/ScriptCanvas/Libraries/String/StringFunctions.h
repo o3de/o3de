@@ -36,3 +36,5 @@ namespace ScriptCanvas
         AZStd::vector<AZStd::string> Split(const AZStd::string& sourceString, const AZStd::string& delimiterString);
     } // namespace StringFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/String/StringFunctions.generated.h>

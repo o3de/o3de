@@ -9,40 +9,24 @@
 #pragma once
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #define AUDIO_MEMORY_ALIGNMENT  AZCORE_GLOBAL_NEW_ALIGNMENT
 
 namespace Audio
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    class AudioSystemAllocator final
-        : public AZ::SystemAllocator
-    {
-    public:
-        AZ_RTTI(AudioSystemAllocator, "{AE15F55D-BD65-4666-B18B-9ED81999A85B}", AZ::SystemAllocator);
-    };
-
-    using AudioSystemStdAllocator = AZ::AZStdAlloc<AZ::SystemAllocator>;
+    AZ_CHILD_ALLOCATOR_WITH_NAME(AudioSystemAllocator, "AudioSystemAllocator", "{AE15F55D-BD65-4666-B18B-9ED81999A85B}", AZ::SystemAllocator);
+    using AudioSystemStdAllocator = AudioSystemAllocator_for_std_t;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    class AudioImplAllocator final
-        : public AZ::SystemAllocator
-    {
-    public:
-        AZ_RTTI(AudioImplAllocator, "{197D999F-3093-4F9D-A9A0-BA9E2AAA11DC}", AZ::SystemAllocator);
-    };
-
-    using AudioImplStdAllocator = AZ::AZStdAlloc<AZ::SystemAllocator>;
+    AZ_CHILD_ALLOCATOR_WITH_NAME(AudioImplAllocator, "AudioImplAllocator", "{197D999F-3093-4F9D-A9A0-BA9E2AAA11DC}", AZ::SystemAllocator);
+    using AudioImplStdAllocator = AudioImplAllocator_for_std_t;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    class AudioBankAllocator final
-        : public AZ::SystemAllocator
-    {
-    public:
-        AZ_RTTI(AudioBankAllocator, "{19E89718-400F-42F9-92C3-E7F0DC1CCC1F}", AZ::SystemAllocator);
-    };
+    AZ_CHILD_ALLOCATOR_WITH_NAME(AudioBankAllocator, "AudioBankAllocator", "{19E89718-400F-42F9-92C3-E7F0DC1CCC1F}", AZ::SystemAllocator);
 
 } // namespace Audio
 

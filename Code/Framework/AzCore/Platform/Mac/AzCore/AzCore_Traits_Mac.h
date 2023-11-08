@@ -64,7 +64,6 @@
 #define AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL 1
 
 // Misc ...
-#define AZ_TRAIT_COMMAND_LINE_OPTION_PREFIX "-"
 #define AZ_TRAIT_CTIME_GMTIME(tm_ptr, time_t_ptr) gmtime_r(time_t_ptr, tm_ptr)
 #define AZ_TRAIT_CTIME_LOCALTIME(tm_ptr, time_t_ptr) localtime_r(time_t_ptr, tm_ptr)
 #define AZ_TRAIT_CVARS_ENABLED_FOR_RELEASE_BUILDS 1

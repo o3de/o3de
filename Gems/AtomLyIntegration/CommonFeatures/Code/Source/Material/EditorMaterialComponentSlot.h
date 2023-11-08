@@ -102,6 +102,7 @@ namespace AZ
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap) override;
 
             //! AZ::Data::AssetBus::Handler overrides...
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
             void UpdatePreview() const;

@@ -32,7 +32,7 @@ namespace EMotionFX
      * 4) the UUID, required by the RTTI system, defines a unique type identifier for this allocator
      */
 
-    using SystemAllocatorBase = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
+    using SystemAllocatorBase = AZ::ChildAllocatorSchema<AZ::SystemAllocator>;
 
     // Allocator name,                          Allocator type,      UUID
 #define EMOTIONFX_ALLOCATORS \
@@ -89,19 +89,32 @@ namespace EMotionFX
 #define EMOTIONFX_ALLOCATOR_SEQ_GET_TYPE(X) EMOTIONFX_SEQ_HEAD_2(X)
 #define EMOTIONFX_ALLOCATOR_SEQ_GET_UUID(X) EMOTIONFX_SEQ_HEAD_3(X)
 
-#define EMOTIONFX_ALLOCATOR_DECL(ALLOCATOR_SEQUENCE) \
-    class EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE) \
-        : public EMOTIONFX_ALLOCATOR_SEQ_GET_TYPE(ALLOCATOR_SEQUENCE) \
+// Helper macro which allows the EMOTIONFX_ALLOCATOR_SEQ_GET_* macros
+// to only need to expand a single time as a conformant C preprocessor will
+// expand the same macro call multiple times in a single macro invocation
+// i.e `EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE)` will only get
+// expanded the first time it processed in a macro
+// If it is repeated multiple times, it will be left unexpanded
+#define EMOTIONFX_ALLOCATOR_DECL_EXPANDER(_ALLOCATOR_NAME, _ALLOCATOR_UUID, _ALLOCATOR_BASE) \
+    class _ALLOCATOR_NAME \
+        : public _ALLOCATOR_BASE \
     { \
-        friend class AZ::AllocatorInstance<EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE)>; \
+        friend class AZ::AllocatorInstance<_ALLOCATOR_NAME>; \
     public: \
-        AZ_TYPE_INFO(EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE), EMOTIONFX_ALLOCATOR_SEQ_GET_UUID(ALLOCATOR_SEQUENCE)); \
-        using Base = EMOTIONFX_ALLOCATOR_SEQ_GET_TYPE(ALLOCATOR_SEQUENCE); \
+        AZ_TYPE_INFO(_ALLOCATOR_NAME, _ALLOCATOR_UUID); \
+        using Base = _ALLOCATOR_BASE; \
         AZ_RTTI_NO_TYPE_INFO_DECL(); \
     };\
     \
     AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE( \
-        EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE), EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE)::Base);
+        _ALLOCATOR_NAME, _ALLOCATOR_NAME ::Base);
+
+
+#define EMOTIONFX_ALLOCATOR_DECL(ALLOCATOR_SEQUENCE) \
+    EMOTIONFX_ALLOCATOR_DECL_EXPANDER( \
+        EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE), \
+        EMOTIONFX_ALLOCATOR_SEQ_GET_UUID(ALLOCATOR_SEQUENCE), \
+        EMOTIONFX_ALLOCATOR_SEQ_GET_TYPE(ALLOCATOR_SEQUENCE))
 
     // Here we create all the classes for all the items in the above table (Step 1)
     AZ_SEQ_FOR_EACH(EMOTIONFX_ALLOCATOR_DECL, EMOTIONFX_ALLOCATORS)
@@ -122,11 +135,10 @@ namespace EMotionFX
     class AnimGraphConditionAllocator final
         : public AZ::ThreadPoolBase<AnimGraphConditionAllocator>
     {
-    public:
-        AZ_CLASS_ALLOCATOR(AnimGraphConditionAllocator, AZ::SystemAllocator)
-        AZ_TYPE_INFO(AnimGraphConditionAllocator, "{F5406A89-3F11-4791-9F83-6A71D0F8DD81}")
-
         using Base = AZ::ThreadPoolBase<AnimGraphConditionAllocator>;
+    public:
+        AZ_CLASS_ALLOCATOR(AnimGraphConditionAllocator, AZ::SystemAllocator);
+        AZ_RTTI(AnimGraphConditionAllocator, "{F5406A89-3F11-4791-9F83-6A71D0F8DD81}", Base);
     };
 
 
@@ -142,11 +154,10 @@ namespace EMotionFX
     class AnimGraphObjectDataAllocator final
         : public AZ::ThreadPoolBase<AnimGraphObjectDataAllocator>
     {
-    public:
-        AZ_CLASS_ALLOCATOR(AnimGraphObjectDataAllocator, AZ::SystemAllocator)
-        AZ_TYPE_INFO(AnimGraphObjectDataAllocator, "{E00ADC25-A311-4003-849E-85C125089C74}")
-
         using Base = AZ::ThreadPoolBase<AnimGraphObjectDataAllocator>;
+    public:
+        AZ_CLASS_ALLOCATOR(AnimGraphObjectDataAllocator, AZ::SystemAllocator);
+        AZ_RTTI(AnimGraphObjectDataAllocator, "{E00ADC25-A311-4003-849E-85C125089C74}", Base);
     };
 
 
@@ -162,11 +173,11 @@ namespace EMotionFX
     class AnimGraphObjectUniqueDataAllocator final
         : public AZ::ThreadPoolBase<AnimGraphObjectUniqueDataAllocator>
     {
-    public:
-        AZ_CLASS_ALLOCATOR(AnimGraphObjectUniqueDataAllocator, AZ::SystemAllocator)
-            AZ_TYPE_INFO(AnimGraphObjectUniqueDataAllocator, "{C74F51E0-E6B0-4EF8-A3BF-0968CAEF1333}")
-
         using Base = AZ::ThreadPoolBase<AnimGraphObjectUniqueDataAllocator>;
+    public:
+        AZ_CLASS_ALLOCATOR(AnimGraphObjectUniqueDataAllocator, AZ::SystemAllocator);
+        AZ_RTTI(AnimGraphObjectUniqueDataAllocator, "{C74F51E0-E6B0-4EF8-A3BF-0968CAEF1333}", Base);
+
     };
 
     class Allocators

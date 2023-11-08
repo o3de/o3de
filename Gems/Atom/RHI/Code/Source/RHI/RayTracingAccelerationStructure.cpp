@@ -45,11 +45,18 @@ namespace AZ::RHI
         return this;
     }
 
+    RayTracingBlasDescriptor* RayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
+    {
+        AZ_Assert(m_buildContext, "BuildFlags property can only be added to a Geometry entry");
+        m_buildFlags = buildFlags;
+        return this;
+    }
+
     RayTracingTlasDescriptor* RayTracingTlasDescriptor::Build()
     {
         return this;
     }
-        
+
     RayTracingTlasDescriptor* RayTracingTlasDescriptor::Instance()
     {
         AZ_Assert(m_instancesBuffer == nullptr, "Instance cannot be combined with an instances buffer");
@@ -57,28 +64,35 @@ namespace AZ::RHI
         m_buildContext = &m_instances.back();
         return this;
     }
-        
+
     RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstanceID(uint32_t instanceID)
     {
         AZ_Assert(m_buildContext, "InstanceID property can only be added to an Instance entry");
         m_buildContext->m_instanceID = instanceID;
         return this;
     }
-        
+
+    RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstanceMask(uint32_t instanceMask)
+    {
+        AZ_Assert(m_buildContext, "InstanceMask property can only be added to an Instance entry");
+        m_buildContext->m_instanceMask = instanceMask;
+        return this;
+    }
+
     RayTracingTlasDescriptor* RayTracingTlasDescriptor::HitGroupIndex(uint32_t hitGroupIndex)
     {
         AZ_Assert(m_buildContext, "HitGroupIndex property can only be added to an Instance entry");
         m_buildContext->m_hitGroupIndex = hitGroupIndex;
         return this;
     }
-        
+
     RayTracingTlasDescriptor* RayTracingTlasDescriptor::Transform(const AZ::Transform& transform)
     {
         AZ_Assert(m_buildContext, "Transform property can only be added to an Instance entry");
         m_buildContext->m_transform = transform;
         return this;
     }
-        
+
     RayTracingTlasDescriptor* RayTracingTlasDescriptor::NonUniformScale(const AZ::Vector3& nonUniformScale)
     {
         AZ_Assert(m_buildContext, "NonUniformSCale property can only be added to an Instance entry");
@@ -128,6 +142,7 @@ namespace AZ::RHI
         if (resultCode == ResultCode::Success)
         {
             DeviceObject::Init(device);
+            m_geometries = descriptor->GetGeometries();
         }
         return resultCode;
     }

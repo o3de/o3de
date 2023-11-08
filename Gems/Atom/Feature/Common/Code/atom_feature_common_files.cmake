@@ -80,6 +80,7 @@ set(FILES
     Source/CoreLights/DepthExponentiationPass.cpp
     Source/CoreLights/DirectionalLightFeatureProcessor.h
     Source/CoreLights/DirectionalLightFeatureProcessor.cpp
+    Source/CoreLights/DirectionalLightShadowNotificationBus.h
     Source/CoreLights/DiskLightFeatureProcessor.h
     Source/CoreLights/DiskLightFeatureProcessor.cpp
     Source/CoreLights/EsmShadowmapsPass.h

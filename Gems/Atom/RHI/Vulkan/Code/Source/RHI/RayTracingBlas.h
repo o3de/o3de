@@ -39,7 +39,7 @@ namespace AZ
             };
 
             const BlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
- 
+
             // RHI::RayTracingBlas overrides...
             virtual bool IsValid() const override { return m_buffers[m_currentBufferIndex].m_accelerationStructure != VK_NULL_HANDLE; }
 
@@ -48,6 +48,8 @@ namespace AZ
 
             // RHI::RayTracingBlas overrides...
             RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RHI::RayTracingBufferPools& rayTracingBufferPools) override;
+
+            static VkBuildAccelerationStructureFlagsKHR GetAccelerationStructureBuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags);
 
             // buffer list to keep buffers alive for several frames
             static const uint32_t BufferCount = 3;

@@ -6,7 +6,12 @@
 #
 #
 
-set(config_base_defines $<IF:$<CONFIG:release>,IMGUI_DISABLED,IMGUI_ENABLED>)
+set(O3DE_IMGUI_RELEASE_ENABLED ON CACHE BOOL "Allow IMGUI in release builds")
+if($<CONFIG:release> AND NOT O3DE_IMGUI_RELEASE_ENABLED)
+    set(config_base_defines IMGUI_DISABLED)
+else()
+    set(config_base_defines IMGUI_ENABLED)
+endif()
 
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 

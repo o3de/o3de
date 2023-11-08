@@ -1501,6 +1501,8 @@ namespace ScriptCanvasEditor
         {
             AZ_Warning("Script Canvas", createOutcome, "%s", createOutcome.GetError().data());
         }
+
+        EnableOpenDocumentActions(true);
     }
 
     int MainWindow::InsertTabForAsset(AZStd::string_view assetPath, SourceHandle assetId, int tabIndex)
@@ -1890,10 +1892,6 @@ namespace ScriptCanvasEditor
     {
         ui->action_Save->setEnabled(enable);
         ui->action_Save_As->setEnabled(enable);
-        ui->action_AlignTop->setEnabled(enable);
-        ui->action_AlignLeft->setEnabled(enable);
-        ui->action_AlignRight->setEnabled(enable);
-        ui->action_AlignBottom->setEnabled(enable);
         ui->action_EnableSelection->setEnabled(enable);
         ui->action_DisableSelection->setEnabled(enable);
         ui->action_ClearSelection->setEnabled(enable);
@@ -1902,6 +1900,14 @@ namespace ScriptCanvasEditor
         ui->action_GotoEndOfChain->setEnabled(enable);
     }
 
+    void MainWindow::EnableAlignmentActions(bool enable)
+    {
+        ui->menuAlign->setEnabled(enable);
+        ui->action_AlignTop->setEnabled(enable);
+        ui->action_AlignBottom->setEnabled(enable);
+        ui->action_AlignLeft->setEnabled(enable);
+        ui->action_AlignRight->setEnabled(enable);
+    }
 
     void MainWindow::SetupEditMenu()
     {
@@ -2001,7 +2007,6 @@ namespace ScriptCanvasEditor
         ui->action_Screenshot->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
         ui->menuSelect->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
         ui->action_ClearSelection->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
-        ui->menuAlign->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
     }
 
     void MainWindow::RefreshPasteAction()
@@ -2852,14 +2857,18 @@ namespace ScriptCanvasEditor
             {
                 hasSelection = true;
                 m_propertyGrid->SetSelection(selection);
+
+                EnableAlignmentActions((selection.size() > 1));
             }
             else
             {
+                EnableAlignmentActions(false);
                 m_propertyGrid->ClearSelection();
             }
         }
         else
         {
+            EnableAlignmentActions(false);
             m_propertyGrid->ClearSelection();
         }
 
@@ -4094,16 +4103,25 @@ namespace ScriptCanvasEditor
 
         if (usableRequestBus == nullptr)
         {
-            AzToolsFramework::EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::AddComponentsToEntities, AzToolsFramework::EntityIdList{ entityId }
+            AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome;
+            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(outcome, &EntityCompositionRequests::AddComponentsToEntities, AzToolsFramework::EntityIdList{ entityId }
                                                                                                                         , AZ::ComponentTypeList{ azrtti_typeid<EditorScriptCanvasComponent>() });
 
-            usableRequestBus = EditorScriptCanvasComponentRequestBus::FindFirstHandler(entityId);
+            if (outcome.IsSuccess())
+            {
+                auto& addedComponent = outcome.GetValue()[entityId].m_componentsAdded[0];
+                AZ_Assert(addedComponent->GetUnderlyingComponentType() == azrtti_typeid<EditorScriptCanvasComponent>(), "Added component returned was not the type requested to add");
+
+                if (EditorScriptCanvasComponent* editorComponent = azrtti_cast<EditorScriptCanvasComponent*>(addedComponent))
+                {
+                    SourceHandle focusedAssetId = m_tabBar->FindAssetId(m_tabBar->currentIndex());
+
+                    AZ::Data::AssetId assetId = static_cast<AZ::Data::AssetId>(focusedAssetId.Id());
+                    editorComponent->SetPrimaryAsset(assetId);
+                }
+            }
         }
 
-        if (usableRequestBus)
-        {
-            usableRequestBus->SetAssetId(m_activeGraph.Describe());
-        }
     }
 
     bool MainWindow::HasSystemTickAction(SystemTickActionFlag action)

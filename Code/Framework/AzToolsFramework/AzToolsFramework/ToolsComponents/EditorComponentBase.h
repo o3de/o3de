@@ -412,7 +412,8 @@ namespace AzToolsFramework
         #define AZ_EDITOR_COMPONENT(_ComponentClass, ...)                                       \
         AZ_RTTI(_ComponentClass, __VA_ARGS__, AzToolsFramework::Components::EditorComponentBase)\
         AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)                          \
-        AZ_COMPONENT_BASE(_ComponentClass, __VA_ARGS__);
+        AZ_COMPONENT_BASE(_ComponentClass)                                                      \
+        AZ_CLASS_ALLOCATOR(_ComponentClass, AZ::ComponentAllocator);
         /// @endcond
 
     } // namespace Components

@@ -63,7 +63,7 @@ namespace AZ
             m_inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
             m_inputs.pGeometryDescs = m_geometryDescs.data();
             m_inputs.NumDescs = aznumeric_cast<UINT>(m_geometryDescs.size());
-            m_inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+            m_inputs.Flags = GetAccelerationStructureBuildFlags(descriptor->GetBuildFlags());
 
             D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo = {};
             dx12Device->GetRaytracingAccelerationStructurePrebuildInfo(&m_inputs, &prebuildInfo);
@@ -103,5 +103,28 @@ namespace AZ
 #endif
             return RHI::ResultCode::Success;
         }
+
+#ifdef AZ_DX12_DXR_SUPPORT
+        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS RayTracingBlas::GetAccelerationStructureBuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
+        {
+            D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS dxBuildFlags = {};
+            if (RHI::CheckBitsAny(buildFlags, RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE))
+            {
+                dxBuildFlags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+            }
+
+            if (RHI::CheckBitsAny(buildFlags, RHI::RayTracingAccelerationStructureBuildFlags::FAST_BUILD))
+            {
+                dxBuildFlags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_BUILD;
+            }
+
+            if (RHI::CheckBitsAny(buildFlags, RHI::RayTracingAccelerationStructureBuildFlags::ENABLE_UPDATE))
+            {
+                dxBuildFlags |= D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+            }
+
+            return dxBuildFlags;
+        }
+#endif
     }
 }

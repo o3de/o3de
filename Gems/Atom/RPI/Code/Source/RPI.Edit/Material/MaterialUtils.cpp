@@ -273,24 +273,26 @@ namespace AZ
 
             AZStd::string PredictIntermediateMaterialTypeSourcePath(const AZStd::string& originalMaterialTypeSourcePath)
             {
-                bool pathFound = false;
-                AZ::Data::AssetInfo assetInfo;
-                AZStd::string watchFolder;
-
                 // This just normalizes the original path into a relative path that can be easily converted into relative path
                 // to the intermediate .materialtype file
+                bool pathFound = false;
+                AZ::Data::AssetInfo sourceInfo;
+                AZStd::string rootFolder;
                 AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                    pathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-                    originalMaterialTypeSourcePath.c_str(), assetInfo, watchFolder);
+                    pathFound,
+                    &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                    originalMaterialTypeSourcePath.c_str(),
+                    sourceInfo,
+                    rootFolder);
 
                 if (!pathFound)
                 {
                     return {};
                 }
 
-                IO::Path intermediatePath = assetInfo.m_relativePath;
-                const AZStd::string materialTypeFilename = AZStd::string::format("%.*s_generated.materialtype",
-                    AZ_STRING_ARG(intermediatePath.Stem().Native()));
+                IO::Path intermediatePath = sourceInfo.m_relativePath;
+                const AZStd::string materialTypeFilename =
+                    AZStd::string::format("%.*s_generated.materialtype", AZ_STRING_ARG(intermediatePath.Stem().Native()));
                 intermediatePath.ReplaceFilename(materialTypeFilename.c_str());
 
                 AZStd::string intermediatePathString = intermediatePath.Native();
@@ -300,10 +302,7 @@ namespace AZ
                 intermediateMaterialTypePath /= "Cache";
                 intermediateMaterialTypePath /= "Intermediate Assets";
                 intermediateMaterialTypePath /= intermediatePathString;
-
-                intermediatePathString = intermediateMaterialTypePath.Native();
-
-                return intermediatePathString;
+                return intermediateMaterialTypePath.LexicallyNormal().String();
             }
 
             AZStd::string PredictIntermediateMaterialTypeSourcePath(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath)
@@ -315,14 +314,7 @@ namespace AZ
             AZStd::string GetIntermediateMaterialTypeSourcePath(const AZStd::string& forOriginalMaterialTypeSourcePath)
             {
                 const AZStd::string intermediatePathString = PredictIntermediateMaterialTypeSourcePath(forOriginalMaterialTypeSourcePath);
-                if (IO::LocalFileIO::GetInstance()->Exists(intermediatePathString.c_str()))
-                {
-                    return intermediatePathString;
-                }
-                else
-                {
-                    return {};
-                }
+                return IO::LocalFileIO::GetInstance()->Exists(intermediatePathString.c_str()) ? intermediatePathString : AZStd::string{};
             }
 
             Outcome<Data::AssetId> GetFinalMaterialTypeAssetId(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath)
@@ -333,10 +325,7 @@ namespace AZ
                 {
                     return AssetUtils::MakeAssetId(intermediateMaterialTypePath, MaterialTypeSourceData::IntermediateMaterialTypeSubId);
                 }
-                else
-                {
-                    return AssetUtils::MakeAssetId(resolvedPath, MaterialTypeAsset::SubId);
-                }
+                return AssetUtils::MakeAssetId(resolvedPath, MaterialTypeAsset::SubId);
             }
 
             AZStd::string GetFinalMaterialTypeSourcePath(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath)
@@ -347,10 +336,7 @@ namespace AZ
                 {
                     return resolvedPath;
                 }
-                else
-                {
-                    return intermediateMaterialTypePath;
-                }
+                return intermediateMaterialTypePath;
             }
 
         }

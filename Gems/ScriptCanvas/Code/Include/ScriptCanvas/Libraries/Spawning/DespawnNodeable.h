@@ -16,6 +16,8 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+
 namespace ScriptCanvas::Nodeables::Spawning
 {
     //! Node for despawning entities
