@@ -14,6 +14,29 @@
 
 namespace AZ::RPI::MaterialBuilderUtils
 {
+    AssetBuilderSDK::JobDependency& AddJobDependency(
+        AssetBuilderSDK::JobDescriptor& jobDescriptor,
+        const AZStd::string& path,
+        const AZStd::string& jobKey,
+        const AZStd::string& platformId,
+        const AZStd::vector<AZ::u32>& subIds,
+        const bool updateFingerprint)
+    {
+        if (updateFingerprint)
+        {
+            AddFingerprintForDependency(path, jobDescriptor);
+        }
+
+        AssetBuilderSDK::JobDependency jobDependency(
+            jobKey,
+            platformId,
+            AssetBuilderSDK::JobDependencyType::Order,
+            AssetBuilderSDK::SourceFileDependency(
+                path, AZ::Uuid{}, AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute));
+        jobDependency.m_productSubIds = subIds;
+        return jobDescriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
+    }
+
     void AddPossibleImageDependencies(
         const AZStd::string& originatingSourceFilePath,
         const AZStd::string& referencedSourceFilePath,
@@ -27,13 +50,13 @@ namespace AZ::RPI::MaterialBuilderUtils
 
             if (!ext.empty())
             {
-                auto& jobDepedency = jobDescriptor.m_jobDependencyList.emplace_back();
-                jobDepedency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
-                jobDepedency.m_sourceFile.m_sourceFileDependencyPath =
-                    AssetUtils::ResolvePathReference(originatingSourceFilePath, referencedSourceFilePath);
-                jobDepedency.m_jobKey = "Image Compile: " + ext;
-                jobDepedency.m_productSubIds = { 0 };
-                AddFingerprintForDependency(jobDepedency.m_sourceFile.m_sourceFileDependencyPath, jobDescriptor);
+                auto& jobDependency = MaterialBuilderUtils::AddJobDependency(
+                    jobDescriptor,
+                    AssetUtils::ResolvePathReference(originatingSourceFilePath, referencedSourceFilePath),
+                    "Image Compile: " + ext,
+                    {},
+                    { 0 });
+                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
             }
         }
     }
