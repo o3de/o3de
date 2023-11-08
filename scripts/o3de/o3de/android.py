@@ -29,8 +29,6 @@ logger = logging.getLogger('o3de.android')
 
 def validate_android_config(android_config:android_support.AndroidConfig) -> None:
 
-    logger.setLevel(logging.INFO)
-
     # Validate Java is installed
     java_version = android_support.validate_java_environment()
 
@@ -85,6 +83,10 @@ def configure_android_options(args: argparse) -> int:
     """
     Configure the android platform settings for generating, building, and deploying android projects.
     """
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
     try:
         is_global = getattr(args,'global',False)
@@ -132,6 +134,12 @@ def configure_android_options(args: argparse) -> int:
 
 
 def generate_android_project(args: argparse) -> int:
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
     try:
 
         # Create the android configuration
@@ -146,8 +154,6 @@ def generate_android_project(args: argparse) -> int:
         if not resolved_project_path:
             raise AndroidToolError(f"Project '{project_name_arg}' is not registered with O3DE.")
         project_settings, android_settings = android_support.read_android_settings_for_project(resolved_project_path)
-
-        logger.setLevel(logging.DEBUG)
 
         # Validate Java is installed
         java_version = android_support.validate_java_environment()
@@ -288,7 +294,8 @@ def add_args(subparsers) -> None:
     try:
         project_name, project_path = android_support.resolve_project_name_and_path(os.getcwd())
         android_config = android_support.AndroidConfig(project_name=project_name, is_global=False)
-    except android_support.AndroidToolError:
+    except android_support.AndroidToolError as e:
+        logger.debug(f"No project detected at {os.getcwd()}, default settings from global config.")
         project_name = None
         android_config = android_support.AndroidConfig(project_name=None, is_global=True)
 
@@ -308,6 +315,9 @@ def add_args(subparsers) -> None:
                                              help='Validate the settings and values in the android settings. ')
     android_configure_subparser.add_argument('--set-value', type=str, required=False,
                                              help='Set the value for an android setting, using the format <argument>=<value>. For example: \'ndk_version=22.5*\'')
+    android_configure_subparser.add_argument('--debug',
+                                             help=f"Enable debug level logging for this script.",
+                                             action='store_true')
 
     android_configure_subparser.set_defaults(func=configure_android_options)
 
@@ -384,5 +394,9 @@ def add_args(subparsers) -> None:
                                                 help=f"The mode of asset deployment to use. ({','.join(android_support.ASSET_MODES)}).\n"
                                                      f"Default: {android_support.ASSET_MODE_LOOSE}",
                                                 default=android_support.ASSET_MODE_LOOSE)
+
+    android_generate_subparser.add_argument('--debug',
+                                            help=f"Enable debug level logging for this script.",
+                                            action='store_true')
 
     android_generate_subparser.set_defaults(func=generate_android_project)

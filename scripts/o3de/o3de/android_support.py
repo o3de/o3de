@@ -127,32 +127,12 @@ ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = [
     ( ('8.0.0', '8.0.1', '8.0.1') , {'gradle': '8.0',
                                      'sdk_build_tools': '30.0.3',
                                      'jdk': '17',
-                                     'url': 'https://developer.android.com/build/releases/past-releases/agp-8-0-0-release-notes'} ),
-    ( ('7.4.0', '7.4.1') , {'gradle': '7.5',
-                            'sdk_build_tools': '30.0.3',
-                            'jdk': '11',
-                            'url': 'https://developer.android.com/build/releases/past-releases/agp-7-4-0-release-notes'} ),
-    ( ('7.3.0') , {'gradle': '7.4',
-                                     'sdk_build_tools': '30.0.3',
-                                     'jdk': '11',
-                                     'url': 'https://developer.android.com/build/releases/past-releases/agp-7-3-0-release-notes'} ),
-    ( ('7.2.0', '7.2.1', '7.2.2') , {'gradle': '7.3.3',
-                                     'sdk_build_tools': '30.0.3',
-                                     'jdk': '11',
-                                     'url': 'https://developer.android.com/build/releases/past-releases/agp-7-2-0-release-notes'} ),
-    ( ('7.1.0', '7.1.1', '7.1.2', '7.1.3') , {'gradle': '7.2',
-                                              'sdk_build_tools': '30.0.3',
-                                              'jdk': '11',
-                                              'url': 'https://developer.android.com/build/releases/past-releases/agp-7-1-0-release-notes'} ),
-    ( ('7.0',) , {'gradle': '7.0.2',
-                 'sdk_build_tools': '30.0.2',
-                 'jdk': '11',
-                 'url': 'https://developer.android.com/build/releases/past-releases/agp-7-0-0-release-notes'} )
+                                     'url': 'https://developer.android.com/build/releases/past-releases/agp-8-0-0-release-notes'} )
 ]
 
 
 # The minimum version of gradle that this script will support
-MINIMUM_GRADLE_VERSION = Version('7.0')
+MINIMUM_GRADLE_VERSION = Version('8.0.0')
 
 class AndroidToolError(Exception):
     pass
@@ -244,7 +224,7 @@ class AndroidConfig(object):
 
     def __init__(self, project_name:str, is_global:bool):
         """
-        Initialize the configration object
+        Initialize the configuration object
 
         :param project_name:    Name of the project if the config represents a project
         :param is_global:       Flag to indicate if this represents global settings
@@ -346,7 +326,7 @@ class AndroidConfig(object):
 
     def set_config_value(self, key:str, value:str) -> str:
         """
-        Apply an android setting based on whether or not its the global config or a local project config
+        Apply an android setting based on whether its the global config or a local project config
         :param key:     The key of the entry to set or add.
         :param value:   The value of the entry to set or add.
         :return: The original value of the key that was changed
@@ -383,7 +363,7 @@ class AndroidConfig(object):
 
     def set_config_value_from_expression(self, key_and_value_arg:str) -> str:
         """
-        Apply an android setting based on whether or not its the global config or a local project config.
+        Apply an android setting based on whether it's the global config or a local project config.
         The follow formats are recognized:
              key=value
              key='value'
@@ -494,13 +474,18 @@ class AndroidSDKManager(object):
         # Validate that the android command line tool root was set to a valid location
         android_sdk_command_tools_root, _ = android_settings.get_value('android_sdk_cmdline_tools_root')
         if not android_sdk_command_tools_root:
-            raise AndroidToolError(f"The android sdk command tools path 'android_sdk_command_tools_root' was not set.\n"
+            raise AndroidToolError(f"The android sdk command tools path '{android_sdk_command_tools_root}' was not set.\n"
                                    f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
+
+        # Locate the sdkmanager script from the possible sub-paths from the sdk command line root (cmdline-tools)
         android_sdk_command_tools_root_path = Path(android_sdk_command_tools_root)
-        android_sdk_command_tools_path = android_sdk_command_tools_root_path / 'bin' / f'sdkmanager{SDKMANAGER_EXTENSION}'
+        for subpath in ['bin', 'latest/bin']:
+            android_sdk_command_tools_path = android_sdk_command_tools_root_path / subpath / f'sdkmanager{SDKMANAGER_EXTENSION}'
+            if android_sdk_command_tools_path.is_file():
+                break
         if not android_sdk_command_tools_path.is_file():
-            raise AndroidToolError(f"The android sdk command tools path 'android_sdk_command_tools_root' is set to an "
-                                   f"invalid path: {android_sdk_command_tools_root_path} is missing or is not a valid "
+            raise AndroidToolError(f"The android sdk command tools path '{android_sdk_command_tools_root}' is set to an "
+                                   f"invalid path: {android_sdk_command_tools_path} is missing or is not a valid "
                                    f"command line tools root folder. \n"
                                    f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
         return android_sdk_command_tools_root_path
@@ -508,7 +493,16 @@ class AndroidSDKManager(object):
     @staticmethod
     def __validate_android_command_line_tools_environment(current_java_version, android_sdk_command_tools_root_path, android_settings) -> Path:
 
-        android_command_line_tools_sdkmanager_path = android_sdk_command_tools_root_path / 'bin' / f'sdkmanager{SDKMANAGER_EXTENSION}'
+        # Locate the sdkmanager script from the possible sub-paths from the sdk command line root (cmdline-tools)
+        for subpath in ['bin', 'latest/bin']:
+            android_command_line_tools_sdkmanager_path = android_sdk_command_tools_root_path / subpath / f'sdkmanager{SDKMANAGER_EXTENSION}'
+            if android_command_line_tools_sdkmanager_path.is_file():
+                break
+        if not android_command_line_tools_sdkmanager_path.is_file():
+            raise AndroidToolError(f"The android sdk command tools path '{android_sdk_command_tools_root_path}' is set to an "
+                                   f"invalid path: {android_command_line_tools_sdkmanager_path} is missing or is not a valid "
+                                   f"command line tools root folder. \n"
+                                   f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
 
         # Retrieve the version if possible
         command_arg = [android_command_line_tools_sdkmanager_path.name, '--version']
@@ -534,7 +528,7 @@ class AndroidSDKManager(object):
                     raise AndroidToolError(f"The android SDK command line tool requires {cmdline_tool_java_version} but the current version of java is {current_java_version}")
                 else:
                     raise AndroidToolError(f"The android SDK command line tool requires java that supports class version {java_file_version}, but the current version of java is {current_java_version}")
-            elif re.search('Could not determine SDK root') is not None:
+            elif re.search('Could not determine SDK root', result.stdout or result.stderr, re.MULTILINE) is not None:
                 # The error is related to the android SDK not being able to be resolved.
                 raise AndroidToolError(f"The android SDK command line tool at {android_command_line_tools_sdkmanager_path} is not located under a valid Android SDK root.\n"
                                        "It must exist under a path designated as the Android SDK root, such as: \n\n"
@@ -823,13 +817,8 @@ def validate_java_environment() -> str:
     return java_version
 
 
-def validate_build_tool(tool_name:str,
-                        tool_command:str,
-                        tool_config_key:str,
-                        tool_config_subpath:str,
-                        tool_version_arg:str,
-                        version_regex:re.Pattern,
-                        android_config:AndroidConfig) -> (Path, str):
+def validate_build_tool(tool_name:str, tool_command:str, tool_config_key:str, tool_config_subpath:str, tool_version_arg:str,
+                        version_regex:re.Pattern, android_config:AndroidConfig) -> (Path, str):
     """
     Perform a tool validation by checking on its version number if possible
 
@@ -915,7 +904,7 @@ def validate_ninja(android_config) -> (Path, str):
     :return:    Tuple of : The full path of the tool and the tool version
     """
     return validate_build_tool(tool_name='Ninja',
-                               tool_command='ninja',
+                               tool_command=f'ninja{EXE_EXTENSION}',
                                tool_config_key='ninja_home',
                                tool_config_subpath='',
                                tool_version_arg='--version',
@@ -1424,7 +1413,7 @@ class AndroidProjectGenerator(object):
         platform_settings_file = self.build_dir / 'platform.settings'
 
         # Check if there already exists the build folder and a 'platform.settings' file. If there is an android gradle
-        # plugin version set and it is different than the one configured here, we will always overwrite it since
+        # plugin version set, and it is different from the one configured here, we will always overwrite it since
         # there could be significant differences from one plug-in to the next
         if platform_settings_file.is_file():
             config = configparser.ConfigParser()
