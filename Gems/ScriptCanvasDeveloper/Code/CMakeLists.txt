@@ -25,7 +25,7 @@ ly_add_target(
             IMGUI_ENABLED
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::ScriptCanvas
+            Gem::ScriptCanvas.API
         PRIVATE
             AZ::AzCore
             AZ::AzFramework

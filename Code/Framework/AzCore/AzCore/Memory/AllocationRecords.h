@@ -49,9 +49,10 @@ namespace AZ
          * \param void* allocation address
          * \param const AllocationInfo& reference to the allocation record.
          * \param unsigned char number of stack records/levels, if AllocationInfo::m_stackFrames != NULL.
+         * \param size_t total number of AllocationRecord objects being enumerated . This will remain the same throughout enumeration
          * \returns true if you want to continue traverse of the records and false if you want to stop.
          */
-        using AllocationInfoCBType = AZStd::function<bool (void*, const AllocationInfo&, unsigned char)>;
+        using AllocationInfoCBType = AZStd::function<bool (void*, const AllocationInfo&, unsigned char, size_t numRecords)>;
         /**
          * Example of records enumeration callback.
          */
@@ -60,7 +61,7 @@ namespace AZ
             PrintAllocationsCB(bool isDetailed = false, bool includeNameAndFilename = false)
                 : m_isDetailed(isDetailed), m_includeNameAndFilename(includeNameAndFilename) {}
 
-            bool operator()(void* address, const AllocationInfo& info, unsigned char numStackLevels);
+            bool operator()(void* address, const AllocationInfo& info, unsigned char numStackLevels, size_t numRecords);
 
             bool m_isDetailed;      ///< True to print allocation line and allocation callstack, otherwise false.
             bool m_includeNameAndFilename;  /// < True to print the source name and source filename, otherwise skip
@@ -80,6 +81,19 @@ namespace AZ
             u32     m_value;
         };
 
+        // Using the AZ_ENUM* macro to allow an AZ EnumTraits structure
+        // to be associated with the AllocationRecord Mode enum
+        // This is used by the ConsoleTypeHelpers to allow
+        // conversion from an enum Value string to an AllocationRecordMode
+        AZ_ENUM_WITH_UNDERLYING_TYPE(AllocationRecordMode, int,
+            RECORD_NO_RECORDS,              ///< Never record any information.
+            RECORD_STACK_NEVER,             ///< Never record stack traces. All other info is stored.
+            RECORD_STACK_IF_NO_FILE_LINE,   ///< Record stack if fileName and lineNum are not available. (default)
+            RECORD_FULL,                    ///< Always record the full stack.
+
+            RECORD_MAX                      ///< Must be last
+        );
+
         /**
         * Container for debug allocation records. This
         * records can be thread safe or not depending on your
@@ -93,16 +107,8 @@ namespace AZ
         */
         class AllocationRecords
         {
-         public:
-            enum Mode : int
-            {
-                RECORD_NO_RECORDS,              ///< Never record any information.
-                RECORD_STACK_NEVER,             ///< Never record stack traces. All other info is stored.
-                RECORD_STACK_IF_NO_FILE_LINE,   ///< Record stack if fileName and lineNum are not available. (default)
-                RECORD_FULL,                    ///< Always record the full stack.
-
-                RECORD_MAX                      ///< Must be last
-            };
+        public:
+            using Mode = AllocationRecordMode;
 
             /**
              * IMPORTANT: if isAllocationGuard

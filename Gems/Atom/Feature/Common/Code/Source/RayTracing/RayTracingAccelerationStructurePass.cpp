@@ -47,7 +47,76 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)
         {
+            m_timestampResult = RPI::TimestampResult();
+            if(GetScopeId().IsEmpty())
+            {
+                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Graphics);
+            }
+
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
+
+            ReadbackScopeQueryResults();
+        }
+
+        RHI::Ptr<RPI::Query> RayTracingAccelerationStructurePass::GetQuery(RPI::ScopeQueryType queryType)
+        {
+            auto typeIndex{ static_cast<uint32_t>(queryType) };
+            if (!m_scopeQueries[typeIndex])
+            {
+                RHI::Ptr<RPI::Query> query;
+                switch (queryType)
+                {
+                case RPI::ScopeQueryType::Timestamp:
+                    query = RPI::GpuQuerySystemInterface::Get()->CreateQuery(
+                        RHI::QueryType::Timestamp, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
+                    break;
+                case RPI::ScopeQueryType::PipelineStatistics:
+                    query = RPI::GpuQuerySystemInterface::Get()->CreateQuery(
+                        RHI::QueryType::PipelineStatistics, RHI::QueryPoolScopeAttachmentType::Global,
+                        RHI::ScopeAttachmentAccess::Write);
+                    break;
+                }
+
+                m_scopeQueries[typeIndex] = query;
+            }
+
+            return m_scopeQueries[typeIndex];
+        }
+
+        template<typename Func>
+        inline void RayTracingAccelerationStructurePass::ExecuteOnTimestampQuery(Func&& func)
+        {
+            if (IsTimestampQueryEnabled())
+            {
+                auto query{ GetQuery(RPI::ScopeQueryType::Timestamp) };
+                if (query)
+                {
+                    func(query);
+                }
+            }
+        }
+
+        template<typename Func>
+        inline void RayTracingAccelerationStructurePass::ExecuteOnPipelineStatisticsQuery(Func&& func)
+        {
+            if (IsPipelineStatisticsQueryEnabled())
+            {
+                auto query{ GetQuery(RPI::ScopeQueryType::PipelineStatistics) };
+                if (query)
+                {
+                    func(query);
+                }
+            }
+        }
+
+        RPI::TimestampResult RayTracingAccelerationStructurePass::GetTimestampResultInternal() const
+        {
+            return m_timestampResult;
+        }
+
+        RPI::PipelineStatisticsResult RayTracingAccelerationStructurePass::GetPipelineStatisticsResultInternal() const
+        {
+            return m_statisticsResult;
         }
 
         void RayTracingAccelerationStructurePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -127,6 +196,8 @@ namespace AZ
                 // be set on the RayTracingSceneSrg for this frame, and the ray tracing mesh data in the RayTracingSceneSrg must
                 // exactly match the TLAS.  Any mismatch in this data may result in a TDR.
                 rayTracingFeatureProcessor->UpdateRayTracingSrgs();
+
+                AddScopeQueryToFrameGraph(frameGraph);
             }
         }
 
@@ -159,6 +230,8 @@ namespace AZ
                 // no ray tracing meshes in the scene
                 return;
             }
+
+            BeginScopeQuery(context);
 
             // build newly added or skinned BLAS objects
             RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
@@ -202,6 +275,69 @@ namespace AZ
             context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas());
 
             ++m_frameCount;
+
+            EndScopeQuery(context);
+        }
+
+        void RayTracingAccelerationStructurePass::AddScopeQueryToFrameGraph(RHI::FrameGraphInterface frameGraph)
+        {
+            const auto addToFrameGraph = [&frameGraph](RHI::Ptr<RPI::Query> query)
+            {
+              query->AddToFrameGraph(frameGraph);
+            };
+
+            ExecuteOnTimestampQuery(addToFrameGraph);
+            ExecuteOnPipelineStatisticsQuery(addToFrameGraph);
+        }
+
+        void RayTracingAccelerationStructurePass::BeginScopeQuery(const RHI::FrameGraphExecuteContext& context)
+        {
+            const auto beginQuery = [&context, this](RHI::Ptr<RPI::Query> query)
+            {
+              if (query->BeginQuery(context) == RPI::QueryResultCode::Fail)
+              {
+                  AZ_UNUSED(this); // Prevent unused warning in release builds
+                  AZ_WarningOnce(
+                      "RayTracingAccelerationStructurePass", false,
+                      "BeginScopeQuery failed. Make sure AddScopeQueryToFrameGraph was called in SetupFrameGraphDependencies"
+                      " for this pass: %s",
+                      this->RTTI_GetTypeName());
+              }
+            };
+
+            ExecuteOnTimestampQuery(beginQuery);
+            ExecuteOnPipelineStatisticsQuery(beginQuery);
+        }
+
+        void RayTracingAccelerationStructurePass::EndScopeQuery(const RHI::FrameGraphExecuteContext& context)
+        {
+            const auto endQuery = [&context](const RHI::Ptr<RPI::Query>& query)
+            {
+              query->EndQuery(context);
+            };
+
+            // This scope query implementation should be replaced by the feature linked below on GitHub:
+            // [GHI-16945] Feature Request - Add GPU timestamp and pipeline statistic support for scopes
+            ExecuteOnTimestampQuery(endQuery);
+            ExecuteOnPipelineStatisticsQuery(endQuery);
+        }
+
+        void RayTracingAccelerationStructurePass::ReadbackScopeQueryResults()
+        {
+            ExecuteOnTimestampQuery(
+                [this](const RHI::Ptr<RPI::Query>& query)
+                {
+                  const uint32_t TimestampResultQueryCount{ 2u };
+                  uint64_t timestampResult[TimestampResultQueryCount] = { 0 };
+                  query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
+                  m_timestampResult = RPI::TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
+                });
+
+            ExecuteOnPipelineStatisticsQuery(
+                [this](const RHI::Ptr<RPI::Query>& query)
+                {
+                  query->GetLatestResult(&m_statisticsResult, sizeof(RPI::PipelineStatisticsResult));
+                });
         }
     }   // namespace RPI
 }   // namespace AZ

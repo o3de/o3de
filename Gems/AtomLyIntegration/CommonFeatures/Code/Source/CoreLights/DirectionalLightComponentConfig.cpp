@@ -27,6 +27,7 @@ namespace AZ
                     ->Field("Intensity", &DirectionalLightComponentConfig::m_intensity)
                     ->Field("AngularDiameter", &DirectionalLightComponentConfig::m_angularDiameter)
                     ->Field("CameraEntityId", &DirectionalLightComponentConfig::m_cameraEntityId)
+                    ->Field("Shadow Enabled", &DirectionalLightComponentConfig::m_shadowEnabled)
                     ->Field("ShadowFarClipDistance", &DirectionalLightComponentConfig::m_shadowFarClipDistance)
                     ->Field("ShadowmapSize", &DirectionalLightComponentConfig::m_shadowmapSize)
                     ->Field("CascadeCount", &DirectionalLightComponentConfig::m_cascadeCount)
@@ -108,24 +109,29 @@ namespace AZ
             return m_isShadowmapFrustumSplitAutomatic;
         }
 
+        bool DirectionalLightComponentConfig::IsShadowDisabled() const
+        {
+            return !m_shadowEnabled;
+        }
+
         bool DirectionalLightComponentConfig::IsCascadeCorrectionDisabled() const
         {
-            return (m_cascadeCount == 1 || !m_isCascadeCorrectionEnabled);
+            return (!m_shadowEnabled || m_cascadeCount == 1 || !m_isCascadeCorrectionEnabled);
         }
 
         bool DirectionalLightComponentConfig::IsShadowFilteringDisabled() const
         {
-            return (m_shadowFilterMethod == ShadowFilterMethod::None);
+            return (!m_shadowEnabled || m_shadowFilterMethod == ShadowFilterMethod::None);
         }
 
         bool DirectionalLightComponentConfig::IsShadowPcfDisabled() const
         {
-            return !(m_shadowFilterMethod == ShadowFilterMethod::Pcf);
+            return !m_shadowEnabled || m_shadowFilterMethod != ShadowFilterMethod::Pcf;
         }
 
         bool DirectionalLightComponentConfig::IsEsmDisabled() const
         {
-            return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+            return !m_shadowEnabled || m_shadowFilterMethod != ShadowFilterMethod::Esm || m_shadowFilterMethod != ShadowFilterMethod::EsmPcf;
         }
 
         AZ::Crc32 DirectionalLightComponentConfig::UpdateCascadeFarDepths()

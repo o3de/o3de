@@ -29,6 +29,8 @@ void GetParallaxInput(real3 normal, real3 tangent, real3 bitangent, real heightm
                       real4x4 objectWorldMatrix, real3x3 uvMatrix, real3x3 uvMatrixInverse,
                       inout float2 uv, inout float3 worldPosition, inout float depthNDC, inout float depthCS, out bool isClipped)
 {
+    isClipped = false;
+
     if(o_parallax_feature_enabled)
     {
         real3 dirToCamera;
@@ -72,7 +74,6 @@ void GetParallaxInput(real3 normal, real3 tangent, real3 bitangent, real heightm
 
             worldPosition = pdo.m_worldPosition;
         }
-        
     }
 }
 
@@ -80,7 +81,7 @@ void GetParallaxInput(real3 normal, real3 tangent, real3 bitangent, real heightm
                       real4x4 objectWorldMatrix, real3x3 uvMatrix, real3x3 uvMatrixInverse,
                       inout real2 uv, inout real3 worldPosition, inout float depthNDC, inout float depthCS)
 {
-    bool isClipped;
+    bool isClipped = false;
     GetParallaxInput(normal, tangent, bitangent, heightmapScale, heightmapOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depthNDC, depthCS, isClipped);
 }
 

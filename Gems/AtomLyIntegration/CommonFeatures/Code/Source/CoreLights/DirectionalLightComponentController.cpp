@@ -578,6 +578,7 @@ namespace AZ
             ColorIntensityChanged();
             SetAngularDiameter(m_configuration.m_angularDiameter);
 
+            SetShadowEnabled(m_configuration.m_shadowEnabled);
             SetCameraEntityId(m_configuration.m_cameraEntityId);
             SetCascadeCount(m_configuration.m_cascadeCount);
             if (m_configuration.m_isShadowmapFrustumSplitAutomatic)
@@ -697,6 +698,17 @@ namespace AZ
             {
                 m_featureProcessor->SetRgbIntensity(m_lightHandle, m_photometricValue.GetCombinedRgb<PhotometricUnit::Lux>());
             }
+        }
+
+        bool DirectionalLightComponentController::GetShadowEnabled() const
+        {
+            return m_configuration.m_shadowEnabled;
+        }
+
+        void DirectionalLightComponentController::SetShadowEnabled(bool enable)
+        {
+            m_configuration.m_shadowEnabled = enable;
+            m_featureProcessor->SetShadowEnabled(m_lightHandle, enable);
         }
 
         bool DirectionalLightComponentController::GetShadowReceiverPlaneBiasEnabled() const

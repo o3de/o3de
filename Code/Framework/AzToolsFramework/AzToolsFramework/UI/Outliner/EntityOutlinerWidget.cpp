@@ -281,7 +281,7 @@ namespace AzToolsFramework
         {
             ComponentPaletteUtil::ComponentDataTable componentDataTable;
             ComponentPaletteUtil::ComponentIconTable componentIconTable;
-            AZStd::vector<AZ::ComponentServiceType> serviceFilter;
+            AZ::ComponentDescriptor::DependencyArrayType serviceFilter;
 
             ComponentPaletteUtil::BuildComponentTables(serializeContext, AppearsInGameComponentMenu, serviceFilter, componentDataTable, componentIconTable);
 

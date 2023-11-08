@@ -54,6 +54,8 @@ namespace AZ
             void SetIntensity(float intensity) override;
             float GetAngularDiameter() const override;
             void SetAngularDiameter(float angularDiameter) override;
+            void SetShadowEnabled(bool enable) override;
+            bool GetShadowEnabled() const override;
             ShadowmapSize GetShadowmapSize() const override;
             void SetShadowmapSize(ShadowmapSize size) override;
             uint32_t GetCascadeCount() const override;

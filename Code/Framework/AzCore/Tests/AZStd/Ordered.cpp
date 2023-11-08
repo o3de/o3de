@@ -16,7 +16,6 @@
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/ranges/transform_view.h>
-#include <AzCore/Memory/AllocatorWrappers.h>
 
 #define AZ_TEST_VALIDATE_EMPTY_TREE(_Tree_) \
     EXPECT_EQ(0, _Tree_.size());     \
@@ -400,7 +399,7 @@ namespace UnitTest
     TEST_F(Tree_Set, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::set<int, AZStd::less<int>, AZ::AllocatorPointerWrapper> setWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
+        AZStd::set<int, AZStd::less<int>, AZ::AZStdIAllocator> setWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
         auto insertIter = setWithCustomAllocator.emplace(1);
         EXPECT_TRUE(insertIter.second);
         insertIter = setWithCustomAllocator.emplace(1);
@@ -524,7 +523,7 @@ namespace UnitTest
     TEST_F(Tree_MultiSet, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::multiset<int, AZStd::less<int>, AZ::AllocatorPointerWrapper> setWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
+        AZStd::multiset<int, AZStd::less<int>, AZ::AZStdIAllocator> setWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
         setWithCustomAllocator.emplace(1);
         setWithCustomAllocator.emplace(1);
         EXPECT_EQ(2, setWithCustomAllocator.size());
@@ -671,7 +670,7 @@ namespace UnitTest
     TEST_F(Tree_Map, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::map<int, int, AZStd::less<int>, AZ::AllocatorPointerWrapper> mapWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
+        AZStd::map<int, int, AZStd::less<int>, AZ::AZStdIAllocator> mapWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
         auto insertIter = mapWithCustomAllocator.emplace(1, 1);
         EXPECT_TRUE(insertIter.second);
         insertIter = mapWithCustomAllocator.emplace(1, 2);
@@ -826,7 +825,7 @@ namespace UnitTest
     TEST_F(Tree_MultiMap, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::multimap<int, int, AZStd::less<int>, AZ::AllocatorPointerWrapper> mapWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
+        AZStd::multimap<int, int, AZStd::less<int>, AZ::AZStdIAllocator> mapWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
         mapWithCustomAllocator.emplace(1, 1);
         mapWithCustomAllocator.emplace(1, 2);
         EXPECT_EQ(2, mapWithCustomAllocator.size());
@@ -1150,11 +1149,11 @@ namespace UnitTest
     template<template <typename, typename, typename> class ContainerTemplate>
     struct TreeSetWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, AZStd::less<int32_t>, AZ::AllocatorPointerWrapper>;
+        using ContainerType = ContainerTemplate<int32_t, AZStd::less<int32_t>, AZ::AZStdIAllocator>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorSet(intList, AZStd::less<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
+            ContainerType allocatorSet(intList, AZStd::less<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorSet;
         }
     };
@@ -1204,13 +1203,13 @@ namespace UnitTest
 
         EXPECT_EQ(1, systemAllocatorMap.size());
         EXPECT_EQ(1, systemAllocatorMap.count(2));
-        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
 
         EXPECT_EQ(3, osAllocatorMap.size());
         EXPECT_EQ(1, osAllocatorMap.count(1));
         EXPECT_EQ(1, osAllocatorMap.count(2));
         EXPECT_EQ(1, osAllocatorMap.count(3));
-        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
     }
 
     template<typename ContainerType>
@@ -1631,11 +1630,11 @@ namespace UnitTest
     template<template <typename, typename, typename, typename> class ContainerTemplate>
     struct TreeMapWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::less<int32_t>, AZ::AllocatorPointerWrapper>;
+        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::less<int32_t>, AZ::AZStdIAllocator>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorMap(intList, AZStd::less<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
+            ContainerType allocatorMap(intList, AZStd::less<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorMap;
         }
     };
@@ -1685,13 +1684,13 @@ namespace UnitTest
 
         EXPECT_EQ(1, systemAllocatorMap.size());
         EXPECT_EQ(1, systemAllocatorMap.count(2));
-        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
 
         EXPECT_EQ(3, osAllocatorMap.size());
         EXPECT_EQ(1, osAllocatorMap.count(1));
         EXPECT_EQ(1, osAllocatorMap.count(2));
         EXPECT_EQ(1, osAllocatorMap.count(3));
-        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
     }
 
     namespace TreeContainerTransparentTestInternal

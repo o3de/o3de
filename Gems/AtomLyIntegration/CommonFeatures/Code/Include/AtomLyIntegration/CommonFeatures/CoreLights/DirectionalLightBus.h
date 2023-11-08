@@ -56,6 +56,12 @@ namespace AZ
             //! @param angularDiameter Directional light's angular diameter in degrees.
             virtual void SetAngularDiameter(float angularDiameter) = 0;
 
+            //! Sets whether enable shadow for this light
+            virtual void SetShadowEnabled(bool enable) = 0;
+
+            //! Get shadow enable status for this light
+            virtual bool GetShadowEnabled() const = 0;
+
             //! This gets shadowmap size (width/height).
             //! @return shadowmap size.
             virtual ShadowmapSize GetShadowmapSize() const = 0;

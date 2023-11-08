@@ -33,7 +33,7 @@ namespace UnitTest
             if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords();
                 records != nullptr)
             {
-                records->SetMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+                records->SetMode(AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS);
             }
 
             AZ::ComponentApplication::StartupParameters startupParameters;

@@ -19,7 +19,7 @@ ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                    
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-linux                            TARGETS expat                       PACKAGE_HASH 755369a919e744b9b3f835d1acc684f02e43987832ad4a1c0b6bbf884e6cd45b)
 ly_associate_package(PACKAGE_NAME assimp-5.2.5-rev1-linux                           TARGETS assimplib                   PACKAGE_HASH 67bd3625078b63b40ae397ef7a3e589a6f77e95d3318c97dd7075e3e22a638cd)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev4-linux                    TARGETS AWSNativeSDK                PACKAGE_HASH e4e81ce83f751a61deb87389e41b05ddcf1dceaf8d642b7735bc2ae42eadb483)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.144-rev1-linux                  TARGETS AWSNativeSDK                PACKAGE_HASH 4ba55b76b8af629a3d405434776790130f785e7c8fadb2f1d373008922a2a33a)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-linux                          TARGETS TIFF                        PACKAGE_HASH 2377f48b2ebc2d1628d9f65186c881544c92891312abe478a20d10b85877409a)
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-linux                        TARGETS Freetype                    PACKAGE_HASH 28bbb850590507eff85154604787881ead6780e6eeee9e71ed09cd1d48d85983)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-linux                              TARGETS Lua                         PACKAGE_HASH d582362c3ef90e1ef175a874abda2265839ffc2e40778fa293f10b443b4697ac)

@@ -49,14 +49,7 @@ namespace EMotionFX
         /**
          * System allocator to be used for all EMotionFX and EMotionFXAnimation gem persistent allocations.
          */
-        class EMotionFXAllocator
-            : public AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>
-        {
-        public:
-            using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-
-            AZ_RTTI(EMotionFXAllocator, "{00AEC34F-4A00-4ECB-BC9C-7221E76337D6}", Base);
-        };
+        AZ_CHILD_ALLOCATOR_WITH_NAME(EMotionFXAllocator, "EMotionFXAllocator", "{00AEC34F-4A00-4ECB-BC9C-7221E76337D6}", AZ::SystemAllocator);
 
         /**
          * Intrusive ptr for EMotionFX-owned objects.

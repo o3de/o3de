@@ -59,6 +59,7 @@ set(FILES
     ../Common/UnixLike/AzCore/PlatformIncl_UnixLike.h
     AzCore/Platform_Mac.cpp
     AzCore/PlatformIncl_Platform.h
+    ../Common/UnixLike/AzCore/Settings/CommandLineParser_UnixLike.cpp
     ../Common/UnixLike/AzCore/Socket/AzSocket_fwd_UnixLike.h
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.cpp
     ../Common/UnixLike/AzCore/Socket/AzSocket_UnixLike.h

@@ -423,6 +423,7 @@ namespace AZ
             // Reconnect the asset bus to the current active material asset ID so that the preview can be refreshed if the asset changes
             AZ::Data::AssetId assetId = {};
             MaterialComponentRequestBus::EventResult(assetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, m_id);
+
             if (!AZ::Data::AssetBus::Handler::BusIsConnectedId(assetId))
             {
                 AZ::Data::AssetBus::Handler::BusDisconnect();
@@ -447,6 +448,11 @@ namespace AZ
                 AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                     &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
             }
+        }
+
+        void EditorMaterialComponentSlot::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        {
+            UpdatePreview();
         }
 
         void EditorMaterialComponentSlot::OnAssetReloaded(Data::Asset<Data::AssetData> asset)

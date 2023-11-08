@@ -124,7 +124,7 @@ void ModuleReflectionTest<ApplicationT, ModuleT>::SetUp()
 
     AZ::ComponentApplication::Descriptor appDescriptor;
     appDescriptor.m_useExistingAllocator = true;
-    appDescriptor.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
+    appDescriptor.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;
 
     AZ::ComponentApplication::StartupParameters appStartup;
 

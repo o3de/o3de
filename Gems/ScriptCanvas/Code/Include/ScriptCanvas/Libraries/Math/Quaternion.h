@@ -71,3 +71,5 @@ namespace ScriptCanvas
         Vector3Type RotateVector3(QuaternionType source, Vector3Type vector3);
     } // namespace QuaternionFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Quaternion.generated.h>

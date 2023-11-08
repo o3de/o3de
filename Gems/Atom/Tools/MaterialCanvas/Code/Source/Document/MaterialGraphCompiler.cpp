@@ -235,6 +235,12 @@ namespace MaterialCanvas
 
     void MaterialGraphCompiler::BuildDependencyTables()
     {
+        if (!m_graph)
+        {
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
+            return;
+        }
+
         for (const auto& nodePair : m_graph->GetNodes())
         {
             const auto& currentNode = nodePair.second;
@@ -320,14 +326,17 @@ namespace MaterialCanvas
 
     void MaterialGraphCompiler::ClearFingerprintsForCurrentNode()
     {
-        for (const auto& templatePath : m_templatePathsForCurrentNode)
+        if (AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/ForceClearAssetFingerprints", false))
         {
-            if (templatePath.ends_with(".material") || templatePath.ends_with(".materialtype"))
+            for (const auto& templatePath : m_templatePathsForCurrentNode)
             {
-                const auto& templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
-                const auto& templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
-                AzToolsFramework::AssetSystemRequestBus::Broadcast(
-                    &AzToolsFramework::AssetSystemRequestBus::Events::ClearFingerprintForAsset, templateOutputPath);
+                if (templatePath.ends_with(".material") || templatePath.ends_with(".materialtype"))
+                {
+                    const auto& templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+                    const auto& templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
+                    AzToolsFramework::AssetSystemRequestBus::Broadcast(
+                        &AzToolsFramework::AssetSystemRequestBus::Events::ClearFingerprintForAsset, templateOutputPath);
+                }
             }
         }
     }
@@ -395,6 +404,12 @@ namespace MaterialCanvas
 
     void MaterialGraphCompiler::BuildInstructionsForCurrentNode(const GraphModel::ConstNodePtr& currentNode)
     {
+        if (!m_graph)
+        {
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
+            return;
+        }
+
         m_instructionNodesForCurrentNode.clear();
         m_instructionNodesForCurrentNode.reserve(m_graph->GetNodeCount());
 
@@ -879,17 +894,19 @@ namespace MaterialCanvas
     {
         AZStd::vector<GraphModel::ConstNodePtr> nodes;
 
-        if (m_graph)
+        if (!m_graph)
         {
-            nodes.reserve(m_graph->GetNodes().size());
-            for (const auto& nodePair : m_graph->GetNodes())
-            {
-                nodes.push_back(nodePair.second);
-            }
-
-            AtomToolsFramework::SortNodesInExecutionOrder(nodes);
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
+            return nodes;
         }
 
+        nodes.reserve(m_graph->GetNodes().size());
+        for (const auto& nodePair : m_graph->GetNodes())
+        {
+            nodes.push_back(nodePair.second);
+        }
+
+        AtomToolsFramework::SortNodesInExecutionOrder(nodes);
         return nodes;
     }
 
@@ -1034,7 +1051,7 @@ namespace MaterialCanvas
     {
         if (!m_graph)
         {
-            AZ_Assert(false, "Attempting to generate data from invalid graph object.");
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
             return {};
         }
 
@@ -1083,13 +1100,13 @@ namespace MaterialCanvas
 
         if (!m_graph)
         {
-            AZ_Assert(false, "Attempting to generate data from invalid graph object.");
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid graph object.");
             return false;
         }
 
         if (!templateNode)
         {
-            AZ_Assert(false, "Attempting to generate data from invalid template node.");
+            AZ_Error("MaterialGraphCompiler", false, "Attempting to generate data from invalid template node.");
             return false;
         }
 
