@@ -8,6 +8,7 @@
 
 #include <AzNetworking/UdpTransport/UdpHeartbeatThread.h>
 #include <AzNetworking/UdpTransport/UdpNetworkInterface.h>
+#include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 
 
 namespace AzNetworking
