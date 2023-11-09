@@ -334,11 +334,6 @@ namespace AzToolsFramework
             }
         }
 
-        if (!assetFileInfoList.m_fileInfoList.size())
-        {
-            return AZ::Failure(AZStd::string::format("File ( %s ) does not contain any assets.\n", assetFileInfoPath.c_str()));
-        }
-
         return AZ::Success(assetFileInfoList);
     }
 

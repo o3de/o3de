@@ -349,12 +349,18 @@ namespace AzToolsFramework
     // Returns the asset info if it exists and is the same for the platform specified by platformIndex
     AZ::Data::AssetInfo AssetSeedManager::GetAssetInfoById(const AZ::Data::AssetId& assetId, const AzFramework::PlatformId& platformIndex, const AZStd::string& seedListfilePath, const AZStd::string& assetHintPath)
     {
+        if (!seedListfilePath.empty() || !assetHintPath.empty())
+        {
+            AZStd::string errorMessage = AZStd::string::format("Seed List (%s) Asset Hint (%s)", seedListfilePath.c_str(), assetHintPath.c_str());
+            AZ_Error("AssetSeedManager", false, errorMessage.c_str());
+        }
+
         using namespace AzToolsFramework::AssetCatalog;
         AZ::Data::AssetInfo assetInfo;
         PlatformAddressedAssetCatalogRequestBus::EventResult(assetInfo, static_cast<AzFramework::PlatformId>(platformIndex), &PlatformAddressedAssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
         if (!assetInfo.m_assetId.IsValid())
         {
-            AZStd::string errorMessage = AZStd::string::format("Could not find asset with id (%s) on platform (%s)", assetId.ToString<AZStd::string>().c_str(), AzFramework::PlatformHelper::GetPlatformName(platformIndex));
+            AZStd::string errorMessage = AZStd::string::format("Could not find asset with id ( %s ) on platform ( %s ). (%s)", assetId.ToString<AZStd::string>().c_str(), AzFramework::PlatformHelper::GetPlatformName(platformIndex), errorMessage.c_str());
 
             if (!seedListfilePath.empty() || !assetHintPath.empty())
             {
@@ -530,8 +536,8 @@ namespace AzToolsFramework
                     if (productDependency.m_assetId.IsValid() && assetIdSet.find(productDependency.m_assetId) == assetIdSet.end())
                     {
                         assetIdSet.insert(productDependency.m_assetId);
-
-                        AZ::Data::AssetInfo assetInfo = GetAssetInfoById(productDependency.m_assetId, platformIndex, m_assetSeedList[idx].m_seedListFilePath);
+                       
+                        AZ::Data::AssetInfo assetInfo = GetAssetInfoById(productDependency.m_assetId, platformIndex, "", m_assetSeedList[idx].m_assetRelativePath);
                         assetsInfoList.emplace_back(AZStd::move(assetInfo));
                     }
                 }
@@ -851,9 +857,8 @@ namespace AzToolsFramework
     {
         if (assetFileInfoList.m_fileInfoList.empty())
         {
-            // Don't save an empty list
-            AZ_Warning("AssetFileInfoList", false, "Unable to save Asset List file (%s): list is empty.\n", destinationFilePath.c_str());
-            return false;
+            // Warn if the asset list is empty, but allow the save
+            AZ_Warning("AssetFileInfoList", false, "(%s): list is empty.\n", destinationFilePath.c_str());
         }
 
         auto fileExtensionOutcome = ValidateAssetListFileExtension(destinationFilePath);
