@@ -11,6 +11,7 @@ import logging
 import sys
 
 import o3de.export_project as exp
+import o3de.manifest as manifest
 import pathlib
 
 from typing import List
@@ -22,6 +23,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               should_build_tools: bool,
                               build_config: str,
                               seedlist_paths: List[pathlib.Path],
+                              seedfile_paths: List[pathlib.Path],
+                              level_names: List[str],
                               game_project_file_patterns_to_copy: List[str] = [],
                               server_project_file_patterns_to_copy: List[str] = [],
                               project_file_patterns_to_copy: List[str] = [],
@@ -49,6 +52,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param should_build_tools:                      Option to build the export process dependent tools (AssetProcessor, AssetBundlerBatch, and dependencies)
     :param build_config:                            The build configuration to use for the export package launchers
     :param seedlist_paths:                          List of seed list files to optionally include in the asset bundling process
+    :param seedfile_paths:                          List of seed files to optionally include in the asset bundling process. These can be individual O3DE assets, such as levels or prefabs.
+    :param level_names:                             List of individual level names. These are assumed to follow standard O3DE level convention, and will be used in the asset bundler.
     :param game_project_file_patterns_to_copy:      List of game (or unified) launcher specific files to include in the game/unified package
     :param server_project_file_patterns_to_copy:    List of server (or unified) launcher specific files to include in the server/unified package
     :param project_file_patterns_to_copy:           List of general file patterns to include in all packages
@@ -67,6 +72,9 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param logger:                                  Optional logger to use to log the process and errors
     """
 
+    is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
+    project_name = manifest.get_project_json_data(project_path=ctx.project_path)['project_name']
+
     # Use a provided logger or get the current system one
     if not logger:
         logger = logging.getLogger()
@@ -75,7 +83,10 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     # Calculate the tools and game build paths
     default_base_build_path = ctx.engine_path / 'build' if engine_centric else ctx.project_path / 'build'
     if not tools_build_path:
-        tools_build_path = default_base_build_path / 'tools'
+        if is_installer_sdk:
+            tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / 'profile/Default'
+        else:
+            tools_build_path = default_base_build_path / 'tools'
     if not launcher_build_path:
         launcher_build_path = default_base_build_path / 'launcher'
     if not asset_bundling_path:
@@ -84,12 +95,17 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     # Resolve (if possible) and validate any provided seedlist files
     validated_seedslist_paths = exp.validate_project_artifact_paths(project_path=ctx.project_path,
                                                                     artifact_paths=seedlist_paths)
+    
+    # Convert level names into seed files that the asset bundler can utilize for packaging
+    for level in level_names:
+        seedfile_paths.append(str(pathlib.PurePath('levels') / level.lower() / (level.lower() + ".spawnable")))
 
     # Make sure there are no running processes for the current project before continuing
     exp.kill_existing_processes(ctx.project_name)
 
     # Optionally build the toolchain needed to bundle the assets
-    if should_build_tools:
+    # Do not run this logic if we're using an installer SDK engine. Tool binaries should already exist
+    if should_build_tools and not is_installer_sdk:
         exp.build_export_toolchain(ctx=ctx,
                                    tools_build_path=tools_build_path,
                                    engine_centric=engine_centric,
@@ -116,24 +132,29 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     # Optionally build the assets
     if should_build_all_assets:
         asset_processor_path = exp.get_asset_processor_batch_path(tools_build_path=tools_build_path,
+                                                                  using_installer_sdk=is_installer_sdk, 
                                                                   required=True)
         logger.info(f"Using '{asset_processor_path}' to process the assets.")
         exp.build_assets(ctx=ctx,
                          tools_build_path=tools_build_path,
                          engine_centric=engine_centric,
                          fail_on_ap_errors=fail_on_asset_errors,
+                         using_installer_sdk=is_installer_sdk,
                          logger=logger)
 
     # Generate the bundle
     asset_bundler_path = exp.get_asset_bundler_batch_path(tools_build_path=tools_build_path,
+                                                          using_installer_sdk=is_installer_sdk,
                                                           required=True)
     logger.info(f"Using '{asset_bundler_path}' to bundle the assets.")
     expected_bundles_path = exp.bundle_assets(ctx=ctx,
                                               selected_platform=selected_platform,
                                               seedlist_paths=validated_seedslist_paths,
+                                              seedfile_paths=seedfile_paths,
                                               tools_build_path=tools_build_path,
                                               engine_centric=engine_centric,
                                               asset_bundling_path=asset_bundling_path,
+                                              using_installer_sdk=is_installer_sdk,
                                               max_bundle_size=max_bundle_size)
 
     # Prepare the different layouts based on the desired launcher types
@@ -196,6 +217,10 @@ if "o3de_context" in globals():
                             help='Option to fail the project export process on any failed asset during asset building (applicable if --should-build-assets is true)')
         parser.add_argument('-sl', '--seedlist', type=pathlib.Path, dest='seedlist_paths', action='append',
                                 help='Path to a seed list file for asset bundling. Specify multiple times for each seed list.')
+        parser.add_argument('-sf', '--seedfile', type=pathlib.Path, dest='seedfile_paths', action='append',
+                            help='Path to a seed file for asset bundling. Example seed files are levels or prefabs.')
+        parser.add_argument('-lvl', '--level-name', type=str, dest='level_names', action='append',
+                            help='The name of the level you want to export. This will look in <o3de_project_path>/Levels to fetch the right level prefab.')
         parser.add_argument('-gpfp', '--game-project-file-pattern-to-copy', type=str, dest='game_project_file_patterns_to_copy', action='append',
                                 help="Any additional file patterns located in the project directory. File patterns will be relative to the project path. Will be included in GameLauncher.")
         parser.add_argument('-spfp', '--server-project-file-pattern-to-copy', type=str, dest='server_project_file_patterns_to_copy', action='append',
@@ -213,9 +238,10 @@ if "o3de_context" in globals():
         parser.add_argument('-abp', '--asset-bundling-path', type=pathlib.Path, default=None,
                             help="Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, default is <o3de_project_path>/build/asset_bundling.")
         parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=2048, help='Specify the maximum size of a given asset bundle.')
-        parser.add_argument('-nogame', '--no-game-launcher', action='store_true', help='This flag skips building the Game Launcher on a platform if not needed.')
-        parser.add_argument('-noserver', '--no-server-launcher', action='store_true', help='This flag skips building the Server Launcher on a platform if not needed.')
-        parser.add_argument('-nounified', '--no-unified-launcher', action='store_true', help='This flag skips building the Unified Launcher on a platform if not needed.')
+        parser.add_argument('-nogame', '--no-game-launcher', default=False, action='store_true', help='This flag skips building the Game Launcher on a platform if not needed.')
+        parser.add_argument('-noserver', '--no-server-launcher', default=False, action='store_true', help='This flag skips building the Server Launcher on a platform if not needed.')
+        parser.add_argument('-noheadless', '--no-headless-server-launcher', default=False, action='store_true', help='This flag skips building the Headless Server Launcher on a platform if not needed.')
+        parser.add_argument('-nounified', '--no-unified-launcher', default=False, action='store_true', help='This flag skips building the Unified Launcher on a platform if not needed.')
         parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
         parser.add_argument('-ec', '--engine-centric', action='store_true', default=False, help='Option use the engine-centric work flow to export the project.')
         parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
@@ -240,6 +266,8 @@ if "o3de_context" in globals():
                                   should_build_tools=args.build_tools,
                                   build_config=args.config,
                                   seedlist_paths=[] if not args.seedlist_paths else args.seedlist_paths,
+                                  seedfile_paths=[] if not args.seedfile_paths else args.seedfile_paths,
+                                  level_names=[] if not args.level_names else args.level_names,
                                   game_project_file_patterns_to_copy=[] if not args.game_project_file_patterns_to_copy else args.game_project_file_patterns_to_copy,
                                   server_project_file_patterns_to_copy=[] if not args.server_project_file_patterns_to_copy else args.server_project_file_patterns_to_copy,
                                   project_file_patterns_to_copy=[] if not args.project_file_patterns_to_copy else args.project_file_patterns_to_copy,

@@ -194,6 +194,12 @@ def get_default_asset_platform():
                                             'darwin':  'mac' }
     return host_platform_to_asset_platform_map.get(platform.system().lower(), "")
 
+def get_platform_installer_folder_name():
+    host_platform_to_installer_name_map = {'pc': 'Windows',
+                                           'linux': 'Linux',
+                                           'mac': 'Mac'}
+    return host_platform_to_installer_name_map.get(platform.lower(), "")
+
 def process_command(args: list,
                     cwd: pathlib.Path = None,
                     env: os._Environ = None) -> int:
@@ -265,7 +271,7 @@ def extract_cmake_custom_args(arg_list: List[str])->tuple:
                 in_cca = False
             elif arg in ('-cba', '--cmake-build-arg'):
                 in_cca = False
-                in_cca = True
+                in_cba = True
             elif arg not in ('-cca', '--cmake-configure-arg'):
                 cmake_configure_args.append(arg)
         elif in_cba:
@@ -368,31 +374,40 @@ def add_args(subparsers) -> None:
 
 
 def get_asset_processor_batch_path(tools_build_path: pathlib.Path,
+                                   using_installer_sdk: bool = False,
                                    required: bool = False) -> pathlib.Path:
     """
     Get the expected path to the asset processor tool
 
     @param tools_build_path:    The tools (cmake) build path to locate AssetProcessorBatch
+    @param using_installer_sdk: Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
     @param required:            If true, check if the asset processor actually exists on file at the expected location, and raise an error if not
     @return: Path to the asset processor tool
     """
-    asset_processor_batch_path = tools_build_path / f'bin/profile/AssetProcessorBatch{EXECUTABLE_EXTENSION}'
+    if using_installer_sdk:
+        asset_processor_batch_path = tools_build_path / f'AssetProcessorBatch{EXECUTABLE_EXTENSION}'
+    else:
+        asset_processor_batch_path = tools_build_path / f'bin/profile/AssetProcessorBatch{EXECUTABLE_EXTENSION}'
     if required and not asset_processor_batch_path.is_file():
         raise ExportProjectError(f"Missing the 'AssetProcessorBatch' tool, expected at '{asset_processor_batch_path}'")
     return asset_processor_batch_path
 
 
 def get_asset_bundler_batch_path(tools_build_path: pathlib.Path,
+                                 using_installer_sdk: bool = False,
                                  required: bool = False) -> pathlib.Path:
     """
     Get the expected path to the asset bundler tool
 
     @param tools_build_path:    The tools (cmake) build path to locate AssetBundlerBatch
+    @param using_installer_sdk: Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
     @param required:            If true, check if the asset bundler actually exists on file at the expected location, and raise an error if not
     @return: Path to the asset bundler tool
     """
-
-    asset_bundler_batch_path = tools_build_path / f'bin/profile/AssetBundlerBatch{EXECUTABLE_EXTENSION}'
+    if using_installer_sdk:
+        asset_bundler_batch_path = tools_build_path / f'AssetBundlerBatch{EXECUTABLE_EXTENSION}'
+    else:
+        asset_bundler_batch_path = tools_build_path / f'bin/profile/AssetBundlerBatch{EXECUTABLE_EXTENSION}'
     if required and not asset_bundler_batch_path.is_file():
         raise ExportProjectError(f"Missing the 'AssetBundlerBatch' tool, expected at '{asset_bundler_batch_path}'")
     return asset_bundler_batch_path
@@ -402,18 +417,20 @@ def build_assets(ctx: O3DEScriptExportContext,
                  tools_build_path: pathlib.Path,
                  engine_centric: bool,
                  fail_on_ap_errors: bool,
+                 using_installer_sdk: bool = False,
                  logger: logging.Logger = None) -> int:
     """
     Build the assets for the project
     @param ctx:                 Export Context
     @param tools_build_path:    The tools (cmake) build path to locate AssetProcessorBatch
     @param fail_on_ap_errors:   Option to fail the whole process if an error occurs during asset processing
+    @param using_installer_sdk: Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
     @param logger:              Optional Logger
     @return: None
     """
 
     # Make sure `AssetProcessorBatch` is available
-    asset_processor_batch_path = get_asset_processor_batch_path(tools_build_path, required=True)
+    asset_processor_batch_path = get_asset_processor_batch_path(tools_build_path, using_installer_sdk, required=True)
     if not asset_processor_batch_path.exists():
         raise ExportProjectError("Missing AssetProcessorBatch. The pre-requisite tools must be built first.")
 
@@ -593,8 +610,10 @@ def build_game_targets(ctx: O3DEScriptExportContext,
 def bundle_assets(ctx: O3DEScriptExportContext,
                   selected_platform: str,
                   seedlist_paths: List[pathlib.Path],
+                  seedfile_paths: List[pathlib.Path],
                   tools_build_path: pathlib.Path,
                   engine_centric: bool,
+                  using_installer_sdk: bool = False,
                   asset_bundling_path: pathlib.Path | None = None,
                   max_bundle_size: int = 2048) -> pathlib.Path:
     """
@@ -603,13 +622,15 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     @param ctx:                      Export Context
     @param selected_platform:        The desired asset platform
     @param seedlist_paths:           The list of seedlist files
+    @param seedfile_paths:           The list of individual seed files
     @param tools_build_path:         The path to the tools cmake build project
+    @param using_installer_sdk:      Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
     @param asset_bundling_path:      The path to use to write all the intermediate and final artifacts from the bundling process
     @param max_bundle_size:          The size limit to put on the bundle
     @return: The path to the bundle
     """
 
-    asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, required=True)
+    asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, using_installer_sdk, required=True)
     asset_list_path = asset_bundling_path / 'AssetLists'
 
     game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
@@ -625,6 +646,11 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     for seed in seedlist_paths:
         gen_game_asset_list_command.append("--seedListFile")
         gen_game_asset_list_command.append(str(seed))
+    
+    for seed in seedfile_paths:
+        gen_game_asset_list_command.append("--addSeed")
+        gen_game_asset_list_command.append(str(seed))
+
     ret = process_command(gen_game_asset_list_command,
                           cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
