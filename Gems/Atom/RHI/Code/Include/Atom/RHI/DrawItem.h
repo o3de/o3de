@@ -134,7 +134,7 @@ namespace AZ::RHI
             {
                 bool m_enabled : 1;    // Whether the Draw Item should render
             };
-            uint8_t m_allFlags;
+            uint8_t m_allFlags = 1;
         };
 
         const PipelineState* m_pipelineState = nullptr;
