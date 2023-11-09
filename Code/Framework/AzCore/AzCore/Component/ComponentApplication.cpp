@@ -115,8 +115,9 @@ namespace AZ::Internal
     {
         None, // 0 = no overrides are allowed
         CommandLineOnly, // 1 = registry overrides are allowed from the command line
-        CommandLineAndProject, // 2 = registry overrides are allowed from the command line, engine, gem, and project files
-        CommandLineProjectAndUser // 3 = registry overrides are allowed from the command line, engine, gem, project, and user files
+        ProjectOnly, // 2 = registry overrides are allowed from the engine, gem and project registry files
+        CommandLineAndProject, // 3 = registry overrides are allowed from the command line, engine, gem, and project files
+        CommandLineProjectAndUser // 4 = registry overrides are allowed from the command line, engine, gem, project, and user files
     };
 
     //! Determines which development settings (user registry files, project registry files, etc) should
@@ -129,8 +130,8 @@ namespace AZ::Internal
         // is a debug, profile, or release build.
         return static_cast<DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
 #elif AZ_RELEASE_BUILD
-        // By default, if no compile setting was provided, turn off all overrides in release builds.
-        return DevelopmentSettingsOverrides::None;
+        // By default, if no compile setting was provided, allow overrides from the engine, gem and project registry files in release builds.
+        return DevelopmentSettingsOverrides::ProjectOnly;
 #else
         // By default, if no compile setting was provided, turn on all overrides in non-release builds.
         return DevelopmentSettingsOverrides::CommandLineProjectAndUser;
@@ -1085,7 +1086,11 @@ namespace AZ
         const AZ::SettingsRegistryInterface::Specializations& specializations,
         AZStd::vector<char>& scratchBuffer)
     {
-        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
+        constexpr bool overridesAllowedFromCommandLine =
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+        if constexpr (overridesAllowedFromCommandLine)
         {
             if constexpr (
                 AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
@@ -1129,8 +1134,11 @@ namespace AZ
             registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 
 #if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        if constexpr (
-            AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject)
+        constexpr bool overridesAllowedFromProjectRegistries =
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::ProjectOnly ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+        if constexpr (overridesAllowedFromProjectRegistries)
         {
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(
                 registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
@@ -1147,7 +1155,11 @@ namespace AZ
         const AZ::SettingsRegistryInterface::Specializations& specializations,
         AZStd::vector<char>& scratchBuffer)
     {
-        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
+        constexpr bool overridesAllowedFromCommandLine =
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject ||
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+        if constexpr (overridesAllowedFromCommandLine)
         {
             if constexpr (
                 AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
