@@ -7,102 +7,103 @@
  */
 
 #include "MaterialBuilderUtils.h"
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AZ::RPI::MaterialBuilderUtils
 {
     void AddPossibleDependencies(
-        const AZStd::string& currentFilePath,
-        const AZStd::string& referencedParentPath,
-        const char* jobKey,
-        AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-        AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies,
-        bool forceOrderOnce,
-        AZStd::optional<AZ::u32> productSubId)
+        const AZStd::string& originatingSourceFilePath,
+        const AZStd::string& referencedSourceFilePath,
+        AssetBuilderSDK::CreateJobsResponse& response,
+        AssetBuilderSDK::JobDescriptor& jobDescriptor,
+        const AZStd::string& jobKey,
+        const AssetBuilderSDK::JobDependencyType jobDependencyType,
+        const AZStd::vector<AZ::u32>& productSubIds,
+        const AZStd::string& platformId)
     {
-        bool dependencyFileFound = false;
-
-        AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(currentFilePath, referencedParentPath);
-        for (auto& file : possibleDependencies)
+        for (const auto& path : RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath))
         {
-            // The first path found is the highest priority, and will have a job dependency, as this is the one
-            // the builder will actually use
-            if (!dependencyFileFound)
+            if (jobDependencyType != AssetBuilderSDK::JobDependencyType::OrderOnce &&
+                jobDependencyType != AssetBuilderSDK::JobDependencyType::OrderOnly)
             {
-                AZ::Data::AssetInfo sourceInfo;
-                AZStd::string watchFolder;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                    dependencyFileFound,
-                    &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
-                    file.c_str(),
-                    sourceInfo,
-                    watchFolder);
-
-                if (dependencyFileFound)
-                {
-                    AssetBuilderSDK::JobDependency jobDependency;
-                    jobDependency.m_jobKey = jobKey;
-                    jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
-                    jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-
-                    if (productSubId)
-                    {
-                        jobDependency.m_productSubIds.push_back(productSubId.value());
-                    }
-
-                    if (forceOrderOnce)
-                    {
-                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
-                    }
-
-                    jobDependencies.push_back(jobDependency);
-
-                    // If the file was found, there is no need to add other possible path for the same dependency file.
-                    return;
-                }
-                else
-                {
-                    // The file was not found so we can't add a job dependency. But we add a source dependency instead so if a file
-                    // shows up later at this location, it will wake up the builder to try again.
-
-                    AssetBuilderSDK::SourceFileDependency sourceDependency;
-                    sourceDependency.m_sourceFileDependencyPath = file;
-                    sourceDependencies.push_back(sourceDependency);
-                }
+                MaterialBuilderUtils::AddFingerprintForDependency(path, jobDescriptor);
             }
+
+            // The first path is the highest priority, and will have a job dependency, as this is the one
+            // the builder will actually use
+            bool dependencyFileFound = false;
+            AZ::Data::AssetInfo sourceInfo;
+            AZStd::string watchFolder;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                dependencyFileFound,
+                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+                path.c_str(),
+                sourceInfo,
+                watchFolder);
+
+            if (dependencyFileFound)
+            {
+                AssetBuilderSDK::JobDependency jobDependency;
+                jobDependency.m_jobKey = jobKey;
+                jobDependency.m_sourceFile.m_sourceFileDependencyPath = path;
+                jobDependency.m_type = jobDependencyType;
+                jobDependency.m_productSubIds = productSubIds;
+                jobDependency.m_platformIdentifier = platformId;
+                jobDescriptor.m_jobDependencyList.emplace_back(AZStd::move(jobDependency));
+                return;
+            }
+
+            // The file was not found so we can't add a job dependency. But we add a source dependency instead so if a file
+            // shows up later at this location, it will wake up the builder to try again.
+            AssetBuilderSDK::SourceFileDependency sourceDependency;
+            sourceDependency.m_sourceFileDependencyPath = path;
+            response.m_sourceFileDependencyList.emplace_back(AZStd::move(sourceDependency));
         }
     }
 
     void AddPossibleImageDependencies(
-        const AZStd::string& currentFilePath,
-        const AZStd::string& imageFilePath,
-        AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-        AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies)
+        const AZStd::string& originatingSourceFilePath,
+        const AZStd::string& referencedSourceFilePath,
+        AssetBuilderSDK::CreateJobsResponse& response,
+        AssetBuilderSDK::JobDescriptor& jobDescriptor)
     {
-        if (imageFilePath.empty())
+        if (!referencedSourceFilePath.empty())
         {
-            return;
+            AZStd::string ext;
+            AzFramework::StringFunc::Path::GetExtension(referencedSourceFilePath.c_str(), ext, false);
+
+            if (!ext.empty())
+            {
+                AZStd::to_upper(ext.begin(), ext.end());
+                AZStd::string jobKey = "Image Compile: " + ext;
+
+                AddPossibleDependencies(
+                    originatingSourceFilePath,
+                    referencedSourceFilePath,
+                    response,
+                    jobDescriptor,
+                    jobKey,
+                    AssetBuilderSDK::JobDependencyType::OrderOnce);
+            }
         }
-
-        AZStd::string ext;
-        AzFramework::StringFunc::Path::GetExtension(imageFilePath.c_str(), ext, false);
-        AZStd::to_upper(ext.begin(), ext.end());
-        AZStd::string jobKey = "Image Compile: " + ext;
-
-        if (ext.empty())
-        {
-            return;
-        }
-
-        bool forceOrderOnce = true;
-        AddPossibleDependencies(currentFilePath,
-            imageFilePath,
-            jobKey.c_str(),
-            jobDependencies,
-            sourceDependencies,
-            forceOrderOnce);
     }
-}
+
+    void AddFingerprintForDependency(const AZStd::string& path, AssetBuilderSDK::JobDescriptor& jobDescriptor)
+    {
+        jobDescriptor.m_additionalFingerprintInfo +=
+            AZStd::string::format("|%u:%llu", (AZ::u32)AZ::Crc32(path), AZ::IO::SystemFile::ModificationTime(path.c_str()));
+    }
+
+    AZStd::string GetRelativeSourcePath(const AZStd::string& path)
+    {
+        bool pathFound{};
+        AZStd::string relativePath;
+        AZStd::string rootFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            pathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath, path, relativePath, rootFolder);
+        return relativePath;
+    }
+} // namespace AZ::RPI::MaterialBuilderUtils

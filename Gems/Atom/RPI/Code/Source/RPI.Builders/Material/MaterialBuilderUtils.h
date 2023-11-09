@@ -16,34 +16,45 @@ namespace AZ
     {
         namespace MaterialBuilderUtils
         {
-
-            //! Adds all relevant dependencies for a referenced source file, considering that the path might be relative to the original file location or a full asset path.
-            //! This can include both source dependencies and a single job dependency, but will include only source dependencies if the file is not found.
-            //! Note the AssetBuilderSDK::JobDependency::m_platformIdentifier will not be set by this function. The calling code must set this value before passing back
-            //! to the AssetBuilderSDK::CreateJobsResponse.
-            //! @param currentFilePath The path of the .material or .materialtype file being processed
-            //! @param referencedParentPath The path to the referenced file as it appears in the current file
+            //! Resolves paths to source files, registers job dependencies, and updates the job fingerprint
+            //! @param originatingSourceFilePath The path of the .material or .materialtype file being processed
+            //! @param referencedSourceFilePath The path to the referenced file as it appears in the current file
+            //! @param response Used to update source dependencies
+            //! @param jobDescriptor Used to update job dependencies
             //! @param jobKey The job key for the job that is expected to process the referenced file
-            //! @param jobDependencies Dependencies may be added to this list
-            //! @param sourceDependencies Dependencies may be added to this list
-            //! @param forceOrderOnce If true, any job dependencies will use JobDependencyType::OrderOnce. Use this if the builder will only ever need to get the AssetId
-            //!                       of the referenced file but will not need to load the asset.
+            //! @param jobDependencyType Assigns the job dependency type for any added dependencies.
+            //! @param productSubIds Sub ids used to filter which product dependencies cause the job to be reprocessed. This should default
+            //! to an empty container so that all nested dependencies cause the job to be reprocessed. Leaving it empty results in the ideal
+            //! propagation and ordering for shaders and materials, where materials always get reprocessed last. However, this causes issues
+            //! if the platform ID is something other than PC. For example, if platform ID is set to server the asset system or streamer
+            //! will fail to correctly resolve products generated from intermediate assets with a correct asset id.
+            //! @param platformId Specific platform identifier for any added job dependencies
             void AddPossibleDependencies(
-                const AZStd::string& currentFilePath,
-                const AZStd::string& referencedParentPath,
-                const char* jobKey,
-                AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies,
-                bool forceOrderOnce = false,
-                AZStd::optional<AZ::u32> productSubId = AZStd::nullopt);
+                const AZStd::string& originatingSourceFilePath,
+                const AZStd::string& referencedSourceFilePath,
+                AssetBuilderSDK::CreateJobsResponse& response,
+                AssetBuilderSDK::JobDescriptor& jobDescriptor,
+                const AZStd::string& jobKey,
+                const AssetBuilderSDK::JobDependencyType jobDependencyType = AssetBuilderSDK::JobDependencyType::Order,
+                const AZStd::vector<AZ::u32>& productSubIds = { 0 },
+                const AZStd::string& platformId = {});
 
-
+            //! Resolve potential paths and add source and job dependencies for image assets
+            //! @param originatingSourceFilePath The path of the .material or .materialtype file being processed
+            //! @param referencedSourceFilePath The path to the referenced file as it appears in the current file
+            //! @param response Used to update source dependencies
+            //! @param jobDescriptor Used to update job dependencies
             void AddPossibleImageDependencies(
-                const AZStd::string& currentFilePath,
-                const AZStd::string& imageFilePath,
-                AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
-                AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies);
-        }
+                const AZStd::string& originatingSourceFilePath,
+                const AZStd::string& referencedSourceFilePath,
+                AssetBuilderSDK::CreateJobsResponse& response,
+                AssetBuilderSDK::JobDescriptor& jobDescriptor);
 
+            //! Append a fingerprint value to the job descriptor using the file modification time of the specified file path
+            void AddFingerprintForDependency(const AZStd::string& path, AssetBuilderSDK::JobDescriptor& jobDescriptor);
+
+            //! Generate a relative path from an absolute path
+            AZStd::string GetRelativeSourcePath(const AZStd::string& path);
+        } // namespace MaterialBuilderUtils
     } // namespace RPI
 } // namespace AZ

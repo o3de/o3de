@@ -24,7 +24,7 @@ namespace AZ
         Data::Instance<BufferPool> BufferPool::FindOrCreate(const Data::Asset<ResourcePoolAsset>& resourcePoolAsset)
         {
             return Data::InstanceDatabase<BufferPool>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(resourcePoolAsset.GetId()),
+                Data::InstanceId::CreateFromAsset(resourcePoolAsset),
                 resourcePoolAsset);
         }
 

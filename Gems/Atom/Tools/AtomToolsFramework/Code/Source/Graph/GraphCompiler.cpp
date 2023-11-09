@@ -69,29 +69,21 @@ namespace AtomToolsFramework
         {
         case State::Idle:
             ReportStatus(AZStd::string::format("%s (Idle)", GetGraphPath().c_str()));
-            m_graph.reset();
-            m_graphName.clear();
-            m_graphPath.clear();
-            m_generatedFiles.clear();
             break;
         case State::Compiling:
             ReportStatus(AZStd::string::format("%s (Compiling)", GetGraphPath().c_str()));
-            m_generatedFiles.clear();
             break;
         case State::Processing:
             ReportStatus(AZStd::string::format("%s (Processing)", GetGraphPath().c_str()));
             break;
         case State::Complete:
             ReportStatus(AZStd::string::format("%s (Complete)", GetGraphPath().c_str()));
-            m_graph.reset();
             break;
         case State::Failed:
             ReportStatus(AZStd::string::format("%s (Failed)", GetGraphPath().c_str()));
-            m_graph.reset();
             break;
         case State::Canceled:
             ReportStatus(AZStd::string::format("%s (Cancelled)", GetGraphPath().c_str()));
-            m_graph.reset();
             break;
         }
 
@@ -142,7 +134,7 @@ namespace AtomToolsFramework
         m_graph = graph;
         m_graphName = graphName;
         m_graphPath = graphPath;
-        SetState(State::Compiling);
+        m_generatedFiles.clear();
 
         // Skip compilation if there is no graph or this is a template.
         if (!m_graph || m_graphName.empty() || GetGraphPath().empty())
@@ -151,6 +143,7 @@ namespace AtomToolsFramework
             return false;
         }
 
+        SetState(State::Compiling);
         return true;
     }
 
