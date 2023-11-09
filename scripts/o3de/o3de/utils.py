@@ -823,3 +823,22 @@ def remove_link(link:pathlib.PurePath):
                 shutil.rmtree(link, onerror=remove_readonly)
             except shutil.Error as shutil_error:
                 raise common.LmbrCmdError(f'Error trying remove directory {link}: {shutil_error}', shutil_error.errno)
+
+
+BOOLEAN_TRUE_VALUES=('1','t','true','on', 'yes')
+BOOLEAN_FALSE_VALUES=('0', 'f', 'false', 'off', 'no')
+def convert_string_to_boolean(input:str)->bool:
+    """
+    Given a string attempt to convert it
+    :param input:   The string to attempt to convert
+    :return: Boolean representation of the input, otherwise None
+    """
+
+    input_lower = input.lower()
+    if input_lower in BOOLEAN_TRUE_VALUES:
+        return True
+    elif input_lower in BOOLEAN_FALSE_VALUES:
+        return False
+    else:
+        return None
+

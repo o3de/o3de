@@ -276,12 +276,6 @@ def post_build_action(android_app_root: pathlib.Path, project_root:pathlib.Path,
                               apk_assets=apk_assets,
                               copy=copy)
 
-
-
-
-
-
-
 if __name__ == '__main__':
 
     try:
@@ -298,8 +292,6 @@ if __name__ == '__main__':
 
 
         parser.add_argument('--copy', help="Flag to copy assets to the android assets folder instead of creating links",action='store_true')
-
-        print("POST_JAVA_BUILD")
 
         args = parser.parse_args(sys.argv[1:])
 

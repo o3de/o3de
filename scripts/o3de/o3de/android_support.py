@@ -58,8 +58,8 @@ else:
 
 ASSET_MODE_LOOSE = 'LOOSE'
 ASSET_MODE_PAK = 'PAK'
-ASSET_MODE_VFS = 'VFS'
-ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK, ASSET_MODE_VFS]
+ASSET_MODE_VFS = 'VFS'  # Future Support
+ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK]
 
 BUILD_CONFIGURATIONS = ['Debug', 'Profile', 'Release']
 ANDROID_ARCH = 'arm64-v8a'
@@ -73,7 +73,9 @@ DEFAULT_ANDROID_SETTINGS = [
     ('ndk_version', '25.*'),
     ('native_build_path', 'o3de'),
     ('android_gradle_plugin', '8.1.0'),
-    ('platform_sdk_api_level', '33')
+    ('platform_sdk_api_level', '31'),
+    ('monolithic_build', 'True'),
+    ('strip_debug', 'True')
 ]
 
 """
@@ -173,7 +175,7 @@ def get_android_gradle_plugin_requirements(requested_agp_version:str) -> Android
         for agp_version in version_set:
             if agp_version == requested_agp_version:
                 return AndroidGradlePluginRequirements(requested_agp_version, compat_grid)
-    raise AndroidToolError(f"Unrecognized gradle version {requested_agp_version}. ")
+    raise AndroidToolError(f"Unrecognized/unsupported android gradle plugin version {requested_agp_version} specified. ")
 
 
 def resolve_project_name_and_path(starting_path:str) -> Path:
@@ -975,11 +977,10 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
     process{config}MainManifest.dependsOn syncLYLayoutMode{config}
 
     syncLYLayoutMode{config}.mustRunAfter {{
-        tasks.findAll {{ task->task.name.contains('merge{config}NativeLibs') }}
+        tasks.findAll {{ task->task.name.contains('strip{config}DebugSymbols') }}
     }}
 
 """
-
 
 CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR = """
      task copyRegistryFolder{config}(type: Copy) {{
@@ -1247,7 +1248,7 @@ class AndroidProjectGenerator(object):
                  android_build_dir, android_sdk_path, android_build_tool_version, android_platform_sdk_api_level, android_ndk_package,
                  project_name, project_path, project_general_settings, project_android_settings, cmake_version, cmake_path, gradle_path, gradle_version,
                  android_gradle_plugin_version, ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path,
-                 vulkan_validation_path, extra_cmake_configure_args, monolithic_build=True, overwrite_existing=True, oculus_project=False):
+                 vulkan_validation_path, extra_cmake_configure_args, monolithic_build=True, strip_debug_symbols=False, overwrite_existing=True, oculus_project=False):
 
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
@@ -1304,11 +1305,9 @@ class AndroidProjectGenerator(object):
         self.gradle_plugin_version = android_gradle_plugin_version
         self.ninja_path = ninja_path
         self.is_monolithic_build = monolithic_build
-
-
+        self.strip_debug_symbols = strip_debug_symbols
 
         self.android_project_builder_path = self.engine_root / 'Code/Tools/Android/ProjectBuilder'
-
 
         self.include_assets_in_apk = include_assets_in_apk
 
@@ -1575,11 +1574,15 @@ class AndroidProjectGenerator(object):
                 f'"-S{template_project_path}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
                 f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_android.cmake"',
-                '"-DLY_DISABLE_TEST_MODULES=ON"'
+                '"-DLY_DISABLE_TEST_MODULES=ON"',
+
             ]
 
             if self.vulkan_validation_path:
                 cmake_argument_list.append(f'"-DLY_ANDROID_VULKAN_VALIDATION_PATH={pathlib.PurePath(self.vulkan_validation_path).as_posix()}"')
+
+            if self.strip_debug_symbols:
+                cmake_argument_list.append('"-DLY_STRIP_DEBUG_SYMBOLS=ON"')
 
             cmake_argument_list.extend([
                 f'"-DANDROID_NATIVE_API_LEVEL={self.android_platform_sdk_api_level}"',

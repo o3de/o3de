@@ -167,8 +167,6 @@ def generate_android_project(args: argparse) -> int:
         # Validate ninja
         ninja_path, ninja_version = android_support.validate_ninja(android_config)
 
-        # Validate the engine path
-
         # Validate the versions of gradle and ninja against the configured version of the android gradle plugin
         android_gradle_plugin_ver, _ = android_config.get_value('android_gradle_plugin')
         assert android_gradle_plugin_ver, "Missing 'android_gradle_plugin' from .android_settings"
@@ -195,7 +193,6 @@ def generate_android_project(args: argparse) -> int:
         platform_package_name = f"platforms;android-{android_platform_sdk_api_level}"
         platform_sdk_package = sdk_manager.install_package(package_install_path=platform_package_name,
                                                            package_description=f'Android SDK Platform {android_platform_sdk_api_level}')
-
         logger.info(f"Selected Android Platform API Level : {android_platform_sdk_api_level}")
 
         # Make sure the requested Android NDK version is installed
@@ -215,6 +212,24 @@ def generate_android_project(args: argparse) -> int:
 
         project_path = resolved_project_path
         logger.info(f'Project Path : {project_path}')
+
+        # Monolithic build option
+        if getattr(args, 'monolithic', False):
+            monolithic_build = True
+        elif getattr(args, 'non_monolithic', False):
+            monolithic_build = False
+        else:
+            monolithic_build, _ = android_config.get_value('monolithic_build')
+        logger.info(f"Monolithic build {'enabled' if monolithic_build else 'disabled'}.")
+
+        # Debug stripping option
+        if getattr(args, 'strip_debug', False):
+            strip_debug = True
+        elif getattr(args, 'no_strip_debug', False):
+            strip_debug = False
+        else:
+            strip_debug, _ = android_config.get_value('strip_debug')
+        logger.info(f"Deubg symbol stripping {'enabled' if strip_debug else 'disabled'}.")
 
         # Create the android build folder
         build_folder = pathlib.Path(args.build_dir)
@@ -246,9 +261,6 @@ def generate_android_project(args: argparse) -> int:
         else:
             signing_config = None
 
-        # For now only support monolithic builds
-        monolithic_build = True
-
         apg = android_support.AndroidProjectGenerator(engine_root=engine_path,
                                                       android_build_dir=build_folder,
                                                       android_sdk_path=sdk_manager.get_android_sdk_path(),
@@ -274,6 +286,7 @@ def generate_android_project(args: argparse) -> int:
                                                       extra_cmake_configure_args=None,
                                                       overwrite_existing=True,
                                                       monolithic_build=monolithic_build,
+                                                      strip_debug_symbols=strip_debug,
                                                       oculus_project=False)
         apg.execute()
 
@@ -302,6 +315,9 @@ def add_args(subparsers) -> None:
         project_name = None
         android_config = android_support.AndroidConfig(project_name=None, is_global=True)
 
+    #
+    # Configure the subparser for 'android-configure'
+    #
     android_configure_subparser = subparsers.add_parser('android-configure',
                                                         help='Configure the android platform settings for generating, building, and deploying android projects.',
                                                         epilog='Configure the android platform settings for generating, building, and deploying android projects.')
@@ -321,11 +337,16 @@ def add_args(subparsers) -> None:
     android_configure_subparser.add_argument('--debug',
                                              help=f"Enable debug level logging for this script.",
                                              action='store_true')
-
     android_configure_subparser.set_defaults(func=configure_android_options)
 
+
+    #
+    # Configure the subparser for 'android_generate'
+    #
     android_generate_subparser = subparsers.add_parser('android-generate',
                                                         help='Generate an android/gradle project.')
+
+    # Project Name
     if project_name:
         android_generate_subparser.add_argument('-p', '--project', type=str, required=False,
                                                  help="The name of the registered project to generate the android project for. If not supplied, the current detected project from the "
@@ -333,6 +354,8 @@ def add_args(subparsers) -> None:
     else:
         android_generate_subparser.add_argument('-p', '--project', type=str, required=True,
                                                 help="The name of the registered project to generate the android project for.")
+
+    # Build Directory
     android_generate_subparser.add_argument('-B', '--build-dir', type=str, required=True,
                                              help="The location to write the android project scripts to.")
 
@@ -345,6 +368,7 @@ def add_args(subparsers) -> None:
         android_generate_subparser.add_argument('--platform-sdk-api-level', type=str, required=True,
                                                 help="Specify the platform SDK API Level. Set with key 'platform_sdk_api_level'")
 
+    # NDK Version
     ndk_version, _ = android_config.get_value('ndk_version')
     if ndk_version:
         android_generate_subparser.add_argument('--ndk-version', type=str,
@@ -354,6 +378,7 @@ def add_args(subparsers) -> None:
         android_generate_subparser.add_argument('--ndk-version', type=str, required=True,
                                                 help="Specify the android NDK version. Set with key 'ndk_version'")
 
+    # Signing configuration key store file
     signconfig_store_file, _ = android_config.get_value('signconfig_store_file')
     if signconfig_store_file:
         android_generate_subparser.add_argument('--signconfig-store-file', type=str,
@@ -366,6 +391,7 @@ def add_args(subparsers) -> None:
                                                 help=f"Specify the location of the jks keystore file to enable a signing configuration for this project automatically. "
                                                      f"If set, then a store file password, key alias, and key password will be required as well.")
 
+    # Signing configuration key store alias
     signconfig_key_alias, _ = android_config.get_value('signconfig_key_alias')
     if signconfig_key_alias:
         android_generate_subparser.add_argument('--signconfig-key-alias', type=str,
@@ -376,6 +402,7 @@ def add_args(subparsers) -> None:
         android_generate_subparser.add_argument('--signconfig-key-alias', type=str,
                                                 help="Specify the key alias for the configured jks keystore file if set.")
 
+    # Native build path
     native_build_path, _ = android_config.get_value('native_build_path')
     if not native_build_path:
         native_build_path = '.'
@@ -386,6 +413,7 @@ def add_args(subparsers) -> None:
                                                      f"Default: {native_build_path}",
                                                 default=native_build_path)
 
+    # Asset Mode
     asset_mode, _ = android_config.get_value('asset_mode')
     if asset_mode:
         android_generate_subparser.add_argument('--asset-mode', type=str,
@@ -398,8 +426,33 @@ def add_args(subparsers) -> None:
                                                      f"Default: {android_support.ASSET_MODE_LOOSE}",
                                                 default=android_support.ASSET_MODE_LOOSE)
 
+    # Monolithic or Non-monolithic depends on what is configured in the settings as the default. Whatever is the default, present an option
+    # for the negation of the event
+    monolithic_build, _ = android_config.get_value('monolithic_build')
+    if monolithic_build:
+        android_generate_subparser.add_argument('--non-monolithic',
+                                                help=f"Build the project in non-monolithic mode. (Currently set to build monolithically).",
+                                                action='store_true')
+    else:
+        android_generate_subparser.add_argument('--monolithic',
+                                                help=f"Build the project in monolithic mode. (Currently set to build non-monolithically).",
+                                                action='store_true')
+
+    # Flag to strip the debug symbols
+    strip_debug, _ = android_config.get_value('strip_debug')
+    if strip_debug:
+        android_generate_subparser.add_argument('--no-strip-debug',
+                                                help=f"Don't strip the debug symbols from the built binaries.",
+                                                action='store_true')
+    else:
+        android_generate_subparser.add_argument('--strip-debug',
+                                                help=f"Strip the debug symbols from the built binaries.",
+                                                action='store_true')
+
+
     android_generate_subparser.add_argument('--debug',
                                             help=f"Enable debug level logging for this script.",
+                                            default=True,
                                             action='store_true')
 
     android_generate_subparser.set_defaults(func=generate_android_project)
