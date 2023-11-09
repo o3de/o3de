@@ -701,6 +701,7 @@ namespace AZ
                     AssetBuilderSDK::JobProduct defaultMaterialFileProduct;
                     defaultMaterialFileProduct.m_dependenciesHandled = true; // This product is only for reference, not used at runtime
                     defaultMaterialFileProduct.m_productFileName = defaultMaterialFilePath;
+                    defaultMaterialFileProduct.m_productAssetType = AZ::Uuid::CreateString("{FE8E7122-9E96-44F0-A4E4-F134DD9804E2}"); // Need a unique acid type for this raw JSON file
                     defaultMaterialFileProduct.m_productSubID = (u32)MaterialTypeProductSubId::AllPropertiesMaterialSourceFile;
                     response.m_outputProducts.emplace_back(AZStd::move(defaultMaterialFileProduct));
                 }
