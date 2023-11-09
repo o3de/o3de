@@ -199,6 +199,8 @@ namespace AZ
             virtual void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) = 0;
             //! Set a flag that the ray tracing data needs to be updated, usually after material changes. 
             virtual void SetRayTracingDirty(const MeshHandle& meshHandle) = 0;
+            //! Print out info about the mesh draw packet
+            virtual void PrintDrawPacketInfo(const MeshHandle& meshHandle) = 0;
         };
     } // namespace Render
 } // namespace AZ

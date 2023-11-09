@@ -996,13 +996,57 @@ namespace AZ
             {
                 for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
                 {
-                    RHI::DrawItem* drawItem = meshDrawPacket.GetRHIDrawPacket()->GetDrawItem(drawListTag);
-                    if (drawItem)
+                    RHI::DrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
+
+                    if (drawPacket != nullptr)
                     {
-                        drawItem->m_enabled = enabled;
+                        size_t drawItemCount = drawPacket->GetDrawItemCount();
+
+                        for (size_t idx = 0; idx < drawItemCount; ++idx)
+                        {
+                            if (drawPacket->GetDrawListTag(idx) == drawListTag)
+                            {
+                                drawPacket->GetDrawItem(idx)->m_enabled = enabled;
+                            }
+                        }
                     }
                 }
             }
+        }
+
+        void MeshFeatureProcessor::PrintDrawPacketInfo(const MeshHandle& meshHandle)
+        {
+            AZStd::string stringOutput = "\n------- MESH INFO -------\n";
+
+            AZ::RPI::MeshDrawPacketLods& drawPacketListByLod = meshHandle.IsValid() && !r_meshInstancingEnabled ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
+
+            u32 lodCounter = 0;
+            for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
+            {
+                stringOutput += AZStd::string::format("--- Mesh Lod %zu ---\n", lodCounter++);
+                u32 drawPacketCounter = 0;
+                for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
+                {
+                    RHI::DrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
+                    if (drawPacket)
+                    {
+                        size_t numDrawItems = drawPacket->GetDrawItemCount();
+                        stringOutput += AZStd::string::format("-- Draw Packet %zu (%zu Draw Items) --\n", drawPacketCounter++, numDrawItems);
+
+                        for (size_t drawItemIdx = 0; drawItemIdx < numDrawItems; ++drawItemIdx)
+                        {
+                            RHI::DrawItem* drawItem = drawPacket->GetDrawItem(drawItemIdx);
+                            RHI::DrawListTag tag = drawPacket->GetDrawListTag(drawItemIdx);
+                            stringOutput += AZStd::string::format("Item %zu | ", drawItemIdx);
+                            stringOutput += drawItem->m_enabled ? "Enabled  | " : "Disabled | ";
+                            stringOutput += AZStd::string::format("%s Tag\n", RHI::GetDrawListName(tag).GetCStr());
+                        }
+
+                    }
+                }
+            }
+            stringOutput += "\n";
+            AZ_Printf("MeshFeatureProcessor", stringOutput.c_str());
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::CloneMesh(const MeshHandle& meshHandle)

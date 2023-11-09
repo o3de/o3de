@@ -136,7 +136,7 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment, u32 imageArraySlice)
+        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment, RenderPipeline* previewOutputPipeline, u32 imageArraySlice)
         {
             if (passAttachment->GetAttachmentType() != RHI::AttachmentType::Image)
             {
@@ -178,7 +178,7 @@ namespace AZ
             // Set the output of this pass to write to the pipeline output
             if (!m_outputColorAttachment)
             {
-                RenderPipeline* pipeline = pass->GetRenderPipeline();
+                RenderPipeline* pipeline = previewOutputPipeline ? previewOutputPipeline : pass->GetRenderPipeline();
                 if (pipeline)
                 {
                     Pass* pipelinePass = pipeline->GetRootPass().get();
