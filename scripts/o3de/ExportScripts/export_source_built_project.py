@@ -110,6 +110,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
         exp.build_export_toolchain(ctx=ctx,
                                    tools_build_path=tools_build_path,
                                    engine_centric=engine_centric,
+                                   tool_config=tool_config,
                                    logger=logger)
 
     # Build the requested game launcher types (if any)
@@ -128,12 +129,14 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                engine_centric=engine_centric,
                                launcher_types=launcher_type,
                                allow_registry_overrides=allow_registry_overrides,
+                               tool_config=tool_config,
                                logger=logger)
 
     # Optionally build the assets
     if should_build_all_assets:
         asset_processor_path = exp.get_asset_processor_batch_path(tools_build_path=tools_build_path,
-                                                                  using_installer_sdk=is_installer_sdk, 
+                                                                  using_installer_sdk=is_installer_sdk,
+                                                                  tool_config=tool_config,
                                                                   required=True)
         logger.info(f"Using '{asset_processor_path}' to process the assets.")
         exp.build_assets(ctx=ctx,
@@ -141,11 +144,13 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                          engine_centric=engine_centric,
                          fail_on_ap_errors=fail_on_asset_errors,
                          using_installer_sdk=is_installer_sdk,
+                         tool_config=tool_config,
                          logger=logger)
 
     # Generate the bundle
     asset_bundler_path = exp.get_asset_bundler_batch_path(tools_build_path=tools_build_path,
                                                           using_installer_sdk=is_installer_sdk,
+                                                          tool_config=tool_config,
                                                           required=True)
     logger.info(f"Using '{asset_bundler_path}' to bundle the assets.")
     expected_bundles_path = exp.bundle_assets(ctx=ctx,
@@ -156,6 +161,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                               engine_centric=engine_centric,
                                               asset_bundling_path=asset_bundling_path,
                                               using_installer_sdk=is_installer_sdk,
+                                              tool_config=tool_config,
                                               max_bundle_size=max_bundle_size)
 
     # Prepare the different layouts based on the desired launcher types

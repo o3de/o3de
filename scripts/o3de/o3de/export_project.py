@@ -423,6 +423,7 @@ def build_assets(ctx: O3DEScriptExportContext,
                  engine_centric: bool,
                  fail_on_ap_errors: bool,
                  using_installer_sdk: bool = False,
+                 tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                  logger: logging.Logger = None) -> int:
     """
     Build the assets for the project
@@ -430,12 +431,13 @@ def build_assets(ctx: O3DEScriptExportContext,
     @param tools_build_path:    The tools (cmake) build path to locate AssetProcessorBatch
     @param fail_on_ap_errors:   Option to fail the whole process if an error occurs during asset processing
     @param using_installer_sdk: Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
+    @param tool_config:         The build configuration to refer to for tool binaries
     @param logger:              Optional Logger
     @return: None
     """
 
     # Make sure `AssetProcessorBatch` is available
-    asset_processor_batch_path = get_asset_processor_batch_path(tools_build_path, using_installer_sdk, required=True)
+    asset_processor_batch_path = get_asset_processor_batch_path(tools_build_path, using_installer_sdk, tool_config=tool_config, required=True)
     if not asset_processor_batch_path.exists():
         raise ExportProjectError("Missing AssetProcessorBatch. The pre-requisite tools must be built first.")
 
@@ -624,6 +626,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                   engine_centric: bool,
                   using_installer_sdk: bool = False,
                   asset_bundling_path: pathlib.Path | None = None,
+                  tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                   max_bundle_size: int = 2048) -> pathlib.Path:
     """
     Execute the 'bundle assets' phase of the export
@@ -635,11 +638,12 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     @param tools_build_path:         The path to the tools cmake build project
     @param using_installer_sdk:      Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
     @param asset_bundling_path:      The path to use to write all the intermediate and final artifacts from the bundling process
+    @param tool_config:              The build configuration to refer to for tool binaries
     @param max_bundle_size:          The size limit to put on the bundle
     @return: The path to the bundle
     """
 
-    asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, using_installer_sdk, required=True)
+    asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, using_installer_sdk, tool_config=tool_config, required=True)
     asset_list_path = asset_bundling_path / 'AssetLists'
 
     game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
