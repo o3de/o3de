@@ -346,13 +346,13 @@ def is_sdk_engine(engine_name:str = None, engine_path:str or pathlib.Path = None
         return engine_json_data.get('sdk_engine', False)
 
     if engine_path:
-        logger.error('Failed to retrieve engine json data for the engine at '
+        logger.warning('Failed to retrieve engine json data for the engine at '
                      f'"{engine_path}". Treating engine as source engine.')
     elif engine_name:
-        logger.error('Failed to retrieve  engine json data for registered engine '
+        logger.warning('Failed to retrieve engine json data for registered engine '
                      f'"{engine_name}". Treating engine as source engine.')
     else:
-        logger.error('Failed to retrieve engine json data as neither an engine name nor path were given.'
+        logger.warning('Failed to retrieve engine json data as neither an engine name nor path were given.'
                      'Treating engine as source engine')
     return False
 
