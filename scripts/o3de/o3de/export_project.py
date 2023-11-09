@@ -376,19 +376,21 @@ def add_args(subparsers) -> None:
 
 def get_asset_processor_batch_path(tools_build_path: pathlib.Path,
                                    using_installer_sdk: bool = False,
+                                   tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                                    required: bool = False) -> pathlib.Path:
     """
     Get the expected path to the asset processor tool
 
     @param tools_build_path:    The tools (cmake) build path to locate AssetProcessorBatch
     @param using_installer_sdk: Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
+    @param tool_config:         The build configuration to refer to for tool binaries
     @param required:            If true, check if the asset processor actually exists on file at the expected location, and raise an error if not
     @return: Path to the asset processor tool
     """
     if using_installer_sdk:
         asset_processor_batch_path = tools_build_path / f'AssetProcessorBatch{EXECUTABLE_EXTENSION}'
     else:
-        asset_processor_batch_path = tools_build_path / f'bin/profile/AssetProcessorBatch{EXECUTABLE_EXTENSION}'
+        asset_processor_batch_path = tools_build_path / f'bin/{tool_config}/AssetProcessorBatch{EXECUTABLE_EXTENSION}'
     if required and not asset_processor_batch_path.is_file():
         raise ExportProjectError(f"Missing the 'AssetProcessorBatch' tool, expected at '{asset_processor_batch_path}'")
     return asset_processor_batch_path
@@ -396,19 +398,21 @@ def get_asset_processor_batch_path(tools_build_path: pathlib.Path,
 
 def get_asset_bundler_batch_path(tools_build_path: pathlib.Path,
                                  using_installer_sdk: bool = False,
+                                 tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                                  required: bool = False) -> pathlib.Path:
     """
     Get the expected path to the asset bundler tool
 
     @param tools_build_path:    The tools (cmake) build path to locate AssetBundlerBatch
     @param using_installer_sdk: Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
+    @param tool_config:         The build configuration to refer to for tool binaries
     @param required:            If true, check if the asset bundler actually exists on file at the expected location, and raise an error if not
     @return: Path to the asset bundler tool
     """
     if using_installer_sdk:
         asset_bundler_batch_path = tools_build_path / f'AssetBundlerBatch{EXECUTABLE_EXTENSION}'
     else:
-        asset_bundler_batch_path = tools_build_path / f'bin/profile/AssetBundlerBatch{EXECUTABLE_EXTENSION}'
+        asset_bundler_batch_path = tools_build_path / f'bin/{tool_config}/AssetBundlerBatch{EXECUTABLE_EXTENSION}'
     if required and not asset_bundler_batch_path.is_file():
         raise ExportProjectError(f"Missing the 'AssetBundlerBatch' tool, expected at '{asset_bundler_batch_path}'")
     return asset_bundler_batch_path
@@ -456,6 +460,7 @@ def build_assets(ctx: O3DEScriptExportContext,
 def build_export_toolchain(ctx: O3DEScriptExportContext,
                            tools_build_path: pathlib.Path,
                            engine_centric: bool,
+                           tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                            logger: logging.Logger = None) -> None:
     """
     Build (or rebuild) the export tool chain (AssetProcessorBatch and AssetBundlerBatch)
@@ -463,6 +468,7 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
     @param ctx:                                 Export Context
     @param tools_build_path:                    The tools (cmake) build path to create the build project for the tools
     @param engine_centric:                      Option to generate/build an engine-centric workflow
+    @param tool_config:                         The build configuration to refer to for tool binaries
     @param logger:                              Optional Logger
     @return: None
     """
@@ -481,7 +487,7 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
     if CMAKE_GENERATOR_OPTIONS:
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
     if not CMAKE_MULTI_CONFIGURATION_GENERATOR:
-        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
+        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={tool_config}'])
     if engine_centric:
         cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path}'])
     if ctx.cmake_additional_configure_args:
@@ -496,7 +502,7 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
     cmake_build_command = ["cmake", "--build", tools_build_path]
 
     if CMAKE_MULTI_CONFIGURATION_GENERATOR:
-        cmake_build_command.extend(["--config", PREREQUISITE_TOOL_BUILD_CONFIG])
+        cmake_build_command.extend(["--config", tool_config])
 
     cmake_build_command.extend(["--target", "AssetProcessorBatch", "AssetBundlerBatch"])
 
@@ -532,6 +538,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        engine_centric: bool,
                        launcher_types: int,
                        allow_registry_overrides: bool,
+                       tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                        logger: logging.Logger = None) -> None:
     """
     Build the launchers for the project (game, server, unified)
@@ -543,6 +550,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     @additional_cmake_configure_options:List of additional configure arguments to pass to cmake during the cmake project generation process
     @param launcher_types:              The launcher type options (bit mask from the LauncherType enum) to specify which launcher types to build
     @param allow_registry_overrides:    Custom Flag argument for 'DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES' to pass down to the project generation
+    @param tool_config:                 The build configuration to refer to for tool binaries
     @param logger:                      Optional Logger
     @return: None
     """
@@ -566,7 +574,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     if GENERATOR:
         cmake_configure_command.extend(["-G", GENERATOR])
     if not CMAKE_MULTI_CONFIGURATION_GENERATOR:
-        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
+        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={tool_config}'])
     if CMAKE_GENERATOR_OPTIONS:
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
     if engine_centric:
