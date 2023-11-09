@@ -335,7 +335,7 @@ namespace ShaderManagementConsole
             AZ_Error(
                 "GetFullSourcePathFromRelativeProductPath",
                 false,
-                "Failed to get full sorece path for relative product path %s.",
+                "Failed to get full source path for relative product path %s.",
                 relativeProductPath.c_str());
         }
 

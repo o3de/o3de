@@ -228,9 +228,10 @@ namespace AZ::RHI
     }
 
     bool ExecuteShaderCompiler(const AZStd::string& executablePath,
-                                const AZStd::string& parameters,
-                                const AZStd::string& shaderSourcePathForDebug,
-                                const char* toolNameForLog)
+                               const AZStd::string& parameters,
+                               const AZStd::string& shaderSourcePathForDebug,
+                               const AZStd::string& tempFolder,
+                               const char* toolNameForLog)
     {
         AZStd::string executableAbsolutePath;
         if (AzFramework::StringFunc::Path::IsRelative(executablePath.c_str()))
@@ -368,7 +369,15 @@ namespace AZ::RHI
         profilingEntry.m_executablePath = executablePath;
         profilingEntry.m_parameters = parameters;
         profilingEntry.m_elapsedTimeSeconds = elapsedTimeSeconds;
-        WriteProfilingEntryToLog(shaderSourcePathForDebug, profilingEntry);
+        AZStd::string shaderSourceArg = shaderSourcePathForDebug;
+        AZStd::string shaderSourceFolder;
+        StringFunc::Path::GetFileName(shaderSourceArg.c_str(), shaderSourceFolder);
+        if (StringFunc::Contains(shaderSourceFolder, "Cache"))
+        {
+            AZStd::string shaderFileNameWithMutatedFolder = BuildFileNameWithExtension(shaderSourcePathForDebug, tempFolder, "");
+            shaderSourceArg = shaderFileNameWithMutatedFolder;
+        }
+        WriteProfilingEntryToLog(shaderSourceArg, profilingEntry);
 
         return true;
     }
@@ -480,8 +489,8 @@ namespace AZ::RHI
     }
 
     AZStd::string BuildFileNameWithExtension(const AZStd::string& shaderSourceFile,
-                                                                const AZStd::string& tempFolder,
-                                                                const char* outputExtension)
+                                             const AZStd::string& tempFolder,
+                                             const char* outputExtension)
     {
         AZStd::string outputFile;
         AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), outputFile);
