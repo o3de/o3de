@@ -1,10 +1,10 @@
-#
+# {BEGIN_LICENSE}
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
+# {END_LICENSE}
 
 # Query the gem name from the gem.json file if possible
 # otherwise fallback to using ${Name}
@@ -19,6 +19,10 @@ if (NOT gem_path)
 endif()
 
 set(gem_json ${gem_path}/gem.json)
+
+# Read the version field from the gem.json
+set(gem_version, "0.0.0")
+o3de_read_json_key(gem_version ${gem_json} "version")
 
 o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
 

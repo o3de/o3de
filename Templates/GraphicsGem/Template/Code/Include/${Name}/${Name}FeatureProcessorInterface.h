@@ -11,18 +11,18 @@
 #include <AzCore/base.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name};
+    class ${SanitizedCppName};
 
-    using ${Name}Handle = AZStd::shared_ptr<${Name}>;
+    using ${SanitizedCppName}Handle = AZStd::shared_ptr<${SanitizedCppName}>;
 
     // ${Name}FeatureProcessorInterface provides an interface to the feature processor for code outside of Atom
-    class ${Name}FeatureProcessorInterface
+    class ${SanitizedCppName}FeatureProcessorInterface
         : public AZ::RPI::FeatureProcessor
     {
     public:
-        AZ_RTTI(${Name}FeatureProcessorInterface, "{${Random_Uuid}}", AZ::RPI::FeatureProcessor);
+        AZ_RTTI(${SanitizedCppName}FeatureProcessorInterface, "{${Random_Uuid}}", AZ::RPI::FeatureProcessor);
 
     };
 }
