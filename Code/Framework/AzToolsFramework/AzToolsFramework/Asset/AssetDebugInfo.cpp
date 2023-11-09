@@ -282,7 +282,7 @@ namespace AzToolsFramework
                 // We are only reflecting the human readable string here because we do not plan on loading this file type
                 // into memory at this time, and this is the easiest way for our customers to read this info
                 ->Field("humanReadableString", &AssetFileDebugInfoList::m_humanReadableString)
-                ->Field("invalidAssetHumanReadableString", &AssetFileDebugInfoList::m_humanReadableString);
+                ->Field("invalidAssetHumanReadableString", &AssetFileDebugInfoList::m_invalidAssetHumanReadableString);
         }
     }
 
