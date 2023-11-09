@@ -22,6 +22,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               output_path: pathlib.Path,
                               should_build_tools: bool,
                               build_config: str,
+                              tool_config: str,
                               seedlist_paths: List[pathlib.Path],
                               seedfile_paths: List[pathlib.Path],
                               level_names: List[str],
@@ -51,6 +52,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param output_path:                             The base output path of the exported package(s)
     :param should_build_tools:                      Option to build the export process dependent tools (AssetProcessor, AssetBundlerBatch, and dependencies)
     :param build_config:                            The build configuration to use for the export package launchers
+    :param tool_config:                             The build configuration to refer to for tool binaries
     :param seedlist_paths:                          List of seed list files to optionally include in the asset bundling process
     :param seedfile_paths:                          List of seed files to optionally include in the asset bundling process. These can be individual O3DE assets, such as levels or prefabs.
     :param level_names:                             List of individual level names. These are assumed to follow standard O3DE level convention, and will be used in the asset bundler.
@@ -83,7 +85,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     default_base_build_path = ctx.engine_path / 'build' if engine_centric else ctx.project_path / 'build'
     if not tools_build_path:
         if is_installer_sdk:
-            tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / 'profile/Default'
+            tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / tool_config / 'Default'
         else:
             tools_build_path = default_base_build_path / 'tools'
     if not launcher_build_path:
@@ -97,7 +99,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     
     # Convert level names into seed files that the asset bundler can utilize for packaging
     for level in level_names:
-        seedfile_paths.append(str(pathlib.PurePath('levels') / level.lower() / (level.lower() + ".spawnable")))
+        seedfile_paths.append(ctx.project_path / 'levels' / level.lower() / (level.lower() + ".spawnable"))
 
     # Make sure there are no running processes for the current project before continuing
     exp.kill_existing_processes(ctx.project_name)
@@ -207,6 +209,8 @@ if "o3de_context" in globals():
         parser.add_argument('-out', '--output-path', type=pathlib.Path, required=True, help='Path that describes the final resulting Release Directory path location.')
         parser.add_argument('-cfg', '--config', type=str, default='profile', choices=['release', 'profile'],
                             help='The CMake build configuration to use when building project binaries.  Tool binaries built with this script will always be built with the profile configuration.')
+        parser.add_argument('-tcfg', '--tool-config', type=str, default='profile', choices=['release', 'profile', 'debug'],
+                            help='The CMake build configuration to use when building tool binaries.')
         parser.add_argument('-a', '--archive-output',  type=str,
                             help="Option to create a compressed archive the output. "
                                  "Specify the format of archive to create from the output directory. If 'none' specified, no archiving will occur.",
@@ -265,6 +269,7 @@ if "o3de_context" in globals():
                                   output_path=args.output_path,
                                   should_build_tools=args.build_tools,
                                   build_config=args.config,
+                                  tool_config=args.tool_config,
                                   seedlist_paths=[] if not args.seedlist_paths else args.seedlist_paths,
                                   seedfile_paths=[] if not args.seedfile_paths else args.seedfile_paths,
                                   level_names=[] if not args.level_names else args.level_names,
