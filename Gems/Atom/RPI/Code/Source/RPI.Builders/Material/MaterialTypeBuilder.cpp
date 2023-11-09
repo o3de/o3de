@@ -44,7 +44,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 44; // Switch from XML to binary assets
+            materialBuilderDescriptor.m_version = 45; // common counter to avoid 'common' intermediate shader files with the same name
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -480,6 +480,8 @@ namespace AZ
             materialTypeSourceData.m_shaderCollection.clear(); 
             materialTypeSourceData.m_pipelineData.clear();
 
+            u32 commonCounter = 0;
+
             // Generate the required shaders
             for (const auto& [shaderTemplate, materialPipelineList] : shaderTemplateReferences)
             {
@@ -494,7 +496,7 @@ namespace AZ
                 else if(materialPipelineList.size() > 1)
                 {
                     // Multiple material pipelines reference the same shader, so it should have a generic common name.
-                    materialPipelineIndicator = PipelineNameForCommonShaders;
+                    materialPipelineIndicator = AZStd::string::format("%s_%zu", PipelineNameForCommonShaders, commonCounter++);
                 }
                 else
                 {
