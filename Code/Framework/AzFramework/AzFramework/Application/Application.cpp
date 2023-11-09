@@ -727,7 +727,7 @@ namespace AzFramework
             char** argV = GetArgV() ? *GetArgV() : nullptr;            
             // This isn't particularly elegant, but check for the user_dir override here.  Needs to be done early so that the aliases
             // can be set correctly
-            if (argC > 2)
+            if (argC > 2 && argV != nullptr)
             {
                 for (int i = 0; i < (argC - 1); i++)
                 {
