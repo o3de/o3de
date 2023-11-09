@@ -238,7 +238,7 @@ namespace AzToolsFramework
                 root.m_assetId = assetDebugInfo->second.m_assetId;
                 BuildNodeTree(assetDebugInfo->second.m_assetId, &root);
                 root.BuildHumanReadableString("", *this, m_invalidAssetHumanReadableString, true);
-                m_invalidAssetHumanReadableString += AZStd::string("\n");
+                m_invalidAssetHumanReadableString += '\n';
             }
         }
     }
