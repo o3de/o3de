@@ -535,7 +535,6 @@ namespace AzToolsFramework
                     if (productDependency.m_assetId.IsValid() && assetIdSet.find(productDependency.m_assetId) == assetIdSet.end())
                     {
                         assetIdSet.insert(productDependency.m_assetId);
-                       
                         AZ::Data::AssetInfo assetInfo = GetAssetInfoById(productDependency.m_assetId, platformIndex, "", m_assetSeedList[idx].m_assetRelativePath);
                         assetsInfoList.emplace_back(AZStd::move(assetInfo));
                     }
