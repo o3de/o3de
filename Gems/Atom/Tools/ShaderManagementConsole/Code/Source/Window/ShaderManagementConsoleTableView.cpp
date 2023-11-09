@@ -439,8 +439,24 @@ namespace ShaderManagementConsole
         m_sortComboBox.addItem(tr("Rank (shader declaration order)"));
         m_sortComboBox.addItem(tr("Cost impact (likely-performance weight, by static-analysis)"));
         m_sortComboBox.setCurrentIndex(2);
+        m_defragVariants.setIcon(QIcon(":/Icons/defrag.svg"));
+        m_defragVariants.setToolTip(tr("Merge duplicated variants, and recompact stable IDs"));
+        connect(&m_defragVariants,
+                &QPushButton::clicked,
+                this,
+                [documentId]() {
+                    AtomToolsFramework::AtomToolsDocumentRequestBus::Event(documentId,
+                        &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::BeginEdit);
+
+                    ShaderManagementConsoleDocumentRequestBus::Event(documentId,
+                        &ShaderManagementConsoleDocumentRequestBus::Events::DefragmentVariantList);
+
+                    AtomToolsFramework::AtomToolsDocumentRequestBus::Event(documentId,
+                        &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::EndEdit);
+                });
         m_subLayout.addWidget(&m_sortLabel);
         m_subLayout.addWidget(&m_sortComboBox);
+        m_subLayout.addWidget(&m_defragVariants);
         m_subLayout.addStretch();
         this->addLayout(&m_subLayout);
         this->addWidget(&m_tableView);
