@@ -217,7 +217,7 @@ namespace AZ::Dom::Utils
         {
             return value.IsNumber();
         }
-        else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
+        else if constexpr (AZStd::is_constructible_v<WrapperType, AZStd::string_view>)
         {
             return value.IsString();
         }
