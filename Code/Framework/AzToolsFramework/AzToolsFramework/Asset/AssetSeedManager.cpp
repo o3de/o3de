@@ -649,7 +649,7 @@ namespace AzToolsFramework
         if (useDebugInfoList)
         {
             debugInfo.BuildHumanReadableString();
-            if (debugInfo.m_invalidFileDebugInfoList.size() > 0)
+            if (!debugInfo.m_invalidFileDebugInfoList.empty())
             {
                 debugInfo.BuildInvalidAssetHumanReadableString();
             }
