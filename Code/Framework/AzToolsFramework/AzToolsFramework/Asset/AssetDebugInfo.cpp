@@ -79,7 +79,7 @@ namespace AzToolsFramework
                     m_assetId.ToString<AZStd::string>().c_str(),
                     sizeString.c_str());
 
-               AZ_Error("Dependency", false, errorText.c_str());
+               AZ_Error("Dependency", false, "%s", errorText.c_str());
             }
 
             for (AZStd::map<AZ::Data::AssetId, DependencyNode*>::iterator leaf = m_leaves.begin(); leaf != m_leaves.end(); ++leaf)
