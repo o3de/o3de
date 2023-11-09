@@ -347,20 +347,14 @@ namespace AzToolsFramework
     }
 
     // Returns the asset info if it exists and is the same for the platform specified by platformIndex
-    AZ::Data::AssetInfo AssetSeedManager::GetAssetInfoById(const AZ::Data::AssetId& assetId, const AzFramework::PlatformId& platformIndex, const AZStd::string& seedListfilePath, const AZStd::string& assetHintPath)
+    AZ::Data::AssetInfo AssetSeedManager::GetAssetInfoById(const AZ::Data::AssetId& assetId, const AzFramework::PlatformId& platformIndex, const AZStd::string& seedListfilePath, const AZStd::string& assetHintPath, AssetFileDebugInfoList* optionalDebugList)
     {
-        if (!seedListfilePath.empty() || !assetHintPath.empty())
-        {
-            AZStd::string errorMessage = AZStd::string::format("Seed List (%s) Asset Hint (%s)", seedListfilePath.c_str(), assetHintPath.c_str());
-            AZ_Error("AssetSeedManager", false, errorMessage.c_str());
-        }
-
         using namespace AzToolsFramework::AssetCatalog;
         AZ::Data::AssetInfo assetInfo;
         PlatformAddressedAssetCatalogRequestBus::EventResult(assetInfo, static_cast<AzFramework::PlatformId>(platformIndex), &PlatformAddressedAssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
         if (!assetInfo.m_assetId.IsValid())
         {
-            AZStd::string errorMessage = AZStd::string::format("Could not find asset with id ( %s ) on platform ( %s ). (%s)", assetId.ToString<AZStd::string>().c_str(), AzFramework::PlatformHelper::GetPlatformName(platformIndex), errorMessage.c_str());
+            AZStd::string errorMessage = AZStd::string::format("Could not find asset with id (%s) on platform (%s)", assetId.ToString<AZStd::string>().c_str(), AzFramework::PlatformHelper::GetPlatformName(platformIndex));
 
             if (!seedListfilePath.empty() || !assetHintPath.empty())
             {
@@ -368,6 +362,11 @@ namespace AzToolsFramework
             }
 
             AZ_Error("AssetSeedManager", false, errorMessage.c_str());
+
+            if (optionalDebugList)
+            {
+                optionalDebugList->m_invalidFileDebugInfoList.push_back(assetId);
+            }
         }
         return assetInfo;
     }
@@ -651,6 +650,10 @@ namespace AzToolsFramework
         if (useDebugInfoList)
         {
             debugInfo.BuildHumanReadableString();
+            if (debugInfo.m_invalidFileDebugInfoList.size() > 0)
+            {
+                debugInfo.BuildInvalidAssetHumanReadableString();
+            }
             return AZ::Utils::SaveObjectToFile(debugFilePath, AZ::DataStream::StreamType::ST_XML, &debugInfo);
         }
 

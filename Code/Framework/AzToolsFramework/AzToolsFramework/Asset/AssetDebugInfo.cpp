@@ -37,7 +37,7 @@ namespace AzToolsFramework
             //!   fonts/vera.fontfamily - {6B62FA48-7032-5B8D-88DB-4EDCF0D500AE}:0
             //!     ui/canvas/start.uicanvas - {E7B190F9-3507-5524-BE05-35C6941B8E26}:0
             //!       [SEED] levels/testdependencieslevel/level.pak - {A89A2DCA-0C7B-5919-B3E0-3F67BFD8AA40}:0
-        void BuildHumanReadableString(const AZStd::string& tabString, AssetFileDebugInfoList& infoList)
+        void BuildHumanReadableString(const AZStd::string& tabString, AssetFileDebugInfoList& infoList, AZStd::string& outputString, bool bLogAsErrors = false)
         {
             AZStd::string fileName = infoList.m_fileDebugInfoList[m_assetId].m_assetRelativePath;
 
@@ -45,27 +45,49 @@ namespace AzToolsFramework
             uint64_t filesize = infoList.m_fileDebugInfoList[m_assetId].m_fileSize;
             AZStd::string sizeString = tabString.empty() ? AZStd::string::format(" - %" PRIu64 " bytes", filesize) : "";
 
-            infoList.m_humanReadableString += tabString;
+            outputString += tabString;
 
             if (m_isCyclicalDependency)
             {
-                infoList.m_humanReadableString += AZStd::string("[CYCLICAL DEPENDENCY] ");
+                outputString += AZStd::string("[CYCLICAL DEPENDENCY] ");
             }
             else if (m_leaves.empty())
             {
-                infoList.m_humanReadableString += AZStd::string("[SEED] ");
+                outputString += AZStd::string("[SEED] ");
             }
 
-            infoList.m_humanReadableString += AZStd::string::format("%s - %s%s\n",
+            outputString += AZStd::string::format("%s - %s%s\n",
                 fileName.c_str(),
                 m_assetId.ToString<AZStd::string>().c_str(),
                 sizeString.c_str());
 
+            if (bLogAsErrors)
+            {
+                AZStd::string errorText;
+
+                if (m_isCyclicalDependency)
+                {
+                    errorText += AZStd::string("[CYCLICAL DEPENDENCY] ");
+                }
+                else if (m_leaves.empty())
+                {
+                    errorText += AZStd::string("[SEED] ");
+                }
+
+               errorText += AZStd::string::format("%s - %s%s",
+                    fileName.c_str(),
+                    m_assetId.ToString<AZStd::string>().c_str(),
+                    sizeString.c_str());
+
+               AZ_Error("Dependency", false, errorText.c_str());
+            }
+
             for (AZStd::map<AZ::Data::AssetId, DependencyNode*>::iterator leaf = m_leaves.begin(); leaf != m_leaves.end(); ++leaf)
             {
-                leaf->second->BuildHumanReadableString(tabString + "  ", infoList);
+                leaf->second->BuildHumanReadableString(tabString + "  ", infoList, outputString, bLogAsErrors);
             }
         }
+
 
         AZ::Data::AssetId m_assetId;
         DependencyNode* m_parent = nullptr;
@@ -198,8 +220,26 @@ namespace AzToolsFramework
             DependencyNode root;
             root.m_assetId = assetDebugInfo->second.m_assetId;
             BuildNodeTree(assetDebugInfo->second.m_assetId, &root);
-            root.BuildHumanReadableString("", *this);
+            root.BuildHumanReadableString("", *this, m_humanReadableString);
             m_humanReadableString += AZStd::string("\n");
+        }
+    }
+    void AssetFileDebugInfoList::BuildInvalidAssetHumanReadableString()
+    {
+        m_invalidAssetHumanReadableString = "\n\nThe following asset references do not exist:\n\n";
+        AZ_Error("AssetSeedManager", false, m_invalidAssetHumanReadableString.c_str());
+
+        for (auto const& assetId : m_invalidFileDebugInfoList)
+        {
+            auto assetDebugInfo = m_fileDebugInfoList.find(assetId);
+            if (assetDebugInfo != m_fileDebugInfoList.end())
+            {
+                DependencyNode root;
+                root.m_assetId = assetDebugInfo->second.m_assetId;
+                BuildNodeTree(assetDebugInfo->second.m_assetId, &root);
+                root.BuildHumanReadableString("", *this, m_invalidAssetHumanReadableString, true);
+                m_invalidAssetHumanReadableString += AZStd::string("\n");
+            }
         }
     }
 
@@ -238,10 +278,11 @@ namespace AzToolsFramework
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<AssetFileDebugInfoList>()
-                ->Version(1)
+                ->Version(2)
                 // We are only reflecting the human readable string here because we do not plan on loading this file type
                 // into memory at this time, and this is the easiest way for our customers to read this info
-                ->Field("humanReadableString", &AssetFileDebugInfoList::m_humanReadableString);
+                ->Field("humanReadableString", &AssetFileDebugInfoList::m_humanReadableString)
+                ->Field("invalidAssetHumanReadableString", &AssetFileDebugInfoList::m_humanReadableString);
         }
     }
 
