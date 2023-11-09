@@ -9,6 +9,7 @@
 import argparse
 import fnmatch
 import glob
+import json
 import logging
 import os
 import pathlib
@@ -718,6 +719,7 @@ def kill_existing_processes(project_name: str):
 
 
 def setup_launcher_layout_directory(project_path: pathlib.Path,
+                                    project_name: str,
                                     asset_platform: str,
                                     launcher_build_path: pathlib.Path,
                                     build_config: str,
@@ -730,6 +732,7 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
     Setup the launcher layout directory for a path
 
     @param project_path:            The base project path
+    @param project_name:            The name of the project
     @param asset_platform:          The desired asset platform
     @param launcher_build_path:     The path where the launcher executables cmake build project was created
     @param build_config:            The build configuration to locate the launcher executables in the cmake build project
@@ -769,6 +772,9 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
     for project_file_pattern in export_layout.project_file_patterns:
         for file in glob.glob(str(pathlib.PurePath(project_path / project_file_pattern))):
             shutil.copy(file, export_layout.output_path)
+    
+    with open(export_layout.output_path / 'project.json', 'w') as project_json_file:
+        json.dump({"project_name": project_name}, project_json_file, ensure_ascii=True)
 
     # Optionally compress the layout directory into an archive if the user requests
     if archive_output_format != "none":

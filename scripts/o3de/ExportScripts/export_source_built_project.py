@@ -73,7 +73,6 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     """
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
-    project_name = manifest.get_project_json_data(project_path=ctx.project_path)['project_name']
 
     # Use a provided logger or get the current system one
     if not logger:
@@ -177,6 +176,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     # Generate the layouts and archive the packages based on the desired launcher types
     for export_layout in export_layouts:
         exp.setup_launcher_layout_directory(project_path=ctx.project_path,
+                                            project_name=ctx.project_name,
                                             asset_platform=selected_platform,
                                             launcher_build_path=launcher_build_path,
                                             build_config=build_config,
