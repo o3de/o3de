@@ -156,7 +156,7 @@ namespace ScriptCanvas
         LogicLibrary::Reflect(reflectContext);
         OperatorsLibrary::Reflect(reflectContext);
 
-#ifndef _RELEASE
+#if !defined(AZ_MONOLITHIC_BUILD)
         UnitTestingLibrary::Reflect(reflectContext);
 #endif
     }
