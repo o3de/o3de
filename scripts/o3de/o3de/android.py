@@ -196,11 +196,14 @@ def generate_android_project(args: argparse) -> int:
         platform_sdk_package = sdk_manager.install_package(package_install_path=platform_package_name,
                                                            package_description=f'Android SDK Platform {android_platform_sdk_api_level}')
 
+        logger.info(f"Selected Android Platform API Level : {android_platform_sdk_api_level}")
+
         # Make sure the requested Android NDK version is installed
         android_ndk_version = args.ndk_version
         ndk_package_name = f"ndk;{android_ndk_version}"
         ndk_package = sdk_manager.install_package(package_install_path=ndk_package_name,
                                                   package_description=f'Android NDK version {android_ndk_version}')
+        logger.info(f"Selected Android NDK Version : {ndk_package.version}")
 
         # Make sure that the android build tools (based on the spec from the android gradle plugin) is installed
         build_tools_package_name = f"build-tools;{sdk_build_tools_version}"
@@ -208,10 +211,10 @@ def generate_android_project(args: argparse) -> int:
                                     package_description=f'Android Build Tools {sdk_build_tools_version}')
 
         engine_path = ENGINE_PATH
-        logger.info(f'Engine Path: {engine_path}')
+        logger.info(f'Engine Path : {engine_path}')
 
         project_path = resolved_project_path
-        logger.info(f'Project Path: {project_path}')
+        logger.info(f'Project Path : {project_path}')
 
         # Create the android build folder
         build_folder = pathlib.Path(args.build_dir)
