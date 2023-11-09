@@ -682,7 +682,7 @@ namespace AZ
             {
                 AZStd::string defaultMaterialFileName;
                 AzFramework::StringFunc::Path::GetFileName(materialTypeSourcePath.c_str(), defaultMaterialFileName);
-                defaultMaterialFileName += "_AllProperties.material";
+                defaultMaterialFileName += "_AllProperties.json";
 
                 AZStd::string defaultMaterialFilePath;
                 AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), defaultMaterialFileName.c_str(), defaultMaterialFilePath, true);
