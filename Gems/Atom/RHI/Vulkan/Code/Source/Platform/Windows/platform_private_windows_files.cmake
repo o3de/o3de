@@ -13,4 +13,5 @@ set(FILES
     RHI/NsightAftermathGpuCrashTracker_Windows.cpp
     RHI/NsightAftermathGpuCrashTracker_Windows.h
     RHI/NsightAftermathHelpers.h
+    ../Common/VisualStudio/Natvis/vulkan.natvis
 )

@@ -26,6 +26,19 @@ namespace AZ
         {
             return m_framebuffer && m_renderPass;
         }
+
+        void RenderPassContext::SetName(const AZ::Name& name)
+        {
+            if (m_renderPass)
+            {
+                m_renderPass->SetName(name);
+            }
+
+            if (m_framebuffer)
+            {
+                m_framebuffer->SetName(name);
+            }
+        }
         
         RenderPassBuilder::RenderPassBuilder(Device& device, uint32_t subpassesCount)
             : m_device(device)
