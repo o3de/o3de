@@ -30,6 +30,7 @@ namespace AZ
             AZStd::vector<RHI::ClearValue> m_clearValues;
 
             bool IsValid() const;
+            void SetName(const AZ::Name& name);
         };
 
         //! Utility class that builds a renderpass and a framebuffer from the

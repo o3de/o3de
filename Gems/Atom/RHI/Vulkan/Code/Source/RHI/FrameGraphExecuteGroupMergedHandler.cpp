@@ -39,6 +39,7 @@ namespace AZ
                 // This will update the m_renderPassContexts with the proper renderpass and framebuffer.
                 RHI::ResultCode result = builder.End(m_renderPassContexts[i]);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                m_renderPassContexts[i].SetName(scope->GetName());
             }
 
             // Set the renderpass contexts.
