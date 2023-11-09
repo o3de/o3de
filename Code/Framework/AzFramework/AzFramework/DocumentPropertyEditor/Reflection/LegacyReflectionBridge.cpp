@@ -1238,7 +1238,7 @@ namespace AZ::Reflection
                         if (name == PropertyEditor::Visibility.GetName())
                         {
                             auto visibilityValue = PropertyEditor::Visibility.DomToValue(
-                                PropertyEditor::Visibility.LegacyAttributeToDomValue(instance.m_address, it->second));
+                                PropertyEditor::Visibility.LegacyAttributeToDomValue(instance, it->second));
 
                             if (visibilityValue.has_value())
                             {
@@ -1262,14 +1262,14 @@ namespace AZ::Reflection
                                 return;
                             }
                             else if (
-                                auto visibilityBoolValue = VisibilityBoolean.DomToValue(
-                                    VisibilityBoolean.LegacyAttributeToDomValue(instance.m_address, it->second)))
+                                auto visibilityBoolValue =
+                                    VisibilityBoolean.DomToValue(VisibilityBoolean.LegacyAttributeToDomValue(instance, it->second)))
                             {
                                 bool isVisible = visibilityBoolValue.value();
                                 visibility = isVisible ? PropertyVisibility::Show : PropertyVisibility::Hide;
                                 return;
                             }
-                            else if (auto genericVisibility = ReadGenericAttributeToDomValue(instance.m_address, it->second))
+                            else if (auto genericVisibility = ReadGenericAttributeToDomValue(instance, it->second))
                             {
                                 // Fallback to generic read if LegacyAttributeToDomValue fails
                                 visibility = PropertyEditor::Visibility.DomToValue(genericVisibility.value()).value();
@@ -1283,7 +1283,7 @@ namespace AZ::Reflection
                         {
                             nodeData.m_disableEditor |=
                                 PropertyEditor::ReadOnly
-                                    .DomToValue(PropertyEditor::ReadOnly.LegacyAttributeToDomValue(instance.m_address, it->second))
+                                    .DomToValue(PropertyEditor::ReadOnly.LegacyAttributeToDomValue(instance, it->second))
                                     .value_or(nodeData.m_disableEditor);
                         }
 
@@ -1294,7 +1294,7 @@ namespace AZ::Reflection
                         {
                             if (attributeValue.IsNull())
                             {
-                                attributeValue = attributeReader.LegacyAttributeToDomValue(instance.m_address, it->second);
+                                attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
                             }
                         };
                         propertyEditorSystem->EnumerateRegisteredAttributes(name, readValue);
@@ -1302,7 +1302,7 @@ namespace AZ::Reflection
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
                         {
-                            attributeValue = ReadGenericAttributeToDomValue(instance.m_address, it->second).value_or(Dom::Value());
+                            attributeValue = ReadGenericAttributeToDomValue(instance, it->second).value_or(Dom::Value());
                         }
 
                         // If we got a valid DOM value, store it.
@@ -1780,9 +1780,9 @@ namespace AZ::Reflection
         }
     }
 
-    AZStd::optional<AZ::Dom::Value> ReadGenericAttributeToDomValue(void* instance, AZ::Attribute* attribute)
+    AZStd::optional<AZ::Dom::Value> ReadGenericAttributeToDomValue(AZ::PointerObject instanceObject, AZ::Attribute* attribute)
     {
-        AZ::Dom::Value result = attribute->GetAsDomValue(instance);
+        AZ::Dom::Value result = attribute->GetAsDomValue(instanceObject);
         if (!result.IsNull())
         {
             return result;
