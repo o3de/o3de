@@ -130,7 +130,7 @@ namespace AZ::Internal
         // is a debug, profile, or release build.
         return static_cast<DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
 #elif AZ_RELEASE_BUILD
-        // By default, if no compile setting was provided, turn allow overrides from the engine, gem and project registry files in release builds.
+        // By default, if no compile setting was provided, allow overrides from the engine, gem and project registry files in release builds.
         return DevelopmentSettingsOverrides::ProjectOnly;
 #else
         // By default, if no compile setting was provided, turn on all overrides in non-release builds.
