@@ -71,9 +71,9 @@ namespace AZ
                 RHI::ImagePoolDescriptor imagePoolDesc;
                 imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead;
 
-                m_probeGridRenderData.m_imagePool = RHI::Factory::Get().CreateImagePool();
+                m_probeGridRenderData.m_imagePool = aznew RHI::MultiDeviceImagePool;
                 m_probeGridRenderData.m_imagePool->SetName(Name("DiffuseProbeGridRenderImageData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(*device, imagePoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(RHI::MultiDevice::AllDevices, imagePoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
 

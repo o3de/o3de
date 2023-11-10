@@ -406,7 +406,7 @@ namespace AZ
                 // add reflection probe data
                 if (mesh.m_reflectionProbe.m_reflectionProbeCubeMap.get())
                 {
-                    materialInfo.m_reflectionProbeCubeMapIndex = mesh.m_reflectionProbe.m_reflectionProbeCubeMap->GetImageView()->GetBindlessReadIndex();
+                    materialInfo.m_reflectionProbeCubeMapIndex = mesh.m_reflectionProbe.m_reflectionProbeCubeMap->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex();
                     if (materialInfo.m_reflectionProbeCubeMapIndex != InvalidIndex)
                     {
                         reflectionProbeModelToWorld3x4.StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorld.data());
@@ -588,7 +588,7 @@ namespace AZ
 
                 // update all of the subMeshes
                 const Data::Instance<RPI::Image>& reflectionProbeCubeMap = reflectionProbe.m_reflectionProbeCubeMap;
-                uint32_t reflectionProbeCubeMapIndex = reflectionProbeCubeMap.get() ? reflectionProbeCubeMap->GetImageView()->GetBindlessReadIndex() : InvalidIndex;
+                uint32_t reflectionProbeCubeMapIndex = reflectionProbeCubeMap.get() ? reflectionProbeCubeMap->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex;
                 Matrix3x4 reflectionProbeModelToWorld3x4 = Matrix3x4::CreateFromTransform(mesh.m_reflectionProbe.m_modelToWorld);
 
                 for (auto& subMeshIndex : mesh.m_subMeshIndices)

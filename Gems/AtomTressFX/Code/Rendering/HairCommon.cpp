@@ -129,11 +129,10 @@ namespace AZ
                 return buffer;
             }
 
-            Data::Instance<RHI::SingleDeviceImagePool> UtilityClass::CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc)
+            Data::Instance<RHI::MultiDeviceImagePool> UtilityClass::CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc)
             {
-                RHI::Ptr<RHI::Device> device = RHI::GetRHIDevice();
-                Data::Instance<RHI::SingleDeviceImagePool> imagePool = RHI::Factory::Get().CreateImagePool();
-                RHI::ResultCode result = imagePool->Init(*device, imagePoolDesc);
+                Data::Instance<RHI::MultiDeviceImagePool> imagePool = aznew RHI::MultiDeviceImagePool;
+                RHI::ResultCode result = imagePool->Init(RHI::MultiDevice::AllDevices, imagePoolDesc);
                 if (result != RHI::ResultCode::Success)
                 {
                     AZ_Error("CreateImagePool", false, "Failed to create or initialize image pool");
@@ -142,10 +141,11 @@ namespace AZ
                 return imagePool;
             }
 
-            Data::Instance<RHI::SingleDeviceImage> UtilityClass::CreateImage2D(RHI::SingleDeviceImagePool* imagePool, RHI::ImageDescriptor& imageDesc)
+            Data::Instance<RHI::MultiDeviceImage> UtilityClass::CreateImage2D(
+                RHI::MultiDeviceImagePool* imagePool, RHI::ImageDescriptor& imageDesc)
             {
-                Data::Instance<RHI::SingleDeviceImage> rhiImage = RHI::Factory::Get().CreateImage();
-                RHI::SingleDeviceImageInitRequest request;
+                Data::Instance<RHI::MultiDeviceImage> rhiImage = aznew RHI::MultiDeviceImage;
+                RHI::MultiDeviceImageInitRequest request;
                 request.m_image = rhiImage.get();
                 request.m_descriptor = imageDesc;
                 RHI::ResultCode result = imagePool->InitImage(request);

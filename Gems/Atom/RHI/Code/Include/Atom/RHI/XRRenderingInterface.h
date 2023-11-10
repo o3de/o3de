@@ -15,7 +15,7 @@
 
 namespace AZ::RHI
 {
-    class SingleDeviceImage;
+    class MultiDeviceImage;
     //! Key for the desired foveated rendering level
     inline constexpr const char* XRFoveatedLevelKey = "/O3DE/Atom/OpenXR/FoveatedLevel";
 
@@ -139,6 +139,6 @@ namespace AZ::RHI
         //! Fills the contents of an image that will be use as a variable shading rate attachment depending
         //! on the requested level of foveted rendering. The image must have the proper format and size for using
         //! as a shading rate attachment.
-        virtual AZ::RHI::ResultCode InitVariableRateShadingImageContent(AZ::RHI::SingleDeviceImage* image, XRFoveatedLevel level) const = 0;
+        virtual AZ::RHI::ResultCode InitVariableRateShadingImageContent(AZ::RHI::MultiDeviceImage* image, XRFoveatedLevel level) const = 0;
     };
 }

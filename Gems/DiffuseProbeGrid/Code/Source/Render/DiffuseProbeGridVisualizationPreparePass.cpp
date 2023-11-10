@@ -218,7 +218,7 @@ namespace AZ
                         AZ::RHI::AttachmentId attachmentId = diffuseProbeGrid->GetProbeDataImageAttachmentId();
                         if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId) == false)
                         {
-                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetProbeDataImage());
+                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(attachmentId, diffuseProbeGrid->GetProbeDataImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
                             AZ_Assert(result == RHI::ResultCode::Success, "Failed to import DiffuseProbeGrid probe data buffer with error %d", result);
                         }
 

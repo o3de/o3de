@@ -943,11 +943,11 @@ namespace AZ
                         Image* image = static_cast<Image*>(attachment->m_importedResource.get());
                         if (currentAttachment == nullptr)
                         {
-                            attachmentDatabase.ImportImage(attachmentId, image->GetRHIImage());
+                            attachmentDatabase.ImportImage(attachmentId, image->GetRHIImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get());
                         }
                         else
                         {
-                            AZ_Assert(currentAttachment->GetResource() == image->GetRHIImage(),
+                            AZ_Assert(currentAttachment->GetResource() == image->GetRHIImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get(),
                                 "Importing image attachment named \"%s\" but a different attachment with the "
                                 "same name already exists in the database.\n", attachmentId.GetCStr());
                         }

@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI/FrameAttachment.h>
-#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/MultiDeviceImage.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <AzCore/Memory/PoolAllocator.h>
 

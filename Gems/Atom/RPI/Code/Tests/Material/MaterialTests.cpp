@@ -204,9 +204,9 @@ namespace UnitTest
             EXPECT_EQ(srgData.GetConstant<Vector4>(srgData.FindShaderInputConstantIndex(Name{ "m_float4" })), Vector4(2.1f, 2.2f, 2.3f, 2.4f));
             EXPECT_EQ(srgData.GetConstant<Color>(srgData.FindShaderInputConstantIndex(Name{ "m_color" })), TransformColor(Color(1.0f, 1.0f, 1.0f, 1.0f), ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg));
 
-            EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_image" }), 0), m_testImage->GetImageView());
+            EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_image" }), 0), m_testImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex));
             EXPECT_EQ(srgData.GetConstant<uint32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_enum" })), 2u);
-            EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_attachmentImage" }), 0), m_testAttachmentImage->GetImageView());
+            EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_attachmentImage" }), 0), m_testAttachmentImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex));
         }
 
         //! Provides write access to private material asset property values, primarily for simulating
@@ -376,7 +376,7 @@ namespace UnitTest
         EXPECT_EQ(srgData.GetConstant<Vector4>(srgData.FindShaderInputConstantIndex(Name{ "m_float4" })), Vector4(12.1f, 12.2f, 12.3f, 12.4f));
         EXPECT_EQ(srgData.GetConstant<Color>(srgData.FindShaderInputConstantIndex(Name{ "m_color" })), TransformColor(Color(0.1f, 0.2f, 0.3f, 0.4f), ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg));
 
-        EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_image" }), 0), otherTestImage->GetImageView());
+        EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_image" }), 0), otherTestImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex));
         EXPECT_EQ(srgData.GetConstant<uint32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_enum" })), 3u);
     }
 

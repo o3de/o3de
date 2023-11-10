@@ -210,7 +210,7 @@ namespace AZ
             {
                 if (m_colorGradingLutEnabled == true && m_blendedColorGradingLut.m_lutImage)
                 {
-                    m_shaderResourceGroup->SetImageView(m_shaderColorGradingLutImageIndex, m_blendedColorGradingLut.m_lutImageView.get());
+                    m_shaderResourceGroup->SetImageView(m_shaderColorGradingLutImageIndex, m_blendedColorGradingLut.m_lutImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
 
                     m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperTypeIndex, m_colorGradingShaperParams.m_type);
                     m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperBiasIndex, m_colorGradingShaperParams.m_bias);

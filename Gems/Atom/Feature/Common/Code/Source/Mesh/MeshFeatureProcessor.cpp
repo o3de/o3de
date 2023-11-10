@@ -2403,7 +2403,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::BaseColor;
-                            subMeshMaterial.m_baseColorImageView = image->GetImageView();
+                            subMeshMaterial.m_baseColorImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                             baseColorImage = image;
                         }
                     }
@@ -2415,7 +2415,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Normal;
-                            subMeshMaterial.m_normalImageView = image->GetImageView();
+                            subMeshMaterial.m_normalImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                         }
                     }
 
@@ -2426,7 +2426,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Metallic;
-                            subMeshMaterial.m_metallicImageView = image->GetImageView();
+                            subMeshMaterial.m_metallicImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                         }
                     }
 
@@ -2437,7 +2437,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Roughness;
-                            subMeshMaterial.m_roughnessImageView = image->GetImageView();
+                            subMeshMaterial.m_roughnessImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                         }
                     }
 
@@ -2448,7 +2448,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMeshMaterial.m_textureFlags |= RayTracingSubMeshTextureFlags::Emissive;
-                            subMeshMaterial.m_emissiveImageView = image->GetImageView();
+                            subMeshMaterial.m_emissiveImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                         }
                     }
 

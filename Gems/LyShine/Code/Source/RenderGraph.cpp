@@ -126,7 +126,7 @@ namespace LyShine
             // Default to white texture
             const AZ::Data::Instance<AZ::RPI::Image>& image = m_textures[i].m_texture ? m_textures[i].m_texture
                 : AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-            const AZ::RHI::SingleDeviceImageView* imageView = image->GetImageView();
+            const auto imageView = image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
 
             if (imageView)
             {
