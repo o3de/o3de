@@ -7,30 +7,29 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/ShaderStageFunction.h>
 #include <Atom/RHI/Device.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/FrameGraphCompiler.h>
+#include <Atom/RHI/FrameGraphExecuter.h>
+#include <Atom/RHI/FrameGraphInterface.h>
+#include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceFence.h>
 #include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
 #include <Atom/RHI/SingleDeviceIndirectBufferWriter.h>
-#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
-#include <Atom/RHI/SingleDeviceSwapChain.h>
-#include <Atom/RHI/SingleDeviceFence.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/SingleDevicePipelineLibrary.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/SingleDeviceQuery.h>
 #include <Atom/RHI/SingleDeviceQueryPool.h>
-#include <Atom/RHI/Scope.h>
-#include <Atom/RHI/FrameGraphCompiler.h>
-#include <Atom/RHI/FrameGraphExecuter.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 #include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
-#include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI.Reflect/ShaderStageFunction.h>
 
 namespace UnitTest
 {
@@ -98,7 +97,10 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
 
         private:
-            void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::SingleDeviceImageSubresourceLayout*, size_t*) const override {}
+            void GetSubresourceLayoutsInternal(
+                const AZ::RHI::ImageSubresourceRange&, AZ::RHI::SingleDeviceImageSubresourceLayout*, size_t*) const override
+            {
+            }
             bool IsStreamableInternal() const override {return true;};
         };
 
@@ -197,7 +199,10 @@ namespace UnitTest
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::ImagePoolDescriptor&) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
             AZ::RHI::ResultCode UpdateImageContentsInternal(const AZ::RHI::SingleDeviceImageUpdateRequest&) override { return AZ::RHI::ResultCode::Success; }
-            AZ::RHI::ResultCode InitImageInternal(const AZ::RHI::SingleDeviceImageInitRequest&) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitImageInternal(const AZ::RHI::SingleDeviceImageInitRequest&) override
+            {
+                return AZ::RHI::ResultCode::Success;
+            }
             void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource&) override {}
         };
 

@@ -13,11 +13,11 @@
 #include <Atom/RHI/SingleDeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
+#include <Atom/RHI/MultiDeviceImagePool.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RHI/SingleDeviceImagePool.h>
 
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 

@@ -12,14 +12,13 @@
 #include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 
 namespace AZ::RHI
 {
     class ImageFrameAttachment;
     class MultiDeviceShaderResourceGroup;
-    class SingleDeviceImageView;
     class MultiDeviceImageView;
-    struct ImageViewDescriptor;
 
     //! MultiDeviceImage represents a collection of MultiDeviceImage Subresources, where each subresource comprises a one to three
     //! dimensional grid of pixels. Images are divided into an array of mip-map chains. A mip map chain is
