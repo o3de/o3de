@@ -75,6 +75,6 @@ namespace AZ::RHI
     RHI::DrawListTagRegistry* GetDrawListTagRegistry();
  
     //! Utility function to get the Name associated with a DrawListTag
-   Name GetDrawListName(DrawListTag drawListTag);
+    Name GetDrawListName(DrawListTag drawListTag);
 }
 

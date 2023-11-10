@@ -1004,6 +1004,7 @@ namespace AZ
 
                         for (size_t idx = 0; idx < drawItemCount; ++idx)
                         {
+                            // Ensure that the draw item belongs to the specified tag
                             if (drawPacket->GetDrawListTag(idx) == drawListTag)
                             {
                                 drawPacket->GetDrawItem(idx)->m_enabled = enabled;
@@ -1023,7 +1024,7 @@ namespace AZ
             u32 lodCounter = 0;
             for (AZ::RPI::MeshDrawPacketList& drawPacketList : drawPacketListByLod)
             {
-                stringOutput += AZStd::string::format("--- Mesh Lod %zu ---\n", lodCounter++);
+                stringOutput += AZStd::string::format("--- Mesh Lod %u ---\n", lodCounter++);
                 u32 drawPacketCounter = 0;
                 for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
                 {
@@ -1031,7 +1032,7 @@ namespace AZ
                     if (drawPacket)
                     {
                         size_t numDrawItems = drawPacket->GetDrawItemCount();
-                        stringOutput += AZStd::string::format("-- Draw Packet %zu (%zu Draw Items) --\n", drawPacketCounter++, numDrawItems);
+                        stringOutput += AZStd::string::format("-- Draw Packet %u (%zu Draw Items) --\n", drawPacketCounter++, numDrawItems);
 
                         for (size_t drawItemIdx = 0; drawItemIdx < numDrawItems; ++drawItemIdx)
                         {

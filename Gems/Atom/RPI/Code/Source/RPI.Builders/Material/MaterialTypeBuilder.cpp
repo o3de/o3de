@@ -473,6 +473,9 @@ namespace AZ
                 else if(materialPipelineList.size() > 1)
                 {
                     // Multiple material pipelines reference the same shader, so it should have a generic common name.
+                    // The common name is appended with an incrementing value to avoid naming conflicts. Naming conflicts
+                    // happen if Pipeline A and Pipeline B include shader X and Pipeline C and Pipeline D include shader Y,
+                    // and X and Y have the same name (for example depth.shader.template).
                     materialPipelineIndicator = AZStd::string::format("%s_%zu", PipelineNameForCommonShaders, commonCounter++);
                 }
                 else
