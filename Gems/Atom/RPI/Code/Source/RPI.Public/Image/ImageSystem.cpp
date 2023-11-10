@@ -20,7 +20,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 
-#include <Atom/RHI/SingleDeviceImagePool.h>
+#include <Atom/RHI/MultiDeviceImagePool.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
@@ -131,12 +131,9 @@ namespace AZ
             assetHandlers.emplace_back(MakeAssetHandler<StreamingImagePoolAssetHandler>());
         }
 
-        void ImageSystem::Init(const ImageSystemDescriptor& desc)
+        void ImageSystem::Init(RHI::MultiDevice::DeviceMask deviceMask, const ImageSystemDescriptor& desc)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             // Register attachment image instance database.
-
             {
                 Data::InstanceHandler<AttachmentImage> handler;
                 handler.m_createFunction = [](Data::AssetData* imageAsset)
@@ -148,9 +145,9 @@ namespace AZ
 
             {
                 Data::InstanceHandler<AttachmentImagePool> handler;
-                handler.m_createFunction = [device](Data::AssetData* poolAsset)
+                handler.m_createFunction = [deviceMask](Data::AssetData* poolAsset)
                 {
-                    return AttachmentImagePool::CreateInternal(*device, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
+                    return AttachmentImagePool::CreateInternal(deviceMask, *(azrtti_cast<ResourcePoolAsset*>(poolAsset)));
                 };
                 Data::InstanceDatabase<AttachmentImagePool>::Create(azrtti_typeid<ResourcePoolAsset>(), handler);
             }
@@ -168,9 +165,9 @@ namespace AZ
 
             {
                 Data::InstanceHandler<StreamingImagePool> handler;
-                handler.m_createFunction = [this, device](Data::AssetData* poolAsset)
+                handler.m_createFunction = [this, deviceMask](Data::AssetData* poolAsset)
                 {
-                    Data::Instance<StreamingImagePool> instance = StreamingImagePool::CreateInternal(*device, *(azrtti_cast<StreamingImagePoolAsset*>(poolAsset)));
+                    Data::Instance<StreamingImagePool> instance = StreamingImagePool::CreateInternal(deviceMask, *(azrtti_cast<StreamingImagePoolAsset*>(poolAsset)));
                     if (instance)
                     {
                         m_activeStreamingPoolMutex.lock();

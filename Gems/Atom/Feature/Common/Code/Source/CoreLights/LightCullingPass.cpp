@@ -14,30 +14,30 @@
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
 
-#include <Atom/RPI.Public/Pass/PassUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
+#include <Atom/RHI/MultiDeviceImagePool.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-#include <Atom/RPI.Public/View.h>
-#include <AzCore/std/algorithm.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <Atom/RPI.Public/Scene.h>
+#include <AzCore/Math/Plane.h>
+#include <AzCore/std/algorithm.h>
+#include <CoreLights/CapsuleLightFeatureProcessor.h>
+#include <CoreLights/DiskLightFeatureProcessor.h>
+#include <CoreLights/LightCullingConstants.h>
+#include <CoreLights/PointLightFeatureProcessor.h>
+#include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
-#include <CoreLights/PointLightFeatureProcessor.h>
-#include <CoreLights/DiskLightFeatureProcessor.h>
-#include <CoreLights/CapsuleLightFeatureProcessor.h>
-#include <CoreLights/QuadLightFeatureProcessor.h>
-#include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
-#include <CoreLights/LightCullingConstants.h>
-#include <AzCore/Math/Plane.h>
 #include <cmath>
-#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
-#include <Atom/RHI/SingleDeviceImagePool.h>
-#include <Atom/RPI.Public/Image/AttachmentImage.h>
 
 namespace AZ
 {

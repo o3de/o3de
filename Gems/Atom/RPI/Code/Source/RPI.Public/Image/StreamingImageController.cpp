@@ -27,7 +27,7 @@ namespace AZ
         #define StreamingDebugOutput(window, ...)
 #endif
 
-        AZStd::unique_ptr<StreamingImageController> StreamingImageController::Create(RHI::SingleDeviceStreamingImagePool& pool)
+        AZStd::unique_ptr<StreamingImageController> StreamingImageController::Create(RHI::MultiDeviceStreamingImagePool& pool)
         {
             AZStd::unique_ptr<StreamingImageController> controller = AZStd::make_unique<StreamingImageController>();
             controller->m_pool = &pool;

@@ -226,7 +226,7 @@ namespace Terrain
 
         auto UpdateImageIndex = [&](uint32_t& indexRef, const AZ::Data::Instance<AZ::RPI::Image>& imageView)
         {
-            indexRef = imageView ? imageView->GetImageView()->GetBindlessReadIndex() : InvalidImageIndex;
+            indexRef = imageView ? imageView->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidImageIndex;
         };
 
         UpdateImageIndex(shaderData.m_colorMapId, macroMaterialData.m_colorImage);

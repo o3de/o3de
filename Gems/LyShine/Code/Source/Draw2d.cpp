@@ -756,12 +756,12 @@ void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::SingleDeviceImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get() : nullptr;
     if (!imageView)
     {
         // Default to white texture
         auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-        imageView = image->GetImageView();
+        imageView = image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
     }
 
     if (imageView)
@@ -817,12 +817,12 @@ void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::SingleDeviceImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get() : nullptr;
     if (!imageView)
     {
         // Default to white texture
         auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-        imageView = image->GetImageView();
+        imageView = image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
     }
 
     if (imageView)
@@ -893,12 +893,12 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const AZ::RHI::SingleDeviceImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get() : nullptr;
     if (!imageView)
     {
         // Default to white texture
         auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-        imageView = image->GetImageView();
+        imageView = image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
     }
 
     if (imageView)
