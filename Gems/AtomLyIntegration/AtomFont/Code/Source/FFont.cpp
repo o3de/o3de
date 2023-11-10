@@ -43,7 +43,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/SingleDeviceDrawPacket.h>
-#include <Atom/RHI/SingleDeviceImagePool.h>
+#include <Atom/RHI/MultiDeviceImagePool.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
@@ -343,7 +343,7 @@ void AZ::FFont::DrawStringUInternal(
             //setup per draw srg
             auto drawSrg = dynamicDraw->NewDrawSrg();
             drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
-            drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontAttachmentImage->GetImageView());
+            drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontAttachmentImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
             drawSrg->Compile();
 
             dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);
@@ -1465,15 +1465,10 @@ bool AZ::FFont::UpdateTexture()
         return false;
     }
 
-    RHI::ImageSubresourceRange range;
-    range.m_mipSliceMin = 0;
-    range.m_mipSliceMax = 0;
-    range.m_arraySliceMin = 0;
-    range.m_arraySliceMax = 0;
-    RHI::SingleDeviceImageSubresourceLayout layout;
-    m_fontImage->GetSubresourceLayouts(range, &layout, nullptr);
+    RHI::MultiDeviceImageSubresourceLayout layout;
+    m_fontImage->GetSubresourceLayout(layout);
 
-    RHI::SingleDeviceImageUpdateRequest imageUpdateReq;
+    RHI::MultiDeviceImageUpdateRequest imageUpdateReq;
     imageUpdateReq.m_image = m_fontImage.get();
     imageUpdateReq.m_imageSubresource = RHI::ImageSubresource{ 0, 0 };
     imageUpdateReq.m_sourceData = m_fontTexture->GetBuffer();

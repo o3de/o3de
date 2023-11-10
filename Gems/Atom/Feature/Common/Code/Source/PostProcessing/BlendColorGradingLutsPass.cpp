@@ -124,7 +124,7 @@ namespace AZ
             // import this attachment if it wasn't imported
             if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(imageAttachmentId))
             {
-                [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_blendedLut.m_lutImage);
+                [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_blendedLut.m_lutImage->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get());
                 AZ_Error("BlendColorGradingLutsPass", result == RHI::ResultCode::Success, "Failed to import BlendColorGradingLutImageAttachmentId with error %d", result);
             }
 
@@ -153,7 +153,7 @@ namespace AZ
 
             if (m_shaderResourceGroup != nullptr)
             {
-                m_shaderResourceGroup->SetImageView(m_shaderInputBlendedLutImageIndex, m_blendedLut.m_lutImageView.get());
+                m_shaderResourceGroup->SetImageView(m_shaderInputBlendedLutImageIndex, m_blendedLut.m_lutImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
                 m_shaderResourceGroup->SetConstant(m_shaderInputBlendedLutDimensionsIndex, m_blendedLutDimensions);
                 m_shaderResourceGroup->SetConstant(m_shaderInputBlendedLutShaperTypeIndex, m_blendedLutShaperParams.m_type);
                 m_shaderResourceGroup->SetConstant(m_shaderInputBlendededLutShaperBiasIndex, m_blendedLutShaperParams.m_bias);
@@ -166,7 +166,7 @@ namespace AZ
 
                 if (m_colorGradingLuts[0].m_lutStreamingImage)
                 {
-                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut1ImageIndex, m_colorGradingLuts[0].m_lutStreamingImage->GetImageView());
+                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut1ImageIndex, m_colorGradingLuts[0].m_lutStreamingImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperTypeIndex, m_colorGradingShaperParams[0].m_type);
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperBiasIndex, m_colorGradingShaperParams[0].m_bias);
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperScaleIndex, m_colorGradingShaperParams[0].m_scale);
@@ -174,7 +174,7 @@ namespace AZ
 
                 if (m_colorGradingLuts[1].m_lutStreamingImage)
                 {
-                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut2ImageIndex, m_colorGradingLuts[1].m_lutStreamingImage->GetImageView());
+                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut2ImageIndex, m_colorGradingLuts[1].m_lutStreamingImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperTypeIndex, m_colorGradingShaperParams[1].m_type);
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperBiasIndex, m_colorGradingShaperParams[1].m_bias);
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperScaleIndex, m_colorGradingShaperParams[1].m_scale);
@@ -182,7 +182,7 @@ namespace AZ
 
                 if (m_colorGradingLuts[2].m_lutStreamingImage)
                 {
-                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut3ImageIndex, m_colorGradingLuts[2].m_lutStreamingImage->GetImageView());
+                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut3ImageIndex, m_colorGradingLuts[2].m_lutStreamingImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperTypeIndex, m_colorGradingShaperParams[2].m_type);
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperBiasIndex, m_colorGradingShaperParams[2].m_bias);
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperScaleIndex, m_colorGradingShaperParams[2].m_scale);
@@ -190,7 +190,7 @@ namespace AZ
 
                 if (m_colorGradingLuts[3].m_lutStreamingImage)
                 {
-                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut4ImageIndex, m_colorGradingLuts[3].m_lutStreamingImage->GetImageView());
+                    m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut4ImageIndex, m_colorGradingLuts[3].m_lutStreamingImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperTypeIndex, m_colorGradingShaperParams[3].m_type);
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperBiasIndex, m_colorGradingShaperParams[3].m_bias);
                     m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperScaleIndex, m_colorGradingShaperParams[3].m_scale);

@@ -348,9 +348,9 @@ namespace AZ
                     uint32_t width = GetNumRaysPerProbe().m_rayCount;
                     uint32_t height = GetTotalProbeCount();
 
-                    m_rayTraceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+                    m_rayTraceImage[m_currentImageIndex] = aznew RHI::MultiDeviceImage;
 
-                    RHI::SingleDeviceImageInitRequest request;
+                    RHI::MultiDeviceImageInitRequest request;
                     request.m_image = m_rayTraceImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::RayTraceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
@@ -362,9 +362,9 @@ namespace AZ
                     uint32_t width = probeCountX * (DefaultNumIrradianceTexels + 2);
                     uint32_t height = probeCountY * (DefaultNumIrradianceTexels + 2);
 
-                    m_irradianceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+                    m_irradianceImage[m_currentImageIndex] = aznew RHI::MultiDeviceImage;
 
-                    RHI::SingleDeviceImageInitRequest request;
+                    RHI::MultiDeviceImageInitRequest request;
                     request.m_image = m_irradianceImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::IrradianceImageFormat);
                     RHI::ClearValue clearValue = RHI::ClearValue::CreateVector4Float(0.0f, 0.0f, 0.0f, 0.0f);
@@ -378,9 +378,9 @@ namespace AZ
                     uint32_t width = probeCountX * (DefaultNumDistanceTexels + 2);
                     uint32_t height = probeCountY * (DefaultNumDistanceTexels + 2);
 
-                    m_distanceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+                    m_distanceImage[m_currentImageIndex] = aznew RHI::MultiDeviceImage;
 
-                    RHI::SingleDeviceImageInitRequest request;
+                    RHI::MultiDeviceImageInitRequest request;
                     request.m_image = m_distanceImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::DistanceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
@@ -392,9 +392,9 @@ namespace AZ
                     uint32_t width = probeCountX;
                     uint32_t height = probeCountY;
 
-                    m_probeDataImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+                    m_probeDataImage[m_currentImageIndex] = aznew RHI::MultiDeviceImage;
 
-                    RHI::SingleDeviceImageInitRequest request;
+                    RHI::MultiDeviceImageInitRequest request;
                     request.m_image = m_probeDataImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::ProbeDataImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
@@ -517,10 +517,10 @@ namespace AZ
             }
 
             m_rayTraceSrg->SetBufferView(m_renderData->m_rayTraceSrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeIrradianceNameIndex, m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeDistanceNameIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeIrradianceNameIndex, m_irradianceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeDistanceNameIndex, m_distanceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_rayTraceSrg->SetImageView(m_renderData->m_rayTraceSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_rayTraceSrg->SetConstant(m_renderData->m_rayTraceSrgAmbientMultiplierNameIndex, m_ambientMultiplier);
             m_rayTraceSrg->SetConstant(m_renderData->m_rayTraceSrgGiShadowsNameIndex, m_giShadows);
             m_rayTraceSrg->SetConstant(m_renderData->m_rayTraceSrgUseDiffuseIblNameIndex, m_useDiffuseIbl);
@@ -539,9 +539,9 @@ namespace AZ
             }
 
             m_blendIrradianceSrg->SetBufferView(m_renderData->m_blendIrradianceSrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_blendIrradianceSrg->SetImageView(m_renderData->m_blendIrradianceSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_blendIrradianceSrg->SetImageView(m_renderData->m_blendIrradianceSrgProbeIrradianceNameIndex, m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_blendIrradianceSrg->SetImageView(m_renderData->m_blendIrradianceSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_blendIrradianceSrg->SetImageView(m_renderData->m_blendIrradianceSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_blendIrradianceSrg->SetImageView(m_renderData->m_blendIrradianceSrgProbeIrradianceNameIndex, m_irradianceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_blendIrradianceSrg->SetImageView(m_renderData->m_blendIrradianceSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_blendIrradianceSrg->SetConstant(m_renderData->m_blendIrradianceSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
             m_blendIrradianceSrg->SetConstant(m_renderData->m_blendIrradianceSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
         }
@@ -555,9 +555,9 @@ namespace AZ
             }
 
             m_blendDistanceSrg->SetBufferView(m_renderData->m_blendDistanceSrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_blendDistanceSrg->SetImageView(m_renderData->m_blendDistanceSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_blendDistanceSrg->SetImageView(m_renderData->m_blendDistanceSrgProbeDistanceNameIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_blendDistanceSrg->SetImageView(m_renderData->m_blendDistanceSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_blendDistanceSrg->SetImageView(m_renderData->m_blendDistanceSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_blendDistanceSrg->SetImageView(m_renderData->m_blendDistanceSrgProbeDistanceNameIndex, m_distanceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_blendDistanceSrg->SetImageView(m_renderData->m_blendDistanceSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_blendDistanceSrg->SetConstant(m_renderData->m_blendDistanceSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
             m_blendDistanceSrg->SetConstant(m_renderData->m_blendDistanceSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
         }
@@ -574,7 +574,7 @@ namespace AZ
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateRowIrradianceSrg.get(), "Failed to create BorderUpdateRowIrradiance shader resource group");
                 }
 
-                m_borderUpdateRowIrradianceSrg->SetImageView(m_renderData->m_borderUpdateRowIrradianceSrgProbeTextureNameIndex, m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+                m_borderUpdateRowIrradianceSrg->SetImageView(m_renderData->m_borderUpdateRowIrradianceSrgProbeTextureNameIndex, m_irradianceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
                 m_borderUpdateRowIrradianceSrg->SetConstant(m_renderData->m_borderUpdateRowIrradianceSrgNumTexelsNameIndex, DefaultNumIrradianceTexels);
             }
 
@@ -586,7 +586,7 @@ namespace AZ
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateColumnIrradianceSrg.get(), "Failed to create BorderUpdateColumnRowIrradiance shader resource group");
                 }
 
-                m_borderUpdateColumnIrradianceSrg->SetImageView(m_renderData->m_borderUpdateColumnIrradianceSrgProbeTextureNameIndex, m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+                m_borderUpdateColumnIrradianceSrg->SetImageView(m_renderData->m_borderUpdateColumnIrradianceSrgProbeTextureNameIndex, m_irradianceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
                 m_borderUpdateColumnIrradianceSrg->SetConstant(m_renderData->m_borderUpdateColumnIrradianceSrgNumTexelsNameIndex, DefaultNumIrradianceTexels);
             }
 
@@ -598,7 +598,7 @@ namespace AZ
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateRowDistanceSrg.get(), "Failed to create BorderUpdateRowDistance shader resource group");
                 }
 
-                m_borderUpdateRowDistanceSrg->SetImageView(m_renderData->m_borderUpdateRowDistanceSrgProbeTextureNameIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+                m_borderUpdateRowDistanceSrg->SetImageView(m_renderData->m_borderUpdateRowDistanceSrgProbeTextureNameIndex, m_distanceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
                 m_borderUpdateRowDistanceSrg->SetConstant(m_renderData->m_borderUpdateRowDistanceSrgNumTexelsNameIndex, DefaultNumDistanceTexels);
             }
 
@@ -610,7 +610,7 @@ namespace AZ
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateColumnDistanceSrg.get(), "Failed to create BorderUpdateColumnRowDistance shader resource group");
                 }
 
-                m_borderUpdateColumnDistanceSrg->SetImageView(m_renderData->m_borderUpdateColumnDistanceSrgProbeTextureNameIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+                m_borderUpdateColumnDistanceSrg->SetImageView(m_renderData->m_borderUpdateColumnDistanceSrgProbeTextureNameIndex, m_distanceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
                 m_borderUpdateColumnDistanceSrg->SetConstant(m_renderData->m_borderUpdateColumnDistanceSrgNumTexelsNameIndex, DefaultNumDistanceTexels);
             }
         }
@@ -624,8 +624,8 @@ namespace AZ
             }
 
             m_relocationSrg->SetBufferView(m_renderData->m_relocationSrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_relocationSrg->SetImageView(m_renderData->m_relocationSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_relocationSrg->SetImageView(m_renderData->m_relocationSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_relocationSrg->SetImageView(m_renderData->m_relocationSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_relocationSrg->SetImageView(m_renderData->m_relocationSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_relocationSrg->SetConstant(m_renderData->m_relocationSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
             m_relocationSrg->SetConstant(m_renderData->m_relocationSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
         }
@@ -639,8 +639,8 @@ namespace AZ
             }
 
             m_classificationSrg->SetBufferView(m_renderData->m_classificationSrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_classificationSrg->SetImageView(m_renderData->m_classificationSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
-            m_classificationSrg->SetImageView(m_renderData->m_classificationSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_classificationSrg->SetImageView(m_renderData->m_classificationSrgProbeRayTraceNameIndex, m_rayTraceImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+            m_classificationSrg->SetImageView(m_renderData->m_classificationSrgProbeDataNameIndex, m_probeDataImage[m_currentImageIndex]->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_classificationSrg->SetConstant(m_renderData->m_classificationSrgFrameUpdateCountNameIndex, m_frameUpdateCount);
             m_classificationSrg->SetConstant(m_renderData->m_classificationSrgFrameUpdateIndexNameIndex, m_frameUpdateIndex);
         }
@@ -670,9 +670,9 @@ namespace AZ
             m_renderObjectSrg->SetConstant(m_renderData->m_renderSrgEnableDiffuseGiNameIndex, m_enabled);
             m_renderObjectSrg->SetConstant(m_renderData->m_renderSrgAmbientMultiplierNameIndex, m_ambientMultiplier);
             m_renderObjectSrg->SetConstant(m_renderData->m_renderSrgEdgeBlendIblNameIndex, m_edgeBlendIbl);
-            m_renderObjectSrg->SetImageView(m_renderData->m_renderSrgProbeIrradianceNameIndex, GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_renderObjectSrg->SetImageView(m_renderData->m_renderSrgProbeDistanceNameIndex, GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_renderObjectSrg->SetImageView(m_renderData->m_renderSrgProbeDataNameIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(m_renderData->m_renderSrgProbeIrradianceNameIndex, GetIrradianceImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(m_renderData->m_renderSrgProbeDistanceNameIndex, GetDistanceImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(m_renderData->m_renderSrgProbeDataNameIndex, GetProbeDataImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
 
             m_updateRenderObjectSrg = false;
 
@@ -693,7 +693,7 @@ namespace AZ
             m_visualizationPrepareSrg->SetBufferView(m_renderData->m_visualizationPrepareSrgTlasInstancesNameIndex, m_visualizationTlas->GetTlasInstancesBuffer()->GetBufferView(bufferViewDescriptor).get());
 
             m_visualizationPrepareSrg->SetBufferView(m_renderData->m_visualizationPrepareSrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_visualizationPrepareSrg->SetImageView(m_renderData->m_visualizationPrepareSrgProbeDataNameIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_visualizationPrepareSrg->SetImageView(m_renderData->m_visualizationPrepareSrgProbeDataNameIndex, GetProbeDataImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_visualizationPrepareSrg->SetConstant(m_renderData->m_visualizationPrepareSrgProbeSphereRadiusNameIndex, m_visualizationSphereRadius);
         }
 
@@ -710,9 +710,9 @@ namespace AZ
             m_visualizationRayTraceSrg->SetBufferView(m_renderData->m_visualizationRayTraceSrgTlasNameIndex, m_visualizationTlas->GetTlasBuffer()->GetBufferView(bufferViewDescriptor).get());
 
             m_visualizationRayTraceSrg->SetBufferView(m_renderData->m_visualizationRayTraceSrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeIrradianceNameIndex, GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeDistanceNameIndex, GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeDataNameIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeIrradianceNameIndex, GetIrradianceImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeDistanceNameIndex, GetDistanceImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeDataNameIndex, GetProbeDataImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_visualizationRayTraceSrg->SetConstant(m_renderData->m_visualizationRayTraceSrgShowInactiveProbesNameIndex, m_visualizationShowInactiveProbes);
             m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgOutputNameIndex, outputImageView);
         }
@@ -726,9 +726,9 @@ namespace AZ
             }
 
             m_querySrg->SetBufferView(m_renderData->m_querySrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_querySrg->SetImageView(m_renderData->m_querySrgProbeIrradianceNameIndex, GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
-            m_querySrg->SetImageView(m_renderData->m_querySrgProbeDistanceNameIndex, GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
-            m_querySrg->SetImageView(m_renderData->m_querySrgProbeDataNameIndex, GetProbeDataImage()->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
+            m_querySrg->SetImageView(m_renderData->m_querySrgProbeIrradianceNameIndex, GetIrradianceImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_querySrg->SetImageView(m_renderData->m_querySrgProbeDistanceNameIndex, GetDistanceImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_querySrg->SetImageView(m_renderData->m_querySrgProbeDataNameIndex, GetProbeDataImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
             m_querySrg->SetConstant(m_renderData->m_querySrgAmbientMultiplierNameIndex, m_ambientMultiplier);
         }
 

@@ -10,9 +10,9 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/MultiDeviceImage.h>
+#include <Atom/RHI/MultiDeviceImagePool.h>
 #include <Atom/RHI/SingleDeviceImageView.h>
-#include <Atom/RHI/SingleDeviceImagePool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -38,13 +38,13 @@ namespace AZ
             bool IsInitialized() const;
 
             //! Returns the mutable GPU image instance initialized at asset load time.
-            RHI::SingleDeviceImage* GetRHIImage();
+            RHI::MultiDeviceImage* GetRHIImage();
 
             //! Returns the immutable GPU image instance initialized at asset load time.
-            const RHI::SingleDeviceImage* GetRHIImage() const;
+            const RHI::MultiDeviceImage* GetRHIImage() const;
 
             //! Returns the default image view instance, mapping the full (resident) image.
-            const RHI::SingleDeviceImageView* GetImageView() const;
+            const RHI::MultiDeviceImageView* GetImageView() const;
 
             //! Returns the image descriptor which contains some image information
             const RHI::ImageDescriptor& GetDescriptor() const;
@@ -53,17 +53,17 @@ namespace AZ
             uint16_t GetMipLevelCount();
                         
             //! Updates content of a single sub-resource in the image from the CPU.
-            virtual RHI::ResultCode UpdateImageContents(const RHI::SingleDeviceImageUpdateRequest& request);
-            
+            virtual RHI::ResultCode UpdateImageContents(const RHI::MultiDeviceImageUpdateRequest& request);
+
         protected:
             // This is a base class for a derived instance variant.
             Image();
 
             // The RHI image instance is created at load time. It contains the resident set of mip levels.
-            RHI::Ptr<RHI::SingleDeviceImage> m_image;
+            RHI::Ptr<RHI::MultiDeviceImage> m_image;
 
             // The default view instance mapping the full resident set of the image mip levels and array slices.
-            RHI::Ptr<RHI::SingleDeviceImageView> m_imageView;
+            RHI::Ptr<RHI::MultiDeviceImageView> m_imageView;
         };
     }
 }

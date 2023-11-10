@@ -316,7 +316,7 @@ namespace Terrain
     void TerrainClipmapManager::ImportClipmap(ClipmapName clipmapName, AZ::RHI::FrameGraphAttachmentInterface attachmentDatabase) const
     {
         auto clipmap = m_clipmaps[clipmapName];
-        attachmentDatabase.ImportImage(clipmap->GetAttachmentId(), clipmap->GetRHIImage());
+        attachmentDatabase.ImportImage(clipmap->GetAttachmentId(), clipmap->GetRHIImage()->GetDeviceImage(AZ::RHI::MultiDevice::DefaultDeviceIndex));
     }
 
     void TerrainClipmapManager::UseClipmap(ClipmapName clipmapName, AZ::RHI::ScopeAttachmentAccess access, AZ::RHI::FrameGraphInterface frameGraph) const

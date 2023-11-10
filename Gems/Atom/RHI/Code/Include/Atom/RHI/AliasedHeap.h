@@ -10,11 +10,11 @@
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
 #include <Atom/RHI/AliasingBarrierTracker.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/FreeListAllocator.h>
-#include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI/SingleDeviceResourcePool.h>
 #include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <AzCore/Memory/SystemAllocator.h>

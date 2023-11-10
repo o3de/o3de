@@ -30,7 +30,7 @@ namespace AZ
             static const RHI::Format ProbeDataImageFormat = RHI::Format::R16G16B16A16_FLOAT;
             static const uint32_t GridDataBufferSize = 112;
 
-            RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;          
+            RHI::Ptr<RHI::MultiDeviceImagePool> m_imagePool;
             RHI::Ptr<RHI::MultiDeviceBufferPool> m_bufferPool;
 
             AZStd::array<RHI::SingleDeviceStreamBufferView, 1> m_boxPositionBufferView;
@@ -273,10 +273,10 @@ namespace AZ
             void UpdateQuerySrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
 
             // textures
-            const RHI::Ptr<RHI::SingleDeviceImage> GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
-            const RHI::Ptr<RHI::SingleDeviceImage> GetIrradianceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_irradianceImage[m_currentImageIndex] : m_bakedIrradianceImage->GetRHIImage(); }
-            const RHI::Ptr<RHI::SingleDeviceImage> GetDistanceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_distanceImage[m_currentImageIndex] : m_bakedDistanceImage->GetRHIImage(); }
-            const RHI::Ptr<RHI::SingleDeviceImage> GetProbeDataImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_probeDataImage[m_currentImageIndex] : m_bakedProbeDataImage->GetRHIImage(); }
+            const RHI::Ptr<RHI::MultiDeviceImage> GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
+            const RHI::Ptr<RHI::MultiDeviceImage> GetIrradianceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_irradianceImage[m_currentImageIndex] : m_bakedIrradianceImage->GetRHIImage(); }
+            const RHI::Ptr<RHI::MultiDeviceImage> GetDistanceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_distanceImage[m_currentImageIndex] : m_bakedDistanceImage->GetRHIImage(); }
+            const RHI::Ptr<RHI::MultiDeviceImage> GetProbeDataImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_probeDataImage[m_currentImageIndex] : m_bakedProbeDataImage->GetRHIImage(); }
             const RHI::Ptr<RHI::MultiDeviceBuffer> GetGridDataBuffer() { return m_gridDataBuffer; }
 
             const AZStd::string& GetBakedIrradianceRelativePath() const { return m_bakedIrradianceRelativePath; }
@@ -407,10 +407,10 @@ namespace AZ
             // real-time textures
             static const uint32_t MaxTextureDimension = 8192;
             static const uint32_t ImageFrameCount = 3;
-            RHI::Ptr<RHI::SingleDeviceImage> m_rayTraceImage[ImageFrameCount];
-            RHI::Ptr<RHI::SingleDeviceImage> m_irradianceImage[ImageFrameCount];
-            RHI::Ptr<RHI::SingleDeviceImage> m_distanceImage[ImageFrameCount];
-            RHI::Ptr<RHI::SingleDeviceImage> m_probeDataImage[ImageFrameCount];
+            RHI::Ptr<RHI::MultiDeviceImage> m_rayTraceImage[ImageFrameCount];
+            RHI::Ptr<RHI::MultiDeviceImage> m_irradianceImage[ImageFrameCount];
+            RHI::Ptr<RHI::MultiDeviceImage> m_distanceImage[ImageFrameCount];
+            RHI::Ptr<RHI::MultiDeviceImage> m_probeDataImage[ImageFrameCount];
             uint32_t m_currentImageIndex = 0;
             bool m_updateTextures = false;
             bool m_textureClearRequired = true;
