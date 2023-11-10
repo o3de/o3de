@@ -122,7 +122,7 @@ namespace UnitTest
 
         AZ::RPI::ImageSystemDescriptor imageSystemDescriptor;
         m_imageSystem = AZStd::make_unique<AZ::RPI::ImageSystem>();
-        m_imageSystem->Init(imageSystemDescriptor);
+        m_imageSystem->Init(AZ::RHI::MultiDevice::AllDevices, imageSystemDescriptor);
     }
 
     void GradientSignalBaseFixture::TearDownCoreSystems()

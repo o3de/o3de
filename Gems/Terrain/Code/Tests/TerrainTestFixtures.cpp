@@ -421,7 +421,7 @@ namespace UnitTest
 
         AZ::RPI::ImageSystemDescriptor imageSystemDescriptor;
         m_imageSystem = AZStd::make_unique<AZ::RPI::ImageSystem>();
-        m_imageSystem->Init(imageSystemDescriptor);
+        m_imageSystem->Init(AZ::RHI::MultiDevice::AllDevices, imageSystemDescriptor);
 
         // Now that the RPISystem is activated, activate the system entity.
         m_systemEntity->Init();
