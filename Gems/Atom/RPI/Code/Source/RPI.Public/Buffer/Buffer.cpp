@@ -294,12 +294,21 @@ namespace AZ
 
             if (auto buf = Map(sourceDataSize, bufferByteOffset); buf.size())
             {
+                auto partialResult{false};
                 for (auto index{ 0u }; index < buf.size(); ++index)
                 {
-                    memcpy(buf[index], sourceData, sourceDataSize);
+                    if(buf[index] != nullptr)
+                    {
+                        memcpy(buf[index], sourceData, sourceDataSize);
+                        partialResult = true;
+                    }
                 }
-                Unmap();
-                return true;
+
+                if(partialResult)
+                {
+                    Unmap();
+                }
+                return partialResult;
             }
 
             return false;
