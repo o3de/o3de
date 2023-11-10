@@ -279,7 +279,8 @@ namespace AZ::RHI
         return ret.second;
     }
 
-    const PipelineState* PipelineStateCache::AcquirePipelineState(PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor)
+    const PipelineState* PipelineStateCache::AcquirePipelineState(
+        PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor, const AZ::Name& name /*= AZ::Name()*/)
     {
         if (handle.IsNull())
         {
@@ -326,7 +327,7 @@ namespace AZ::RHI
                     threadLibraryEntry.m_library = AZStd::move(pipelineLibrary);
                 }
 
-                ConstPtr<PipelineState> pipelineState = CompilePipelineState(globalLibraryEntry, threadLibraryEntry, descriptor, pipelineStateHash);
+                ConstPtr<PipelineState> pipelineState = CompilePipelineState(globalLibraryEntry, threadLibraryEntry, descriptor, pipelineStateHash, name);
 
                 [[maybe_unused]] bool success = InsertPipelineState(threadLocalCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
                 AZ_Assert(success, "PipelineStateEntry already exists in the thread cache.");
@@ -340,7 +341,8 @@ namespace AZ::RHI
         GlobalLibraryEntry& globalLibraryEntry,
         ThreadLibraryEntry& threadLibraryEntry,
         const PipelineStateDescriptor& descriptor,
-        PipelineStateHash pipelineStateHash)
+        PipelineStateHash pipelineStateHash,
+        const AZ::Name& name)
     {
         Ptr<PipelineState> pipelineState;
 
@@ -398,6 +400,8 @@ namespace AZ::RHI
         default:
             AZ_Assert(false, "Invalid pipeline state descriptor type specified.");
         }
+
+        pipelineState->SetName(name);
 
         if (Validation::IsEnabled())
         {

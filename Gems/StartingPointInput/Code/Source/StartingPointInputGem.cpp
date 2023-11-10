@@ -17,11 +17,6 @@
 #include <AzCore/Component/Component.h>
 
 #include <AzFramework/Asset/GenericAssetHandler.h>
-#include <AutoGenNodeableRegistry.generated.h>
-#include <AutoGenGrammarRegistry.generated.h>
-
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(StartingPointInputStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(StartingPointInputStatic);
 
 namespace StartingPointInput
 {

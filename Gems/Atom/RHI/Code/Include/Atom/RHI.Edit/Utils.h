@@ -78,9 +78,10 @@ namespace AZ::RHI
     //! Returns true it compiled the shader without errors.
     //! Returns false otherwise and with compilation errors messages.
     bool ExecuteShaderCompiler(const AZStd::string& executablePath,
-                                const AZStd::string& parameters,
-                                const AZStd::string& shaderSourcePathForDebug,
-                                const char* toolNameForLog);
+                               const AZStd::string& parameters,
+                               const AZStd::string& shaderSourcePathForDebug,
+                               const AZStd::string& tempFolder,
+                               const char* toolNameForLog);
 
     //! Reports messages with AZ_Error or AZ_Warning (See @reportAsErrors).
     //! @param window  Debug window name used for AZ Trace functions.

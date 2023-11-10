@@ -94,6 +94,8 @@ namespace ScriptCanvasEditor
 
         AZStd::sys_time_t GetTranslateDuration() const;
 
+        const AZ::IO::Path& GetFilePath() const;
+
         bool IsActivated() const;
 
         bool IsCompiled() const;
@@ -135,6 +137,8 @@ namespace ScriptCanvasEditor
         void SetGraph(const AZ::Data::AssetId& graphID);
 
         void SetProcessOnly(bool processOnly);
+
+        void SetFilePath(const AZ::IO::PathView& filePath);
 
         // Bus::Handler
         void AddFailure(const Report& report) override;
@@ -190,6 +194,7 @@ namespace ScriptCanvasEditor
         bool m_isParseAttemptMade = false;
         bool m_isReportFinished = false;
         bool m_processOnly = false;
+        AZ::IO::Path m_filePath;
         ExecutionConfiguration m_configuration = ExecutionConfiguration::Release;
         ExecutionMode m_mode;
         Execution::PerformanceTrackingReport m_performanceReport;

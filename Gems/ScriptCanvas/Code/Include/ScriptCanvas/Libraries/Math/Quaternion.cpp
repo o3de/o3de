@@ -8,6 +8,8 @@
 
 #include "Quaternion.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/Quaternion.generated.h>
+
 namespace ScriptCanvas
 {
     namespace QuaternionFunctions

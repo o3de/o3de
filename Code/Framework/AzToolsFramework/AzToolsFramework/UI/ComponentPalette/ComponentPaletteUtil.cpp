@@ -56,10 +56,10 @@ namespace AzToolsFramework
         void BuildComponentTables(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter,
-            ComponentDataTable &componentDataTable,
-            ComponentIconTable &componentIconTable)
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter,
+            ComponentDataTable& componentDataTable,
+            ComponentIconTable& componentIconTable)
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
             serializeContext->EnumerateDerived<AZ::Component>(
@@ -104,23 +104,23 @@ namespace AzToolsFramework
         void BuildComponentTables(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
             ComponentDataTable& componentDataTable,
             ComponentIconTable& componentIconTable)
         {
-            const AZStd::vector<AZ::ComponentServiceType> incompatibleServices;
+            const AZ::ComponentDescriptor::DependencyArrayType incompatibleServices;
             BuildComponentTables(serializeContext, componentFilter, serviceFilter, incompatibleServices, componentDataTable, componentIconTable);
         }
 
         bool ContainsEditableComponents(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter
         )
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
-            
+
             bool containsEditable = false;
 
             serializeContext->EnumerateDerived<AZ::Component>(
@@ -150,10 +150,10 @@ namespace AzToolsFramework
         bool ContainsEditableComponents(
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter
         )
         {
-            const AZStd::vector<AZ::ComponentServiceType> incompatibleServices;
+            const AZ::ComponentDescriptor::DependencyArrayType incompatibleServices;
             return ContainsEditableComponents(serializeContext, componentFilter, serviceFilter, incompatibleServices);
         }
 

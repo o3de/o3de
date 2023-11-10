@@ -49,8 +49,9 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-            Source/Editor
             ${pal_source_dir}
+        PUBLIC
+            Source/Editor
     COMPILE_DEFINITIONS
         PRIVATE
             _SCL_SECURE_NO_WARNINGS

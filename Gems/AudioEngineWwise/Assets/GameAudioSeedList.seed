@@ -1,0 +1,14 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{95372958-1CFD-524C-9574-EC7A7BB6F883}"
+            },
+            "platformFlags": 1,
+            "pathHint": "audiobank_dependencies.xml"
+        }
+    ]
+}

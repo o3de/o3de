@@ -16,11 +16,6 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
-            TargetedSequencer::TargetedSequencer()
-                : Node()
-                , m_numOutputs(0)
-            {
-            }
 
             void TargetedSequencer::OnInit()
             {

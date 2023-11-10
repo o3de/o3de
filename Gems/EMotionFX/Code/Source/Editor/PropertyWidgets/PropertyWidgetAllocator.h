@@ -9,18 +9,10 @@
 #pragma once
 
 #include <AzCore/Memory/Memory.h>
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/ChildAllocatorSchema.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 namespace EMotionFX
 {
-    class PropertyWidgetAllocator
-        : public AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>
-    {
-    public:
-        using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-
-        AZ_RTTI(PropertyWidgetAllocator, "{5A2780C1-3660-4F47-A529-8E4F7B2B2F84}", Base)
-    };
-
+    AZ_CHILD_ALLOCATOR_WITH_NAME(PropertyWidgetAllocator, "PropertyWidgetAllocator", "{5A2780C1-3660-4F47-A529-8E4F7B2B2F84}", AZ::SystemAllocator);
 } // namespace EMotionFX

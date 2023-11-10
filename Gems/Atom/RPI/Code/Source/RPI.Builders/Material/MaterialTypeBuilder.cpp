@@ -44,7 +44,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 45; // common counter to avoid 'common' intermediate shader files with the same name
+            materialBuilderDescriptor.m_version = 46; // common counter to avoid 'common' intermediate shader files with the same name
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -156,14 +156,10 @@ namespace AZ
 
             auto addPossibleDependencies = [&response, &outputJobDescriptor](const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
-                AZStd::vector<AZStd::string> possibleDependencies =
-                    RPI::AssetUtils::GetPossibleDependencyPaths(originatingSourceFilePath, referencedSourceFilePath);
-                for (const AZStd::string& path : possibleDependencies)
-                {
-                    response.m_sourceFileDependencyList.push_back({});
-                    response.m_sourceFileDependencyList.back().m_sourceFileDependencyPath = path;
-                    MaterialBuilderUtils::AddFingerprintForDependency(path, outputJobDescriptor);
-                }
+                auto& sourceDependency = response.m_sourceFileDependencyList.emplace_back();
+                sourceDependency.m_sourceFileDependencyPath =
+                    RPI::AssetUtils::ResolvePathReference(originatingSourceFilePath, referencedSourceFilePath);
+                MaterialBuilderUtils::AddFingerprintForDependency(sourceDependency.m_sourceFileDependencyPath, outputJobDescriptor);
             };
 
             // Add dependencies for the material type file
@@ -216,29 +212,23 @@ namespace AZ
 
             MaterialBuilderUtils::AddFingerprintForDependency(materialTypeSourcePath, outputJobDescriptor);
 
-            for (auto& shader : materialTypeSourceData.m_shaderCollection)
+            for (const auto& shader : materialTypeSourceData.GetShaderReferences())
             {
-                MaterialBuilderUtils::AddPossibleDependencies(
-                    materialTypeSourcePath,
-                    shader.m_shaderFilePath,
-                    response,
-                    outputJobDescriptor,
-                    "Shader Asset");
+                MaterialBuilderUtils::AddJobDependency(
+                    outputJobDescriptor, AssetUtils::ResolvePathReference(materialTypeSourcePath, shader.m_shaderFilePath), "Shader Asset");
             }
 
-            auto addFunctorDependencies = [&response, &outputJobDescriptor, &materialTypeSourcePath](const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
+            auto addFunctorDependencies = [&outputJobDescriptor, &materialTypeSourcePath](
+                                              const AZStd::vector<Ptr<MaterialFunctorSourceDataHolder>>& functors)
             {
                 for (const auto& functor : functors)
                 {
-                    const auto& dependencies = functor->GetActualSourceData()->GetAssetDependencies();
-
-                    for (const MaterialFunctorSourceData::AssetDependency& dependency : dependencies)
+                    for (const MaterialFunctorSourceData::AssetDependency& dependency :
+                         functor->GetActualSourceData()->GetAssetDependencies())
                     {
-                        MaterialBuilderUtils::AddPossibleDependencies(
-                            materialTypeSourcePath,
-                            dependency.m_sourceFilePath,
-                            response,
+                        MaterialBuilderUtils::AddJobDependency(
                             outputJobDescriptor,
+                            AssetUtils::ResolvePathReference(materialTypeSourcePath, dependency.m_sourceFilePath),
                             dependency.m_jobKey);
                     }
                 }
@@ -253,32 +243,19 @@ namespace AZ
                 });
 
             materialTypeSourceData.EnumerateProperties(
-                [&response, &outputJobDescriptor, &materialTypeSourcePath](
-                    const MaterialPropertySourceData* property, const MaterialNameContext&)
+                [&outputJobDescriptor, &materialTypeSourcePath](const MaterialPropertySourceData* property, const MaterialNameContext&)
                 {
-                    if (property->m_dataType == MaterialPropertyDataType::Image && MaterialUtils::LooksLikeImageFileReference(property->m_value))
+                    if (property->m_dataType == MaterialPropertyDataType::Image &&
+                        MaterialUtils::LooksLikeImageFileReference(property->m_value))
                     {
                         MaterialBuilderUtils::AddPossibleImageDependencies(
-                            materialTypeSourcePath,
-                            property->m_value.GetValue<AZStd::string>(),
-                            response,
-                            outputJobDescriptor);
+                            materialTypeSourcePath, property->m_value.GetValue<AZStd::string>(), outputJobDescriptor);
                     }
                     return true;
                 });
 
             for (const auto& pipelinePair : materialTypeSourceData.m_pipelineData)
             {
-                for (const auto& shader : pipelinePair.second.m_shaderCollection)
-                {
-                    MaterialBuilderUtils::AddPossibleDependencies(
-                        materialTypeSourcePath,
-                        shader.m_shaderFilePath,
-                        response,
-                        outputJobDescriptor,
-                        "Shader Asset");
-                }
-
                 addFunctorDependencies(pipelinePair.second.m_materialFunctorSourceData);
             }
 
@@ -452,7 +429,7 @@ namespace AZ
 
                     // Only include Object SRGs from material pipelines which have shader templates relevant to this material
                     // This avoids adding extra SRG members in materials for MaterialPipelines it won't be rendered in
-                    if (shaderTemplateList.size() > 0)
+                    if (!shaderTemplateList.empty())
                     {
                         objectSrgAdditionsFromMaterialPipelines.push_back(&materialPipeline.m_objectSrgAdditions);
                     }
@@ -573,6 +550,7 @@ namespace AZ
                 {
                     AssetBuilderSDK::JobProduct product;
                     product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                    product.m_dependenciesHandled = true;
                     product.m_productFileName = outputShaderFilePath.String();
                     product.m_productSubID = nextProductSubID++;
                     response.m_outputProducts.emplace_back(AZStd::move(product));
@@ -632,6 +610,7 @@ namespace AZ
             {
                 AssetBuilderSDK::JobProduct product;
                 product.m_outputFlags = AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
+                product.m_dependenciesHandled = true;
                 product.m_productFileName = outputMaterialTypeFilePath.String();
                 product.m_productAssetType = azrtti_typeid<RPI::MaterialTypeSourceData>();
                 product.m_productSubID = MaterialTypeSourceData::IntermediateMaterialTypeSubId;

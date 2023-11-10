@@ -23,6 +23,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Document/ShaderManagementConsoleDocument.h>
+#include <HashedVariantListSourceData.h>
 
 namespace ShaderManagementConsole
 {
@@ -45,6 +46,7 @@ namespace ShaderManagementConsole
                 ->Event("GetShaderOptionDescriptorCount", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptorCount)
                 ->Event("GetShaderOptionDescriptor", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptor)
                 ->Event("AppendSparseVariantSet", &ShaderManagementConsoleDocumentRequestBus::Events::AppendSparseVariantSet)
+                ->Event("DefragmentVariantList", &ShaderManagementConsoleDocumentRequestBus::Events::DefragmentVariantList)
                 ->Event("AddOneVariantRow", &ShaderManagementConsoleDocumentRequestBus::Events::AddOneVariantRow)
                 ;
         }
@@ -73,12 +75,8 @@ namespace ShaderManagementConsole
             AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderAssetResult.GetValue();
             AZStd::vector<AZ::RPI::ShaderOptionDescriptor> options = shaderAsset->GetShaderOptionGroupLayout()->GetShaderOptions();
             AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-            for (auto& optionDescriptor : options)
-            {
-                variantInfo.m_options[optionDescriptor.GetName()] = ""; // all unset
-            }
             variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
-                ? 0
+                ? 1  // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
                 : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
             m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
             return variantInfo.m_stableId;
@@ -117,11 +115,7 @@ namespace ShaderManagementConsole
                 auto& descriptor = GetShaderOptionDescriptor(column);
                 auto& optionName = descriptor.GetName();
                 auto indexIt = nameToHeaderIndex.find(optionName);
-                if (indexIt == nameToHeaderIndex.end())
-                {
-                    mapOfOptionNameToValues[optionName] = ""; // unset
-                }
-                else
+                if (indexIt != nameToHeaderIndex.end())
                 {
                     int index = line * optionHeaders.size() + indexIt->second;
                     mapOfOptionNameToValues[optionName] = matrixOfValues[index];
@@ -129,6 +123,69 @@ namespace ShaderManagementConsole
             }
             AZ::RPI::ShaderVariantListSourceData::VariantInfo newLine{ stableId++, mapOfOptionNameToValues };
             newSourceData.m_shaderVariants.emplace_back(std::move(newLine));
+        }
+        SetShaderVariantListSourceData(newSourceData);
+    }
+
+    void ShaderManagementConsoleDocument::DefragmentVariantList()
+    {
+        struct VariantCompacterKey
+        {
+            AZ::RPI::ShaderVariantListSourceData::VariantInfo* m_info{};
+            size_t m_hash{};
+
+            bool operator==(const VariantCompacterKey& rhs) const
+            {
+                return m_hash == rhs.m_hash && m_info->m_options == rhs.m_info->m_options;  // first part of expression for short circuit
+            }
+
+            static VariantCompacterKey Make(AZ::RPI::ShaderVariantListSourceData::VariantInfo* source)
+            {
+                VariantCompacterKey newKey;
+                newKey.m_info = source;
+                newKey.m_hash = AZ::ShaderBuilder::HashedVariantInfoSourceData::HashCombineShaderOptionValues(0, source->m_options);
+                return newKey;
+            }
+        };
+
+        struct KeyHasher
+        {
+            std::size_t operator()(const VariantCompacterKey& key) const
+            {
+                return key.m_hash;
+            }
+        };
+        // Use a set for uniquification process
+        AZStd::unordered_set<VariantCompacterKey, KeyHasher> compacter;
+        compacter.reserve(m_shaderVariantListSourceData.m_shaderVariants.size());
+        for (auto& variantInfo : m_shaderVariantListSourceData.m_shaderVariants)
+        {
+            compacter.insert(VariantCompacterKey::Make(&variantInfo));
+        }
+        // Prepare a whole new source data
+        AZ::RPI::ShaderVariantListSourceData newSourceData;
+        // partial copy
+        newSourceData.m_materialOptionsHint = m_shaderVariantListSourceData.m_materialOptionsHint;
+        newSourceData.m_shaderFilePath = m_shaderVariantListSourceData.m_shaderFilePath;
+        // variants are prepared from the compacted set
+        newSourceData.m_shaderVariants.reserve(compacter.size());
+        for (VariantCompacterKey& compactedKey : compacter)
+        {
+            newSourceData.m_shaderVariants.emplace_back(std::move(*compactedKey.m_info));
+        }
+        // sort by old stable id
+        AZStd::sort(newSourceData.m_shaderVariants.begin(),
+                    newSourceData.m_shaderVariants.end(),
+                    [&](const AZ::RPI::ShaderVariantListSourceData::VariantInfo& a,
+                        const AZ::RPI::ShaderVariantListSourceData::VariantInfo& b)
+                    {
+                        return a.m_stableId < b.m_stableId;
+                    });
+        // reassign stable ids completely, but based on old order
+        AZ::u32 idCounter = 1;  // start at 1 (0 is reserved as explained in ShaderVariantTreeAssetCreator)
+        for (auto& variantInfo : newSourceData.m_shaderVariants)
+        {
+            variantInfo.m_stableId = idCounter++;
         }
         SetShaderVariantListSourceData(newSourceData);
     }

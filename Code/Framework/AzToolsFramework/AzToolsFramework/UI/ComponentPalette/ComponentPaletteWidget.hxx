@@ -47,8 +47,8 @@ namespace AzToolsFramework
             AZ::SerializeContext* serializeContext,
             const AzToolsFramework::EntityIdList& selectedEntityIds,
             const AzToolsFramework::ComponentFilter& componentFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter);
+            AZStd::span<const AZ::ComponentServiceType> serviceFilter,
+            AZStd::span<const AZ::ComponentServiceType> incompatibleServiceFilter);
 
         void Present();
 
@@ -58,7 +58,7 @@ namespace AzToolsFramework
         void OnAddComponentCancel();
 
     protected:
-        void focusOutEvent(QFocusEvent *event) override;
+        void focusOutEvent(QFocusEvent* event) override;
 
     private slots:
         void UpdateContent();
@@ -84,8 +84,8 @@ namespace AzToolsFramework
         AZ::SerializeContext* m_serializeContext = nullptr;
         EntityIdList m_selectedEntityIds;
         ComponentFilter m_componentFilter;
-        AZStd::vector<AZ::ComponentServiceType> m_serviceFilter;
-        AZStd::vector<AZ::ComponentServiceType> m_incompatibleServiceFilter;
+        AZ::ComponentDescriptor::DependencyArrayType m_serviceFilter;
+        AZ::ComponentDescriptor::DependencyArrayType m_incompatibleServiceFilter;
         AZStd::map<QString, bool> m_categoryExpandedState;
     };
 }

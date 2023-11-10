@@ -62,7 +62,7 @@ namespace Benchmark
 
         for ([[maybe_unused]] auto _ : state)
         {
-            const AZStd::vector<AZ::Component*>& components = m_entityToModify->GetComponents();
+            AZStd::span<AZ::Component* const> components = m_entityToModify->GetComponents();
             AZ::Component* transformComponent = components.front();
             m_entityToModify->RemoveComponent(transformComponent);
             delete transformComponent;

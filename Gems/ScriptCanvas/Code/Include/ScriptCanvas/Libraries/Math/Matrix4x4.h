@@ -69,3 +69,5 @@ namespace ScriptCanvas
 
     } // namespace Matrix4x4Functions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Matrix4x4.generated.h>
