@@ -5,14 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI/SingleDeviceImagePool.h>
-#include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>

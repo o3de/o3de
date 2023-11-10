@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/SingleDeviceImagePool.h>
+#include <Atom/RHI/MultiDeviceImagePool.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
 #include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>

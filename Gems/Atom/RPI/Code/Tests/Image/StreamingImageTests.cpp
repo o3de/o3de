@@ -278,7 +278,7 @@ namespace UnitTest
 
             const size_t mipChainTailIndex = imageAsset->GetMipChainCount() - 1;
 
-            RHI::Ptr<RHI::SingleDeviceImage> rhiImage = imageInstance->GetRHIImage();
+            RHI::Ptr<RHI::MultiDeviceImage> rhiImage = imageInstance->GetRHIImage();
 
             // This should no-op.
             imageInstance->TrimToMipChainLevel(mipChainTailIndex);

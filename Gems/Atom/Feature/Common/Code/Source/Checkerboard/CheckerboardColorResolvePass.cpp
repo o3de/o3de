@@ -46,7 +46,7 @@ namespace AZ
                             RPI::Image* image = azrtti_cast<RPI::Image*>(attachment->m_importedResource.get());
                             if (image)
                             {
-                                attachmentDatabase.ImportImage(attachmentId, image->GetRHIImage());
+                                attachmentDatabase.ImportImage(attachmentId, image->GetRHIImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
                             }
                         }
                     }
