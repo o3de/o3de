@@ -213,7 +213,7 @@ namespace AZ
 
         bool ShaderResourceGroup::SetImage(RHI::ShaderInputImageIndex inputIndex, const Data::Instance<Image>& image, uint32_t arrayIndex)
         {
-            const RHI::SingleDeviceImageView* imageView = image ? image->GetImageView() : nullptr;
+            const auto imageView = image ? image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get() : nullptr;
 
             if (m_data.SetImageView(inputIndex, imageView, arrayIndex))
             {

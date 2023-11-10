@@ -2382,7 +2382,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::BaseColor;
-                            subMesh.m_baseColorImageView = image->GetImageView();
+                            subMesh.m_baseColorImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                             baseColorImage = image;
                         }
                     }
@@ -2394,7 +2394,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Normal;
-                            subMesh.m_normalImageView = image->GetImageView();
+                            subMesh.m_normalImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                         }
                     }
 
@@ -2405,7 +2405,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Metallic;
-                            subMesh.m_metallicImageView = image->GetImageView();
+                            subMesh.m_metallicImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                         }
                     }
 
@@ -2416,7 +2416,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Roughness;
-                            subMesh.m_roughnessImageView = image->GetImageView();
+                            subMesh.m_roughnessImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                         }
                     }
 
@@ -2427,7 +2427,7 @@ namespace AZ
                         if (image.get())
                         {
                             subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Emissive;
-                            subMesh.m_emissiveImageView = image->GetImageView();
+                            subMesh.m_emissiveImageView = image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex);
                         }
                     }
 

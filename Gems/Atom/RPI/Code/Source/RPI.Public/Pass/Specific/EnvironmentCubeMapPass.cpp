@@ -189,7 +189,8 @@ namespace AZ
 
         void EnvironmentCubeMapPass::AttachmentReadbackCallback(const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
         {
-            RHI::SingleDeviceImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format);
+            RHI::SingleDeviceImageSubresourceLayout imageLayout =
+                RHI::GetImageSubresourceLayout(readbackResult.m_imageDescriptor.m_size, readbackResult.m_imageDescriptor.m_format);
 
             delete [] m_textureData[m_renderFace];
 

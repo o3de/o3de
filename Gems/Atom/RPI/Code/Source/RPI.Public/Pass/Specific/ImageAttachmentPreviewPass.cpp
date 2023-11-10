@@ -88,7 +88,7 @@ namespace AZ
             }
             // Import this scope producer
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
-            attachmentDatabase.ImportImage(m_destAttachmentId, m_destImage->GetRHIImage());
+            attachmentDatabase.ImportImage(m_destAttachmentId, m_destImage->GetRHIImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
         }
 
         void ImageAttachmentCopy::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -353,7 +353,7 @@ namespace AZ
                     // So the attachment can be still previewed when the pass is disabled.
                     if (m_attachmentCopy && m_attachmentCopy->m_destImage)
                     {
-                        attachmentDatabase.ImportImage(m_attachmentCopy->m_destAttachmentId, m_attachmentCopy->m_destImage->GetRHIImage());
+                        attachmentDatabase.ImportImage(m_attachmentCopy->m_destAttachmentId, m_attachmentCopy->m_destImage->GetRHIImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
                         isAttachmentValid = true;
                     }
                 }

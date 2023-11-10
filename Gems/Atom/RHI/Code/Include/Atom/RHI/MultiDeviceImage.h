@@ -12,6 +12,7 @@
 #include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 
 namespace AZ::RHI
 {
