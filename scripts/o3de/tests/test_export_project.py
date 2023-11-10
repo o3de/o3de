@@ -505,7 +505,7 @@ def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform,
                 ignore_file_patterns=file_patterns_to_ignore)
 
     setup_launcher_layout_directory(project_path=test_project_path,
-                                    project_name=project_name
+                                    project_name=project_name,
                                     asset_platform=test_asset_platform,
                                     launcher_build_path=test_mono_build_path,
                                     build_config=test_build_config,
