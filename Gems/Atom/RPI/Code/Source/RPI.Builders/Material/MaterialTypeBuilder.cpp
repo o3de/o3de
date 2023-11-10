@@ -44,7 +44,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = "Material Type Builder";
-            materialBuilderDescriptor.m_version = 45; // Revising job dependencies
+            materialBuilderDescriptor.m_version = 47; // Fixed warnings related to all properties material JSON
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialTypeBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialTypeBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -682,7 +682,7 @@ namespace AZ
             {
                 AZStd::string defaultMaterialFileName;
                 AzFramework::StringFunc::Path::GetFileName(materialTypeSourcePath.c_str(), defaultMaterialFileName);
-                defaultMaterialFileName += "_AllProperties.material";
+                defaultMaterialFileName += "_AllProperties.json";
 
                 AZStd::string defaultMaterialFilePath;
                 AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), defaultMaterialFileName.c_str(), defaultMaterialFilePath, true);
@@ -701,6 +701,7 @@ namespace AZ
                     AssetBuilderSDK::JobProduct defaultMaterialFileProduct;
                     defaultMaterialFileProduct.m_dependenciesHandled = true; // This product is only for reference, not used at runtime
                     defaultMaterialFileProduct.m_productFileName = defaultMaterialFilePath;
+                    defaultMaterialFileProduct.m_productAssetType = AZ::Uuid::CreateString("{FE8E7122-9E96-44F0-A4E4-F134DD9804E2}"); // Need a unique acid type for this raw JSON file
                     defaultMaterialFileProduct.m_productSubID = (u32)MaterialTypeProductSubId::AllPropertiesMaterialSourceFile;
                     response.m_outputProducts.emplace_back(AZStd::move(defaultMaterialFileProduct));
                 }
