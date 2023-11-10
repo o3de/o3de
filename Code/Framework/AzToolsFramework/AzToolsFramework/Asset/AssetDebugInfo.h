@@ -65,14 +65,15 @@ namespace AzToolsFramework
         static const char* GetAssetListDebugFileExtension();
 
         void BuildHumanReadableString();
-        void BuildInvalidAssetHumanReadableString();
-
         void BuildNodeTree(AZ::Data::AssetId assetId, DependencyNode* parent);
 
         AZStd::map<AZ::Data::AssetId, AssetFileDebugInfo> m_fileDebugInfoList;
-        AZStd::vector<AZ::Data::AssetId> m_invalidFileDebugInfoList;
-
         AZStd::string m_humanReadableString;
+
+#if defined(CARBONATED)
+        void BuildInvalidAssetHumanReadableString();
+        AZStd::vector<AZ::Data::AssetId> m_invalidFileDebugInfoList;
         AZStd::string m_invalidAssetHumanReadableString;
+#endif
     };
 } // namespace AzToolsFramework
