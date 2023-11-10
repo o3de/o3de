@@ -180,6 +180,8 @@ namespace PhysX
 
         if (IsRootArticulation())
         {
+            m_sceneRemovedHandler.Disconnect();
+
             if (m_articulation)
             {
                 DestroyArticulation();
