@@ -458,7 +458,7 @@ def test_bundle_assets(tmp_path, asset_platform):
             assert mock_process_input_arglist == expected_values
 
 
-@pytest.mark.parametrize("build_config, asset_platform, project_files_to_copy, file_patterns_to_ignore, archive_format", "project_name", [
+@pytest.mark.parametrize("build_config, asset_platform, project_files_to_copy, file_patterns_to_ignore, archive_format, project_name", [
     pytest.param("profile", "pc", ["include*.cfg"], ["ExcludeMe.ServerLauncher"], "zip", "testproject"),
     pytest.param("profile", "linux", ["include_me1.cfg", "include_me2.cfg"], ["*.ServerLauncher"], "zip", "testproject"),
     pytest.param("profile", "pc", ["include*.cfg"], ["ExcludeMe.ServerLauncher"], "none", "testproject"),
