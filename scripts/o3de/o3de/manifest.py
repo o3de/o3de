@@ -32,7 +32,6 @@ def get_this_engine_path() -> pathlib.Path:
     else:
         return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
 
-
 def get_home_folder() -> pathlib.Path:
     return pathlib.Path(os.path.expanduser("~")).resolve()
 
@@ -334,6 +333,28 @@ def get_engine_templates() -> list:
         return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
                         engine_object['templates'])) if 'templates' in engine_object else []
     return []
+
+def is_sdk_engine(engine_name:str = None, engine_path:str or pathlib.Path = None) -> bool:
+    """
+    Queries if the engine is an SDK engine that was created via the CMake install command
+    :param engine_name: Name of a registered engine to lookup in the ~/.o3de/o3de_manifest.json file
+    :param engine_path: The path to the engine
+    :return True if the engine.json contains an "sdk_engine" field which is True
+    """
+    engine_json_data = get_engine_json_data(engine_name, engine_path)
+    if engine_json_data:
+        return engine_json_data.get('sdk_engine', False)
+
+    if engine_path:
+        logger.warning('Failed to retrieve engine json data for the engine at '
+                     f'"{engine_path}". Treating engine as source engine.')
+    elif engine_name:
+        logger.warning('Failed to retrieve engine json data for registered engine '
+                     f'"{engine_name}". Treating engine as source engine.')
+    else:
+        logger.warning('Failed to retrieve engine json data as neither an engine name nor path were given.'
+                     'Treating engine as source engine')
+    return False
 
 
 # project.json queries
