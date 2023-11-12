@@ -645,7 +645,7 @@ namespace AzFramework
         constexpr const char* userCachePathFilename{ "Cache" };
         AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
 #if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
+        // The number of max attempts ultimately dictates the number of application instances that can run
         // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
         // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't
         // be set *infinitely* high - each cache folder is GBs in size, and finding a free directory is a
@@ -716,19 +716,51 @@ namespace AzFramework
             }
 
             AZ::IO::FixedMaxPath projectUserPath;
-            if (!m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+
+            // carbonated begin (mp-469): Add the ability to change the 'user' dir
+
+            bool hasCliUserDirOverride = false;
+
+            AZStd::string userDirName("user");
+#if defined(CARBONATED)
+            const int argC = GetArgC() ? *GetArgC() : 0;
+            char** argV = GetArgV() ? *GetArgV() : nullptr;            
+            // This isn't particularly elegant, but check for the user_dir override here.  Needs to be done early so that the aliases
+            // can be set correctly
+            if (argC > 2 && argV != nullptr)
             {
-                projectUserPath = engineRootPath / "user";
+                for (int i = 0; i < (argC - 1); i++)
+                {
+                    if (AZStd::string(argV[i]) == "+user_dir")
+                    {
+                        userDirName = argV[i + 1];
+                        hasCliUserDirOverride = true;
+                        break;
+                    }
+                }
+            }
+#endif
+
+            if (hasCliUserDirOverride)
+            {
+                projectUserPath = projectRootPath.Append(userDirName);
+            }
+            else if (!m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            {
+                projectUserPath = engineRootPath.Append(userDirName);
             }
             fileIoBase->SetAlias("@user@", projectUserPath.c_str());
             fileIoBase->CreatePath(projectUserPath.c_str());
             CreateUserCache(projectUserPath, *fileIoBase);
 
             AZ::IO::FixedMaxPath projectLogPath;
-            if (!m_settingsRegistry->Get(projectLogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
+            if (hasCliUserDirOverride || !m_settingsRegistry->Get(projectLogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
             {
                 projectLogPath = projectUserPath / "log";
             }
+
+            // carbonated end
+
             fileIoBase->SetAlias("@log@", projectLogPath.c_str());
             fileIoBase->CreatePath(projectLogPath.c_str());
 

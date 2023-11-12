@@ -59,7 +59,7 @@
             "type": "float",
             "defaultValue": 0.0,
             "min":0.0,
-            "max":3.0,
+            "max":100.0,
             "connection": {
                 "type": "ShaderInput",
                 "name": "m_outlineSize"

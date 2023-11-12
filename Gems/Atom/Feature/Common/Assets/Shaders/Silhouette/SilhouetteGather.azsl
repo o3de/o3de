@@ -21,15 +21,22 @@ VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
     VsSystemValues SV;
     SV.m_instanceId = instanceId;
 
-    // assumes IN.normal is already normalized and pointing in direction the silhouette should expand in
-    IN.position += MaterialSrg::m_outlineSize * IN.normal;
-
     VsOutput OUT = EvaluateVertexGeometry(IN, SV);
 
     // this depth bias helps prevent silhouettes appearing where there are small intersections
     // like the player feet with the ground
-    float distance = 1.0 - OUT.position.z / OUT.position.w;
-    OUT.position.z += MaterialSrg::m_depthBias * distance;
+    real distanceScale = 1.0 - OUT.position.z / OUT.position.w;
+    OUT.position.z += MaterialSrg::m_depthBias * distanceScale;
+
+    if(MaterialSrg::m_outlineSize > EPSILON)
+    {
+        real3 worldNormal = normalize(mul(GetObjectToWorldMatrixInverseTranspose(instanceId), IN.normal));
+        real4 screenSpaceNormal = mul(ViewSrg::m_viewProjectionMatrix, real4(worldNormal, 0.0));
+
+        // use a size scale so input m_outlineSize can be in range 0..100
+        const real sizeScale = 1.0 / 400.0;
+        OUT.position.xy += screenSpaceNormal.xy * (MaterialSrg::m_outlineSize * OUT.position.w * sizeScale) * distanceScale;
+    }
 
     return OUT;
 }

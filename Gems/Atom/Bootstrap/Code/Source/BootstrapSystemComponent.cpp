@@ -602,8 +602,10 @@ namespace AZ
 
                 // Switch render pipeline
                 viewportContext->GetRenderScene()->RemoveRenderPipeline(oldRenderPipeline->GetId());
+                auto view = oldRenderPipeline->GetDefaultView();
+                oldRenderPipeline = nullptr;
                 viewportContext->GetRenderScene()->AddRenderPipeline(newRenderPipeline);
-                newRenderPipeline->SetDefaultView(oldRenderPipeline->GetDefaultView());
+                newRenderPipeline->SetDefaultView(view);
 
                 AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(newRenderPipeline->GetRenderSettings().m_multisampleState);
             }

@@ -45,4 +45,5 @@ set(FILES
     PaintBrush/PaintBrushPaintSettingsTests.cpp
     PaintBrush/PaintBrushSmoothLocationTests.cpp
     QualitySystemComponentTests.cpp
+    DeviceAttributeSystemComponentTests.cpp
 )
