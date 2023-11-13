@@ -20,9 +20,11 @@ import string
 import subprocess
 import pathlib
 
+from enum import Enum
+from o3de import command_utils, manifest, utils
 from packaging.version import Version
 from pathlib import Path
-from o3de import command_utils, manifest, utils
+from typing import Tuple, List
 
 logging.basicConfig(format=utils.LOG_FORMAT)
 logger = logging.getLogger('o3de.android')
@@ -68,7 +70,6 @@ ANDROID_ARCH = 'arm64-v8a'
 ANDROID_SETTINGS_FILE = '.command_settings'
 ANDROID_SETTINGS_SECTION_NAME = 'android'
 ANDROID_SETTINGS_DEFAULT_VALUES = [
-    ('android_sdk_cmdline_tools_root', ''),
     ('android_sdk_root', ''),
     ('gradle_home', ''),
     ('cmake_home', ''),
@@ -123,34 +124,28 @@ If installing from Android Studio (recommended) then the default location of the
 
 For example:
 
-o3de{O3DE_SCRIPT_EXTENSION} android-register --global --set-value android_sdk_cmdline_tools_root=<path to android command line tools folder>
+o3de{O3DE_SCRIPT_EXTENSION} android-register --global --set-value android_sdk_root=<path to android SDK>
 
 """
-
-
-
-
-
-# The ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP manages the known android plugin known to O3DE and its compatibility requirements
-# Note: This map needs to be updated in conjunction with newer versions of the Android Gradle plugins.
-ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = [
-    ( ('8.1.0',) , {'gradle': '8.0',
-                   'sdk_build_tools': '33.0.1',
-                   'jdk': '17',
-                   'url': 'https://developer.android.com/build/releases/gradle-plugin'} ),
-    ( ('8.0.0', '8.0.1', '8.0.1') , {'gradle': '8.0',
-                                     'sdk_build_tools': '30.0.3',
-                                     'jdk': '17',
-                                     'url': 'https://developer.android.com/build/releases/past-releases/agp-8-0-0-release-notes'} )
-]
-
-
-# The minimum version of gradle that this script will support
-MINIMUM_GRADLE_VERSION = Version('8.0.0')
 
 class AndroidToolError(Exception):
     pass
 
+# The ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP manages the known android plugin known to O3DE and its compatibility requirements
+# Note: This map needs to be updated in conjunction with newer versions of the Android Gradle plugins.
+ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = [
+    ( ('8.1', ) , {'gradle': '8.0',
+                   'sdk_build_tools': '33.0.1',
+                   'jdk': '17',
+                   'url': 'https://developer.android.com/build/releases/gradle-plugin'} ),
+    ( ('8.0', ) , {'gradle': '8.0',
+                   'sdk_build_tools': '30.0.3',
+                   'jdk': '17',
+                   'url': 'https://developer.android.com/build/releases/past-releases/agp-8-0-0-release-notes'} )
+]
+
+# The minimum version of gradle that this script will support
+MINIMUM_GRADLE_VERSION = Version('8.0.0')
 
 class AndroidGradlePluginRequirements(object):
     """
@@ -165,12 +160,22 @@ class AndroidGradlePluginRequirements(object):
         self.url = source_dict['url']
 
     def validate_java_version(self, java_version:str) -> None:
+        """
+        Validate a version of java against the current Android Gradle Plugin. Raise a a detailed exception if it doesnt meet the requirements.
+        @param java_version:    The version string reported by java (-version)
+        @return: None
+        """
         java_version_check = Version(java_version)
         if not java_version_check >= self.jdk_version:
             raise AndroidToolError(f"The installed version of java ({java_version_check}) does not meet the minimum version of ({self.jdk_version}) "
                                    f"which is required by the Android Gradle Plugin version ({self.agp_version})")
 
     def validate_gradle_version(self, gradle_version:str) -> None:
+        """
+        Validate a version of gradle against the current Android Gradle Plugin. Raise a a detailed exception if it doesnt meet the requirements.
+        @param java_version:    The version string reported by gradle. (--version)
+        @return: None
+        """
         gradle_version_check = Version(gradle_version)
         if not gradle_version_check >= self.gradle_ver:
             raise AndroidToolError(f"The installed version of gradle ({gradle_version_check}) does not meet the minimum version of ({self.gradle_ver}) "
@@ -183,11 +188,16 @@ def get_android_gradle_plugin_requirements(requested_agp_version:str) -> Android
     :param requested_agp_version:   The version of the AGP to look for the requirements
     :return: The instance of AndroidGradlePluginRequirements for the specific version of AGP
     """
+    lookup_version = Version(requested_agp_version)
+    lookup_version_str = f'{lookup_version.major}.{lookup_version.minor}'
+    checked_versions = []
     for version_set, compat_grid in ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP:
         for agp_version in version_set:
-            if agp_version == requested_agp_version:
+            checked_versions.append(agp_version)
+            if agp_version == lookup_version_str:
                 return AndroidGradlePluginRequirements(requested_agp_version, compat_grid)
-    raise AndroidToolError(f"Unrecognized/unsupported android gradle plugin version {requested_agp_version} specified. ")
+    raise AndroidToolError(f"Unrecognized/unsupported android gradle plugin version {requested_agp_version} specified. Supported Versions are "
+                           f"{','.join(checked_versions)}")
 
 
 class AndroidSDKManager(object):
@@ -218,82 +228,69 @@ class AndroidSDKManager(object):
             super().__init__(available_update_components)
             assert len(available_update_components) == 3, '3 sections expected for installed package components (path, version, available)'
 
+    # Enums that track the type of package information that we are tracking
+    class PackageCategory(Enum):
+        AVAILABLE = 1
+        INSTALLED = 2
+        UPDATEABLE = 3
 
     def __init__(self, current_java_version:str, android_settings: command_utils.O3DEConfig):
         """
-        Initialize
+        Initialize the Android SDK Manager
 
         :param current_java_version:    The current version of java used by gradle
         :param android_settings:        The current android settings
         """
 
-        # Validate that the android command line tool root was set to a valid location
-        android_sdk_command_tools_root_path = AndroidSDKManager.__validate_android_command_line_tools_root(android_settings)
-
-        # Validate the android command line tool itself by checking the version and validating against the java in the environment
+        # Validate the android sdk path is set, contains the command line tools at the expected location, and that it is compatible with the
+        # input java version
+        self.installed_packages = {}
+        self.available_packages = {}
+        self.available_updates = {}
         self.android_command_line_tools_sdkmanager_path, self.android_sdk_path = \
-            AndroidSDKManager.__validate_android_command_line_tools_environment(current_java_version,
-                                                                                android_sdk_command_tools_root_path,
-                                                                                android_settings)
+            AndroidSDKManager.validate_android_sdk_environment(current_java_version=current_java_version,
+                                                               android_settings=android_settings)
 
-        self.refresh_sdk_installation(log_status=True)
+        assert self.android_command_line_tools_sdkmanager_path, "android_command_line_tools_sdkmanager_path not set"
+
+        self.refresh_sdk_installation()
+
 
     @staticmethod
-    def __validate_android_command_line_tools_root(android_settings: command_utils.O3DEConfig) -> Path:
+    def validate_android_sdk_environment(current_java_version, android_settings) -> Path:
+        """
+        From the android sdk value (android_sdk_root) from the settings, validate that it is set to a valid location,
+        contains the command line tools at the expected location, and that it is compatible with the input java version
 
-        # Validate that the android command line tool root was set to a valid location
-        android_sdk_command_tools_root = android_settings.get_value('android_sdk_cmdline_tools_root')
+        :param current_java_version:    The version of java to validate the version of the command line tools (if any)
+        :param android_settings:        The android settings to read the android sdk path from
+        :return: The path to the android sdk command line tools (in its expected location)
+        """
+
+        # Validate the android sdk folder was set to a valid location
         android_sdk_root = android_settings.get_value('android_sdk_root')
-        if not android_sdk_command_tools_root and not android_sdk_root:
-            raise AndroidToolError(f"Neither the android sdk command tools path '{android_sdk_command_tools_root}' nor the android sdk path was not set .\n"
-                                   f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
-        if not android_sdk_command_tools_root and android_sdk_root:
-            android_sdk_command_tools_root_path = Path(android_sdk_root) / 'cmdline-tools'
-        else:
-            android_sdk_command_tools_root_path = Path(android_sdk_command_tools_root)
+        if not android_sdk_root:
+            raise AndroidToolError("The android sdk path was not set. Set the value of 'android_sdk' to the path where the android sdk base is located.")
+        android_sdk_root_path = Path(android_sdk_root)
+        if not android_sdk_root_path.is_dir():
+            raise AndroidToolError(f"The android sdk path '{android_sdk_root_path}' is set to an invalid path. Folder does not exist.")
 
-        # Locate the sdkmanager script from the possible sub-paths from the sdk command line root (cmdline-tools)
-        for sub_path in ['bin', 'latest/bin']:
-            android_sdk_command_tools_path = android_sdk_command_tools_root_path / sub_path / f'sdkmanager{SDKMANAGER_EXTENSION}'
-            if android_sdk_command_tools_path.is_file():
-                break
-        if not android_sdk_command_tools_path.is_file():
-            if android_sdk_command_tools_root:
-                raise AndroidToolError(f"The android sdk command tools path '{android_sdk_command_tools_root}' is set to an "
-                                       f"invalid path: {android_sdk_command_tools_path} is missing or is not a valid "
-                                       f"command line tools root folder. \n"
-                                       f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
-            else:
-                raise AndroidToolError(
-                    f"Unable to locate the android sdk command tools from the android sdk specified at '{android_sdk_root}'." 
-                    f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
-        return android_sdk_command_tools_root_path
+        # Make sure that the android command line tool is installed (unzipped) to the expected location under the specified android SDK
+        android_sdk_command_line_tools_root = android_sdk_root_path / 'cmdline-tools' / 'latest'
+        android_sdk_command_line_tool = android_sdk_command_line_tools_root / 'bin' / f'sdkmanager{SDKMANAGER_EXTENSION}'
+        if not android_sdk_command_line_tool.is_file():
+            raise AndroidToolError(f"Unable to locate the android sdk command line tool from the android sdk root set at '{android_sdk_root_path}'. "
+                                   f"Make sure that it is installed at {android_sdk_command_line_tools_root}.")
 
-    @staticmethod
-    def __validate_android_command_line_tools_environment(current_java_version, android_sdk_command_tools_root_path, android_settings) -> Path:
-
-        # Locate the sdkmanager script from the possible sub-paths from the sdk command line root (cmdline-tools)
-        for subpath in ['bin', 'latest/bin']:
-            android_command_line_tools_sdkmanager_path = android_sdk_command_tools_root_path / subpath / f'sdkmanager{SDKMANAGER_EXTENSION}'
-            if android_command_line_tools_sdkmanager_path.is_file():
-                break
-        if not android_command_line_tools_sdkmanager_path.is_file():
-            raise AndroidToolError(f"The android sdk command tools path '{android_sdk_command_tools_root_path}' is set to an "
-                                   f"invalid path: {android_command_line_tools_sdkmanager_path} is missing or is not a valid "
-                                   f"command line tools root folder. \n"
-                                   f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
-
-        # Retrieve the version if possible
-        command_arg = [android_command_line_tools_sdkmanager_path.name, '--version']
-
+        # Retrieve the version if possible to validate it can be used
+        command_arg = [android_sdk_command_line_tool.name, '--version']
         logging.debug("Validating tool version exec: (%s)", subprocess.list2cmdline(command_arg))
-
         result = subprocess.run(command_arg,
                                 shell=(platform.system() == 'Windows'),
                                 capture_output=True,
                                 encoding='utf-8',
                                 errors=ENCODING_ERROR_HANDLINGS,
-                                cwd=android_command_line_tools_sdkmanager_path.parent)
+                                cwd=android_sdk_command_line_tool.parent)
 
         if result.returncode != 0:
 
@@ -304,12 +301,12 @@ class AndroidSDKManager(object):
                 java_file_version = match.group(2)
                 cmdline_tool_java_version = JAVA_CLASS_FILE_MAP.get(java_file_version.split('.')[0], None)
                 if cmdline_tool_java_version:
-                    raise AndroidToolError(f"The android SDK command line tool requires {cmdline_tool_java_version} but the current version of java is {current_java_version}")
+                    raise AndroidToolError(f"The android SDK command line tool requires java version {cmdline_tool_java_version} but the current version of java is {current_java_version}")
                 else:
                     raise AndroidToolError(f"The android SDK command line tool requires java that supports class version {java_file_version}, but the current version of java is {current_java_version}")
             elif re.search('Could not determine SDK root', result.stdout or result.stderr, re.MULTILINE) is not None:
                 # The error is related to the android SDK not being able to be resolved.
-                raise AndroidToolError(f"The android SDK command line tool at {android_command_line_tools_sdkmanager_path} is not located under a valid Android SDK root.\n"
+                raise AndroidToolError(f"The android SDK command line tool at {android_sdk_command_line_tool} is not located under a valid Android SDK root.\n"
                                        "It must exist under a path designated as the Android SDK root, such as: \n\n"
                                        f"<android_sdk>/cmdline-tools/latest/sdkmanager{SDKMANAGER_EXTENSION}' \n\n"
                                        "Refer to https://developer.android.com/tools/sdkmanager for more information.\n")
@@ -317,17 +314,23 @@ class AndroidSDKManager(object):
                 raise AndroidToolError(f"An error occurred attempt to run the android command line tool:\n{result.stdout or result.stderr}")
         else:
             logger.info(f'Verified Android SDK Manager version {result.stdout.strip()}')
-            logger.info(f'Verified Android SDK path at {android_command_line_tools_sdkmanager_path.parents[3]}')
-            return android_command_line_tools_sdkmanager_path, android_command_line_tools_sdkmanager_path.parents[3]
+            logger.info(f'Verified Android SDK path at {android_sdk_root_path}')
+            return android_sdk_command_line_tool, android_sdk_root_path
 
     def call_sdk_manager(self, arguments):
+        """
+        Perform the command line call to the sdk manager
 
-        assert self.android_command_line_tools_sdkmanager_path, "android_command_line_tools_sdkmanager_path not set"
+        :param arguments:   The arguments to pass to the SDK manager
+        :return: The subprocess.Result of the call
+        """
+        assert isinstance(arguments, list)
 
         command_args = [self.android_command_line_tools_sdkmanager_path]
         command_args.extend(arguments)
 
         logger.debug(f"Calling sdkmanager:  {subprocess.list2cmdline(arguments)}")
+
         result = subprocess.run(command_args,
                                 shell=(platform.system() == 'Windows'),
                                 capture_output=True,
@@ -335,35 +338,39 @@ class AndroidSDKManager(object):
                                 errors=ENCODING_ERROR_HANDLINGS)
         return result
 
-    def is_package_installed(self, search_package_path):
+    def get_package_list(self, search_package_path: str, packageCategory: PackageCategory) -> List:
         """
-        Check if a package path to see if its a package that is installed. The path can use wildcard '*'s
-        The function will return a list of the results that match the package paths, ordered by the newest version first
+        Query for the package information that this manager class maintains based a search query (that uses file patterns)
+        on the category of packages (INSTALLED, AVAILABLE, UPDATEABLE)
+
+        :param search_package_path: The path search pattern (file pattern) to search for the package
+        :param packageCategory:     The category of packages to search on
+        :return:    The list of packages that meet the search path and category inputs
         """
+
         def _package_sort(package):
+            # Sort by version number of the package
             return package.version
+
         package_detail_result_list = []
-        for installed_package_path, installed_package_details in self.installed_packages.items():
+
+        match packageCategory:
+            case AndroidSDKManager.PackageCategory.INSTALLED:
+                package_dict = self.installed_packages
+            case AndroidSDKManager.PackageCategory.AVAILABLE:
+                package_dict = self.available_packages
+            case AndroidSDKManager.PackageCategory.UPDATEABLE:
+                package_dict = self.available_updates
+            case _:
+                assert False, "Unsupported package category"
+
+        for installed_package_path, installed_package_details in package_dict.items():
             if fnmatch.fnmatch(installed_package_path, search_package_path):
                 package_detail_result_list.append(installed_package_details)
         package_detail_result_list.sort(reverse=True, key=_package_sort)
         return package_detail_result_list
 
-    def is_package_available(self, search_package_path):
-        """
-        Check if a package path to see if its an available package to install. The path can use wildcard '*'s
-        The function will return a list of the results that match the package paths, ordered by the newest version first
-        """
-        def _package_sort(package):
-            return package.version
-        package_detail_result_list = []
-        for available_package_path, available_package_details in self.available_packages.items():
-            if fnmatch.fnmatch(available_package_path, search_package_path):
-                package_detail_result_list.append(available_package_details)
-        package_detail_result_list.sort(reverse=True, key=_package_sort)
-        return package_detail_result_list
-
-    def refresh_sdk_installation(self, log_status:bool):
+    def refresh_sdk_installation(self):
         """
         Utilize the sdk_manager command line tool from the Android SDK to collect / refresh the list of
         installed, available, and updateable packages that are managed by the android SDK.
@@ -382,8 +389,7 @@ class AndroidSDKManager(object):
             package_map[item_components[0]] = AndroidSDKManager.AvailableUpdate(item_components)
 
         # Use the SDK manager to collect the available and installed packages
-        if log_status:
-            logger.info("Refreshing installed and available packages...")
+        logger.info("Refreshing installed and available packages...")
         result = self.call_sdk_manager(['--list'])
         if result.returncode != 0:
             raise AndroidToolError(f"Error calling sdkmanager (arguments: '--list' error : {result.stderr or result.stdout}")
@@ -419,25 +425,27 @@ class AndroidSDKManager(object):
             if current_append_map is not None and current_item_factory is not None:
                 current_item_factory(current_append_map, item_parts)
 
-        if log_status:
-            logger.info(f"Installed packages: {len(self.installed_packages)}")
-            logger.info(f"Available packages: {len(self.available_packages)}")
-            logger.info(f"Available updates: {len(self.available_updates)}")
+        logger.info(f"Installed packages: {len(self.installed_packages)}")
+        logger.info(f"Available packages: {len(self.available_packages)}")
+        logger.info(f"Available updates: {len(self.available_updates)}")
 
-    def install_package(self, package_install_path, package_description):
+    def install_package(self, package_install_path: str, package_description: str):
         """
         Install a package based on the path of an available android sdk package
+
+        :param package_install_path:    The path (as reported by the sdk manager) of the package to install locally
+        :param package_description:     A human-readable description to report back status and/or errors from the install operation
         """
 
         # Skip installation if the package is already installed
-        package_result_list = self.is_package_installed(package_install_path)
+        package_result_list = self.get_package_list(package_install_path, AndroidSDKManager.PackageCategory.INSTALLED)
         if package_result_list:
             installed_package_detail = package_result_list[0]
             logging.info(f"{installed_package_detail.description} (version {installed_package_detail.version}) Detected")
             return installed_package_detail
 
         # Make sure the package name is available
-        package_result_list = self.is_package_available(package_install_path)
+        package_result_list = self.get_package_list(package_install_path, AndroidSDKManager.PackageCategory.AVAILABLE)
         if not package_result_list:
             raise AndroidToolError(f"Invalid Android SDK Package {package_description}: Bad package path {package_install_path}")
 
@@ -454,10 +462,10 @@ class AndroidSDKManager(object):
         self.call_sdk_manager(['--install', available_package_to_install.path])
 
         # Refresh the tracked SDK Contents
-        self.refresh_sdk_installation(log_status=False)
+        self.refresh_sdk_installation()
 
         # Get the package details to verify
-        package_result_list = self.is_package_installed(package_install_path)
+        package_result_list = self.get_package_list(package_install_path, AndroidSDKManager.PackageCategory.INSTALLED)
         if package_result_list:
             installed_package_detail = package_result_list[0]
             logging.info(f"{installed_package_detail.description} (version {installed_package_detail.version}) Installed")
@@ -471,7 +479,8 @@ class AndroidSDKManager(object):
 
     def check_licenses(self):
         """
-        Make sure that all the android SDK licenses have been reviewed and accepted first
+        Make sure that all the android SDK licenses have been reviewed and accepted first, otherwise raise an exception
+        that provides information on how to accept them.
         """
         logger.info("Checking Android SDK Package licenses state..")
         result = subprocess.run(['echo' , 'Y' , '|', self.android_command_line_tools_sdkmanager_path, '--licenses'],
@@ -495,10 +504,13 @@ class AndroidSDKManager(object):
         return self.android_sdk_path
 
 
-def read_android_settings_for_project(project_path:Path)->(dict,dict):
+def read_android_settings_for_project(project_path:Path) -> Tuple[dict, dict]:
     """
     Read the general project and android specific settings for the project, and return the general project settings
     from project.json, and the android specific settings from 'Platform/Android/android_project.json'
+
+    :param project_path:
+    :return: Tuple of the project settings, and the android-specific settings
     """
     if not project_path.is_dir():
         raise AndroidToolError(f"Invalid project path {project_path}. Path does not exist or is a file.")
@@ -526,7 +538,6 @@ def read_android_settings_for_project(project_path:Path)->(dict,dict):
         if android_settings is None:
             raise AndroidToolError(f"Missing android settings file {android_project_json_file} and cannot located legacy "
                                    f"'android_settings' from {project_json_path}")
-
 
     return project_settings, android_settings
 
@@ -701,8 +712,6 @@ asset_deploy_mode={asset_mode}
 
 [android]
 android_sdk_path={android_sdk_path}
-embed_assets_in_apk={embed_assets_in_apk}
-is_unit_test={is_unit_test}
 android_gradle_plugin={android_gradle_plugin_version}
 """
 
@@ -1023,11 +1032,10 @@ class AndroidProjectGenerator(object):
     def __init__(self, engine_root:Path,
                  android_build_dir, android_sdk_path, android_build_tool_version, android_platform_sdk_api_level, android_ndk_package,
                  project_name, project_path, project_general_settings, project_android_settings, cmake_version, cmake_path, gradle_path, gradle_version,
-                 android_gradle_plugin_version, ninja_path, include_assets_in_apk, asset_mode, signing_config, native_build_path,
+                 android_gradle_plugin_version, ninja_path, asset_mode, signing_config, native_build_path,
                  vulkan_validation_path,
                  extra_cmake_configure_args,
                  src_pak_file_path,
-                 monolithic_build=True,
                  strip_debug_symbols=False,
                  overwrite_existing=True,
                  oculus_project=False):
@@ -1051,7 +1059,6 @@ class AndroidProjectGenerator(object):
         :param gradle_version:          The detected version of gradle being used
         :param android_gradle_plugin_version:   The android gradle plugin version
         :param ninja_path:     The override path to ninja if it does not exists in the system path
-        :param include_assets_in_apk:
         :param asset_mode:
         :param asset_type:
         :param signing_config:          Optional signing configuration arguments
@@ -1086,16 +1093,11 @@ class AndroidProjectGenerator(object):
         self.gradle_version = gradle_version
         self.gradle_plugin_version = android_gradle_plugin_version
         self.ninja_path = ninja_path
-        self.is_monolithic_build = monolithic_build
         self.strip_debug_symbols = strip_debug_symbols
 
         self.android_project_builder_path = self.engine_root / 'Code/Tools/Android/ProjectBuilder'
-        self.include_assets_in_apk = include_assets_in_apk
         self.src_pak_file_path = src_pak_file_path
         self.asset_mode = asset_mode
-
-
-
 
         self.native_build_path = native_build_path
         self.vulkan_validation_path = vulkan_validation_path
@@ -1206,8 +1208,6 @@ class AndroidProjectGenerator(object):
                                                                     project_path=self.project_path,
                                                                     asset_mode=self.asset_mode,
                                                                     android_sdk_path=str(self.android_sdk_path),
-                                                                    embed_assets_in_apk=str(self.include_assets_in_apk),
-                                                                    is_unit_test=False,
                                                                     android_gradle_plugin_version=self.gradle_plugin_version)
 
         platform_settings_file = self.build_dir / 'platform.settings'
@@ -1390,10 +1390,8 @@ class AndroidProjectGenerator(object):
                 f'"-DLY_NDK_DIR={template_ndk_path}"',
                 '"-DANDROID_STL=c++_shared"',
                 '"-Wno-deprecated"',
+                '"-DLY_MONOLITHIC_GAME=ON"'
             ])
-            if self.is_monolithic_build:
-                cmake_argument_list.append('"-DLY_MONOLITHIC_GAME=ON"')
-
             if self.ninja_path:
                 cmake_argument_list.append(f'"-DCMAKE_MAKE_PROGRAM={self.ninja_path.as_posix()}"')
 
@@ -1416,10 +1414,7 @@ class AndroidProjectGenerator(object):
             # 'main' folder so they will be included into the APK. Otherwise
             # do the layout under a different folder so it's created, but not
             # copied into the APK.
-            if self.include_assets_in_apk:
-                layout_folder = 'app/src/main/assets'
-            else:
-                layout_folder = 'app/src/assets'
+            layout_folder = 'app/src/main/assets'
 
             python_full_path = self.engine_root / 'python' / PYTHON_SCRIPT
             syncLayoutCommandLineSource = [f'{python_full_path.resolve().as_posix()}',
@@ -1428,11 +1423,8 @@ class AndroidProjectGenerator(object):
                                             '--gradle-version', self.gradle_version,
                                             '--build-config', native_config.lower(),
                                             '--native-build-path', self.native_build_path,
-                                            '--asset-mode', self.asset_mode ]
-            if self.is_monolithic_build:
-                syncLayoutCommandLineSource.append('--monolithic')
-            if self.include_assets_in_apk:
-                syncLayoutCommandLineSource.append('--apk-assets')
+                                            '--asset-mode', self.asset_mode,
+                                            '--asset-bundle-folder', self.src_pak_file_path ]
 
             syncLayoutCommandLine = ','.join([f"'{arg}'" for arg in syncLayoutCommandLineSource])
 

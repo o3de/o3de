@@ -208,9 +208,6 @@ def generate_android_project(args: argparse) -> int:
         project_path = resolved_project_path
         logger.info(f'Project Path : {project_path}')
 
-        # Note: Only monolithic builds are supported for gradle scripts from at least version 8.0
-        monolithic_build = True
-
         # Debug stripping option
         if getattr(args, 'strip_debug', False):
             strip_debug = True
@@ -271,14 +268,12 @@ def generate_android_project(args: argparse) -> int:
                                                       gradle_version=gradle_version,
                                                       android_gradle_plugin_version=android_gradle_plugin_ver,
                                                       ninja_path=ninja_path,
-                                                      include_assets_in_apk=True,
                                                       asset_mode=args.asset_mode,
                                                       signing_config=signing_config,
                                                       native_build_path=args.native_build_path,
                                                       vulkan_validation_path=None,
                                                       extra_cmake_configure_args=None,
                                                       overwrite_existing=True,
-                                                      monolithic_build=monolithic_build,
                                                       strip_debug_symbols=strip_debug,
                                                       src_pak_file_path='AssetBundling/Bundles',
                                                       oculus_project=args.oculus_project)
