@@ -274,39 +274,43 @@ namespace AZ
 
             AZStd::string PredictOriginalMaterialTypeSourcePath(const AZStd::string& materialTypeSourcePath)
             {
-                // Separate the input material type path into a relative path and root folder. This should work for both intermediate,
-                // generated material types and original material types.
-                bool pathFound = false;
-                AZStd::string relativePath;
-                AZStd::string rootFolder;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                    pathFound,
-                    &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
-                    materialTypeSourcePath.c_str(),
-                    relativePath,
-                    rootFolder);
-
-                if (pathFound)
+                constexpr const char* generatedMaterialTypeSuffix = "_generated.materialtype";
+                if (materialTypeSourcePath.ends_with(generatedMaterialTypeSuffix))
                 {
-                    // Replace the generated suffix if present
-                    AZ::StringFunc::Replace(relativePath, "_generated.materialtype", ".materialtype");
-
-                    // Search for the original material type file using the stripped generated material type path.
-                    pathFound = false;
-                    AZ::Data::AssetInfo sourceInfo;
+                    // Separate the input material type path into a relative path and root folder. This should work for both intermediate,
+                    // generated material types and original material types.
+                    bool pathFound = false;
+                    AZStd::string relativePath;
+                    AZStd::string rootFolder;
                     AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                         pathFound,
-                        &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-                        relativePath.c_str(),
-                        sourceInfo,
+                        &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+                        materialTypeSourcePath.c_str(),
+                        relativePath,
                         rootFolder);
 
                     if (pathFound)
                     {
-                        AZStd::string fullPath;
-                        if (AZ::StringFunc::Path::ConstructFull(rootFolder.c_str(), sourceInfo.m_relativePath.c_str(), fullPath, true))
+                        // Replace the generated suffix if present
+                        AZ::StringFunc::Replace(relativePath, generatedMaterialTypeSuffix, ".materialtype");
+
+                        // Search for the original material type file using the stripped generated material type path.
+                        pathFound = false;
+                        AZ::Data::AssetInfo sourceInfo;
+                        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                            pathFound,
+                            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                            relativePath.c_str(),
+                            sourceInfo,
+                            rootFolder);
+
+                        if (pathFound)
                         {
-                            return fullPath;
+                            AZStd::string fullPath;
+                            if (AZ::StringFunc::Path::ConstructFull(rootFolder.c_str(), sourceInfo.m_relativePath.c_str(), fullPath, true))
+                            {
+                                return fullPath;
+                            }
                         }
                     }
                 }
