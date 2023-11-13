@@ -421,17 +421,27 @@ def main():
     if numVal == 0:
         return
 
-    print(f"adding {numVal} values. ({numVal/len(dialog.participantNames)} variants)")
+    mode = "append" if dialog.mixOpt_append.isChecked() else ("multiply" if dialog.mixOpt_multiply.isChecked() else "<error>")
+    print(f"sending {numVal} values. ({numVal/len(dialog.participantNames)} new variants). in '{mode}' mode")
 
     beginEdit(documentId)
     # passing the result
-    azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
-        azlmbr.bus.Event,
-        'AppendSparseVariantSet',
-        documentId,
-        dialog.participantNames,
-        dialog.listOfDigitArrays
-    )
+    if dialog.mixOpt_append.isChecked():  # append mode
+        azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
+            azlmbr.bus.Event,
+            'AppendSparseVariantSet',
+            documentId,
+            dialog.participantNames,
+            dialog.listOfDigitArrays
+        )
+    elif dialog.mixOpt_multiply.isChecked():  # mix mode (enumerate the new variants fully with the old ones)
+        azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
+            azlmbr.bus.Event,
+            'MultiplySparseVariantSet',
+            documentId,
+            dialog.participantNames,
+            dialog.listOfDigitArrays
+        )
     endEdit(documentId)
 
 
