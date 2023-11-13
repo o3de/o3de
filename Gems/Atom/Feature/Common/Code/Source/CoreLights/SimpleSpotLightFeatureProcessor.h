@@ -68,7 +68,7 @@ namespace AZ
             void SetRgbIntensity(LightHandle handle, const PhotometricColor<PhotometricUnitType>& lightColor) override;
             void SetPosition(LightHandle handle, const AZ::Vector3& lightPosition) override;
             void SetDirection(LightHandle handle, const AZ::Vector3& lightDirection) override;
-            virtual void SetConeAngles(LightHandle handle, float innerRadians, float outerRadians) override;
+            void SetConeAngles(LightHandle handle, float innerRadians, float outerRadians) override;
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
@@ -89,11 +89,7 @@ namespace AZ
             SimpleSpotLightFeatureProcessor(const SimpleSpotLightFeatureProcessor&) = delete;
 
             static constexpr const char* FeatureProcessorName = "SimpleSpotLightFeatureProcessor";
-            static constexpr float MaxConeRadians = AZ::DegToRad(90.0f);
-            static constexpr float MaxProjectedShadowRadians = ProjectedShadowFeatureProcessorInterface::MaxProjectedShadowRadians * 0.5f;
-            using ShadowId = ProjectedShadowFeatureProcessor::ShadowId;
 
-            void ValidateAndSetConeAngles(LightHandle handle, float innerRadians, float outerRadians);
             void UpdateBounds(LightHandle handle);
             void UpdateShadow(LightHandle handle);
 

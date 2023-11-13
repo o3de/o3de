@@ -7,6 +7,7 @@
  */
 
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
+#include <CoreLights/SpotLightUtils.h>
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
@@ -83,7 +84,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                ShadowId shadowId = ShadowId(m_lightData.GetData<0>(handle.GetIndex()).m_shadowIndex);
+                SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(m_lightData.GetData<0>(handle.GetIndex()).m_shadowIndex);
                 if (shadowId.IsValid())
                 {
                     m_shadowFeatureProcessor->ReleaseShadow(shadowId);
@@ -109,13 +110,13 @@ namespace AZ
                 light = m_lightData.GetData<0>(sourceLightHandle.GetIndex());
                 m_lightData.GetData<1>(handle.GetIndex()) = m_lightData.GetData<1>(sourceLightHandle.GetIndex());
 
-                ShadowId shadowId = ShadowId(light.m_shadowIndex);
+                SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(light.m_shadowIndex);
                 if (shadowId.IsValid())
                 {
                     // Since the source light has a valid shadow, a new shadow must be generated for the cloned light.
                     ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor originalDesc =
                         m_shadowFeatureProcessor->GetShadowProperties(shadowId);
-                    ShadowId cloneShadow = m_shadowFeatureProcessor->AcquireShadow();
+                    SpotLightUtils::ShadowId cloneShadow = m_shadowFeatureProcessor->AcquireShadow();
                     light.m_shadowIndex = cloneShadow.GetIndex();
                     m_shadowFeatureProcessor->SetShadowProperties(cloneShadow, originalDesc);
                 }
@@ -135,13 +136,13 @@ namespace AZ
                 m_deviceBufferNeedsUpdate = false;
             }
 
-             if (r_enablePerMeshShaderOptionFlags)
+            if (r_enablePerMeshShaderOptionFlags)
             {
                 // Filter lambdas
                 auto hasShadow = [&](const MeshCommon::BoundsVariant& bounds) -> bool
                 {
                     LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&bounds);
-                    ShadowId shadowId = ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
+                    SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
                     return shadowId.IsValid();
                 };
 
@@ -198,7 +199,8 @@ namespace AZ
 
         void SimpleSpotLightFeatureProcessor::SetConeAngles(LightHandle handle, float innerRadians, float outerRadians)
         {
-            ValidateAndSetConeAngles(handle, innerRadians, outerRadians);
+            auto& light = m_lightData.GetData<0>(handle.GetIndex());
+            SpotLightUtils::ValidateAndSetConeAngles(light, innerRadians, outerRadians);
             UpdateShadow(handle);
 
             m_deviceBufferNeedsUpdate = true;
@@ -215,10 +217,10 @@ namespace AZ
             UpdateBounds(handle);
 
             // Update the shadow near far planes if necessary
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
+            SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(light.m_shadowIndex);
             if (shadowId.IsValid())
             {
-                m_shadowFeatureProcessor->SetNearFarPlanes(ShadowId(light.m_shadowIndex), 0, attenuationRadius);
+                m_shadowFeatureProcessor->SetNearFarPlanes(SpotLightUtils::ShadowId(light.m_shadowIndex), 0, attenuationRadius);
             }
             m_deviceBufferNeedsUpdate = true;
         }
@@ -242,7 +244,7 @@ namespace AZ
         void SimpleSpotLightFeatureProcessor::SetShadowsEnabled(LightHandle handle, bool enabled)
         {
             auto& light = m_lightData.GetData<0>(handle.GetIndex());
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
+            SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(light.m_shadowIndex);
             if (shadowId.IsValid() && enabled == false)
             {
                 // Disable shadows
@@ -258,7 +260,7 @@ namespace AZ
 
                 // It's possible the cone angles aren't set, or are too wide for casting shadows. This makes sure they're set to reasonable
                 // limits. This function expects radians, so the cos stored in the actual data needs to be undone.
-                ValidateAndSetConeAngles(handle, acosf(light.m_cosInnerConeAngle), acosf(light.m_cosOuterConeAngle));
+                SpotLightUtils::ValidateAndSetConeAngles(light, acosf(light.m_cosInnerConeAngle), acosf(light.m_cosOuterConeAngle));
 
                 UpdateShadow(handle);
                 m_deviceBufferNeedsUpdate = true;
@@ -283,56 +285,16 @@ namespace AZ
             return m_lightBufferHandler.GetElementCount();
         }
 
-        void SimpleSpotLightFeatureProcessor::ValidateAndSetConeAngles(LightHandle handle, float innerRadians, float outerRadians)
-        {
-            auto& light = m_lightData.GetData<0>(handle.GetIndex());
-
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
-            float maxRadians = shadowId.IsNull() ? MaxConeRadians : MaxProjectedShadowRadians;
-            float minRadians = 0.001f;
-
-            outerRadians = AZStd::clamp(outerRadians, minRadians, maxRadians);
-            innerRadians = AZStd::clamp(innerRadians, minRadians, outerRadians);
-
-            light.m_cosInnerConeAngle = cosf(innerRadians);
-            light.m_cosOuterConeAngle = cosf(outerRadians);
-        }
-
         void SimpleSpotLightFeatureProcessor::UpdateBounds(LightHandle handle)
         {
             const SimpleSpotLightData& data = m_lightData.GetData<0>(handle.GetIndex());
-
-            float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
-            AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
-            AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_direction.data());
-
-            // At greater than a 68 degree cone angle, a hemisphere will have a smaller volume than a frustum.
-            constexpr float CosFrustumHemisphereVolumeCrossoverAngle = 0.37f;
-
-            if (data.m_cosOuterConeAngle < CosFrustumHemisphereVolumeCrossoverAngle)
-            {
-                // Wide angle, use a hemisphere for bounds instead of frustum
-                MeshCommon::BoundsVariant& bounds = m_lightData.GetData<1>(handle.GetIndex());
-                bounds.emplace<Hemisphere>(Hemisphere(position, radius, normal));
-            }
-            else
-            {
-                ViewFrustumAttributes desc;
-                desc.m_aspectRatio = 1.0f;
-
-                desc.m_nearClip = 0.f;
-                desc.m_farClip = radius;
-                desc.m_verticalFovRadians = GetMax(0.001f, acosf(data.m_cosOuterConeAngle) * 2.0f);
-                desc.m_worldTransform = AZ::Transform::CreateLookAt(position, position + normal);
-
-                m_lightData.GetData<1>(handle.GetIndex()) = AZ::Frustum(desc);
-            }
+            m_lightData.GetData<1>(handle.GetIndex()) = SpotLightUtils::BuildBounds(data);            
         }
 
         void SimpleSpotLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
             const auto& lightData = m_lightData.GetData<0>(handle.GetIndex());
-            ShadowId shadowId = ShadowId(lightData.m_shadowIndex);
+            SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(lightData.m_shadowIndex);
             if (shadowId.IsNull())
             {
                 // Early out if shadows are disabled.
@@ -342,19 +304,7 @@ namespace AZ
             ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor desc =
                 m_shadowFeatureProcessor->GetShadowProperties(shadowId);
 
-            Vector3 position = Vector3::CreateFromFloat3(lightData.m_position.data());
-            const Vector3 direction = Vector3::CreateFromFloat3(lightData.m_direction.data());
-
-            constexpr float SmallAngle = 0.01f;
-            float halfFov = acosf(lightData.m_cosOuterConeAngle);
-            desc.m_fieldOfViewYRadians = GetMax(halfFov * 2.0f, SmallAngle);
-            desc.m_transform = Transform::CreateLookAt(position, position + direction);
-
-            desc.m_aspectRatio = 1.0f;
-            desc.m_nearPlaneDistance = 0.f;
-            const float attenuationRadius = LightCommon::GetRadiusFromInvRadiusSquared(lightData.m_invAttenuationRadiusSquared);
-            desc.m_farPlaneDistance = attenuationRadius;
-
+            SpotLightUtils::UpdateShadowDescriptor(lightData, desc);
             m_shadowFeatureProcessor->SetShadowProperties(shadowId, desc);
         }
 
@@ -364,7 +314,7 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetShadowSetting().");
 
             auto& light = m_lightData.GetData<0>(handle.GetIndex());
-            ShadowId shadowId = ShadowId(light.m_shadowIndex);
+            SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(light.m_shadowIndex);
 
             AZ_Assert(shadowId.IsValid(), "Attempting to set a shadow property when shadows are not enabled.");
             if (shadowId.IsValid())

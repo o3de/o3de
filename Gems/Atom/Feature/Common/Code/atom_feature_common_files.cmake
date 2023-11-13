@@ -113,6 +113,7 @@ set(FILES
     Source/CoreLights/ShadowmapAtlas.cpp
     Source/CoreLights/ShadowmapPass.h
     Source/CoreLights/ShadowmapPass.cpp
+    Source/CoreLights/SpotLightUtils.h
     Source/Checkerboard/CheckerboardColorResolvePass.cpp
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
