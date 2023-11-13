@@ -347,7 +347,11 @@ namespace AzToolsFramework
     }
 
     // Returns the asset info if it exists and is the same for the platform specified by platformIndex
+#if defined(CARBONATED)
+    AZ::Data::AssetInfo AssetSeedManager::GetAssetInfoById(const AZ::Data::AssetId& assetId, const AzFramework::PlatformId& platformIndex, const AZStd::string& seedListfilePath, const AZStd::string& assetHintPath, AssetFileDebugInfoList* optionalDebugList)
+#else
     AZ::Data::AssetInfo AssetSeedManager::GetAssetInfoById(const AZ::Data::AssetId& assetId, const AzFramework::PlatformId& platformIndex, const AZStd::string& seedListfilePath, const AZStd::string& assetHintPath)
+#endif
     {
         using namespace AzToolsFramework::AssetCatalog;
         AZ::Data::AssetInfo assetInfo;
@@ -362,6 +366,12 @@ namespace AzToolsFramework
             }
 
             AZ_Error("AssetSeedManager", false, errorMessage.c_str());
+#if defined(CARBONATED)
+            if (optionalDebugList)
+            {
+                optionalDebugList->m_invalidFileDebugInfoList.push_back(assetId);
+            }
+#endif
         }
         return assetInfo;
     }
@@ -530,8 +540,11 @@ namespace AzToolsFramework
                     if (productDependency.m_assetId.IsValid() && assetIdSet.find(productDependency.m_assetId) == assetIdSet.end())
                     {
                         assetIdSet.insert(productDependency.m_assetId);
-
+#if defined(CARBONATED)
+                        AZ::Data::AssetInfo assetInfo = GetAssetInfoById(productDependency.m_assetId, platformIndex, "", m_assetSeedList[idx].m_assetRelativePath);
+#else
                         AZ::Data::AssetInfo assetInfo = GetAssetInfoById(productDependency.m_assetId, platformIndex, m_assetSeedList[idx].m_seedListFilePath);
+#endif
                         assetsInfoList.emplace_back(AZStd::move(assetInfo));
                     }
                 }
@@ -645,6 +658,12 @@ namespace AzToolsFramework
         if (useDebugInfoList)
         {
             debugInfo.BuildHumanReadableString();
+#if defined(CARBONATED)
+            if (!debugInfo.m_invalidFileDebugInfoList.empty())
+            {
+                debugInfo.BuildInvalidAssetHumanReadableString();
+            }
+#endif
             return AZ::Utils::SaveObjectToFile(debugFilePath, AZ::DataStream::StreamType::ST_XML, &debugInfo);
         }
 
@@ -851,9 +870,14 @@ namespace AzToolsFramework
     {
         if (assetFileInfoList.m_fileInfoList.empty())
         {
+#if defined(CARBONATED)
+            // Warn if the asset list is empty, but allow the save
+            AZ_Warning("AssetFileInfoList", false, "(%s): list is empty.\n", destinationFilePath.c_str());
+#else
             // Don't save an empty list
             AZ_Warning("AssetFileInfoList", false, "Unable to save Asset List file (%s): list is empty.\n", destinationFilePath.c_str());
             return false;
+#endif
         }
 
         auto fileExtensionOutcome = ValidateAssetListFileExtension(destinationFilePath);

@@ -149,7 +149,11 @@ namespace AzToolsFramework
         AZ::Data::AssetId FindAssetIdByPathHint(const AZStd::string& pathHint) const;
         AZ::Data::AssetId GetAssetIdByPath(const AZStd::string& assetPath, const AzFramework::PlatformFlags& platformFlags) const;
         AZ::Data::AssetId GetAssetIdByAssetKey(const AZStd::string& assetKey, const AzFramework::PlatformFlags& platformFlags) const;
+#if defined(CARBONATED)
+        static AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& assetId, const AzFramework::PlatformId& platformIndex, const AZStd::string& seedListfilePath = AZStd::string(), const AZStd::string& asetHintPath = AZStd::string(), AssetFileDebugInfoList* optionalDebugList = nullptr);
+#else
         static AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& assetId, const AzFramework::PlatformId& platformIndex, const AZStd::string& seedListfilePath = AZStd::string(), const AZStd::string& asetHintPath = AZStd::string());
+#endif
     private:
         AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> GetAllProductDependencies(
             const AZ::Data::AssetId& assetId,
