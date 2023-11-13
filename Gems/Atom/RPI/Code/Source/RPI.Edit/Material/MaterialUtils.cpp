@@ -24,10 +24,11 @@
 #include <AzCore/Serialization/Json/JsonImporter.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/string/regex.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/string/regex.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace AZ
@@ -269,6 +270,49 @@ namespace AZ
             bool CheckIsValidGroupName(AZStd::string_view name)
             {
                 return CheckIsValidName(name, "Group name");
+            }
+
+            AZStd::string PredictOriginalMaterialTypeSourcePath(const AZStd::string& materialTypeSourcePath)
+            {
+                // Separate the input material type path into a relative path and root folder. This should work for both intermediate,
+                // generated material types and original material types.
+                bool pathFound = false;
+                AZStd::string relativePath;
+                AZStd::string rootFolder;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    pathFound,
+                    &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+                    materialTypeSourcePath.c_str(),
+                    relativePath,
+                    rootFolder);
+
+                if (pathFound)
+                {
+                    // Replace the generated suffix if present
+                    AZ::StringFunc::Replace(relativePath, "_generated.materialtype", ".materialtype");
+
+                    // Search for the original material type file using the stripped generated material type path.
+                    pathFound = false;
+                    AZ::Data::AssetInfo sourceInfo;
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                        pathFound,
+                        &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                        relativePath.c_str(),
+                        sourceInfo,
+                        rootFolder);
+
+                    if (pathFound)
+                    {
+                        AZStd::string fullPath;
+                        if (AZ::StringFunc::Path::ConstructFull(rootFolder.c_str(), sourceInfo.m_relativePath.c_str(), fullPath, true))
+                        {
+                            return fullPath;
+                        }
+                    }
+                }
+
+                // Conversion failed. Return the input path.
+                return materialTypeSourcePath;
             }
 
             AZStd::string PredictIntermediateMaterialTypeSourcePath(const AZStd::string& originalMaterialTypeSourcePath)
