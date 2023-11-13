@@ -306,10 +306,10 @@ namespace AZ
 
                         if (pathFound)
                         {
-                            AZStd::string fullPath;
-                            if (AZ::StringFunc::Path::ConstructFull(rootFolder.c_str(), sourceInfo.m_relativePath.c_str(), fullPath, true))
+                            const AZ::IO::Path result = AZ::IO::Path(rootFolder) / sourceInfo.m_relativePath;
+                            if (!result.empty())
                             {
-                                return fullPath;
+                                return result.LexicallyNormal().String();
                             }
                         }
                     }

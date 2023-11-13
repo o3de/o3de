@@ -666,16 +666,16 @@ namespace AtomToolsFramework
     {
         bool found = false;
         AZ::Data::AssetInfo sourceInfo;
-        AZStd::string watchFolder;
+        AZStd::string rootFolder;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            found, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, path.c_str(), sourceInfo, watchFolder);
+            found, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, path.c_str(), sourceInfo, rootFolder);
 
         if (found)
         {
-            AZStd::string result;
-            if (AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), sourceInfo.m_relativePath.c_str(), result, true))
+            const AZ::IO::Path result = AZ::IO::Path(rootFolder) / sourceInfo.m_relativePath;
+            if (!result.empty())
             {
-                return result;
+                return result.LexicallyNormal().String();
             }
         }
 
@@ -727,13 +727,10 @@ namespace AtomToolsFramework
                 return true;
             });
 
-        AZStd::sort(
-            sourcePaths.begin(),
-            sourcePaths.end(),
-            [](const auto& a, const auto& b)
-            {
-                return a < b;
-            });
+        assetDatabaseConnection.CloseDatabase();
+
+        AZStd::sort(sourcePaths.begin(), sourcePaths.end());
+        sourcePaths.erase(AZStd::unique(sourcePaths.begin(), sourcePaths.end()), sourcePaths.end());
         return sourcePaths;
     }
 
@@ -748,7 +745,7 @@ namespace AtomToolsFramework
         return GetPathsForAssetSourceDependencies(sourceInfo);
     }
 
-    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependenciesByPath(const AZStd::string& sourcPath)
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependenciesByPath(const AZStd::string& sourcePath)
     {
         bool found = false;
         AZ::Data::AssetInfo sourceInfo;
@@ -756,7 +753,7 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
             found,
             &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-            GetPathWithoutAlias(sourcPath).c_str(),
+            GetPathWithoutAlias(sourcePath).c_str(),
             sourceInfo,
             watchFolder);
 
@@ -817,13 +814,10 @@ namespace AtomToolsFramework
                 return true;
             });
 
-        AZStd::sort(
-            sourcePaths.begin(),
-            sourcePaths.end(),
-            [](const auto& a, const auto& b)
-            {
-                return a < b;
-            });
+        assetDatabaseConnection.CloseDatabase();
+
+        AZStd::sort(sourcePaths.begin(), sourcePaths.end());
+        sourcePaths.erase(AZStd::unique(sourcePaths.begin(), sourcePaths.end()), sourcePaths.end());
         return sourcePaths;
     }
 
@@ -838,7 +832,7 @@ namespace AtomToolsFramework
         return GetPathsForAssetSourceDependents(sourceInfo);
     }
 
-    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependentsByPath(const AZStd::string& sourcPath)
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependentsByPath(const AZStd::string& sourcePath)
     {
         bool found = false;
         AZ::Data::AssetInfo sourceInfo;
@@ -846,7 +840,7 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
             found,
             &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-            GetPathWithoutAlias(sourcPath).c_str(),
+            GetPathWithoutAlias(sourcePath).c_str(),
             sourceInfo,
             watchFolder);
 
