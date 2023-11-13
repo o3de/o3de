@@ -22,8 +22,8 @@ namespace AZ::Render
     {
         if (GetLightHandle().IsValid())
         {
-            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
             GetFeatureProcessor()->SetDirection(GetLightHandle(), GetTransform().GetBasisZ());
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
         }
     }
 
