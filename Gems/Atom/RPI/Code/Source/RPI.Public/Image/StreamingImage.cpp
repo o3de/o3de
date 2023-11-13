@@ -43,7 +43,7 @@ namespace AZ
             Uuid id)
         {
             Data::Instance<StreamingImage> existingImage = Data::InstanceDatabase<StreamingImage>::Instance().Find(Data::InstanceId::CreateFromAssetId(id));
-            AZ_Error("StreamingImage", !existingImage, "StreamingImage::CreateFromCpuData found an existing entry in the instance database for the provided id.");
+            AZ_Error("StreamingImage", !existingImage, "StreamingImage::CreateFromCpuData found no existing entry in the instance database for the provided id.");
 
             RHI::ImageDescriptor imageDescriptor;
             imageDescriptor.m_bindFlags = RHI::ImageBindFlags::ShaderRead;
