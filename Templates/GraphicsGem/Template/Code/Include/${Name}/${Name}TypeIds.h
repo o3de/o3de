@@ -1,3 +1,4 @@
+// {BEGIN_LICENSE}
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -5,22 +6,23 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+// {END_LICENSE}
 
 #pragma once
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
     // System Component TypeIds
-    inline constexpr const char* ${Name}SystemComponentTypeId = "${SysCompClassId}";
-    inline constexpr const char* ${Name}EditorSystemComponentTypeId = "${EditorSysCompClassId}";
+    inline constexpr const char* ${SanitizedCppName}SystemComponentTypeId = "${SysCompClassId}";
+    inline constexpr const char* ${SanitizedCppName}EditorSystemComponentTypeId = "${EditorSysCompClassId}";
 
     // Module derived classes TypeIds
-    inline constexpr const char* ${Name}ModuleInterfaceTypeId = "{${Random_Uuid}}";
-    inline constexpr const char* ${Name}ModuleTypeId = "${ModuleClassId}";
+    inline constexpr const char* ${SanitizedCppName}ModuleInterfaceTypeId = "{${Random_Uuid}}";
+    inline constexpr const char* ${SanitizedCppName}ModuleTypeId = "${ModuleClassId}";
     // The Editor Module by default is mutually exclusive with the Client Module
     // so they use the Same TypeId
-    inline constexpr const char* ${Name}EditorModuleTypeId = ${SanitizedCppName}ModuleTypeId;
+    inline constexpr const char* ${SanitizedCppName}EditorModuleTypeId = ${SanitizedCppName}ModuleTypeId;
 
     // Interface TypeIds
-    inline constexpr const char* ${Name}RequestsTypeId = "{${Random_Uuid}}";
-} // namespace ${Name}
+    inline constexpr const char* ${SanitizedCppName}RequestsTypeId = "{${Random_Uuid}}";
+} // namespace ${SanitizedCppName}

@@ -104,7 +104,8 @@ namespace AZ
             const RHI::ResultCode result = BuildNativeDescriptorSetLayout();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            SetName(GetName());
+            // Name the descriptor layout from the SRG layout
+            SetName(m_shaderResourceGroupLayout->GetName());
             return result;
         }
 

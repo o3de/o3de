@@ -1047,6 +1047,8 @@ namespace AZ
                     shaderResourceGroup = shaderResourceGroupList.front();
                 }
 
+                bindings.m_SRGByVulkanBindingIndex[index] = shaderResourceGroup.get();
+
                 VkDescriptorSet vkDescriptorSet = nullptr;
 
                 if (shaderResourceGroup == nullptr)

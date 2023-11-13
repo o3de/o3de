@@ -45,6 +45,15 @@ namespace AZ
             Base::Shutdown();
         }
 
+        void GraphicsPipeline::SetNameInternal(const AZStd::string_view& name)
+        {
+            if (m_renderPass)
+            {
+                m_renderPass->SetName(AZ::Name(name));
+            }
+            Base::SetNameInternal(name);
+        }
+
         RHI::ResultCode GraphicsPipeline::BuildNativePipeline(const Descriptor& descriptor, const PipelineLayout& pipelineLayout)
         {
             AZ_Assert(m_renderPass, "RenderPass is null.");
