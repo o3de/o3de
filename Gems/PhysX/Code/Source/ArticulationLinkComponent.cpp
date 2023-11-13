@@ -129,7 +129,7 @@ namespace PhysX
                 // Create a handler that in the case that the scene was removed before the deactivation of the component,
                 // ensures that all articulations are destroyed.
                 m_sceneRemovedHandler = AzPhysics::SystemEvents::OnSceneRemovedEvent::Handler(
-                    [this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle)
+                    [this](AzPhysics::SceneHandle sceneHandle)
                     {
                         if (sceneHandle == m_attachedSceneHandle && m_articulation)
                         {
