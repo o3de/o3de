@@ -22,7 +22,7 @@ import pathlib
 
 from packaging.version import Version
 from pathlib import Path
-from o3de import manifest, utils
+from o3de import command_utils, manifest, utils
 
 logging.basicConfig(format=utils.LOG_FORMAT)
 logger = logging.getLogger('o3de.android')
@@ -64,7 +64,10 @@ ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK]
 BUILD_CONFIGURATIONS = ['Debug', 'Profile', 'Release']
 ANDROID_ARCH = 'arm64-v8a'
 
-DEFAULT_ANDROID_SETTINGS = [
+# Values to set for the android configuration handler
+ANDROID_SETTINGS_FILE = '.command_settings'
+ANDROID_SETTINGS_SECTION_NAME = 'android'
+ANDROID_SETTINGS_DEFAULT_VALUES = [
     ('android_sdk_cmdline_tools_root', ''),
     ('android_sdk_root', ''),
     ('gradle_home', ''),
@@ -74,9 +77,16 @@ DEFAULT_ANDROID_SETTINGS = [
     ('native_build_path', 'o3de'),
     ('android_gradle_plugin', '8.1.0'),
     ('platform_sdk_api_level', '31'),
-    ('monolithic_build', 'True'),
     ('strip_debug', 'True')
 ]
+
+
+def get_android_config(project_name: str or None) -> command_utils.O3DEConfig:
+    return command_utils.O3DEConfig(project_name=project_name,
+                                    settings_filename=ANDROID_SETTINGS_FILE,
+                                    settings_section_name=ANDROID_SETTINGS_SECTION_NAME,
+                                    default_settings=ANDROID_SETTINGS_DEFAULT_VALUES)
+
 
 """
 Map to make troubleshooting java issues related to mismatched java versions when running the sdkmanager.
@@ -105,9 +115,11 @@ JAVA_CLASS_FILE_MAP = {
 }
 
 ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE = f"""
-Building android projects requires the android sdk manager command-line (https://developer.android.com/tools/sdkmanager). Please follow
-the instructions at https://developer.android.com/studio to download the sdk manager command line tool from either Android Studio or  
-the command line tools only and set the path to the 'sdkmanager{SDKMANAGER_EXTENSION}' path. 
+Building android projects requires the android sdk manager command-line (https://developer.android.com/tools/sdkmanager). 
+Please follow the instructions at https://developer.android.com/studio to download the sdk manager command line tool from
+either Android Studio or the command line tools only and set the path to the 'sdkmanager{SDKMANAGER_EXTENSION}' path.
+
+If installing from Android Studio (recommended) then the default location of the Android SDK will be %HOME%   
 
 For example:
 
@@ -178,249 +190,6 @@ def get_android_gradle_plugin_requirements(requested_agp_version:str) -> Android
     raise AndroidToolError(f"Unrecognized/unsupported android gradle plugin version {requested_agp_version} specified. ")
 
 
-def resolve_project_name_and_path(starting_path:str) -> Path:
-    """
-    Attempt to resolve the project name and path attempting to find the first 'project.json' that can be discovered based on the 'starting_path'
-
-    :param starting_path: The starting path to use to look for the O3DE project.json and walk up the folder.
-    :return tuple of <project name>, <project_path> if a project was resolved. None, None if not.
-    """
-    def _get_project_name(project_json_path):
-        # Make sure that the project defined with project.json is a valid o3de project and that it is registered properly
-        with project_json_path.open(mode='r') as json_data_file:
-            try:
-                json_data = json.load(json_data_file)
-            except json.JSONDecodeError as e:
-                raise AndroidToolError(f"Invalid O3DE project at {project_path}: {e}")
-            project_name = json_data.get('project_name', None)
-            if not project_name:
-                raise AndroidToolError(f"Invalid O3DE project at {project_path}: Invalid O3DE project json file")
-            return project_name
-
-    # Walk up the path util we find a valid 'project.json'
-    current_working_dir = Path(starting_path)
-    project_json_path = current_working_dir / 'project.json'
-    while current_working_dir != current_working_dir.parent and not project_json_path.is_file():
-        project_json_path = current_working_dir / 'project.json'
-        current_working_dir = current_working_dir.parent
-    if not project_json_path.is_file():
-        raise AndroidToolError(f"Unable to locate a 'project.json' file based on directory {starting_path}")
-
-    # Extract the project name from resolved project.json file and use it to look up a registered project by its name
-    project_path = project_json_path.parent
-    resolved_project_name = _get_project_name(project_json_path)
-    resolved_project_path = manifest.get_registered(project_name=resolved_project_name)
-    if not resolved_project_path:
-        raise AndroidToolError(f"Project '{resolved_project_name}' found in {project_json_path} is not registered with O3DE.")
-
-    return resolved_project_name, resolved_project_path
-
-
-class AndroidConfig(object):
-    """
-    This class manages the android configuration settings which can be applied either globally or at the project level.
-    """
-
-    ANDROID_SETTINGS_FILE = '.android_settings'
-    ANDROID_SETTINGS_GLOBAL_SECTION = 'android'
-
-    def __init__(self, project_name:str, is_global:bool):
-        """
-        Initialize the configuration object
-
-        :param project_name:    Name of the project if the config represents a project
-        :param is_global:       Flag to indicate if this represents global settings
-        """
-
-        self.global_settings_file = AndroidConfig.apply_default_global_android_settings()
-        android_global_config_reader = configparser.ConfigParser()
-        android_global_config_reader.read(self.global_settings_file.absolute())
-        self.global_settings = android_global_config_reader[AndroidConfig.ANDROID_SETTINGS_GLOBAL_SECTION]
-        self.project_name = project_name
-
-        if is_global:
-            self.project_settings_file = None
-            self.project_settings = None
-        else:
-            self.project_settings_file = AndroidConfig.resolve_android_project_settings_file(project_name, True)
-            android_project_config_reader = configparser.ConfigParser()
-            android_project_config_reader.read(self.project_settings_file.absolute())
-            self.project_settings = android_project_config_reader[AndroidConfig.ANDROID_SETTINGS_GLOBAL_SECTION]
-
-    @property
-    def is_global(self)->bool:
-        return self.project_settings_file is None
-
-    @staticmethod
-    def apply_default_global_android_settings() -> Path:
-        """
-        Apply the default global android settings. This will ensure that :
-         1. Validates that O3DE has been registered properly
-         2. The global android settings file exists
-         3. Any missing default values will be populated accordingly
-        :return: Path to the global settings file
-        """
-
-        # Make sure that we have a global .o3de folder
-        o3de_folder = manifest.get_o3de_folder()
-        if not o3de_folder.is_dir():
-            raise AndroidToolError('The .o3de is not registered yet. Make sure to register the engine first.')
-
-        # Make sure a global settings file exists
-        global_android_settings = AndroidConfig.resolve_android_global_settings_file()
-        if not global_android_settings.is_file():
-            global_android_settings.write_text(f"[{AndroidConfig.ANDROID_SETTINGS_GLOBAL_SECTION}]")
-
-        global_config = configparser.ConfigParser()
-        global_config.read(global_android_settings.absolute())
-        global_section = global_config[AndroidConfig.ANDROID_SETTINGS_GLOBAL_SECTION]
-        modified = False
-        for config_key, default_value in DEFAULT_ANDROID_SETTINGS:
-            if not config_key in global_section:
-                global_section[config_key] = default_value
-                modified = True
-
-        if modified:
-            with global_android_settings.open('w') as global_android_settings_file:
-                global_config.write(global_android_settings_file)
-        return global_android_settings
-
-    @staticmethod
-    def resolve_android_global_settings_file() -> Path:
-        """
-        Resolve the location of the android settings file based on whether its global, or by project
-
-        :param is_global:       Flag to indicate that we want to use the global android settings
-        :param project_name_arg:    If provided, configure project-specific android settings
-        :return:                The path to the android settings file to manipulate
-        """
-        # Resolve the android settings file
-        android_settings_path = manifest.get_o3de_folder() / AndroidConfig.ANDROID_SETTINGS_FILE
-        return android_settings_path
-
-    @staticmethod
-    def resolve_android_project_settings_file(project_name_arg: str,
-                                              create_default_if_missing: bool = False) -> Path:
-        """
-        Resolve the location of the android settings file based on either a project name, or a path
-        where a project.json file will eventually be resolved
-
-        :param project_name_arg:            If provided, configure project-specific android settings
-        :param create_default_if_missing:   Option to create a default file if missing
-        :return: The path to the android settings file
-        """
-        # Resolve the android settings file
-        if project_name_arg:
-            project_path = manifest.get_registered(project_name=project_name_arg)
-            if not project_path:
-                raise AndroidToolError(f"Unable to resolve project named '{project_name_arg}'. Make sure it is registered with O3DE.")
-            logger.info(f"Configuring settings for project '{project_name_arg}' at '{project_path}'")
-            android_settings_path = Path(project_path) / AndroidConfig.ANDROID_SETTINGS_FILE
-        else:
-            project_name_arg, project_path = resolve_project_name_and_path(os.getcwd())
-            logger.info(f"Configuring settings for project '{project_name_arg}' at '{project_path}'")
-            android_settings_path = Path(project_path) / AndroidConfig.ANDROID_SETTINGS_FILE
-
-        if create_default_if_missing and android_settings_path and not android_settings_path.is_file():
-            android_settings_path.write_text(f"[{AndroidConfig.ANDROID_SETTINGS_GLOBAL_SECTION}]\n")
-
-        return android_settings_path
-
-    def set_config_value(self, key:str, value:str) -> str:
-        """
-        Apply an android setting based on whether its the global config or a local project config
-        :param key:     The key of the entry to set or add.
-        :param value:   The value of the entry to set or add.
-        :return: The original value of the key that was changed
-        """
-        if not key:
-            raise AndroidToolError("Missing 'key' argument to set a config value")
-
-        if self.is_global:
-            settings = self.global_settings
-            settings_file = self.global_settings_file
-        else:
-            settings = self.project_settings
-            settings_file = self.project_settings_file
-
-        # Read the settings and apply the change if necessary
-        project_config = configparser.ConfigParser()
-        project_config.read(settings_file.absolute())
-        project_config_section = project_config[AndroidConfig.ANDROID_SETTINGS_GLOBAL_SECTION]
-        current_value = project_config_section.get(key, None)
-        if current_value != value:
-            try:
-                settings[key] = value
-                project_config_section[key] = value
-            except ValueError as e:
-                raise AndroidToolError(f"Invalid settings value for key '{key}': {e}")
-            with settings_file.open('w') as android_settings_file:
-                project_config.write(android_settings_file)
-
-        return current_value
-
-    REGEX_NAME_AND_VALUE_MATCH_UNQUOTED = re.compile(r'([\w]+)[\s]*=[\s]*((.*))')
-    REGEX_NAME_AND_VALUE_MATCH_SINGLE_QUOTED = re.compile(r"([\w]+)[\s]*=[\s]*('(.*)')")
-    REGEX_NAME_AND_VALUE_MATCH_DOUBLE_QUOTED = re.compile(r'([\w]+)[\s]*=[\s]*("(.*)")')
-
-    def set_config_value_from_expression(self, key_and_value_arg:str) -> str:
-        """
-        Apply an android setting based on whether it's the global config or a local project config.
-        The follow formats are recognized:
-             key=value
-             key='value'
-             key="value"
-        :param key_and_value_arg: The 'key=value' expression to apply for setting the config value
-        :return: The value of the previously set value if any for the key
-        """
-
-        match = AndroidConfig.REGEX_NAME_AND_VALUE_MATCH_DOUBLE_QUOTED.match(key_and_value_arg)
-        if not match:
-            match = AndroidConfig.REGEX_NAME_AND_VALUE_MATCH_SINGLE_QUOTED.match(key_and_value_arg)
-        if not match:
-            match = AndroidConfig.REGEX_NAME_AND_VALUE_MATCH_UNQUOTED.match(key_and_value_arg)
-        if not match:
-            raise AndroidToolError(f"Invalid setting key argument: {key_and_value_arg}")
-
-        key = match.group(1)
-        value = match.group(3)
-
-        self.set_config_value(key, value)
-
-    def get_value(self, key:str) -> (str,str):
-        """
-        Get a tuple of android setting and its project source based on a key. If the project source is empty, then
-        it represents a global setting.
-        :param key: The key to lookup the value
-        :return: Tuple (str,str) that represents (value, project_name). If project_name is empty, then the value is global for all projects
-        """
-        if self.project_settings:
-            value = self.project_settings.get(key, None)
-            if value:
-                return value, self.project_name
-
-        value = self.global_settings.get(key, None)
-        return value, ""
-
-    def get_all_values(self) -> list:
-
-        all_settings_map = {}
-        for key, value in self.global_settings.items():
-            all_settings_map[key] = value
-        if not self.is_global:
-            for key, value in self.project_settings.items():
-                all_settings_map[key] = value
-
-        all_settings_list = []
-        for key, value in all_settings_map.items():
-            if not self.is_global:
-                all_settings_list.append((key, value, self.project_name if key in self.project_settings else ''))
-            else:
-                all_settings_list.append((key, value, ''))
-
-        return all_settings_list
-
-
 class AndroidSDKManager(object):
     """
     Class to manage the android sdk manager command-line tool which is required to generate and process O3DE
@@ -450,7 +219,7 @@ class AndroidSDKManager(object):
             assert len(available_update_components) == 3, '3 sections expected for installed package components (path, version, available)'
 
 
-    def __init__(self, current_java_version:str, android_settings:AndroidConfig):
+    def __init__(self, current_java_version:str, android_settings: command_utils.O3DEConfig):
         """
         Initialize
 
@@ -460,7 +229,6 @@ class AndroidSDKManager(object):
 
         # Validate that the android command line tool root was set to a valid location
         android_sdk_command_tools_root_path = AndroidSDKManager.__validate_android_command_line_tools_root(android_settings)
-        android_command_line_tools_sdkmanager_path = android_sdk_command_tools_root_path / 'bin' / f'sdkmanager{SDKMANAGER_EXTENSION}'
 
         # Validate the android command line tool itself by checking the version and validating against the java in the environment
         self.android_command_line_tools_sdkmanager_path, self.android_sdk_path = \
@@ -471,25 +239,34 @@ class AndroidSDKManager(object):
         self.refresh_sdk_installation(log_status=True)
 
     @staticmethod
-    def __validate_android_command_line_tools_root(android_settings) -> Path:
+    def __validate_android_command_line_tools_root(android_settings: command_utils.O3DEConfig) -> Path:
 
         # Validate that the android command line tool root was set to a valid location
-        android_sdk_command_tools_root, _ = android_settings.get_value('android_sdk_cmdline_tools_root')
-        if not android_sdk_command_tools_root:
-            raise AndroidToolError(f"The android sdk command tools path '{android_sdk_command_tools_root}' was not set.\n"
+        android_sdk_command_tools_root = android_settings.get_value('android_sdk_cmdline_tools_root')
+        android_sdk_root = android_settings.get_value('android_sdk_root')
+        if not android_sdk_command_tools_root and not android_sdk_root:
+            raise AndroidToolError(f"Neither the android sdk command tools path '{android_sdk_command_tools_root}' nor the android sdk path was not set .\n"
                                    f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
+        if not android_sdk_command_tools_root and android_sdk_root:
+            android_sdk_command_tools_root_path = Path(android_sdk_root) / 'cmdline-tools'
+        else:
+            android_sdk_command_tools_root_path = Path(android_sdk_command_tools_root)
 
         # Locate the sdkmanager script from the possible sub-paths from the sdk command line root (cmdline-tools)
-        android_sdk_command_tools_root_path = Path(android_sdk_command_tools_root)
-        for subpath in ['bin', 'latest/bin']:
-            android_sdk_command_tools_path = android_sdk_command_tools_root_path / subpath / f'sdkmanager{SDKMANAGER_EXTENSION}'
+        for sub_path in ['bin', 'latest/bin']:
+            android_sdk_command_tools_path = android_sdk_command_tools_root_path / sub_path / f'sdkmanager{SDKMANAGER_EXTENSION}'
             if android_sdk_command_tools_path.is_file():
                 break
         if not android_sdk_command_tools_path.is_file():
-            raise AndroidToolError(f"The android sdk command tools path '{android_sdk_command_tools_root}' is set to an "
-                                   f"invalid path: {android_sdk_command_tools_path} is missing or is not a valid "
-                                   f"command line tools root folder. \n"
-                                   f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
+            if android_sdk_command_tools_root:
+                raise AndroidToolError(f"The android sdk command tools path '{android_sdk_command_tools_root}' is set to an "
+                                       f"invalid path: {android_sdk_command_tools_path} is missing or is not a valid "
+                                       f"command line tools root folder. \n"
+                                       f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
+            else:
+                raise AndroidToolError(
+                    f"Unable to locate the android sdk command tools from the android sdk specified at '{android_sdk_root}'." 
+                    f"{ANDROID_HELP_REGISTER_ANDROID_SDK_MESSAGE}")
         return android_sdk_command_tools_root_path
 
     @staticmethod
@@ -743,14 +520,13 @@ def read_android_settings_for_project(project_path:Path)->(dict,dict):
         android_settings = android_json.get('android_settings')
         if android_settings is None:
             raise AndroidToolError(f"Missing android settings in file {android_project_json_file}")
+        android_settings = android_json['android_settings']
     else:
         android_settings = project_settings.get('android_settings')
         if android_settings is None:
             raise AndroidToolError(f"Missing android settings file {android_project_json_file} and cannot located legacy "
                                    f"'android_settings' from {project_json_path}")
-        logger.warning(f"Project {project_name_arg} does not have an 'android_project.json' file (expected at "
-                       f"'{android_settings_file}') Falling back to the android settings in {android_settings_file}. ")
-    android_settings = android_json['android_settings']
+
 
     return project_settings, android_settings
 
@@ -819,25 +595,25 @@ def validate_java_environment() -> str:
     return java_version
 
 
-def validate_build_tool(tool_name:str, tool_command:str, tool_config_key:str, tool_config_subpath:str, tool_version_arg:str,
-                        version_regex:re.Pattern, android_config:AndroidConfig) -> (Path, str):
+def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str or None, tool_config_sub_path: str or None, tool_version_arg: str,
+                        version_regex: re.Pattern, android_config: command_utils.O3DEConfig) -> (Path, str):
     """
     Perform a tool validation by checking on its version number if possible
 
-    :param tool_name:           The name of the tool to display for status purposes
-    :param tool_command:        The name of the tool command that is executed
-    :param tool_config_key:     The android settings key into the android config to locate the tool home folder if provided
-    :param tool_config_subpath: The optional subpath that leads to the binary from the value of the tool home folder
-    :param tool_version_arg:    The command line option for the tool to display the version information
-    :param version_regex:       A regex patterm to use to extract out just the version from the result of running the tool with the version arg
-    :param android_config:      The android configuration to get the tool home if needed
-    :return:    Tuple of : The full path of the tool and the tool version
+    :param tool_name:               The name of the tool to display for status purposes
+    :param tool_command:            The name of the tool command that is executed
+    :param tool_config_key:         Optional. If provided, check against the path represented by this key for the tool, otherwise the tool must exist in the PATH environment
+    :param tool_config_sub_path:    Optional. The sub path that leads to the binary from the value of the tool home folder
+    :param tool_version_arg:        The argument to pass to the <tool_command> to query for its version
+    :param version_regex:           The regex to search for the raw version string from the result of the version query command
+    :param android_config:          The configuration to look up the <tool_config_key> if necessary
+    :return: Tuple of the full tool path, and its raw version string
     """
 
     # Locate the tool command
-    tool_home, _ = android_config.get_value(tool_config_key)
+    tool_home = android_config.get_value(tool_config_key) if tool_config_key else None
     if tool_home:
-        tool_test_command = os.path.join(tool_home, tool_config_subpath, tool_command)
+        tool_test_command = os.path.join(tool_home, tool_config_sub_path, tool_command)
     else:
         tool_test_command = tool_command
 
@@ -848,8 +624,12 @@ def validate_build_tool(tool_name:str, tool_command:str, tool_config_key:str, to
                             encoding='utf-8',
                             errors=ENCODING_ERROR_HANDLINGS)
     if result.returncode != 0:
-        raise AndroidToolError(f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment, or set the path to its home "
-                               f"in the .android_settings with {tool_config_key} key.")
+        if tool_config_key:
+            raise AndroidToolError(f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment, or set the path to its home "
+                                   f"in the .android_settings with {tool_config_key} key.")
+        else:
+            raise AndroidToolError(f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment")
+
     # Extract the version number from the results of running the command with the version argument
     tool_version_match = re.search(version_regex, result.stdout, re.MULTILINE)
     if tool_version_match is None:
@@ -858,15 +638,12 @@ def validate_build_tool(tool_name:str, tool_command:str, tool_config_key:str, to
 
     # Report the status
     if tool_home:
-        logger.info(f"Detected {tool_name} version {tool_version} (From {tool_config_key} in .androidsettings)")
-        tool_full_path = Path(tool_home) / tool_config_subpath / tool_command
+        tool_full_path = Path(tool_home) / tool_config_sub_path / tool_command
     else:
-        logger.info(f"Detected {tool_name} version {tool_version} (From PATH)")
         tool_full_path = Path(shutil.which(tool_command))
 
+    logger.info(f"Detected {tool_name} version {tool_version} (From {tool_full_path})")
     return tool_full_path, tool_version
-
-GRADLE_VERSION_REGEX = re.compile(r'.*(Gradle)\s*\"?([\d\_\.]+)', re.MULTILINE)
 
 
 def validate_gradle(android_config) -> (Path, str):
@@ -878,7 +655,7 @@ def validate_gradle(android_config) -> (Path, str):
     return validate_build_tool(tool_name='Gradle',
                                tool_command=f'gradle{GRADLE_EXTENSION}',
                                tool_config_key='gradle_home',
-                               tool_config_subpath='bin',
+                               tool_config_sub_path='bin',
                                tool_version_arg='--version',
                                version_regex=r'.*(Gradle)\s*\"?([\d\_\.]+)',
                                android_config=android_config)
@@ -893,7 +670,7 @@ def validate_cmake(android_config) -> (Path, str):
     return validate_build_tool(tool_name='Cmake',
                                tool_command='cmake',
                                tool_config_key='cmake_home',
-                               tool_config_subpath='bin',
+                               tool_config_sub_path='bin',
                                tool_version_arg='--version',
                                version_regex=r'.*(cmake version)\s*\"?([\d\_\.]+)',
                                android_config=android_config)
@@ -907,8 +684,8 @@ def validate_ninja(android_config) -> (Path, str):
     """
     return validate_build_tool(tool_name='Ninja',
                                tool_command=f'ninja{EXE_EXTENSION}',
-                               tool_config_key='ninja_home',
-                               tool_config_subpath='',
+                               tool_config_key=None,
+                               tool_config_sub_path='',
                                tool_version_arg='--version',
                                version_regex=r'(\s*)([\d\_\.]+)',
                                android_config=android_config)
@@ -921,7 +698,6 @@ PLATFORM_SETTINGS_FORMAT = """
 platform={platform}
 game_projects={project_path}
 asset_deploy_mode={asset_mode}
-asset_deploy_type={asset_type}
 
 [android]
 android_sdk_path={android_sdk_path}
@@ -1247,8 +1023,14 @@ class AndroidProjectGenerator(object):
     def __init__(self, engine_root:Path,
                  android_build_dir, android_sdk_path, android_build_tool_version, android_platform_sdk_api_level, android_ndk_package,
                  project_name, project_path, project_general_settings, project_android_settings, cmake_version, cmake_path, gradle_path, gradle_version,
-                 android_gradle_plugin_version, ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path,
-                 vulkan_validation_path, extra_cmake_configure_args, monolithic_build=True, strip_debug_symbols=False, overwrite_existing=True, oculus_project=False):
+                 android_gradle_plugin_version, ninja_path, include_assets_in_apk, asset_mode, signing_config, native_build_path,
+                 vulkan_validation_path,
+                 extra_cmake_configure_args,
+                 src_pak_file_path,
+                 monolithic_build=True,
+                 strip_debug_symbols=False,
+                 overwrite_existing=True,
+                 oculus_project=False):
 
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
@@ -1308,14 +1090,16 @@ class AndroidProjectGenerator(object):
         self.strip_debug_symbols = strip_debug_symbols
 
         self.android_project_builder_path = self.engine_root / 'Code/Tools/Android/ProjectBuilder'
-
         self.include_assets_in_apk = include_assets_in_apk
+        self.src_pak_file_path = src_pak_file_path
+        self.asset_mode = asset_mode
+
+
+
 
         self.native_build_path = native_build_path
         self.vulkan_validation_path = vulkan_validation_path
         self.extra_cmake_configure_args = extra_cmake_configure_args
-        self.asset_mode = asset_mode
-        self.asset_type = asset_type
         self.signing_config = signing_config
         self.overwrite_existing = overwrite_existing
         self.oculus_project = oculus_project
@@ -1324,6 +1108,24 @@ class AndroidProjectGenerator(object):
         """
         Execute the android project creation workflow
         """
+        # If we are using asset PAK mode, then make sure we have pak files, and warn if they are missing
+        if self.asset_mode == ASSET_MODE_PAK:
+            src_pak_file_full_path = self.project_path / self.src_pak_file_path
+            if not src_pak_file_full_path.is_dir():
+                logger.warn(f"Pak files are expected at location {src_pak_file_full_path}, but the folder doesnt exist. Make sure "
+                            f"to create release bundles (Pak files) before building and deploying to an android device. Refer to "
+                            f"https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more"
+                            f"information.")
+            else:
+                pak_count = 0
+                for pak_dir_item in src_pak_file_full_path.iterdir():
+                    if pak_dir_item.suffix == '.pak':
+                        pak_count += 1
+                if pak_count == 0:
+                    logger.warn(f"Pak files are expected at location {src_pak_file_full_path}, but none was detected. Make sure "
+                                f"to create release bundles (Pak files) before building and deploying to an android device. Refer to "
+                                f"https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more"
+                                f"information.")
 
         # Prepare the working build directory
         self.build_dir.mkdir(parents=True, exist_ok=True)
@@ -1403,7 +1205,6 @@ class AndroidProjectGenerator(object):
                                                                     platform='android',
                                                                     project_path=self.project_path,
                                                                     asset_mode=self.asset_mode,
-                                                                    asset_type=self.asset_type,
                                                                     android_sdk_path=str(self.android_sdk_path),
                                                                     embed_assets_in_apk=str(self.include_assets_in_apk),
                                                                     is_unit_test=False,

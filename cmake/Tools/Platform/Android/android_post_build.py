@@ -119,18 +119,28 @@ def determine_intermediate_folder_from_compile_commands(android_app_root_path:pa
     return intermediate_folder_name
 
 
-def apply_pak_layout(project_root:pathlib.Path, target_layout_root:pathlib.Path, copy:bool) -> None:
+def apply_pak_layout(project_root: pathlib.Path, asset_bundle_folder:str, target_layout_root:pathlib.Path, copy:bool) -> None:
 
-    android_pak_folder = project_root / 'AssetBundling' / 'Bundles'
-    if not android_pak_folder.is_dir():
-        raise AndroidPostBuildError(f"Pak folder {android_pak_folder} does not exist.")
-    engine_pak_marker = android_pak_folder / 'engine.pak'
-    if not engine_pak_marker.is_file():
-        raise AndroidPostBuildError(f"Pak folder {android_pak_folder} does not contain an engine.pak file.")
+    src_pak_file_full_path = project_root / asset_bundle_folder
+    if not src_pak_file_full_path.is_dir():
+        raise AndroidPostBuildError(f"Pak files are expected at location {src_pak_file_full_path}, but the folder doesnt exist. Make sure "
+                                    f"to create release bundles (Pak files) before building and deploying to an android device. Refer to "
+                                    f"https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more"
+                                    f"information.")
+    else:
+        pak_count = 0
+        for pak_dir_item in src_pak_file_full_path.iterdir():
+            if pak_dir_item.is_file() and pak_dir_item.suffix == '.pak':
+                pak_count += 1
+        if pak_count == 0:
+            raise AndroidPostBuildError(f"Pak files are expected at location {src_pak_file_full_path}, but none was detected. Make sure "
+                                        f"to create release bundles (Pak files) before building and deploying to an android device. Refer to "
+                                        f"https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more"
+                                        f"information.")
 
     if target_layout_root.is_dir():
         remove_link(target_layout_root)
-    create_link(android_pak_folder, target_layout_root, copy)
+    create_link(src_pak_file_full_path, target_layout_root, copy)
 
 def apply_loose_layout(project_root:pathlib.Path, target_layout_root:pathlib.Path, agp_intermediate_folder_name:str, copy:bool) -> None:
 
@@ -197,6 +207,7 @@ def apply_gradle_8x_rules(android_app_root_path:pathlib.Path,
                           native_build_path:str,
                           build_config:str,
                           asset_mode:str,
+                          asset_bundle_folder:str,
                           is_monolithic:bool,
                           apk_assets:bool,
                           copy:bool):
@@ -253,7 +264,7 @@ def apply_gradle_8x_rules(android_app_root_path:pathlib.Path,
 GRADLE_VER_8_0 = Version("8.0")
 
 
-def post_build_action(android_app_root: pathlib.Path, project_root:pathlib.Path, gradle_version:Version, build_config:str, native_build_path:str, asset_mode:str, is_monolithic:bool, apk_assets:bool, copy:bool):
+def post_build_action(android_app_root: pathlib.Path, project_root:pathlib.Path, gradle_version:Version, build_config:str, native_build_path:str, asset_mode:str, asset_bundle_folder: str, is_monolithic:bool, apk_assets:bool, copy:bool):
 
     android_app_root_path = pathlib.Path(android_app_root)
     if not android_app_root_path.is_dir():
@@ -274,6 +285,7 @@ def post_build_action(android_app_root: pathlib.Path, project_root:pathlib.Path,
                               asset_mode=asset_mode,
                               is_monolithic=is_monolithic,
                               apk_assets=apk_assets,
+                              asset_bundle_folder=asset_bundle_folder,
                               copy=copy)
 
 if __name__ == '__main__':
@@ -289,7 +301,8 @@ if __name__ == '__main__':
         parser.add_argument('--asset-mode', type=str, help="The asset mode of deployment (LOOSE, PAK, VFS)", default='LOOSE', choices=['LOOSE', 'PAK', 'VFS'])
         parser.add_argument('--monolithic', help="Flag to indicate this is a monolithic build",action='store_true')
         parser.add_argument('--apk-assets', help="Flag to indicate that assets will be contained within the apk", action='store_true')
-
+        parser.add_argument('--asset-bundle-folder', type=str, help="The sub folder from the project root where the pak files are located (For Pak Asset Mode)",
+                            default="AssetBundling/Bundles")
 
         parser.add_argument('--copy', help="Flag to copy assets to the android assets folder instead of creating links",action='store_true')
 
@@ -301,6 +314,7 @@ if __name__ == '__main__':
                                         native_build_path=args.native_build_path,
                                         build_config=args.build_config,
                                         asset_mode=args.asset_mode,
+                                        asset_bundle_folder=args.asset_bundle_folder,
                                         is_monolithic=args.monolithic,
                                         apk_assets=args.apk_assets,
                                         copy=args.copy)
