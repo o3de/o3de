@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME NvCloth.Stub ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Stub ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         nvcloth_stub_files.cmake
@@ -18,11 +18,11 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
 )
-add_library(Gem::NvCloth ALIAS NvCloth.Stub) 
+add_library(Gem::${gem_name} ALIAS ${gem_name}.Stub) 
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME NvCloth.Editor.Stub GEM_MODULE
+        NAME ${gem_name}.Editor.Stub GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -37,5 +37,14 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AzCore
     )
-    add_library(Gem::NvCloth.Editor ALIAS NvCloth.Editor.Stub) 
+    add_library(Gem::${gem_name}.Editor ALIAS ${gem_name}.Editor.Stub) 
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/ModuleUnsupported.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
 endif()

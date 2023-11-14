@@ -145,4 +145,8 @@ namespace LmbrCentral
 
 } // namespace LmbrCentral
 
-AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentralEditor, LmbrCentral::LmbrCentralEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), LmbrCentral::LmbrCentralEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_LmbrCentral_Editor, LmbrCentral::LmbrCentralEditorModule)
+#endif

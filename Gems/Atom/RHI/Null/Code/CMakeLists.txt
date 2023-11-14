@@ -11,7 +11,7 @@ o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLAT
 
 
 ly_add_target(
-    NAME Atom_RHI_Null.Reflect STATIC
+    NAME ${gem_name}.Reflect STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_null_reflect_common_files.cmake
@@ -26,7 +26,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_RHI_Null.Private.Static STATIC
+    NAME ${gem_name}.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_null_private_common_files.cmake
@@ -47,7 +47,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_RHI_Null.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_null_private_common_shared_files.cmake
@@ -58,14 +58,23 @@ ly_add_target(
             ${pal_source_dir}
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Atom_RHI_Null.Reflect
-            Gem::Atom_RHI_Null.Private.Static
+            Gem::${gem_name}.Reflect
+            Gem::${gem_name}.Private.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/RHI/Module.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME Atom_RHI_Null.Builders.Static STATIC
+        NAME ${gem_name}.Builders.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_null_builders_common_files.cmake
@@ -81,11 +90,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::Atom_RHI.Edit
                 Gem::Atom_RHI.Reflect
-                Gem::Atom_RHI_Null.Reflect
+                Gem::${gem_name}.Reflect
     )
 
    ly_add_target(
-        NAME Atom_RHI_Null.Builders GEM_MODULE
+        NAME ${gem_name}.Builders GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_null_builders_shared_files.cmake
@@ -97,6 +106,15 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::Atom_RHI.Edit
                 Gem::Atom_RHI.Reflect
-                Gem::Atom_RHI_Null.Builders.Static
+                Gem::${gem_name}.Builders.Static
     )
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/RHI.Builders/BuilderModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
 endif()

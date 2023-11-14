@@ -7,10 +7,10 @@
 #
 
 # Query the gem name from the gem.json file if possible
-# otherwise fallback to using ${Name}
+# otherwise fallback to using Multiplayer_ScriptCanvas
 o3de_find_ancestor_gem_root(gem_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
 if (NOT gem_name)
-    set(gem_name "${Name}")
+    set(gem_name "Multiplayer_ScriptCanvas")
 endif()
 
 # Fallback to using the current source CMakeLists.txt directory as the gem root path

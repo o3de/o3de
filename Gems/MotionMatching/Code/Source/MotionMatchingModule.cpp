@@ -20,4 +20,8 @@ namespace EMotionFX::MotionMatching
     };
 }// namespace EMotionFX::MotionMatching
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), EMotionFX::MotionMatching::MotionMatchingModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_MotionMatching, EMotionFX::MotionMatching::MotionMatchingModule)
+#endif
