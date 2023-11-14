@@ -544,13 +544,13 @@ class AssetProcessor(object):
                     return False, None
             return True, None
         except BaseException as be:  # purposefully broad
-            logger.exception("Exception while starting Asset Processor", be)
+            logger.exception("Exception while starting Asset Processor")
             # clean up to avoid leaking open AP process to future tests
             try:
                 if self._ap_proc:
                     self._ap_proc.kill()
             except Exception as ex:
-                logger.exception("Ignoring exception while trying to terminate Asset Processor from LyTestTools ", ex)
+                logger.exception("Ignoring exception while trying to terminate Asset Processor from LyTestTools")
             raise exceptions.LyTestToolsFrameworkException from be  # raise whatever prompted us to clean up
 
     def connect_listen(self, timeout=DEFAULT_TIMEOUT_SECONDS):
