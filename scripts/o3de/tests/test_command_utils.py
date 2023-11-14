@@ -21,15 +21,15 @@ def test_apply_default_values_create_new_settings_file(tmpdir):
 
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
-    default_settings = [("foo", "1"),
-                        ("bar", "2")]
+    settings = [command_utils.SettingsDescription("foo", "foo desc", "1"),
+                command_utils.SettingsDescription("bar", "bar desc", "2")]
 
     with patch(target='o3de.manifest.get_o3de_folder',
                return_value=pathlib.Path(tmpdir.join('.o3de').realpath())):
 
         result_settings_file = command_utils.O3DEConfig.apply_default_global_settings(settings_filename=settings_filename,
                                                                                       settings_section_name=settings_section_name,
-                                                                                      default_settings=default_settings)
+                                                                                      settings_descriptions=settings)
         expected_settings_file_path = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
 
         assert result_settings_file == expected_settings_file_path
@@ -50,8 +50,8 @@ def test_apply_default_values_open_existing_settings_file_new_entries(tmpdir):
 
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
-    default_settings = [("foo", "1"),
-                        ("bar", "2")]
+    settings = [command_utils.SettingsDescription("foo", "foo desc","1"),
+                command_utils.SettingsDescription("bar", "bar desc","2")]
 
     existing_settings_file = tmpdir.join(f'.o3de/{settings_filename}')
     existing_settings_file.write(f"""
@@ -65,7 +65,7 @@ crew = 7
 
         result_settings_file = command_utils.O3DEConfig.apply_default_global_settings(settings_filename=settings_filename,
                                                                                       settings_section_name=settings_section_name,
-                                                                                      default_settings=default_settings)
+                                                                                      settings_descriptions=settings)
         expected_settings_file_path = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
 
         assert expected_settings_file_path == expected_settings_file_path
@@ -160,6 +160,8 @@ def test_read_config_global_only(tmpdir):
 sdk_api_level = ZZZZ
 extra1 = XXXX
 """)
+    settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
 
     global_settings_file = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
     with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
@@ -168,7 +170,7 @@ extra1 = XXXX
         config = command_utils.O3DEConfig(project_name=None,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
-                                          default_settings=[])
+                                          settings_description_list=settings)
 
         result_sdk_api_level = config.get_value('sdk_api_level')
         result_extra1 = config.get_value('extra1')
@@ -198,6 +200,8 @@ extra1 = XXXX
 sdk_api_level = FFFF
 """)
 
+    settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
     global_settings_file = pathlib.Path(global_settings_file.realpath())
     project_settings_file = pathlib.Path(project_settings_file.realpath())
 
@@ -208,7 +212,7 @@ sdk_api_level = FFFF
         config = command_utils.O3DEConfig(project_name=project_name,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
-                                          default_settings=[])
+                                          settings_description_list=settings)
         result_sdk_api_level = config.get_value('sdk_api_level')
         assert result_sdk_api_level == 'FFFF'
 
@@ -236,6 +240,8 @@ extra1 = XXXX
 [{settings_section_name}]
 sdk_api_level = FFFF
 """)
+    settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
 
     with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
                return_value=pathlib.Path(global_settings_file.realpath())), \
@@ -245,7 +251,7 @@ sdk_api_level = FFFF
         config = command_utils.O3DEConfig(project_name=project_name,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
-                                          default_settings=[])
+                                          settings_description_list=settings)
 
         result_sdk_api_level, result_sdk_api_level_project = config.get_value_and_source('sdk_api_level')
         assert result_sdk_api_level == 'FFFF'
@@ -269,13 +275,17 @@ sdk_api_level = ZZZZ
 extra1 = XXXX
 """)
 
+    settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
+
+
     with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
                return_value=pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())):
 
         config = command_utils.O3DEConfig(project_name=None,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
-                                          default_settings=[])
+                                          settings_description_list=settings)
 
         config.set_config_value('extra1', 'ZZZZ')
 
@@ -306,6 +316,9 @@ extra1 = XXXX
 sdk_api_level = FFFF
 """)
 
+    settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
+
     with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
                return_value=pathlib.Path(test_global_settings_file.realpath())), \
          patch(target="o3de.command_utils.O3DEConfig.resolve_project_settings_file",
@@ -314,7 +327,7 @@ sdk_api_level = FFFF
         config = command_utils.O3DEConfig(project_name=project_name,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
-                                          default_settings=[])
+                                          settings_description_list=settings)
         config.set_config_value('extra1','ZZZZ')
 
         project_config = configparser.ConfigParser()
@@ -334,7 +347,9 @@ sdk_api_level = FFFF
         pytest.param("argument =foo", "argument", "foo", id="Simple with space 1"),
         pytest.param("argument= foo", "argument", "foo", id="Simple with space 2"),
         pytest.param("argument = foo", "argument", "foo", id="Simple with space 3"),
-        pytest.param("argument='foo* and three.'", "argument", "foo* and three.", id="Double Quotes")
+        pytest.param("argument='foo* and three.'", "argument", "foo* and three.", id="Double Quotes"),
+        pytest.param("argument.one = foo", "argument.one", "foo", id="Simple alpha with dot"),
+        pytest.param("argument.1.foo = foo", "argument.1.foo", "foo", id="Simple alpha with number and dot")
     ]
 )
 def test_set_config_key_value(tmpdir, key_and_value, expected_key, expected_value):
@@ -350,13 +365,16 @@ sdk_api_level = ZZZZ
 extra1 = XXXX
 """)
 
+    settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
+                command_utils.SettingsDescription(expected_key, "argument desc"),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
     global_settings_file = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
     with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
                return_value=global_settings_file):
         config = command_utils.O3DEConfig(project_name=None,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
-                                          default_settings=[])
+                                          settings_description_list=settings)
         config.set_config_value_from_expression(key_and_value)
 
         global_config = configparser.ConfigParser()
@@ -379,12 +397,15 @@ extra1 = XXXX
 """)
     bad_config_value = "foo? and two%"
 
+    settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
+
     with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
                return_value=pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())):
         config = command_utils.O3DEConfig(project_name=None,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
-                                          default_settings=[])
+                                          settings_description_list=settings)
         try:
             config.set_config_value_from_expression(f"argument=\"{bad_config_value}\"")
         except command_utils.O3DEConfigError as e:
@@ -415,6 +436,10 @@ extra1 = XXXX
 sdk_api_level = FFFF
 """)
 
+    settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
+                command_utils.SettingsDescription("ndk", "ndk desc"),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
+
     with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
                return_value=pathlib.Path(global_settings_file.realpath())), \
          patch(target="o3de.command_utils.O3DEConfig.resolve_project_settings_file",
@@ -422,7 +447,7 @@ sdk_api_level = FFFF
         config = command_utils.O3DEConfig(project_name=project_name,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
-                                          default_settings=[])
+                                          settings_description_list=settings)
 
         results = config.get_all_values()
         project_to_value_list = {}
@@ -430,3 +455,106 @@ sdk_api_level = FFFF
             project_to_value_list.setdefault(source or "global", []).append( (key, value) )
         assert len(project_to_value_list['global']) == 2  # Note: Not 3 since 'extra1' is overridden by the project
         assert len(project_to_value_list[project_name]) == 1
+
+
+@pytest.mark.parametrize(
+    "bool_str, expected_value, is_error", [
+        pytest.param('t', True, False),
+        pytest.param('true', True, False),
+        pytest.param('T', True, False),
+        pytest.param('True', True, False),
+        pytest.param('TRUE', True, False),
+        pytest.param('1', True, False),
+        pytest.param('on', True, False),
+        pytest.param('On', True, False),
+        pytest.param('ON', True, False),
+        pytest.param('yes', True, False),
+        pytest.param('Bad', True, True),
+        pytest.param('f', False, False),
+        pytest.param('F', False, False),
+        pytest.param('false', False, False),
+        pytest.param('FALSE', False, False),
+        pytest.param('False', False, False),
+        pytest.param('0', False, False),
+        pytest.param('off', False, False),
+        pytest.param('OFF', False, False),
+        pytest.param('Off', False, False),
+        pytest.param('no', False, False)
+    ]
+)
+def test_set_config_boolean_value(tmpdir,bool_str, expected_value, is_error):
+
+    settings_filename = '.unit_test_settings'
+    settings_section_name = 'testing'
+
+    tmpdir.ensure('.o3de/o3de_manifest.json')
+    global_settings_file = tmpdir.join(f'.o3de/{settings_filename}')
+    global_settings_file.write(f"""
+[{settings_section_name}]
+extra1 = XXXX
+""")
+
+    settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
+                command_utils.SettingsDescription("strip.debug", "strip.debug desc", is_boolean=True),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
+
+
+    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
+               return_value=pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())):
+
+        try:
+            config = command_utils.O3DEConfig(project_name=None,
+                                              settings_filename=settings_filename,
+                                              settings_section_name=settings_section_name,
+                                              settings_description_list=settings)
+
+            config.set_config_value('strip.debug', bool_str)
+            str_result = config.get_value('strip.debug')
+            assert str_result == bool_str
+            bool_result = config.get_boolean_value('strip.debug')
+            assert bool_result == expected_value
+        except command_utils.O3DEConfigError as e:
+            assert is_error, f"Unexpected Error: {e}"
+        else:
+            assert not is_error, "Error expected"
+
+
+@pytest.mark.parametrize(
+    "input, restricted_regex, is_error", [
+        pytest.param('LOOSE', '(LOOSE|PAK)', False),
+        pytest.param('PAK', '(LOOSE|PAK)', False),
+        pytest.param('VFS', '(LOOSE|PAK)', True),
+    ]
+)
+def test_set_config_boolean_value(tmpdir, input, restricted_regex, is_error):
+
+    settings_filename = '.unit_test_settings'
+    settings_section_name = 'testing'
+
+    tmpdir.ensure('.o3de/o3de_manifest.json')
+    global_settings_file = tmpdir.join(f'.o3de/{settings_filename}')
+    global_settings_file.write(f"""
+[{settings_section_name}]
+extra1 = XXXX
+""")
+    key = 'test'
+    settings = [command_utils.SettingsDescription(key, f"{key} desc", restricted_regex=restricted_regex, restricted_regex_description=f"regex: {restricted_regex}"),
+                command_utils.SettingsDescription("extra1", "extra1 desc")]
+
+
+    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
+               return_value=pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())):
+
+        try:
+            config = command_utils.O3DEConfig(project_name=None,
+                                              settings_filename=settings_filename,
+                                              settings_section_name=settings_section_name,
+                                              settings_description_list=settings)
+
+            config.set_config_value(key, input)
+            str_result = config.get_value(key)
+            assert str_result == input
+        except command_utils.O3DEConfigError as e:
+            assert is_error, f"Unexpected Error: {e}"
+        else:
+            assert not is_error, "Error expected"

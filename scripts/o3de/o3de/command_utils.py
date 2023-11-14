@@ -12,6 +12,7 @@ import json
 import re
 import os
 
+from getpass import getpass
 from o3de import manifest
 from typing import List, Tuple
 from pathlib import Path
@@ -21,6 +22,73 @@ logger = logging.getLogger('o3de')
 
 class O3DEConfigError(Exception):
     pass
+
+GENERAL_BOOLEAN_REGEX = '(t|f|true|false|0|1|on|off|yes|no)'
+
+def evaluate_boolean_from_setting(input: str, default: bool = None) -> bool:
+
+    if input is None:
+        return default
+
+    if not re.match(GENERAL_BOOLEAN_REGEX, input, re.IGNORECASE):
+        raise O3DEConfigError(f"Invalid boolean value {input}. Must match '{GENERAL_BOOLEAN_REGEX}'")
+
+    lower_input = input.lower()
+    match lower_input:
+        case 't' | 'true' | '1' | 'on' | 'yes':
+            return True
+        case 'f' | 'false' | '0' | 'off' | 'no':
+            return False
+        case _:
+            raise O3DEConfigError(f"Invalid boolean value {input}. Must match '{GENERAL_BOOLEAN_REGEX}'")
+
+class SettingsDescription(object):
+
+    def __init__(self, key: str, description: str, default: str= None,  is_password:bool = False, is_boolean = False, restricted_regex: str = None, restricted_regex_description: str = None):
+
+        self._key = key
+        self._description = description
+        self._default = default
+        self._is_password = is_password
+        self._is_boolean = is_boolean
+        self._restricted_regex = re.compile(restricted_regex, re.IGNORECASE) if restricted_regex is not None else None
+        self._restricted_regex_description = restricted_regex_description
+
+        assert not (is_boolean and is_password), 'Only is_boolean or is_password is allowed'
+        assert (restricted_regex and not (is_boolean and is_password)) or (not restricted_regex), 'restricted_regex cannot be set with either is_boolean or is_password'
+        assert (restricted_regex and restricted_regex_description) or not (restricted_regex or restricted_regex_description), 'If restricted_regex is set, then restricted_regex_description must be set as well'
+
+
+    def __str__(self):
+        return self._key
+
+    @property
+    def key(self) -> str:
+        return self._key
+
+    @property
+    def description(self) -> str:
+        return self._description
+
+    @property
+    def default(self):
+        return self._default
+
+    @property
+    def is_password(self):
+        return self._is_password
+
+    @property
+    def is_boolean(self):
+        return self._is_boolean
+
+    def validate_value(self, input):
+        assert not self._is_password, f"Input value for key  '{self._key}' must be set through a password-specific setter"
+        if self._is_boolean:
+            evaluate_boolean_from_setting(input)
+        if self._restricted_regex and not self._restricted_regex.match(input):
+            raise O3DEConfigError(f"Input value '{input}' not valid. {self._restricted_regex_description}")
+
 
 
 def resolve_project_name_and_path(starting_path: str or None = None) -> (str, Path):
@@ -67,46 +135,52 @@ class O3DEConfig(object):
     values for specified registered projects.
     """
     def __init__(self, project_name: str or None, settings_filename: str, settings_section_name: str,
-                 default_settings: List[Tuple]):
+                 settings_description_list: List[SettingsDescription]):
         """
         Initialize the configuration object
 
-        :param project_name:            Optional. The name of the registered o3de-project if this object is to handle both the global settings and project-specific overrides.
-        :param settings_filename:
-        :param settings_section_name:
-        :param default_settings:
+        :param project_name:                Optional. The name of the registered o3de-project if this object is to handle both the global settings and project-specific overrides.
+        :param settings_filename:           The filename for the setting
+        :param settings_section_name:       The section name that this settings object manages for the settings file
+        :param settings_description_list:   The list of supported setting descriptions
         """
 
-        self.settings_filename = settings_filename
-        self.settings_section_name = settings_section_name
+        self._settings_filename = settings_filename
+        self._settings_section_name = settings_section_name
+
+        # Construct a map to the settings by its key
+        self._settings_description_map = {}
+        for setting in settings_description_list:
+            assert setting.key not in self._settings_description_map, f"Duplicate settings key '{setting.key}' detected"
+            self._settings_description_map[setting.key] = setting
 
         # Always apply and read the global configuration
-        self.global_settings_file = self.apply_default_global_settings(settings_filename=settings_filename,
-                                                                       settings_section_name=settings_section_name,
-                                                                       default_settings=default_settings)
+        self._global_settings_file = O3DEConfig.apply_default_global_settings(settings_filename=settings_filename,
+                                                                              settings_section_name=settings_section_name,
+                                                                              settings_descriptions=settings_description_list)
         global_config_reader = configparser.ConfigParser()
-        global_config_reader.read(self.global_settings_file.absolute())
-        if not global_config_reader.has_section(self.settings_section_name):
-            global_config_reader.add_section(self.settings_section_name)
-        self.global_settings = global_config_reader[self.settings_section_name]
+        global_config_reader.read(self._global_settings_file.absolute())
+        if not global_config_reader.has_section(self._settings_section_name):
+            global_config_reader.add_section(self._settings_section_name)
+        self._global_settings = global_config_reader[self._settings_section_name]
 
         if project_name is None:
             # No project name, set to handle only the global configuration
-            self.project_settings_file = None
-            self.project_settings = None
-            self.project_name = None
+            self._project_settings_file = None
+            self._project_settings = None
+            self._project_name = None
         else:
             # The project name was specified, locate and read the project settings and use it as overlay values
-            self.project_settings_file = O3DEConfig.resolve_project_settings_file(project_name=project_name,
+            self._project_settings_file = O3DEConfig.resolve_project_settings_file(project_name=project_name,
                                                                                   settings_filename=settings_filename,
                                                                                   settings_section_name=settings_section_name,
                                                                                   create_default_if_missing=True)
-            self.project_name = project_name
+            self._project_name = project_name
             project_config_reader = configparser.ConfigParser()
-            project_config_reader.read(self.project_settings_file.absolute())
-            if not project_config_reader.has_section(self.settings_section_name):
-                project_config_reader.add_section(self.settings_section_name)
-            self.project_settings = project_config_reader[self.settings_section_name]
+            project_config_reader.read(self._project_settings_file.absolute())
+            if not project_config_reader.has_section(self._settings_section_name):
+                project_config_reader.add_section(self._settings_section_name)
+            self._project_settings = project_config_reader[self._settings_section_name]
 
     @property
     def is_global(self) -> bool:
@@ -114,18 +188,25 @@ class O3DEConfig(object):
         Determine if this object represents only global settings or both project and global settings
         :return: bool: True if only the global settings are managed, false if not
         """
-        return self.project_settings_file is None
+        return self._project_settings_file is None
+
+    @property
+    def project_name(self) -> str or None:
+        return self._project_name
+
+    @property
+    def setting_descriptions(self) -> list:
+        return [setting for _, setting in self._settings_description_map.items()]
 
     @staticmethod
     def apply_default_global_settings(settings_filename: str,
                                       settings_section_name: str,
-                                      default_settings: List[Tuple]) -> Path:
+                                      settings_descriptions: List[SettingsDescription]) -> Path:
         """
         Make sure that the global settings file exists and is populated with the default settings if they are missing
 
         :param settings_filename:       The name of the settings file (file name only) to use to locate/create/update the settings file.
         :param settings_section_name:   The settings file section name to create (if needed) for the default settings
-        :param default_settings:        The list of tuples (key,value) to populate the default values if needed
         :return: The path to the global settings file
         """
 
@@ -147,7 +228,16 @@ class O3DEConfig(object):
             global_config.add_section(settings_section_name)
         global_section = global_config[settings_section_name]
         modified = False
-        for config_key, default_value in default_settings:
+
+        for setting in settings_descriptions:
+
+            config_key = setting.key
+            default_value = setting.default
+
+            # Only apply default values if it is not None
+            if default_value is None:
+                continue
+
             # Only add default values to keys that don't exist. We don't want to overwrite any existing value
             if config_key not in global_section:
                 global_section[config_key] = default_value
@@ -194,46 +284,54 @@ class O3DEConfig(object):
 
         return settings_path
 
-    def set_config_value(self, key: str, value: str) -> str:
+    def set_config_value(self, key: str, value: str, validate_value: bool = True) -> str:
         """
         Apply a settings value to the configuration. If there is a project overlay configured, then only apply the value
         to the project override. Only apply the value globally if this object is not managing an overlay setting
 
-        :param key:     The key of the entry to set or add.
-        :param value:   The value of the entry to set or add.
+        :param key:             The key of the entry to set or add.
+        :param value:           The value of the entry to set or add.
+        :param validate_value:  Option to validate the value validity against the key
         :return: The previous value if the key if it is being overwritten, or None if this is a new key+value
         """
+
+        # Validate the setting key and its value
         if not key:
             raise O3DEConfigError("Missing 'key' argument to set a config value")
+        settings_description = self._settings_description_map.get(key, None)
+        if not settings_description:
+            raise O3DEConfigError(f"Unrecognized setting '{key}'")
+        if validate_value:
+            settings_description.validate_value(value)
 
         if self.is_global:
-            settings = self.global_settings
-            settings_file = self.global_settings_file
+            current_settings = self._global_settings
+            current_settings_file = self._global_settings_file
         else:
-            settings = self.project_settings
-            settings_file = self.project_settings_file
+            current_settings = self._project_settings
+            current_settings_file = self._project_settings_file
 
         # Read the settings and apply the change if necessary
         project_config = configparser.ConfigParser()
-        project_config.read(settings_file.absolute())
-        if not project_config.has_section(self.settings_section_name):
-            project_config.add_section(self.settings_section_name)
-        project_config_section = project_config[self.settings_section_name]
+        project_config.read(current_settings_file.absolute())
+        if not project_config.has_section(self._settings_section_name):
+            project_config.add_section(self._settings_section_name)
+        project_config_section = project_config[self._settings_section_name]
         current_value = project_config_section.get(key, None)
         if current_value != value:
             try:
-                settings[key] = value
+                current_settings[key] = value
                 project_config_section[key] = value
             except ValueError as e:
-                raise O3DEConfigError(f"Invalid settings value for key '{key}': {e}")
-            with settings_file.open('w') as settings_file:
-                project_config.write(settings_file)
+                raise O3DEConfigError(f"Invalid settings value for setting '{key}': {e}")
+            with current_settings_file.open('w') as current_settings_file:
+                project_config.write(current_settings_file)
 
         return current_value
 
-    REGEX_NAME_AND_VALUE_MATCH_UNQUOTED = re.compile(r'([\w]+)[\s]*=[\s]*((.*))')
-    REGEX_NAME_AND_VALUE_MATCH_SINGLE_QUOTED = re.compile(r"([\w]+)[\s]*=[\s]*('(.*)')")
-    REGEX_NAME_AND_VALUE_MATCH_DOUBLE_QUOTED = re.compile(r'([\w]+)[\s]*=[\s]*("(.*)")')
+    REGEX_NAME_AND_VALUE_MATCH_UNQUOTED = re.compile(r'(\w[\d\w\.]+)[\s]*=[\s]*((.*))')
+    REGEX_NAME_AND_VALUE_MATCH_SINGLE_QUOTED = re.compile(r"(\w[\d\w\.]+)[\s]*=[\s]*('(.*)')")
+    REGEX_NAME_AND_VALUE_MATCH_DOUBLE_QUOTED = re.compile(r'(\w[\d\w\.]+)[\s]*=[\s]*("(.*)")')
 
     def set_config_value_from_expression(self, key_and_value: str) -> str:
         """
@@ -271,21 +369,41 @@ class O3DEConfig(object):
         :param key: The key to look up the value
         :return: Tuple (str,str) that represents (value, project_name). If project_name is empty, then the value is global for all projects
         """
-        if self.project_settings:
-            value = self.project_settings.get(key, None)
-            if value:
-                return value, self.project_name
+        settings_description = self._settings_description_map.get(key, None)
+        if not settings_description:
+            raise O3DEConfigError(f"Unrecognized setting '{key}'")
 
-        value = self.global_settings.get(key, None)
+        if self._project_settings:
+            value = self._project_settings.get(key, None)
+            if value:
+                return value, self._project_name
+
+        value = self._global_settings.get(key, None)
         return value, ""
 
-    def get_value(self, key: str) -> str:
+    def get_value(self, key: str, default: str = None) -> str:
         """
         Get the value of a particular setting based on a key.
         :param key: The key to look up the value
-        :return: The value of the settings based on the key. If the key is not found, return None
+        :param default: The default value to return if the key is not set
+        :return: The value of the settings based on the key. If the key is not found, return the default
         """
-        return self.get_value_and_source(key)[0]
+        settings_description = self._settings_description_map.get(key, None)
+        if not settings_description:
+            raise O3DEConfigError(f"Unrecognized setting '{key}'")
+        result = self.get_value_and_source(key)[0]
+        return result or default
+
+    def get_boolean_value(self, key: str, default: bool=False) -> bool:
+
+        settings_description = self._settings_description_map.get(key, None)
+        if not settings_description:
+            raise O3DEConfigError(f"Unrecognized setting '{key}'")
+        if not settings_description.is_boolean:
+            raise O3DEConfigError(f"Setting '{key}' is not a boolean value.")
+
+        str_value = self.get_value(key)
+        return evaluate_boolean_from_setting(str_value)
 
     def get_all_values(self) -> List[Tuple]:
         """
@@ -296,17 +414,43 @@ class O3DEConfig(object):
         """
 
         all_settings_map = {}
-        for key, value in self.global_settings.items():
+        for key, value in self._global_settings.items():
             all_settings_map[key] = value
         if not self.is_global:
-            for key, value in self.project_settings.items():
-                all_settings_map[key] = value
+            for key, value in self._project_settings.items():
+                if value:
+                    all_settings_map[key] = value
 
         all_settings_list = []
         for key, value in all_settings_map.items():
             if not self.is_global:
-                all_settings_list.append((key, value, self.project_name if key in self.project_settings else ''))
+                all_settings_list.append((key, value, self._project_name if self._project_settings.get(key) else ''))
             else:
                 all_settings_list.append((key, value, ''))
 
         return all_settings_list
+
+    def set_password(self, key) -> None:
+        """
+        Set a password for a password-specified key 
+        :param key:     The key to the password setting to set
+        """
+        
+        settings_description = self._settings_description_map.get(key, None)
+        if not settings_description:
+            raise O3DEConfigError(f"Unrecognized setting '{key}'")
+        if not settings_description.is_password:
+            raise O3DEConfigError(f"Setting '{key}' is not a password setting.")
+
+        input_password = getpass(f'Please enter the password for {key}: ')
+        if not input_password:
+            raise O3DEConfigError(f"Invalid empty password")
+
+        verify_password = getpass(f'Please verify the password for {key}: ')
+        if input_password != verify_password:
+            raise O3DEConfigError(f"Passwords do not match.")
+    
+        # Set the password bypassing the validity check
+        return self.set_config_value(key=key,
+                                     value=input_password,
+                                     validate_value=False)

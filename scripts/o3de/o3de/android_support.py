@@ -60,7 +60,7 @@ else:
 
 ASSET_MODE_LOOSE = 'LOOSE'
 ASSET_MODE_PAK = 'PAK'
-ASSET_MODE_VFS = 'VFS'  # Future Support
+
 ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK]
 
 BUILD_CONFIGURATIONS = ['Debug', 'Profile', 'Release']
@@ -69,16 +69,44 @@ ANDROID_ARCH = 'arm64-v8a'
 # Values to set for the android configuration handler
 ANDROID_SETTINGS_FILE = '.command_settings'
 ANDROID_SETTINGS_SECTION_NAME = 'android'
-ANDROID_SETTINGS_DEFAULT_VALUES = [
-    ('android_sdk_root', ''),
-    ('gradle_home', ''),
-    ('cmake_home', ''),
-    ('ninja_home', ''),
-    ('ndk_version', '25.*'),
-    ('native_build_path', 'o3de'),
-    ('android_gradle_plugin', '8.1.0'),
-    ('platform_sdk_api_level', '31'),
-    ('strip_debug', 'True')
+
+ANDROID_SETTINGS_SDK_ROOT              = command_utils.SettingsDescription('sdk.root', description='The root path of the android sdk on this system.')
+ANDROID_SETTINGS_PLATFORM_SDK_API      = command_utils.SettingsDescription('platform.sdk.api', description='The android platform API level (ref https://developer.android.com/tools/releases/platforms)', default='31')
+ANDROID_SETTINGS_NDK_VERSION           = command_utils.SettingsDescription('ndk.version', description='The version of the android NDK (ref https://developer.android.com/ndk/downloads). File matching patterns can be used (i.e. 25.* will search for the most update to date major version 25)', default='25.*')
+ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION = command_utils.SettingsDescription('android_gradle_plugin', description='The version of the android gradle plugin to use for the build (ref https://developer.android.com/reference/tools/gradle-api)', default='8.1.0')
+ANDROID_SETTINGS_GRADLE_HOME           = command_utils.SettingsDescription('gradle.home', description='The root path of the locally installed version of gradle. If not set, the gradle that is in the PATH environment will be used')
+ANDROID_SETTINGS_CMAKE_HOME            = command_utils.SettingsDescription('cmake.home', description='The root path of the locally installed version of cmake. If not set, the cmake that is in the PATH environment will be used')
+
+# Settings related to the signing configuration (ref https://developer.android.com/studio/publish/app-signing)
+ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE     = command_utils.SettingsDescription('signconfig.store.file', description='The key store file to use for creating a signing config. (ref https://developer.android.com/studio/publish/app-signing)')
+ANDROID_SETTINGS_SIGNING_CONFIG_STORE_PASSWORD = command_utils.SettingsDescription('signconfig.store.password', description='The password for the key store file', is_password=True)
+ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS      = command_utils.SettingsDescription('signconfig.key.alias', description='The key alias withing the key store that idfentifies the signing key')
+ANDROID_SETTINGS_SIGNING_CONFIG_KEY_PASSWORD   = command_utils.SettingsDescription('signconfig.key.password', description='The password for the key inside the key store referenced by the key alias', is_password=True)
+
+# General O3DE build and deployment options
+ANDROID_SETTINGS_ASSET_MODE           = command_utils.SettingsDescription('asset_mode',
+                                                        description='The asset mode to determine how the assets are stored in the target APK. Valid values are LOOSE and PAK.',
+                                                        restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK})',
+                                                        restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.")
+ANDROID_SETTINGS_STRIP_DEBUG          = command_utils.SettingsDescription('strip.debug', description='Option to strip the debug symbols of the built native libs before deployment to the APK')
+ANDROID_SETTINGS_OCULUS_PROJECT       = command_utils.SettingsDescription('oculus.project', description='Option to set oculus-specific build options when building the APK')
+ANDROID_SETTINGS_ASSET_BUNDLE_SUBPATH = command_utils.SettingsDescription('asset.bundle.subpath', description='The sub-path from the project root to specify where the bundle/pak files will be generated to. (ref https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/)')
+
+SUPPORTED_ANDROID_SETTINGS = [
+    ANDROID_SETTINGS_SDK_ROOT,
+    ANDROID_SETTINGS_PLATFORM_SDK_API,
+    ANDROID_SETTINGS_NDK_VERSION,
+    ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION,
+    ANDROID_SETTINGS_GRADLE_HOME,
+    ANDROID_SETTINGS_CMAKE_HOME,
+    ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE,
+    ANDROID_SETTINGS_SIGNING_CONFIG_STORE_PASSWORD,
+    ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS,
+    ANDROID_SETTINGS_SIGNING_CONFIG_KEY_PASSWORD,
+    ANDROID_SETTINGS_ASSET_MODE,
+    ANDROID_SETTINGS_STRIP_DEBUG,
+    ANDROID_SETTINGS_OCULUS_PROJECT,
+    ANDROID_SETTINGS_ASSET_BUNDLE_SUBPATH
 ]
 
 
@@ -86,7 +114,7 @@ def get_android_config(project_name: str or None) -> command_utils.O3DEConfig:
     return command_utils.O3DEConfig(project_name=project_name,
                                     settings_filename=ANDROID_SETTINGS_FILE,
                                     settings_section_name=ANDROID_SETTINGS_SECTION_NAME,
-                                    default_settings=ANDROID_SETTINGS_DEFAULT_VALUES)
+                                    settings_description_list=SUPPORTED_ANDROID_SETTINGS)
 
 
 """
@@ -251,8 +279,6 @@ class AndroidSDKManager(object):
             AndroidSDKManager.validate_android_sdk_environment(current_java_version=current_java_version,
                                                                android_settings=android_settings)
 
-        assert self.android_command_line_tools_sdkmanager_path, "android_command_line_tools_sdkmanager_path not set"
-
         self.refresh_sdk_installation()
 
 
@@ -268,12 +294,12 @@ class AndroidSDKManager(object):
         """
 
         # Validate the android sdk folder was set to a valid location
-        android_sdk_root = android_settings.get_value('android_sdk_root')
+        android_sdk_root = android_settings.get_value(ANDROID_SETTINGS_SDK_ROOT.key)
         if not android_sdk_root:
-            raise AndroidToolError("The android sdk path was not set. Set the value of 'android_sdk' to the path where the android sdk base is located.")
+            raise AndroidToolError(f"The android sdk path was not set. Set the value of '{ANDROID_SETTINGS_SDK_ROOT}' to the path where the android sdk base is located.")
         android_sdk_root_path = Path(android_sdk_root)
         if not android_sdk_root_path.is_dir():
-            raise AndroidToolError(f"The android sdk path '{android_sdk_root_path}' is set to an invalid path. Folder does not exist.")
+            raise AndroidToolError(f"The android sdk path '{ANDROID_SETTINGS_SDK_ROOT}' is set to an invalid path '{android_sdk_root_path}'. Folder does not exist.")
 
         # Make sure that the android command line tool is installed (unzipped) to the expected location under the specified android SDK
         android_sdk_command_line_tools_root = android_sdk_root_path / 'cmdline-tools' / 'latest'
@@ -665,7 +691,7 @@ def validate_gradle(android_config) -> (Path, str):
     """
     return validate_build_tool(tool_name='Gradle',
                                tool_command=f'gradle{GRADLE_EXTENSION}',
-                               tool_config_key='gradle_home',
+                               tool_config_key=ANDROID_SETTINGS_GRADLE_HOME.key,
                                tool_config_sub_path='bin',
                                tool_version_arg='--version',
                                version_regex=r'.*(Gradle)\s*\"?([\d\_\.]+)',
@@ -680,7 +706,7 @@ def validate_cmake(android_config) -> (Path, str):
     """
     return validate_build_tool(tool_name='Cmake',
                                tool_command='cmake',
-                               tool_config_key='cmake_home',
+                               tool_config_key=ANDROID_SETTINGS_CMAKE_HOME.key,
                                tool_config_sub_path='bin',
                                tool_version_arg='--version',
                                version_regex=r'.*(cmake version)\s*\"?([\d\_\.]+)',
@@ -1029,45 +1055,57 @@ class AndroidProjectGenerator(object):
     Class the manages the process to generate an android project folder in order to build with gradle/android studio
     """
 
-    def __init__(self, engine_root:Path,
-                 android_build_dir, android_sdk_path, android_build_tool_version, android_platform_sdk_api_level, android_ndk_package,
-                 project_name, project_path, project_general_settings, project_android_settings, cmake_version, cmake_path, gradle_path, gradle_version,
-                 android_gradle_plugin_version, ninja_path, asset_mode, signing_config, native_build_path,
-                 vulkan_validation_path,
+    def __init__(self, engine_root: Path,
+                 android_build_dir: Path,
+                 android_sdk_path: Path,
+                 android_build_tool_version: str,
+                 android_platform_sdk_api_level: str,
+                 android_ndk_package: str,
+                 project_name: str,
+                 project_path: Path,
+                 project_general_settings: dict,
+                 project_android_settings: dict,
+                 cmake_path: Path,
+                 cmake_version: str,
+                 gradle_path: Path,
+                 gradle_version: str,
+                 android_gradle_plugin_version: str,
+                 ninja_path: Path,
+                 asset_mode:str,
+                 signing_config: AndroidSigningConfig or None,
                  extra_cmake_configure_args,
-                 src_pak_file_path,
-                 strip_debug_symbols=False,
-                 overwrite_existing=True,
-                 oculus_project=False):
-
+                 src_pak_file_path: str,
+                 strip_debug_symbols: bool = False,
+                 overwrite_existing: bool = True,
+                 oculus_project: bool = False):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
-
-        :param engine_root:                 The engine root that contains the engine
-        :param android_build_dir:           The target folder under the where the android project folder will be created
-        :param android_sdk_path:                The path to the ANDROID_SDK used for building the android java code
-        :param android_build_tool_version:      The android SDK build-tool version.
-        :param android_platform_sdk_api_level:The android native API level (ANDROID_NATIVE_API_LEVEL) to set
-        :param android_ndk_package:             The android ndk version number to use for the native builds
-        :param project_name:            The name of the project
-        :param project_path:            The path to the project
-        :param project_android_settings:    The android settings for the project
-        :param third_party_path:        The required path to the lumberyard 3rd party path
-        :param cmake_version:           The version number of cmake that will be used by gradle
-        :param cmake_path:     The override path to cmake if it does not exists in the system path
-        :param gradle_path:    The override path to gradle if it does not exists in the system path
-        :param gradle_version:          The detected version of gradle being used
-        :param android_gradle_plugin_version:   The android gradle plugin version
-        :param ninja_path:     The override path to ninja if it does not exists in the system path
-        :param asset_mode:
-        :param asset_type:
-        :param signing_config:          Optional signing configuration arguments
-        :param native_build_path:       Override the native build staging path in gradle
-        :param vulkan_validation_path:  Override the path to where the Vulkan Validation Layers libraries are (required when using NDK r23+)
-        :param extra_cmake_configure_args Additional arguments to supply cmake when configuring a project
-        :param overwrite_existing:      Flag to overwrite existing project files when being generated, or skip if they already exist.
-        :param oculus_project:          Flag to indicate if this is an oculus project
+        
+        :param engine_root:                     The Path location of the Engine
+        :param android_build_dir:               The Path of the target folder where the android project will be created 
+        :param android_sdk_path:                The Path to the Android SDK Root used to generate and process the android build script.
+        :param android_build_tool_version:      The Android SDK build-tool version.
+        :param android_platform_sdk_api_level:  The Android Platform SDK API Level to use for the android build
+        :param android_ndk_package:             The Android NDK package version to use
+        :param project_name:                    The name of the project the android build script is being generated for.
+        :param project_path:                    The Path to the root of the project that the android build script is being generated for.
+        :param project_general_settings:        The general project settings (from <project_path>/project.json) for the project (to get the legacy android settings if specified)
+        :param project_android_settings:        The android project settings (from <project_path>/Platform/Android/android_project.json) to get the android settings
+        :param cmake_path:                      The path to cmake to use for the native android build
+        :param cmake_version:                   The version of cmake to use for the native android build
+        :param gradle_path:                     The path to gradle to use for the android gradle build script
+        :param gradle_version:                  The path to gradle to use for the android gradle build script
+        :param android_gradle_plugin_version:   The version of the android gradle plugin to specify for the android build script
+        :param ninja_path:                      The path to the ninja-build tool needed for the native android build step
+        :param asset_mode:                      The asset mode to use when applying the asset layout (see ASSET_MODES)
+        :param signing_config:                  The optional signing config to embed in the android build script. (Required for APK signing)
+        :param extra_cmake_configure_args:      TBD
+        :param src_pak_file_path:               The sub-path from the project root to where the bundled pak files are expected
+        :param strip_debug_symbols:             Option to strip the debug symbols from the native built libraries
+        :param overwrite_existing:              Option to overwrite the any existing build script
+        :param oculus_project:                  Option to indicate that we are building the android script for oculus devices.
         """
+
         self.env = {}
 
         self.engine_root = engine_root
@@ -1099,8 +1137,7 @@ class AndroidProjectGenerator(object):
         self.src_pak_file_path = src_pak_file_path
         self.asset_mode = asset_mode
 
-        self.native_build_path = native_build_path
-        self.vulkan_validation_path = vulkan_validation_path
+        self.native_build_path = 'o3de'
         self.extra_cmake_configure_args = extra_cmake_configure_args
         self.signing_config = signing_config
         self.overwrite_existing = overwrite_existing
@@ -1378,9 +1415,6 @@ class AndroidProjectGenerator(object):
                 '"-DLY_DISABLE_TEST_MODULES=ON"',
 
             ]
-
-            if self.vulkan_validation_path:
-                cmake_argument_list.append(f'"-DLY_ANDROID_VULKAN_VALIDATION_PATH={pathlib.PurePath(self.vulkan_validation_path).as_posix()}"')
 
             if self.strip_debug_symbols:
                 cmake_argument_list.append('"-DLY_STRIP_DEBUG_SYMBOLS=ON"')

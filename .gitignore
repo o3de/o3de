@@ -2,6 +2,7 @@
 .venv/
 .vs/
 .vscode/
+.gradle/
 __pycache__
 /[Bb]uild
 [Oo]ut/**

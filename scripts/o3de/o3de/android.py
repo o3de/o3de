@@ -14,9 +14,15 @@ from o3de import command_utils, manifest, utils, android_support
 from getpass import getpass
 
 ENGINE_PATH = pathlib.Path(__file__).parents[3]
+O3DE_SCRIPT_PATH = f"{ENGINE_PATH}{os.sep}scripts{os.sep}o3de{android_support.O3DE_SCRIPT_EXTENSION}"
 
 logging.basicConfig(format=utils.LOG_FORMAT)
 logger = logging.getLogger('o3de.android')
+
+O3DE_COMMAND_CONFIGURE = 'android-configure'
+O3DE_COMMAND_GENERATE = 'android-generate'
+SIGNCONFIG_ARG_STORE_FILE = '--signconfig-store-file'
+SIGNCONFIG_ARG_KEY_ALIAS = '--signconfig-key-alias'
 
 
 def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
@@ -40,8 +46,10 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
     android_support.validate_ninja(android_config)
 
     # Validate the versions of gradle and ninja against the configured version of the android gradle plugin
-    android_gradle_plugin_ver = android_config.get_value('android_gradle_plugin')
-    assert android_gradle_plugin_ver, "Missing 'android_gradle_plugin' from .android_settings"
+    android_gradle_plugin_ver = android_config.get_value(android_support.ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION.key)
+    if not android_gradle_plugin_ver:
+        raise android_support.AndroidToolError(f"Missing '{android_support.ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION.key}' from the android settings")
+
     android_gradle_requirements = android_support.get_android_gradle_plugin_requirements(android_gradle_plugin_ver)
     android_gradle_requirements.validate_gradle_version(gradle_version)
     android_gradle_requirements.validate_java_version(java_version)
@@ -51,6 +59,51 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
 
     # Make sure that the licenses have been read and accepted
     sdk_manager.check_licenses()
+
+    # Make sure that all of the signing config is set (warning)
+
+    WARNING_ALIGN_PREFIX = f"\n{' ' * len('[WARNING] ')}"
+
+    has_signing_config_store_file = len(android_config.get_value(android_support.ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE.key, default='')) > 0
+    has_signing_config_store_password = len(android_config.get_value(android_support.ANDROID_SETTINGS_SIGNING_CONFIG_STORE_PASSWORD.key, default='')) > 0
+    has_signing_config_key_alias = len(android_config.get_value(android_support.ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS.key, default='')) > 0
+    has_signing_config_key_password = len(android_config.get_value(android_support.ANDROID_SETTINGS_SIGNING_CONFIG_KEY_PASSWORD.key, default='')) > 0
+
+    signing_config_warned = False
+    if not has_signing_config_store_file and not has_signing_config_store_password and not has_signing_config_key_alias and not has_signing_config_key_password:
+        signing_config_warned = True
+        logger.warn(f"Signing configuration not set. None of the 'signconfig.*' was set."
+                    f"The android scripts will not support APK signing until a signing config is set. The signing configuration "
+                    f"{WARNING_ALIGN_PREFIX}key store and key alias can be set with the '{SIGNCONFIG_ARG_STORE_FILE}' and '{SIGNCONFIG_ARG_KEY_ALIAS}' " 
+                    f"respectively with the '{O3DE_COMMAND_GENERATE}' command. The signing configuration values can "
+                    f"{WARNING_ALIGN_PREFIX}also be stored in the settings.\n")
+    elif has_signing_config_store_file and not has_signing_config_key_alias:
+        signing_config_warned = True
+        logger.warn(f"Signing configuration settings is incomplete.{WARNING_ALIGN_PREFIX}'{android_support.ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE}' is set, "
+                    f"but '{android_support.ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS}' is not. You will need to provide a '{SIGNCONFIG_ARG_KEY_ALIAS}' argument when calling "
+                    f"'{O3DE_COMMAND_GENERATE}'. For example:\n{WARNING_ALIGN_PREFIX}{O3DE_SCRIPT_PATH} {O3DE_COMMAND_GENERATE} {SIGNCONFIG_ARG_KEY_ALIAS} SIGNCONFIG_KEY_ALIAS ...")
+    elif not has_signing_config_store_file and has_signing_config_key_alias:
+        signing_config_warned = True
+        logger.warn(f"Signing configuration settings is incomplete.{WARNING_ALIGN_PREFIX}'{android_support.ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS}' is set, "
+                    f"but '{android_support.ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE}' is not. You will need to provide a '{SIGNCONFIG_ARG_STORE_FILE}' argument when calling "
+                    f"'{O3DE_COMMAND_GENERATE}'. For example:\n{WARNING_ALIGN_PREFIX}{O3DE_SCRIPT_PATH} {O3DE_COMMAND_GENERATE} {SIGNCONFIG_ARG_STORE_FILE} SIGNCONFIG_STORE_FILE ...")
+
+    if has_signing_config_store_file:
+        signing_config_warned = True
+        signing_config_store_file = pathlib.Path(android_config.get_value(android_support.ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE.key))
+        if not signing_config_store_file.is_file():
+            raise android_support.AndroidToolError(f"The signing config key store file '{signing_config_store_file}' is not a valid file.")
+
+    if has_signing_config_store_file and has_signing_config_key_alias:
+        if not has_signing_config_store_password:
+            signing_config_warned = True
+            logger.warn(f"The signing configuration is set but missing the store password. You will be prompted for one during the call to {O3DE_COMMAND_GENERATE}.")
+        if not has_signing_config_key_password:
+            signing_config_warned = True
+            logger.warn(f"The signing configuration is set but missing the key password. You will be prompted for one during the call to {O3DE_COMMAND_GENERATE}.")
+
+    if signing_config_warned:
+        print(f"{WARNING_ALIGN_PREFIX}Type in '{O3DE_SCRIPT_PATH} {O3DE_COMMAND_CONFIGURE} --help' for more information about setting the signing config value in the settings.")
 
 
 def list_android_config(android_config: command_utils.O3DEConfig) -> None:
@@ -65,12 +118,12 @@ def list_android_config(android_config: command_utils.O3DEConfig) -> None:
     print("\nO3DE Android settings:\n")
 
     for item, value, source in all_settings:
-        if source:
-            print(f"* {item} = {value}")
-        else:
-            print(f"  {item} = {value}")
+        if not value:
+            continue
+        print(f"{'* ' if source else '  '}{item} = {value}")
+
     if not android_config.is_global:
-        print(f"\n* - Specific to {android_config.project_name}")
+        print(f"\n* Settings that are specific to {android_config.project_name}. Use the --global argument to see only the global settings.")
 
 
 def get_android_config_from_args(args: argparse) -> (command_utils.O3DEConfig, str):
@@ -96,7 +149,7 @@ def get_android_config_from_args(args: argparse) -> (command_utils.O3DEConfig, s
         except command_utils.O3DEConfigError:
             project_name = None
         if project_name:
-            logger.info(f"The execution of this command will be based on the currently detected project ({project_name}).")
+            logger.info(f"The execution of this command will be based on the currently detected project ({project_name}). Add the '--global' argument to set this value globally.")
             android_config = android_support.get_android_config(project_name=project_name)
         else:
             logger.info("The execution of this command will be based on the global settings.")
@@ -106,6 +159,7 @@ def get_android_config_from_args(args: argparse) -> (command_utils.O3DEConfig, s
         android_config = android_support.get_android_config(project_name=project_name)
 
     return android_config, project_name
+
 
 def configure_android_options(args: argparse) -> int:
     """
@@ -125,6 +179,14 @@ def configure_android_options(args: argparse) -> int:
             validate_android_config(android_config)
         if args.set_value:
             android_config.set_config_value_from_expression(args.set_value)
+        if args.set_password:
+            android_config.set_password(args.set_password)
+        if args.clear_value:
+            android_config.set_config_value(key=args.clear_value,
+                                            value='',
+                                            validate_value=False)
+
+
 
     except (command_utils.O3DEConfigError, android_support.AndroidToolError) as err:
         logger.error(str(err))
@@ -163,8 +225,10 @@ def generate_android_project(args: argparse) -> int:
         ninja_path, ninja_version = android_support.validate_ninja(android_config)
 
         # Validate the versions of gradle and ninja against the configured version of the android gradle plugin
-        android_gradle_plugin_ver = android_config.get_value('android_gradle_plugin')
-        assert android_gradle_plugin_ver, "Missing 'android_gradle_plugin' from .android_settings"
+        android_gradle_plugin_ver = android_config.get_value(android_support.ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION.key)
+        if not android_gradle_plugin_ver:
+            raise android_support.AndroidToolError(f"Missing '{android_support.ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION.key}' from the android settings")
+
         android_gradle_requirements = android_support.get_android_gradle_plugin_requirements(android_gradle_plugin_ver)
         android_gradle_requirements.validate_gradle_version(gradle_version)
         android_gradle_requirements.validate_java_version(java_version)
@@ -214,27 +278,39 @@ def generate_android_project(args: argparse) -> int:
         elif getattr(args, 'no_strip_debug', False):
             strip_debug = False
         else:
-            strip_debug = android_config.get_value('strip_debug')
-        logger.info(f"Deubg symbol stripping {'enabled' if strip_debug else 'disabled'}.")
+            strip_debug = android_config.get_value(android_support.ANDROID_SETTINGS_STRIP_DEBUG.key)
+        logger.info(f"Debug symbol stripping {'enabled' if strip_debug else 'disabled'}.")
 
-        # Create the android build folder
+        # Oculus project options
+        if getattr(args, 'oculus_project', False):
+            is_oculus_project = True
+        elif getattr(args, 'no_oculus_project', False):
+            is_oculus_project = False
+        else:
+            is_oculus_project = android_config.get_value(android_support.ANDROID_SETTINGS_OCULUS_PROJECT.key)
+        if is_oculus_project:
+            logger.info(f"Oculus flags enabled.")
+
+        # Get the android build folder
         build_folder = pathlib.Path(args.build_dir)
         logger.info(f'Project Android Build Folder : {build_folder}')
+
+        # Get the bundled assets sub folder
+        src_bundle_pak_subfolder = android_config.get_value(android_support.ANDROID_SETTINGS_ASSET_BUNDLE_SUBPATH.key,
+                                                            default='AssetBundling/Bundles')
 
         # Check if there is a signing config from the arguments
         signconfig_store_file = getattr(args, 'signconfig_store_file', None)
         signconfig_key_alias = getattr(args, 'signconfig_key_alias', None)
-        if signconfig_store_file:
-            if not signconfig_key_alias:
-                raise android_support.AndroidToolError(f"Missing required '--signconfig-key-alias' argument to accompany the provided '--signconfig-store-file' ({signconfig_store_file})")
+        if signconfig_store_file and signconfig_key_alias:
 
-            stored_signconfig_store_password = android_config.get_value('signconfig_store_password')
+            stored_signconfig_store_password = android_config.get_value(android_support.ANDROID_SETTINGS_SIGNING_CONFIG_STORE_PASSWORD.key)
             if stored_signconfig_store_password:
                 signconfig_store_password = stored_signconfig_store_password
             else:
                 signconfig_store_password = getpass(f"Please enter the key store password for {signconfig_store_file} : ")
 
-            stored_signconfig_key_password = android_config.get_value('signconfig_key_password')
+            stored_signconfig_key_password = android_config.get_value(android_support.ANDROID_SETTINGS_SIGNING_CONFIG_KEY_PASSWORD.key)
             if stored_signconfig_key_password:
                 signconfig_key_password = stored_signconfig_key_password
             else:
@@ -244,6 +320,10 @@ def generate_android_project(args: argparse) -> int:
                                                                   store_password=signconfig_store_password,
                                                                   key_alias=signconfig_key_alias,
                                                                   key_password=signconfig_key_password)
+        elif signconfig_store_file and not signconfig_key_alias:
+            raise android_support.AndroidToolError(f"Missing required '{SIGNCONFIG_ARG_KEY_ALIAS}' argument to accompany the provided '{SIGNCONFIG_ARG_STORE_FILE}' ({signconfig_store_file})")
+        elif not signconfig_store_file and signconfig_key_alias:
+            raise android_support.AndroidToolError(f"Missing required '{SIGNCONFIG_ARG_STORE_FILE}' argument to accompany the provided '{SIGNCONFIG_ARG_KEY_ALIAS}' ({signconfig_store_file})")
         else:
             signing_config = None
 
@@ -270,13 +350,12 @@ def generate_android_project(args: argparse) -> int:
                                                       ninja_path=ninja_path,
                                                       asset_mode=args.asset_mode,
                                                       signing_config=signing_config,
-                                                      native_build_path=args.native_build_path,
                                                       vulkan_validation_path=None,
                                                       extra_cmake_configure_args=None,
                                                       overwrite_existing=True,
                                                       strip_debug_symbols=strip_debug,
-                                                      src_pak_file_path='AssetBundling/Bundles',
-                                                      oculus_project=args.oculus_project)
+                                                      src_pak_file_path=src_bundle_pak_subfolder,
+                                                      oculus_project=is_oculus_project)
         apg.execute()
 
     except android_support.AndroidToolError as err:
@@ -307,9 +386,31 @@ def add_args(subparsers) -> None:
     #
     # Configure the subparser for 'android-configure'
     #
-    android_configure_subparser = subparsers.add_parser('android-configure',
+
+    # Generate the epilog string to describe the settings that can be configured
+    epilog_lines = ['Configure the default values that control the android helper scripts for O3DE.',
+                    'The list settings that can be set are:',
+                    '']
+    max_key_len = 0
+    for setting in android_config.setting_descriptions:
+        max_key_len = max(len(setting.key), max_key_len)
+    max_key_len += 4
+    for setting in android_config.setting_descriptions:
+        setting_line = f"{'* ' if setting.is_password else '  '}{setting.key: <{max_key_len}} {setting.description}"
+        epilog_lines.append(setting_line)
+    epilog_lines.extend([
+        '',
+        '* Denotes password settings that can only be set using the --set-password command'
+    ])
+
+    epilog = '\n'.join(epilog_lines)
+
+
+
+    android_configure_subparser = subparsers.add_parser(O3DE_COMMAND_CONFIGURE,
                                                         help='Configure the android platform settings for generating, building, and deploying android projects.',
-                                                        epilog='Configure the android platform settings for generating, building, and deploying android projects.')
+                                                        epilog=epilog,
+                                                        formatter_class=argparse.RawTextHelpFormatter)
 
     android_configure_subparser.add_argument('--global', default=False, action='store_true',
                                              help='Used with the configure command, specify whether the settings are project local or global.')
@@ -323,6 +424,10 @@ def add_args(subparsers) -> None:
                                              help='Validate the settings and values in the android settings. ')
     android_configure_subparser.add_argument('--set-value', type=str, required=False,
                                              help='Set the value for an android setting, using the format <argument>=<value>. For example: \'ndk_version=22.5*\'')
+    android_configure_subparser.add_argument('--clear-value', type=str, required=False,
+                                             help='Clear a previously configured setting.')
+    android_configure_subparser.add_argument('--set-password', type=str, required=False,
+                                             help='Set the password for a password setting. A password prompt will be presented.')
     android_configure_subparser.add_argument('--debug',
                                              help=f"Enable debug level logging for this script.",
                                              action='store_true')
@@ -332,7 +437,7 @@ def add_args(subparsers) -> None:
     #
     # Configure the subparser for 'android_generate'
     #
-    android_generate_subparser = subparsers.add_parser('android-generate',
+    android_generate_subparser = subparsers.add_parser(O3DE_COMMAND_GENERATE,
                                                         help='Generate an android/gradle project.')
 
     # Project Name
@@ -348,75 +453,62 @@ def add_args(subparsers) -> None:
     android_generate_subparser.add_argument('-B', '--build-dir', type=str, required=True,
                                              help="The location to write the android project scripts to.")
 
-    platform_sdk_api_level = android_config.get_value('platform_sdk_api_level')
+    # Platform SDK API Level (https://developer.android.com/tools/releases/platforms)
+    platform_sdk_api_level = android_config.get_value(android_support.ANDROID_SETTINGS_PLATFORM_SDK_API.key)
     if platform_sdk_api_level:
         android_generate_subparser.add_argument('--platform-sdk-api-level', type=str,
-                                                help=f"Specify the platform SDK API Level.\nDefault: {platform_sdk_api_level}",
+                                                help=f"Specify the platform SDK API Level. Default: {platform_sdk_api_level}",
                                                 default=platform_sdk_api_level)
     else:
-        android_generate_subparser.add_argument('--platform-sdk-api-level', type=str, required=True,
-                                                help="Specify the platform SDK API Level. Set with key 'platform_sdk_api_level'")
+        android_generate_subparser.add_argument('--platform-sdk-api-level', type=str,
+                                                help=f"Specify the platform SDK API Level ({android_support.ANDROID_SETTINGS_PLATFORM_SDK_API.key})",
+                                                required=True)
 
-    # NDK Version
-    ndk_version = android_config.get_value('ndk_version')
+    # Android NDK Version version (https://developer.android.com/ndk/downloads)
+    ndk_version = android_config.get_value(android_support.ANDROID_SETTINGS_NDK_VERSION.key)
     if ndk_version:
         android_generate_subparser.add_argument('--ndk-version', type=str,
-                                                help=f"Specify the android NDK version.\nDefault: {ndk_version}.",
+                                                help=f"Specify the android NDK version. Default: {ndk_version}.",
                                                 default=ndk_version)
     else:
-        android_generate_subparser.add_argument('--ndk-version', type=str, required=True,
-                                                help="Specify the android NDK version. Set with key 'ndk_version'")
+        android_generate_subparser.add_argument('--ndk-version', type=str,
+                                                help=f"Specify the android NDK version ({android_support.ANDROID_SETTINGS_NDK_VERSION.key}).",
+                                                required=True)
 
     # Signing configuration key store file
-    signconfig_store_file = android_config.get_value('signconfig_store_file')
+    signconfig_store_file = android_config.get_value(android_support.ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE.key)
     if signconfig_store_file:
-        android_generate_subparser.add_argument('--signconfig-store-file', type=str,
+        android_generate_subparser.add_argument(SIGNCONFIG_ARG_STORE_FILE, type=str,
                                                 help=f"Specify the location of the jks keystore file to enable a signing configuration for this project automatically. "
                                                      f"If set, then a store file password, key alias, and key password will be required as well. "
-                                                     f"\nDefault {signconfig_store_file}",
+                                                     f" Default : {signconfig_store_file}",
                                                 default=signconfig_store_file)
     else:
-        android_generate_subparser.add_argument('--signconfig-store-file', type=str,
-                                                help=f"Specify the location of the jks keystore file to enable a signing configuration for this project automatically. "
+        android_generate_subparser.add_argument(SIGNCONFIG_ARG_STORE_FILE, type=str,
+                                                help=f"Specify the location of the jks keystore file to enable a signing configuration for this project automatically "
+                                                     f"({android_support.ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE.key}). "
                                                      f"If set, then a store file password, key alias, and key password will be required as well.")
 
     # Signing configuration key store alias
-    signconfig_key_alias = android_config.get_value('signconfig_key_alias')
+    signconfig_key_alias = android_config.get_value(android_support.ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS.key)
     if signconfig_key_alias:
-        android_generate_subparser.add_argument('--signconfig-key-alias', type=str,
+        android_generate_subparser.add_argument(SIGNCONFIG_ARG_KEY_ALIAS, type=str,
                                                 help=f"Specify the key alias for the configured jks keystore file if set.\n"
                                                      f"Default: {signconfig_key_alias}.",
                                                 default=signconfig_key_alias)
     else:
-        android_generate_subparser.add_argument('--signconfig-key-alias', type=str,
-                                                help="Specify the key alias for the configured jks keystore file if set.")
-
-    # Native build path
-    native_build_path = android_config.get_value('native_build_path')
-    if not native_build_path:
-        native_build_path = '.'
-    if native_build_path:
-        android_generate_subparser.add_argument('--native-build-path', type=str,
-                                                help=f"Specify the optional intermediate build folder to use during the native c++ build"
-                                                     f" process, relative to the main 'app' folder.\n"
-                                                     f"Default: {native_build_path}",
-                                                default=native_build_path)
-
+        android_generate_subparser.add_argument(SIGNCONFIG_ARG_KEY_ALIAS, type=str,
+                                                help=f"Specify the key alias for the configured jks keystore file if set "
+                                                     f"({android_support.ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS.key}.")
     # Asset Mode
-    asset_mode = android_config.get_value('asset_mode')
-    if asset_mode:
-        android_generate_subparser.add_argument('--asset-mode', type=str,
-                                                help=f"The mode of asset deployment to use. ({','.join(android_support.ASSET_MODES)}).\n"
-                                                     f"Default: {asset_mode}",
-                                                default=native_build_path)
-    else:
-        android_generate_subparser.add_argument('--asset-mode', type=str,
-                                                help=f"The mode of asset deployment to use. ({','.join(android_support.ASSET_MODES)}).\n"
-                                                     f"Default: {android_support.ASSET_MODE_LOOSE}",
-                                                default=android_support.ASSET_MODE_LOOSE)
+    asset_mode = android_config.get_value(android_support.ANDROID_SETTINGS_ASSET_MODE.key, default=android_support.ASSET_MODE_LOOSE)
+    android_generate_subparser.add_argument('--asset-mode', type=str,
+                                            help=f"The mode of asset deployment to use. Accepted values are {','.join(android_support.ASSET_MODES)}."
+                                                 f"Default: {asset_mode}",
+                                            default=asset_mode)
 
     # Flag to strip the debug symbols
-    strip_debug = android_config.get_value('strip_debug')
+    strip_debug = android_config.get_value(android_support.ANDROID_SETTINGS_STRIP_DEBUG.key)
     if strip_debug:
         android_generate_subparser.add_argument('--no-strip-debug',
                                                 help=f"Don't strip the debug symbols from the built binaries.",
@@ -426,9 +518,18 @@ def add_args(subparsers) -> None:
                                                 help=f"Strip the debug symbols from the built binaries.",
                                                 action='store_true')
 
-    android_generate_subparser.add_argument('--oculus-project',
-                                            help=f"If the project is to be built for oculus, this flag enables oculus-specific settings that are required for the android project generation.",
-                                            action='store_true')
+    # Flag indicating this is an oculus project
+    is_oculus_project = android_config.get_value(android_support.ANDROID_SETTINGS_OCULUS_PROJECT.key)
+    if is_oculus_project:
+        android_generate_subparser.add_argument('--no-oculus-project',
+                                                help=f"Turn off the flag that marks the project as an oculus project.",
+                                                action='store_true')
+    else:
+        android_generate_subparser.add_argument('--oculus-project',
+                                                help="Turn on the flag that marks the project as an oculus project. This flag enables oculus-specific settings "
+                                                     "that are required for the android project generation.",
+                                                action='store_true')
+
 
     android_generate_subparser.add_argument('--debug',
                                             help=f"Enable debug level logging for this script.",
