@@ -10,7 +10,6 @@ import argparse
 
 import fnmatch
 import os
-import pathlib
 import re
 import shutil
 import stat
@@ -18,9 +17,12 @@ import sys
 
 import platform
 import logging
+
 from packaging.version import Version
+from pathlib import Path, PurePath
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+logger = logging.getLogger('o3de.android')
 
 ANDROID_ARCH = 'arm64-v8a'
 
@@ -28,74 +30,103 @@ ASSET_MODE_PAK = 'PAK'
 ASSET_MODE_LOOSE = 'LOOSE'
 ASSET_MODE_VFS = 'VFS'
 
+ASSET_PLATFORM_KEY = 'android'
+
+MINIMUM_ANDROID_GRADLE_PLUGIN_VER = Version("8.0")
+
+IS_PLATFORM_WINDOWS = platform.system() == 'Windows'
+
 
 class AndroidPostBuildError(Exception):
     pass
 
 
-def remove_link(link:pathlib.PurePath):
+def copy_or_create_link(src: Path, tgt: Path):
     """
-    Helper function to either remove a symlink, or remove a folder
+    Copy or create a link/junction depending on the source type. If this is a file, then perform file copy from the
+    source to the target. If it is a directory, then create a junction(windows) or symlink(linux) from the source to
+    the target
+
+    :param src: The source to copy/link from
+    :param tgt: The target tp copy/link to
     """
-    link = pathlib.PurePath(link)
-    if os.path.isdir(link):
-        try:
-            os.unlink(link)
-        except OSError:
-            # If unlink fails use shutil.rmtree
-            def remove_readonly(func, path, _):
-                "Clear the readonly bit and reattempt the removal"
-                os.chmod(path, stat.S_IWRITE)
-                func(path)
 
-            try:
-                shutil.rmtree(link, onerror=remove_readonly)
-            except shutil.Error as shutil_error:
-                raise AndroidPostBuildError(f'Error trying remove directory {link}: {shutil_error}', shutil_error.errno)
+    assert src.exists()
+    assert not tgt.exists()
 
+    full_src_path = str(src.resolve().absolute())
+    full_tgt_path = str(tgt.resolve().absolute())
 
-def create_link(src:pathlib.Path, tgt:pathlib.Path, copy:bool):
-    """
-    Helper function to create a directory link or copy a directory. On windows, this will be a directory junction, and on mac/linux
-    this will be a soft link
-
-    :param src:     The name of the link to create
-    :param tgt:     The target of the new link
-    :param copy:    Perform a directory copy instead of a link
-    """
-    src = pathlib.Path(src)
-    tgt = pathlib.Path(tgt)
-    if copy:
-        # Remove the exist target
-        if tgt.exists():
-            if tgt.is_symlink():
-                tgt.unlink()
-            else:
-                def remove_readonly(func, path, _):
-                    "Clear the readonly bit and reattempt the removal"
-                    os.chmod(path, stat.S_IWRITE)
-                    func(path)
-                shutil.rmtree(tgt, onerror=remove_readonly)
-
-        logging.debug(f'Copying from {src} to {tgt}')
-        shutil.copytree(str(src), str(tgt), symlinks=False)
-    else:
-        link_type = "symlink"
-        logging.debug(f'Creating symlink {src} =>{tgt}')
-        try:
-            if platform.system() == "Windows":
-                link_type = "junction"
+    try:
+        if src.is_file():
+            shutil.copy2(src=full_src_path,
+                         dst=full_tgt_path,
+                         follow_symlinks=True)
+            logger.info("Copied {full_src_path} to {full_tgt_path}")
+        else:
+            if IS_PLATFORM_WINDOWS:
                 import _winapi
-                _winapi.CreateJunction(str(src), str(tgt))
+                _winapi.CreateJunction(full_src_path, full_tgt_path)
+                logger.info(f'Created Junction {full_src_path} => {full_tgt_path}')
             else:
-                if tgt.exists():
-                    tgt.unlink()
                 tgt.symlink_to(src, target_is_directory=True)
+                logger.info(f'Created symbolic link {full_src_path} => {full_tgt_path}')
+
+    except OSError as err:
+        raise AndroidPostBuildError(f"Error trying to copy/link  {src} => {tgt} : {err}")
+
+
+def safe_clear_folder(target_folder: Path) -> None:
+    """
+    Safely clean the contents of a folder. If items are links/junctions, then attempt to unlink, but if the
+    items are non-linked, then perform a deletion.
+
+    :param target_folder: Folder to safely clear
+    """
+
+    if not target_folder.exists():
+        logger.warn(f"Nothing to clean. '{target_folder}' does not exist")
+        return
+
+    if not target_folder.is_dir():
+        logger.warn(f"Unable to clean '{target_folder}', target is not a directory")
+        return
+
+    for target_item in target_folder.iterdir():
+        try:
+            target_item.unlink()
         except OSError as err:
-            raise AndroidPostBuildError(f"Error trying to create {link_type} {src} => {tgt} : {err}")
+            raise AndroidPostBuildError(f"Error trying to unlink {target_item}: {err}")
 
 
-def determine_intermediate_folder_from_compile_commands(android_app_root_path:pathlib.Path,native_build_path:str,build_config:str,) -> str:
+def synchronize_folders(src: Path, tgt: Path) -> None:
+    """
+    Create a copy of a source folder 'src' to a target folder 'tgt', but use the following rules:
+    1. Make sure that a 'tgt' folder exists
+    2. For each item in the 'src' folder, call 'copy_or_create_link' to apply a copy or link of the items to the
+       target folder 'tgt'
+
+    :param src: The source folder to synchronize from
+    :param tgt: The target folder to synchronize to
+    """
+
+    assert not tgt.is_file()
+    assert src.is_dir()
+
+    # Make sure the target folder exists
+    tgt.mkdir(parents=True, exist_ok=True)
+
+    # Iterate through the items in the source folder and copy to the target folder
+    processed = 0
+    for src_item in src.iterdir():
+        tgt_item = tgt / src_item.name
+        copy_or_create_link(src_item, tgt_item)
+        processed += 1
+
+    logger.info(f"{processed} items from {src} linked/copied to {tgt}")
+
+
+def determine_intermediate_folder_from_compile_commands(android_app_root_path:Path,native_build_path:str,build_config:str,) -> str:
     """
     Gradle 7.x+ started to use a generated intermediate folder which makes it difficult the locate some of the binary files that do need
     to be included in the APK but are not automatically copied since there is no link dependencies on them.
@@ -119,11 +150,20 @@ def determine_intermediate_folder_from_compile_commands(android_app_root_path:pa
     intermediate_folder_name = matched.group(1)
     return intermediate_folder_name
 
+
 PAK_FILE_INSTRUCTIONS = "Make sure to create release bundles (Pak files) before building and deploying to an android device. Refer to " \
                         "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more" \
                         "information."
 
-def apply_pak_layout(project_root: pathlib.Path, asset_bundle_folder:str, target_layout_root:pathlib.Path, copy:bool) -> None:
+
+def apply_pak_layout(project_root: Path, asset_bundle_folder: str, target_layout_root: Path) -> None:
+    """
+    Apply the pak folder layout to the target assets folder
+
+    :param project_root:            The project root folder to base the search for the location of the pak files (Bundle)
+    :param asset_bundle_folder:     The sub path within the project root folder of the location of the pak files
+    :param target_layout_root:      The target layout destination of the pak files
+    """
 
     src_pak_file_full_path = project_root / asset_bundle_folder
 
@@ -134,94 +174,87 @@ def apply_pak_layout(project_root: pathlib.Path, asset_bundle_folder:str, target
     # Make sure that we have at least the engine_android.pak file
     has_engine_android_pak = False
     for pak_dir_item in src_pak_file_full_path.iterdir():
-        if pak_dir_item.is_file and str(pak_dir_item.name).lower() == 'engine_android.pak':
+        if pak_dir_item.is_file and str(pak_dir_item.name).lower() == f'engine_{ASSET_PLATFORM_KEY}.pak':
             has_engine_android_pak = True
             break
     if not has_engine_android_pak:
         raise AndroidPostBuildError(f"Unable to located the required 'engine_android.pak' file at location specified at {src_pak_file_full_path}. "
                                     f"{PAK_FILE_INSTRUCTIONS}")
 
-    # Reset and apply the android assets folder with the links to the android pak files from the source pak folder
-    if target_layout_root.is_dir():
-        remove_link(target_layout_root)
+    # Clear out the target folder first
+    safe_clear_folder(target_layout_root)
 
-    for pak_dir_item in src_pak_file_full_path.iterdir():
-
-        if not pak_dir_item.is_file or fnmatch.fnmatch(str(pak_dir_item.name), '*_android.pak'):
-            continue
-        target_linked_pak = target_layout_root / str(pak_dir_item.name)
-        create_link(pak_dir_item, target_linked_pak, False)
+    # Copy/Link the contents to the target folder
+    synchronize_folders(src_pak_file_full_path, target_layout_root)
 
 
-def apply_loose_layout(project_root:pathlib.Path, target_layout_root:pathlib.Path, agp_intermediate_folder_name:str, copy:bool) -> None:
+def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app_root_path: Path, native_build_path: str, build_config: str) -> None:
+    """
+    Apply the loose assets folder layout rules to the target assets folder
 
-    android_cache_folder = project_root / 'Cache' / 'android'
+    :param project_root:            The project folder root to look for the loose assets
+    :param target_layout_root:      The target layout destination of the loose assets
+    :param android_app_root_path:   The android app root path to inspect the intermediate folder to copy over some additional files if applicable
+    :param native_build_path:       Optional native build path used when generating the android gradle script
+    :param build_config:            The build config that this layout is being applied to
+    :return:
+    """
+
+    android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY
     engine_json_marker = android_cache_folder / 'engine.json'
     if not engine_json_marker.is_file():
         raise AndroidPostBuildError(f"Assets have not been built for this project at ({project_root}) yet. "
                                     f"Please run the AssetProcessor for this project first.")
-    if target_layout_root.is_dir():
-        remove_link(target_layout_root)
-    create_link(android_cache_folder, target_layout_root, copy)
 
+    # Clear out the target folder first
+    safe_clear_folder(target_layout_root)
 
-def apply_gradle_8x_rules(android_app_root_path:pathlib.Path,
-                          project_root:pathlib.Path,
-                          native_build_path:str,
-                          build_config:str,
-                          asset_mode:str,
-                          asset_bundle_folder:str,
-                          copy:bool):
-
-    target_layout_root = android_app_root_path / 'src' / 'main' / 'assets'
+    # Copy/Link the contents to the target folder
+    synchronize_folders(android_cache_folder, target_layout_root)
 
     intermediate_folder_name = determine_intermediate_folder_from_compile_commands(android_app_root_path=android_app_root_path,
                                                                                    native_build_path=native_build_path,
                                                                                    build_config=build_config)
 
-    if asset_mode == ASSET_MODE_LOOSE:
-
-        apply_loose_layout(project_root=project_root,
-                           agp_intermediate_folder_name=intermediate_folder_name,
-                           target_layout_root=target_layout_root,
-                           copy=copy)
-
-    elif asset_mode == ASSET_MODE_PAK:
-
-        apply_pak_layout(project_root=project_root,
-                         target_layout_root=target_layout_root,
-                         asset_bundle_folder=asset_bundle_folder,
-                         copy=copy)
-
-    else:
-        raise AndroidPostBuildError(f"Invalid asset mode: {asset_mode}.")
 
 
+def post_build_action(android_app_root: Path,
+                      project_root: Path,
+                      gradle_version: Version,
+                      build_config: str,
+                      native_build_path: str,
+                      asset_mode: str,
+                      asset_bundle_folder: str):
 
-
-GRADLE_VER_8_0 = Version("8.0")
-
-
-def post_build_action(android_app_root: pathlib.Path, project_root:pathlib.Path, gradle_version:Version, build_config:str, native_build_path:str, asset_mode:str, asset_bundle_folder: str):
-
-    android_app_root_path = pathlib.Path(android_app_root)
+    android_app_root_path = Path(android_app_root)
     if not android_app_root_path.is_dir():
         raise AndroidPostBuildError(f"Invalid android gradle build path: {android_app_root_path} is not a directory or does not exist.")
 
-    logging.info(f"Applying post-build for gradle version {gradle_version}")
+    if gradle_version < MINIMUM_ANDROID_GRADLE_PLUGIN_VER:
+        raise AndroidPostBuildError(f"Android gradle plugin versions below version {MINIMUM_ANDROID_GRADLE_PLUGIN_VER} is not supported.")
+    logger.info(f"Applying post-build for android gradle plugin version {gradle_version}")
 
     # Validate the build directory exists
     app_build_root = android_app_root_path / 'build'
     if not app_build_root.is_dir():
         raise AndroidPostBuildError(f"Android gradle build path: {app_build_root} is not a directory or does not exist.")
 
-    if gradle_version >= GRADLE_VER_8_0:
-        apply_gradle_8x_rules(android_app_root_path=android_app_root_path,
-                              project_root=project_root,
-                              native_build_path=native_build_path,
-                              build_config=build_config,
-                              asset_mode=asset_mode,
-                              asset_bundle_folder=asset_bundle_folder)
+    target_layout_root = android_app_root_path / 'src' / 'main' / 'assets'
+
+    if asset_mode == ASSET_MODE_LOOSE:
+
+        apply_loose_layout(project_root=project_root,
+                           target_layout_root=target_layout_root,
+                           android_app_root_path=android_app_root_path,
+                           native_build_path=native_build_path,
+                           build_config=build_config)
+
+    elif asset_mode == ASSET_MODE_PAK:
+
+        apply_pak_layout(project_root=project_root,
+                         target_layout_root=target_layout_root,
+                         asset_bundle_folder=asset_bundle_folder)
+
 
 if __name__ == '__main__':
 
@@ -239,8 +272,8 @@ if __name__ == '__main__':
 
         args = parser.parse_args(sys.argv[1:])
 
-        result_code = post_build_action(android_app_root=pathlib.Path(args.android_app_root),
-                                        project_root=pathlib.Path(args.project_root),
+        result_code = post_build_action(android_app_root=Path(args.android_app_root),
+                                        project_root=Path(args.project_root),
                                         gradle_version=Version(args.gradle_version),
                                         native_build_path=args.native_build_path,
                                         build_config=args.build_config,
