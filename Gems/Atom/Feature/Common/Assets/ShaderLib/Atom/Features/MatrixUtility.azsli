@@ -190,23 +190,23 @@ float3x3 InverseTransposeMatrixFast(float3x3 worldMat)
     return invScaleWorldMat;
 }
 
-float3x3 MatrixFromQuaternion(float4 quaternion)
+real3x3 MatrixFromQuaternion(real4 quaternion)
 {
-    float tx = quaternion.x * 2.0f;
-    float ty = quaternion.y * 2.0f;
-    float tz = quaternion.z * 2.0f;
-    float twx = quaternion.w * tx;
-    float twy = quaternion.w * ty;
-    float twz = quaternion.w * tz;
-    float txy = quaternion.x * ty;
-    float txx = quaternion.x * tx;
-    float txz = quaternion.x * tz;
-    float tyy = quaternion.y * ty;
-    float tyz = quaternion.y * tz;
-    float tzz = quaternion.z * tz;
+    real tx = quaternion.x * 2.0;
+    real ty = quaternion.y * 2.0;
+    real tz = quaternion.z * 2.0;
+    real twx = quaternion.w * tx;
+    real twy = quaternion.w * ty;
+    real twz = quaternion.w * tz;
+    real txy = quaternion.x * ty;
+    real txx = quaternion.x * tx;
+    real txz = quaternion.x * tz;
+    real tyy = quaternion.y * ty;
+    real tyz = quaternion.y * tz;
+    real tzz = quaternion.z * tz;
     
-    float3x3 m = float3x3(1.0f - tyy - tzz, txy - twz, txz + twy, 
-                            txy + twz, 1.0f - txx - tzz, tyz - twx, 
-                            txz - twy, tyz + twx, 1.0f - txx - tyy);
+    real3x3 m = real3x3(1.0 - tyy - tzz, txy - twz, txz + twy,
+                        txy + twz, 1.0 - txx - tzz, tyz - twx,
+                        txz - twy, tyz + twx, 1.0 - txx - tyy);
     return m;
 }
