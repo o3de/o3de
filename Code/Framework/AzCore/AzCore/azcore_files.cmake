@@ -82,7 +82,7 @@ set(FILES
     Debug/Budget.cpp
     Debug/BudgetTracker.h
     Debug/BudgetTracker.cpp
-	Debug/EngineAnalyticsBus.h	
+    Debug/EngineAnalyticsBus.h
     Debug/MemoryProfiler.h
     Debug/PerformanceCollector.h
     Debug/PerformanceCollector.cpp
