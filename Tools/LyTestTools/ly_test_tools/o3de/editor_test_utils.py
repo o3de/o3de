@@ -288,7 +288,7 @@ def _check_log_errors_warnings(log_path: str) -> bool:
 
 
 def prepare_asset_processor(workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                            collected_test_data: TestData) -> None:
+                            collected_test_data: TestData, extra_params=None) -> None:
     """
     Prepares the asset processor for the test depending on whether the process is open and if the current test owns it.
     :param workspace: The workspace object in case an AssetProcessor object needs to be created
@@ -301,11 +301,11 @@ def prepare_asset_processor(workspace: ly_test_tools._internal.managers.workspac
             if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
                 kill_all_ly_processes(include_asset_processor=True)
                 collected_test_data.asset_processor = AssetProcessor(workspace)
-                collected_test_data.asset_processor.start()
+                collected_test_data.asset_processor.start(extra_params=extra_params)
             else:  # If another AP process already exists, do not kill it as we do not manage it
                 kill_all_ly_processes(include_asset_processor=False)
         else:  # Make sure existing asset processor wasn't closed by accident
-            collected_test_data.asset_processor.start()
+            collected_test_data.asset_processor.start(extra_params=extra_params)
     except Exception as ex:
         collected_test_data.asset_processor = None
         raise EditorToolsFrameworkException from ex
