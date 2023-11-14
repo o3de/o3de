@@ -18,6 +18,13 @@ namespace AZ
 {
     namespace NativeUI
     {
+
+#if defined(CARBONATED) // TODO : implement for platform
+        bool NativeUISystem::IsDisplayingBlockingDialog() const
+        {
+            return false;
+        }
+#endif
         AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
             if (m_mode == NativeUI::Mode::DISABLED)
