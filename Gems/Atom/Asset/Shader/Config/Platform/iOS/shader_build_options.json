@@ -15,6 +15,7 @@
         "metalair": ["-sdk", "iphoneos", "metal", "-std=ios-metal2.2", "-target air64-apple-ios14.0" // For xcrun
                    , "-fpreserve-invariance"
                    , "-c"
+                   , "-Wno-null-character"
         ],
         "metallib": ["-sdk", "iphoneos", "metallib" // For xcrun
         ]

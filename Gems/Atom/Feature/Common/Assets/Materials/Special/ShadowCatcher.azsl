@@ -68,7 +68,7 @@ PSOutput ShadowCatcherPS(VSOutput IN)
 {
     PSOutput OUT;
         
-    float litRatio = DirectionalLightShadow::GetVisibility(ViewSrg::m_shadowIndexDirectionalLight, IN.m_worldPosition, IN.m_worldNormal, 0);
+    real litRatio = DirectionalLightShadow::GetVisibility(ViewSrg::m_shadowIndexDirectionalLight, real3(IN.m_worldPosition), real3(IN.m_worldNormal), 0);
 
     if (o_shadeAll)
     {
@@ -78,15 +78,15 @@ PSOutput ShadowCatcherPS(VSOutput IN)
     if (ViewSrg::m_directionalLightShadows[ViewSrg::m_shadowIndexDirectionalLight].m_debugFlags & 
         ViewSrg::DirectionalLightShadowDebugColoringBitMask)
     {
-        float3 debugColor = float3(1,1,1) * litRatio * 0.5f;
-        debugColor = DirectionalLightShadow::AddDebugColoring(debugColor, ViewSrg::m_shadowIndexDirectionalLight, IN.m_worldPosition, IN.m_worldNormal);
+        real3 debugColor = real3(1,1,1) * litRatio * 0.5;
+        debugColor = DirectionalLightShadow::AddDebugColoring(debugColor, ViewSrg::m_shadowIndexDirectionalLight, real3(IN.m_worldPosition), real3(IN.m_worldNormal));
         OUT.m_color.rgb = debugColor;
         OUT.m_color.a = 1; 
     }
     else
     {
-        OUT.m_color = float4(0, 0, 0, 1 - litRatio) * MaterialSrg::m_opacity;  
-    } 
+        OUT.m_color = real4(0, 0, 0, 1 - litRatio) * MaterialSrg::m_opacity;
+    }
 
     return OUT; 
 }

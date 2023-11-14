@@ -22,7 +22,7 @@ static const real FLOAT_16_MAX = 65504.0;
 // Min values (smallest positive values)
 
 static const float FLOAT_32_MIN = 1.175494351e-38f;
-static const float FLOAT_16_MIN = 0.000000059605f;
+static const real FLOAT_16_MIN = 0.000000059605f;
 
 
 
@@ -80,36 +80,36 @@ float Pow10(float x)        // 4 multiplications
 
 // ---------- Min & Max -----------
 
-float min3(float a, float b, float c)
+real min3(real a, real b, real c)
 {
     return min(min(a, b), c);
 }
-float min4(float a, float b, float c, float d)
+real min4(real a, real b, real c, real d)
 {
     return min(min3(a, b, c), d);
 }
-float max3(float a, float b, float c)
+real max3(real a, real b, real c)
 {
     return max(max(a, b), c);
 }
-float max4(float a, float b, float c, float d)
+real max4(real a, real b, real c, real d)
 {
     return max(max3(a, b, c), d);
 }
 
-float min3(float3 abc)
+real min3(real3 abc)
 {
     return min3(abc.x, abc.y, abc.z);
 }
-float min4(float4 abcd)
+real min4(real4 abcd)
 {
     return min4(abcd.x, abcd.y, abcd.z, abcd.w);
 }
-float max3(float3 abc)
+real max3(real3 abc)
 {
     return max3(abc.x, abc.y, abc.z);
 }
-float max4(float4 abcd)
+real max4(real4 abcd)
 {
     return max4(abcd.x, abcd.y, abcd.z, abcd.w);
 }
@@ -336,6 +336,10 @@ float3 RotateVectorByQuaternion(float3 v, float4 q)
 //       /         -1          \
 //       \   ((n-f)d + f) / nf /.
 float PerspectiveDepthToLinear(float clipDepth, float3 coefficients)
+{
+    return coefficients.x * (coefficients.z / (coefficients.y * clipDepth + coefficients.z) - 1.);
+}
+half PerspectiveDepthToLinear(half clipDepth, half3 coefficients)
 {
     return coefficients.x * (coefficients.z / (coefficients.y * clipDepth + coefficients.z) - 1.);
 }
