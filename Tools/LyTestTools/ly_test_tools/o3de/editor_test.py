@@ -136,6 +136,8 @@ class EditorTestSuite(MultiTestSuite):
     """
     # Extra cmdline arguments to supply for every Editor for this test suite.
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
+    # Extra commandline arguments to supply to the asset-processor for this test suite
+    global_assetprocessor_extra_cmdline_args = None
     # Tests usually run with no renderer, however some tests require a renderer and will disable this.
     use_null_renderer = True
     # Maximum time in seconds for a single Editor to stay open across the set of shared tests.
