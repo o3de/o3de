@@ -42,7 +42,7 @@ namespace AZ::NativeUI
         {
             return {};
         }
-#if defined(CARBONATED) && defined(AZ_PLATFORM_WINDOWS) // aefimov MAD-10299 assert modal dialog fix
+#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
             // returns true if a blocking dialog is displayed
             virtual bool IsDisplayingBlockingDialog() const { return false; }
 #endif

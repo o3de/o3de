@@ -775,7 +775,7 @@ void CGameEngine::Update()
         return;
     }
 
-#if defined(CARBONATED) && defined(AZ_PLATFORM_WINDOWS) // aefimov MAD-10299 assert modal dialog fix
+#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
     if (gEnv->IsEditor())
     {
         bool result = false;
