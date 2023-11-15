@@ -24,7 +24,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::AWSCore
             Gem::HttpRequestor
-            3rdParty::AWSNativeSDK::${gem_name}
+            3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
 )
 
@@ -41,7 +41,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::AWSCore
-            3rdParty::AWSNativeSDK::${gem_name}
+            3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
         PUBLIC
             Gem::${gem_name}.Static
@@ -78,7 +78,7 @@ ly_add_target(
             AZ::AzToolsFramework
             Gem::AWSCore
             Gem::HttpRequestor
-            3rdParty::AWSNativeSDK::${gem_name}
+            3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
     RUNTIME_DEPENDENCIES
         Gem::${gem_name}
@@ -152,7 +152,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                3rdParty::AWSNativeSDK::${gem_name}
+                3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AWSNativeSDKTestLibs

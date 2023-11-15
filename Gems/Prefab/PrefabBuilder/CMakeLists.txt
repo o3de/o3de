@@ -6,6 +6,10 @@
 #
 #
 
+# Queries the "gem_name" "version" values from the gem.json file for this gem
+# They are set in the ${gem_name} and ${gem_version} variables
+o3de_gem_setup("${Name}")
+
 if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()

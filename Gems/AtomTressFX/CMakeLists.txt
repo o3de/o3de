@@ -6,23 +6,7 @@
 #
 #
 
-# Query the gem name from the gem.json file if possible
-# otherwise fallback to using AtomTressFX
-o3de_find_ancestor_gem_root(gem_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
-if (NOT gem_name)
-    set(gem_name "AtomTressFX")
-endif()
-
-# Fallback to using the current source CMakeLists.txt directory as the gem root path
-if (NOT gem_path)
-    set(gem_path ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
-
-set(gem_json ${gem_path}/gem.json)
-
-# Read the version field from the gem.json
-set(gem_version, "0.0.0")
-o3de_read_json_key(gem_version ${gem_json} "version")
+o3de_gem_setup("AtomTressFX")
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
