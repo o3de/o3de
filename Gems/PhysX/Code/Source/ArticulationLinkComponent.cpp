@@ -126,6 +126,19 @@ namespace PhysX
             {
                 sceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
 
+                // Create a handler that in the case that the scene was removed before the deactivation of the component,
+                // ensures that all articulations are destroyed.
+                m_sceneRemovedHandler = AzPhysics::SystemEvents::OnSceneRemovedEvent::Handler(
+                    [this](AzPhysics::SceneHandle sceneHandle)
+                    {
+                        if (sceneHandle == m_attachedSceneHandle && m_articulation)
+                        {
+                            DestroyArticulation();
+                        }
+                    });
+
+                AZ::Interface<AzPhysics::SystemInterface>::Get()->RegisterSceneRemovedEvent(m_sceneRemovedHandler);
+
                 CreateArticulation();
                 m_link = GetArticulationLink(GetEntityId());
                 m_sensorIndices = GetSensorIndices(GetEntityId());
@@ -167,6 +180,8 @@ namespace PhysX
 
         if (IsRootArticulation())
         {
+            m_sceneRemovedHandler.Disconnect();
+
             if (m_articulation)
             {
                 DestroyArticulation();
@@ -469,6 +484,12 @@ namespace PhysX
     void ArticulationLinkComponent::DestroyArticulation()
     {
         AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
+        if (scene == nullptr)
+        {
+            // The scene can be removed before articulation is destroyed.
+            // If the scene was removed. Articulations were also removed.
+            return;
+        }
         scene->RemoveSimulatedBodies(m_articulationLinks);
         m_articulationLinks.clear();
 
