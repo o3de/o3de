@@ -334,11 +334,14 @@ namespace AzToolsFramework
             }
         }
 
+#if defined(CARBONATED)
+        // Removed - don't fail on empty assets
+#else
         if (!assetFileInfoList.m_fileInfoList.size())
         {
             return AZ::Failure(AZStd::string::format("File ( %s ) does not contain any assets.\n", assetFileInfoPath.c_str()));
         }
-
+#endif
         return AZ::Success(assetFileInfoList);
     }
 

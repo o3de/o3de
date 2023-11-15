@@ -12,7 +12,7 @@
 #include "ParallaxShadowUtil.azsli"
 
  void MultilayerSetPixelDepth(
-     float3 vertexBlendMask,
+     real3 vertexBlendMask,
      inout float3 worldPosition,
      real3 normal,
      real3 tangents[UvSetCount],
@@ -42,7 +42,7 @@
 }
 
  void MultilayerSetPixelDepth(
-     float3 vertexBlendMask,
+     real3 vertexBlendMask,
      inout float3 positionWS,
      real3 normal,
      real3 tangents[UvSetCount],

@@ -119,7 +119,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 
     class PixelGeometryData_StandardMultilayerPBR : PixelGeometryData_StandardPBR
     {
-        float3 m_vertexBlendMask;
+        real3 m_vertexBlendMask;
     };
     
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
@@ -137,7 +137,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         float2 uvs[UvSetCount],
         bool isFrontFace,
         real4x4 objectToWorld,
-        float3 vertexBlendMask)
+        real3 vertexBlendMask)
     {
         PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
@@ -170,7 +170,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             IN.uvs,
             isFrontFace,
             objectToWorld,
-            IN.m_blendMask);
+            real3(IN.m_blendMask));
     }
     
     bool CanHandleParallax()
@@ -427,15 +427,15 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         float2 uvs[UvSetCount],
         bool isFrontFace,
         bool isDisplacementClipped,
-        float3 vertexBlendMask)
-    {        
+        real3 vertexBlendMask)
+    {
         LayerBlendSource blendSource = GetFinalLayerBlendSource();
         
         // ------- Debug Modes -------
 
         if(o_debugDrawMode == DebugDrawMode::BlendMask)
         {
-            float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
+            real3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
             return MakeDebugSurface(positionWS, normalWS, real3(blendMaskValues));
         }
     
@@ -450,7 +450,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     
         if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
         {
-            float3 blendWeights = GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
+            real3 blendWeights = GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
             return MakeDebugSurface(positionWS, normalWS, real3(blendWeights));
         }
 
