@@ -67,7 +67,7 @@ namespace AzToolsFramework
             AssetDatabaseLocationNotificationBus::Handler::BusConnect();
             AssetBrowserComponentRequestBus::Handler::BusConnect();
             AzFramework::AssetCatalogEventBus::Handler::BusConnect();
-            AZ::TickBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
             AssetSystemBus::Handler::BusConnect();
             AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AssetBrowserFileCreationNotificationBus::Handler::BusConnect(
@@ -105,7 +105,7 @@ namespace AzToolsFramework
             AssetDatabaseLocationNotificationBus::Handler::BusDisconnect();
             AssetBrowserComponentRequestBus::Handler::BusDisconnect();
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-            AZ::TickBus::Handler::BusDisconnect();
+            AZ::SystemTickBus::Handler::BusDisconnect();
             AssetSystemBus::Handler::BusDisconnect();
             m_assetBrowserModel.reset();
             EntryCache::DestroyInstance();
@@ -166,7 +166,7 @@ namespace AzToolsFramework
             return m_styledBusyLabel;
         }
 
-        void AssetBrowserComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+        void AssetBrowserComponent::OnSystemTick()
         {
             m_changeset->Synchronize();
             if (!m_entriesReady)

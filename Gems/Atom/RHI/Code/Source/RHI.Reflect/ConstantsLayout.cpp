@@ -101,7 +101,9 @@ namespace AZ::RHI
 
     const ShaderInputConstantDescriptor& ConstantsLayout::GetShaderInput(ShaderInputConstantIndex inputIndex) const
     {
-        return m_inputs[inputIndex.GetIndex()];
+        const auto index = inputIndex.GetIndex();
+        static const ShaderInputConstantDescriptor invalidDescriptor;
+        return index < m_inputs.size() ? m_inputs[index] : invalidDescriptor;
     }
 
     AZStd::span<const ShaderInputConstantDescriptor> ConstantsLayout::GetShaderInputList() const
