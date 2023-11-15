@@ -49,7 +49,7 @@ namespace AZ
             void ApplySettingsTo(ExposureControlSettings* target, float alpha) const;
 
             void UpdateBuffer();
-            const RHI::SingleDeviceBufferView* GetBufferView() const { return m_buffer->GetBufferView(); }
+            const RHI::MultiDeviceBufferView* GetBufferView() const { return m_buffer->GetBufferView(); }
             
             // Generate all getters and override setters.
             // Declare non-override setters, which will be defined in the .cpp
