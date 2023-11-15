@@ -144,11 +144,11 @@ namespace AZ
             // query buffer
             {
                 RHI::AttachmentId attachmentId = diffuseProbeGridFeatureProcessor->GetQueryBufferAttachmentId();
-                RHI::Ptr<RHI::SingleDeviceBuffer> buffer = diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer();
+                RHI::Ptr<RHI::MultiDeviceBuffer> buffer = diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer();
 
                 if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId))
                 {
-                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, buffer);
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, buffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to import query buffer");
                 }
 
@@ -226,9 +226,9 @@ namespace AZ
 
                 // bind query buffer
                 RHI::ShaderInputBufferIndex bufferIndex = m_srgLayout->FindShaderInputBufferIndex(AZ::Name("m_irradianceQueries"));
-                RHI::Ptr<RHI::SingleDeviceBuffer> buffer = diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer();
+                RHI::Ptr<RHI::MultiDeviceBuffer> buffer = diffuseProbeGridFeatureProcessor->GetQueryBuffer()->GetRHIBuffer();
                 RHI::BufferViewDescriptor bufferViewDescriptor = diffuseProbeGridFeatureProcessor->GetQueryBufferViewDescriptor();
-                diffuseProbeGrid->GetQuerySrg()->SetBufferView(bufferIndex, buffer->GetBufferView(bufferViewDescriptor).get());
+                diffuseProbeGrid->GetQuerySrg()->SetBufferView(bufferIndex, buffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(bufferViewDescriptor).get());
 
                 // bind output UAV
                 bufferIndex = m_srgLayout->FindShaderInputBufferIndex(AZ::Name("m_output"));

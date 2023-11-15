@@ -172,7 +172,7 @@ namespace AZ
             // The attachment itself is created for the PerPass shared buffer.
             viewDescriptor.m_ignoreFrameAttachmentValidation = true;
 
-            RHI::SingleDeviceBuffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
+            RHI::MultiDeviceBuffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
             Data::Instance<RHI::SingleDeviceBufferView> bufferView = RHI::Factory::Get().CreateBufferView();
             RHI::ResultCode resultCode = bufferView->Init(*rhiBuffer, viewDescriptor);
 

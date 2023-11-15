@@ -448,12 +448,14 @@ namespace AZ
         {
             if (m_offsetBuffer)
             {
-                m_shaderResourceGroup->SetBufferView(m_offsetsInputIndex, m_offsetBuffer->GetBufferView());
+                m_shaderResourceGroup->SetBufferView(
+                    m_offsetsInputIndex, m_offsetBuffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
             }
 
             if (m_weightBuffer)
             {
-                m_shaderResourceGroup->SetBufferView(m_weightsInputIndex, m_weightBuffer->GetBufferView());
+                m_shaderResourceGroup->SetBufferView(
+                    m_weightsInputIndex, m_weightBuffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
             }
 
             SetTargetThreadCounts(m_sourceImageWidth, m_sourceImageHeight, 1);

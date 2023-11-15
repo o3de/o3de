@@ -294,7 +294,7 @@ namespace Terrain
     {
         return
         {
-            *buffer->GetRHIBuffer(),
+            *buffer->GetRHIBuffer()->GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex),
             offset,
             aznumeric_cast<uint32_t>(buffer->GetBufferSize()),
             buffer->GetBufferViewDescriptor().m_elementSize
@@ -375,21 +375,21 @@ namespace Terrain
         rtSector.m_normalsBuffer = CreateRayTracingMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, m_gridVerts2D, nullptr, positionName.c_str());
 
         // setup the stream and shader buffer views
-        AZ::RHI::SingleDeviceBuffer& rhiPositionsBuffer = *rtSector.m_positionsBuffer->GetRHIBuffer();
+        AZ::RHI::MultiDeviceBuffer& rhiPositionsBuffer = *rtSector.m_positionsBuffer->GetRHIBuffer();
         uint32_t positionsBufferByteCount = aznumeric_cast<uint32_t>(rhiPositionsBuffer.GetDescriptor().m_byteCount);
         AZ::RHI::Format positionsBufferFormat = rtSector.m_positionsBuffer->GetBufferViewDescriptor().m_elementFormat;
         uint32_t positionsBufferElementSize = AZ::RHI::GetFormatSize(positionsBufferFormat);
-        AZ::RHI::SingleDeviceStreamBufferView positionsVertexBufferView(rhiPositionsBuffer, 0, positionsBufferByteCount, positionsBufferElementSize);
+        AZ::RHI::SingleDeviceStreamBufferView positionsVertexBufferView(*rhiPositionsBuffer.GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex), 0, positionsBufferByteCount, positionsBufferElementSize);
         AZ::RHI::BufferViewDescriptor positionsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, positionsBufferByteCount);
 
-        AZ::RHI::SingleDeviceBuffer& rhiNormalsBuffer = *rtSector.m_normalsBuffer->GetRHIBuffer();
+        AZ::RHI::MultiDeviceBuffer& rhiNormalsBuffer = *rtSector.m_normalsBuffer->GetRHIBuffer();
         uint32_t normalsBufferByteCount = aznumeric_cast<uint32_t>(rhiNormalsBuffer.GetDescriptor().m_byteCount);
         AZ::RHI::Format normalsBufferFormat = rtSector.m_normalsBuffer->GetBufferViewDescriptor().m_elementFormat;
         uint32_t normalsBufferElementSize = AZ::RHI::GetFormatSize(normalsBufferFormat);
-        AZ::RHI::SingleDeviceStreamBufferView normalsVertexBufferView(rhiNormalsBuffer, 0, normalsBufferByteCount, normalsBufferElementSize);
+        AZ::RHI::SingleDeviceStreamBufferView normalsVertexBufferView(*rhiNormalsBuffer.GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex), 0, normalsBufferByteCount, normalsBufferElementSize);
         AZ::RHI::BufferViewDescriptor normalsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, normalsBufferByteCount);
 
-        AZ::RHI::SingleDeviceBuffer& rhiIndexBuffer = *m_rtIndexBuffer->GetRHIBuffer();
+        AZ::RHI::MultiDeviceBuffer& rhiIndexBuffer = *m_rtIndexBuffer->GetRHIBuffer();
         AZ::RHI::IndexFormat indexBufferFormat = AZ::RHI::IndexFormat::Uint32;
 
         uint32_t totalIndexBufferByteCount = aznumeric_cast<uint32_t>(rhiIndexBuffer.GetDescriptor().m_byteCount);
@@ -404,11 +404,11 @@ namespace Terrain
 
             subMesh.m_positionFormat = positionsBufferFormat;
             subMesh.m_positionVertexBufferView = positionsVertexBufferView;
-            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.GetBufferView(positionsBufferDescriptor);
+            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(positionsBufferDescriptor);
             subMesh.m_normalFormat = normalsBufferFormat;
             subMesh.m_normalVertexBufferView = normalsVertexBufferView;
-            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
-            subMesh.m_indexBufferView = AZ::RHI::SingleDeviceIndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
+            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(normalsBufferDescriptor);
+            subMesh.m_indexBufferView = AZ::RHI::SingleDeviceIndexBufferView(*rhiIndexBuffer.GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex), indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
             subMesh.m_material.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
 
             AZ::RHI::BufferViewDescriptor indexBufferDescriptor;
@@ -417,7 +417,7 @@ namespace Terrain
             indexBufferDescriptor.m_elementSize = indexElementSize;
             indexBufferDescriptor.m_elementFormat = AZ::RHI::Format::R32_UINT;
 
-            subMesh.m_indexShaderBufferView = rhiIndexBuffer.GetBufferView(indexBufferDescriptor);
+            subMesh.m_indexShaderBufferView = rhiIndexBuffer.GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(indexBufferDescriptor);
 
             meshGroup.m_mesh.m_assetId = AZ::Data::AssetId(meshGroup.m_id);
             float xyScale = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
@@ -459,7 +459,7 @@ namespace Terrain
         // Create all the sectors with uninitialized SRGs. The SRGs will be updated later by CheckLodGridsForUpdate().
         m_indexBufferView =
         {
-            *m_indexBuffer->GetRHIBuffer(),
+            *m_indexBuffer->GetRHIBuffer()->GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex),
             0,
             aznumeric_cast<uint32_t>(m_indexBuffer->GetBufferSize()),
             AZ::RHI::IndexFormat::Uint16

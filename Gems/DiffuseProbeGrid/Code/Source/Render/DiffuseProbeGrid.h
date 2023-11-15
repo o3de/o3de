@@ -31,7 +31,7 @@ namespace AZ
             static const uint32_t GridDataBufferSize = 112;
 
             RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;          
-            RHI::Ptr<RHI::SingleDeviceBufferPool> m_bufferPool;
+            RHI::Ptr<RHI::MultiDeviceBufferPool> m_bufferPool;
 
             AZStd::array<RHI::SingleDeviceStreamBufferView, 1> m_boxPositionBufferView;
             RHI::SingleDeviceIndexBufferView m_boxIndexBufferView;
@@ -277,7 +277,7 @@ namespace AZ
             const RHI::Ptr<RHI::SingleDeviceImage> GetIrradianceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_irradianceImage[m_currentImageIndex] : m_bakedIrradianceImage->GetRHIImage(); }
             const RHI::Ptr<RHI::SingleDeviceImage> GetDistanceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_distanceImage[m_currentImageIndex] : m_bakedDistanceImage->GetRHIImage(); }
             const RHI::Ptr<RHI::SingleDeviceImage> GetProbeDataImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_probeDataImage[m_currentImageIndex] : m_bakedProbeDataImage->GetRHIImage(); }
-            const RHI::Ptr<RHI::SingleDeviceBuffer> GetGridDataBuffer() { return m_gridDataBuffer; }
+            const RHI::Ptr<RHI::MultiDeviceBuffer> GetGridDataBuffer() { return m_gridDataBuffer; }
 
             const AZStd::string& GetBakedIrradianceRelativePath() const { return m_bakedIrradianceRelativePath; }
             const AZStd::string& GetBakedDistanceRelativePath() const { return m_bakedDistanceRelativePath; }
@@ -401,7 +401,7 @@ namespace AZ
             DiffuseProbeGridMode m_mode = DiffuseProbeGridMode::RealTime;
 
             // grid data buffer
-            RHI::Ptr<RHI::SingleDeviceBuffer> m_gridDataBuffer;
+            RHI::Ptr<RHI::MultiDeviceBuffer> m_gridDataBuffer;
             bool m_gridDataInitialized = false;
 
             // real-time textures

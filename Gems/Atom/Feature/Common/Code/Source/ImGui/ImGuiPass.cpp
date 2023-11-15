@@ -536,7 +536,7 @@ namespace AZ
             desc.m_bufferData = instanceData;
             m_instanceBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
             m_instanceBufferView = RHI::SingleDeviceStreamBufferView(
-                *m_instanceBuffer->GetRHIBuffer(),
+                *m_instanceBuffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
                 0,
                 aznumeric_cast<uint32_t>(desc.m_byteCount),
                 aznumeric_cast<uint32_t>(desc.m_elementSize));

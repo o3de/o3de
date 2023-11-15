@@ -110,7 +110,7 @@ namespace AZ
             {
                 // grid data buffer
                 {
-                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(diffuseProbeGrid->GetGridDataBufferAttachmentId(), diffuseProbeGrid->GetGridDataBuffer());
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(diffuseProbeGrid->GetGridDataBufferAttachmentId(), diffuseProbeGrid->GetGridDataBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to import grid data buffer");
 
                     RHI::BufferScopeAttachmentDescriptor desc;

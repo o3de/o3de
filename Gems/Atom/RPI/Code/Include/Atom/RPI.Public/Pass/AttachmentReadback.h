@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/SingleDeviceCopyItem.h>
 #include <Atom/RHI/SingleDeviceDispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>

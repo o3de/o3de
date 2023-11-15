@@ -9,8 +9,6 @@
 #pragma once
 
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
-#include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
