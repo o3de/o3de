@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/SingleDeviceIndexBufferView.h>
 #include <Atom/RHI/SingleDeviceStreamBufferView.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>

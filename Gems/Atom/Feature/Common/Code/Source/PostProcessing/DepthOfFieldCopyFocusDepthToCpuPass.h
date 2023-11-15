@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceCopyItem.h>
+#include <Atom/RHI/MultiDeviceCopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -49,7 +49,7 @@ namespace AZ
 
             RPI::Ptr<RPI::Buffer> m_bufferRef;
             Data::Instance<RPI::Buffer> m_readbackBuffer;
-            RHI::SingleDeviceCopyBufferDescriptor m_copyDescriptor;
+            RHI::MultiDeviceCopyBufferDescriptor m_copyDescriptor;
             bool m_needsInitialize = true;
         };
     }   // namespace RPI

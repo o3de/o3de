@@ -58,9 +58,9 @@ namespace AZ
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_bufferPool = aznew RHI::MultiDeviceBufferPool;
             m_bufferPool->SetName(Name("DiffuseProbeGridBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*device, desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(RHI::MultiDevice::AllDevices, desc);
             AZ_Error("DiffuseProbeGridFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -82,9 +82,9 @@ namespace AZ
                 RHI::BufferPoolDescriptor bufferPoolDesc;
                 bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
 
-                m_probeGridRenderData.m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                m_probeGridRenderData.m_bufferPool = aznew RHI::MultiDeviceBufferPool;
                 m_probeGridRenderData.m_bufferPool->SetName(Name("DiffuseProbeGridRenderBufferData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(*device, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(RHI::MultiDevice::AllDevices, bufferPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
             }
 
@@ -736,8 +736,8 @@ namespace AZ
             m_boxStreamLayout = layoutBuilder.End();
 
             // create index buffer
-            AZ::RHI::SingleDeviceBufferInitRequest request;
-            m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            AZ::RHI::MultiDeviceBufferInitRequest request;
+            m_boxIndexBuffer = aznew RHI::MultiDeviceBuffer;
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
             request.m_initialData = m_boxIndices.data();
@@ -747,7 +747,7 @@ namespace AZ
             // create index buffer view
             AZ::RHI::SingleDeviceIndexBufferView indexBufferView =
             {
-                *m_boxIndexBuffer,
+                *m_boxIndexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
                 0,
                 sizeof(indices),
                 AZ::RHI::IndexFormat::Uint16,
@@ -756,7 +756,7 @@ namespace AZ
             m_probeGridRenderData.m_boxIndexCount = numIndices;
 
             // create position buffer
-            m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            m_boxPositionBuffer = aznew RHI::MultiDeviceBuffer;
             request.m_buffer = m_boxPositionBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxPositions.size() * sizeof(Position) };
             request.m_initialData = m_boxPositions.data();
@@ -766,7 +766,7 @@ namespace AZ
             // create position buffer view
             RHI::SingleDeviceStreamBufferView positionBufferView =
             {
-                *m_boxPositionBuffer,
+                *m_boxPositionBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
                 0,
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
                 sizeof(Position),
