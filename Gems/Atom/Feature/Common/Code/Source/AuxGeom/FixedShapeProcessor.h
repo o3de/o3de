@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/MultiDeviceBuffer.h>
+#include <Atom/RHI/MultiDeviceBufferPool.h>
 #include <Atom/RHI/SingleDeviceIndexBufferView.h>
 #include <Atom/RHI/SingleDeviceStreamBufferView.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
@@ -62,7 +62,7 @@ namespace AZ
             ~FixedShapeProcessor() = default;
 
             //! Initialize the FixedShapeProcessor and all its buffers, shaders, stream layouts etc
-            bool Initialize(AZ::RHI::Device& rhiDevice, const AZ::RPI::Scene* scene);
+            bool Initialize(RHI::MultiDevice::DeviceMask deviceMask, const AZ::RPI::Scene* scene);
 
             //! Releases the FixedShapeProcessor and all buffers
             void Release();
@@ -88,19 +88,19 @@ namespace AZ
             struct ObjectBuffers
             {
                 uint32_t m_pointIndexCount;
-                AZ::RHI::Ptr<AZ::RHI::SingleDeviceBuffer> m_pointIndexBuffer;
+                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_pointIndexBuffer;
                 AZ::RHI::SingleDeviceIndexBufferView m_pointIndexBufferView;
 
                 uint32_t m_lineIndexCount;
-                AZ::RHI::Ptr<AZ::RHI::SingleDeviceBuffer> m_lineIndexBuffer;
+                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_lineIndexBuffer;
                 AZ::RHI::SingleDeviceIndexBufferView m_lineIndexBufferView;
 
                 uint32_t m_triangleIndexCount;
-                AZ::RHI::Ptr<AZ::RHI::SingleDeviceBuffer> m_triangleIndexBuffer;
+                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_triangleIndexBuffer;
                 AZ::RHI::SingleDeviceIndexBufferView m_triangleIndexBufferView;
 
-                AZ::RHI::Ptr<AZ::RHI::SingleDeviceBuffer> m_positionBuffer;
-                AZ::RHI::Ptr<AZ::RHI::SingleDeviceBuffer> m_normalBuffer;
+                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_positionBuffer;
+                AZ::RHI::Ptr<AZ::RHI::MultiDeviceBuffer> m_normalBuffer;
                 StreamBufferViewsForAllStreams m_streamBufferViews;
                 StreamBufferViewsForAllStreams m_streamBufferViewsWithNormals;
             };
@@ -214,7 +214,7 @@ namespace AZ
         private: // data
 
             //! The buffer pool that manages the index and vertex buffers for each shape
-            RHI::Ptr<AZ::RHI::SingleDeviceBufferPool> m_bufferPool;
+            RHI::Ptr<AZ::RHI::MultiDeviceBufferPool> m_bufferPool;
 
             //! The descriptor for drawing an object of each draw style using predefined streams
             RHI::InputStreamLayout m_objectStreamLayout[DrawStyle_Count];

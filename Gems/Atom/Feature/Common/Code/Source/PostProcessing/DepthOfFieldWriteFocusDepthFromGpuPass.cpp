@@ -42,7 +42,8 @@ namespace AZ
             AZ_Assert(m_shaderResourceGroup != nullptr, "%s has a null shader resource group when calling Compile.", GetPathName().GetCStr());
 
             m_shaderResourceGroup->SetConstant(m_autoFocusScreenPositionIndex, m_autoFocusScreenPosition);
-            m_shaderResourceGroup->SetBufferView(m_autoFocusDataBufferIndex, m_bufferRef->GetBufferView());
+            m_shaderResourceGroup->SetBufferView(
+                m_autoFocusDataBufferIndex, m_bufferRef->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
 
             BindPassSrg(context, m_shaderResourceGroup);
             m_shaderResourceGroup->Compile();
