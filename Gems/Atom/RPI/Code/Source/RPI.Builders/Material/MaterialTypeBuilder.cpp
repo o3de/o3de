@@ -418,13 +418,6 @@ namespace AZ
 
                         shaderTemplateReferences[normalizedShaderTemplate].push_back(materialPipelineName);
                     }
-
-                    // Only include Object SRGs from material pipelines which have shader templates relevant to this material
-                    // This avoids adding extra SRG members in materials for MaterialPipelines it won't be rendered in
-                    if (!shaderTemplateList.empty())
-                    {
-                        objectSrgAdditionsFromMaterialPipelines.push_back(&materialPipeline.m_objectSrgAdditions);
-                    }
                 }
 
                 if (foundProblems)
