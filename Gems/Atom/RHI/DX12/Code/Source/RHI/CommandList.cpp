@@ -718,18 +718,18 @@ namespace AZ
             {
                 // create a barrier for BLAS completion
                 // this is required since all BLAS must be built prior to using it in the TLAS
-                std::vector<D3D12_RESOURCE_BARRIER> barriers;
+                AZStd::vector<D3D12_RESOURCE_BARRIER> barriers;
                 barriers.reserve(changedBlasList.size());
                 for (const auto* blas : changedBlasList)
                 {
-                const auto dx12RayTracingBlas = static_cast<const RayTracingBlas*>(blas);
-                const RayTracingBlas::BlasBuffers& blasBuffers = dx12RayTracingBlas->GetBuffers();
+                    const auto dx12RayTracingBlas = static_cast<const RayTracingBlas*>(blas);
+                    const RayTracingBlas::BlasBuffers& blasBuffers = dx12RayTracingBlas->GetBuffers();
 
-                D3D12_RESOURCE_BARRIER barrier;
-                barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-                barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-                barrier.UAV.pResource = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetMemory();
-                barriers.push_back(barrier);
+                    D3D12_RESOURCE_BARRIER barrier;
+                    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+                    barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+                    barrier.UAV.pResource = static_cast<Buffer*>(blasBuffers.m_blasBuffer.get())->GetMemoryView().GetMemory();
+                    barriers.push_back(barrier);
                 }
                 commandList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
             }
