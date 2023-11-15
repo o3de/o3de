@@ -48,15 +48,15 @@ namespace AZ
             }
         }
 
-        bool FixedShapeProcessor::Initialize(AZ::RHI::Device& rhiDevice, const AZ::RPI::Scene* scene)
+        bool FixedShapeProcessor::Initialize(RHI::MultiDevice::DeviceMask deviceMask, const AZ::RPI::Scene* scene)
         {
             RHI::BufferPoolDescriptor desc;
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_bufferPool = aznew RHI::MultiDeviceBufferPool;
             m_bufferPool->SetName(Name("AuxGeomFixedShapeBufferPool"));
-            RHI::ResultCode resultCode = m_bufferPool->Init(rhiDevice, desc);
+            RHI::ResultCode resultCode = m_bufferPool->Init(deviceMask, desc);
 
             if (resultCode != RHI::ResultCode::Success)
             {
@@ -1225,10 +1225,10 @@ namespace AZ
         {
             AZ::RHI::ResultCode result = AZ::RHI::ResultCode::Fail;
 
-            AZ::RHI::SingleDeviceBufferInitRequest request;
+            AZ::RHI::MultiDeviceBufferInitRequest request;
 
             // setup m_pointIndexBuffer
-            objectBuffers.m_pointIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_pointIndexBuffer = aznew RHI::MultiDeviceBuffer;
             const auto pointIndexDataSize = static_cast<uint32_t>(meshData.m_pointIndices.size() * sizeof(uint16_t));
 
             request.m_buffer = objectBuffers.m_pointIndexBuffer.get();
@@ -1243,7 +1243,7 @@ namespace AZ
             }
 
             // setup m_lineIndexBuffer
-            objectBuffers.m_lineIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_lineIndexBuffer = aznew RHI::MultiDeviceBuffer;
             const auto lineIndexDataSize = static_cast<uint32_t>(meshData.m_lineIndices.size() * sizeof(uint16_t));
 
             request.m_buffer = objectBuffers.m_lineIndexBuffer.get();
@@ -1258,7 +1258,7 @@ namespace AZ
             }
 
             // setup m_triangleIndexBuffer
-            objectBuffers.m_triangleIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_triangleIndexBuffer = aznew RHI::MultiDeviceBuffer;
             const auto triangleIndexDataSize = static_cast<uint32_t>(meshData.m_triangleIndices.size() * sizeof(uint16_t));
             request.m_buffer = objectBuffers.m_triangleIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, triangleIndexDataSize };
@@ -1272,7 +1272,7 @@ namespace AZ
             }
 
             // setup m_positionBuffer
-            objectBuffers.m_positionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_positionBuffer = aznew RHI::MultiDeviceBuffer;
             const auto positionDataSize = static_cast<uint32_t>(meshData.m_positions.size() * sizeof(AuxGeomPosition));
 
             request.m_buffer = objectBuffers.m_positionBuffer.get();
@@ -1286,7 +1286,7 @@ namespace AZ
             }
 
             // setup m_normalBuffer
-            objectBuffers.m_normalBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            objectBuffers.m_normalBuffer = aznew RHI::MultiDeviceBuffer;
             const auto normalDataSize = static_cast<uint32_t>(meshData.m_normals.size() * sizeof(AuxGeomNormal));
 
             request.m_buffer = objectBuffers.m_normalBuffer.get();
@@ -1303,7 +1303,7 @@ namespace AZ
             objectBuffers.m_pointIndexCount = static_cast<uint32_t>(meshData.m_pointIndices.size());
             AZ::RHI::SingleDeviceIndexBufferView pointIndexBufferView =
             {
-                *objectBuffers.m_pointIndexBuffer,
+                *objectBuffers.m_pointIndexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
                 0,
                 static_cast<uint32_t>(objectBuffers.m_pointIndexCount * sizeof(uint16_t)),
                 AZ::RHI::IndexFormat::Uint16,
@@ -1314,7 +1314,7 @@ namespace AZ
             objectBuffers.m_lineIndexCount = static_cast<uint32_t>(meshData.m_lineIndices.size());
             AZ::RHI::SingleDeviceIndexBufferView lineIndexBufferView =
             {
-                *objectBuffers.m_lineIndexBuffer,
+                *objectBuffers.m_lineIndexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
                 0,
                 static_cast<uint32_t>(objectBuffers.m_lineIndexCount * sizeof(uint16_t)),
                 AZ::RHI::IndexFormat::Uint16,
@@ -1325,7 +1325,7 @@ namespace AZ
             objectBuffers.m_triangleIndexCount = static_cast<uint32_t>(meshData.m_triangleIndices.size());
             AZ::RHI::SingleDeviceIndexBufferView triangleIndexBufferView =
             {
-                *objectBuffers.m_triangleIndexBuffer,
+                *objectBuffers.m_triangleIndexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
                 0,
                 static_cast<uint32_t>(objectBuffers.m_triangleIndexCount * sizeof(uint16_t)),
                 AZ::RHI::IndexFormat::Uint16,
@@ -1338,7 +1338,7 @@ namespace AZ
 
             AZ::RHI::SingleDeviceStreamBufferView positionBufferView =
             {
-                *objectBuffers.m_positionBuffer,
+                *objectBuffers.m_positionBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
                 0,
                 positionCount * positionSize,
                 positionSize,
@@ -1350,7 +1350,7 @@ namespace AZ
 
             AZ::RHI::SingleDeviceStreamBufferView normalBufferView =
             {
-                *objectBuffers.m_normalBuffer,
+                *objectBuffers.m_normalBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
                 0,
                 normalCount * normalSize,
                 normalSize,

@@ -166,7 +166,7 @@ namespace AZ::Render
             m_starsVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
         }
 
-        m_meshStreamBufferViews[0] = RHI::SingleDeviceStreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize);
+        m_meshStreamBufferViews[0] = RHI::SingleDeviceStreamBufferView(*m_starsVertexBuffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex), 0, bufferSize, elementSize);
 
         UpdateDrawPacket();
     }
