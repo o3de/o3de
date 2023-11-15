@@ -81,13 +81,13 @@ namespace AZ
         RHI::SingleDeviceIndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
         {
             return RHI::SingleDeviceIndexBufferView(
-                *m_bufferData.GetCurrentElement()->GetRHIBuffer(), GetBufferAddressOffset(dynamicBuffer), dynamicBuffer->m_size, format);
+                *m_bufferData.GetCurrentElement()->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex), GetBufferAddressOffset(dynamicBuffer), dynamicBuffer->m_size, format);
         }
 
         RHI::SingleDeviceStreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
         {
             return RHI::SingleDeviceStreamBufferView(
-                *m_bufferData.GetCurrentElement()->GetRHIBuffer(),
+                *m_bufferData.GetCurrentElement()->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
                 GetBufferAddressOffset(dynamicBuffer),
                 dynamicBuffer->m_size,
                 strideByteCount);

@@ -8,10 +8,9 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
-#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/MultiDeviceBuffer.h>
+#include <Atom/RHI/MultiDeviceBufferPool.h>
+#include <Atom/RHI/MultiDeviceFence.h>
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/Base.h>
@@ -48,11 +47,11 @@ namespace AZ
             //! Blocks until a streaming upload has completed (if one is currently in flight).
             void WaitForUpload();
 
-            RHI::SingleDeviceBuffer* GetRHIBuffer();
+            RHI::MultiDeviceBuffer* GetRHIBuffer();
 
-            const RHI::SingleDeviceBuffer* GetRHIBuffer() const;
+            const RHI::MultiDeviceBuffer* GetRHIBuffer() const;
 
-            const RHI::SingleDeviceBufferView* GetBufferView() const;
+            const RHI::MultiDeviceBufferView* GetBufferView() const;
 
             //! Update buffer's content with sourceData at an offset of bufferByteOffset
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0);
@@ -66,7 +65,9 @@ namespace AZ
             //! This function is only used for buffer created in host such as dynamic buffer which content is rewritten every frame
             bool OrphanAndUpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes);
 
-            void* Map(size_t byteCount, uint64_t byteOffset);
+            //! Maps all buffers in the underlying multi-device buffer and returns a vector
+            //! with mapped addresses, one per device.
+            AZStd::vector<void*> Map(size_t byteCount, uint64_t byteOffset);
             void Unmap();
 
             //! Get attachment id if this buffer is used as scope attachment
@@ -94,9 +95,9 @@ namespace AZ
             RHI::ResultCode Init(BufferAsset& bufferAsset);
             void InitBufferView();
 
-            RHI::Ptr<RHI::SingleDeviceBuffer> m_rhiBuffer;
-            RHI::Ptr<RHI::SingleDeviceBufferView> m_bufferView;
-            RHI::SingleDeviceBufferPool* m_rhiBufferPool = nullptr;
+            RHI::Ptr<RHI::MultiDeviceBuffer> m_rhiBuffer;
+            RHI::Ptr<RHI::MultiDeviceBufferView> m_bufferView;
+            RHI::MultiDeviceBufferPool* m_rhiBufferPool = nullptr;
 
             Data::Instance<BufferPool> m_bufferPool;
 
@@ -104,7 +105,7 @@ namespace AZ
             Data::Asset<BufferAsset> m_bufferAsset;
 
             // Tracks the streaming upload of the buffer.
-            RHI::Ptr<RHI::SingleDeviceFence> m_streamFence;
+            RHI::Ptr<RHI::MultiDeviceFence> m_streamFence;
             AZStd::mutex m_pendingUploadMutex;
 
             RHI::BufferViewDescriptor m_bufferViewDescriptor;

@@ -139,8 +139,8 @@ namespace AZ
                 //! This indirectly forces the sync to be applied to all 'sub-buffers' used by each of the
                 //!  HairObjects / HairDispatches and therefore allows us to change their data in the shader
                 //!  between passes.
-                AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> m_dynamicBuffersViews;   // RW used for the Compute
-                AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> m_readBuffersViews;      // Read only used for the Raster fill
+                AZStd::vector<Data::Instance<RHI::MultiDeviceBufferView>> m_dynamicBuffersViews;   // RW used for the Compute
+                AZStd::vector<Data::Instance<RHI::MultiDeviceBufferView>> m_readBuffersViews;      // Read only used for the Raster fill
 
                 //! The following vector is required in order to keep the allocators 'alive' or
                 //!  else they are cleared from the buffer via the reference mechanism.
@@ -380,7 +380,7 @@ namespace AZ
                 Data::Instance<RPI::ShaderResourceGroup> m_hairRenderSrg;   
  
                 //! Index buffer for the render pass via draw calls - naming was kept
-                Data::Instance<RHI::SingleDeviceBuffer> m_indexBuffer;
+                Data::Instance<RHI::MultiDeviceBuffer> m_indexBuffer;
                 RHI::SingleDeviceIndexBufferView m_indexBufferView;
                 //-------------------------------------------------------------------
 

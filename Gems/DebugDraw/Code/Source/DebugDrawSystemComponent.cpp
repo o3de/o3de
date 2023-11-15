@@ -1142,7 +1142,7 @@ namespace DebugDraw
                 "DebugDraw::Sphere",
                 rayTracingShader,
                 "SphereIntersection",
-                m_spheresRayTracingIndicesBuffer->GetBufferView()->GetBindlessReadIndex());
+                m_spheresRayTracingIndicesBuffer->GetBufferView()->GetDeviceBufferView(AZ::RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex());
         }
 
         element.m_localInstanceIndex = m_spheresRayTracingIndices.AddEntry(0);
@@ -1152,7 +1152,7 @@ namespace DebugDraw
         {
             m_spheresRayTracingIndicesBuffer->Resize(requiredSizeInBytes);
             m_rayTracingFeatureProcessor->SetProceduralGeometryTypeBindlessBufferIndex(
-                m_sphereRayTracingTypeHandle.GetWeakHandle(), m_spheresRayTracingIndicesBuffer->GetBufferView()->GetBindlessReadIndex());
+                m_sphereRayTracingTypeHandle.GetWeakHandle(), m_spheresRayTracingIndicesBuffer->GetBufferView()->GetDeviceBufferView(AZ::RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex());
 
             // Need to copy all existing data to resized buffer
             AZStd::vector<float> radii(m_spheresRayTracingIndices.GetIndexList().size());

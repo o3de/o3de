@@ -957,11 +957,11 @@ namespace AZ
                         Buffer* buffer = static_cast<Buffer*>(attachment->m_importedResource.get());
                         if (currentAttachment == nullptr)
                         {
-                            attachmentDatabase.ImportBuffer(attachmentId, buffer->GetRHIBuffer());
+                            attachmentDatabase.ImportBuffer(attachmentId, buffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get());
                         }
                         else
                         {
-                            AZ_Assert(currentAttachment->GetResource() == buffer->GetRHIBuffer(),
+                            AZ_Assert(currentAttachment->GetResource() == buffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get(),
                                 "Importing buffer attachment named \"%s\" but a different attachment with the "
                                 "same name already exists in the database.\n", attachmentId.GetCStr());
                         }

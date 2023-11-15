@@ -7,7 +7,7 @@
  */
 
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/MultiDeviceBuffer.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <Atom/Utils/Utils.h>
@@ -92,7 +92,7 @@ namespace AZ
         {
             if (m_bufferIndex.IsValid())
             {
-                srg->SetBufferView(m_bufferIndex, m_buffer->GetBufferView());
+                srg->SetBufferView(m_bufferIndex, m_buffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
             }
             if (m_elementCountIndex.IsValid())
             {

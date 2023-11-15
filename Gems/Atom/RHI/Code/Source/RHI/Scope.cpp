@@ -8,7 +8,6 @@
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/SingleDeviceImagePoolBase.h>
-#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI

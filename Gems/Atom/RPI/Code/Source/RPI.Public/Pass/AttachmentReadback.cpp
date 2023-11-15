@@ -379,7 +379,7 @@ namespace AZ
                 // copy buffer
                 RHI::SingleDeviceCopyBufferDescriptor copyBuffer;
                 copyBuffer.m_sourceBuffer = buffer;
-                copyBuffer.m_destinationBuffer = m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
+                copyBuffer.m_destinationBuffer = m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
                 copyBuffer.m_size = aznumeric_cast<uint32_t>(desc.m_byteCount);
 
                 m_readbackItems[0].m_copyItem = copyBuffer;
@@ -437,7 +437,7 @@ namespace AZ
                     copyImageToBuffer.m_destinationOffset = 0;
                     copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayouts[mipSlice].m_bytesPerRow;
                     copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayouts[mipSlice].m_bytesPerImage;
-                    copyImageToBuffer.m_destinationBuffer = readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
+                    copyImageToBuffer.m_destinationBuffer = readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
                     copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
 
                     readbackItem.m_mipInfo.m_slice = mipSlice;
@@ -580,7 +580,8 @@ namespace AZ
                 auto bufferSize = readbackBufferCurrent->GetBufferSize();
                 readbackItem.m_dataBuffer = AZStd::make_shared<AZStd::vector<uint8_t>>();
 
-                void* buf = readbackBufferCurrent->Map(bufferSize, 0);
+                AZ_Assert(RHI::CheckBitsAny(readbackBufferCurrent->GetRHIBuffer()->GetDeviceMask(), RHI::MultiDevice::DefaultDevice), "AttachmentReadback currently only supports the default device for now as long as passes have no device index yet.");
+                void* buf = readbackBufferCurrent->Map(bufferSize, 0)[RHI::MultiDevice::DefaultDeviceIndex];
                 if (buf)
                 {
                     if (m_attachmentType == RHI::AttachmentType::Buffer)

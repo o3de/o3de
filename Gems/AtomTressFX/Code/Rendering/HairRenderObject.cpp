@@ -110,7 +110,7 @@ namespace AZ
 
                 m_readBuffersViews.resize(2);
            
-                RHI::SingleDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::MultiDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (uint8_t index = 0; index < 2 ; ++index)
                 {
                     // Buffer view creation from the shared buffer
@@ -124,17 +124,11 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderRead    // No need for ReadWrite in the raster fill
                     );
 
-                    m_readBuffersViews[index] = RHI::Factory::Get().CreateBufferView();
-                    RHI::ResultCode resultCode = m_readBuffersViews[index]->Init(*rhiBuffer, viewDescriptor);
-                    if (resultCode != RHI::ResultCode::Success)
-                    {
-                        AZ_Error("Hair Gem", false, "Read BufferView could not be retrieved for [%s]", streamDesc.m_bufferName.GetCStr());
-                        return false;
-                    }
+                    m_readBuffersViews[index] = aznew RHI::MultiDeviceBufferView{ rhiBuffer, viewDescriptor };
 
                     // Buffer binding into the raster srg
                     RHI::ShaderInputBufferIndex indexHandle = m_simSrgForRaster->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
-                    if (!m_simSrgForRaster->SetBufferView(indexHandle, m_readBuffersViews[index].get()))
+                    if (!m_simSrgForRaster->SetBufferView(indexHandle, m_readBuffersViews[index]->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
                     {
                         AZ_Error("Hair Gem", false, "Failed to bind raster buffer view for %s", streamDesc.m_bufferName.GetCStr());
                         return false;
@@ -176,7 +170,7 @@ namespace AZ
                     RHI::ShaderInputBufferIndex indexHandle = m_simSrgForCompute->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
                     streamDesc.m_resourceShaderIndex = indexHandle.GetIndex();
 
-                    if (!m_simSrgForCompute->SetBufferView(indexHandle, m_dynamicBuffersViews[buffer].get()))
+                    if (!m_simSrgForCompute->SetBufferView(indexHandle, m_dynamicBuffersViews[buffer]->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
                     {
                         AZ_Error("Hair Gem", false, "Failed to bind compute buffer view for %s", streamDesc.m_bufferName.GetCStr());
                         return false;
@@ -234,7 +228,7 @@ namespace AZ
                 m_dynamicBuffersViews.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
                 m_dynamicViewAllocators.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
 
-                RHI::SingleDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::MultiDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (int stream=0; stream< uint8_t(HairDynamicBuffersSemantics::NumBufferStreams) ; ++stream)
                 {
                     SrgBufferDescriptor& streamDesc = m_dynamicBuffersDescriptors[stream];
@@ -259,13 +253,7 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderReadWrite
                     );
 
-                    m_dynamicBuffersViews[stream] = RHI::Factory::Get().CreateBufferView();
-                    RHI::ResultCode resultCode = m_dynamicBuffersViews[stream]->Init(*rhiBuffer, viewDescriptor);
-                    if (resultCode != RHI::ResultCode::Success)
-                    {
-                        AZ_Error("Hair Gem", false, "Dynamic BufferView could not be retrieved for [%s]", streamDesc.m_bufferName.GetCStr());
-                        return false;
-                    }
+                    m_dynamicBuffersViews[stream] = aznew RHI::MultiDeviceBufferView{ rhiBuffer, viewDescriptor };
                 }
 
                 m_initialized = true;
@@ -509,13 +497,13 @@ namespace AZ
 
                 // Vertex streams: thickness and texture coordinates
                 desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)];
-                if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairVertexRenderParams->GetBufferView()))
+                if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairVertexRenderParams->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
                 {
                     bindSuccess = false;
                     AZ_Error("Hair Gem", false, "Failed to bind buffer view for [%s]", desc->m_bufferName.GetCStr());
                 }
                 desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)];
-                if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairTexCoords->GetBufferView()))
+                if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairTexCoords->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
                 {
                     AZ_Error("Hair Gem", false, "Failed to bind buffer view for [%s]", desc->m_bufferName.GetCStr());
                     bindSuccess = false;
@@ -576,9 +564,9 @@ namespace AZ
                 //------------ Index Buffer  ------------
                 m_TotalIndices = asset.GetNumHairTriangleIndices();
 
-                RHI::SingleDeviceBufferInitRequest request;
+                RHI::MultiDeviceBufferInitRequest request;
                 uint32_t indexBufferSize = m_TotalIndices * sizeof(uint32_t);
-                m_indexBuffer = RHI::Factory::Get().CreateBuffer();
+                m_indexBuffer = aznew RHI::MultiDeviceBuffer;
                 request.m_buffer = m_indexBuffer.get();
                 request.m_descriptor = RHI::BufferDescriptor{
                     RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::InputAssembly,
@@ -586,7 +574,7 @@ namespace AZ
                 };
                 request.m_initialData = (void*)asset.m_triangleIndices.data();
                 
-                RHI::Ptr<RHI::SingleDeviceBufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
+                RHI::Ptr<RHI::MultiDeviceBufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
                 if (!bufferPool)
                 {
                     AZ_Error("Hair Gem", false, "Common buffer pool for index buffer could not be created");
@@ -597,7 +585,7 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::SingleDeviceIndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
+                m_indexBufferView = RHI::SingleDeviceIndexBufferView(*m_indexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
  
                 return true;
             }
