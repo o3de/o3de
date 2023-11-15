@@ -90,7 +90,6 @@ class SettingsDescription(object):
             raise O3DEConfigError(f"Input value '{input}' not valid. {self._restricted_regex_description}")
 
 
-
 def resolve_project_name_and_path(starting_path: str or None = None) -> (str, Path):
     """
     Attempt to resolve the project name and path attempting to find the first 'project.json' that can be discovered based on the 'starting_path'
@@ -430,7 +429,7 @@ class O3DEConfig(object):
 
         return all_settings_list
 
-    def set_password(self, key) -> None:
+    def set_password(self, key: str) -> None:
         """
         Set a password for a password-specified key 
         :param key:     The key to the password setting to set
@@ -451,6 +450,6 @@ class O3DEConfig(object):
             raise O3DEConfigError(f"Passwords do not match.")
     
         # Set the password bypassing the validity check
-        return self.set_config_value(key=key,
-                                     value=input_password,
-                                     validate_value=False)
+        self.set_config_value(key=key,
+                              value=input_password,
+                              validate_value=False)

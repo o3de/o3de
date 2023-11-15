@@ -62,7 +62,7 @@ def copy_or_create_link(src: Path, tgt: Path):
             shutil.copy2(src=full_src_path,
                          dst=full_tgt_path,
                          follow_symlinks=True)
-            logger.info("Copied {full_src_path} to {full_tgt_path}")
+            logger.info(f"Copied {full_src_path} to {full_tgt_path}")
         else:
             if IS_PLATFORM_WINDOWS:
                 import _winapi
@@ -212,9 +212,12 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app
     # Copy/Link the contents to the target folder
     synchronize_folders(android_cache_folder, target_layout_root)
 
-    intermediate_folder_name = determine_intermediate_folder_from_compile_commands(android_app_root_path=android_app_root_path,
-                                                                                   native_build_path=native_build_path,
-                                                                                   build_config=build_config)
+    try:
+        intermediate_folder_name = determine_intermediate_folder_from_compile_commands(android_app_root_path=android_app_root_path,
+                                                                                       native_build_path=native_build_path,
+                                                                                       build_config=build_config)
+    except AndroidPostBuildError:
+        pass
 
 
 

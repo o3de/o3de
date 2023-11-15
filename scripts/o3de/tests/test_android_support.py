@@ -282,7 +282,7 @@ Available Updates:
         assert result_available[0].path == 'add-ons;addon-google_apis-google-15'
         assert result_available[1].path == 'add-ons;addon-google_apis-google-23'
 
-        result_updateable = test.get_package_list('*', android_support.AndroidSDKManager.PackageCategory.UPDATEABLE)
+        result_updateable = test.get_package_list('*', android_support.AndroidSDKManager.PackageCategory.UPDATABLE)
         assert len(result_updateable) == 1
         assert result_updateable[0].path == 'platforms;android-33'
 
@@ -328,7 +328,7 @@ Available Updates:
         assert result_available[0].path == 'add-ons;addon-google_apis-google-15'
         assert result_available[1].path == 'add-ons;addon-google_apis-google-23'
 
-        result_updateable = test.get_package_list('*', android_support.AndroidSDKManager.PackageCategory.UPDATEABLE)
+        result_updateable = test.get_package_list('*', android_support.AndroidSDKManager.PackageCategory.UPDATABLE)
         assert len(result_updateable) == 1
         assert result_updateable[0].path == 'platforms;android-33'
 

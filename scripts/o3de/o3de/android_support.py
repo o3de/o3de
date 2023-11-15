@@ -16,9 +16,9 @@ import os
 import re
 import platform
 import shutil
+import stat
 import string
 import subprocess
-import pathlib
 
 from enum import Enum
 from o3de import command_utils, manifest, utils
@@ -66,31 +66,71 @@ ASSET_MODES = [ASSET_MODE_LOOSE, ASSET_MODE_PAK]
 BUILD_CONFIGURATIONS = ['Debug', 'Profile', 'Release']
 ANDROID_ARCH = 'arm64-v8a'
 
+DEFAULT_ANDROID_GRADLE_PLUGIN_VERSION = '8.1.0'
+ANDROID_RESOLUTION_SETTINGS = ('mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi')
+
 # Values to set for the android configuration handler
 ANDROID_SETTINGS_FILE = '.command_settings'
 ANDROID_SETTINGS_SECTION_NAME = 'android'
 
-ANDROID_SETTINGS_SDK_ROOT              = command_utils.SettingsDescription('sdk.root', description='The root path of the android sdk on this system.')
-ANDROID_SETTINGS_PLATFORM_SDK_API      = command_utils.SettingsDescription('platform.sdk.api', description='The android platform API level (ref https://developer.android.com/tools/releases/platforms)', default='31')
-ANDROID_SETTINGS_NDK_VERSION           = command_utils.SettingsDescription('ndk.version', description='The version of the android NDK (ref https://developer.android.com/ndk/downloads). File matching patterns can be used (i.e. 25.* will search for the most update to date major version 25)', default='25.*')
-ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION = command_utils.SettingsDescription('android_gradle_plugin', description='The version of the android gradle plugin to use for the build (ref https://developer.android.com/reference/tools/gradle-api)', default='8.1.0')
-ANDROID_SETTINGS_GRADLE_HOME           = command_utils.SettingsDescription('gradle.home', description='The root path of the locally installed version of gradle. If not set, the gradle that is in the PATH environment will be used')
-ANDROID_SETTINGS_CMAKE_HOME            = command_utils.SettingsDescription('cmake.home', description='The root path of the locally installed version of cmake. If not set, the cmake that is in the PATH environment will be used')
+ANDROID_SETTINGS_SDK_ROOT              = command_utils.SettingsDescription(key='sdk.root',
+                                                                           description='The root path of the android sdk on this system.')
+
+ANDROID_SETTINGS_PLATFORM_SDK_API      = command_utils.SettingsDescription(key='platform.sdk.api',
+                                                                           description='The android platform API level (ref https://developer.android.com/tools/releases/platforms)',
+                                                                           default='31')
+
+ANDROID_SETTINGS_NDK_VERSION           = command_utils.SettingsDescription(key='ndk.version',
+                                                                           description='The version of the android NDK (ref https://developer.android.com/ndk/downloads). File matching patterns can be used (i.e. 25.* will search for the most update to date major version 25)',
+                                                                           default='25.*')
+
+ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION = command_utils.SettingsDescription(key='android.gradle.plugin',
+                                                                           description='The version of the android gradle plugin to use for the build (ref https://developer.android.com/reference/tools/gradle-api)',
+                                                                           default=DEFAULT_ANDROID_GRADLE_PLUGIN_VERSION)
+
+ANDROID_SETTINGS_GRADLE_HOME           = command_utils.SettingsDescription(key='gradle.home',
+                                                                           description='The root path of the locally installed version of gradle. If not set, the gradle that is in the PATH environment will be used')
+
+ANDROID_SETTINGS_GRADLE_JVM_ARGS       = command_utils.SettingsDescription(key='gradle.jvmargs',
+                                                                           description='Customized jvm arguments to set when invoking gradle. (ref https://docs.gradle.org/current/userguide/config_gradle.html#sec:configuring_jvm_memory)',
+                                                                           default='-Xmx1280m')
+
+ANDROID_SETTINGS_CMAKE_HOME            = command_utils.SettingsDescription(key='cmake.home',
+                                                                           description='The root path of the locally installed version of cmake. If not set, the cmake that is in the PATH environment will be used')
 
 # Settings related to the signing configuration (ref https://developer.android.com/studio/publish/app-signing)
-ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE     = command_utils.SettingsDescription('signconfig.store.file', description='The key store file to use for creating a signing config. (ref https://developer.android.com/studio/publish/app-signing)')
-ANDROID_SETTINGS_SIGNING_CONFIG_STORE_PASSWORD = command_utils.SettingsDescription('signconfig.store.password', description='The password for the key store file', is_password=True)
-ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS      = command_utils.SettingsDescription('signconfig.key.alias', description='The key alias withing the key store that idfentifies the signing key')
-ANDROID_SETTINGS_SIGNING_CONFIG_KEY_PASSWORD   = command_utils.SettingsDescription('signconfig.key.password', description='The password for the key inside the key store referenced by the key alias', is_password=True)
+ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE     = command_utils.SettingsDescription(key='signconfig.store.file',
+                                                                                   description='The key store file to use for creating a signing config. (ref https://developer.android.com/studio/publish/app-signing)')
+
+ANDROID_SETTINGS_SIGNING_CONFIG_STORE_PASSWORD = command_utils.SettingsDescription(key='signconfig.store.password',
+                                                                                   description='The password for the key store file',
+                                                                                   is_password=True)
+
+ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS      = command_utils.SettingsDescription(key='signconfig.key.alias',
+                                                                                   description='The key alias withing the key store that idfentifies the signing key')
+
+ANDROID_SETTINGS_SIGNING_CONFIG_KEY_PASSWORD   = command_utils.SettingsDescription(key='signconfig.key.password',
+                                                                                   description='The password for the key inside the key store referenced by the key alias',
+                                                                                   is_password=True)
 
 # General O3DE build and deployment options
-ANDROID_SETTINGS_ASSET_MODE           = command_utils.SettingsDescription('asset_mode',
-                                                        description='The asset mode to determine how the assets are stored in the target APK. Valid values are LOOSE and PAK.',
-                                                        restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK})',
-                                                        restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.")
-ANDROID_SETTINGS_STRIP_DEBUG          = command_utils.SettingsDescription('strip.debug', description='Option to strip the debug symbols of the built native libs before deployment to the APK')
-ANDROID_SETTINGS_OCULUS_PROJECT       = command_utils.SettingsDescription('oculus.project', description='Option to set oculus-specific build options when building the APK')
-ANDROID_SETTINGS_ASSET_BUNDLE_SUBPATH = command_utils.SettingsDescription('asset.bundle.subpath', description='The sub-path from the project root to specify where the bundle/pak files will be generated to. (ref https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/)')
+ANDROID_SETTINGS_ASSET_MODE           = command_utils.SettingsDescription(key='asset.mode',
+                                                                          description='The asset mode to determine how the assets are stored in the target APK. Valid values are LOOSE and PAK.',
+                                                                          restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK})',
+                                                                          restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.")
+
+ANDROID_SETTINGS_STRIP_DEBUG          = command_utils.SettingsDescription(key='strip.debug',
+                                                                          description='Option to strip the debug symbols of the built native libs before deployment to the APK')
+
+ANDROID_SETTINGS_OCULUS_PROJECT       = command_utils.SettingsDescription(key='oculus.project',
+                                                                          description='Option to set oculus-specific build options when building the APK')
+
+ANDROID_SETTINGS_ASSET_BUNDLE_SUBPATH = command_utils.SettingsDescription(key='asset.bundle.subpath',
+                                                                          description='The sub-path from the project root to specify where the bundle/pak files will be generated to. '
+                                                                                      '(ref https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/)')
+
+ANDROID_SETTINGS_EXTRA_CMAKE_ARGS     = command_utils.SettingsDescription(key='extra.cmake.args',
+                                                                          description='Optional string to set additional cmake arguments during the native project generation within the android gradle build process')
 
 SUPPORTED_ANDROID_SETTINGS = [
     ANDROID_SETTINGS_SDK_ROOT,
@@ -106,7 +146,9 @@ SUPPORTED_ANDROID_SETTINGS = [
     ANDROID_SETTINGS_ASSET_MODE,
     ANDROID_SETTINGS_STRIP_DEBUG,
     ANDROID_SETTINGS_OCULUS_PROJECT,
-    ANDROID_SETTINGS_ASSET_BUNDLE_SUBPATH
+    ANDROID_SETTINGS_ASSET_BUNDLE_SUBPATH,
+    ANDROID_SETTINGS_EXTRA_CMAKE_ARGS,
+    ANDROID_SETTINGS_GRADLE_JVM_ARGS
 ]
 
 
@@ -260,9 +302,9 @@ class AndroidSDKManager(object):
     class PackageCategory(Enum):
         AVAILABLE = 1
         INSTALLED = 2
-        UPDATEABLE = 3
+        UPDATABLE = 3
 
-    def __init__(self, current_java_version:str, android_settings: command_utils.O3DEConfig):
+    def __init__(self, current_java_version: str, android_settings: command_utils.O3DEConfig):
         """
         Initialize the Android SDK Manager
 
@@ -272,18 +314,17 @@ class AndroidSDKManager(object):
 
         # Validate the android sdk path is set, contains the command line tools at the expected location, and that it is compatible with the
         # input java version
-        self.installed_packages = {}
-        self.available_packages = {}
-        self.available_updates = {}
-        self.android_command_line_tools_sdkmanager_path, self.android_sdk_path = \
+        self._installed_packages = {}
+        self._available_packages = {}
+        self._available_updates = {}
+        self._android_command_line_tools_sdkmanager_path, self.android_sdk_path = \
             AndroidSDKManager.validate_android_sdk_environment(current_java_version=current_java_version,
                                                                android_settings=android_settings)
 
         self.refresh_sdk_installation()
 
-
     @staticmethod
-    def validate_android_sdk_environment(current_java_version, android_settings) -> Path:
+    def validate_android_sdk_environment(current_java_version: str, android_settings: command_utils.O3DEConfig) -> Path:
         """
         From the android sdk value (android_sdk_root) from the settings, validate that it is set to a valid location,
         contains the command line tools at the expected location, and that it is compatible with the input java version
@@ -352,7 +393,7 @@ class AndroidSDKManager(object):
         """
         assert isinstance(arguments, list)
 
-        command_args = [self.android_command_line_tools_sdkmanager_path]
+        command_args = [self._android_command_line_tools_sdkmanager_path]
         command_args.extend(arguments)
 
         logger.debug(f"Calling sdkmanager:  {subprocess.list2cmdline(arguments)}")
@@ -382,11 +423,11 @@ class AndroidSDKManager(object):
 
         match packageCategory:
             case AndroidSDKManager.PackageCategory.INSTALLED:
-                package_dict = self.installed_packages
+                package_dict = self._installed_packages
             case AndroidSDKManager.PackageCategory.AVAILABLE:
-                package_dict = self.available_packages
-            case AndroidSDKManager.PackageCategory.UPDATEABLE:
-                package_dict = self.available_updates
+                package_dict = self._available_packages
+            case AndroidSDKManager.PackageCategory.UPDATABLE:
+                package_dict = self._available_updates
             case _:
                 assert False, "Unsupported package category"
 
@@ -401,9 +442,9 @@ class AndroidSDKManager(object):
         Utilize the sdk_manager command line tool from the Android SDK to collect / refresh the list of
         installed, available, and updateable packages that are managed by the android SDK.
         """
-        self.installed_packages = {}
-        self.available_packages = {}
-        self.available_updates = {}
+        self._installed_packages = {}
+        self._available_packages = {}
+        self._available_updates = {}
 
         def _factory_installed_package(package_map, item_components):
             package_map[item_components[0]] = AndroidSDKManager.InstalledPackage(item_components)
@@ -429,13 +470,13 @@ class AndroidSDKManager(object):
                 continue
             if '|' not in package_item_stripped:
                 if package_item_stripped.upper() == 'INSTALLED PACKAGES:':
-                    current_append_map = self.installed_packages
+                    current_append_map = self._installed_packages
                     current_item_factory = _factory_installed_package
                 elif package_item_stripped.upper() == 'AVAILABLE PACKAGES:':
-                    current_append_map = self.available_packages
+                    current_append_map = self._available_packages
                     current_item_factory = _factory_available_package
                 elif package_item_stripped.upper() == 'AVAILABLE UPDATES:':
-                    current_append_map = self.available_updates
+                    current_append_map = self._available_updates
                     current_item_factory = _factory_available_update
                 else:
                     current_append_map = None
@@ -451,9 +492,9 @@ class AndroidSDKManager(object):
             if current_append_map is not None and current_item_factory is not None:
                 current_item_factory(current_append_map, item_parts)
 
-        logger.info(f"Installed packages: {len(self.installed_packages)}")
-        logger.info(f"Available packages: {len(self.available_packages)}")
-        logger.info(f"Available updates: {len(self.available_updates)}")
+        logger.info(f"Installed packages: {len(self._installed_packages)}")
+        logger.info(f"Available packages: {len(self._available_packages)}")
+        logger.info(f"Available updates: {len(self._available_updates)}")
 
     def install_package(self, package_install_path: str, package_description: str):
         """
@@ -509,7 +550,7 @@ class AndroidSDKManager(object):
         that provides information on how to accept them.
         """
         logger.info("Checking Android SDK Package licenses state..")
-        result = subprocess.run(['echo' , 'Y' , '|', self.android_command_line_tools_sdkmanager_path, '--licenses'],
+        result = subprocess.run(['echo' , 'Y' , '|', self._android_command_line_tools_sdkmanager_path, '--licenses'],
                                 shell=(platform.system() == 'Windows'),
                                 capture_output=True,
                                 encoding='utf-8',
@@ -518,13 +559,13 @@ class AndroidSDKManager(object):
         license_not_accepted_match = AndroidSDKManager.LICENSE_NOT_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_not_accepted_match:
             raise AndroidToolError(f"{license_not_accepted_match.group(1)}\n"
-                                   f"Please run '{self.android_command_line_tools_sdkmanager_path} --licenses' and follow the instructions.\n")
+                                   f"Please run '{self._android_command_line_tools_sdkmanager_path} --licenses' and follow the instructions.\n")
         license_accepted_match = AndroidSDKManager.LICENSE_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_accepted_match:
             logger.info(license_accepted_match.group(1))
         else:
             raise AndroidToolError("Unable to determine the Android SDK Package license state. \n"
-                                   f"Please run '{self.android_command_line_tools_sdkmanager_path} --licenses' to troubleshoot the issue.\n")
+                                   f"Please run '{self._android_command_line_tools_sdkmanager_path} --licenses' to troubleshoot the issue.\n")
 
     def get_android_sdk_path(self) -> str:
         return self.android_sdk_path
@@ -662,8 +703,7 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
                             errors=ENCODING_ERROR_HANDLINGS)
     if result.returncode != 0:
         if tool_config_key:
-            raise AndroidToolError(f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment, or set the path to its home "
-                                   f"in the .android_settings with {tool_config_key} key.")
+            raise AndroidToolError(f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment, or value of {tool_config_key} in the android settings.")
         else:
             raise AndroidToolError(f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment")
 
@@ -1069,11 +1109,12 @@ class AndroidProjectGenerator(object):
                  cmake_version: str,
                  gradle_path: Path,
                  gradle_version: str,
+                 gradle_custom_jvm_args: str,
                  android_gradle_plugin_version: str,
                  ninja_path: Path,
                  asset_mode:str,
                  signing_config: AndroidSigningConfig or None,
-                 extra_cmake_configure_args,
+                 extra_cmake_configure_args: str,
                  src_pak_file_path: str,
                  strip_debug_symbols: bool = False,
                  overwrite_existing: bool = True,
@@ -1130,6 +1171,7 @@ class AndroidProjectGenerator(object):
         self.override_gradle_path = gradle_path
         self.gradle_version = gradle_version
         self.gradle_plugin_version = android_gradle_plugin_version
+        self.gradle_custom_jvm_args = gradle_custom_jvm_args
         self.ninja_path = ninja_path
         self.strip_debug_symbols = strip_debug_symbols
 
@@ -1433,12 +1475,13 @@ class AndroidProjectGenerator(object):
                 cmake_argument_list.append('"-DANDROID_USE_OCULUS_OPENXR=ON"')
 
             if self.extra_cmake_configure_args:
-                cmake_argument_list.extend(map(json.dumps, self.extra_cmake_configure_args))
+                extra_cmake_configure_arg_list = [f'"{arg}"' for arg in self.extra_cmake_configure_args.split()]
+                cmake_argument_list.extend(extra_cmake_configure_arg_list)
 
             # Prepare the config-specific section to place the cmake argument list in the build.gradle for the app
             gradle_build_env[f'NATIVE_CMAKE_SECTION_{native_config_upper}_CONFIG'] = \
                 NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(arguments=','.join(cmake_argument_list),
-                    targets_section=f'targets "{self.project_name}.GameLauncher"')
+                                                                         targets_section=f'targets "{self.project_name}.GameLauncher"')
 
             # Prepare the config-specific section to copy the related .so files that are marked as dependencies for the target
             # (launcher) since gradle will not include them automatically for APK import
@@ -1542,7 +1585,9 @@ class AndroidProjectGenerator(object):
 
         # TODO: Add substitution entries here if variables are added to gradle.properties.in
         # Refer to the Code/Tools/Android/ProjectBuilder/gradle.properties.in for reference.
-        grade_properties_env = {}
+        grade_properties_env = {
+            'GRADLE_JVM_ARGS': self.gradle_custom_jvm_args
+        }
         gradle_properties_file = self.build_dir / 'gradle.properties'
         self.create_file_from_project_template(src_template_file='gradle.properties.in',
                                                template_env=grade_properties_env,
