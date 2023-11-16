@@ -197,7 +197,7 @@ def get_default_asset_platform():
 
 def get_platform_installer_folder_name(selected_platform=None):
     if not selected_platform:
-        selected_platform = platform.lower()
+        selected_platform = CURRENT_PLATFORM
     host_platform_to_installer_name_map = {'pc': 'Windows',
                                            'linux': 'Linux',
                                            'mac': 'Mac'}
