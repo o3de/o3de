@@ -21,6 +21,19 @@ namespace AZ
 {
     namespace Metal
     {
+        void RasterizerState::UpdateHash()
+        {
+            HashValue64 seed = HashValue64{ 0 };
+            seed = TypeHash64(m_cullMode, seed);
+            seed = TypeHash64(m_depthBias, seed);
+            seed = TypeHash64(m_depthSlopeScale, seed);
+            seed = TypeHash64(m_depthBiasClamp, seed);
+            seed = TypeHash64(m_frontFaceWinding, seed);
+            seed = TypeHash64(m_triangleFillMode, seed);
+            seed = TypeHash64(m_depthClipMode, seed);
+            m_hash = seed;
+        }
+    
         RHI::Ptr<PipelineState> PipelineState::Create()
         {
             return aznew PipelineState;
