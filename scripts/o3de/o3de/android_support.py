@@ -714,7 +714,6 @@ def validate_java_environment() -> str:
     java search approach used by the sdkmanager.
     """
 
-    java_cwd_paths = []
     java_home = os.getenv('JAVA_HOME', None)
     if java_home:
         java_exe_working_dir = os.path.join(java_home,'bin')
@@ -733,7 +732,7 @@ def validate_java_environment() -> str:
 
     if result.returncode != 0:
         if java_exe_working_dir:
-            raise AndroidToolError(f"Unable to determine java version from {java_exe_working_dir} ({result.stderr or result.stdout}")
+            raise AndroidToolError(f"Unable to determine java version from {java_exe_working_dir} ({result.stderr or result.stdout})")
         else:
             raise AndroidToolError(f"Unable to locate java. Either set it in the PATH environment or set JAVA_HOME to a valid java installation. ({result.stderr or result.stdout})")
 

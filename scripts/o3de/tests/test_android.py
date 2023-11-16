@@ -6,16 +6,13 @@
 #
 #
 
-import argparse
-from getpass import getpass
-import logging
 import pathlib
 import os
-import re
-from unittest.mock import patch, MagicMock, Mock, PropertyMock
-
 import pytest
+import re
+
 from o3de import android, android_support, command_utils
+from unittest.mock import patch, MagicMock, Mock, PropertyMock
 
 
 def test_validate_android_config_happy_path(tmpdir):
@@ -25,12 +22,30 @@ def test_validate_android_config_happy_path(tmpdir):
 
     # Test Data
     test_gradle_version = '8.4'
-    mock_validate_java_environment_result = '1.17'
-    mock_android_support_validate_gradle_result = ('/home/gradle-8.4/', test_gradle_version)
+    test_validate_java_environment_result = '1.17'
+    test_android_support_validate_gradle_result = ('/home/gradle-8.4/', test_gradle_version)
 
     # Mocks
-    class MockAndroidConfig(object):
-        def get_value(self, input, default=None):
+    with patch('o3de.android_support.validate_java_environment') as mock_validate_java_environment, \
+         patch('o3de.android_support.validate_gradle') as mock_validate_gradle, \
+         patch('o3de.android_support.validate_cmake') as mock_validate_cmake, \
+         patch('o3de.android_support.validate_ninja') as mock_validate_ninja, \
+         patch('o3de.android_support.get_android_gradle_plugin_requirements') as mock_get_android_gradle_plugin_requirements, \
+         patch('o3de.android_support.AndroidSDKManager') as mock_get_AndroidSDKManager, \
+         patch('o3de.android.logger.warn') as mock_warn:
+
+        mock_validate_java_environment.return_value = test_validate_java_environment_result
+        mock_validate_gradle.return_value = test_android_support_validate_gradle_result
+        mock_validate_cmake.return_value = None
+        mock_validate_ninja.return_value = None
+
+        mock_gradle_requirements = Mock()
+        mock_get_android_gradle_plugin_requirements.return_value = mock_gradle_requirements
+
+        mock_sdk_manager = Mock()
+        mock_get_AndroidSDKManager.return_value = mock_sdk_manager
+
+        def _android_config_get_value_(input, default=None):
             if input == android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key:
                 return "8.4"
             elif input == android_support.SETTINGS_SIGNING_STORE_FILE.key:
@@ -44,29 +59,22 @@ def test_validate_android_config_happy_path(tmpdir):
             else:
                 return default
 
-    mock_gradle_requirements = Mock()
-
-    mock_sdk_manager = Mock()
-
-    mock_android_config = MockAndroidConfig()
-
-    with patch(target='o3de.android_support.validate_java_environment', return_value=mock_validate_java_environment_result), \
-         patch(target='o3de.android_support.validate_gradle', return_value=mock_android_support_validate_gradle_result), \
-         patch(target='o3de.android_support.validate_cmake', return_value=None), \
-         patch(target='o3de.android_support.validate_ninja', return_value=None), \
-         patch(target='o3de.android_support.get_android_gradle_plugin_requirements', return_value=mock_gradle_requirements), \
-         patch(target='o3de.android_support.AndroidSDKManager', return_value=mock_sdk_manager), \
-         patch(target='o3de.android.logger.warn', new_callable=Mock) as mock_warn:
+        mock_android_config = Mock(spec=command_utils.O3DEConfig)
+        mock_android_config.get_value.side_effect = _android_config_get_value_
 
         # Call the method
         android.validate_android_config(mock_android_config)
 
         # Validation
         mock_gradle_requirements.validate_gradle_version.assert_called_with(test_gradle_version)
-        mock_gradle_requirements.validate_java_version.assert_called_with(mock_validate_java_environment_result)
+        mock_gradle_requirements.validate_java_version.assert_called_with(test_validate_java_environment_result)
         mock_sdk_manager.check_licenses.assert_called()
+        mock_validate_java_environment.assert_called_once()
+        mock_validate_gradle.assert_called_once_with(mock_android_config)
+        mock_validate_cmake.assert_called_once_with(mock_android_config)
+        mock_validate_ninja.assert_called_once_with(mock_android_config)
 
-        mock_warn.call_count == 0
+        assert mock_warn.call_count == 0
 
 
 @pytest.mark.xfail(raises=android_support.AndroidToolError)
@@ -77,8 +85,26 @@ def test_validate_android_config_bad_keystore_path(tmpdir):
     mock_android_support_validate_gradle_result = ('/home/gradle-8.4/', '8.4')
 
     # Mocks
-    class MockAndroidConfig(object):
-        def get_value(self, input, default=None):
+    with patch('o3de.android_support.validate_java_environment') as mock_validate_java_environment, \
+         patch('o3de.android_support.validate_gradle') as mock_validate_gradle, \
+         patch('o3de.android_support.validate_cmake') as mock_validate_cmake, \
+         patch('o3de.android_support.validate_ninja') as mock_validate_ninja, \
+         patch('o3de.android_support.get_android_gradle_plugin_requirements') as mock_get_android_gradle_plugin_requirements, \
+         patch('o3de.android_support.AndroidSDKManager') as mock_get_AndroidSDKManager:
+
+        mock_validate_java_environment.return_value = mock_validate_java_environment_result
+        mock_validate_gradle.return_value = mock_android_support_validate_gradle_result
+        mock_validate_cmake.return_value = None
+        mock_validate_ninja.return_value = None
+
+        mock_gradle_requirements = Mock()
+        mock_get_android_gradle_plugin_requirements.return_value = mock_gradle_requirements
+
+        mock_sdk_manager = Mock()
+        mock_get_AndroidSDKManager.return_value = mock_sdk_manager
+
+        mock_android_config = Mock(spec=command_utils.O3DEConfig)
+        def _android_config_get_value_(input, default=None):
             if input == android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key:
                 return "8.4"
             elif input == android_support.SETTINGS_SIGNING_STORE_FILE.key:
@@ -92,19 +118,14 @@ def test_validate_android_config_bad_keystore_path(tmpdir):
             else:
                 return default
 
-    mock_gradle_requirements = Mock()
+        mock_android_config.get_value.side_effect = _android_config_get_value_
 
-    mock_sdk_manager = Mock()
-
-    with patch(target='o3de.android_support.validate_java_environment', return_value=mock_validate_java_environment_result), \
-         patch(target='o3de.android_support.validate_gradle', return_value=mock_android_support_validate_gradle_result), \
-         patch(target='o3de.android_support.validate_cmake', return_value=None), \
-         patch(target='o3de.android_support.validate_ninja', return_value=None), \
-         patch(target='o3de.android_support.get_android_gradle_plugin_requirements', return_value=mock_gradle_requirements), \
-         patch(target='o3de.android_support.AndroidSDKManager', return_value=mock_sdk_manager):
-
-        mock_android_config = MockAndroidConfig()
+        # Test the method
         android.validate_android_config(mock_android_config)
+        mock_validate_java_environment.assert_called_once()
+        mock_validate_gradle.assert_called_once_with(mock_android_config)
+        mock_validate_cmake.assert_called_once_with(mock_android_config)
+        mock_validate_ninja.assert_called_once_with(mock_android_config)
 
 
 @pytest.mark.parametrize(
@@ -120,20 +141,38 @@ def test_validate_android_config_bad_keystore_path(tmpdir):
 def test_validate_android_signing_config_warnings(tmpdir, test_sc_store_file, test_store_pw, test_key_alias,
                                                   test_key_password, expected_warning):
     tmpdir.ensure('test.keystore', dir=False)
-    test_key_store_path = tmpdir.join('test.keystore').realpath()
 
     # Test Data
     test_gradle_version = '8.4'
-    mock_validate_java_environment_result = '1.17'
-    mock_android_support_validate_gradle_result = ('/home/gradle-8.4/', test_gradle_version)
+    test_validate_java_environment_result = '1.17'
+    test_android_support_validate_gradle_result = ('/home/gradle-8.4/', test_gradle_version)
 
     # Mocks
-    class MockAndroidConfig(object):
-        def get_value(self, input, default=None):
+    with patch('o3de.android_support.validate_java_environment') as mock_validate_java_environment, \
+         patch('o3de.android_support.validate_gradle') as mock_validate_gradle, \
+         patch('o3de.android_support.validate_cmake') as mock_validate_cmake, \
+         patch('o3de.android_support.validate_ninja') as mock_validate_ninja, \
+         patch('o3de.android_support.get_android_gradle_plugin_requirements') as mock_get_android_gradle_plugin_requirements, \
+         patch('o3de.android_support.AndroidSDKManager') as mock_get_AndroidSDKManager, \
+         patch('o3de.android.logger.warn') as mock_warn:
+
+        mock_validate_java_environment.return_value = test_validate_java_environment_result
+        mock_validate_gradle.return_value = test_android_support_validate_gradle_result
+        mock_validate_cmake.return_value = None
+        mock_validate_ninja.return_value = None
+
+        mock_gradle_requirements = Mock()
+        mock_get_android_gradle_plugin_requirements.return_value = mock_gradle_requirements
+
+        mock_sdk_manager = Mock()
+        mock_get_AndroidSDKManager.return_value = mock_sdk_manager
+
+        mock_android_config = Mock(spec=command_utils.O3DEConfig)
+
+        def _mock_android_config_get_value_(input, default=None):
 
             if input == android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key:
                 return "8.4"
-
             elif input == android_support.SETTINGS_SIGNING_STORE_FILE.key:
 
                 if test_sc_store_file:
@@ -142,7 +181,6 @@ def test_validate_android_signing_config_warnings(tmpdir, test_sc_store_file, te
                     return str(test_key_store_path)
                 else:
                     return ""
-
             elif input == android_support.SETTINGS_SIGNING_STORE_PASSWORD.key:
                 return test_store_pw
             elif input == android_support.SETTINGS_SIGNING_KEY_ALIAS.key:
@@ -152,27 +190,19 @@ def test_validate_android_signing_config_warnings(tmpdir, test_sc_store_file, te
             else:
                 return default
 
-    mock_gradle_requirements = Mock()
-
-    mock_sdk_manager = Mock()
-
-    mock_android_config = MockAndroidConfig()
-
-    with patch(target='o3de.android_support.validate_java_environment', return_value=mock_validate_java_environment_result), \
-         patch(target='o3de.android_support.validate_gradle', return_value=mock_android_support_validate_gradle_result), \
-         patch(target='o3de.android_support.validate_cmake', return_value=None), \
-         patch(target='o3de.android_support.validate_ninja', return_value=None), \
-         patch(target='o3de.android_support.get_android_gradle_plugin_requirements', return_value=mock_gradle_requirements), \
-         patch(target='o3de.android_support.AndroidSDKManager', return_value=mock_sdk_manager), \
-         patch(target='o3de.android.logger.warn', new_callable=Mock) as mock_warn:
+        mock_android_config.get_value.side_effect = _mock_android_config_get_value_
 
         # Test the method
         android.validate_android_config(mock_android_config)
 
         # Validation
         mock_gradle_requirements.validate_gradle_version.assert_called_with(test_gradle_version)
-        mock_gradle_requirements.validate_java_version.assert_called_with(mock_validate_java_environment_result)
+        mock_gradle_requirements.validate_java_version.assert_called_with(test_validate_java_environment_result)
         mock_sdk_manager.check_licenses.assert_called()
+        mock_validate_java_environment.assert_called_once()
+        mock_validate_gradle.assert_called_once_with(mock_android_config)
+        mock_validate_cmake.assert_called_once_with(mock_android_config)
+        mock_validate_ninja.assert_called_once_with(mock_android_config)
 
         assert mock_warn.call_count == 1
         mock_call_args = mock_warn.mock_calls[0].args
@@ -191,21 +221,12 @@ def test_list_android_config_local():
     ]
 
     # Mocks
-    class MockAndroidConfig(object):
-        def get_all_values(self):
-            return all_settings
+    with patch('builtins.print') as mock_print:
 
-        @property
-        def is_global(self):
-            return False
-
-        @property
-        def project_name(self):
-            return test_project_name
-
-    mock_config = MockAndroidConfig()
-
-    with patch(target='builtins.print', new_callable=Mock) as mock_print:
+        mock_config = PropertyMock(spec=command_utils.O3DEConfig)
+        mock_config.get_all_values.return_value = all_settings
+        mock_config.is_global = False
+        mock_config.project_name = test_project_name
 
         # Test the method
         android.list_android_config(mock_config)
@@ -224,21 +245,12 @@ def test_list_android_config_global():
     ]
 
     # Mocks
-    class MockAndroidConfig(object):
-        def get_all_values(self):
-            return all_settings
+    with patch('builtins.print') as mock_print:
 
-        @property
-        def is_global(self):
-            return True
-
-        @property
-        def project_name(self):
-            return ""
-
-    mock_config = MockAndroidConfig()
-
-    with patch(target='builtins.print', new_callable=Mock) as mock_print:
+        mock_config = PropertyMock(spec=command_utils.O3DEConfig)
+        mock_config.get_all_values.return_value = all_settings
+        mock_config.is_global = True
+        mock_config.project_name = ""
 
         # Test the method
         android.list_android_config(mock_config)
@@ -254,8 +266,8 @@ def test_get_android_config_from_args_global():
     setattr(test_args, 'global', True)
 
     # Mocks
-    with patch(target='o3de.android_support.get_android_config') as mock_get_android_config, \
-         patch(target='o3de.android.logger.warn') as mock_warning:
+    with patch('o3de.android_support.get_android_config') as mock_get_android_config, \
+         patch('o3de.android.logger.warn') as mock_warning:
 
         mock_get_android_config.return_value = Mock()
 
@@ -279,8 +291,8 @@ def test_get_android_config_from_args_global_with_warning_project_name():
     setattr(test_args, 'project', "Foo")
 
     # Mocjs
-    with patch(target='o3de.android_support.get_android_config') as mock_get_android_config, \
-         patch(target='o3de.android.logger.warn') as mock_warning:
+    with patch('o3de.android_support.get_android_config') as mock_get_android_config, \
+         patch('o3de.android.logger.warn') as mock_warning:
 
         mock_get_android_config.return_value = Mock()
 
@@ -303,9 +315,9 @@ def test_get_android_config_no_project_name_no_project_detected():
     setattr(test_args, 'project', "")
 
     # Mocks
-    with patch(target='o3de.android_support.get_android_config') as mock_get_android_config, \
-         patch(target='o3de.android.logger.info') as mock_info, \
-         patch(target='o3de.command_utils.resolve_project_name_and_path', new_callable=MagicMock) as mock_resolve:
+    with patch('o3de.android_support.get_android_config') as mock_get_android_config, \
+         patch('o3de.android.logger.info') as mock_info, \
+         patch('o3de.command_utils.resolve_project_name_and_path', new_callable=MagicMock) as mock_resolve:
 
         mock_resolve.side_effect = command_utils.O3DEConfigError
 
@@ -333,9 +345,9 @@ def test_get_android_config_no_project_name_project_detected():
     setattr(test_args, 'project', "")
 
     # Mocks
-    with patch(target='o3de.android_support.get_android_config') as mock_get_android_config, \
-         patch(target='o3de.android.logger.info') as mock_info, \
-         patch(target='o3de.command_utils.resolve_project_name_and_path', new_callable=MagicMock) as mock_resolve:
+    with patch('o3de.android_support.get_android_config') as mock_get_android_config, \
+         patch('o3de.android.logger.info') as mock_info, \
+         patch('o3de.command_utils.resolve_project_name_and_path', new_callable=MagicMock) as mock_resolve:
 
         mock_resolve.return_value = (detected_project, '/foo')
 
@@ -363,8 +375,8 @@ def test_get_android_config_no_global_project_name_provided():
     setattr(test_args, 'project', test_project)
 
     # Mocks
-    with patch(target='o3de.android_support.get_android_config') as mock_get_android_config, \
-         patch(target='o3de.android.logger.info') as mock_info:
+    with patch('o3de.android_support.get_android_config') as mock_get_android_config, \
+         patch('o3de.android.logger.info') as mock_info:
 
         mock_get_android_config.return_value = Mock()
 
@@ -393,10 +405,10 @@ def test_configure_android_options_list():
     setattr(test_args, 'clear_value', False)
 
     # Mocks
-    with patch(target='o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
-         patch(target='o3de.android.list_android_config') as mock_list_android, \
-         patch(target='o3de.android.logger.setLevel') as mock_logger_set_level, \
-         patch(target='o3de.android.logger.info') as mock_logger_info:
+    with patch('o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
+         patch('o3de.android.list_android_config') as mock_list_android, \
+         patch('o3de.android.logger.setLevel') as mock_logger_set_level, \
+         patch('o3de.android.logger.info') as mock_logger_info:
 
         mock_android_config = Mock()
 
@@ -422,10 +434,10 @@ def test_configure_android_options_validate():
     setattr(test_args, 'clear_value', False)
 
     # Mocks
-    with patch(target='o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
-         patch(target='o3de.android.validate_android_config') as mock_validate_android_config, \
-         patch(target='o3de.android.logger.setLevel') as mock_logger_set_level, \
-         patch(target='o3de.android.logger.info') as mock_logger_info:
+    with patch('o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
+         patch('o3de.android.validate_android_config') as mock_validate_android_config, \
+         patch('o3de.android.logger.setLevel') as mock_logger_set_level, \
+         patch('o3de.android.logger.info') as mock_logger_info:
 
         mock_android_config = Mock()
 
@@ -452,9 +464,9 @@ def test_configure_android_options_set_value():
     setattr(test_args, 'clear_value', False)
 
     # Mocks
-    with patch(target='o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
-         patch(target='o3de.android.logger.setLevel') as mock_logger_set_level, \
-         patch(target='o3de.android.logger.info') as mock_logger_info:
+    with patch('o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
+         patch('o3de.android.logger.setLevel') as mock_logger_set_level, \
+         patch('o3de.android.logger.info') as mock_logger_info:
 
         mock_android_config = Mock()
 
@@ -481,9 +493,9 @@ def test_configure_android_options_set_password():
     setattr(test_args, 'clear_value', False)
 
     # Mocks
-    with patch(target='o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
-         patch(target='o3de.android.logger.setLevel') as mock_logger_set_level, \
-         patch(target='o3de.android.logger.info') as mock_logger_info:
+    with patch('o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
+         patch('o3de.android.logger.setLevel') as mock_logger_set_level, \
+         patch('o3de.android.logger.info') as mock_logger_info:
 
         mock_android_config = Mock()
 
@@ -511,9 +523,9 @@ def test_configure_android_options_clear_value():
     setattr(test_args, 'clear_value', test_value)
 
     # Mocks
-    with patch(target='o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
-         patch(target='o3de.android.logger.setLevel') as mock_logger_set_level, \
-         patch(target='o3de.android.logger.info') as mock_logger_info:
+    with patch('o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
+         patch('o3de.android.logger.setLevel') as mock_logger_set_level, \
+         patch('o3de.android.logger.info') as mock_logger_info:
 
         mock_android_config = Mock()
 
@@ -540,10 +552,10 @@ def test_configure_android_options_validate_error():
     setattr(test_args, 'clear_value', False)
 
     # Mocks
-    with patch(target='o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
-         patch(target='o3de.android.validate_android_config') as mock_validate_android_config, \
-         patch(target='o3de.android.logger.setLevel') as mock_logger_set_level, \
-         patch(target='o3de.android.logger.error') as mock_logger_error:
+    with patch('o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
+         patch('o3de.android.validate_android_config') as mock_validate_android_config, \
+         patch('o3de.android.logger.setLevel') as mock_logger_set_level, \
+         patch('o3de.android.logger.error') as mock_logger_error:
 
         mock_android_config = Mock()
         mock_get_android_config_from_args.return_value = (mock_android_config, 'foo')
@@ -553,7 +565,7 @@ def test_configure_android_options_validate_error():
 
         # Validation
         assert result == 1
-        mock_logger_error.call_count == 1
+        assert mock_logger_error.call_count == 1
 
 
 def test_prompt_password_empty_error():
@@ -561,17 +573,20 @@ def test_prompt_password_empty_error():
     # Test Data
     test_key_name = 'Foo'
 
-    try:
-        with patch(target='o3de.android.getpass', return_value = ""):
+    # Mocks
+    with patch('o3de.android.getpass') as mock_get_pass:
 
+        mock_get_pass.return_value = ""
+
+        try:
             # Test the method
             android.prompt_validated_password(test_key_name)
 
-    except android_support.AndroidToolError as err:
-        # Validate the error
-        assert f"Password for {test_key_name} required." == str(err)
-    else:
-        assert False, "Error expected"
+        except android_support.AndroidToolError as err:
+            # Validate the error
+            assert f"Password for {test_key_name} required." == str(err)
+        else:
+            assert False, "Error expected"
 
 
 def test_prompt_password_mismatch_error():
@@ -580,23 +595,24 @@ def test_prompt_password_mismatch_error():
     test_key_name = 'Foo'
 
     # Mocks
-    get_pass_call_count = 0
-    def _mock_get_pass(prompt='Password: ', stream=None):
-        nonlocal get_pass_call_count
-        get_pass_call_count += 1
-        return f"foo{get_pass_call_count}"
+    with patch('o3de.android.getpass') as mock_get_pass:
 
-    try:
-        with patch(target='o3de.android.getpass', side_effect=_mock_get_pass) as mock_get_pass:
+        get_pass_call_count = 0
+        def _mock_get_pass_(prompt='Password: ', stream=None):
+            nonlocal get_pass_call_count
+            get_pass_call_count += 1
+            return f"foo{get_pass_call_count}"
 
-            # Test the method
+        mock_get_pass.side_effect = _mock_get_pass_
+
+        # Test the method
+        try:
             android.prompt_validated_password(test_key_name)
-
-    except android_support.AndroidToolError as err:
-        # Validate the error
-        assert f"Passwords for {test_key_name} do not match." == str(err)
-    else:
-        assert False, "Error expected"
+        except android_support.AndroidToolError as err:
+            # Validate the error
+            assert f"Passwords for {test_key_name} do not match." == str(err)
+        else:
+            assert False, "Error expected"
 
 
 def test_prompt_password_success():
@@ -606,7 +622,9 @@ def test_prompt_password_success():
     test_password = '1111'
 
     # Mocks
-    with patch(target='o3de.android.getpass', return_value=test_password) as mock_get_pass:
+    with patch('o3de.android.getpass') as mock_get_pass:
+
+        mock_get_pass.return_value = test_password
 
         # Test the method
         result = android.prompt_validated_password(test_key_name)
@@ -658,44 +676,44 @@ def test_generate_android_project_success(tmpdir):
     setattr(test_args, 'ndk_version', test_ndk_version)
 
     # Mocks
-    with patch(target='o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
-         patch(target='o3de.manifest.get_registered') as mock_manifest_get_registered, \
-         patch(target='o3de.android_support.read_android_settings_for_project') as mock_read_android_settings_for_project, \
-         patch(target='o3de.android_support.validate_java_environment') as mock_validate_java_environment, \
-         patch(target='o3de.android_support.validate_gradle') as mock_validate_gradle, \
-         patch(target='o3de.android_support.validate_cmake') as mock_validate_cmake, \
-         patch(target='o3de.android_support.validate_ninja') as mock_validate_ninja, \
-         patch(target='o3de.android_support.get_android_gradle_plugin_requirements') as mock_get_android_gradle_plugin_requirements, \
-         patch(target='o3de.android_support.AndroidSDKManager') as mock_get_android_sdk_manager, \
-         patch(target='o3de.android_support.AndroidProjectGenerator') as mock_get_android_project_generator, \
-         patch(target='o3de.android_support.AndroidSigningConfig') as mock_get_signing_config, \
-         patch(target='o3de.android.logger.setLevel') as mock_logger_set_level, \
-         patch(target='o3de.android.logger.error') as mock_logger_error:
+    with patch('o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
+         patch('o3de.manifest.get_registered') as mock_manifest_get_registered, \
+         patch('o3de.android_support.read_android_settings_for_project') as mock_read_android_settings_for_project, \
+         patch('o3de.android_support.validate_java_environment') as mock_validate_java_environment, \
+         patch('o3de.android_support.validate_gradle') as mock_validate_gradle, \
+         patch('o3de.android_support.validate_cmake') as mock_validate_cmake, \
+         patch('o3de.android_support.validate_ninja') as mock_validate_ninja, \
+         patch('o3de.android_support.get_android_gradle_plugin_requirements') as mock_get_android_gradle_plugin_requirements, \
+         patch('o3de.android_support.AndroidSDKManager') as mock_get_android_sdk_manager, \
+         patch('o3de.android_support.AndroidProjectGenerator') as mock_get_android_project_generator, \
+         patch('o3de.android_support.AndroidSigningConfig') as mock_get_signing_config, \
+         patch('o3de.android.logger.setLevel') as mock_logger_set_level, \
+         patch('o3de.android.logger.error') as mock_logger_error:
 
-        class MockAndroidConfig(object):
-            def get_value(self, input, default=None):
-                if input == android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key:
-                    return test_android_grade_plugin_version
+        def _mock_android_config_get_value_(key, default=None):
+            if key == android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key:
+                return test_android_grade_plugin_version
+            elif key == android_support.SETTINGS_ASSET_BUNDLE_SUBPATH.key:
+                return test_bundle_subpath
+            elif key == android_support.SETTINGS_SIGNING_STORE_PASSWORD.key:
+                return test_store_pw
+            elif key == android_support.SETTINGS_SIGNING_KEY_PASSWORD.key:
+                return test_key_password
+            else:
+                assert False
 
-                elif input == android_support.SETTINGS_ASSET_BUNDLE_SUBPATH.key:
-                    return test_bundle_subpath
+        def _mock_android_config_get_boolean_value_(key: str, default: bool = False):
+            if key == android_support.SETTINGS_STRIP_DEBUG.key:
+                return True
+            elif key == android_support.SETTINGS_OCULUS_PROJECT.key:
+                return False
+            else:
+                assert False
 
-                elif input == android_support.SETTINGS_SIGNING_STORE_PASSWORD.key:
-                    return test_store_pw
-                elif input == android_support.SETTINGS_SIGNING_KEY_PASSWORD.key:
-                    return test_key_password
-                else:
-                    assert False
+        mock_android_config = Mock(spec=command_utils.O3DEConfig)
+        mock_android_config.get_value.side_effect = _mock_android_config_get_value_
+        mock_android_config.get_boolean_value = _mock_android_config_get_boolean_value_
 
-            def get_boolean_value(self, key: str, default: bool = False) -> bool:
-                if key == android_support.SETTINGS_STRIP_DEBUG.key:
-                    return True
-                elif key == android_support.SETTINGS_OCULUS_PROJECT.key:
-                    return False
-                else:
-                    assert False
-
-        mock_android_config = MockAndroidConfig()
         mock_get_android_config_from_args.return_value = (mock_android_config, test_project_name)
 
         mock_manifest_get_registered.return_value = test_project_root
@@ -751,7 +769,6 @@ def test_generate_android_project_success(tmpdir):
 
         mock_sdk_manager.check_licenses.assert_called_once()
         assert mock_sdk_manager.install_package.call_count == 5
-
 
         mock_get_signing_config.assert_called_once_with(store_file=pathlib.Path(test_key_store_path),
                                                         store_password=test_store_pw,

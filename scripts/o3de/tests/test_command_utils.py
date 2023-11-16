@@ -17,6 +17,7 @@ from o3de import command_utils
 
 def test_apply_default_values_create_new_settings_file(tmpdir):
 
+    # Test Data
     tmpdir.ensure('.o3de', dir=True)
 
     settings_filename = '.unit_test_settings'
@@ -24,22 +25,23 @@ def test_apply_default_values_create_new_settings_file(tmpdir):
     settings = [command_utils.SettingsDescription("foo", "foo desc", "1"),
                 command_utils.SettingsDescription("bar", "bar desc", "2")]
 
-    with patch(target='o3de.manifest.get_o3de_folder',
-               return_value=pathlib.Path(tmpdir.join('.o3de').realpath())):
+    # Mocks
+    with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder:
 
+        mock_get_o3de_folder.return_value = pathlib.Path(tmpdir.join('.o3de').realpath())
+
+        # Test the method
         result_settings_file = command_utils.O3DEConfig.apply_default_global_settings(settings_filename=settings_filename,
                                                                                       settings_section_name=settings_section_name,
                                                                                       settings_descriptions=settings)
+        # Validation
+        mock_get_o3de_folder.assert_called()
         expected_settings_file_path = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
-
         assert result_settings_file == expected_settings_file_path
-
         assert pathlib.Path(expected_settings_file_path).is_file()
-
         config_reader = configparser.ConfigParser()
         config_reader.read(result_settings_file.absolute())
         settings = config_reader[settings_section_name]
-
         assert settings['foo'] == '1'
         assert settings['bar'] == '2'
 
@@ -48,6 +50,7 @@ def test_apply_default_values_open_existing_settings_file_new_entries(tmpdir):
 
     tmpdir.ensure('.o3de', dir=True)
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
     settings = [command_utils.SettingsDescription("foo", "foo desc","1"),
@@ -60,16 +63,20 @@ foo = 3
 crew = 7
 """)
 
-    with patch(target='o3de.manifest.get_o3de_folder',
-               return_value=pathlib.Path(tmpdir.join('.o3de').realpath())):
+    # Mocks
+    with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder:
 
+        mock_get_o3de_folder.return_value = pathlib.Path(tmpdir.join('.o3de').realpath())
+
+        # Test the methods
         result_settings_file = command_utils.O3DEConfig.apply_default_global_settings(settings_filename=settings_filename,
                                                                                       settings_section_name=settings_section_name,
                                                                                       settings_descriptions=settings)
+        # Validation
         expected_settings_file_path = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
+        mock_get_o3de_folder.assert_called()
 
         assert expected_settings_file_path == expected_settings_file_path
-
         assert pathlib.Path(expected_settings_file_path).is_file()
 
         config_reader = configparser.ConfigParser()
@@ -91,6 +98,7 @@ crew = 7
 )
 def test_resolve_project_path_from_cwd(tmpdir, test_path, expect_error):
 
+    # Test Data
     tmpdir.ensure('not_a_project/foo', dir=True)
     tmpdir.ensure('my_project/Cache/windows', dir=True)
     tmpdir.ensure('my_project/Gem/Source/foo.cpp')
@@ -102,15 +110,19 @@ def test_resolve_project_path_from_cwd(tmpdir, test_path, expect_error):
     "project_id": "{11111111-1111-AAAA-AA11-111111111111}"
 }
 """)
+    # Mocks
+    with patch('o3de.manifest.get_all_projects') as mock_get_all_projects:
 
-    with patch(target='o3de.manifest.get_all_projects',
-               return_value=[tmpdir.join('my_project').realpath()]):
+        mock_get_all_projects.return_value = [tmpdir.join('my_project').realpath()]
         try:
-            resolved_name, resolved_path = command_utils.resolve_project_name_and_path(tmpdir.join(test_path).realpath())
+            # Test the method
+            command_utils.resolve_project_name_and_path(tmpdir.join(test_path).realpath())
 
         except command_utils.O3DEConfigError:
+            # Validate error conditions
             assert expect_error
         else:
+            # Validate success conditions
             assert not expect_error
 
 
@@ -125,6 +137,8 @@ def test_resolve_settings_file_by_project(tmpdir, project_name):
     tmpdir.ensure('my_project/Cache/windows')
     tmpdir.ensure('my_project/Cache/windows')
     tmpdir.ensure('my_project/Gem/Source/foo.cpp')
+
+    # Test Data
     dummy_project_file = tmpdir.join('my_project/project.json')
     dummy_project_file.write("""
         {
@@ -136,19 +150,34 @@ def test_resolve_settings_file_by_project(tmpdir, project_name):
     settings_section_name = 'testing'
 
     expected_settings_file = tmpdir.join(f'my_project/{settings_filename}').realpath()
-    with patch(target='o3de.manifest.get_registered',
-               return_value=pathlib.Path(tmpdir.join('my_project').realpath())), \
-         patch(target='o3de.command_utils.resolve_project_name_and_path',
-               return_value=('MyProject',pathlib.Path(tmpdir.join('my_project').realpath()))):
+
+    # Mocks
+    with patch('o3de.manifest.get_registered') as mock_get_registered, \
+         patch('o3de.command_utils.resolve_project_name_and_path') as mock_resolve_project_name_and_path:
+
+        mock_get_registered.return_value = pathlib.Path(tmpdir.join('my_project').realpath())
+
+        mock_resolve_project_name_and_path.return_value = ('MyProject',pathlib.Path(tmpdir.join('my_project').realpath()))
+
+        # Test the method
         settings_file = command_utils.O3DEConfig.resolve_project_settings_file(project_name=project_name,
                                                                                settings_filename=settings_filename,
                                                                                settings_section_name=settings_section_name,
                                                                                create_default_if_missing=False)
+        # Validation
         assert settings_file == expected_settings_file
+
+        if project_name:
+            mock_get_registered.assert_called()
+            mock_resolve_project_name_and_path.assert_not_called()
+        else:
+            mock_get_registered.assert_not_called()
+            mock_resolve_project_name_and_path.assert_called()
 
 
 def test_read_config_global_only(tmpdir):
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
 
@@ -164,14 +193,20 @@ extra1 = XXXX
                 command_utils.SettingsDescription("extra1", "extra1 desc")]
 
     global_settings_file = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=global_settings_file):
 
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings:
+
+        mock_apply_default_global_settings.return_value = global_settings_file
+
+        # Test the method
         config = command_utils.O3DEConfig(project_name=None,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
                                           settings_description_list=settings)
 
+        # Validation
+        mock_apply_default_global_settings.assert_called()
         result_sdk_api_level = config.get_value('sdk_api_level')
         result_extra1 = config.get_value('extra1')
 
@@ -181,6 +216,7 @@ extra1 = XXXX
 
 def test_read_config_value_with_override(tmpdir):
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
     project_name = 'foo'
@@ -205,23 +241,34 @@ sdk_api_level = FFFF
     global_settings_file = pathlib.Path(global_settings_file.realpath())
     project_settings_file = pathlib.Path(project_settings_file.realpath())
 
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=global_settings_file), \
-         patch(target="o3de.command_utils.O3DEConfig.resolve_project_settings_file",
-               return_value=project_settings_file):
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings, \
+         patch("o3de.command_utils.O3DEConfig.resolve_project_settings_file") as mock_resolve_project_settings_file:
+
+        mock_apply_default_global_settings.return_value = global_settings_file
+
+        mock_resolve_project_settings_file.return_value = project_settings_file
+
+        # Test the method
         config = command_utils.O3DEConfig(project_name=project_name,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
                                           settings_description_list=settings)
+
+        # Validation
         result_sdk_api_level = config.get_value('sdk_api_level')
         assert result_sdk_api_level == 'FFFF'
 
         result_extra1 = config.get_value('extra1')
         assert result_extra1 == 'XXXX'
 
+        mock_apply_default_global_settings.assert_called_once()
+        mock_resolve_project_settings_file.assert_called_once()
+
 
 def test_read_config_value_and_source_with_override(tmpdir):
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
     project_name = 'foo'
@@ -243,16 +290,21 @@ sdk_api_level = FFFF
     settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
                 command_utils.SettingsDescription("extra1", "extra1 desc")]
 
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=pathlib.Path(global_settings_file.realpath())), \
-         patch(target="o3de.command_utils.O3DEConfig.resolve_project_settings_file",
-               return_value=pathlib.Path(project_settings_file.realpath())):
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings, \
+         patch("o3de.command_utils.O3DEConfig.resolve_project_settings_file") as mock_resolve_project_settings_file:
 
+        mock_apply_default_global_settings.return_value = pathlib.Path(global_settings_file.realpath())
+
+        mock_resolve_project_settings_file.return_value = pathlib.Path(project_settings_file.realpath())
+
+        # Test the method
         config = command_utils.O3DEConfig(project_name=project_name,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
                                           settings_description_list=settings)
 
+        # Validation
         result_sdk_api_level, result_sdk_api_level_project = config.get_value_and_source('sdk_api_level')
         assert result_sdk_api_level == 'FFFF'
         assert result_sdk_api_level_project == project_name
@@ -261,9 +313,13 @@ sdk_api_level = FFFF
         assert result_extra1 == 'XXXX'
         assert result_extra1_project == ''
 
+        mock_apply_default_global_settings.assert_called_once()
+        mock_resolve_project_settings_file.assert_called_once()
+
 
 def test_set_config_global(tmpdir):
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
 
@@ -278,10 +334,12 @@ extra1 = XXXX
     settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
                 command_utils.SettingsDescription("extra1", "extra1 desc")]
 
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings:
 
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())):
+        mock_apply_default_global_settings.return_value = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
 
+        # Test the method
         config = command_utils.O3DEConfig(project_name=None,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
@@ -289,14 +347,17 @@ extra1 = XXXX
 
         config.set_config_value('extra1', 'ZZZZ')
 
+        # Validation
         result_extra1 = config.get_value('extra1')
         assert result_extra1 == 'ZZZZ'
+        mock_apply_default_global_settings.assert_called_once()
 
 
 def test_set_config_project(tmpdir):
 
     tmpdir.ensure('.o3de', dir=True)
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
 
@@ -319,17 +380,22 @@ sdk_api_level = FFFF
     settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
                 command_utils.SettingsDescription("extra1", "extra1 desc")]
 
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=pathlib.Path(test_global_settings_file.realpath())), \
-         patch(target="o3de.command_utils.O3DEConfig.resolve_project_settings_file",
-               return_value=pathlib.Path(test_project_settings_file.realpath())):
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings, \
+         patch("o3de.command_utils.O3DEConfig.resolve_project_settings_file") as mock_resolve_project_settings_file:
 
+        mock_apply_default_global_settings.return_value = pathlib.Path(test_global_settings_file.realpath())
+
+        mock_resolve_project_settings_file.return_value = pathlib.Path(test_project_settings_file.realpath())
+
+        # Test the method
         config = command_utils.O3DEConfig(project_name=project_name,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
                                           settings_description_list=settings)
         config.set_config_value('extra1','ZZZZ')
 
+        # Validation
         project_config = configparser.ConfigParser()
         project_config.read(test_project_settings_file.realpath())
         project_config_section = project_config[settings_section_name]
@@ -339,6 +405,9 @@ sdk_api_level = FFFF
         global_config.read(test_global_settings_file.realpath())
         global_config_section = global_config[settings_section_name]
         assert global_config_section.get('extra1') == 'XXXX'
+
+        mock_apply_default_global_settings.assert_called_once()
+        mock_resolve_project_settings_file.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -354,6 +423,7 @@ sdk_api_level = FFFF
 )
 def test_set_config_key_value(tmpdir, key_and_value, expected_key, expected_value):
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
 
@@ -369,22 +439,31 @@ extra1 = XXXX
                 command_utils.SettingsDescription(expected_key, "argument desc"),
                 command_utils.SettingsDescription("extra1", "extra1 desc")]
     global_settings_file = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=global_settings_file):
+
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings:
+
+        mock_apply_default_global_settings.return_value = global_settings_file
+
+        # Test the method
         config = command_utils.O3DEConfig(project_name=None,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
                                           settings_description_list=settings)
         config.set_config_value_from_expression(key_and_value)
 
+        # Validation
         global_config = configparser.ConfigParser()
         global_config.read(global_settings_file)
         global_config_section = global_config[settings_section_name]
         assert global_config_section.get(expected_key) == expected_value
+        mock_apply_default_global_settings.assert_called_once()
 
 
+@pytest.mark.xfail(raises=command_utils.O3DEConfigError)
 def test_set_config_key_invalid_config_value(tmpdir):
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
 
@@ -400,22 +479,23 @@ extra1 = XXXX
     settings = [command_utils.SettingsDescription("sdk_api_level", "sdk_api_level desc"),
                 command_utils.SettingsDescription("extra1", "extra1 desc")]
 
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())):
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings:
+
+        mock_apply_default_global_settings.return_value = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
+
+        # Test the method
         config = command_utils.O3DEConfig(project_name=None,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
                                           settings_description_list=settings)
-        try:
-            config.set_config_value_from_expression(f"argument=\"{bad_config_value}\"")
-        except command_utils.O3DEConfigError as e:
-            pass
-        else:
-            assert False, f"Expected invalid config entry of '{bad_config_value}' to fail"
+
+        config.set_config_value_from_expression(f"argument=\"{bad_config_value}\"")
 
 
 def test_get_all_config_values(tmpdir):
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
     project_name = 'foo'
@@ -440,16 +520,26 @@ sdk_api_level = FFFF
                 command_utils.SettingsDescription("ndk", "ndk desc"),
                 command_utils.SettingsDescription("extra1", "extra1 desc")]
 
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=pathlib.Path(global_settings_file.realpath())), \
-         patch(target="o3de.command_utils.O3DEConfig.resolve_project_settings_file",
-               return_value=pathlib.Path(project_settings_file.realpath())):
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings, \
+         patch("o3de.command_utils.O3DEConfig.resolve_project_settings_file") as mock_resolve_project_settings_file:
+
+        mock_apply_default_global_settings.return_value = pathlib.Path(global_settings_file.realpath())
+
+        mock_resolve_project_settings_file.return_value = pathlib.Path(project_settings_file.realpath())
+
+        # Test the method
         config = command_utils.O3DEConfig(project_name=project_name,
                                           settings_filename=settings_filename,
                                           settings_section_name=settings_section_name,
                                           settings_description_list=settings)
 
         results = config.get_all_values()
+
+        mock_apply_default_global_settings.assert_called()
+        mock_resolve_project_settings_file.assert_called()
+
+        # Validation
         project_to_value_list = {}
         for key, value, source in results:
             project_to_value_list.setdefault(source or "global", []).append( (key, value) )
@@ -484,6 +574,7 @@ sdk_api_level = FFFF
 )
 def test_set_config_boolean_value(tmpdir,bool_str, expected_value, is_error):
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
 
@@ -498,22 +589,29 @@ extra1 = XXXX
                 command_utils.SettingsDescription("strip.debug", "strip.debug desc", is_boolean=True),
                 command_utils.SettingsDescription("extra1", "extra1 desc")]
 
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings:
 
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())):
+        mock_apply_default_global_settings.return_value = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
 
         try:
+            # Test the method
             config = command_utils.O3DEConfig(project_name=None,
                                               settings_filename=settings_filename,
                                               settings_section_name=settings_section_name,
                                               settings_description_list=settings)
 
             config.set_config_value('strip.debug', bool_str)
+
+            # Validate success values
+            mock_apply_default_global_settings.assert_called()
             str_result = config.get_value('strip.debug')
             assert str_result == bool_str
             bool_result = config.get_boolean_value('strip.debug')
             assert bool_result == expected_value
+
         except command_utils.O3DEConfigError as e:
+            # Validate errors
             assert is_error, f"Unexpected Error: {e}"
         else:
             assert not is_error, "Error expected"
@@ -528,6 +626,7 @@ extra1 = XXXX
 )
 def test_set_config_boolean_value(tmpdir, input, restricted_regex, is_error):
 
+    # Test Data
     settings_filename = '.unit_test_settings'
     settings_section_name = 'testing'
 
@@ -541,9 +640,10 @@ extra1 = XXXX
     settings = [command_utils.SettingsDescription(key, f"{key} desc", restricted_regex=restricted_regex, restricted_regex_description=f"regex: {restricted_regex}"),
                 command_utils.SettingsDescription("extra1", "extra1 desc")]
 
+    # Mocks
+    with patch("o3de.command_utils.O3DEConfig.apply_default_global_settings") as mock_apply_default_global_settings:
 
-    with patch(target="o3de.command_utils.O3DEConfig.apply_default_global_settings",
-               return_value=pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())):
+        mock_apply_default_global_settings.return_value = pathlib.Path(tmpdir.join(f'.o3de/{settings_filename}').realpath())
 
         try:
             config = command_utils.O3DEConfig(project_name=None,
@@ -552,9 +652,13 @@ extra1 = XXXX
                                               settings_description_list=settings)
 
             config.set_config_value(key, input)
+
+            # Validate success conditions
+            mock_apply_default_global_settings.assert_called()
             str_result = config.get_value(key)
             assert str_result == input
         except command_utils.O3DEConfigError as e:
+            # Validation error conditions
             assert is_error, f"Unexpected Error: {e}"
         else:
             assert not is_error, "Error expected"
