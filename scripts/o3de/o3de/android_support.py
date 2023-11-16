@@ -153,10 +153,12 @@ SETTINGS_ASSET_MODE             = register_setting(key='asset.mode',
                                                    restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.")
 
 SETTINGS_STRIP_DEBUG            = register_setting(key='strip.debug',
-                                                   description='Option to strip the debug symbols of the built native libs before deployment to the APK')
+                                                   description='Option to strip the debug symbols of the built native libs before deployment to the APK',
+                                                   is_boolean=True)
 
 SETTINGS_OCULUS_PROJECT         = register_setting(key='oculus.project',
-                                                   description='Option to set oculus-specific build options when building the APK')
+                                                   description='Option to set oculus-specific build options when building the APK',
+                                                   is_boolean=True)
 
 SETTINGS_ASSET_BUNDLE_SUBPATH   = register_setting(key='asset.bundle.subpath',
                                                    description='The sub-path from the project root to specify where the bundle/pak files will be generated to. '

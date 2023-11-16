@@ -101,16 +101,16 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
             signing_config_warned = True
             logger.warning(VALIDATION_MISSING_PASSWORD)
 
-        missing_passwords = []
-        if not has_signing_config_store_password:
-            missing_passwords.append(f"store password ({android_support.SETTINGS_SIGNING_STORE_PASSWORD})")
-        if not has_signing_config_key_password:
-            missing_passwords.append(f"key password ({android_support.SETTINGS_SIGNING_KEY_PASSWORD})")
+            missing_passwords = []
+            if not has_signing_config_store_password:
+                missing_passwords.append(f"store password ({android_support.SETTINGS_SIGNING_STORE_PASSWORD})")
+            if not has_signing_config_key_password:
+                missing_passwords.append(f"key password ({android_support.SETTINGS_SIGNING_KEY_PASSWORD})")
 
-        print(f"The signing configuration is set but missing the following settings:\n")
-        for missing_password in missing_passwords:
-            print(f" - {missing_password}")
-        print(f"\nYou will be prompted for these passwords during the call to {O3DE_COMMAND_GENERATE}.")
+            print(f"The signing configuration is set but missing the following settings:\n")
+            for missing_password in missing_passwords:
+                print(f" - {missing_password}")
+            print(f"\nYou will be prompted for these passwords during the call to {O3DE_COMMAND_GENERATE}.")
 
     if signing_config_warned:
         print(f"\nType in '{O3DE_SCRIPT_PATH} {O3DE_COMMAND_CONFIGURE} --help' for more information about setting the signing config value in the settings.")
@@ -194,12 +194,10 @@ def configure_android_options(args: argparse) -> int:
             android_config.set_config_value_from_expression(args.set_value)
         if args.set_password:
             android_config.set_password(args.set_password)
-            logger.info(f"Password set for {args.set_password}.")
         if args.clear_value:
             android_config.set_config_value(key=args.clear_value,
                                             value='',
                                             validate_value=False)
-            logger.info(f"Setting for {args.clear_value} cleared.")
 
     except (command_utils.O3DEConfigError, android_support.AndroidToolError) as err:
         logger.error(str(err))

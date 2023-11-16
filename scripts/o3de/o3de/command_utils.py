@@ -83,7 +83,8 @@ class SettingsDescription(object):
         return self._is_boolean
 
     def validate_value(self, input):
-        assert not self._is_password, f"Input value for key  '{self._key}' must be set through a password-specific setter"
+        if self._is_password:
+            raise O3DEConfigError(f"Input value for '{self._key}' must be set through the password setting argument.")
         if self._is_boolean:
             evaluate_boolean_from_setting(input)
         if self._restricted_regex and not self._restricted_regex.match(input):
@@ -283,7 +284,7 @@ class O3DEConfig(object):
 
         return settings_path
 
-    def set_config_value(self, key: str, value: str, validate_value: bool = True) -> str:
+    def set_config_value(self, key: str, value: str, validate_value: bool = True, show_log: bool = True) -> str:
         """
         Apply a settings value to the configuration. If there is a project overlay configured, then only apply the value
         to the project override. Only apply the value globally if this object is not managing an overlay setting
@@ -303,10 +304,14 @@ class O3DEConfig(object):
         if validate_value:
             settings_description.validate_value(value)
 
+        is_clear_operation = len(value) == 0
+
         if self.is_global:
+            # Only apply the setting to the global map
             current_settings = self._global_settings
             current_settings_file = self._global_settings_file
         else:
+            # Apply the setting locally
             current_settings = self._project_settings
             current_settings_file = self._project_settings_file
 
@@ -325,6 +330,14 @@ class O3DEConfig(object):
                 raise O3DEConfigError(f"Invalid settings value for setting '{key}': {e}")
             with current_settings_file.open('w') as current_settings_file:
                 project_config.write(current_settings_file)
+            if show_log:
+                logger.info(f"Setting for {key} cleared.")
+        elif is_clear_operation and not self.is_global and len(self._global_settings.get(key)) > 0:
+            # If the was a clear value request, but the key is only set globally and the global flag was not applied,
+            # then present a warning
+            if show_log:
+                logger.warning(f"Operation skipped. The settings value for {key} was requested to be cleared locally, but is only "
+                               "set globally. Run this request again but with the global flag specified.")
 
         return current_value
 
@@ -452,4 +465,8 @@ class O3DEConfig(object):
         # Set the password bypassing the validity check
         self.set_config_value(key=key,
                               value=input_password,
-                              validate_value=False)
+                              validate_value=False,
+                              show_log=False)
+
+        logger.info(f"Password set for {key}.")
+
