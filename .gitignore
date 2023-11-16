@@ -22,4 +22,4 @@ server*.cfg
 _savebackup/
 *.swatches
 /imgui.ini
-.android_settings
+.command_settings
