@@ -63,7 +63,7 @@
                 // To enable any additional platform, just uncomment the appropriate line below.
                 "Platforms": {
                     //"pc": "enabled",
-                    "android": "enabled"
+                    //"android": "enabled",
                     //"ios": "enabled",
                     //"mac": "enabled",
                     //"server": "enabled"
