@@ -24,13 +24,13 @@ from enum import Enum
 from o3de import command_utils, manifest, utils
 from packaging.version import Version
 from pathlib import Path
-from typing import Tuple, List
+from typing import Dict, List, Tuple
 
 logging.basicConfig(format=utils.LOG_FORMAT)
 logger = logging.getLogger('o3de.android')
 
-DEFAULT_TEXT_READ_ENCODING = 'utf-8'    # The default encoding to use when reading from a text file
-DEFAULT_TEXT_WRITE_ENCODING = 'ascii'
+DEFAULT_READ_ENCODING = 'utf-8'    # The default encoding to use when reading from a text file or stream
+DEFAULT_WRITE_ENCODING = 'ascii'
 ENCODING_ERROR_HANDLINGS = 'ignore'     # What to do if we encounter any encoding errors
 
 # Set platform specific values and extensions
@@ -73,86 +73,108 @@ ANDROID_RESOLUTION_SETTINGS = ('mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi')
 ANDROID_SETTINGS_FILE = '.command_settings'
 ANDROID_SETTINGS_SECTION_NAME = 'android'
 
-ANDROID_SETTINGS_SDK_ROOT              = command_utils.SettingsDescription(key='sdk.root',
-                                                                           description='The root path of the android sdk on this system.')
+SUPPORTED_ANDROID_SETTINGS = []
 
-ANDROID_SETTINGS_PLATFORM_SDK_API      = command_utils.SettingsDescription(key='platform.sdk.api',
-                                                                           description='The android platform API level (ref https://developer.android.com/tools/releases/platforms)',
-                                                                           default='31')
+def register_setting(key: str, description: str, default: str= None,  is_password:bool = False, is_boolean = False, restricted_regex: str = None, restricted_regex_description: str = None) -> command_utils.SettingsDescription:
+    """
+    Register a new settings description for android
 
-ANDROID_SETTINGS_NDK_VERSION           = command_utils.SettingsDescription(key='ndk.version',
-                                                                           description='The version of the android NDK (ref https://developer.android.com/ndk/downloads). File matching patterns can be used (i.e. 25.* will search for the most update to date major version 25)',
-                                                                           default='25.*')
+    :param key:             The settings key used for configuration storage
+    :param description:     The description of this setting value
+    :param default:         The default value for the setting
+    :param is_password:     Flag indicating that this is a password setting
+    :param is_boolean:      Flag indicating that this is a boolean setting
+    :param restricted_regex:  (Optional) Validation regex to restrict the possible value
+    :param restricted_regex_description:  Description of the validation regex
+    :return: The new settings description
+    """
 
-ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION = command_utils.SettingsDescription(key='android.gradle.plugin',
-                                                                           description='The version of the android gradle plugin to use for the build (ref https://developer.android.com/reference/tools/gradle-api)',
-                                                                           default=DEFAULT_ANDROID_GRADLE_PLUGIN_VERSION)
+    global SUPPORTED_ANDROID_SETTINGS
 
-ANDROID_SETTINGS_GRADLE_HOME           = command_utils.SettingsDescription(key='gradle.home',
-                                                                           description='The root path of the locally installed version of gradle. If not set, the gradle that is in the PATH environment will be used')
+    new_setting = command_utils.SettingsDescription(key=key,
+                                                    description=description,
+                                                    default=default,
+                                                    is_password=is_password,
+                                                    is_boolean=is_boolean,
+                                                    restricted_regex=restricted_regex,
+                                                    restricted_regex_description=restricted_regex_description)
+    SUPPORTED_ANDROID_SETTINGS.append(new_setting)
 
-ANDROID_SETTINGS_GRADLE_JVM_ARGS       = command_utils.SettingsDescription(key='gradle.jvmargs',
-                                                                           description='Customized jvm arguments to set when invoking gradle. (ref https://docs.gradle.org/current/userguide/config_gradle.html#sec:configuring_jvm_memory)',
-                                                                           default='-Xmx1280m')
+    return new_setting
 
-ANDROID_SETTINGS_CMAKE_HOME            = command_utils.SettingsDescription(key='cmake.home',
-                                                                           description='The root path of the locally installed version of cmake. If not set, the cmake that is in the PATH environment will be used')
+
+#
+# Declarations of the android-specific settings
+#
+SETTINGS_SDK_ROOT              = register_setting(key='sdk.root',
+                                                  description='The root path of the android sdk on this system.')
+
+SETTINGS_PLATFORM_SDK_API      = register_setting(key='platform.sdk.api',
+                                                  description='The android platform API level (ref https://developer.android.com/tools/releases/platforms)',
+                                                  default='31')
+
+SETTINGS_NDK_VERSION           = register_setting(key='ndk.version',
+                                                  description='The version of the android NDK (ref https://developer.android.com/ndk/downloads). File matching patterns can be used (i.e. 25.* will search for the most update to date major version 25)',
+                                                  default='25.*')
+
+SETTINGS_GRADLE_PLUGIN_VERSION = register_setting(key='android.gradle.plugin',
+                                                  description='The version of the android gradle plugin to use for the build (ref https://developer.android.com/reference/tools/gradle-api)',
+                                                  default=DEFAULT_ANDROID_GRADLE_PLUGIN_VERSION)
+
+SETTINGS_GRADLE_HOME           = register_setting(key='gradle.home',
+                                                  description='The root path of the locally installed version of gradle. If not set, the gradle that is in the PATH environment will be used')
+
+SETTINGS_GRADLE_JVM_ARGS       = register_setting(key='gradle.jvmargs',
+                                                  description='Customized jvm arguments to set when invoking gradle. (ref https://docs.gradle.org/current/userguide/config_gradle.html#sec:configuring_jvm_memory)',
+                                                  default='-Xmx1280m')
+
+SETTINGS_CMAKE_HOME            = register_setting(key='cmake.home',
+                                                  description='The root path of the locally installed version of cmake. If not set, the cmake that is in the PATH environment will be used')
 
 # Settings related to the signing configuration (ref https://developer.android.com/studio/publish/app-signing)
-ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE     = command_utils.SettingsDescription(key='signconfig.store.file',
-                                                                                   description='The key store file to use for creating a signing config. (ref https://developer.android.com/studio/publish/app-signing)')
+SETTINGS_SIGNING_STORE_FILE     = register_setting(key='signconfig.store.file',
+                                                   description='The key store file to use for creating a signing config. (ref https://developer.android.com/studio/publish/app-signing)')
 
-ANDROID_SETTINGS_SIGNING_CONFIG_STORE_PASSWORD = command_utils.SettingsDescription(key='signconfig.store.password',
-                                                                                   description='The password for the key store file',
-                                                                                   is_password=True)
+SETTINGS_SIGNING_STORE_PASSWORD = register_setting(key='signconfig.store.password',
+                                                   description='The password for the key store file',
+                                                   is_password=True)
 
-ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS      = command_utils.SettingsDescription(key='signconfig.key.alias',
-                                                                                   description='The key alias withing the key store that idfentifies the signing key')
+SETTINGS_SIGNING_KEY_ALIAS      = register_setting(key='signconfig.key.alias',
+                                                   description='The key alias withing the key store that idfentifies the signing key')
 
-ANDROID_SETTINGS_SIGNING_CONFIG_KEY_PASSWORD   = command_utils.SettingsDescription(key='signconfig.key.password',
-                                                                                   description='The password for the key inside the key store referenced by the key alias',
-                                                                                   is_password=True)
+SETTINGS_SIGNING_KEY_PASSWORD   = register_setting(key='signconfig.key.password',
+                                                   description='The password for the key inside the key store referenced by the key alias',
+                                                   is_password=True)
 
 # General O3DE build and deployment options
-ANDROID_SETTINGS_ASSET_MODE           = command_utils.SettingsDescription(key='asset.mode',
-                                                                          description='The asset mode to determine how the assets are stored in the target APK. Valid values are LOOSE and PAK.',
-                                                                          restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK})',
-                                                                          restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.")
+SETTINGS_ASSET_MODE             = register_setting(key='asset.mode',
+                                                   description='The asset mode to determine how the assets are stored in the target APK. Valid values are LOOSE and PAK.',
+                                                   restricted_regex=f'({ASSET_MODE_LOOSE}|{ASSET_MODE_PAK})',
+                                                   restricted_regex_description=f"Valid values are {','.join(ASSET_MODES)}.")
 
-ANDROID_SETTINGS_STRIP_DEBUG          = command_utils.SettingsDescription(key='strip.debug',
-                                                                          description='Option to strip the debug symbols of the built native libs before deployment to the APK')
+SETTINGS_STRIP_DEBUG            = register_setting(key='strip.debug',
+                                                   description='Option to strip the debug symbols of the built native libs before deployment to the APK')
 
-ANDROID_SETTINGS_OCULUS_PROJECT       = command_utils.SettingsDescription(key='oculus.project',
-                                                                          description='Option to set oculus-specific build options when building the APK')
+SETTINGS_OCULUS_PROJECT         = register_setting(key='oculus.project',
+                                                   description='Option to set oculus-specific build options when building the APK')
 
-ANDROID_SETTINGS_ASSET_BUNDLE_SUBPATH = command_utils.SettingsDescription(key='asset.bundle.subpath',
-                                                                          description='The sub-path from the project root to specify where the bundle/pak files will be generated to. '
+SETTINGS_ASSET_BUNDLE_SUBPATH   = register_setting(key='asset.bundle.subpath',
+                                                   description='The sub-path from the project root to specify where the bundle/pak files will be generated to. '
                                                                                       '(ref https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/)')
 
-ANDROID_SETTINGS_EXTRA_CMAKE_ARGS     = command_utils.SettingsDescription(key='extra.cmake.args',
-                                                                          description='Optional string to set additional cmake arguments during the native project generation within the android gradle build process')
-
-SUPPORTED_ANDROID_SETTINGS = [
-    ANDROID_SETTINGS_SDK_ROOT,
-    ANDROID_SETTINGS_PLATFORM_SDK_API,
-    ANDROID_SETTINGS_NDK_VERSION,
-    ANDROID_SETTINGS_GRADLE_PLUGIN_VERSION,
-    ANDROID_SETTINGS_GRADLE_HOME,
-    ANDROID_SETTINGS_CMAKE_HOME,
-    ANDROID_SETTINGS_SIGNING_CONFIG_STORE_FILE,
-    ANDROID_SETTINGS_SIGNING_CONFIG_STORE_PASSWORD,
-    ANDROID_SETTINGS_SIGNING_CONFIG_KEY_ALIAS,
-    ANDROID_SETTINGS_SIGNING_CONFIG_KEY_PASSWORD,
-    ANDROID_SETTINGS_ASSET_MODE,
-    ANDROID_SETTINGS_STRIP_DEBUG,
-    ANDROID_SETTINGS_OCULUS_PROJECT,
-    ANDROID_SETTINGS_ASSET_BUNDLE_SUBPATH,
-    ANDROID_SETTINGS_EXTRA_CMAKE_ARGS,
-    ANDROID_SETTINGS_GRADLE_JVM_ARGS
-]
+SETTINGS_EXTRA_CMAKE_ARGS       = register_setting(key='extra.cmake.args',
+                                                   description='Optional string to set additional cmake arguments during the native project generation within the android gradle build process')
 
 
 def get_android_config(project_name: str or None) -> command_utils.O3DEConfig:
+    """
+    Create an android configuration a project. If a project name is provided, then attempt to look for the project and use its
+    project-specific settings (if any) as an overlay to the global settings. If the project name is None, then return an
+    android configuration object that only represents the global setting
+
+    :param project_name:    The name of the project to look for its project-specific setting. If None, only use the global settings.
+    :return: The android configuration object
+    """
     return command_utils.O3DEConfig(project_name=project_name,
                                     settings_filename=ANDROID_SETTINGS_FILE,
                                     settings_section_name=ANDROID_SETTINGS_SECTION_NAME,
@@ -223,11 +245,18 @@ class AndroidGradlePluginRequirements(object):
     ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.
     """
     def __init__(self, requested_agp_version:str, source_dict:dict):
-        self.agp_version = Version(requested_agp_version)
-        self.gradle_ver = Version(source_dict['gradle'])
-        self.sdk_build_tools_version = Version(source_dict['sdk_build_tools'])
-        self.jdk_version = Version(source_dict['jdk'])
-        self.url = source_dict['url']
+        self._agp_version = Version(requested_agp_version)
+        self._gradle_ver = Version(source_dict['gradle'])
+        self._sdk_build_tools_version = Version(source_dict['sdk_build_tools'])
+        self._jdk_version = Version(source_dict['jdk'])
+
+    @property
+    def gradle_ver(self) -> Version:
+        return self._gradle_ver
+
+    @property
+    def sdk_build_tools_version(self) -> Version:
+        return self._sdk_build_tools_version
 
     def validate_java_version(self, java_version:str) -> None:
         """
@@ -236,9 +265,9 @@ class AndroidGradlePluginRequirements(object):
         @return: None
         """
         java_version_check = Version(java_version)
-        if not java_version_check >= self.jdk_version:
-            raise AndroidToolError(f"The installed version of java ({java_version_check}) does not meet the minimum version of ({self.jdk_version}) "
-                                   f"which is required by the Android Gradle Plugin version ({self.agp_version})")
+        if not java_version_check >= self._jdk_version:
+            raise AndroidToolError(f"The installed version of java ({java_version_check}) does not meet the minimum version of ({self._jdk_version}) "
+                                   f"which is required by the Android Gradle Plugin version ({self._agp_version})")
 
     def validate_gradle_version(self, gradle_version:str) -> None:
         """
@@ -247,9 +276,9 @@ class AndroidGradlePluginRequirements(object):
         @return: None
         """
         gradle_version_check = Version(gradle_version)
-        if not gradle_version_check >= self.gradle_ver:
-            raise AndroidToolError(f"The installed version of gradle ({gradle_version_check}) does not meet the minimum version of ({self.gradle_ver}) "
-                                   f"which is required by the Android Gradle Plugin version ({self.agp_version})")
+        if not gradle_version_check >= self._gradle_ver:
+            raise AndroidToolError(f"The installed version of gradle ({gradle_version_check}) does not meet the minimum version of ({self._gradle_ver}) "
+                                   f"which is required by the Android Gradle Plugin version ({self._agp_version})")
 
 
 def get_android_gradle_plugin_requirements(requested_agp_version:str) -> AndroidGradlePluginRequirements:
@@ -277,23 +306,57 @@ class AndroidSDKManager(object):
     """
 
     class BasePackage(object):
-        def __init__(self, components):
-            self.path = components[0]
-            self.version = Version(components[1].strip().replace(' ', '.'))  # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
-            self.description = components[2]
+        """
+        Base package with the common properties for all the android sdk packages
+        """
+        def __init__(self, components: List):
+            """
+            Initialize the base package
+
+            :param components:  Dictionary of the components to extract the common properties from
+            """
+
+            self._path = components[0]
+            self._version = Version(components[1].strip().replace(' ', '.'))  # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
+            self._description = components[2]
+
+        @property
+        def path(self)->str:
+            return self._path
+
+        @property
+        def version(self)->Version:
+            return self._version
+
+        def description(self) -> str:
+            return self._description
 
     class InstalledPackage(BasePackage):
+        """
+        This class represents an installed package
+        """
         def __init__(self, installed_package_components):
             super().__init__(installed_package_components)
             assert len(installed_package_components) == 4, '4 sections expected for installed package components (path, version, description, location)'
-            self.location = installed_package_components[3]
+            self._location = installed_package_components[3]
+
+        @property
+        def location(self) -> str:
+            return self._location
+
 
     class AvailablePackage(BasePackage):
+        """
+        This class represents an available package (for install)
+        """
         def __init__(self, available_package_components):
             super().__init__(available_package_components)
             assert len(available_package_components) == 3, '3 sections expected for installed package components (path, version, description)'
 
     class AvailableUpdate(BasePackage):
+        """
+        This class represents an installed package that has an available update
+        """
         def __init__(self, available_update_components):
             super().__init__(available_update_components)
             assert len(available_update_components) == 3, '3 sections expected for installed package components (path, version, available)'
@@ -335,12 +398,12 @@ class AndroidSDKManager(object):
         """
 
         # Validate the android sdk folder was set to a valid location
-        android_sdk_root = android_settings.get_value(ANDROID_SETTINGS_SDK_ROOT.key)
+        android_sdk_root = android_settings.get_value(SETTINGS_SDK_ROOT.key)
         if not android_sdk_root:
-            raise AndroidToolError(f"The android sdk path was not set. Set the value of '{ANDROID_SETTINGS_SDK_ROOT}' to the path where the android sdk base is located.")
+            raise AndroidToolError(f"The android sdk path was not set. Set the value of '{SETTINGS_SDK_ROOT}' to the path where the android sdk base is located.")
         android_sdk_root_path = Path(android_sdk_root)
         if not android_sdk_root_path.is_dir():
-            raise AndroidToolError(f"The android sdk path '{ANDROID_SETTINGS_SDK_ROOT}' is set to an invalid path '{android_sdk_root_path}'. Folder does not exist.")
+            raise AndroidToolError(f"The android sdk path '{SETTINGS_SDK_ROOT}' is set to an invalid path '{android_sdk_root_path}'. Folder does not exist.")
 
         # Make sure that the android command line tool is installed (unzipped) to the expected location under the specified android SDK
         android_sdk_command_line_tools_root = android_sdk_root_path / 'cmdline-tools' / 'latest'
@@ -355,7 +418,7 @@ class AndroidSDKManager(object):
         result = subprocess.run(command_arg,
                                 shell=(platform.system() == 'Windows'),
                                 capture_output=True,
-                                encoding='utf-8',
+                                encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS,
                                 cwd=android_sdk_command_line_tool.parent)
 
@@ -401,7 +464,7 @@ class AndroidSDKManager(object):
         result = subprocess.run(command_args,
                                 shell=(platform.system() == 'Windows'),
                                 capture_output=True,
-                                encoding='utf-8',
+                                encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS)
         return result
 
@@ -553,7 +616,7 @@ class AndroidSDKManager(object):
         result = subprocess.run(['echo' , 'Y' , '|', self._android_command_line_tools_sdkmanager_path, '--licenses'],
                                 shell=(platform.system() == 'Windows'),
                                 capture_output=True,
-                                encoding='utf-8',
+                                encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS,
                                 timeout=2)
         license_not_accepted_match = AndroidSDKManager.LICENSE_NOT_ACCEPTED_REGEX.search(result.stdout or result.stderr)
@@ -586,14 +649,14 @@ def read_android_settings_for_project(project_path:Path) -> Tuple[dict, dict]:
     project_json_path = project_path / 'project.json'
     if not project_json_path.is_file():
         raise AndroidToolError(f"Invalid project path {project_path}. Path does not contain 'project.json.")
-    project_json_content = project_json_path.read_text(encoding=DEFAULT_TEXT_READ_ENCODING,
+    project_json_content = project_json_path.read_text(encoding=DEFAULT_READ_ENCODING,
                                                        errors=ENCODING_ERROR_HANDLINGS)
     project_settings = json.loads(project_json_content)
     # Read the android_project.json next. If it does not exist, check if this is a legacy project where the android
     # settings are in the root project.json
     android_project_json_file = project_path / 'Platform' / 'Android' / 'android_project.json'
     if android_project_json_file.is_file():
-        android_project_json_content = android_project_json_file.read_text(encoding=DEFAULT_TEXT_READ_ENCODING,
+        android_project_json_content = android_project_json_file.read_text(encoding=DEFAULT_READ_ENCODING,
                                                                            errors=ENCODING_ERROR_HANDLINGS)
         android_json = json.loads(android_project_json_content)
         android_settings = android_json.get('android_settings')
@@ -613,19 +676,33 @@ class AndroidSigningConfig(object):
     """
     Class to manage android signing configs section in a gradle build script
     """
-    def __init__(self, store_file:str, store_password:str, key_alias:str, key_password:str):
+    def __init__(self, store_file:Path, store_password:str, key_alias:str, key_password:str):
+        """
+        Initialize this android signing config object
 
-        self.store_file = Path(store_file)
-        self.store_password = store_password
-        self.key_alias = key_alias
-        self.key_password = key_password
+        :param store_file:      The path to the key store file used for the signing configuration
+        :param store_password:  The password to the key store file
+        :param key_alias:       The alias of the private signing key in the key store
+        :param key_password:    The password to the private signing key in the key store referenced by the key alias
+        """
 
-    def to_template_string(self, tabs):
-        tab_prefix = ' '* 4 * tabs
-        return f"{tab_prefix}storeFile file('{self.store_file.as_posix()}')\n" \
-               f"{tab_prefix}storePassword '{self.store_password}'\n" \
-               f"{tab_prefix}keyPassword '{self.key_password}'\n" \
-               f"{tab_prefix}keyAlias '{self.key_alias}'\n"
+        self._store_file = Path(store_file)
+        self._store_password = store_password
+        self._key_alias = key_alias
+        self._key_password = key_password
+
+    def to_template_string(self, tabs) -> str:
+        """
+        Generate a string that represents a signing config section that can be inserted into a gradle script.
+
+        :param tabs:    The number of leading tabs for each line to insert for better readability of the gradle script
+        :return:    The signing config string section to insert
+        """
+        tab_prefix = ' '* 4 * tabs  # 4 spaces per tab
+        return f"{tab_prefix}storeFile file('{self._store_file.as_posix()}')\n" \
+               f"{tab_prefix}storePassword '{self._store_password}'\n" \
+               f"{tab_prefix}keyPassword '{self._key_password}'\n" \
+               f"{tab_prefix}keyAlias '{self._key_alias}'\n"
 
 
 JAVA_VERSION_REGEX = re.compile(r'.*(\w)\s(version)\s*\"?([\d\_\.]+)', re.MULTILINE)
@@ -650,7 +727,7 @@ def validate_java_environment() -> str:
     result = subprocess.run([f'java{EXE_EXTENSION}', '-version'],
                             shell=(platform.system() == 'Windows'),
                             capture_output=True,
-                            encoding='utf-8',
+                            encoding=DEFAULT_READ_ENCODING,
                             errors=ENCODING_ERROR_HANDLINGS,
                             cwd=java_exe_working_dir)
 
@@ -673,14 +750,15 @@ def validate_java_environment() -> str:
     return java_version
 
 
-def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str or None, tool_config_sub_path: str or None, tool_version_arg: str,
-                        version_regex: re.Pattern, android_config: command_utils.O3DEConfig) -> (Path, str):
+def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str or None, tool_environment_var: str, tool_config_sub_path: str or None, tool_version_arg: str,
+                        version_regex: str, android_config: command_utils.O3DEConfig) -> (Path, str):
     """
     Perform a tool validation by checking on its version number if possible
 
     :param tool_name:               The name of the tool to display for status purposes
     :param tool_command:            The name of the tool command that is executed
     :param tool_config_key:         Optional. If provided, check against the path represented by this key for the tool, otherwise the tool must exist in the PATH environment
+    :param tool_environment_var:    Optional. If provided, check if there is an environment variable that matches this value and use to check the tool
     :param tool_config_sub_path:    Optional. The sub path that leads to the binary from the value of the tool home folder
     :param tool_version_arg:        The argument to pass to the <tool_command> to query for its version
     :param version_regex:           The regex to search for the raw version string from the result of the version query command
@@ -688,24 +766,47 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
     :return: Tuple of the full tool path, and its raw version string
     """
 
-    # Locate the tool command
-    tool_home = android_config.get_value(tool_config_key) if tool_config_key else None
-    if tool_home:
-        tool_test_command = os.path.join(tool_home, tool_config_sub_path, tool_command)
-    else:
-        tool_test_command = tool_command
+    # Locate the tool command. The order of precedence for the search is: 'tool_config_key', 'tool_environment_var', PATH (None)
+    tool_home_and_src_list = []
+    if tool_config_key:
+        config_home = android_config.get_value(tool_config_key)
+        if config_home:
+            tool_home_and_src_list.append( (config_home, f'configration {tool_config_key}') )
+    if tool_environment_var:
+        env_home = os.getenv(tool_environment_var)
+        if env_home:
+            tool_home_and_src_list.append( (env_home, f'environment variable {tool_environment_var}') )
+    tool_home_and_src_list.append( (None, None) )
 
-    # Run the command to get the tool version
-    result = subprocess.run([tool_test_command, tool_version_arg],
-                            shell=(platform.system() == 'Windows'),
-                            capture_output=True,
-                            encoding='utf-8',
-                            errors=ENCODING_ERROR_HANDLINGS)
-    if result.returncode != 0:
-        if tool_config_key:
-            raise AndroidToolError(f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment, or value of {tool_config_key} in the android settings.")
+    for tool_home, tool_home_src in tool_home_and_src_list:
+        if tool_home is not None:
+            tool_test_command = os.path.join(tool_home, tool_config_sub_path, tool_command)
         else:
-            raise AndroidToolError(f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment")
+            tool_test_command = tool_command
+
+        # Run the command to get the tool version
+        result = subprocess.run([tool_test_command, tool_version_arg],
+                                shell=(platform.system() == 'Windows'),
+                                capture_output=True,
+                                encoding=DEFAULT_READ_ENCODING,
+                                errors=ENCODING_ERROR_HANDLINGS)
+        if result.returncode == 0:
+            if tool_home:
+                tool_full_path = Path(tool_home) / tool_config_sub_path / tool_command
+            else:
+                tool_full_path = Path(shutil.which(tool_command))
+            break
+        else:
+            logger.warn(f"Unable to resolve tool {tool_name} from {tool_home_src}")
+
+    if result.returncode != 0:
+        error_msgs = [f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment"]
+        if tool_config_key:
+            error_msgs.append(f', or the {tool_config_key} settings')
+        if tool_environment_var:
+            error_msgs.append(f', or the {tool_environment_var} environment variable')
+        error_msgs.append('.')
+        raise AndroidToolError(''.join(error_msgs))
 
     # Extract the version number from the results of running the command with the version argument
     tool_version_match = re.search(version_regex, result.stdout, re.MULTILINE)
@@ -714,11 +815,6 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
     tool_version = tool_version_match.group(2)
 
     # Report the status
-    if tool_home:
-        tool_full_path = Path(tool_home) / tool_config_sub_path / tool_command
-    else:
-        tool_full_path = Path(shutil.which(tool_command))
-
     logger.info(f"Detected {tool_name} version {tool_version} (From {tool_full_path})")
     return tool_full_path, tool_version
 
@@ -731,7 +827,8 @@ def validate_gradle(android_config) -> (Path, str):
     """
     return validate_build_tool(tool_name='Gradle',
                                tool_command=f'gradle{GRADLE_EXTENSION}',
-                               tool_config_key=ANDROID_SETTINGS_GRADLE_HOME.key,
+                               tool_config_key=SETTINGS_GRADLE_HOME.key,
+                               tool_environment_var='GRADLE_HOME',
                                tool_config_sub_path='bin',
                                tool_version_arg='--version',
                                version_regex=r'.*(Gradle)\s*\"?([\d\_\.]+)',
@@ -746,7 +843,8 @@ def validate_cmake(android_config) -> (Path, str):
     """
     return validate_build_tool(tool_name='Cmake',
                                tool_command='cmake',
-                               tool_config_key=ANDROID_SETTINGS_CMAKE_HOME.key,
+                               tool_config_key=SETTINGS_CMAKE_HOME.key,
+                               tool_environment_var='CMAKE_HOME',
                                tool_config_sub_path='bin',
                                tool_version_arg='--version',
                                version_regex=r'.*(cmake version)\s*\"?([\d\_\.]+)',
@@ -762,6 +860,7 @@ def validate_ninja(android_config) -> (Path, str):
     return validate_build_tool(tool_name='Ninja',
                                tool_command=f'ninja{EXE_EXTENSION}',
                                tool_config_key=None,
+                               tool_environment_var=None,
                                tool_config_sub_path='',
                                tool_version_arg='--version',
                                version_regex=r'(\s*)([\d\_\.]+)',
@@ -1095,30 +1194,11 @@ class AndroidProjectGenerator(object):
     Class the manages the process to generate an android project folder in order to build with gradle/android studio
     """
 
-    def __init__(self, engine_root: Path,
-                 android_build_dir: Path,
-                 android_sdk_path: Path,
-                 android_build_tool_version: str,
-                 android_platform_sdk_api_level: str,
-                 android_ndk_package: str,
-                 project_name: str,
-                 project_path: Path,
-                 project_general_settings: dict,
-                 project_android_settings: dict,
-                 cmake_path: Path,
-                 cmake_version: str,
-                 gradle_path: Path,
-                 gradle_version: str,
-                 gradle_custom_jvm_args: str,
-                 android_gradle_plugin_version: str,
-                 ninja_path: Path,
-                 asset_mode:str,
-                 signing_config: AndroidSigningConfig or None,
-                 extra_cmake_configure_args: str,
-                 src_pak_file_path: str,
-                 strip_debug_symbols: bool = False,
-                 overwrite_existing: bool = True,
-                 oculus_project: bool = False):
+    def __init__(self, engine_root: Path, android_build_dir: Path, android_sdk_path: Path, android_build_tool_version: str, android_platform_sdk_api_level: str,
+                 android_ndk_package: str, project_name: str, project_path: Path, project_general_settings: dict, project_android_settings: dict,
+                 cmake_path: Path, cmake_version: str, gradle_path: Path, gradle_version: str, gradle_custom_jvm_args: str, android_gradle_plugin_version: str,
+                 ninja_path: Path, asset_mode:str, signing_config: AndroidSigningConfig or None, extra_cmake_configure_args: str, src_pak_file_path: str,
+                 strip_debug_symbols: bool = False, overwrite_existing: bool = True, oculus_project: bool = False):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
         
@@ -1140,76 +1220,78 @@ class AndroidProjectGenerator(object):
         :param ninja_path:                      The path to the ninja-build tool needed for the native android build step
         :param asset_mode:                      The asset mode to use when applying the asset layout (see ASSET_MODES)
         :param signing_config:                  The optional signing config to embed in the android build script. (Required for APK signing)
-        :param extra_cmake_configure_args:      TBD
+        :param extra_cmake_configure_args:      The optional additional cmake arguments to pass down to the cmake project generation command for the native code
         :param src_pak_file_path:               The sub-path from the project root to where the bundled pak files are expected
         :param strip_debug_symbols:             Option to strip the debug symbols from the native built libraries
         :param overwrite_existing:              Option to overwrite the any existing build script
         :param oculus_project:                  Option to indicate that we are building the android script for oculus devices.
         """
 
-        self.env = {}
-
-        self.engine_root = engine_root
-
-        self.build_dir = android_build_dir
+        # General properties
+        self._engine_root = engine_root
+        self._build_dir = android_build_dir
 
         # Android SDK Properties
-        self.android_sdk_path = android_sdk_path
-        self.android_sdk_build_tool_version = android_build_tool_version
-        self.android_ndk = android_ndk_package
-        self.android_platform_sdk_api_level = android_platform_sdk_api_level
+        self._android_sdk_path = android_sdk_path
+        self._android_sdk_build_tool_version = android_build_tool_version
+        self._android_ndk = android_ndk_package
+        self._android_platform_sdk_api_level = android_platform_sdk_api_level
 
         # Target project properties
-        self.project_name = project_name
-        self.project_path = project_path
-        self.project_general_settings = project_general_settings
-        self.project_android_settings = project_android_settings
+        self._project_name = project_name
+        self._project_path = project_path
+        self._project_general_settings = project_general_settings
+        self._project_android_settings = project_android_settings
 
         # Build tool related properties
-        self.cmake_version = cmake_version
-        self.cmake_path = cmake_path
-        self.override_gradle_path = gradle_path
-        self.gradle_version = gradle_version
-        self.gradle_plugin_version = android_gradle_plugin_version
-        self.gradle_custom_jvm_args = gradle_custom_jvm_args
-        self.ninja_path = ninja_path
-        self.strip_debug_symbols = strip_debug_symbols
+        self._cmake_version = cmake_version
+        self._cmake_path = cmake_path
+        self._extra_cmake_configure_args = extra_cmake_configure_args
+        self._gradle_path = gradle_path
+        self._gradle_version = gradle_version
+        self._gradle_plugin_version = android_gradle_plugin_version
+        self._gradle_custom_jvm_args = gradle_custom_jvm_args
+        self._ninja_path = ninja_path
+        self._strip_debug_symbols = strip_debug_symbols
 
-        self.android_project_builder_path = self.engine_root / 'Code/Tools/Android/ProjectBuilder'
-        self.src_pak_file_path = src_pak_file_path
-        self.asset_mode = asset_mode
+        # Asset type and location properties
+        self._src_pak_file_path = src_pak_file_path
+        self._asset_mode = asset_mode
 
-        self.native_build_path = 'o3de'
-        self.extra_cmake_configure_args = extra_cmake_configure_args
-        self.signing_config = signing_config
-        self.overwrite_existing = overwrite_existing
-        self.oculus_project = oculus_project
+        # Gradle script related properties
+        self._android_project_builder_path = self._engine_root / 'Code/Tools/Android/ProjectBuilder'
+        self._native_build_path = 'o3de'
+        self._signing_config = signing_config
+        self._is_oculus_project = oculus_project
+
+        self._overwrite_existing = overwrite_existing
+        self._android_replacement_map_env = {}
 
     def execute(self):
         """
         Execute the android project creation workflow
         """
         # If we are using asset PAK mode, then make sure we have pak files, and warn if they are missing
-        if self.asset_mode == ASSET_MODE_PAK:
-            src_pak_file_full_path = self.project_path / self.src_pak_file_path
+        if self._asset_mode == ASSET_MODE_PAK:
+            src_pak_file_full_path = self._project_path / self._src_pak_file_path
             if not src_pak_file_full_path.is_dir():
-                logger.warn(f"Pak files are expected at location {src_pak_file_full_path}, but the folder doesnt exist. Make sure "
-                            f"to create release bundles (Pak files) before building and deploying to an android device. Refer to "
-                            f"https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more"
-                            f"information.")
+                logger.warn(f"Android PAK files are expected at location {src_pak_file_full_path}, but the folder doesnt exist. Make sure "
+                            "to create release bundles (PAK files) before building and deploying to an android device. Refer to "
+                            "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more "
+                            "information.")
             else:
                 pak_count = 0
                 for pak_dir_item in src_pak_file_full_path.iterdir():
-                    if pak_dir_item.suffix == '.pak':
+                    if pak_dir_item.name.lower().endswith('_android.pak'):
                         pak_count += 1
                 if pak_count == 0:
-                    logger.warn(f"Pak files are expected at location {src_pak_file_full_path}, but none was detected. Make sure "
-                                f"to create release bundles (Pak files) before building and deploying to an android device. Refer to "
-                                f"https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more"
-                                f"information.")
+                    logger.warn(f"Android PAK files are expected at location {src_pak_file_full_path}, but none was detected. Make sure "
+                                "to create release bundles (PAK files) before building and deploying to an android device. Refer to "
+                                "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more "
+                                "information.")
 
         # Prepare the working build directory
-        self.build_dir.mkdir(parents=True, exist_ok=True)
+        self._build_dir.mkdir(parents=True, exist_ok=True)
 
         self.create_platform_settings()
 
@@ -1220,17 +1302,17 @@ class AndroidProjectGenerator(object):
         project_names.extend(self.create_lumberyard_app(project_names))
 
         root_gradle_env = {
-            'ANDROID_GRADLE_PLUGIN_VERSION': str(self.gradle_plugin_version),
-            'SDK_VER': self.android_platform_sdk_api_level,
-            'MIN_SDK_VER': self.android_platform_sdk_api_level,
-            'NDK_VERSION': self.android_ndk.version,
-            'SDK_BUILD_TOOL_VER': self.android_sdk_build_tool_version,
-            'LY_ENGINE_ROOT': self.engine_root.as_posix()
+            'ANDROID_GRADLE_PLUGIN_VERSION': str(self._gradle_plugin_version),
+            'SDK_VER': self._android_platform_sdk_api_level,
+            'MIN_SDK_VER': self._android_platform_sdk_api_level,
+            'NDK_VERSION': self._android_ndk.version,
+            'SDK_BUILD_TOOL_VER': self._android_sdk_build_tool_version,
+            'LY_ENGINE_ROOT': self._engine_root.as_posix()
         }
         # Generate the gradle build script
         self.create_file_from_project_template(src_template_file='root.build.gradle.in',
                                                template_env=root_gradle_env,
-                                               dst_file=self.build_dir / 'build.gradle')
+                                               dst_file=self._build_dir / 'build.gradle')
 
         self.write_settings_gradle(project_names)
 
@@ -1245,14 +1327,14 @@ class AndroidProjectGenerator(object):
         :param dst_file:                The target concrete file to write to
         """
 
-        src_template_file_path = self.android_project_builder_path / src_template_file
-        if not dst_file.exists() or self.overwrite_existing:
+        src_template_file_path = self._android_project_builder_path / src_template_file
+        if not dst_file.exists() or self._overwrite_existing:
 
             default_local_properties_content = utils.load_template_file(template_file_path=src_template_file_path,
                                                                         template_env=template_env)
 
             dst_file.write_text(default_local_properties_content,
-                                encoding=DEFAULT_TEXT_WRITE_ENCODING,
+                                encoding=DEFAULT_WRITE_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS)
 
             logging.info('Generated default {}'.format(dst_file.name))
@@ -1265,12 +1347,12 @@ class AndroidProjectGenerator(object):
         """
         logging.info('Preparing Gradle Wrapper')
 
-        if self.override_gradle_path:
-            gradle_wrapper_cmd = [self.override_gradle_path]
+        if self._gradle_path:
+            gradle_wrapper_cmd = [self._gradle_path]
         else:
             gradle_wrapper_cmd = ['gradle']
 
-        gradle_wrapper_cmd.extend(['wrapper', '-p', str(self.build_dir.resolve())])
+        gradle_wrapper_cmd.extend(['wrapper', '-p', str(self._build_dir.resolve())])
 
         proc_result = subprocess.run(gradle_wrapper_cmd,
                                      shell=(platform.system() == 'Windows'))
@@ -1284,12 +1366,12 @@ class AndroidProjectGenerator(object):
         """
         platform_settings_content = PLATFORM_SETTINGS_FORMAT.format(generation_timestamp=str(datetime.datetime.now().strftime("%c")),
                                                                     platform='android',
-                                                                    project_path=self.project_path,
-                                                                    asset_mode=self.asset_mode,
-                                                                    android_sdk_path=str(self.android_sdk_path),
-                                                                    android_gradle_plugin_version=self.gradle_plugin_version)
+                                                                    project_path=self._project_path,
+                                                                    asset_mode=self._asset_mode,
+                                                                    android_sdk_path=str(self._android_sdk_path),
+                                                                    android_gradle_plugin_version=self._gradle_plugin_version)
 
-        platform_settings_file = self.build_dir / 'platform.settings'
+        platform_settings_file = self._build_dir / 'platform.settings'
 
         # Check if there already exists the build folder and a 'platform.settings' file. If there is an android gradle
         # plugin version set, and it is different from the one configured here, we will always overwrite it since
@@ -1299,8 +1381,8 @@ class AndroidProjectGenerator(object):
             config.read([str(platform_settings_file.resolve(strict=True))])
             if config.has_option('android', 'android_gradle_plugin'):
                 exist_agp_version = config.get('android', 'android_gradle_plugin')
-                if exist_agp_version != self.gradle_plugin_version:
-                    self.overwrite_existing = True
+                if exist_agp_version != self._gradle_plugin_version:
+                    self._overwrite_existing = True
 
         platform_settings_file.open('w').write(platform_settings_content)
 
@@ -1308,21 +1390,21 @@ class AndroidProjectGenerator(object):
         """
         Create the default 'local.properties' file in the build folder
         """
-        if self.cmake_path:
+        if self._cmake_path:
             # The cmake dir references the base cmake folder, not the executable path itself, so resolve to the base folder
-            template_cmake_path = Path(self.cmake_path).parents[1].as_posix()
+            template_cmake_path = Path(self._cmake_path).parents[1].as_posix()
         else:
             template_cmake_path = None
 
         local_properties_env = {
             "GENERATION_TIMESTAMP": str(datetime.datetime.now().strftime("%c")),
-            "ANDROID_SDK_PATH": self.android_sdk_path.resolve().as_posix(),
+            "ANDROID_SDK_PATH": self._android_sdk_path.resolve().as_posix(),
             "CMAKE_DIR_LINE": f'cmake.dir={template_cmake_path}' if template_cmake_path else ''
         }
 
         self.create_file_from_project_template(src_template_file='local.properties.in',
                                                template_env=local_properties_env,
-                                               dst_file=self.build_dir / 'local.properties')
+                                               dst_file=self._build_dir / 'local.properties')
 
     def patch_and_transfer_android_libs(self):
         """
@@ -1332,13 +1414,13 @@ class AndroidProjectGenerator(object):
         # The android_libraries.json is templatized and needs to be provided the following environment for processing
         # before we can process it.
         android_libraries_substitution_table = {
-            "ANDROID_SDK_HOME": self.android_sdk_path.as_posix(),
-            "ANDROID_SDK_VERSION": f"android-{self.android_platform_sdk_api_level}"
+            "ANDROID_SDK_HOME": self._android_sdk_path.as_posix(),
+            "ANDROID_SDK_VERSION": f"android-{self._android_platform_sdk_api_level}"
         }
-        android_libraries_template_json_path = self.android_project_builder_path / ANDROID_LIBRARIES_JSON_FILE
+        android_libraries_template_json_path = self._android_project_builder_path / ANDROID_LIBRARIES_JSON_FILE
 
         android_libraries_template_json_content = android_libraries_template_json_path.resolve(strict=True) \
-                                                                                      .read_text(encoding='utf-8',
+                                                                                      .read_text(encoding=DEFAULT_READ_ENCODING,
                                                                                                  errors=ENCODING_ERROR_HANDLINGS)
 
         android_libraries_json_content = string.Template(android_libraries_template_json_content) \
@@ -1353,18 +1435,18 @@ class AndroidProjectGenerator(object):
             # The library is in different places depending on the revision, so we must check multiple paths.
             src_dir = None
             for path in value['srcDir']:
-                path = string.Template(path).substitute(self.env)
+                path = string.Template(path).substitute(self._android_replacement_map_env)
                 if os.path.exists(path):
                     src_dir = path
                     break
 
             if not src_dir:
-                failed_paths = ", ".join(string.Template(path).substitute(self.env) for path in value['srcDir'])
+                failed_paths = ", ".join(string.Template(path).substitute(self._android_replacement_map_env) for path in value['srcDir'])
                 raise AndroidToolError(f'Failed to find library - {libName} - in path(s) [{failed_paths}]. Please download the '
                                           'library from the Android SDK Manager and run this command again.')
 
             if 'patches' in value:
-                lib_to_patch = self._Library(libName, src_dir, self.overwrite_existing, self.signing_config)
+                lib_to_patch = self._Library(libName, src_dir, self._overwrite_existing, self._signing_config)
                 for patch in value['patches']:
                     file_to_patch = self._File(patch['path'])
                     for change in patch['changes']:
@@ -1389,8 +1471,8 @@ class AndroidProjectGenerator(object):
 
         # Patch the libraries
         for lib in libs_to_patch:
-            lib.process_patch_lib(android_project_builder_path=self.android_project_builder_path,
-                                  dest_root=self.build_dir)
+            lib.process_patch_lib(android_project_builder_path=self._android_project_builder_path,
+                                  dest_root=self._build_dir)
             patched_lib_names.append(lib.name)
 
         return patched_lib_names
@@ -1403,7 +1485,7 @@ class AndroidProjectGenerator(object):
         :returns    List (of one) project name for the gradle build properties (see write_settings_gradle)
         """
 
-        az_android_dst_path = self.build_dir / APP_NAME
+        az_android_dst_path = self._build_dir / APP_NAME
 
         # We must always delete 'src' any existing copied AzAndroid projects since building may pick up stale java sources
         lumberyard_app_src = az_android_dst_path / 'src'
@@ -1423,20 +1505,20 @@ class AndroidProjectGenerator(object):
         # Prepare the 'PROJECT_DEPENDENCIES' environment variable
         gradle_project_dependencies = [f"    api project(path: ':{project_dependency}')" for project_dependency in project_dependencies]
 
-        template_engine_root = self.engine_root.as_posix()
-        template_project_path = self.project_path.as_posix()
-        template_ndk_path = (self.android_sdk_path / self.android_ndk.location).resolve().as_posix()
+        template_engine_root = self._engine_root.as_posix()
+        template_project_path = self._project_path.as_posix()
+        template_ndk_path = (self._android_sdk_path / self._android_ndk.location).resolve().as_posix()
 
-        native_build_path = self.native_build_path
+        native_build_path = self._native_build_path
 
         gradle_build_env = dict()
 
-        absolute_cmakelist_path = (self.engine_root / 'CMakeLists.txt').resolve().as_posix()
-        absolute_azandroid_path = (self.engine_root / 'Code/Framework/AzAndroid/java').resolve().as_posix()
+        absolute_cmakelist_path = (self._engine_root / 'CMakeLists.txt').resolve().as_posix()
+        absolute_azandroid_path = (self._engine_root / 'Code/Framework/AzAndroid/java').resolve().as_posix()
 
         gradle_build_env['TARGET_TYPE'] = 'application'
         gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies))
-        gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self.cmake_version), native_build_path=native_build_path, absolute_cmakelist_path=absolute_cmakelist_path)
+        gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self._cmake_version), native_build_path=native_build_path, absolute_cmakelist_path=absolute_cmakelist_path)
         gradle_build_env['NATIVE_CMAKE_SECTION_DEFAULT_CONFIG'] = NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR.format(abi=ANDROID_ARCH)
 
         gradle_build_env['OVERRIDE_JAVA_SOURCESET'] = OVERRIDE_JAVA_SOURCESET_STR.format(absolute_azandroid_path=absolute_azandroid_path)
@@ -1458,30 +1540,30 @@ class AndroidProjectGenerator(object):
 
             ]
 
-            if self.strip_debug_symbols:
+            if self._strip_debug_symbols:
                 cmake_argument_list.append('"-DLY_STRIP_DEBUG_SYMBOLS=ON"')
 
             cmake_argument_list.extend([
-                f'"-DANDROID_NATIVE_API_LEVEL={self.android_platform_sdk_api_level}"',
+                f'"-DANDROID_NATIVE_API_LEVEL={self._android_platform_sdk_api_level}"',
                 f'"-DLY_NDK_DIR={template_ndk_path}"',
                 '"-DANDROID_STL=c++_shared"',
                 '"-Wno-deprecated"',
                 '"-DLY_MONOLITHIC_GAME=ON"'
             ])
-            if self.ninja_path:
-                cmake_argument_list.append(f'"-DCMAKE_MAKE_PROGRAM={self.ninja_path.as_posix()}"')
+            if self._ninja_path:
+                cmake_argument_list.append(f'"-DCMAKE_MAKE_PROGRAM={self._ninja_path.as_posix()}"')
 
-            if self.oculus_project:
+            if self._is_oculus_project:
                 cmake_argument_list.append('"-DANDROID_USE_OCULUS_OPENXR=ON"')
 
-            if self.extra_cmake_configure_args:
-                extra_cmake_configure_arg_list = [f'"{arg}"' for arg in self.extra_cmake_configure_args.split()]
+            if self._extra_cmake_configure_args:
+                extra_cmake_configure_arg_list = [f'"{arg}"' for arg in self._extra_cmake_configure_args.split()]
                 cmake_argument_list.extend(extra_cmake_configure_arg_list)
 
             # Prepare the config-specific section to place the cmake argument list in the build.gradle for the app
             gradle_build_env[f'NATIVE_CMAKE_SECTION_{native_config_upper}_CONFIG'] = \
                 NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(arguments=','.join(cmake_argument_list),
-                                                                         targets_section=f'targets "{self.project_name}.GameLauncher"')
+                                                                         targets_section=f'targets "{self._project_name}.GameLauncher"')
 
             # Prepare the config-specific section to copy the related .so files that are marked as dependencies for the target
             # (launcher) since gradle will not include them automatically for APK import
@@ -1493,20 +1575,20 @@ class AndroidProjectGenerator(object):
             # copied into the APK.
             layout_folder = 'app/src/main/assets'
 
-            python_full_path = self.engine_root / 'python' / PYTHON_SCRIPT
+            python_full_path = self._engine_root / 'python' / PYTHON_SCRIPT
             syncLayoutCommandLineSource = [f'{python_full_path.resolve().as_posix()}',
                                             'android_post_build.py', az_android_dst_path.resolve().as_posix(),  # android_app_root
-                                            '--project-root', self.project_path.as_posix(),
-                                            '--gradle-version', self.gradle_version,
+                                            '--project-root', self._project_path.as_posix(),
+                                            '--gradle-version', self._gradle_version,
                                             '--build-config', native_config.lower(),
-                                            '--native-build-path', self.native_build_path,
-                                            '--asset-mode', self.asset_mode,
-                                            '--asset-bundle-folder', self.src_pak_file_path ]
+                                            '--native-build-path', self._native_build_path,
+                                            '--asset-mode', self._asset_mode,
+                                            '--asset-bundle-folder', self._src_pak_file_path]
 
             syncLayoutCommandLine = ','.join([f"'{arg}'" for arg in syncLayoutCommandLineSource])
 
             gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
-                CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=(self.engine_root / 'cmake/Tools/Platform/Android').resolve().as_posix(),
+                CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=(self._engine_root / 'cmake/Tools/Platform/Android').resolve().as_posix(),
                                                                  full_command_line=syncLayoutCommandLine,
                                                                  config=native_config)
 
@@ -1514,24 +1596,24 @@ class AndroidProjectGenerator(object):
             gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
                 CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR.format(config=native_config,
                                                                     config_lower=native_config_lower,
-                                                                    asset_layout_folder=(self.build_dir / layout_folder).resolve().as_posix())
+                                                                    asset_layout_folder=(self._build_dir / layout_folder).resolve().as_posix())
             gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
                 CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR.format(config=native_config)
 
-            gradle_build_env[f'SIGNING_{native_config_upper}_CONFIG'] = f'signingConfig signingConfigs.{native_config_lower}' if self.signing_config else ''
+            gradle_build_env[f'SIGNING_{native_config_upper}_CONFIG'] = f'signingConfig signingConfigs.{native_config_lower}' if self._signing_config else ''
 
-        if self.signing_config:
+        if self._signing_config:
             gradle_build_env['SIGNING_CONFIGS'] = f"""
     signingConfigs {{
-        debug {{{self.signing_config.to_template_string(3)}}}
-        profile {{{self.signing_config.to_template_string(3)}}}
-        release {{{self.signing_config.to_template_string(3)}}}
+        debug {{{self._signing_config.to_template_string(3)}}}
+        profile {{{self._signing_config.to_template_string(3)}}}
+        release {{{self._signing_config.to_template_string(3)}}}
     }}
 """
         else:
             gradle_build_env['SIGNING_CONFIGS'] = ""
 
-        package_namespace = self.project_android_settings['package_name']
+        package_namespace = self._project_android_settings['package_name']
         gradle_build_env['PROJECT_NAMESPACE'] = package_namespace
 
         az_android_gradle_file = az_android_dst_path / 'build.gradle'
@@ -1542,11 +1624,11 @@ class AndroidProjectGenerator(object):
         # Generate a AndroidManifest.xml and write to ${az_android_dst_path}/src/main/AndroidManifest.xml
         dest_src_main_path = az_android_dst_path / 'src/main'
         dest_src_main_path.mkdir(parents=True)
-        az_android_package_env = AndroidProjectManifestEnvironment(project_path=self.project_path,
-                                                                   project_settings=self.project_general_settings,
-                                                                   android_settings=self.project_android_settings,
-                                                                   android_sdk_version_number=self.android_platform_sdk_api_level,
-                                                                   oculus_project=self.oculus_project)
+        az_android_package_env = AndroidProjectManifestEnvironment(project_path=self._project_path,
+                                                                   project_settings=self._project_general_settings,
+                                                                   android_settings=self._project_android_settings,
+                                                                   android_sdk_version_number=self._android_platform_sdk_api_level,
+                                                                   oculus_project=self._is_oculus_project)
         self.create_file_from_project_template(src_template_file=ANDROID_MANIFEST_FILE,
                                                template_env=az_android_package_env,
                                                dst_file=dest_src_main_path / ANDROID_MANIFEST_FILE)
@@ -1575,9 +1657,9 @@ class AndroidProjectGenerator(object):
 
         settings_gradle_lines = [f"include ':{project_name}'" for project_name in project_list]
         settings_gradle_content = '\n'.join(settings_gradle_lines)
-        settings_gradle_file = self.build_dir / 'settings.gradle'
+        settings_gradle_file = self._build_dir / 'settings.gradle'
         settings_gradle_file.write_text(settings_gradle_content,
-                                        encoding=DEFAULT_TEXT_READ_ENCODING,
+                                        encoding=DEFAULT_READ_ENCODING,
                                         errors=ENCODING_ERROR_HANDLINGS)
         logging.info("Generated settings.gradle -> %s", str(settings_gradle_file.resolve()))
 
@@ -1586,9 +1668,9 @@ class AndroidProjectGenerator(object):
         # TODO: Add substitution entries here if variables are added to gradle.properties.in
         # Refer to the Code/Tools/Android/ProjectBuilder/gradle.properties.in for reference.
         grade_properties_env = {
-            'GRADLE_JVM_ARGS': self.gradle_custom_jvm_args
+            'GRADLE_JVM_ARGS': self._gradle_custom_jvm_args
         }
-        gradle_properties_file = self.build_dir / 'gradle.properties'
+        gradle_properties_file = self._build_dir / 'gradle.properties'
         self.create_file_from_project_template(src_template_file='gradle.properties.in',
                                                template_env=grade_properties_env,
                                                dst_file=gradle_properties_file)
@@ -1602,7 +1684,7 @@ class AndroidProjectGenerator(object):
         :param az_android_package_env:  The template environment to use to process all the source template files
         """
 
-        android_builder_json_path = self.android_project_builder_path / 'android_builder.json'
+        android_builder_json_path = self._android_project_builder_path / 'android_builder.json'
         android_builder_json_content = utils.load_template_file(template_file_path=android_builder_json_path,
                                                                 template_env=az_android_package_env)
         android_builder_json = json.loads(android_builder_json_content)
@@ -1621,7 +1703,7 @@ class AndroidProjectGenerator(object):
                 # Filter out files that shouldn't be copied
                 return
 
-            src_path = self.android_project_builder_path / src_file
+            src_path = self._android_project_builder_path / src_file
             resolved_src = src_path.resolve(strict=True)
 
             if imghdr.what(resolved_src) in ('rgb', 'gif', 'pbm', 'ppm', 'tiff', 'rast', 'xbm', 'jpeg', 'bmp', 'png'):
@@ -1682,12 +1764,12 @@ class AndroidProjectGenerator(object):
             # Always return itself if the path is already and absolute path
             return Path(source_path)
 
-        game_gem_resources = self.project_path / 'Gem' / 'Resources'
+        game_gem_resources = self._project_path / 'Gem' / 'Resources'
         if game_gem_resources.is_dir(game_gem_resources):
             # If the source is relative and the game gem's resource is present, construct the path based on that
             return game_gem_resources / source_path
 
-        raise AndroidToolError(f'Unable to locate resources folder for project at path "{self.project_path}"')
+        raise AndroidToolError(f'Unable to locate resources folder for project at path "{self._project_path}"')
 
     def resolve_icon_overrides(self, az_android_dst_path, az_android_package_env):
         """
@@ -1717,7 +1799,7 @@ class AndroidProjectGenerator(object):
             shutil.copyfile(src_default_icon_file.resolve(), dst_default_icon_file.resolve())
             os.chmod(dst_default_icon_file.resolve(), stat.S_IWRITE | stat.S_IREAD)
         else:
-            logging.debug(f'No default icon override specified for project_at path {self.project_path}')
+            logging.debug(f'No default icon override specified for project_at path {self._project_path}')
 
         # process each of the resolution overrides
         warnings = []
@@ -1733,11 +1815,11 @@ class AndroidProjectGenerator(object):
                 # if both the resolution and the default are unspecified, warn the user but do nothing
                 if icon_source is None:
                     warnings.append(f'No icon override found for "{resolution}".  Either supply one for "{resolution}" or a '
-                                    f'"default" in the android_settings "icon" section of the project.json file for {self.project_path}')
+                                    f'"default" in the android_settings "icon" section of the project.json file for {self._project_path}')
 
                 # if only the resolution is unspecified, remove the resolution specific version from the project
                 else:
-                    logging.debug(f'Default icon being used for "{resolution}" in {self.project_path}', resolution)
+                    logging.debug(f'Default icon being used for "{resolution}" in {self._project_path}', resolution)
                     utils.remove_dir_path(target_directory)
                 continue
 
@@ -1777,7 +1859,7 @@ class AndroidProjectGenerator(object):
             unused_override_warning = None
             if (orientation & orientation_flag) == 0:
                 unused_override_warning = f'Splash screen overrides specified for "{orientation_key}" when desired orientation ' \
-                                          f'is set to "{ORIENTATION_FLAG_TO_KEY_MAP[orientation]}" in project {self.project_path}. ' \
+                                          f'is set to "{ORIENTATION_FLAG_TO_KEY_MAP[orientation]}" in project {self._project_path}. ' \
                                           f'These overrides will be ignored.'
 
             # if a default splash image is specified for this orientation, then copy it into the generic drawable-<orientation> folder
@@ -1798,7 +1880,7 @@ class AndroidProjectGenerator(object):
                 os.chmod(dst_default_splash_img_file.resolve(), stat.S_IWRITE | stat.S_IREAD)
             else:
                 logging.debug(f'No default splash screen override specified for "%s" orientation in %s', orientation_key,
-                              self.project_path)
+                              self._project_path)
 
             # process each of the resolution overrides
             warnings = []
@@ -1819,10 +1901,10 @@ class AndroidProjectGenerator(object):
                         section = f"{orientation_key}-{resolution}"
                         warnings.append(f'No splash screen override found for "{section}".  Either supply one for "{resolution}" '
                                         f'or a "default" in the android_settings "splash_screen-{orientation_key}" section of the '
-                                        f'project.json file for {self.project_path}.')
+                                        f'project.json file for {self._project_path}.')
                     else:
                         # if only the resolution is unspecified, remove the resolution specific version from the project
-                        logging.debug(f'Default splash screen being used for "{orientation_key}-{resolution}" in {self.project_path}')
+                        logging.debug(f'Default splash screen being used for "{orientation_key}-{resolution}" in {self._project_path}')
                         utils.remove_dir_path(target_directory)
                     continue
                 src_splash_img_file = self.construct_source_resource_path(splash_img_source)
@@ -1892,7 +1974,7 @@ class AndroidProjectGenerator(object):
             if not library_android_manifest_file.is_file():
                 raise AndroidToolError(f"Missing expected 'AndroidManifest.xml' file from the anroid library package {self.name}")
 
-            library_android_manifest = library_android_manifest_file.read_text(encoding=DEFAULT_TEXT_READ_ENCODING, errors=ENCODING_ERROR_HANDLINGS)
+            library_android_manifest = library_android_manifest_file.read_text(encoding=DEFAULT_READ_ENCODING, errors=ENCODING_ERROR_HANDLINGS)
             match_package_name = re.search(r'[\s]*package="([a-zA-Z\.]+)"', library_android_manifest, re.MULTILINE)
             if not match_package_name:
                 raise AndroidToolError(f"Error reading 'AndroidManifest.xml' file from the anroid library package {self.name}. Unable to locate 'package' attribute.")
@@ -1962,7 +2044,7 @@ class AndroidProjectGenerator(object):
             dest_gradle_script_file = dst_path / 'build.gradle'
             if not dest_gradle_script_file.exists() or self.overwrite_existing:
                 dest_gradle_script_file.write_text(build_gradle_content,
-                                                   encoding=DEFAULT_TEXT_WRITE_ENCODING,
+                                                   encoding=DEFAULT_WRITE_ENCODING,
                                                    errors=ENCODING_ERROR_HANDLINGS)
 
             src_path = Path(self.path)

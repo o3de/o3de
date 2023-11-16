@@ -11,6 +11,8 @@ import configparser
 import json
 import logging
 import os
+import re
+import shutil
 import subprocess
 
 import pytest
@@ -541,3 +543,215 @@ def test_android_sdk_manager_check_licenses_accepted():
 
         test.check_licenses()
 
+
+@pytest.mark.parametrize(
+    "test_version_query, test_version_result, test_version_regex, test_expected_version", [
+        pytest.param("-version", "Version 1.4", r'(Version)\s*([\d\.]*)', '1.4'),
+        pytest.param("--version", "Unknown", r'(Version)\s*([\d\.]*)', None),
+        pytest.param("/version", "Version 1.6", r'(Version)\s*([\d\.]*)', '1.6')
+    ]
+)
+def test_validate_build_tool_from_config_key(test_version_query, test_version_result, test_version_regex, test_expected_version):
+
+
+    tool_name = 'test'
+    tool_cmd = 'validate.exe'
+    tool_config_subpath = 'bin'
+    tool_config_key = 'validate.home'
+    tool_config_value = f'{os.sep}home{os.sep}path{os.sep}validator'
+    tool_config_full_path = os.path.join(tool_config_value, tool_config_subpath, tool_cmd)
+
+    tool_version_arg = test_version_query
+    tool_version_regex =test_version_regex
+    mock_result_version = test_version_result
+
+    class MockAndroidConfig(object):
+        def get_value(self, input):
+            nonlocal tool_config_value
+            return tool_config_value
+
+    mock_android_config = MockAndroidConfig()
+
+    bak_subprocess_run = subprocess.run
+
+    def _mock_subprocess_run(*popenargs, input=None, capture_output=False, timeout=None, check=False, **kwargs):
+
+        full_cmd_line_args = popenargs[0]
+        full_cmd_line = ' '.join(full_cmd_line_args)
+
+        expected_cmd_line = f'{tool_config_full_path} {tool_version_arg}'
+        assert full_cmd_line == expected_cmd_line
+
+        nonlocal mock_result_version
+        return subprocess.CompletedProcess(args=full_cmd_line_args,returncode=0,stdout=mock_result_version)
+
+    subprocess.run = _mock_subprocess_run
+    try:
+        result_location, result_version = android_support.validate_build_tool(tool_name=tool_name,
+                                                             tool_command=tool_cmd,
+                                                             tool_config_key=tool_config_key,
+                                                             tool_environment_var=None,
+                                                             tool_config_sub_path=tool_config_subpath,
+                                                             tool_version_arg=tool_version_arg,
+                                                             version_regex=tool_version_regex,
+                                                             android_config=mock_android_config)
+        assert str(result_location) == tool_config_full_path
+        assert result_version == test_expected_version
+    except android_support.AndroidToolError:
+        assert test_expected_version is None
+    finally:
+        subprocess.run = bak_subprocess_run
+
+@pytest.mark.parametrize(
+    "test_version_query, test_version_result, test_version_regex, test_expected_version", [
+        pytest.param("-version", "Version 1.4", r'(Version)\s*([\d\.]*)', '1.4'),
+        pytest.param("--version", "Unknown", r'(Version)\s*([\d\.]*)', None),
+        pytest.param("/version", "Version 1.6", r'(Version)\s*([\d\.]*)', '1.6')
+    ]
+)
+def test_validate_build_tool_from_env(test_version_query, test_version_result, test_version_regex, test_expected_version):
+
+    bak_subprocess_run = subprocess.run
+    bak_os_getenv = os.getenv
+
+    tool_name = 'test'
+
+    tool_config_subpath = 'bin'
+
+    tool_cmd = 'validate.exe'
+    tool_config_key = 'validate.home'
+    tool_config_value = f'{os.sep}home{os.sep}path{os.sep}invalid_validator'
+    tool_config_full_path = os.path.join(tool_config_value, tool_config_subpath, tool_cmd)
+
+    tool_env_key = 'VALIDATE_HOME'
+    tool_env_value = f'{os.sep}home{os.sep}path{os.sep}validator'
+    tool_env_full_path = os.path.join(tool_env_value, tool_config_subpath, tool_cmd)
+
+    tool_version_arg = test_version_query
+    tool_version_regex = test_version_regex
+    mock_result_version = test_version_result
+
+    class MockAndroidConfig(object):
+        def get_value(self, input):
+            nonlocal tool_config_value
+            return tool_config_value
+    mock_android_config = MockAndroidConfig()
+
+    def _mock_subprocess_run(*popenargs, input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        full_cmd_line_args = popenargs[0]
+        if full_cmd_line_args[0] == tool_config_full_path:
+            return subprocess.CompletedProcess(args=full_cmd_line_args, returncode=1, stdout="")
+
+        full_cmd_line = ' '.join(full_cmd_line_args)
+
+        # nonlocal tool_config_value, tool_config_subpath, tool_cmd
+        expected_cmd_line = f'{tool_env_full_path} {tool_version_arg}'
+        assert full_cmd_line == expected_cmd_line
+
+        return subprocess.CompletedProcess(args=full_cmd_line_args,returncode=0,stdout=mock_result_version)
+
+    subprocess.run = _mock_subprocess_run
+    def _mock_os_get_env(input):
+        assert input == tool_env_key
+        return tool_env_value
+
+    os.getenv = _mock_os_get_env
+
+    try:
+        result_location, result_version = android_support.validate_build_tool(tool_name=tool_name,
+                                                             tool_command=tool_cmd,
+                                                             tool_config_key=tool_config_key,
+                                                             tool_environment_var=tool_env_key,
+                                                             tool_config_sub_path=tool_config_subpath,
+                                                             tool_version_arg=tool_version_arg,
+                                                             version_regex=tool_version_regex,
+                                                             android_config=mock_android_config)
+        assert str(result_location) == tool_env_full_path
+        assert result_version == test_expected_version
+    except android_support.AndroidToolError:
+        assert test_expected_version is None
+    finally:
+        subprocess.run = bak_subprocess_run
+        os.getenv = bak_os_getenv
+
+
+@pytest.mark.parametrize(
+    "test_version_query, test_version_result, test_version_regex, test_expected_version", [
+        pytest.param("-version", "Version 1.4", r'(Version)\s*([\d\.]*)', '1.4'),
+        pytest.param("--version", "Unknown", r'(Version)\s*([\d\.]*)', None),
+        pytest.param("/version", "Version 1.6", r'(Version)\s*([\d\.]*)', '1.6')
+    ]
+)
+def test_validate_build_tool_from_path(test_version_query, test_version_result, test_version_regex, test_expected_version):
+
+    bak_subprocess_run = subprocess.run
+    bak_os_getenv = os.getenv
+    bak_shutil_which = shutil.which
+
+    tool_name = 'test'
+
+    tool_config_subpath = 'bin'
+
+    tool_cmd = 'validate.exe'
+    tool_config_key = 'validate.home'
+    tool_config_value = f'{os.sep}home{os.sep}path{os.sep}invalid_validator'
+    tool_config_full_path = os.path.join(tool_config_value, tool_config_subpath, tool_cmd)
+
+    tool_env_key = 'VALIDATE_HOME'
+    tool_env_value = f'{os.sep}home{os.sep}path{os.sep}validator'
+    tool_env_full_path = os.path.join(tool_env_value, tool_config_subpath, tool_cmd)
+
+    path_value = f'{os.sep}system{os.sep}bin'
+    full_path = os.path.join(path_value, tool_cmd)
+
+    tool_version_arg = test_version_query
+    tool_version_regex = test_version_regex
+    mock_result_version = test_version_result
+
+    class MockAndroidConfig(object):
+        def get_value(self, input):
+            nonlocal tool_config_value
+            return tool_config_value
+    mock_android_config = MockAndroidConfig()
+
+    def _mock_subprocess_run(*popenargs, input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        full_cmd_line_args = popenargs[0]
+        if full_cmd_line_args[0] in (tool_config_full_path, tool_env_full_path):
+            return subprocess.CompletedProcess(args=full_cmd_line_args, returncode=1, stdout="")
+
+        full_cmd_line = ' '.join(full_cmd_line_args)
+
+        # nonlocal tool_config_value, tool_config_subpath, tool_cmd
+        expected_cmd_line = f'{tool_cmd} {tool_version_arg}'
+        assert full_cmd_line == expected_cmd_line
+
+        return subprocess.CompletedProcess(args=full_cmd_line_args,returncode=0,stdout=mock_result_version)
+
+    subprocess.run = _mock_subprocess_run
+    def _mock_os_get_env(input):
+        assert input == tool_env_key
+        return tool_env_value
+    os.getenv = _mock_os_get_env
+
+    def _mock_shutil_which(input):
+        assert input == tool_cmd
+        return os.path.join(path_value, tool_cmd)
+    shutil.which = _mock_shutil_which
+
+    try:
+        result_location, result_version = android_support.validate_build_tool(tool_name=tool_name,
+                                                             tool_command=tool_cmd,
+                                                             tool_config_key=tool_config_key,
+                                                             tool_environment_var=tool_env_key,
+                                                             tool_config_sub_path=tool_config_subpath,
+                                                             tool_version_arg=tool_version_arg,
+                                                             version_regex=tool_version_regex,
+                                                             android_config=mock_android_config)
+        assert str(result_location) == full_path
+        assert result_version == test_expected_version
+    except android_support.AndroidToolError:
+        assert test_expected_version is None
+    finally:
+        subprocess.run = bak_subprocess_run
+        os.getenv = bak_os_getenv
+        shutil.which = bak_shutil_which
