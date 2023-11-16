@@ -41,7 +41,8 @@ namespace O3DELauncher
     {
 #if defined(O3DE_IS_GENERIC_LAUNCHER)
         return true;
-#endif
+#else
         return false;
+#endif
     }
 }
