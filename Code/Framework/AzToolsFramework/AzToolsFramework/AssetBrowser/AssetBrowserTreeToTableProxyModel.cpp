@@ -357,10 +357,7 @@ namespace AzToolsFramework
             m_parents.append(QModelIndex());
 
             m_processing = true;
-            while (!m_parents.isEmpty())
-            {
-                ProcessParents();
-            }
+            ProcessParents();
             m_processing = false;
         }
 
@@ -848,66 +845,63 @@ namespace AzToolsFramework
                 return sourceIndex.data(role);
             }
         }
-  
+
         void AssetBrowserTreeToTableProxyModel::ProcessParents()
         {
-            const QPersistentModelIndexList::iterator begin = m_parents.begin();
-            const QPersistentModelIndexList::iterator end = m_parents.end();
-
-            QPersistentModelIndexList newPendingParents;
-
-            for (QPersistentModelIndexList::iterator it = begin; it != end && it != m_parents.end();)
+            auto sourceModelPtr = sourceModel();
+            while (!m_parents.isEmpty())
             {
-                const QModelIndex sourceParent = *it;
-                if (!sourceParent.isValid() && m_rowCount > 0)
+                QPersistentModelIndexList newPendingParents;
+                for (QPersistentModelIndexList::iterator it = m_parents.begin(); it != m_parents.end();)
                 {
-                    it = m_parents.erase(it);
-                    continue;
-                }
-
-                const int rowCount = sourceModel()->rowCount(sourceParent);
-
-                if (rowCount == 0)
-                {
-                    it = m_parents.erase(it);
-                    continue;
-                }
-                const QPersistentModelIndex sourceIndex = sourceModel()->index(rowCount - 1, 0, sourceParent);
-                const QModelIndex proxyParent = mapFromSource(sourceParent);
-                const int proxyEndRow = proxyParent.row() + rowCount;
-                const int proxyStartRow = proxyEndRow - rowCount + 1;
-
-                if (!m_processing)
-                {
-                    beginInsertRows(QModelIndex(), proxyStartRow, proxyEndRow);
-                }
-
-                UpdateInternalIndices(proxyStartRow, rowCount);
-                m_map.Insert(sourceIndex, proxyEndRow);
-                it = m_parents.erase(it);
-                m_rowCount += rowCount;
-
-                if (!m_processing)
-                {
-                    endInsertRows();
-                }
-
-                for (int sourceRow = 0; sourceRow < rowCount; ++sourceRow)
-                {
-                    static const int column = 0;
-                    const QModelIndex child = sourceModel()->index(sourceRow, column, sourceParent);
-                    AZ_Assert(child.isValid(), "Child isn't valid");
-
-                    if (sourceModel()->hasChildren(child) && sourceModel()->rowCount(child) > 0)
+                    const QModelIndex sourceParent = *it;
+                    if (!sourceParent.isValid() && m_rowCount > 0)
                     {
-                        newPendingParents.append(child);
+                        it = m_parents.erase(it);
+                        continue;
+                    }
+
+                    const int rowCount = sourceModelPtr->rowCount(sourceParent);
+                    if (rowCount == 0)
+                    {
+                        it = m_parents.erase(it);
+                        continue;
+                    }
+
+                    const QPersistentModelIndex sourceIndex = sourceModelPtr->index(rowCount - 1, 0, sourceParent);
+                    const QModelIndex proxyParent = mapFromSource(sourceParent);
+                    const int proxyEndRow = proxyParent.row() + rowCount;
+                    const int proxyStartRow = proxyEndRow - rowCount + 1;
+
+                    if (!m_processing)
+                    {
+                        beginInsertRows(QModelIndex(), proxyStartRow, proxyEndRow);
+                    }
+
+                    UpdateInternalIndices(proxyStartRow, rowCount);
+                    m_map.Insert(sourceIndex, proxyEndRow);
+                    it = m_parents.erase(it);
+                    m_rowCount += rowCount;
+
+                    if (!m_processing)
+                    {
+                        endInsertRows();
+                    }
+
+                    for (int sourceRow = 0; sourceRow < rowCount; ++sourceRow)
+                    {
+                        static const int column = 0;
+                        const QModelIndex child = sourceModelPtr->index(sourceRow, column, sourceParent);
+                        AZ_Assert(child.isValid(), "Child isn't valid");
+
+                        if (sourceModelPtr->hasChildren(child) && sourceModelPtr->rowCount(child) > 0)
+                        {
+                            newPendingParents.append(child);
+                        }
                     }
                 }
-            }
-            m_parents += newPendingParents;
-            if (!m_parents.isEmpty())
-            {
-                ProcessParents();
+
+                m_parents += newPendingParents;
             }
         }
 
