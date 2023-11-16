@@ -45,7 +45,14 @@ namespace AZ::RHI
 
     Ptr<MultiDeviceImageView> MultiDeviceImage::BuildImageView(const ImageViewDescriptor& imageViewDescriptor)
     {
-        return aznew MultiDeviceImageView{ this, imageViewDescriptor };
+        //? TODO: We currently need to cache the SingleDeviceImageViews (as no one else is doing that atm),
+        //?       can possibly be removed once everything handles MultiDeviceResources everywhere
+        AZStd::unordered_map<int, Ptr<RHI::SingleDeviceImageView>> m_cache;
+        IterateObjects<SingleDeviceImage>([&imageViewDescriptor, &m_cache](auto deviceIndex, auto deviceImage)
+        {
+            m_cache[deviceIndex] = deviceImage->GetImageView(imageViewDescriptor);
+        });
+        return aznew MultiDeviceImageView{ this, imageViewDescriptor, AZStd::move(m_cache) };
     }
 
     uint32_t MultiDeviceImage::GetResidentMipLevel() const
@@ -103,6 +110,12 @@ namespace AZ::RHI
     //! Given a device index, return the corresponding SingleDeviceBufferView for the selected device
     const RHI::Ptr<RHI::SingleDeviceImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
     {
-        return m_image->GetDeviceImage(deviceIndex)->GetImageView(m_descriptor);
+        AZ_Error(
+            "MultiDeviceImageView",
+            m_cache.find(deviceIndex) != m_cache.end(),
+            "No SingleDeviceImageView found for device index %d\n",
+            deviceIndex);
+
+        return m_cache.at(deviceIndex);
     }
 } // namespace AZ::RHI

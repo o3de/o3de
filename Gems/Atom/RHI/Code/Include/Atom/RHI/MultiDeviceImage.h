@@ -118,9 +118,10 @@ namespace AZ::RHI
         AZ_RTTI(MultiDeviceImageView, "{C837818B-2A4D-49F2-A37E-349494A9C9B7}", Object);
         virtual ~MultiDeviceImageView() = default;
 
-        MultiDeviceImageView(const RHI::MultiDeviceImage* image, ImageViewDescriptor descriptor)
+        MultiDeviceImageView(const RHI::MultiDeviceImage* image, ImageViewDescriptor descriptor, AZStd::unordered_map<int, Ptr<RHI::SingleDeviceImageView>>&& cache)
             : m_image{ image }
             , m_descriptor{ descriptor }
+            , m_cache{AZStd::move(cache)}
         {
         }
 
@@ -144,5 +145,7 @@ namespace AZ::RHI
         const RHI::MultiDeviceImage* m_image;
         //! The corresponding ImageViewDescriptor for this view.
         ImageViewDescriptor m_descriptor;
+        //! SingleDeviceImageView cache
+        AZStd::unordered_map<int, Ptr<RHI::SingleDeviceImageView>> m_cache;
     };
 } // namespace AZ::RHI
