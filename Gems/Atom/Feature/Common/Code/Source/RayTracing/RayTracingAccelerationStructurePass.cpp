@@ -50,7 +50,7 @@ namespace AZ
             m_timestampResult = RPI::TimestampResult();
             if(GetScopeId().IsEmpty())
             {
-                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Graphics);
+                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Compute);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
