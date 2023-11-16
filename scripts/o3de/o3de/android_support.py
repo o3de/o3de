@@ -126,7 +126,7 @@ SETTINGS_GRADLE_HOME           = register_setting(key='gradle.home',
 
 SETTINGS_GRADLE_JVM_ARGS       = register_setting(key='gradle.jvmargs',
                                                   description='Customized jvm arguments to set when invoking gradle. (ref https://docs.gradle.org/current/userguide/config_gradle.html#sec:configuring_jvm_memory)',
-                                                  default='-Xmx1280m')
+                                                  default='')
 
 SETTINGS_CMAKE_HOME            = register_setting(key='cmake.home',
                                                   description='The root path of the locally installed version of cmake. If not set, the cmake that is in the PATH environment will be used')

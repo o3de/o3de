@@ -159,7 +159,7 @@ def get_android_config_from_args(args: argparse) -> (command_utils.O3DEConfig, s
         except command_utils.O3DEConfigError:
             project_name = None
         if project_name:
-            logger.info(f"The execution of this command will be based on the currently detected project ({project_name}). Add the '--global' argument to set this value globally.")
+            logger.info(f"The execution of this command will be based on the currently detected project ({project_name}).")
             android_config = android_support.get_android_config(project_name=project_name)
         else:
             logger.info("The execution of this command will be based on the global settings.")
