@@ -13,8 +13,10 @@
 #include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/Feature/Utils/IndexedDataVector.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
+#include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 namespace AZ
 {
@@ -32,6 +34,8 @@ namespace AZ
             float m_cosInnerConeAngle = 0.0f; // Cosine of the inner cone angle
             AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
             float m_cosOuterConeAngle = 0.0f; // Cosine of the outer cone angle
+
+            uint16_t m_shadowIndex = std::numeric_limits<uint16_t>::max(); // index for ProjectedShadowData. A value of 0xFFFF indicates an illegal index.
 
             float m_affectsGIFactor = 1.0f;
             bool m_affectsGI = true;
@@ -64,10 +68,18 @@ namespace AZ
             void SetRgbIntensity(LightHandle handle, const PhotometricColor<PhotometricUnitType>& lightColor) override;
             void SetPosition(LightHandle handle, const AZ::Vector3& lightPosition) override;
             void SetDirection(LightHandle handle, const AZ::Vector3& lightDirection) override;
-            virtual void SetConeAngles(LightHandle handle, float innerRadians, float outerRadians) override;
+            void SetConeAngles(LightHandle handle, float innerRadians, float outerRadians) override;
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetShadowsEnabled(LightHandle handle, bool enabled) override;
+            void SetShadowBias(LightHandle handle, float bias) override;
+            void SetNormalShadowBias(LightHandle handle, float bias) override;
+            void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
+            void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
+            void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
+            void SetEsmExponent(LightHandle handle, float esmExponent) override;
+            void SetUseCachedShadows(LightHandle handle, bool useCachedShadows) override;
 
             const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
             uint32_t GetLightCount()const;
@@ -77,9 +89,19 @@ namespace AZ
 
             static constexpr const char* FeatureProcessorName = "SimpleSpotLightFeatureProcessor";
 
-            IndexedDataVector<SimpleSpotLightData> m_lightData;
+            void UpdateBounds(LightHandle handle);
+            void UpdateShadow(LightHandle handle);
+
+            // Convenience function for forwarding requests to the ProjectedShadowFeatureProcessor
+            template<typename Functor, typename ParamType>
+            void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
+
+            MultiIndexedDataVector<SimpleSpotLightData, MeshCommon::BoundsVariant> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
+            RHI::Handle<uint32_t> m_shadowMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
+
+            ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
         };
     } // namespace Render
 } // namespace AZ
