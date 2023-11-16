@@ -101,7 +101,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     
     # Convert level names into seed files that the asset bundler can utilize for packaging
     for level in level_names:
-        seedfile_paths.append(ctx.project_path / 'levels' / level.lower() / (level.lower() + ".spawnable"))
+        seedfile_paths.append(ctx.project_path / f'Cache/{selected_platform}/levels' / level.lower() / (level.lower() + ".spawnable"))
 
     # Make sure there are no running processes for the current project before continuing
     exp.kill_existing_processes(ctx.project_name)
