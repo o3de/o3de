@@ -7,19 +7,15 @@
 #
 
 import argparse
-
-import fnmatch
-import os
 import re
 import shutil
-import stat
 import sys
 
 import platform
 import logging
 
 from packaging.version import Version
-from pathlib import Path, PurePath
+from pathlib import Path
 
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 logger = logging.getLogger('o3de.android')
@@ -28,7 +24,6 @@ ANDROID_ARCH = 'arm64-v8a'
 
 ASSET_MODE_PAK = 'PAK'
 ASSET_MODE_LOOSE = 'LOOSE'
-ASSET_MODE_VFS = 'VFS'
 
 ASSET_PLATFORM_KEY = 'android'
 
@@ -126,31 +121,6 @@ def synchronize_folders(src: Path, tgt: Path) -> None:
     logger.info(f"{processed} items from {src} linked/copied to {tgt}")
 
 
-def determine_intermediate_folder_from_compile_commands(android_app_root_path:Path,native_build_path:str,build_config:str,) -> str:
-    """
-    Gradle 7.x+ started to use a generated intermediate folder which makes it difficult the locate some of the binary files that do need
-    to be included in the APK but are not automatically copied since there is no link dependencies on them.
-    We will use a hack method to determine the name of the intermediate folder by inspecting the known 'compile_commands.json' that is generated
-    by the Android Gradle Plugin (in {app_build_root}.parent/tools/{build_config}/{ANDROID_ARCH}/compile_commands.json and search for it from the directory pattern:
-    {android_app_root_path.as_posix()}/{native_build_path}/{build_config}/(.*)/{ANDROID_ARCH}
-
-    :param android_app_root_path:   The root path to the 'app' source in the gradle build
-    :param native_build_path:       The specified path for the intermediate build folders
-    :param build_config:            The build configuration
-    :return: The intermediate folder name
-    """
-    compile_commands_path = android_app_root_path / native_build_path / 'tools' / build_config / ANDROID_ARCH / 'compile_commands.json'
-    if not compile_commands_path.is_file():
-        raise AndroidPostBuildError(f"Unable to locate  path: {compile_commands_path}.")
-    compile_command_content = compile_commands_path.read_text()
-    search_pattern = re.compile(f"{android_app_root_path.as_posix()}/{native_build_path}/{build_config}/(.*)/{ANDROID_ARCH}", re.MULTILINE)
-    matched = search_pattern.search(compile_command_content)
-    if not matched:
-        raise AndroidPostBuildError(f"Unable to determine intermediate folder from the contents of {compile_commands_path}.")
-    intermediate_folder_name = matched.group(1)
-    return intermediate_folder_name
-
-
 PAK_FILE_INSTRUCTIONS = "Make sure to create release bundles (Pak files) before building and deploying to an android device. Refer to " \
                         "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more" \
                         "information."
@@ -188,16 +158,12 @@ def apply_pak_layout(project_root: Path, asset_bundle_folder: str, target_layout
     synchronize_folders(src_pak_file_full_path, target_layout_root)
 
 
-def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app_root_path: Path, native_build_path: str, build_config: str) -> None:
+def apply_loose_layout(project_root: Path, target_layout_root: Path) -> None:
     """
     Apply the loose assets folder layout rules to the target assets folder
 
     :param project_root:            The project folder root to look for the loose assets
     :param target_layout_root:      The target layout destination of the loose assets
-    :param android_app_root_path:   The android app root path to inspect the intermediate folder to copy over some additional files if applicable
-    :param native_build_path:       Optional native build path used when generating the android gradle script
-    :param build_config:            The build config that this layout is being applied to
-    :return:
     """
 
     android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY
@@ -212,22 +178,23 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app
     # Copy/Link the contents to the target folder
     synchronize_folders(android_cache_folder, target_layout_root)
 
-    try:
-        intermediate_folder_name = determine_intermediate_folder_from_compile_commands(android_app_root_path=android_app_root_path,
-                                                                                       native_build_path=native_build_path,
-                                                                                       build_config=build_config)
-    except AndroidPostBuildError:
-        pass
-
-
 
 def post_build_action(android_app_root: Path,
                       project_root: Path,
                       gradle_version: Version,
-                      build_config: str,
-                      native_build_path: str,
                       asset_mode: str,
                       asset_bundle_folder: str):
+    """
+    Perform the post-build logic for android native builds that will prepare the output folders by laying out the asset files
+    to their locations before the APK is generated.
+
+    :param android_app_root:    The root path of the 'app' project within the android gradle build script
+    :param project_root:        The root of the project that the APK is being built for
+    :param gradle_version:      The version of gradle used to build the APK (for validation)
+    :param build_config:        The native build configuration (Debug, Profile, Release)
+    :param asset_mode:          The desired asset mode to determine the layout rules
+    :param asset_bundle_folder: (For PAK asset modes) the location of where the PAK files are expected.
+    """
 
     android_app_root_path = Path(android_app_root)
     if not android_app_root_path.is_dir():
@@ -247,10 +214,7 @@ def post_build_action(android_app_root: Path,
     if asset_mode == ASSET_MODE_LOOSE:
 
         apply_loose_layout(project_root=project_root,
-                           target_layout_root=target_layout_root,
-                           android_app_root_path=android_app_root_path,
-                           native_build_path=native_build_path,
-                           build_config=build_config)
+                           target_layout_root=target_layout_root)
 
     elif asset_mode == ASSET_MODE_PAK:
 
@@ -266,9 +230,6 @@ if __name__ == '__main__':
         parser.add_argument('android_app_root', type=str, help="The base of the 'app' in the O3DE generated gradle script.")
         parser.add_argument('--project-root', type=str, help="The project root.", required=True)
         parser.add_argument('--gradle-version', type=str, help="The version of gradle.", required=True)
-        parser.add_argument('--build-config', type=str, help="The build configuration that was built.", required=True)
-        parser.add_argument('--native-build-path', type=str, help="The native build path (from the app folder) that was specified in the android-generate command.",
-                            default='.')
         parser.add_argument('--asset-mode', type=str, help="The asset mode of deployment (LOOSE, PAK, VFS)", default='LOOSE', choices=['LOOSE', 'PAK', 'VFS'])
         parser.add_argument('--asset-bundle-folder', type=str, help="The sub folder from the project root where the pak files are located (For Pak Asset Mode)",
                             default="AssetBundling/Bundles")
@@ -278,8 +239,6 @@ if __name__ == '__main__':
         result_code = post_build_action(android_app_root=Path(args.android_app_root),
                                         project_root=Path(args.project_root),
                                         gradle_version=Version(args.gradle_version),
-                                        native_build_path=args.native_build_path,
-                                        build_config=args.build_config,
                                         asset_mode=args.asset_mode,
                                         asset_bundle_folder=args.asset_bundle_folder)
 

@@ -72,19 +72,19 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
     signing_config_warned = False
     if not has_signing_config_store_file and not has_signing_config_store_password and not has_signing_config_key_alias and not has_signing_config_key_password:
         signing_config_warned = True
-        logger.warn(VALIDATION_WARNING_SIGNCONFIG_NOT_SET)
+        logger.warning(VALIDATION_WARNING_SIGNCONFIG_NOT_SET)
         print(f"\nNone of the 'signconfig.*' was set. The android scripts will not support APK signing until a signing config is set. The "
               f"\nsigning configuration key store and key alias can be set with the '{SIGNCONFIG_ARG_STORE_FILE}' and '{SIGNCONFIG_ARG_KEY_ALIAS}' "
               f"\nrespectively with the '{O3DE_COMMAND_GENERATE}' command. The signing configuration values can also be stored in the settings.")
     elif has_signing_config_store_file and not has_signing_config_key_alias:
         signing_config_warned = True
-        logger.warn(VALIDATION_WARNING_SIGNCONFIG_INCOMPLETE)
+        logger.warning(VALIDATION_WARNING_SIGNCONFIG_INCOMPLETE)
         print(f"{android_support.SETTINGS_SIGNING_STORE_FILE}' is set, but '{android_support.SETTINGS_SIGNING_KEY_ALIAS}' is not. "
               f"\nYou will need to provide a '{SIGNCONFIG_ARG_KEY_ALIAS}' argument when calling '{O3DE_COMMAND_GENERATE}'. For example:\n"
               f"\n{O3DE_SCRIPT_PATH} {O3DE_COMMAND_GENERATE} {SIGNCONFIG_ARG_KEY_ALIAS} SIGNCONFIG_KEY_ALIAS ...\n")
     elif not has_signing_config_store_file and has_signing_config_key_alias:
         signing_config_warned = True
-        logger.warn(VALIDATION_WARNING_SIGNCONFIG_INCOMPLETE)
+        logger.warning(VALIDATION_WARNING_SIGNCONFIG_INCOMPLETE)
         print(f" The setting for '{android_support.SETTINGS_SIGNING_KEY_ALIAS}' is set, but '{android_support.SETTINGS_SIGNING_STORE_FILE}' "
               f"\nis not. You will need to provide a '{SIGNCONFIG_ARG_STORE_FILE}' argument when calling '{O3DE_COMMAND_GENERATE}'. For example:\n"
               f"\n{O3DE_SCRIPT_PATH} {O3DE_COMMAND_GENERATE} {SIGNCONFIG_ARG_STORE_FILE} SIGNCONFIG_STORE_FILE ...\n")
@@ -99,7 +99,7 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
         # they will still have an opportunity to enter the password
         if not has_signing_config_store_password or not has_signing_config_key_password:
             signing_config_warned = True
-            logger.warn(VALIDATION_MISSING_PASSWORD)
+            logger.warning(VALIDATION_MISSING_PASSWORD)
 
         missing_passwords = []
         if not has_signing_config_store_password:
@@ -110,10 +110,10 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
         print(f"The signing configuration is set but missing the following settings:\n")
         for missing_password in missing_passwords:
             print(f" - {missing_password}")
-        print(f"You will be prompted for these passwords during the call to {O3DE_COMMAND_GENERATE}.")
+        print(f"\nYou will be prompted for these passwords during the call to {O3DE_COMMAND_GENERATE}.")
 
     if signing_config_warned:
-        print(f"\n Type in '{O3DE_SCRIPT_PATH} {O3DE_COMMAND_CONFIGURE} --help' for more information about setting the signing config value in the settings.")
+        print(f"\nType in '{O3DE_SCRIPT_PATH} {O3DE_COMMAND_CONFIGURE} --help' for more information about setting the signing config value in the settings.")
 
 
 def list_android_config(android_config: command_utils.O3DEConfig) -> None:
@@ -150,7 +150,7 @@ def get_android_config_from_args(args: argparse) -> (command_utils.O3DEConfig, s
 
     if is_global:
         if project_name:
-            logger.warn(f"Both --global and --project ({project_name}) arguments were provided. The --project argument will "
+            logger.warning(f"Both --global and --project ({project_name}) arguments were provided. The --project argument will "
                          "be ignored and the execution of this command will be based on the global settings.")
         android_config = android_support.get_android_config(project_name=None)
     elif not project_name:
@@ -378,7 +378,7 @@ def generate_android_project(args: argparse) -> int:
         if signing_config is not None:
             logger.info("Signing configuration enabled")
         else:
-            logger.warn("No signing configuration enabled. This output APK will not be signed until a signing configuration is added.")
+            logger.warning("No signing configuration enabled. This output APK will not be signed until a signing configuration is added.")
 
         apg = android_support.AndroidProjectGenerator(engine_root=engine_path,
                                                       android_build_dir=build_folder,

@@ -796,7 +796,7 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
                 tool_full_path = Path(shutil.which(tool_command))
             break
         else:
-            logger.warn(f"Unable to resolve tool {tool_name} from {tool_home_src}")
+            logger.warning(f"Unable to resolve tool {tool_name} from {tool_home_src}")
 
     if result.returncode != 0:
         error_msgs = [f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment"]
@@ -1274,20 +1274,20 @@ class AndroidProjectGenerator(object):
         if self._asset_mode == ASSET_MODE_PAK:
             src_pak_file_full_path = self._project_path / self._src_pak_file_path
             if not src_pak_file_full_path.is_dir():
-                logger.warn(f"Android PAK files are expected at location {src_pak_file_full_path}, but the folder doesnt exist. Make sure "
-                            "to create release bundles (PAK files) before building and deploying to an android device. Refer to "
-                            "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more "
-                            "information.")
+                logger.warning(f"Android PAK files are expected at location {src_pak_file_full_path}, but the folder doesnt exist. Make sure "
+                                "to create release bundles (PAK files) before building and deploying to an android device. Refer to "
+                                "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more "
+                                "information.")
             else:
                 pak_count = 0
                 for pak_dir_item in src_pak_file_full_path.iterdir():
                     if pak_dir_item.name.lower().endswith('_android.pak'):
                         pak_count += 1
                 if pak_count == 0:
-                    logger.warn(f"Android PAK files are expected at location {src_pak_file_full_path}, but none was detected. Make sure "
-                                "to create release bundles (PAK files) before building and deploying to an android device. Refer to "
-                                "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more "
-                                "information.")
+                    logger.warning(f"Android PAK files are expected at location {src_pak_file_full_path}, but none was detected. Make sure "
+                                    "to create release bundles (PAK files) before building and deploying to an android device. Refer to "
+                                    "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more "
+                                    "information.")
 
         # Prepare the working build directory
         self._build_dir.mkdir(parents=True, exist_ok=True)
@@ -1579,8 +1579,6 @@ class AndroidProjectGenerator(object):
                                             'android_post_build.py', az_android_dst_path.resolve().as_posix(),  # android_app_root
                                             '--project-root', self._project_path.as_posix(),
                                             '--gradle-version', self._gradle_version,
-                                            '--build-config', native_config.lower(),
-                                            '--native-build-path', self._native_build_path,
                                             '--asset-mode', self._asset_mode,
                                             '--asset-bundle-folder', self._src_pak_file_path]
 

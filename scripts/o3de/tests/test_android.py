@@ -154,7 +154,7 @@ def test_validate_android_signing_config_warnings(tmpdir, test_sc_store_file, te
          patch('o3de.android_support.validate_ninja') as mock_validate_ninja, \
          patch('o3de.android_support.get_android_gradle_plugin_requirements') as mock_get_android_gradle_plugin_requirements, \
          patch('o3de.android_support.AndroidSDKManager') as mock_get_AndroidSDKManager, \
-         patch('o3de.android.logger.warn') as mock_warn:
+         patch('o3de.android.logger.warning') as mock_warn:
 
         mock_validate_java_environment.return_value = test_validate_java_environment_result
         mock_validate_gradle.return_value = test_android_support_validate_gradle_result
@@ -292,7 +292,7 @@ def test_get_android_config_from_args_global_with_warning_project_name():
 
     # Mocjs
     with patch('o3de.android_support.get_android_config') as mock_get_android_config, \
-         patch('o3de.android.logger.warn') as mock_warning:
+         patch('o3de.android.logger.warning') as mock_warning:
 
         mock_get_android_config.return_value = Mock()
 
@@ -360,7 +360,7 @@ def test_get_android_config_no_project_name_project_detected():
         assert result == mock_get_android_config.return_value
         assert project_name == detected_project
         assert mock_info.call_count == 1
-        assert re.search(f'(based on the currently detected project \({detected_project}\))', mock_info.call_args.args[0]) is not None
+        assert re.search(f'(based on the currently detected project \\({detected_project}\\))', mock_info.call_args.args[0]) is not None
         assert mock_get_android_config.call_count == 1
         assert 'project_name' in mock_get_android_config.call_args_list[0].kwargs
         assert mock_get_android_config.call_args_list[0].kwargs['project_name'] == detected_project
@@ -387,7 +387,7 @@ def test_get_android_config_no_global_project_name_provided():
         assert result == mock_get_android_config.return_value
         assert project_name == test_project
         assert mock_info.call_count == 1
-        assert re.search(f'(will be based on project \({test_project}\))', mock_info.call_args.args[0]) is not None
+        assert re.search(f'(will be based on project \\({test_project}\\))', mock_info.call_args.args[0]) is not None
         assert mock_get_android_config.call_count == 1
         assert 'project_name' in mock_get_android_config.call_args_list[0].kwargs
         assert mock_get_android_config.call_args_list[0].kwargs['project_name'] == test_project

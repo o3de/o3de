@@ -5,16 +5,11 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-import datetime
-import os
+
 import pathlib
 import platform
-import pytest
-
-import time
-
 import shutil
-from unittest.mock import patch, Mock
+
 from cmake.Tools.Platform.Android import android_post_build
 
 
@@ -89,7 +84,6 @@ def test_copy_folder_with_linked_directories(tmpdir):
     src_file_l2.write('file_l2')
     src_file_1 = tmpdir.join('src/file_1')
     src_file_1.write('file_1')
-    src_level1 = tmpdir.join('src/level1')
 
     tmpdir.ensure('tgt', dir=True)
     tgt_path = tmpdir.join('tgt')
@@ -157,26 +151,19 @@ def test_apply_pak_layout_success(tmpdir):
 
 
 def test_apply_loose_layout_no_loose_assets(tmpdir):
+
     tmpdir.ensure('src/Cache/android', dir=True)
     src_path = pathlib.Path(tmpdir.join('src').realpath())
     tmpdir.ensure('dst/android/app', dir=True)
     tgt_path = pathlib.Path(tmpdir.join('dst/android/app/assets').realpath())
-    test_android_app_root = pathlib.Path(tmpdir.join('dst/android').realpath())
 
     try:
-        with patch(target='cmake.Tools.Platform.Android.android_post_build.determine_intermediate_folder_from_compile_commands',
-                   return_value='FOO'):
-            android_post_build.apply_loose_layout(project_root=src_path,
-                                                  target_layout_root=tgt_path,
-                                                  android_app_root_path=test_android_app_root,
-                                                  native_build_path='foo',
-                                                  build_config='Profile')
+        android_post_build.apply_loose_layout(project_root=src_path,
+                                              target_layout_root=tgt_path)
     except android_post_build.AndroidPostBuildError as e:
         assert 'Assets have not been built' in str(e)
     else:
         assert False, "Error expected"
-    finally:
-        pass
 
 
 def test_apply_loose_layout_success(tmpdir):
@@ -189,15 +176,9 @@ def test_apply_loose_layout_success(tmpdir):
 
     tmpdir.ensure('dst/android/app', dir=True)
     tgt_path = pathlib.Path(tmpdir.join('dst/android/app/assets').realpath())
-    test_android_app_root = pathlib.Path(tmpdir.join('dst/android').realpath())
 
-    with patch(target='cmake.Tools.Platform.Android.android_post_build.determine_intermediate_folder_from_compile_commands',
-               return_value='FOO'):
-        android_post_build.apply_loose_layout(project_root=src_path,
-                                              target_layout_root=tgt_path,
-                                              android_app_root_path=test_android_app_root,
-                                              native_build_path='foo',
-                                              build_config='Profile')
+    android_post_build.apply_loose_layout(project_root=src_path,
+                                          target_layout_root=tgt_path)
 
     validate_engine_android_pak = tmpdir.join('dst/android/app/assets/engine.json')
     assert pathlib.Path(validate_engine_android_pak.realpath()).exists()
