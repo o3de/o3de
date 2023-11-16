@@ -49,6 +49,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_cosInnerConeAngle; // cosine of the outer cone angle
         float3 m_rgbIntensityCandelas;
         float m_cosOuterConeAngle; // cosine of the inner cone angle
+        uint m_shadowIndex; 
         float m_affectsGIFactor;
         bool m_affectsGI;
         float2 m_padding;

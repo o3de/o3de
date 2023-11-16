@@ -114,7 +114,7 @@ namespace AZ
 
         bool AreaLightComponentConfig::SupportsShadows() const
         {
-            return m_lightType == LightType::SpotDisk || m_lightType == LightType::Sphere;
+            return m_lightType == LightType::SpotDisk || m_lightType == LightType::Sphere || m_lightType == LightType::SimpleSpot;
         }
 
         bool AreaLightComponentConfig::SupportsAffectsGI() const
