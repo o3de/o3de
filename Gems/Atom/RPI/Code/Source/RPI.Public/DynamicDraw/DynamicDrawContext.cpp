@@ -504,7 +504,7 @@ namespace AZ
             drawItem.m_arguments = drawIndexed;
 
             // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState();
+            drawItem.m_pipelineState = GetCurrentPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
@@ -598,7 +598,7 @@ namespace AZ
             drawItem.m_arguments = drawLinear;
 
             // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState();
+            drawItem.m_pipelineState = GetCurrentPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
@@ -777,7 +777,7 @@ namespace AZ
             }
         }
 
-        const RHI::SingleDevicePipelineState* DynamicDrawContext::GetCurrentPipelineState()
+        const RHI::MultiDevicePipelineState* DynamicDrawContext::GetCurrentPipelineState()
         {
             // If m_currentStates wasn't changed, it's safe to return m_rhiPipelineState directly.
             if (!m_currentStates.m_isDirty)
@@ -819,7 +819,7 @@ namespace AZ
                     m_pipelineState->RenderStatesOverlay().m_blendState.m_targets[0] = m_currentStates.m_blendState0;
                 }
 
-                const RHI::SingleDevicePipelineState* pipelineState = m_pipelineState->Finalize();                
+                const RHI::MultiDevicePipelineState* pipelineState = m_pipelineState->Finalize();                
                 m_cachedRhiPipelineStates[m_currentStates.m_hash] = pipelineState;
                 m_rhiPipelineState = pipelineState;
             }

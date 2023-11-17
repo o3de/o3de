@@ -41,13 +41,13 @@ namespace AZ
             void CompileShaderVariant(Data::Instance<AZ::RPI::ShaderResourceGroup>& shaderResourceGroup);
 
             //! Get precomputed pipeline.
-            const AZ::RHI::SingleDevicePipelineState* GetPipelineStateFromShaderVariant() const;
+            const AZ::RHI::MultiDevicePipelineState* GetPipelineStateFromShaderVariant() const;
 
         private:
             struct ShaderVariantInformation
             {
                 bool m_isFullyBaked = false;
-                const AZ::RHI::SingleDevicePipelineState* m_pipelineState = nullptr;
+                const AZ::RHI::MultiDevicePipelineState* m_pipelineState = nullptr;
             };
             AZStd::unordered_map<AZ::u64, ShaderVariantInformation> m_shaderVariantTable;
             AZ::u64 m_currentShaderVariantKeyValue = 0;

@@ -143,7 +143,7 @@ namespace AZ
 
             SetSrgsForDraw(commandList);
 
-            m_item.m_pipelineState = GetPipelineStateFromShaderVariant();
+            m_item.m_pipelineState = GetPipelineStateFromShaderVariant()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             commandList->Submit(m_item);
         }

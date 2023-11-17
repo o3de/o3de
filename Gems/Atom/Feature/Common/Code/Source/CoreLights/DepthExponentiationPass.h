@@ -39,7 +39,7 @@ namespace AZ
             struct ShaderVariantInfo
             {
                 const bool m_isFullyBaked = false;
-                const RHI::SingleDevicePipelineState* m_pipelineState = nullptr;
+                const RHI::MultiDevicePipelineState* m_pipelineState = nullptr;
             };
 
             DepthExponentiationPass() = delete;

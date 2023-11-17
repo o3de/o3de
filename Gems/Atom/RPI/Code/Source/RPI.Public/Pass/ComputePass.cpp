@@ -141,7 +141,7 @@ namespace AZ
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
             m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
 
-            m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
+            m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             OnShaderReloadedInternal();
 

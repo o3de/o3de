@@ -188,7 +188,7 @@ namespace AZ
 
                 RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
                 drawRequest.m_listTag = m_drawListTag;
-                drawRequest.m_pipelineState = m_pipelineState;
+                drawRequest.m_pipelineState = m_pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 //                drawRequest.m_streamBufferViews =  // no explicit vertex buffer.  shader is using the srg buffers
                 drawRequest.m_stencilRef = 0;
                 drawRequest.m_sortKey = 0;

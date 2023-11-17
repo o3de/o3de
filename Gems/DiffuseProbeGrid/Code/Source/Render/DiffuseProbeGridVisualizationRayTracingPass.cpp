@@ -83,7 +83,7 @@ namespace AZ
             // build the ray tracing pipeline state descriptor
             RHI::SingleDeviceRayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
-                ->PipelineState(m_globalPipelineState.get())
+                ->PipelineState(m_globalPipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get())
                 ->MaxPayloadSize(64)
                 ->MaxAttributeSize(32)
                 ->MaxRecursionDepth(2)
@@ -309,7 +309,7 @@ namespace AZ
                 dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable.get();
                 dispatchRaysItem.m_shaderResourceGroupCount = RHI::ArraySize(shaderResourceGroups);
                 dispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups;
-                dispatchRaysItem.m_globalPipelineState = m_globalPipelineState.get();
+                dispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
                 // submit the DispatchRays item
                 context.GetCommandList()->Submit(dispatchRaysItem, index);

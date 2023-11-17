@@ -180,7 +180,7 @@ namespace AZ
             draw.m_vertexCount = 3;
 
             m_item.m_arguments = RHI::SingleDeviceDrawArguments(draw);
-            m_item.m_pipelineState = m_pipelineStateForDraw.Finalize();
+            m_item.m_pipelineState = m_pipelineStateForDraw.Finalize()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
             m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
         }
 

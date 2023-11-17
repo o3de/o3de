@@ -58,7 +58,7 @@ namespace AZ::RHI
         RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
 
         m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
-        m_pipelineStateCache = RHI::PipelineStateCache::Create(*m_devices[MultiDevice::DefaultDeviceIndex]);
+        m_pipelineStateCache = RHI::PipelineStateCache::Create(RHI::MultiDevice::AllDevices);
 
         m_gpuMarkersEnabled = !RHI::QueryCommandLineOption("rhi-disable-gpu-markers");
 

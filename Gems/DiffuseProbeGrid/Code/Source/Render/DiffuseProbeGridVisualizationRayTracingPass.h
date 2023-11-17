@@ -59,7 +59,7 @@ namespace AZ
 
             // ray tracing global shader resource group layout and pipeline state
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_globalSrgLayout;
-            RHI::ConstPtr<RHI::SingleDevicePipelineState> m_globalPipelineState;
+            RHI::ConstPtr<RHI::MultiDevicePipelineState> m_globalPipelineState;
 
             bool m_initialized = false;
         };

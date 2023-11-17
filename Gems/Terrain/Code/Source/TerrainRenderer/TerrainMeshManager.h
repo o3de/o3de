@@ -215,7 +215,7 @@ namespace Terrain
         {
             AZ::Data::Instance<AZ::RPI::Shader> m_shader;
             AZ::RPI::ShaderOptionGroup m_shaderOptions;
-            const AZ::RHI::SingleDevicePipelineState* m_pipelineState;
+            const AZ::RHI::MultiDevicePipelineState* m_pipelineState;
             AZ::RHI::DrawListTag m_drawListTag;
             AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
             AZ::RPI::ShaderVariant m_shaderVariant;

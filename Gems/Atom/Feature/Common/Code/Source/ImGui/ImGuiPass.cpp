@@ -680,7 +680,7 @@ namespace AZ
             {
                 RHI::SingleDeviceDrawItem drawItem;
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
-                drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
+                drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
                 drawItem.m_indexBufferView = &m_indexBufferView;
                 drawItem.m_streamBufferViewCount = 2;
                 drawItem.m_streamBufferViews = m_vertexBufferView.data();

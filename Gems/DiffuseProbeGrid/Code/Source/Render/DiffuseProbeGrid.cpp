@@ -97,7 +97,7 @@ namespace AZ
 
                         RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
                         drawRequest.m_listTag = m_renderData->m_drawListTag;
-                        drawRequest.m_pipelineState = m_renderData->m_pipelineState->GetRHIPipelineState();
+                        drawRequest.m_pipelineState = m_renderData->m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
                         drawRequest.m_streamBufferViews = m_renderData->m_boxPositionBufferView;
                         drawRequest.m_sortKey = m_sortKey;
                         drawPacketBuilder.AddDrawItem(drawRequest);
