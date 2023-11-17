@@ -11,6 +11,7 @@
 #include <Atom/RHI/BufferProperty.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
+#include <Atom/RHI/MultiDeviceFence.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 #include <RHI/CommandList.h>
@@ -331,7 +332,7 @@ namespace AZ
             m_signalFences.reserve(fences.size());
             for (const auto& fence : fences)
             {
-                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
+                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence->GetDeviceFence(deviceBase.GetDeviceIndex())));
             }
 
             Device& device = static_cast<Device&>(deviceBase);

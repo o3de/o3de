@@ -29,7 +29,7 @@ namespace AZ::RHI
     class SingleDeviceSwapChain;
     class SingleDeviceResourcePool;
     class SingleDeviceQueryPool;
-    class SingleDeviceFence;
+    class MultiDeviceFence;
     struct Interval;
 
     //! The frame graph is a graph of scopes, where edges are derived from attachment usage. It can be visualized as a sparse 2D grid.
@@ -109,7 +109,7 @@ namespace AZ::RHI
         ResultCode UseQueryPool(Ptr<SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
         void ExecuteAfter(const ScopeId& scopeId);
         void ExecuteBefore(const ScopeId& scopeId);
-        void SignalFence(SingleDeviceFence& fence);
+        void SignalFence(MultiDeviceFence& fence);
         void SetEstimatedItemCount(uint32_t itemCount);
         void SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass);
 

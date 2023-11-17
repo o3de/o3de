@@ -24,7 +24,7 @@ namespace AZ::RHI
 {
     class SingleDeviceResourcePool;
     class SingleDeviceQueryPool;
-    class SingleDeviceFence;
+    class MultiDeviceFence;
     struct Interval;
 
     //! This interface exposes FrameGraph functionality to non-RHI systems (like the RPI).
@@ -203,11 +203,11 @@ namespace AZ::RHI
             m_frameGraph.ExecuteBefore(consumerScopeId);
         }
             
-        //! Requests that the provided fence be signaled after the scope has completed.
-        void SignalFence(SingleDeviceFence& fence)
-        {
-            m_frameGraph.SignalFence(fence);
-        }
+            //! Requests that the provided fence be signaled after the scope has completed.
+            void SignalFence(MultiDeviceFence& fence)
+            {
+                m_frameGraph.SignalFence(fence);
+            }
             
         //! Sets the number of work items (Draw / Dispatch / etc) that will be processed by
         //! this scope. This value is used to load-balance the scope across command lists. A small

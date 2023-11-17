@@ -12,7 +12,7 @@
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI/SingleDeviceResourcePool.h>
 #include <Atom/RHI/SingleDeviceQueryPool.h>
-#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/MultiDeviceFence.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
 
@@ -114,8 +114,8 @@ namespace AZ::RHI
         //! Returns a list of swap chains which require presentation at the end of the scope.
         const AZStd::vector<SingleDeviceSwapChain*>& GetSwapChainsToPresent() const;
 
-        //! Returns a list of fences to signal on completion of the scope.
-        const AZStd::vector<Ptr<SingleDeviceFence>>& GetFencesToSignal() const;
+            /// Returns a list of fences to signal on completion of the scope.
+            const AZStd::vector<Ptr<MultiDeviceFence>>& GetFencesToSignal() const;
 
         //! Initializes the scope.
         void Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
@@ -149,8 +149,8 @@ namespace AZ::RHI
         //! Links the producer and consumer according to their queues.
         static void LinkProducerConsumerByQueues(Scope* producer, Scope* consumer);
 
-        //! Adds a fence that will be signaled at the end of the scope.
-        void AddFenceToSignal(Ptr<SingleDeviceFence> fence);
+            /// Adds a fence that will be signaled at the end of the scope.
+            void AddFenceToSignal(Ptr<MultiDeviceFence> fence);
 
     protected:
         //! Called when the scope will use a query pool during it's execution. Some platforms need this information.
@@ -237,8 +237,8 @@ namespace AZ::RHI
         /// The set of swap chain present actions requested.
         AZStd::vector<SingleDeviceSwapChain*>                m_swapChainsToPresent;
 
-        /// The set of fences to signal on scope completion.
-        AZStd::vector<Ptr<SingleDeviceFence>>                m_fencesToSignal;
+            /// The set of fences to signal on scope completion.
+            AZStd::vector<Ptr<MultiDeviceFence>>                m_fencesToSignal;
 
         /// The set query pools.
         AZStd::vector<Ptr<SingleDeviceQueryPool>>                m_queryPools;

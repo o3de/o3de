@@ -17,7 +17,7 @@
 
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/MultiDeviceFence.h>
 #include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -119,10 +119,9 @@ namespace AZ
             }
             
             // Create fence
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_fence = RHI::Factory::Get().CreateFence();
+            m_fence = aznew RHI::MultiDeviceFence;
             AZ_Assert(m_fence != nullptr, "AttachmentReadback failed to create a fence");
-            [[maybe_unused]] RHI::ResultCode result = m_fence->Init(*device, RHI::FenceState::Reset);
+            [[maybe_unused]] RHI::ResultCode result = m_fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Reset);
             AZ_Assert(result == RHI::ResultCode::Success, "AttachmentReadback failed to init fence");
 
             // Load shader and srg
