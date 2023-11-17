@@ -406,7 +406,7 @@ namespace AZ
 
             RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
             drawRequest.m_listTag = m_shaderData.m_drawListTag;
-            drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
+            drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
             drawRequest.m_streamBufferViews = group.m_streamBufferViews;
             drawRequest.m_sortKey = sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);

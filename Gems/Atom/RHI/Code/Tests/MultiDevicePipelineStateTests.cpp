@@ -66,6 +66,11 @@ namespace UnitTest
             return desc;
         }
 
+        void ValidateCacheIntegrity(RHI::Ptr<RHI::PipelineStateCache>& cache) const
+        {
+            cache->ValidateCacheIntegrity();
+        }
+
     private:
         void SetUp() override
         {
@@ -192,5 +197,170 @@ namespace UnitTest
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);
+    }
+
+    TEST_F(MultiDevicePipelineStateTests, PipelineStateCache_Init_Test)
+    {
+        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache =
+        RHI::PipelineStateCache::Create(DeviceMask);
+
+        AZStd::array<RHI::MultiDevicePipelineLibraryHandle, RHI::PipelineStateCache::LibraryCountMax> handles;
+        for (size_t i = 0; i < handles.size(); ++i)
+        {
+            handles[i] = pipelineStateCache->CreateLibrary({}, {});
+
+            EXPECT_TRUE(handles[i].IsValid());
+
+            for (size_t j = 0; j < i; ++j)
+            {
+                EXPECT_NE(handles[i], handles[j]);
+            }
+        }
+
+        // Creating more than the maximum number of libraries should assert but still function.
+        AZ_TEST_START_ASSERTTEST;
+        EXPECT_EQ(pipelineStateCache->CreateLibrary({}, {}), RHI::MultiDevicePipelineLibraryHandle{});
+        AZ_TEST_STOP_ASSERTTEST(1);
+
+        // Reset should no-op.
+        pipelineStateCache->Reset();
+
+        for (size_t i = 0; i < handles.size(); ++i)
+        {
+            pipelineStateCache->ResetLibrary(handles[i]);
+            pipelineStateCache->ReleaseLibrary(handles[i]);
+        }
+
+        // Test free-list by allocating another set of libraries.
+
+        for (size_t i = 0; i < handles.size(); ++i)
+        {
+            handles[i] = pipelineStateCache->CreateLibrary({}, {});
+            EXPECT_FALSE(handles[i].IsNull());
+        }
+    }
+
+    TEST_F(MultiDevicePipelineStateTests, PipelineStateCache_NullHandle_Test)
+    {
+        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(DeviceMask);
+
+        // Calling library methods with a null handle should early out.
+        pipelineStateCache->ResetLibrary({});
+        pipelineStateCache->ReleaseLibrary({});
+        EXPECT_EQ(pipelineStateCache->GetMergedLibrary({}), nullptr);
+        EXPECT_EQ(pipelineStateCache->AcquirePipelineState({}, CreatePipelineStateDescriptor(0)), nullptr);
+        pipelineStateCache->Compact();
+        ValidateCacheIntegrity(pipelineStateCache);
+    }
+
+    TEST_F(MultiDevicePipelineStateTests, PipelineStateCache_PipelineStateThreading_Same_Test)
+    {
+        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(DeviceMask);
+
+        static const size_t IterationCountMax = 10000;
+        static const size_t ThreadCountMax = 8;
+
+        RHI::PipelineStateDescriptorForDraw descriptor = CreatePipelineStateDescriptor(0);
+
+        RHI::MultiDevicePipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary({}, {});
+
+        AZStd::mutex mutex;
+        AZStd::unordered_set<const RHI::MultiDevicePipelineState*> pipelineStatesMerged;
+
+        ThreadTester::Dispatch(
+            ThreadCountMax,
+            [&]([[maybe_unused]] size_t threadIndex)
+            {
+                AZStd::unordered_set<const RHI::MultiDevicePipelineState*> pipelineStates;
+
+                for (size_t i = 0; i < IterationCountMax; ++i)
+                {
+                    pipelineStates.insert(pipelineStateCache->AcquirePipelineState(libraryHandle, descriptor));
+                }
+
+                EXPECT_EQ(pipelineStates.size(), 1);
+                EXPECT_NE(*pipelineStates.begin(), nullptr);
+
+                mutex.lock();
+                pipelineStatesMerged.insert(*pipelineStates.begin());
+                mutex.unlock();
+            });
+
+        pipelineStateCache->Compact();
+        ValidateCacheIntegrity(pipelineStateCache);
+
+        EXPECT_EQ(pipelineStatesMerged.size(), 1);
+    }
+
+    TEST_F(MultiDevicePipelineStateTests, PipelineStateCache_PipelineStateThreading_Fuzz_Test)
+    {
+        RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(DeviceMask);
+
+        static const size_t CycleIterationCountMax = 4;
+        static const size_t AcquireIterationCountMax = 2000;
+        static const size_t ThreadCountMax = 4;
+        static const size_t PipelineStateCountMax = 128;
+        static const size_t LibraryCountMax = 2;
+
+        AZStd::vector<RHI::PipelineStateDescriptorForDraw> descriptors;
+        descriptors.reserve(PipelineStateCountMax);
+        for (size_t i = 0; i < PipelineStateCountMax; ++i)
+        {
+            descriptors.push_back(CreatePipelineStateDescriptor(static_cast<uint32_t>(i)));
+        }
+
+        AZStd::vector<RHI::MultiDevicePipelineLibraryHandle> libraryHandles;
+        for (size_t i = 0; i < LibraryCountMax; ++i)
+        {
+            libraryHandles.push_back(pipelineStateCache->CreateLibrary({}, {}));
+        }
+
+        AZStd::mutex mutex;
+
+        for (size_t cycleIndex = 0; cycleIndex < CycleIterationCountMax; ++cycleIndex)
+        {
+            for (size_t libraryIndex = 0; libraryIndex < LibraryCountMax; ++libraryIndex)
+            {
+                RHI::MultiDevicePipelineLibraryHandle libraryHandle = libraryHandles[libraryIndex];
+
+                AZStd::unordered_set<const RHI::MultiDevicePipelineState*> pipelineStatesMerged;
+
+                ThreadTester::Dispatch(
+                    ThreadCountMax,
+                    [&](size_t threadIndex)
+                    {
+                        SimpleLcgRandom random(threadIndex);
+
+                        AZStd::unordered_set<const RHI::MultiDevicePipelineState*> pipelineStates;
+
+                        for (size_t i = 0; i < AcquireIterationCountMax; ++i)
+                        {
+                            size_t descriptorIndex = random.GetRandom() % descriptors.size();
+
+                            pipelineStates.emplace(pipelineStateCache->AcquirePipelineState(libraryHandle,
+                            descriptors[descriptorIndex]));
+                        }
+
+                        mutex.lock();
+                        for (const RHI::MultiDevicePipelineState* pipelineState : pipelineStates)
+                        {
+                            pipelineStatesMerged.emplace(pipelineState);
+                        }
+                        mutex.unlock();
+                    });
+
+                EXPECT_EQ(pipelineStatesMerged.size(), PipelineStateCountMax);
+            }
+
+            pipelineStateCache->Compact();
+            ValidateCacheIntegrity(pipelineStateCache);
+
+            // Halfway through, reset the caches.
+
+            if (cycleIndex == (CycleIterationCountMax / 2))
+            {
+                pipelineStateCache->Reset();
+            }
+        }
     }
 } // namespace UnitTest

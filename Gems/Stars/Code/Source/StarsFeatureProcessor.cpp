@@ -296,7 +296,7 @@ namespace AZ::Render
 
         RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
         drawRequest.m_listTag = drawListTag;
-        drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
+        drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
         drawRequest.m_streamBufferViews = streamBufferViews;
         drawPacketBuilder.AddDrawItem(drawRequest);
         return drawPacketBuilder.End();

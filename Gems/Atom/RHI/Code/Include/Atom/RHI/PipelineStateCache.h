@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDevicePipelineState.h>
-#include <Atom/RHI/SingleDevicePipelineLibrary.h>
+#include <Atom/RHI/MultiDevicePipelineState.h>
+#include <Atom/RHI/MultiDevicePipelineLibrary.h>
 #include <Atom/RHI/ThreadLocalContext.h>
 #include <AzCore/std/containers/bitset.h>
 #include <AzCore/Utils/TypeHash.h>
@@ -16,6 +16,7 @@
 namespace UnitTest
 {
     class PipelineStateTests;
+    class MultiDevicePipelineStateTests;
 }
 
 namespace AZ::RHI
@@ -47,7 +48,7 @@ namespace AZ::RHI
     //!
     //! Each library has global and thread-local caches. Initially, the global cache is checked, if that fails, the
     //! thread-local cache is checked (no locks taken). Finally, the pending cache is checked under a lock and if
-    //! the entry still doesn't exist, it is allocated and added to the pending cache. A thread-local SingleDevicePipelineLibrary
+    //! the entry still doesn't exist, it is allocated and added to the pending cache. A thread-local MultiDevicePipelineLibrary
     //! is used to compile the pipeline state, which eliminates all locking for compilation.
     //!
     //! Pipeline states can be acquired at any time and from any thread. The cache will take a reader lock. During
@@ -63,7 +64,7 @@ namespace AZ::RHI
     //!      Both the global read-only cache and thread-local caches miss, one thread wins the race to take a lock
     //!      on the global pending cache. It allocates but does not compile the pipeline state. All other threads wait on the
     //!      lock (which should be quick) and then find and return the uninitialized pipeline state. The compiling
-    //!      thread uses the thread-local SingleDevicePipelineLibrary instance to compile the pipeline state. Non-compiling threads
+    //!      thread uses the thread-local MultiDevicePipelineLibrary instance to compile the pipeline state. Non-compiling threads
     //!      will enter the uninitialized pipeline state into their thread-local cache (as does the compiling thread once it
     //!      completes). Note that the compiling thread is now busy, but all remaining threads are now unblocked to compile other
     //!      pipeline states.
@@ -85,10 +86,10 @@ namespace AZ::RHI
     //! Example Usage:
     //! @code{.cpp}
     //!      // Create library instance.
-    //!      RHI::SingleDevicePipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary(serializedData); // Initial data loaded from disk.
+    //!      RHI::MultiDevicePipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary(serializedData); // Initial data loaded from disk.
     //!
     //!      // In jobs. Lots and lots of requests.
-    //!      const RHI::SingleDevicePipelineState* pipelineState = pipelineStateCache->AcquirePipelineState(libraryHandle, descriptor);
+    //!      const RHI::MultiDevicePipelineState* pipelineState = pipelineStateCache->AcquirePipelineState(libraryHandle, descriptor);
     //!
     //!      // Reset contents of library. Releases all pipeline state references. Library remains valid.
     //!      pipelineStateCache->ResetLibrary(libraryHandle);
@@ -100,6 +101,7 @@ namespace AZ::RHI
     class PipelineStateCache final
         : public AZStd::intrusive_base
     {
+        friend class UnitTest::MultiDevicePipelineStateTests;
     public:
         AZ_CLASS_ALLOCATOR(PipelineStateCache, SystemAllocator);
 
@@ -108,23 +110,25 @@ namespace AZ::RHI
         //! avoid a pointer indirection on access.
         static const size_t LibraryCountMax = 256;
 
-        static Ptr<PipelineStateCache> Create(Device& device);
+        static Ptr<PipelineStateCache> Create(MultiDevice::DeviceMask deviceMask);
 
         //! Resets the caches of all pipeline libraries back to empty. All internal references to pipeline states are released.
         void Reset();
 
         //! Creates an internal pipeline library instance and returns its handle.
-        SingleDevicePipelineLibraryHandle CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath = "");
+        MultiDevicePipelineLibraryHandle CreateLibrary(
+            const AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>>& serializedData,
+            const AZStd::unordered_map<int, AZStd::string>& filePaths);
 
         //! Releases the pipeline library and purges it from the cache. Releases all held references to pipeline states for the library.
-        void ReleaseLibrary(SingleDevicePipelineLibraryHandle handle);
+        void ReleaseLibrary(MultiDevicePipelineLibraryHandle handle);
 
         //! Resets cache contents in the library. Releases all held references to pipeline states for the library.
-        void ResetLibrary(SingleDevicePipelineLibraryHandle handle);
+        void ResetLibrary(MultiDevicePipelineLibraryHandle handle);
 
         //! Returns the resulting merged library from all the threadLibraries related to the passed in handle.
         //! The merged library can be used to write out the serialized data.
-        Ptr<SingleDevicePipelineLibrary> GetMergedLibrary(SingleDevicePipelineLibraryHandle handle) const;
+        Ptr<MultiDevicePipelineLibrary> GetMergedLibrary(MultiDevicePipelineLibraryHandle handle) const;
 
         //! Acquires a pipeline state (either draw or dispatch variants) from the cache. Pipeline states are associated
         //! to a specific library handle. Successive calls with the same pipeline state descriptor hash will return the same
@@ -134,8 +138,8 @@ namespace AZ::RHI
         //! It is permitted to take a strong reference to the returned pointer, but is not necessary as long as the reference
         //! is discarded on a library reset / release event. The cache will store a reference internally. If a strong reference
         //! is held externally, the instance will remain valid even after the cache is reset / destroyed.
-        const SingleDevicePipelineState* AcquirePipelineState(
-            SingleDevicePipelineLibraryHandle library, const PipelineStateDescriptor& descriptor, const AZ::Name& name = AZ::Name());
+        const MultiDevicePipelineState* AcquirePipelineState(
+            MultiDevicePipelineLibraryHandle library, const PipelineStateDescriptor& descriptor, const AZ::Name& name = AZ::Name());
 
         //! This method merges the global pending cache into the global read-only cache and clears all thread-local caches.
         //! This reduces the total memory footprint of the caches and optimizes subsequent fetches. This method should be called
@@ -143,7 +147,7 @@ namespace AZ::RHI
         void Compact();
 
     private:
-        PipelineStateCache(Device& device);
+        PipelineStateCache(MultiDevice::DeviceMask deviceMask);
 
         void ValidateCacheIntegrity() const;
 
@@ -151,7 +155,8 @@ namespace AZ::RHI
 
         struct PipelineStateEntry
         {
-            PipelineStateEntry(PipelineStateHash hash, ConstPtr<SingleDevicePipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
+            PipelineStateEntry(
+                PipelineStateHash hash, ConstPtr<MultiDevicePipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
 
             bool operator < (const PipelineStateEntry& rhs) const
             {
@@ -161,7 +166,7 @@ namespace AZ::RHI
             bool operator == (const PipelineStateEntry& rhs) const;
 
             PipelineStateHash m_hash;
-            ConstPtr<SingleDevicePipelineState> m_pipelineState;
+            ConstPtr<MultiDevicePipelineState> m_pipelineState;
 
             // pipeline state descriptor variant for dispatch, draw, and ray tracing
             using PipelineStateDescriptorVariant = AZStd::variant<AZ::RHI::PipelineStateDescriptorForDraw, AZ::RHI::PipelineStateDescriptorForDispatch, AZ::RHI::PipelineStateDescriptorForRayTracing>;
@@ -193,7 +198,7 @@ namespace AZ::RHI
 
             // Contains the initial serialized data (Used to prime the thread libraries)
             // or the file name that contains the serialized data
-            SingleDevicePipelineLibraryDescriptor m_pipelineLibraryDescriptor;
+            MultiDevicePipelineLibraryDescriptor m_pipelineLibraryDescriptor;
         };
 
         using GlobalLibrarySet = AZStd::fixed_vector<GlobalLibraryEntry, LibraryCountMax>;
@@ -207,7 +212,7 @@ namespace AZ::RHI
             //! pipeline states without locking. The libraries are coalesced into a single library
             //! during GetMergedLibrary. The library is lazily initialized on the thread
             //! and uses the initial serialized data passed in at creation time.
-            Ptr<SingleDevicePipelineLibrary> m_library;
+            Ptr<MultiDevicePipelineLibrary> m_library;
         };
 
         //! Each thread has its own list of pipeline library entries. The index maps 1-to-1 with GlobalLibrarySet.
@@ -216,13 +221,14 @@ namespace AZ::RHI
         using ThreadLibrarySet = AZStd::array<ThreadLibraryEntry, LibraryCountMax>;
 
         //! Helper function which binary searches a pipeline state set looking for an entry which matches the requested descriptor.
-        static const SingleDevicePipelineState* FindPipelineState(const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor);
+        static const MultiDevicePipelineState* FindPipelineState(
+            const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor);
 
         //! Helper function which inserts an entry into the set. Returns true if the entry was inserted, or false is a duplicate entry existed.
         static bool InsertPipelineState(PipelineStateSet& pipelineStateSet, PipelineStateEntry pipelineStateEntry);
 
         //! Performs a pipeline state compilation on the global cache using the thread-local pipeline library.
-        ConstPtr<SingleDevicePipelineState> CompilePipelineState(
+        ConstPtr<MultiDevicePipelineState> CompilePipelineState(
             GlobalLibraryEntry& globalLibraryEntry,
             ThreadLibraryEntry& threadLibraryEntry,
             const PipelineStateDescriptor& pipelineStateDescriptor,
@@ -230,18 +236,18 @@ namespace AZ::RHI
             const AZ::Name& name);
 
         //! Resets the library without validating the handle or taking a lock.
-        void ResetLibraryImpl(SingleDevicePipelineLibraryHandle handle);
+        void ResetLibraryImpl(MultiDevicePipelineLibraryHandle handle);
 
-        Ptr<Device> m_device;
+        MultiDevice::DeviceMask m_deviceMask;
 
-        /// Each thread owns a set of ThreadLibraryEntry elements. RHI::SingleDevicePipelineLibraryHandle is an
+        /// Each thread owns a set of ThreadLibraryEntry elements. RHI::MultiDevicePipelineLibraryHandle is an
         /// index into the array.
         ThreadLocalContext<ThreadLibrarySet> m_threadLibrarySet;
 
         /// This mutex guards library creation / reset / deletion.
         mutable AZStd::shared_mutex m_mutex;
 
-        /// The set of library entries. The RHI::SingleDevicePipelineLibraryHandle maps into this array.
+        /// The set of library entries. The RHI::MultiDevicePipelineLibraryHandle maps into this array.
         GlobalLibrarySet m_globalLibrarySet;
 
         /// Tracks whether the library at the bit index is active.
@@ -249,7 +255,7 @@ namespace AZ::RHI
 
         /// The free list of handles. This free list is checked first before expanding the watermark in order
         /// to recycle slots in m_globalLibrarySet.
-        AZStd::fixed_vector<SingleDevicePipelineLibraryHandle, LibraryCountMax> m_libraryFreeList;
+        AZStd::fixed_vector<MultiDevicePipelineLibraryHandle, LibraryCountMax> m_libraryFreeList;
 
         // Friends
         friend class UnitTest::PipelineStateTests;
