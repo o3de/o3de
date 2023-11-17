@@ -8,6 +8,8 @@
 
 #include "Matrix4x4.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/Matrix4x4.generated.h>
+
 namespace ScriptCanvas
 {
     namespace Matrix4x4Functions

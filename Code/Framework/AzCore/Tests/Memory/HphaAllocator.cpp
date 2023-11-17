@@ -22,13 +22,9 @@ namespace UnitTest
         HphaSchema_TestAllocator()
         {
             Create();
-            PostCreate();
         }
 
-        ~HphaSchema_TestAllocator() override
-        {
-            PreDestroy();
-        }
+        ~HphaSchema_TestAllocator() override = default;
     };
 
     static const size_t s_kiloByte = 1024;

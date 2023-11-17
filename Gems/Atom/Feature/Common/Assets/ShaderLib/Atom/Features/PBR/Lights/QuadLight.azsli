@@ -173,7 +173,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
             // Then adjusting it's brightness based on different factors.
 
             // Calculate the reflection ray from the view direction and surface normal
-            float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+            float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.GetSpecularNormal());
             
             // First find the reflection-plane intersection, then find the closest point on the rectangle to that intersection.
             float2 halfSize = float2(light.m_halfWidth, light.m_halfHeight);
@@ -198,7 +198,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
             float rough = surface.roughnessA; // shorten the name for readability.
             float roughnessAdjustment = lerp(0.0, solidAngle, pow(rough, 1.5));
             // Decrease intensity when the light position doesn't line up well with the dominant reflection direction.
-            float3 dominantDir = GetSpecularDominantDirection(surface.normal, reflectionDir, rough);
+            float3 dominantDir = GetSpecularDominantDirection(surface.GetSpecularNormal(), reflectionDir, rough);
             roughnessAdjustment *= max(0.0f, dot(dirToLight, dominantDir)) * INV_PI; // INV_PI is here to make brightness match ground truth result more accurately for nearby lights.
             // Smooth surfaces need to increase light intensity with distance to maintain constant perceptual
             // intensity depending on the solid angle of the light.

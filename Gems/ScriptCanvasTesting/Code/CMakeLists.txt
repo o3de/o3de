@@ -38,13 +38,11 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
-        AUTOGEN_RULES
-            *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,TestAutoGenFunctionRegistry.generated.h
-            *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,TestAutoGenFunctionRegistry.generated.cpp
-            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
-            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
-            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,TestAutoGenNodeableRegistry.generated.h
-            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,TestAutoGenNodeableRegistry.generated.cpp
+    AUTOGEN_RULES
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Source.jinja,$path/$fileprefix.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvas.Editor
         Gem::GraphCanvasWidgets

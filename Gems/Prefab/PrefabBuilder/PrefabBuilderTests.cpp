@@ -185,7 +185,7 @@ namespace UnitTest
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         AZ::ComponentApplication::Descriptor desc;
-        desc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
+        desc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_NO_RECORDS;
         m_app.Start(desc);
         m_app.CreateReflectionManager();
 

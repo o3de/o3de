@@ -21,11 +21,14 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h> // Used as the allocator for most components.
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ
 {
+    AZ_CHILD_ALLOCATOR_WITH_NAME(ComponentAllocator, "ComponentAllocator", "{1F0B962C-2D9D-414C-ABF1-E93E83C07A18}", SystemAllocator);
+
     class Entity;
     class ComponentDescriptor;
 
@@ -48,6 +51,7 @@ namespace AZ
          */
         AZ_TYPE_INFO_WITH_NAME_DECL(Component);
         AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR_DECL
 
         /**
          * Initializes a component's internals.
@@ -259,8 +263,7 @@ namespace AZ
      * This macro is typically included in other macros, such as AZ_COMPONENT, to
      * create a component.
      */
-    #define AZ_COMPONENT_BASE(_ComponentClass, ...)                                                                                     \
-    AZ_CLASS_ALLOCATOR(_ComponentClass, AZ::SystemAllocator)                                                                            \
+    #define AZ_COMPONENT_BASE(_ComponentClass)                                                                                          \
     template<class Comp, class Void> friend class AZ::HasComponentReflect;                                                              \
     template<class Comp, class Void> friend class AZ::HasComponentProvidedServices;                                                     \
     template<class Comp, class Void> friend class AZ::HasComponentDependentServices;                                                    \
@@ -367,10 +370,14 @@ namespace AZ
      * You are not required to use the AZ_COMPONENT macro if you want to implement your own creation
      * functions by calling AZ_CLASS_ALLOCATOR, AZ_RTTI, and so on.
      */
-    #define AZ_COMPONENT(_ComponentClass, ...)                  \
-    AZ_RTTI(_ComponentClass, __VA_ARGS__, AZ::Component)        \
-    AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)     \
-    AZ_COMPONENT_BASE(_ComponentClass, __VA_ARGS__)
+
+    #define AZ_COMPONENT_WITH_ALLOCATOR(_ComponentClass, _Allocator, ...) \
+    AZ_RTTI(_ComponentClass, __VA_ARGS__, AZ::Component) \
+    AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass) \
+    AZ_COMPONENT_BASE(_ComponentClass) \
+    AZ_CLASS_ALLOCATOR(_ComponentClass, _Allocator)
+
+    #define AZ_COMPONENT(_ComponentClass, ...) AZ_COMPONENT_WITH_ALLOCATOR(_ComponentClass, AZ::ComponentAllocator, __VA_ARGS__)
 
     //! Declares the required AzTypeInfo(GetO3deTypeName and GetO3deTypeId),
     //! RTTI (RTTI_TypeName and RTTI_Type),
@@ -442,7 +449,7 @@ namespace AZ
     //! 3. `AZ_COMPONENT_BASE_IMPL`: The call to `AZ_COMPONENT_BASE_IMPL` requires the template placeholder arguments to be supplied as variadic args,
     //! with the simple template name as the first parameter.
     //! It goes through the same transformation as the `AZ_TYPE_INFO_WITH_NAME_IMPL` macro to split out the template name
-    //! from the template placholder parameters via parenthesis unwrapping and using the `AZ_INTERNAL_USE_FIRST_ELEMENT` and `AZ_INTERNAL_SKIP_FIRST`
+    //! from the template placeholder parameters via parenthesis unwrapping and using the `AZ_INTERNAL_USE_FIRST_ELEMENT` and `AZ_INTERNAL_SKIP_FIRST`
     //! macros
     //!
     //! 4. `AZ_CLASS_ALLOCATOR_IMPL`: The call to `AZ_CLASS_ALLOCATOR_IMPL` requires template placeholder argument
@@ -459,7 +466,8 @@ namespace AZ
     //! ```
     //! The `AZ_CLASS` is a placeholder macro that is used to substitute `class` template parameters
     //! For non-type template parameters such as `size_t` or `int` the `AZ_AUTO` placeholder can be used
-    #define AZ_COMPONENT_IMPL(_ComponentClassOrTemplate, _DisplayName, _Uuid, ...) \
+
+    #define AZ_COMPONENT_IMPL_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, _Allocator, ...) \
     AZ_COMPONENT_MACRO_CALL(AZ_TYPE_INFO_WITH_NAME_IMPL, \
         AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)), \
         _DisplayName, \
@@ -467,17 +475,21 @@ namespace AZ
         AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
         AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
     ) \
-    AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__) \
+    AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__ AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) AZ::Component) \
     AZ_COMPONENT_MACRO_CALL(AZ_COMPONENT_BASE_IMPL, \
         AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
         AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
         AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
     ) \
-    AZ_CLASS_ALLOCATOR_IMPL(_ComponentClassOrTemplate, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(_ComponentClassOrTemplate, _Allocator)
+
+    #define AZ_COMPONENT_IMPL(_ComponentClassOrTemplate, _DisplayName, _Uuid, ...) \
+        AZ_COMPONENT_IMPL_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, AZ::ComponentAllocator, __VA_ARGS__)
 
     //! Version of the AZ_COMPONENT_IMPL macro which can be used in a header or inline file
     //! which is included in multiple translation units
-    #define AZ_COMPONENT_IMPL_INLINE(_ComponentClassOrTemplate, _DisplayName, _Uuid, ...) \
+
+    #define AZ_COMPONENT_IMPL_INLINE_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, _Allocator, ...) \
     AZ_COMPONENT_MACRO_CALL(AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE, \
         AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)), \
         _DisplayName, \
@@ -485,13 +497,16 @@ namespace AZ
         AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
         AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
     ) \
-    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(_ComponentClassOrTemplate, __VA_ARGS__) \
+    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(_ComponentClassOrTemplate, __VA_ARGS__ AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) AZ::Component) \
     AZ_COMPONENT_MACRO_CALL(AZ_COMPONENT_BASE_IMPL_INLINE, \
         AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
         AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
         AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
     ) \
-    AZ_CLASS_ALLOCATOR_IMPL_INLINE(_ComponentClassOrTemplate, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_INLINE(_ComponentClassOrTemplate, _Allocator)
+
+    #define AZ_COMPONENT_IMPL_INLINE(_ComponentClassOrTemplate, _DisplayName, _Uuid, ...) \
+        AZ_COMPONENT_IMPL_INLINE_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, AZ::ComponentAllocator, __VA_ARGS__)
 
     /**
      * Provides an interface through which the system can get the details of a component
@@ -502,17 +517,18 @@ namespace AZ
     class ComponentDescriptor
     {
     public:
+        AZ_CLASS_ALLOCATOR(ComponentDescriptor, ComponentAllocator);
 
         /**
          * The type of array that components use to specify provided, required, dependent,
          * and incompatible services.
          */
-        typedef AZStd::vector<ComponentServiceType> DependencyArrayType;
+        using DependencyArrayType = AZStd::vector<ComponentServiceType, ComponentAllocator_for_std_t>;
 
         /**
         * This type of array is used by the warning
         */
-        typedef AZStd::vector<AZStd::string> StringWarningArray;
+        using StringWarningArray = AZStd::vector<AZStd::string, ComponentAllocator_for_std_t>;
 
          /**
           * Creates an instance of the component.
@@ -631,6 +647,7 @@ namespace AZ
         : public ComponentDescriptorBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(ComponentDescriptorHelper, ComponentAllocator);
         /**
          * Connects to the component descriptor bus.
          */
@@ -694,7 +711,7 @@ namespace AZ
          * Specifies that this class should use the AZ::SystemAllocator for memory
          * management by default.
          */
-        AZ_CLASS_ALLOCATOR(ComponentDescriptorDefault<ComponentClass>, SystemAllocator);
+        AZ_CLASS_ALLOCATOR(ComponentDescriptorDefault<ComponentClass>, ComponentAllocator);
 
         /**
          * Calls the static function AZ::ComponentDescriptor::Reflect if the user provided it.

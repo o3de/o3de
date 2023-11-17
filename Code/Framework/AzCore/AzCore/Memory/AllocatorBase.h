@@ -22,8 +22,9 @@ namespace AZ
     class AllocatorBase : public IAllocator
     {
     protected:
-        AllocatorBase() = default;
-        ~AllocatorBase();
+        AllocatorBase();
+        explicit AllocatorBase(bool enableProfiling);
+        ~AllocatorBase() override;
 
     public:
         AZ_RTTI(AllocatorBase, "{E89B953E-FAB2-4BD0-A754-74AD5F8902F5}", IAllocator)

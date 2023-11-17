@@ -24,7 +24,7 @@ namespace AZ::Dom
             }
             else
             {
-                refCountedPointer = AZStd::allocate_shared<T>(StdValueAllocator(), *refCountedPointer);
+                refCountedPointer = AZStd::allocate_shared<T>(ValueAllocator_for_std_t(), *refCountedPointer);
                 return refCountedPointer;
             }
         }
@@ -142,7 +142,7 @@ namespace AZ::Dom
     }
 
     Value::Value(AZStd::any opaqueValue)
-        : m_value(AZStd::allocate_shared<AZStd::any>(StdValueAllocator(), AZStd::move(opaqueValue)))
+        : m_value(AZStd::allocate_shared<AZStd::any>(ValueAllocator_for_std_t(), AZStd::move(opaqueValue)))
     {
     }
 
@@ -446,7 +446,7 @@ namespace AZ::Dom
 
     Value& Value::SetObject()
     {
-        m_value = AZStd::allocate_shared<Object>(StdValueAllocator());
+        m_value = AZStd::allocate_shared<Object>(ValueAllocator_for_std_t());
         return *this;
     }
 
@@ -644,45 +644,26 @@ namespace AZ::Dom
         return HasMember(AZ::Name(name));
     }
 
-    Value& Value::AddMember(KeyType name, const Value& value)
+    Value& Value::AddMember(KeyType name, Value value)
     {
         Object::ContainerType& object = GetObjectInternal();
-        // Reserve in ReserveIncremenet chunks instead of the default vector doubling strategy
+        // Reserve in ReserveIncrement chunks instead of the default vector doubling strategy
         // Profiling has found that this is an aggregate performance gain for typical workflows
         object.reserve(AZ_SIZE_ALIGN_UP(object.size() + 1, Object::ReserveIncrement));
         if (auto memberIt = FindMutableMember(name); memberIt != object.end())
         {
-            memberIt->second = value;
+            memberIt->second = AZStd::move(value);
         }
         else
         {
-            object.emplace_back(AZStd::move(name), value);
+            object.emplace_back(AZStd::move(name), AZStd::move(value));
         }
         return *this;
     }
 
-    Value& Value::AddMember(AZStd::string_view name, const Value& value)
+    Value& Value::AddMember(AZStd::string_view name, Value value)
     {
-        return AddMember(AZ::Name(name), value);
-    }
-
-    Value& Value::AddMember(AZ::Name name, Value&& value)
-    {
-        Object::ContainerType& object = GetObjectInternal();
-        if (auto memberIt = FindMutableMember(name); memberIt != object.end())
-        {
-            memberIt->second = value;
-        }
-        else
-        {
-            object.emplace_back(AZStd::move(name), value);
-        }
-        return *this;
-    }
-
-    Value& Value::AddMember(AZStd::string_view name, Value&& value)
-    {
-        return AddMember(AZ::Name(name), value);
+        return AddMember(AZ::Name(name), AZStd::move(value));
     }
 
     void Value::RemoveAllMembers()
@@ -749,7 +730,7 @@ namespace AZ::Dom
 
     Value& Value::SetArray()
     {
-        m_value = AZStd::allocate_shared<Array>(StdValueAllocator());
+        m_value = AZStd::allocate_shared<Array>(ValueAllocator_for_std_t());
         return *this;
     }
 
@@ -835,6 +816,26 @@ namespace AZ::Dom
         return *this;
     }
 
+    Array::Iterator Value::ArrayInsertRange(Array::ConstIterator insertPos, AZStd::span<Value> values)
+    {
+        return GetArrayInternal().insert(insertPos, values.begin(), values.end());
+    }
+
+    Array::Iterator Value::ArrayInsert(Array::ConstIterator insertPos, Array::ConstIterator first, Array::ConstIterator last)
+    {
+        return GetArrayInternal().insert(insertPos, first, last);
+    }
+
+    Array::Iterator Value::ArrayInsert(Array::ConstIterator insertPos, AZStd::initializer_list<Value> initList)
+    {
+        return GetArrayInternal().insert(insertPos, initList);
+    }
+
+    Array::Iterator Value::ArrayInsert(Array::ConstIterator insertPos, Value value)
+    {
+        return GetArrayInternal().insert(insertPos, value);
+    }
+
     Array::Iterator Value::ArrayErase(Array::Iterator pos)
     {
         return GetArrayInternal().erase(pos);
@@ -857,7 +858,7 @@ namespace AZ::Dom
 
     void Value::SetNode(AZ::Name name)
     {
-        m_value = AZStd::allocate_shared<Node>(StdValueAllocator(), AZStd::move(name));
+        m_value = AZStd::allocate_shared<Node>(ValueAllocator_for_std_t(), AZStd::move(name));
     }
 
     void Value::SetNode(AZStd::string_view name)
@@ -1048,7 +1049,7 @@ namespace AZ::Dom
         }
         else
         {
-            SharedStringType sharedString = AZStd::allocate_shared<SharedStringContainer>(StdValueAllocator(), value.begin(), value.end());
+            SharedStringType sharedString = AZStd::allocate_shared<SharedStringContainer>(ValueAllocator_for_std_t(), value.begin(), value.end());
             m_value = AZStd::move(sharedString);
         }
     }
@@ -1060,7 +1061,7 @@ namespace AZ::Dom
 
     void Value::SetOpaqueValue(AZStd::any value)
     {
-        m_value = AZStd::allocate_shared<AZStd::any>(StdValueAllocator(), AZStd::move(value));
+        m_value = AZStd::allocate_shared<AZStd::any>(ValueAllocator_for_std_t(), AZStd::move(value));
     }
 
     void Value::SetNull()

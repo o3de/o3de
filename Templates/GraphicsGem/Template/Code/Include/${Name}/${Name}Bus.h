@@ -1,3 +1,4 @@
+// {BEGIN_LICENSE}
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -5,6 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+// {END_LICENSE}
 
 #pragma once
 
@@ -13,17 +15,17 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name}Requests
+    class ${SanitizedCppName}Requests
     {
     public:
-        AZ_RTTI(${Name}Requests, ${Name}RequestsTypeId);
-        virtual ~${Name}Requests() = default;
+        AZ_RTTI(${SanitizedCppName}Requests, ${SanitizedCppName}RequestsTypeId);
+        virtual ~${SanitizedCppName}Requests() = default;
         // Put your public methods here
     };
 
-    class ${Name}BusTraits
+    class ${SanitizedCppName}BusTraits
         : public AZ::EBusTraits
     {
     public:
@@ -34,7 +36,7 @@ namespace ${Name}
         //////////////////////////////////////////////////////////////////////////
     };
 
-    using ${Name}RequestBus = AZ::EBus<${Name}Requests, ${Name}BusTraits>;
-    using ${Name}Interface = AZ::Interface<${Name}Requests>;
+    using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests, ${SanitizedCppName}BusTraits>;
+    using ${SanitizedCppName}Interface = AZ::Interface<${SanitizedCppName}Requests>;
 
-} // namespace ${Name}
+} // namespace ${SanitizedCppName}

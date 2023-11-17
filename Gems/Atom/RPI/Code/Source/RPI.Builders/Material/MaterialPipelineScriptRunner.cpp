@@ -11,6 +11,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/LuaScriptUtilities.h>
 #include <AzCore/Script/ScriptAsset.h>
+#include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Utils/Utils.h>
 
 namespace AZ
@@ -125,10 +126,11 @@ namespace AZ
             return m_materialType.m_lightingModel;
         }
 
-        MaterialPipelineScriptRunner::MaterialPipelineScriptRunner()
+        MaterialPipelineScriptRunner::MaterialPipelineScriptRunner() = default;
+
+        void MaterialPipelineScriptRunner::Reflect(ReflectContext* context)
         {
-            MaterialPipelineScriptRunner::ScriptExecutionContext::Reflect(&m_scriptBehaviorContext);
-            LuaScriptUtilities::Reflect(&m_scriptBehaviorContext);
+            ScriptExecutionContext::Reflect(context);
         }
 
         void MaterialPipelineScriptRunner::Reset()
@@ -161,8 +163,6 @@ namespace AZ
                 AZ_Error(DebugName, false, "Script '%s' failed. %s", scriptPath.c_str(), message.c_str());
             };
 
-            AZ::ScriptContext scriptContext;
-            scriptContext.BindTo(&m_scriptBehaviorContext);
 
             // TODO(MaterialPipeline): At some point it would be nice if we didn't have to parse the lua script every time we need to run it, and
             // instead just use the corresponding ScriptAsset, similar to how LuaMaterialFunctorSourceData works. But AssetProcessor does not allow
@@ -177,14 +177,24 @@ namespace AZ
                 return false;
             }
 
-            if (!scriptContext.Execute(luaScriptContent.GetValue().data(), materialPipeline.m_pipelineScript.c_str(), luaScriptContent.GetValue().size()))
+            AZ::ScriptContext* scriptContext{};
+            AZ::ScriptSystemRequestBus::BroadcastResult(scriptContext, &AZ::ScriptSystemRequests::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
+            if (scriptContext == nullptr)
+            {
+                reportError("Unable to query global script context. Is the ScriptSystemComponent active?");
+                return false;
+            }
+
+            // Remove any MaterialTypeSetup functions from the lua global table before loading in new script
+            scriptContext->RemoveGlobal(MainFunctionName);
+            if (!scriptContext->Execute(luaScriptContent.GetValue().data(), materialPipeline.m_pipelineScript.c_str(), luaScriptContent.GetValue().size()))
             {
                 reportError("Error initializing script.");
                 return false;
             }
 
             AZ::ScriptDataContext call;
-            if (!scriptContext.Call(MainFunctionName, call))
+            if (!scriptContext->Call(MainFunctionName, call))
             {
                 reportError(AZStd::string::format("Function %s() is not defined.", MainFunctionName));
                 return false;

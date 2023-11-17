@@ -45,6 +45,7 @@ namespace AzNetworking
         AZ::Interface<INetworking>::Register(this);
 
         m_listenThread = AZStd::make_unique<TcpListenThread>();
+        m_heartbeatThread = AZStd::make_unique<UdpHeartbeatThread>();
         m_readerThread = AZStd::make_unique<UdpReaderThread>();
     }
 
@@ -56,6 +57,7 @@ namespace AzNetworking
         m_compressorFactories.clear();
 
         m_readerThread = nullptr;
+        m_heartbeatThread = nullptr;
         m_listenThread = nullptr;
 
         AZ::Interface<INetworking>::Unregister(this);
@@ -93,7 +95,7 @@ namespace AzNetworking
             result = AZStd::make_unique<TcpNetworkInterface>(name, listener, trustZone, *m_listenThread);
             break;
         case ProtocolType::Udp:
-            result = AZStd::make_unique<UdpNetworkInterface>(name, listener, trustZone, *m_readerThread);
+            result = AZStd::make_unique<UdpNetworkInterface>(name, listener, trustZone, *m_readerThread, *m_heartbeatThread);
             break;
         }
         INetworkInterface* returnResult = result.get();

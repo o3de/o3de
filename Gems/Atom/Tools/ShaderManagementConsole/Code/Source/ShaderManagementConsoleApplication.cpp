@@ -173,7 +173,7 @@ namespace ShaderManagementConsole
             sourceAssetFileName.c_str(),
             assetInfo,
             watchFolder);
-        AZ_Error(nullptr, result, "Failed to get the asset info for the file: %s.", sourceAssetFileName.c_str());
+        AZ_Error(AZ::Debug::Trace::GetDefaultSystemWindow(), result, "Failed to get the asset info for the file: %s.", sourceAssetFileName.c_str());
 
         return assetInfo;
     }
@@ -335,7 +335,7 @@ namespace ShaderManagementConsole
             AZ_Error(
                 "GetFullSourcePathFromRelativeProductPath",
                 false,
-                "Failed to get full sorece path for relative product path %s.",
+                "Failed to get full source path for relative product path %s.",
                 relativeProductPath.c_str());
         }
 

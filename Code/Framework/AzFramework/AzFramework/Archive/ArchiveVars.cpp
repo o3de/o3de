@@ -16,9 +16,7 @@ namespace AZ::IO
 #if defined(LY_ARCHIVE_FILE_SEARCH_MODE)
         return FileSearchPriority{ LY_ARCHIVE_FILE_SEARCH_MODE };
 #else
-        return FileSearchPriority{ !ArchiveVars::IsReleaseConfig
-            ? FileSearchPriority::FileFirst
-            : FileSearchPriority::PakOnly };
+        return FileSearchPriority{ FileSearchPriority::FileFirst };
 #endif
     }
 }

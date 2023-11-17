@@ -47,7 +47,7 @@ namespace AzToolsFramework
                     if (pendingComponentsIter->value.IsArray())
                     {
                         // If the serialized data is an array type, then convert the data to a map.
-                        AZStd::vector<AZ::Component*> componentVector;
+                        AZ::Entity::ComponentArrayType componentVector;
                         pendingComponentsResult = ContinueLoadingFromJsonObjectField(
                             &componentVector, azrtti_typeid<decltype(componentVector)>(), inputValue, "PendingComponents", context);
 
@@ -124,7 +124,7 @@ namespace AzToolsFramework
             services.push_back(AZ_CRC("EditorPendingCompositionService", 0x6b5b794f));
         }
 
-        void EditorPendingCompositionComponent::GetPendingComponents(AZStd::vector<AZ::Component*>& components)
+        void EditorPendingCompositionComponent::GetPendingComponents(AZ::Entity::ComponentArrayType& components)
         {
             for (auto const& pair : m_pendingComponents)
             {

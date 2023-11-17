@@ -72,7 +72,7 @@ namespace AZ
                 return fullPath;
             }
 
-            for (const auto &includeDir : includeDirectories)
+            for (const auto& includeDir : includeDirectories)
             {
                 AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
                 if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
@@ -93,7 +93,7 @@ namespace AZ
             AZStd::string fullPath;
             AzFramework::StringFunc::Path::Join(currentFolderPath.data(), normalizedRelativePath.data(), fullPath);
             includedFiles.insert(fullPath);
-            for (const auto &includeDir : includeDirectories)
+            for (const auto& includeDir : includeDirectories)
             {
                 AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
                 includedFiles.insert(fullPath);
@@ -126,7 +126,7 @@ namespace AZ
             }
 
             auto listOfRelativePaths = outcome.TakeValue();
-            for (auto relativePath : listOfRelativePaths)
+            for (const auto& relativePath : listOfRelativePaths)
             {
                 auto fullPath = DiscoverFullPath(relativePath, sourceFileFolderPath, includeDirectories);
                 if (fullPath.empty())
@@ -139,7 +139,7 @@ namespace AZ
                 }
 
                 // Add the file to the list and keep parsing recursively.
-                if (includedFiles.count(fullPath))
+                if (includedFiles.contains(fullPath))
                 {
                     continue;
                 }
@@ -179,7 +179,7 @@ namespace AZ
                 // Add the AZSL as source dependency
                 AssetBuilderSDK::SourceFileDependency azslFileDependency;
                 azslFileDependency.m_sourceFileDependencyPath = azslFullPath;
-                response.m_sourceFileDependencyList.emplace_back(azslFileDependency);
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(azslFileDependency));
             }
 
             if (!IO::FileIOBase::GetInstance()->Exists(azslFullPath.c_str()))
@@ -195,11 +195,11 @@ namespace AZ
 
             AZStd::unordered_set<AZStd::string> includedFiles;
             GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
-            for (auto includePath : includedFiles)
+            for (const auto& includePath : includedFiles)
             {
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
                 includeFileDependency.m_sourceFileDependencyPath = includePath;
-                response.m_sourceFileDependencyList.emplace_back(includeFileDependency);
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
             }
 
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
@@ -461,7 +461,7 @@ namespace AZ
                     AZ_TracePrintf(ShaderAssetBuilderName, "Preprocessed AZSL File: %s \n", prependedAzslFilePath.c_str());
 
                     // Ready to transpile the azslin file into HLSL.
-                    ShaderBuilder::AzslCompiler azslc(azslinFullPath);
+                    ShaderBuilder::AzslCompiler azslc(azslinFullPath, request.m_tempDirPath);
                     AZStd::string hlslFullPath = AZStd::string::format("%s_%s.hlsl", superVariantAzslinStemName.c_str(), apiName.c_str());
                     AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), hlslFullPath.c_str(), hlslFullPath, true);
                     auto emitFullOutcome = azslc.EmitFullData(buildArgsManager.GetCurrentArguments().m_azslcArguments, hlslFullPath);
@@ -500,9 +500,8 @@ namespace AZ
                     RootConstantData rootConstantData;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
                         ShaderAssetBuilderName, subProductsPaths, azslData, srgLayoutList,
-                        shaderOptionGroupLayout, bindingDependencies, rootConstantData);
+                        shaderOptionGroupLayout, bindingDependencies, rootConstantData, request.m_tempDirPath);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
-
                     {
                         response.m_resultCode = azslJsonReadResult;
                         return;
@@ -587,7 +586,7 @@ namespace AZ
                         azslData, shaderEntryPoints, *shaderOptionGroupLayout.get(),
                         subProductsPaths[ShaderBuilderUtility::AzslSubProducts::om],
                         subProductsPaths[ShaderBuilderUtility::AzslSubProducts::ia],
-                        shaderInputContract, shaderOutputContract, colorAttachmentCount);
+                        shaderInputContract, shaderOutputContract, colorAttachmentCount, request.m_tempDirPath);
                     shaderAssetCreator.SetInputContract(shaderInputContract);
                     shaderAssetCreator.SetOutputContract(shaderOutputContract);
 
@@ -727,7 +726,7 @@ namespace AZ
 
                 } // end for the supervariant
 
-                for (auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
+                for (const auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
                 {
                     shaderAssetCreator.SetShaderOptionDefaultValue(shaderOptionName, value);
                 }

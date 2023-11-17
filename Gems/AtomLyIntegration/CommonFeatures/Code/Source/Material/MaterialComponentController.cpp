@@ -23,14 +23,15 @@ namespace AZ
         {
             MaterialComponentConfig::Reflect(context);
 
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialComponentController>()
                     ->Version(1)
                     ->Field("Configuration", &MaterialComponentController::m_configuration)
                     ;
             }
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<MaterialComponentRequestBus>("MaterialComponentRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -175,15 +176,15 @@ namespace AZ
         {
             if (m_queuedLoadMaterials)
             {
-                LoadMaterials();
                 m_queuedLoadMaterials = false;
+                LoadMaterials();
             }
 
             if (m_queuedMaterialsCreatedNotification)
             {
+                m_queuedMaterialsCreatedNotification = false;
                 MaterialComponentNotificationBus::Event(
                     m_entityId, &MaterialComponentNotifications::OnMaterialsCreated, m_configuration.m_materials);
-                m_queuedMaterialsCreatedNotification = false;
             }
 
             bool propertiesChanged = false;
@@ -214,17 +215,22 @@ namespace AZ
                     m_entityId, &MaterialComponentNotifications::OnMaterialPropertiesUpdated, m_configuration.m_materials);
             }
 
-            // Only disconnect from tick bus and send notification after all pending properties have been applied
-            if (m_materialsWithDirtyProperties.empty())
+            // Only send notifications that materials have been updated after all pending properties have been applied
+            if (m_queuedMaterialsUpdatedNotification && m_materialsWithDirtyProperties.empty())
             {
-                if (m_queuedMaterialsUpdatedNotification)
-                {
-                    // Materials have been edited and instances have changed but the notification will only be sent once per tick
-                    MaterialComponentNotificationBus::Event(
-                        m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
-                    m_queuedMaterialsUpdatedNotification = false;
-                }
+                // Materials have been edited and instances have changed but the notification will only be sent once per tick
+                m_queuedMaterialsUpdatedNotification = false;
+                MaterialComponentNotificationBus::Event(
+                    m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
+            }
 
+            // Only disconnect from the tick bus if there is no remaining work for the next tick. It's possible that additional work was
+            // queued while notifications were in progress.
+            if (!m_queuedLoadMaterials &&
+                !m_queuedMaterialsCreatedNotification &&
+                !m_queuedMaterialsUpdatedNotification &&
+                m_materialsWithDirtyProperties.empty())
+            {
                 SystemTickBus::Handler::BusDisconnect();
             }
         }
@@ -232,7 +238,8 @@ namespace AZ
         void MaterialComponentController::LoadMaterials()
         {
             // Caching previously loaded unique materials to avoid unloading and reloading assets that have not changed
-            const auto uniqueMaterialMapBeforeLoad = m_uniqueMaterialMap;
+            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> uniqueMaterialMapBeforeLoad;
+            AZStd::swap(uniqueMaterialMapBeforeLoad, m_uniqueMaterialMap);
 
             // Clear any previously loaded or queued material assets, instances, or notifications
             ReleaseMaterials();
@@ -262,8 +269,10 @@ namespace AZ
             {
                 if (uniqueMaterial.GetId().IsValid())
                 {
-                    AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
-                    if (uniqueMaterial.QueueLoad())
+                    AZ::Data::AssetLoadParameters loadParams;
+                    loadParams.m_dependencyRules = AZ::Data::AssetDependencyLoadRules::LoadAll;
+                    loadParams.m_reloadMissingDependencies = true;
+                    if (uniqueMaterial.QueueLoad(loadParams))
                     {
                         anyQueued = true;
                     }
@@ -271,6 +280,8 @@ namespace AZ
                     {
                         DisplayMissingAssetWarning(uniqueMaterial);
                     }
+
+                    AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
                 }
             }
 

@@ -52,6 +52,7 @@ namespace ShaderManagementConsole
         void AppendSparseVariantSet(
             AZStd::vector<AZ::Name> optionHeaders,
             AZStd::vector<AZ::Name> matrixOfValues) override;
+        void DefragmentVariantList() override;
         void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) override;
         const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const override;
         size_t GetShaderOptionDescriptorCount() const override;

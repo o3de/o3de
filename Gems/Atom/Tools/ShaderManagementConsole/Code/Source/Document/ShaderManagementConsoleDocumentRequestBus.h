@@ -36,6 +36,9 @@ namespace ShaderManagementConsole
         //! and         matrixOfValues is [ 0,1, 1,0 ]    # flattened values-subrect matrix
         virtual void AppendSparseVariantSet(AZStd::vector<AZ::Name> optionHeaders, AZStd::vector<AZ::Name> matrixOfValues) = 0;
 
+        //! Uniquifies and recompacts stableID space
+        virtual void DefragmentVariantList() = 0;
+
         //! Set the shader variant list source data on the document.
         //! This function can be used to edit and update the data contained within the document.
         //! Functions can be added to this bus for more fine grained editing of shader variant list data.

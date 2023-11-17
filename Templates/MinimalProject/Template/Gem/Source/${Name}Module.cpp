@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- // {END_LICENSE}
+// {END_LICENSE}
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
@@ -45,4 +45,8 @@ namespace ${SanitizedCppName}
     };
 }// namespace ${SanitizedCppName}
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ${SanitizedCppName}::${SanitizedCppName}Module)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}, ${SanitizedCppName}::${SanitizedCppName}Module)
+#endif

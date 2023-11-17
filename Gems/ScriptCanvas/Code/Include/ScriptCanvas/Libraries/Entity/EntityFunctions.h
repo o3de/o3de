@@ -30,3 +30,5 @@ namespace ScriptCanvas
         AZStd::string ToString(const AZ::EntityId& source);
     } // namespace EntityFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Entity/EntityFunctions.generated.h>

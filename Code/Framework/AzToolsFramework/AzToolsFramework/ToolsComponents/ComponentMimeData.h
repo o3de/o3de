@@ -56,7 +56,7 @@ namespace AzToolsFramework
 
         static QString GetMimeType();
 
-        static AZStd::unique_ptr<QMimeData> Create(const ComponentDataContainer& components);
+        static AZStd::unique_ptr<QMimeData> Create(AZStd::span<AZ::Component* const> components);
         static void GetComponentDataFromMimeData(const QMimeData* mimeData, ComponentDataContainer& componentData);
 
         static const QMimeData* GetComponentMimeDataFromClipboard();

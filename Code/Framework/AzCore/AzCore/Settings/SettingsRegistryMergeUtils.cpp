@@ -740,7 +740,7 @@ namespace AZ::SettingsRegistryMergeUtils
     // check for a default write storage path, fall back to the <project-user-path> if not
     static AZ::IO::FixedMaxPath FindDevWriteStoragePath(const AZ::IO::FixedMaxPath& projectUserPath)
     {
-        AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
+        AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDefaultDevWriteStoragePath();
         AZ::IO::FixedMaxPath devWriteStoragePath = devWriteStorage.has_value() ? *devWriteStorage : projectUserPath;
         if (devWriteStoragePath.IsRelative())
         {
@@ -1115,7 +1115,7 @@ namespace AZ::SettingsRegistryMergeUtils
             registry.Set(FilePathKey_CacheProjectRootFolder, projectPath.Native());
             registry.Set(FilePathKey_CacheRootFolder, projectPath.Native());
         }
-        if (AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDevWriteStoragePath();
+        if (AZStd::optional<AZ::IO::FixedMaxPathString> devWriteStorage = Utils::GetDefaultDevWriteStoragePath();
             devWriteStorage)
         {
             const auto devWriteStoragePath = AZ::IO::PathView(*devWriteStorage).LexicallyNormal();
