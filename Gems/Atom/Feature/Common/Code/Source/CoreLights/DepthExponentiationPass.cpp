@@ -89,7 +89,7 @@ namespace AZ
         void DepthExponentiationPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             const uint32_t typeIndex = aznumeric_cast<uint32_t>(m_shadowmapType);
-            m_dispatchItem.m_pipelineState = m_shaderVariant[typeIndex].m_pipelineState;
+            m_dispatchItem.m_pipelineState = m_shaderVariant[typeIndex].m_pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             Base::BuildCommandListInternal(context);
         }

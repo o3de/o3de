@@ -148,7 +148,7 @@ namespace AZ
 
                 RHI::PipelineStateCache* pipelineStateCache = rhiSystem->GetPipelineStateCache();
                 ConstPtr<RHI::PipelineLibraryData> serializedData = LoadPipelineLibrary();
-                RHI::SingleDevicePipelineLibraryHandle pipelineLibraryHandle = pipelineStateCache->CreateLibrary(serializedData.get(), m_pipelineLibraryPath);
+                RHI::MultiDevicePipelineLibraryHandle pipelineLibraryHandle = pipelineStateCache->CreateLibrary(serializedData.get(), m_pipelineLibraryPath);
 
                 if (pipelineLibraryHandle.IsNull())
                 {
@@ -300,28 +300,36 @@ namespace AZ
 
         void Shader::SavePipelineLibrary() const
         {
-            RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice();
             if (m_pipelineLibraryPath[0] != 0)
             {
-                RHI::ConstPtr<RHI::SingleDevicePipelineLibrary> pipelineLib = m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle);
-                if(!pipelineLib)
+                auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+                for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
                 {
-                    return;
-                }
-                
-                //Check if explicit file load/save operation is needed as the RHI backend api may not support it
-                if (device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
-                {
-                    RHI::ConstPtr<RHI::PipelineLibraryData> serializedData = pipelineLib->GetSerializedData();
-                    if(serializedData)
+                    RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
+
+                    RHI::ConstPtr<RHI::MultiDevicePipelineLibrary> pipelineLibrary = m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle);
+                    if (!pipelineLibrary)
                     {
-                        Utils::SaveObjectToFile<RHI::PipelineLibraryData>(m_pipelineLibraryPath, DataStream::ST_BINARY, serializedData.get());
+                        return;
                     }
-                }
-                else
-                {
-                    [[maybe_unused]] bool result = pipelineLib->SaveSerializedData(m_pipelineLibraryPath);
-                    AZ_Error("Shader", result, "Pipeline Library %s was not saved", &m_pipelineLibraryPath);
+                    RHI::ConstPtr<RHI::SingleDevicePipelineLibrary> pipelineLib = pipelineLibrary->GetDevicePipelineLibrary(deviceIndex);
+
+                    // Check if explicit file load/save operation is needed as the RHI backend api may not support it
+                    if (device->GetFeatures().m_isPsoCacheFileOperationsNeeded)
+                    {
+                        RHI::ConstPtr<RHI::PipelineLibraryData> serializedData = pipelineLib->GetSerializedData();
+                        if (serializedData)
+                        {
+                            Utils::SaveObjectToFile<RHI::PipelineLibraryData>(
+                                m_pipelineLibraryPath, DataStream::ST_BINARY, serializedData.get());
+                        }
+                    }
+                    else
+                    {
+                        [[maybe_unused]] bool result = pipelineLib->SaveSerializedData(m_pipelineLibraryPath);
+                        AZ_Error("Shader", result, "Pipeline Library %s was not saved", &m_pipelineLibraryPath);
+                    }
                 }
             }
         }
@@ -437,7 +445,7 @@ namespace AZ
             return m_asset->GetOutputContract(m_supervariantIndex);
         }
 
-        const RHI::SingleDevicePipelineState* Shader::AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const
+        const RHI::MultiDevicePipelineState* Shader::AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const
         {
             return m_pipelineStateCache->AcquirePipelineState(m_pipelineLibraryHandle, descriptor, m_asset->GetName());
         }

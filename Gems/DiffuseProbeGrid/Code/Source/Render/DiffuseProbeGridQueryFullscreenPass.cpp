@@ -226,7 +226,7 @@ namespace AZ
                 };
 
                 RHI::SingleDeviceDispatchItem dispatchItem;
-                dispatchItem.m_pipelineState = m_pipelineState;
+                dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_shaderResourceGroupCount = srgCount;
                 dispatchItem.m_shaderResourceGroups = shaderResourceGroups;
