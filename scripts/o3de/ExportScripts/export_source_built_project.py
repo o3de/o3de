@@ -36,6 +36,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               should_build_server_launcher: bool = True,
                               should_build_unified_launcher: bool = True,
                               should_build_headless_server_launcher: bool = True,
+                              monolithic_build: bool = True,
                               allow_registry_overrides: bool = False,
                               tools_build_path: pathlib.Path | None =None,
                               launcher_build_path: pathlib.Path | None =None,
@@ -67,6 +68,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param should_build_server_launcher:            Option to build the server launcher package
     :param should_build_unified_launcher:           Option to build the unified launcher package
     :param should_build_headless_server_launcher:   Option to build the headless server launcher package
+    :param monolithic_build:                        Option to build the game binaries monolithically
     :param allow_registry_overrides:                Option to allow registry overrides in the build process
     :param tools_build_path:                        Optional build path to build the tools. (Will default to build/tools if not supplied)
     :param launcher_build_path:                     Optional build path to build the game launcher(s). (Will default to build/launcher if not supplied)
@@ -131,7 +133,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                build_config=build_config,
                                game_build_path=launcher_build_path,
                                engine_centric=engine_centric,
-                               monolithic_build=True
+                               monolithic_build=monolithic_build,
                                launcher_types=launcher_type,
                                allow_registry_overrides=allow_registry_overrides,
                                tool_config=tool_config,
@@ -270,7 +272,8 @@ if "o3de_context" in globals():
         parser.add_argument('-noserver', '--no-server-launcher', action='store_true', help='This flag skips building the Server Launcher on a platform if not needed.')
         parser.add_argument('-noheadless', '--no-headless-server-launcher', action='store_true', help='This flag skips building the Headless Server Launcher on a platform if not needed.')
         parser.add_argument('-nounified', '--no-unified-launcher', action='store_true', help='This flag skips building the Unified Launcher on a platform if not needed.')
-        parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
+        parser.add_argument('-nomonolithic', '--no-monolithic-build', action='store_true', help='Build the project binaries as shared libraries (as opposed to default monolithic build).')
+        parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'], help="The asset platform to package (from the Cache folder)")
         parser.add_argument('-ec', '--engine-centric', action='store_true', default=False, help='Option use the engine-centric work flow to export the project.')
         parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
         if o3de_context is None:
@@ -308,6 +311,7 @@ if "o3de_context" in globals():
                                   should_build_server_launcher=not args.no_server_launcher,
                                   should_build_unified_launcher=not args.no_unified_launcher,
                                   should_build_headless_server_launcher=not args.no_headless_server_launcher,
+                                  monolithic_build=not args.no_monolithic_build,
                                   engine_centric=args.engine_centric,
                                   allow_registry_overrides=args.allow_registry_overrides,
                                   tools_build_path=args.tools_build_path,
