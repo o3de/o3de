@@ -563,8 +563,8 @@ namespace UnitTest
                 ->RenderTargetAttachment(RHI::Format::R8G8B8A8_SNORM)
                 ->DepthStencilAttachment(RHI::Format::R32_FLOAT);
             builder.End(descriptorForDraw.m_renderAttachmentConfiguration.m_renderAttachmentLayout);
-
-            const RHI::SingleDevicePipelineState* pipelineState = shader->AcquirePipelineState(descriptorForDraw);
+            
+            const RHI::MultiDevicePipelineState* pipelineState = shader->AcquirePipelineState(descriptorForDraw);
             EXPECT_NE(pipelineState, nullptr);
         }
 

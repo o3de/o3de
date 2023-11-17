@@ -305,7 +305,7 @@ namespace AZ
 
             RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
-            drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState();
+            drawRequest.m_pipelineState = pipelineState->GetRHIPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
             drawRequest.m_streamBufferViews = m_reflectionRenderData->m_boxPositionBufferView;
             drawRequest.m_stencilRef = static_cast<uint8_t>(stencilRef);
             drawRequest.m_sortKey = m_sortKey;

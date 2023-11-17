@@ -74,7 +74,7 @@ namespace AZ
             AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
             // The shader variant (for choosing the different MSAA version) is sent to the RHI via the PipelineState
-            AZ::RHI::ConstPtr<AZ::RHI::SingleDevicePipelineState> m_msaaPipelineState;
+            AZ::RHI::ConstPtr<AZ::RHI::MultiDevicePipelineState> m_msaaPipelineState;
 
             AZ::Name m_msaaNoneName;
             AZ::Name m_msaaMode2xName;

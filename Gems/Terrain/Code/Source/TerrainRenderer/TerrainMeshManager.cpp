@@ -319,7 +319,7 @@ namespace Terrain
 
             AZ::RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
             drawRequest.m_listTag = drawData.m_drawListTag;
-            drawRequest.m_pipelineState = drawData.m_pipelineState;
+            drawRequest.m_pipelineState = drawData.m_pipelineState->GetDevicePipelineState(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
             drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
             drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
 
@@ -627,7 +627,7 @@ namespace Terrain
 
                 m_parentScene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
-                const AZ::RHI::SingleDevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+                const AZ::RHI::MultiDevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
                 if (!pipelineState)
                 {
                     AZ_Error(
