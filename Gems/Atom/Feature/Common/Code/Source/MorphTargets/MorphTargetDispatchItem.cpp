@@ -76,7 +76,7 @@ namespace AZ
 
             InitRootConstants(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
 
-            m_dispatchItem.m_pipelineState = m_morphTargetShader->AcquirePipelineState(pipelineStateDescriptor);
+            m_dispatchItem.m_pipelineState = m_morphTargetShader->AcquirePipelineState(pipelineStateDescriptor)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             // Get the threads-per-group values from the compute shader [numthreads(x,y,z)]
             auto& arguments = m_dispatchItem.m_arguments.m_direct;

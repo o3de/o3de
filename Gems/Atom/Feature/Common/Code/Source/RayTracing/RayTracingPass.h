@@ -72,7 +72,7 @@ namespace AZ
             Data::Instance<RPI::Shader> m_missShader;
             Data::Instance<RPI::Shader> m_closestHitShader;
             RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> m_rayTracingPipelineState;
-            RHI::ConstPtr<RHI::SingleDevicePipelineState> m_globalPipelineState;
+            RHI::ConstPtr<RHI::MultiDevicePipelineState> m_globalPipelineState;
             RHI::Ptr<RHI::SingleDeviceRayTracingShaderTable> m_rayTracingShaderTable;
             bool m_requiresViewSrg = false;
             bool m_requiresSceneSrg = false;

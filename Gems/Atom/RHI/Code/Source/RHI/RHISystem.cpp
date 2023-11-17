@@ -55,7 +55,7 @@ namespace AZ::RHI
         RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
 
         m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
-        m_pipelineStateCache = RHI::PipelineStateCache::Create(*m_devices[MultiDevice::DefaultDeviceIndex]);
+        m_pipelineStateCache = RHI::PipelineStateCache::Create(RHI::MultiDevice::AllDevices);
 
         frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
         frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_imageBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
