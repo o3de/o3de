@@ -908,6 +908,7 @@ namespace AZ
             rasterizerState.m_depthSlopeScale = raster.m_depthBiasSlopeScale;
             rasterizerState.m_triangleFillMode = ConvertFillMode(raster.m_fillMode);
             rasterizerState.m_depthClipMode = raster.m_depthClipEnable ? MTLDepthClipModeClip:MTLDepthClipModeClamp;
+            rasterizerState.UpdateHash();
         }
         
         bool IsDepthStencilMerged(RHI::Format format)

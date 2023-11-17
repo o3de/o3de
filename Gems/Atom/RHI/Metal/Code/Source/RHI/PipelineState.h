@@ -18,13 +18,16 @@ namespace AZ
         class ShaderStageFunction;
         struct RasterizerState
         {
-            MTLCullMode         m_cullMode;
-            float               m_depthBias;
-            float               m_depthSlopeScale;
-            float               m_depthBiasClamp;
-            MTLWinding          m_frontFaceWinding;
-            MTLTriangleFillMode m_triangleFillMode;
-            MTLDepthClipMode    m_depthClipMode;
+            MTLCullMode         m_cullMode = MTLCullModeNone;
+            float               m_depthBias = 0.0f;
+            float               m_depthSlopeScale = 0.0f;
+            float               m_depthBiasClamp = 0.0f;
+            MTLWinding          m_frontFaceWinding = MTLWindingClockwise;
+            MTLTriangleFillMode m_triangleFillMode = MTLTriangleFillModeFill;
+            MTLDepthClipMode    m_depthClipMode = MTLDepthClipModeClip;
+            HashValue64         m_hash = HashValue64{ 0 };
+            
+            void UpdateHash();
         };
 
         class PipelineState final

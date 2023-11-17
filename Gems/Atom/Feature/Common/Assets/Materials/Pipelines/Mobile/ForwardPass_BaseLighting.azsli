@@ -23,7 +23,6 @@
 #define ENABLE_SHADOWS 1
 #define ENABLE_FULLSCREEN_SHADOW 0
 #define ENABLE_LIGHT_CULLING 0
-#define ENABLE_SPHERE_LIGHTS 1   // Enabling this for mobile pipeline as point sphere lights support projected shadows.
 #define ENABLE_AREA_LIGHTS 0
 #define ENABLE_AREA_LIGHT_VALIDATION    0
 #define ENABLE_PHYSICAL_SKY 0
