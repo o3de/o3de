@@ -187,7 +187,7 @@ class AndroidProjectManifestEnvironment(object):
                 'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT'],
                 'OCULUS_INTENT_FILTER_CATEGORY':    oculus_intent_filter_category,
 
-                'ANDROID_MANIFEST_PACKAGE_OPTION': f'package="{package_name}',  # Legacy gradle 4.x support
+                'ANDROID_MANIFEST_PACKAGE_OPTION': f'package="{package_name}"',  # Legacy gradle 4.x support
             }
         except KeyError as e:
             raise common.LmbrCmdError(f"Missing key from android project settings for project at {project_path}:'{e}' ")

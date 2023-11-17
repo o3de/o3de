@@ -8,7 +8,7 @@
 
 set(LY_STRIP_DEBUG_SYMBOLS FALSE CACHE BOOL "Flag to strip debug symbols from the (non-debug) output binaries")
 
-# Check if 'strip' is available so that debug symbols can be stripped from output libraries and executables.
+# Check if 'llvm-strip' is available so that debug symbols can be stripped from output libraries and executables.
 find_program(LLVM_STRIP_TOOL llvm-strip)
 if (NOT LLVM_STRIP_TOOL)
     message(WARNING "Unable to locate 'strip' tool needed to strip debug symbols from the output target(s). "

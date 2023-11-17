@@ -22,14 +22,17 @@ logger = logging.getLogger('o3de.android')
 
 ANDROID_ARCH = 'arm64-v8a'
 
-ASSET_MODE_PAK = 'PAK'
-ASSET_MODE_LOOSE = 'LOOSE'
-
+ASSET_MODE_PAK     = 'PAK'
+ASSET_MODE_LOOSE   = 'LOOSE'
 ASSET_PLATFORM_KEY = 'android'
 
 MINIMUM_ANDROID_GRADLE_PLUGIN_VER = Version("8.0")
 
 IS_PLATFORM_WINDOWS = platform.system() == 'Windows'
+
+PAK_FILE_INSTRUCTIONS = "Make sure to create release bundles (Pak files) before building and deploying to an android device. Refer to " \
+                        "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more" \
+                        "information."
 
 
 class AndroidPostBuildError(Exception):
@@ -99,8 +102,8 @@ def safe_clear_folder(target_folder: Path, delete_folders: set = {}) -> None:
                 shutil.rmtree(str(target_item))
             else:
                 target_item.unlink()
-        except OSError as err:
-            raise AndroidPostBuildError(f"Error trying to unlink/delete {target_item}: {err}")
+        except OSError as os_err:
+            raise AndroidPostBuildError(f"Error trying to unlink/delete {target_item}: {os_err}")
 
 
 def synchronize_folders(src: Path, tgt: Path, copy_folders: set = {}) -> None:
@@ -140,7 +143,7 @@ def determine_intermediate_folder_from_compile_commands(android_app_root_path:Pa
     {android_app_root_path.as_posix()}/{native_build_path}/{build_config}/(.*)/{ANDROID_ARCH}
 
     :param android_app_root_path:   The root path to the 'app' source in the gradle build
-    :param native_build_path:       The specified path for the intermediate build folders
+    :param native_build_folder:     The specified path for the intermediate build folders
     :param build_config:            The build configuration
     :return: The intermediate folder name
     """
@@ -154,11 +157,6 @@ def determine_intermediate_folder_from_compile_commands(android_app_root_path:Pa
         raise AndroidPostBuildError(f"Unable to determine intermediate folder from the contents of {compile_commands_path}.")
     intermediate_folder_name = matched.group(1)
     return intermediate_folder_name
-
-
-PAK_FILE_INSTRUCTIONS = "Make sure to create release bundles (Pak files) before building and deploying to an android device. Refer to " \
-                        "https://www.docs.o3de.org/docs/user-guide/packaging/asset-bundler/bundle-assets-for-release/ for more" \
-                        "information."
 
 
 def apply_pak_layout(project_root: Path, asset_bundle_folder: str, target_layout_root: Path) -> None:
@@ -200,7 +198,7 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app
     :param project_root:            The project folder root to look for the loose assets
     :param target_layout_root:      The target layout destination of the loose assets
     :param android_app_root_path:   The root of the 'app' project in the gradle script
-    :param native_build_folder:     The subfolder where the intermediate native project files are generated
+    :param native_build_folder:     The sub folder where the intermediate native project files are generated
     :param build_config:            The build configuration used for the native build
     """
 
@@ -228,6 +226,7 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app
             target_asset_registry_path = target_layout_root / 'registry'
             if not target_asset_registry_path.is_dir():
                 target_asset_registry_path.mkdir(parents=True, exist_ok=True)
+            # Copy each item individually into the target folder
             for src_item in registry_source_folder.iterdir():
                 if src_item.is_file():
                     shutil.copy2(str(src_item), str(target_asset_registry_path / src_item.name))

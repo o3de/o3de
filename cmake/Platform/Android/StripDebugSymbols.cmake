@@ -16,9 +16,8 @@ set(GNU_STRIP_TOOL ${CMAKE_ARGV3})          # GNU_STRIP_TOOL      : The location
 set(STRIP_TARGET ${CMAKE_ARGV4})            # STRIP_TARGET        : The built binary to process
 set(TARGET_TYPE ${CMAKE_ARGV5})             # TARGET_TYPE         : The target type (STATIC_LIBRARY, MODULE_LIBRARY, SHARED_LIBRARY, EXECUTABLE, or APPLICATION)
 
-# This script only supports executables, applications, modules, static libraries, and shared libraries
-if (NOT ${TARGET_TYPE} STREQUAL "STATIC_LIBRARY" AND
-    NOT ${TARGET_TYPE} STREQUAL "MODULE_LIBRARY" AND
+# This script only supports executables, applications, modules and shared libraries
+if (NOT ${TARGET_TYPE} STREQUAL "MODULE_LIBRARY" AND
     NOT ${TARGET_TYPE} STREQUAL "SHARED_LIBRARY" AND
     NOT ${TARGET_TYPE} STREQUAL "EXECUTABLE" AND
     NOT ${TARGET_TYPE} STREQUAL "APPLICATION")
