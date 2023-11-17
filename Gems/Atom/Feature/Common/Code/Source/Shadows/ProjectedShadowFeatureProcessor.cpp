@@ -766,7 +766,7 @@ namespace AZ::Render
         RHI::InputStreamLayoutBuilder layoutBuilder;
         pipelineStateDescriptor.m_inputStreamLayout = layoutBuilder.End();
 
-        const RHI::SingleDevicePipelineState* pipelineState = m_clearShadowShader->AcquirePipelineState(pipelineStateDescriptor);
+        const RHI::MultiDevicePipelineState* pipelineState = m_clearShadowShader->AcquirePipelineState(pipelineStateDescriptor);
         if (!pipelineState)
         {
             AZ_Assert(false, "Shader '%s'. Failed to acquire default pipeline state", shaderAsset->GetName().GetCStr());
@@ -779,7 +779,7 @@ namespace AZ::Render
 
         RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
         drawRequest.m_listTag = m_clearShadowShader->GetDrawListTag();
-        drawRequest.m_pipelineState = pipelineState;
+        drawRequest.m_pipelineState = pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
         drawRequest.m_sortKey = AZStd::numeric_limits<RHI::DrawItemSortKey>::min();
 
         drawPacketBuilder.AddDrawItem(drawRequest);

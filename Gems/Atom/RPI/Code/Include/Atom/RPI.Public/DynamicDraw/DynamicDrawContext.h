@@ -198,7 +198,7 @@ namespace AZ
             void ReInit();
 
             // Get rhi pipeline state which matches current states
-            const RHI::SingleDevicePipelineState* GetCurrentPipelineState();
+            const RHI::MultiDevicePipelineState* GetCurrentPipelineState();
                         
             struct MultiStates
             {
@@ -229,10 +229,10 @@ namespace AZ
             uint8_t m_stencilRef = 0;
 
             // Cached RHI pipeline states for different combination of render states 
-            AZStd::unordered_map<HashValue64, const RHI::SingleDevicePipelineState*> m_cachedRhiPipelineStates;
+            AZStd::unordered_map<HashValue64, const RHI::MultiDevicePipelineState*> m_cachedRhiPipelineStates;
 
             // Current RHI pipeline state for current MultiStates
-            const RHI::SingleDevicePipelineState* m_rhiPipelineState = nullptr;
+            const RHI::MultiDevicePipelineState* m_rhiPipelineState = nullptr;
 
             // Data for draw item
             Ptr<PipelineStateForDraw> m_pipelineState;

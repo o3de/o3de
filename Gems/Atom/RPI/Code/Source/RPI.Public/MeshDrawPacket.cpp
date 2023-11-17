@@ -417,7 +417,7 @@ namespace AZ
 
                 parentScene.ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
-                const RHI::SingleDevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+                const RHI::MultiDevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
                 if (!pipelineState)
                 {
                     AZ_Error("MeshDrawPacket", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
@@ -452,7 +452,7 @@ namespace AZ
 
                 RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
-                drawRequest.m_pipelineState = pipelineState;
+                drawRequest.m_pipelineState = pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
                 drawRequest.m_streamBufferViews = streamBufferViews;
                 drawRequest.m_stencilRef = m_stencilRef;
                 drawRequest.m_sortKey = m_sortKey;

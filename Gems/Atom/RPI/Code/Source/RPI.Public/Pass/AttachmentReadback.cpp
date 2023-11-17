@@ -152,7 +152,7 @@ namespace AZ
             const auto& shaderVariant = m_decomposeShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
 
-            m_dispatchItem.m_pipelineState = m_decomposeShader->AcquirePipelineState(pipelineStateDescriptor);
+            m_dispatchItem.m_pipelineState = m_decomposeShader->AcquirePipelineState(pipelineStateDescriptor)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             m_dispatchItem.m_shaderResourceGroupCount = 1;
             m_dispatchItem.m_shaderResourceGroups[0] = m_decomposeSrg->GetRHIShaderResourceGroup();

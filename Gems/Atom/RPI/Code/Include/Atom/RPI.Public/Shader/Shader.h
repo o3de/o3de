@@ -15,7 +15,8 @@
 #include <Atom/RPI.Reflect/Shader/IShaderVariantFinder.h>
 
 #include <Atom/RHI/DrawListTagRegistry.h>
-#include <Atom/RHI/SingleDevicePipelineLibrary.h>
+#include <Atom/RHI/MultiDevicePipelineLibrary.h>
+#include <Atom/RHI/MultiDevicePipelineState.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 #include <AzCore/IO/SystemFile.h>
@@ -46,9 +47,9 @@ namespace AZ
         //!  3) Find the ShaderVariantStableId using the ShaderVariantId generated from the configured ShaderOptionGroup.
         //!  4) Acquire the ShaderVariant instance using the ShaderVariantStableId.
         //!  5) Configure a pipeline state descriptor on the variant; make local overrides as necessary (e.g. to configure runtime render state).
-        //!  6) Acquire a RHI::SingleDevicePipelineState instance from the shader using the configured pipeline state descriptor.
+        //!  6) Acquire a RHI::MultiDevicePipelineState instance from the shader using the configured pipeline state descriptor.
         //! 
-        //! Remember that the returned RHI::SingleDevicePipelineState instance lifetime is tied to the Shader lifetime.
+        //! Remember that the returned RHI::MultiDevicePipelineState instance lifetime is tied to the Shader lifetime.
         //! If you need guarantee lifetime, it is safe to take a reference on the returned pipeline state.
         class Shader final
             : public Data::InstanceData
@@ -122,7 +123,7 @@ namespace AZ
             const ShaderOutputContract& GetOutputContract() const;
             
             //! Acquires a pipeline state directly from a descriptor.
-            const RHI::SingleDevicePipelineState* AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const;
+            const RHI::MultiDevicePipelineState* AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const;
 
             //! Finds and returns the shader resource group asset with the requested name. Returns an empty handle if no matching group was found.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindShaderResourceGroupLayout(const Name& shaderResourceGroupName) const;
@@ -168,7 +169,7 @@ namespace AZ
 
             void Shutdown();
 
-            ConstPtr<RHI::PipelineLibraryData> LoadPipelineLibrary() const;
+            AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>> LoadPipelineLibrary() const;
             void SavePipelineLibrary() const;
             
             const ShaderVariant& GetVariantInternal(ShaderVariantStableId shaderVariantStableId);
@@ -194,7 +195,7 @@ namespace AZ
             RHI::PipelineStateCache* m_pipelineStateCache = nullptr;
 
             //! A handle to the pipeline library in the pipeline state cache.
-            RHI::SingleDevicePipelineLibraryHandle m_pipelineLibraryHandle;
+            RHI::MultiDevicePipelineLibraryHandle m_pipelineLibraryHandle;
 
             //! Used for thread safety for FindVariantStableId() and GetVariant().
             AZStd::shared_mutex m_variantCacheMutex;
@@ -210,8 +211,7 @@ namespace AZ
             RHI::DrawListTag m_drawListTag;
 
             //! PipelineLibrary file name
-            char m_pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
-
+            AZStd::unordered_map<int, AZStd::string> m_pipelineLibraryPaths;
         };
     }
 }

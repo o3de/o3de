@@ -35,7 +35,7 @@ namespace AZ
 
             void LoadShader(AZStd::string shaderFilePath,
                             Data::Instance<RPI::Shader>& shader,
-                            const RHI::SingleDevicePipelineState*& pipelineState,
+                            const RHI::MultiDevicePipelineState*& pipelineState,
                             RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
                             RHI::DispatchDirect& dispatchArgs);
 
@@ -58,8 +58,8 @@ namespace AZ
             // shader
             Data::Instance<RPI::Shader> m_rowShader;
             Data::Instance<RPI::Shader> m_columnShader;
-            const RHI::SingleDevicePipelineState* m_rowPipelineState = nullptr;
-            const RHI::SingleDevicePipelineState* m_columnPipelineState = nullptr;
+            const RHI::MultiDevicePipelineState* m_rowPipelineState = nullptr;
+            const RHI::MultiDevicePipelineState* m_columnPipelineState = nullptr;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_rowSrgLayout;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_columnSrgLayout;
             RHI::DispatchDirect m_rowDispatchArgs;

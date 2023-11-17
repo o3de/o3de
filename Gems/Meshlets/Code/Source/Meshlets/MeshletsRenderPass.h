@@ -90,7 +90,7 @@ namespace AZ
             // To help create the pipeline state 
             RPI::PassDescriptor m_passDescriptor;
 
-            const RHI::SingleDevicePipelineState* m_pipelineState = nullptr;
+            const RHI::MultiDevicePipelineState* m_pipelineState = nullptr;
             RPI::ViewPtr m_currentView = nullptr;
         };
 
