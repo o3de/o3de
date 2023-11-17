@@ -1581,6 +1581,8 @@ class AndroidProjectGenerator(object):
             syncLayoutCommandLineSource = [f'{python_full_path.resolve().as_posix()}',
                                             'android_post_build.py', az_android_dst_path.resolve().as_posix(),  # android_app_root
                                             '--project-root', self._project_path.as_posix(),
+                                            '--native-build-folder', self._native_build_path,
+                                            '--build-config', native_config_lower,
                                             '--gradle-version', self._gradle_version,
                                             '--asset-mode', self._asset_mode,
                                             '--asset-bundle-folder', self._src_pak_file_path]

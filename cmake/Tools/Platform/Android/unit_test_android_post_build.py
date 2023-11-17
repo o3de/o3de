@@ -159,7 +159,10 @@ def test_apply_loose_layout_no_loose_assets(tmpdir):
 
     try:
         android_post_build.apply_loose_layout(project_root=src_path,
-                                              target_layout_root=tgt_path)
+                                              target_layout_root=tgt_path,
+                                              android_app_root_path=pathlib.Path(tmpdir.join('dst/android/app')),
+                                              native_build_folder='o3de',
+                                              build_config='profile')
     except android_post_build.AndroidPostBuildError as e:
         assert 'Assets have not been built' in str(e)
     else:
@@ -178,7 +181,32 @@ def test_apply_loose_layout_success(tmpdir):
     tgt_path = pathlib.Path(tmpdir.join('dst/android/app/assets').realpath())
 
     android_post_build.apply_loose_layout(project_root=src_path,
-                                          target_layout_root=tgt_path)
+                                          target_layout_root=tgt_path,
+                                          android_app_root_path=pathlib.Path(tmpdir.join('dst/android/app')),
+                                          native_build_folder='o3de',
+                                          build_config='profile')
 
     validate_engine_android_pak = tmpdir.join('dst/android/app/assets/engine.json')
     assert pathlib.Path(validate_engine_android_pak.realpath()).exists()
+
+
+def test_determine_intermediate_folder_from_compile_commands(tmpdir):
+    test_intermediate_folder = "6g15r5p3"
+    test_native_build_path = 'o3de'
+    test_build_config = 'profile'
+
+    test_compile_commands = f"""
+    "directory": "D:/github/NewspaperDeliveryGame/build/android_loose/app/{test_native_build_path}/{test_build_config}/{test_intermediate_folder}/arm64-v8a",
+    "command": "C:\\Tools\\android_sdk\\ndk\\25.2.9519653\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe --target=aarch64-none-linux-android31 --sysroot=C:/Tools/android_sdk/ndk/25.2.9519653/toolchains/llvm/prebuilt/windows-x86_64/sysroot -DANDROID -DAZ_BUILD_CONFIGURATION_TYPE=\\\"profile\\\" -DAZ_ENABLE_DEBUG_TOOLS -DAZ_ENABLE_TRACING -DAZ_MONOLITHIC_BUILD -DAZ_PROFILE_BUILD -DENABLE_TYPE_INFO -DLINUX -DLINUX64 -DMOBILE -DNDEBUG -DNDK_REV_MAJOR=25 -DNDK_REV_MINOR=2 -D_FORTIFY_SOURCE=2 -D_HAS_C9X -D_HAS_EXCEPTIONS=0 -D_LINUX -D_PROFILE -ID:/github/o3de/Code/Framework/AtomCore/. -ID:/github/o3de/Code/Framework/AzCore/. -ID:/github/o3de/Code/Framework/AzCore/Platform/Android -ID:/github/o3de/Code/Framework/AzCore/Platform/Common -isystem C:/Users/spham/.o3de/3rdParty/packages/Lua-5.4.4-rev1-android/Lua/include -isystem C:/Users/spham/.o3de/3rdParty/packages/RapidJSON-1.1.0-rev1-multiplatform/RapidJSON/include -isystem C:/Users/spham/.o3de/3rdParty/packages/RapidXML-1.13-rev1-multiplatform/RapidXML/include -isystem C:/Users/spham/.o3de/3rdParty/packages/zlib-1.2.11-rev5-android/zlib/include -isystem C:/Users/spham/.o3de/3rdParty/packages/zstd-1.35-multiplatform/zstd/lib -isystem C:/Users/spham/.o3de/3rdParty/packages/cityhash-1.1-multiplatform/cityhash/src  -fno-exceptions -fvisibility=hidden -fvisibility-inlines-hidden -Wall -Werror -Wno-inconsistent-missing-override -Wrange-loop-analysis -Wno-unknown-warning-option -Wno-parentheses -Wno-reorder -Wno-switch -Wno-undefined-var-template -femulated-tls -ffast-math -fno-aligned-allocation -fms-extensions -fno-aligned-allocation -stdlib=libc++  -O2 -g -fstack-protector-all -fstack-check -g -gdwarf-2 -fPIC -std=c++17 -o o3de\\Code\\Framework\\AtomCore\\CMakeFiles\\AtomCore.dir\\Unity\\unity_0_cxx.cxx.o -c D:\\github\\NewspaperDeliveryGame\\build\\android_loose\\app\\{test_native_build_path}\\{test_build_config}\\{test_intermediate_folder}\\arm64-v8a\\{test_native_build_path}\\Code\\Framework\\AtomCore\\CMakeFiles\\AtomCore.dir\\Unity\\unity_0_cxx.cxx",
+    "file": "D:\\github\\NewspaperDeliveryGame\\build\\android_loose\\app\\{test_native_build_path}\\{test_build_config}\\{test_intermediate_folder}\\arm64-v8a\\{test_native_build_path}\\Code\\Framework\\AtomCore\\CMakeFiles\\AtomCore.dir\\Unity\\unity_0_cxx.cxx"
+      """
+
+    tmpdir.ensure(f'android/o3de/tools/profile/{android_post_build.ANDROID_ARCH}', dir=True)
+
+    compile_commands_file= tmpdir.join(f'android/o3de/tools/profile/{android_post_build.ANDROID_ARCH}/compile_commands.json')
+    compile_commands_file.write(test_compile_commands)
+
+    result = android_post_build.determine_intermediate_folder_from_compile_commands(android_app_root_path=pathlib.Path(tmpdir.join('android').realpath()),
+                                                                                    native_build_folder=test_native_build_path,
+                                                                                    build_config=test_build_config)
+    assert test_intermediate_folder == result
