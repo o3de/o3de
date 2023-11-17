@@ -16,6 +16,13 @@
 // in that shader options allow more user flexibility to adjust materials at runtime, whereas
 // these #define options are for customizing and optimizing material types (like BasePBR)
 
+
+#ifndef MAX_SPECULAR_VIEWS
+#define MAX_SPECULAR_VIEWS 1
+#endif
+
+#define ENABLE_MULTIPLE_SPECULAR_VIEWS (MAX_SPECULAR_VIEWS > 1)
+
 // --- Light Defines ---
 
 #ifndef ENABLE_SHADOWS
