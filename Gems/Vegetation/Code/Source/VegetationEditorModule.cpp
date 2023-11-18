@@ -72,4 +72,8 @@ namespace Vegetation
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_VegetationEditor, Vegetation::VegetationEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), Vegetation::VegetationEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Vegetation_Editor, Vegetation::VegetationEditorModule)
+#endif

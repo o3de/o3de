@@ -46,4 +46,8 @@ namespace Profiler
     };
 }// namespace Profiler
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, ImGui), Profiler::ProfilerImGuiModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_ProfilerImGui, Profiler::ProfilerImGuiModule)
+#endif

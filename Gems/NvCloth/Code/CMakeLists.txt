@@ -28,7 +28,7 @@ ly_add_target(
         PUBLIC
             3rdParty::NvCloth
             AZ::AzFramework
-            Gem::AtomLyIntegration_CommonFeatures.Public
+            Gem::CommonFeaturesAtom.Public
         PRIVATE
             Gem::EMotionFXStaticLib
 )
@@ -50,6 +50,15 @@ ly_add_target(
         PRIVATE
             Gem::${gem_name}.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Module.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 # use the NvCloth module in clients and servers:
 ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})

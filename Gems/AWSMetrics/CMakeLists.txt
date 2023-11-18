@@ -6,6 +6,10 @@
 #
 #
 
+o3de_gem_setup("AWSMetrics")
+
+ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
+
 add_subdirectory(Code)
 
 ly_install_directory(DIRECTORIES cdk)
