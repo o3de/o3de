@@ -19,7 +19,6 @@
 
 namespace AZ::RHI
 {
-    class SingleDeviceQuery;
     class ScopeProducer;
 
     //! Supported operations for rendering predication.
