@@ -26,18 +26,18 @@ namespace AZ
 
         RHI::ResultCode TimestampQueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
-            AZStd::span<const RHI::Ptr<RHI::SingleDeviceQuery>> rhiQueryArray = GetRhiQueryArray();
-            AZ::RHI::Ptr<AZ::RHI::SingleDeviceQuery> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
+            AZStd::span<const RHI::Ptr<RHI::MultiDeviceQuery>> rhiQueryArray = GetRhiQueryArray();
+            AZ::RHI::Ptr<AZ::RHI::MultiDeviceQuery> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
 
-            return beginQuery->WriteTimestamp(commandList);
+            return beginQuery->GetDeviceQuery(RHI::MultiDevice::DefaultDeviceIndex)->WriteTimestamp(commandList);
         }
 
         RHI::ResultCode TimestampQueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
-            AZStd::span<const RHI::Ptr<RHI::SingleDeviceQuery>> rhiQueryArray = GetRhiQueryArray();
-            AZ::RHI::Ptr<AZ::RHI::SingleDeviceQuery> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
+            AZStd::span<const RHI::Ptr<RHI::MultiDeviceQuery>> rhiQueryArray = GetRhiQueryArray();
+            AZ::RHI::Ptr<AZ::RHI::MultiDeviceQuery> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
 
-            return endQuery->WriteTimestamp(commandList);
+            return endQuery->GetDeviceQuery(RHI::MultiDevice::DefaultDeviceIndex)->WriteTimestamp(commandList);
         }
     };  // Namespace RPI
 };  // Namespace AZ
