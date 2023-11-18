@@ -419,14 +419,14 @@ namespace AzToolsFramework
 
             AZ::IO::Path workingPath{ workingDirectory };
             AZ::IO::Path fullPath = workingPath / fileToAdd;
-            AZ::IO::PathView relativePath = AZ::IO::PathView{ fullPath }.LexicallyRelative(workingPath);
+            AZ::IO::Path relativePath = fullPath.LexicallyRelative(workingPath);
 
             AZStd::vector<char> fileBuffer;
             bool success = false;
             if (ArchiveUtils::ReadFile(fullPath, AZ::IO::OpenMode::ModeRead, fileBuffer))
             {
                 int result = archive->UpdateFile(
-                    relativePath.Native(), fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
+                    relativePath.c_str(), fileBuffer.data(), fileBuffer.size(), s_compressionMethod,
                     s_compressionLevel, s_compressionCodec);
 
                 success = (result == AZ::IO::ZipDir::ZD_ERROR_SUCCESS);
