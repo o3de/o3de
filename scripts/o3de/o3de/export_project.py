@@ -196,11 +196,13 @@ def get_default_asset_platform():
                                             'darwin':  'mac' }
     return host_platform_to_asset_platform_map.get(platform.system().lower(), "")
 
-def get_platform_installer_folder_name():
+def get_platform_installer_folder_name(selected_platform=None):
+    if not selected_platform:
+        selected_platform = CURRENT_PLATFORM
     host_platform_to_installer_name_map = {'pc': 'Windows',
                                            'linux': 'Linux',
                                            'mac': 'Mac'}
-    return host_platform_to_installer_name_map.get(platform.lower(), "")
+    return host_platform_to_installer_name_map.get(selected_platform, "")
 
 def process_command(args: list,
                     cwd: pathlib.Path = None,
