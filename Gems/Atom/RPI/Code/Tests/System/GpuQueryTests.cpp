@@ -15,7 +15,6 @@
 
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/FrameGraph.h>
-#include <Atom/RHI/SingleDeviceQueryPool.h>
 
 #include <AzTest/AzTest.h>
 
