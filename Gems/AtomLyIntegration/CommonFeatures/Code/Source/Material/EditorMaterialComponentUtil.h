@@ -47,6 +47,7 @@ namespace AZ
                 AZ::RPI::MaterialTypeSourceData m_materialTypeSourceData;
                 AZStd::string m_materialSourcePath;
                 AZStd::string m_materialTypeSourcePath;
+                AZStd::string m_originalMaterialTypeSourcePath;
                 AZStd::string m_materialParentSourcePath;
                 MaterialPropertyOverrideMap m_materialPropertyOverrideMap = {};
             };

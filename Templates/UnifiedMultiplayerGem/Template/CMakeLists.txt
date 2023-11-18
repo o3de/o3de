@@ -20,6 +20,10 @@ endif()
 
 set(gem_json ${gem_path}/gem.json)
 
+# Read the version field from the gem.json
+set(gem_version, "0.0.0")
+o3de_read_json_key(gem_version ${gem_json} "version")
+
 o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
 
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")

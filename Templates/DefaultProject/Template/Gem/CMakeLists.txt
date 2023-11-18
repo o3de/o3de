@@ -20,6 +20,10 @@ endif()
 
 set(gem_json ${gem_path}/gem.json)
 
+# Read the version field from the gem.json
+set(gem_version, "0.0.0")
+o3de_read_json_key(gem_version ${gem_json} "version")
+
 o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
 
 # Currently we are in the ${Name}/Code folder: ${CMAKE_CURRENT_LIST_DIR}
@@ -76,6 +80,19 @@ ly_add_target(
             Gem::${gem_name}.Private.Object
             AZ::AzCore
 )
+
+# Include the gem name into the Client Module source file
+# for use with the AZ_DECLARE_MODULE_CLASS macro
+# This is to allow renaming of the gem to also cause
+# the CreateModuleClass_Gem_<gem-name> function which
+# is used to bootstrap the gem in monolithic builds to link to the new gem name
+ly_add_source_properties(
+SOURCES
+    Source/${Name}Module.cpp
+PROPERTY COMPILE_DEFINITIONS
+    VALUES
+        O3DE_GEM_NAME=${gem_name}
+        O3DE_GEM_VERSION=${gem_version})
 
 # if enabled, ${gem_name} is used by all kinds of applications
 ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})

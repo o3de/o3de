@@ -42,7 +42,8 @@ namespace AZ
             size_t imageDataSize,
             Uuid id)
         {
-            Data::Instance<StreamingImage> existingImage = Data::InstanceDatabase<StreamingImage>::Instance().Find(Data::InstanceId::CreateFromAssetId(id));
+            const Data::InstanceId instanceId = Data::InstanceId::CreateUuid(id);
+            Data::Instance<StreamingImage> existingImage = Data::InstanceDatabase<StreamingImage>::Instance().Find(instanceId);
             AZ_Error("StreamingImage", !existingImage, "StreamingImage::CreateFromCpuData found an existing entry in the instance database for the provided id.");
 
             RHI::ImageDescriptor imageDescriptor;
@@ -93,20 +94,14 @@ namespace AZ
                 }
             }
 
-            return StreamingImage::FindOrCreate(streamingImageAsset);
+            return Data::InstanceDatabase<StreamingImage>::Instance().FindOrCreate(instanceId, streamingImageAsset);
         }
 
         Data::Instance<StreamingImage> StreamingImage::CreateInternal(StreamingImageAsset& streamingImageAsset)
         {
             Data::Instance<StreamingImage> streamingImage = aznew StreamingImage();
             const RHI::ResultCode resultCode = streamingImage->Init(streamingImageAsset);
-
-            if (resultCode == RHI::ResultCode::Success)
-            {
-                return streamingImage;
-            }
-
-            return nullptr;
+            return resultCode == RHI::ResultCode::Success ? streamingImage : nullptr;
         }
 
         RHI::ResultCode StreamingImage::Init(StreamingImageAsset& imageAsset)
