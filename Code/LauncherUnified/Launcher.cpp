@@ -426,6 +426,8 @@ namespace O3DELauncher
         gameApplication.SetHeadless(false);
 #endif // O3DE_HEADLESS_SERVER
 
+        gameApplication.SetDedicatedServer(IsDedicatedServer());
+
         // Finally add the "launcher" specialization tag into the Settings Registry
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, LauncherFilenameTag);
 
@@ -462,9 +464,6 @@ namespace O3DELauncher
             gameApplicationStartupParams.m_createStaticModulesCallback = CreateStaticModules;
             gameApplicationStartupParams.m_loadDynamicModules = false;
         #endif // defined(AZ_MONOLITHIC_BUILD)
-
-            const char* isDedicatedServerCommand = IsDedicatedServer() ? "sv_isDedicated true" : "sv_isDedicated false";
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(isDedicatedServerCommand);
 
             gameApplication.Start({}, gameApplicationStartupParams);
 

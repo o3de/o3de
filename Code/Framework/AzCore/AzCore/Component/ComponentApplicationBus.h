@@ -44,6 +44,7 @@ namespace AZ
         bool IsGame() const;
         bool IsHeadless() const;
         bool IsValid() const;
+        bool IsDedicatedServer() const;
 
         enum class Masks
         {
@@ -52,6 +53,7 @@ namespace AZ
             Tool = 1 << 1,
             Game = 1 << 2,
             Headless = 1 << 3,
+            DedicatedServer = 1 << 4,
         };
         Masks m_maskValue = Masks::Invalid;
     };
@@ -63,6 +65,7 @@ namespace AZ
     inline bool ApplicationTypeQuery::IsGame() const { return (m_maskValue & Masks::Game) == Masks::Game; }
     inline bool ApplicationTypeQuery::IsHeadless() const { return (m_maskValue & Masks::Headless) == Masks::Headless; }
     inline bool ApplicationTypeQuery::IsValid() const { return m_maskValue != Masks::Invalid; }
+    inline bool ApplicationTypeQuery::IsDedicatedServer() const { return (m_maskValue & Masks::DedicatedServer) == Masks::DedicatedServer; }
 
     using EntityAddedEvent = AZ::Event<AZ::Entity*>;
     using EntityRemovedEvent = AZ::Event<AZ::Entity*>;

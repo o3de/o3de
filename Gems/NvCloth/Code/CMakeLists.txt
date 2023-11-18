@@ -51,14 +51,13 @@ ly_add_target(
             Gem::${gem_name}.Static
 )
 
-# use the NvCloth module in clients and servers:
+# use the NvCloth module in client and unified targets, but not dedicated servers:
 ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
-ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 # Add each "dependencies" entry from the NvCloth gem.json as a dependency to the
-# NvCloth Clients, Servers and Unified targets
-o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Clients Servers Unified)
+# NvCloth Clients and Unified targets, but not the dedicated server target
+o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Clients Unified)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

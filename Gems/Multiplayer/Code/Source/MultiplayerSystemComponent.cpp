@@ -95,7 +95,6 @@ namespace Multiplayer
     AZ_CVAR(uint16_t, sv_portRange, 999, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The range of ports the host will incrementally attempt to bind to when initializing");
     AZ_CVAR(AZ::CVarFixedString, sv_map, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The map the server should load");
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
-    AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
     AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "[DEPRECATED: use sv_terminateOnPlayerExit instead] Whether a dedicated server shuts down if all existing connections disconnect.");
     AZ_CVAR(bool, sv_terminateOnPlayerExit, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
     AZ_CVAR(AZ::TimeMs, sv_serverSendRateMs, AZ::TimeMs{ 50 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of milliseconds between each network update");
@@ -133,7 +132,6 @@ namespace Multiplayer
     AZ_CVAR(bool, bg_parallelNotifyPreRender, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "If true, OnPreRender events will be sent in parallel from job threads. Please make sure the handlers of the event are thread safe.");
     
-
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         NetworkSpawnable::Reflect(context);
@@ -275,7 +273,7 @@ namespace Multiplayer
             m_metricsEvent.Enqueue(bg_captureTransportPeriod, true);
         }
 
-        // Wait for all systems to activate because allowing this server or client to host or connect.
+        // Wait for all system components to activate before allowing this server or client to host or connect.
         // Connecting too soon causes a "version mismatch" because all of the system components haven't registered their multiplayer components.
         if (const auto settingsRegistry = AZ::SettingsRegistry::Get())
         {
@@ -308,29 +306,26 @@ namespace Multiplayer
                         *this,
                         &MultiplayerSystemComponent::ConnectConsoleCommand);
 
-                    // ExecuteDeferredConsoleCommands will execute any previously deferred "host" or "connect" commands now that they have been registered with the AZ Console
+                    // ExecuteDeferredConsoleCommands will execute any previously deferred "host" or "connect" commands now that they have
+                    // been registered with the AZ Console
                     console->ExecuteDeferredConsoleCommands();
 
-                    // Don't access cvars directly (their values might be stale https://github.com/o3de/o3de/issues/5537)
-                    bool isDedicatedServer = false;
-                    bool dedicatedServerHostOnStartup = false;
-                    if (console->GetCvarValue("sv_isDedicated", isDedicatedServer) != AZ::GetValueResult::Success)
-                    {
-                        AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_isDedicated).")
-                        return;
-                    }
+                    #if AZ_TRAIT_SERVER
+                        const auto shouldHostOnStartup = [&console]() -> bool
+                        {
+                            bool result{};
+                            if (console->GetCvarValue("sv_dedicated_host_onstartup", result) != AZ::GetValueResult::Success)
+                            {
+                                AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_dedicated_host_onstartup).")
+                                return false;
+                            }
 
-                    if (console->GetCvarValue("sv_dedicated_host_onstartup", dedicatedServerHostOnStartup) != AZ::GetValueResult::Success)
-                    {
-                        AZLOG_WARN("Multiplayer system failed to access cvar on startup (sv_dedicated_host_onstartup).")
-                        return;
-                    }
+                            return result;
+                        }();
 
-                    // Dedicated servers will automatically begin hosting
-                    if (isDedicatedServer && dedicatedServerHostOnStartup)
-                    {
-                        this->StartHosting(sv_port, /*is dedicated*/ true);
-                    }
+                        // Dedicated servers will automatically begin hosting
+                        StartHosting(sv_port, shouldHostOnStartup);
+                    #endif
                 },
                 "SystemComponentsActivated",
                 /*autoRegisterEvent*/ true);
@@ -499,7 +494,14 @@ namespace Multiplayer
             }
         }
 
-        Multiplayer::MultiplayerAgentType serverType = sv_isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
+        const auto isDedicated = []() -> bool
+        {
+            AZ::ApplicationTypeQuery appTypeResult{};
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appTypeResult);
+            return appTypeResult.IsDedicatedServer();
+        }();
+        
+        const Multiplayer::MultiplayerAgentType serverType = isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
         InitializeMultiplayer(serverType);
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
@@ -1874,7 +1876,14 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::HostConsoleCommand([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        StartHosting(sv_port, sv_isDedicated);
+        const auto isDedicated = []() -> bool
+        {
+            AZ::ApplicationTypeQuery appTypeResult{};
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appTypeResult);
+            return appTypeResult.IsDedicatedServer();
+        }();
+
+        StartHosting(sv_port, isDedicated);
     }
 
     void sv_launch_local_client([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

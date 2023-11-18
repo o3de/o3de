@@ -112,25 +112,24 @@ namespace Multiplayer
         m_drawParams.m_position = AZ::Vector3(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height), 1.0f) + AZ::Vector3(viewportConnectionBottomRightBorderPadding) * viewport->GetDpiScalingFactor();
 
         AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
+        
         switch (agentType)
         {
         case MultiplayerAgentType::Uninitialized:
-            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
             {
-                bool isDedicatedServer = false;
-                if (console->GetCvarValue("sv_isDedicated", isDedicatedServer) != AZ::GetValueResult::Success)
+                const auto isDedicated = []() -> bool
                 {
-                    AZLOG_WARN("MultiplayerConnectionViewport failed to access cvar  (sv_isDedicated).")
-                    break;
-                }
-
-                if (isDedicatedServer)
+                    AZ::ApplicationTypeQuery appTypeResult{};
+                    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appTypeResult);
+                    return appTypeResult.IsDedicatedServer();
+                }();
+                if (isDedicated)
                 {
                     DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
                     DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
                 }
             }
-            
+
             break;
         case MultiplayerAgentType::Client:
             {

@@ -3812,8 +3812,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             registry, Editor::GetBuildTargetName());
 
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
-
         if (!AZToolsApp.Start())
         {
             return -1;
