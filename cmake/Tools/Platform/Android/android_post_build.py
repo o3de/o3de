@@ -39,7 +39,7 @@ class AndroidPostBuildError(Exception):
     pass
 
 
-def copy_or_create_link(src: Path, tgt: Path, copy_folders: set = {}):
+def copy_or_create_link(src: Path, tgt: Path):
     """
     Copy or create a link/junction depending on the source type. If this is a file, then perform file copy from the
     source to the target. If it is a directory, then create a junction(windows) or symlink(linux) from the source to
@@ -47,7 +47,6 @@ def copy_or_create_link(src: Path, tgt: Path, copy_folders: set = {}):
 
     :param src:             The source to copy/link from
     :param tgt:             The target tp copy/link to
-    :param copy_folders:    Optional list of folder names that will perform a copy instead of a junction
     """
 
     assert src.exists()
@@ -63,23 +62,19 @@ def copy_or_create_link(src: Path, tgt: Path, copy_folders: set = {}):
                          follow_symlinks=True)
             logger.info(f"Copied {full_src_path} to {full_tgt_path}")
         else:
-            if src.name in copy_folders:
-                shutil.copytree(full_src_path, full_tgt_path)
-                logger.info(f"Copied Folder {full_src_path} to {full_tgt_path}")
+            if IS_PLATFORM_WINDOWS:
+                import _winapi
+                _winapi.CreateJunction(full_src_path, full_tgt_path)
+                logger.info(f'Created Junction {full_src_path} => {full_tgt_path}')
             else:
-                if IS_PLATFORM_WINDOWS:
-                    import _winapi
-                    _winapi.CreateJunction(full_src_path, full_tgt_path)
-                    logger.info(f'Created Junction {full_src_path} => {full_tgt_path}')
-                else:
-                    tgt.symlink_to(src, target_is_directory=True)
-                    logger.info(f'Created symbolic link {full_src_path} => {full_tgt_path}')
+                tgt.symlink_to(src, target_is_directory=True)
+                logger.info(f'Created symbolic link {full_src_path} => {full_tgt_path}')
 
     except OSError as err:
         raise AndroidPostBuildError(f"Error trying to copy/link  {src} => {tgt} : {err}")
 
 
-def safe_clear_folder(target_folder: Path, delete_folders: set = {}) -> None:
+def safe_clear_folder(target_folder: Path) -> None:
     """
     Safely clean the contents of a folder. If items are links/junctions, then attempt to unlink, but if the
     items are non-linked, then perform a deletion.
@@ -98,15 +93,12 @@ def safe_clear_folder(target_folder: Path, delete_folders: set = {}) -> None:
 
     for target_item in target_folder.iterdir():
         try:
-            if target_item.is_dir() and target_item.name in delete_folders:
-                shutil.rmtree(str(target_item))
-            else:
-                target_item.unlink()
+            target_item.unlink()
         except OSError as os_err:
             raise AndroidPostBuildError(f"Error trying to unlink/delete {target_item}: {os_err}")
 
 
-def synchronize_folders(src: Path, tgt: Path, copy_folders: set = {}) -> None:
+def synchronize_folders(src: Path, tgt: Path) -> None:
     """
     Create a copy of a source folder 'src' to a target folder 'tgt', but use the following rules:
     1. Make sure that a 'tgt' folder exists
@@ -115,7 +107,6 @@ def synchronize_folders(src: Path, tgt: Path, copy_folders: set = {}) -> None:
 
     :param src:             The source folder to synchronize from
     :param tgt:             The target folder to synchronize to
-    :param copy_folders:    Optional list of folder names that will perform a copy instead of a junction
     """
 
     assert not tgt.is_file()
@@ -128,35 +119,10 @@ def synchronize_folders(src: Path, tgt: Path, copy_folders: set = {}) -> None:
     processed = 0
     for src_item in src.iterdir():
         tgt_item = tgt / src_item.name
-        copy_or_create_link(src_item, tgt_item, copy_folders=copy_folders)
+        copy_or_create_link(src_item, tgt_item)
         processed += 1
 
     logger.info(f"{processed} items from {src} linked/copied to {tgt}")
-
-
-def determine_intermediate_folder_from_compile_commands(android_app_root_path:Path, native_build_folder:str, build_config:str,) -> str:
-    """
-    Gradle 7.x+ started to use a generated intermediate folder which makes it difficult the locate some of the binary files that do need
-    to be included in the APK but are not automatically copied since there is no link dependencies on them.
-    We will use a hack method to determine the name of the intermediate folder by inspecting the known 'compile_commands.json' that is generated
-    by the Android Gradle Plugin (in {app_build_root}.parent/tools/{build_config}/{ANDROID_ARCH}/compile_commands.json and search for it from the directory pattern:
-    {android_app_root_path.as_posix()}/{native_build_path}/{build_config}/(.*)/{ANDROID_ARCH}
-
-    :param android_app_root_path:   The root path to the 'app' source in the gradle build
-    :param native_build_folder:     The specified path for the intermediate build folders
-    :param build_config:            The build configuration
-    :return: The intermediate folder name
-    """
-    compile_commands_path = android_app_root_path / native_build_folder / 'tools' / build_config / ANDROID_ARCH / 'compile_commands.json'
-    if not compile_commands_path.is_file():
-        raise AndroidPostBuildError(f"Unable to locate  path: {compile_commands_path}.")
-    compile_command_content = compile_commands_path.read_text()
-    search_pattern = re.compile(f"app/{native_build_folder}/{build_config}/(.*)/{ANDROID_ARCH}", re.MULTILINE)
-    matched = search_pattern.search(compile_command_content)
-    if not matched:
-        raise AndroidPostBuildError(f"Unable to determine intermediate folder from the contents of {compile_commands_path}.")
-    intermediate_folder_name = matched.group(1)
-    return intermediate_folder_name
 
 
 def apply_pak_layout(project_root: Path, asset_bundle_folder: str, target_layout_root: Path) -> None:
@@ -200,6 +166,7 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app
     :param android_app_root_path:   The root of the 'app' project in the gradle script
     :param native_build_folder:     The sub folder where the intermediate native project files are generated
     :param build_config:            The build configuration used for the native build
+    :param is_monolithic:           Flag marking the deployment is for monolithic builds
     """
 
     android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY
@@ -209,42 +176,14 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app
                                     f"Please run the AssetProcessor for this project first.")
 
     # Clear out the target folder first
-    safe_clear_folder(target_layout_root, delete_folders={'registry'})
+    safe_clear_folder(target_layout_root)
 
     # Copy/Link the contents to the target folder
-    synchronize_folders(android_cache_folder, target_layout_root, copy_folders={'registry'})
-
-    # Copy over the Registry folder contents to the target layout
-    try:
-        intermediate_folder = determine_intermediate_folder_from_compile_commands(android_app_root_path=android_app_root_path,
-                                                                                  native_build_folder=native_build_folder,
-                                                                                  build_config=build_config)
-
-        # Locate the Android Gradle Plugin version 7.x specific location to where the Registry folder is generated
-        registry_source_folder = android_app_root_path / native_build_folder / build_config / intermediate_folder / ANDROID_ARCH / native_build_folder / 'Registry'
-        if registry_source_folder.is_dir():
-            target_asset_registry_path = target_layout_root / 'registry'
-            if not target_asset_registry_path.is_dir():
-                target_asset_registry_path.mkdir(parents=True, exist_ok=True)
-            # Copy each item individually into the target folder
-            for src_item in registry_source_folder.iterdir():
-                if src_item.is_file():
-                    shutil.copy2(str(src_item), str(target_asset_registry_path / src_item.name))
-                elif src_item.is_dir():
-                    shutil.copytree(str(src_item), str(target_asset_registry_path / src_item.name))
-        else:
-            logger.info(f"Unable to locate generated 'Registry' folder at {registry_source_folder}. Skipping copying of registry files.")
-    except AndroidPostBuildError:
-        logger.info(f"Unable to determine the intermediate build folder for {target_layout_root} . Skipping copying of registry files.")
+    synchronize_folders(android_cache_folder, target_layout_root)
 
 
-def post_build_action(android_app_root: Path,
-                      native_build_folder: str,
-                      build_config: str,
-                      project_root: Path,
-                      gradle_version: Version,
-                      asset_mode: str,
-                      asset_bundle_folder: str):
+def post_build_action(android_app_root: Path, native_build_folder: str, build_config: str, project_root: Path, gradle_version: Version,
+                      asset_mode: str, asset_bundle_folder: str):
     """
     Perform the post-build logic for android native builds that will prepare the output folders by laying out the asset files
     to their locations before the APK is generated.
@@ -254,6 +193,7 @@ def post_build_action(android_app_root: Path,
     :param project_root:        The root of the project that the APK is being built for
     :param gradle_version:      The version of gradle used to build the APK (for validation)
     :param build_config:        The native build configuration (Debug, Profile, Release)
+    :param is_monolithic:       Flag marking the deployment is for monolithic builds
     :param asset_mode:          The desired asset mode to determine the layout rules
     :param asset_bundle_folder: (For PAK asset modes) the location of where the PAK files are expected.
     """
