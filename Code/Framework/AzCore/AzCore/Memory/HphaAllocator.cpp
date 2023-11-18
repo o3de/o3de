@@ -1541,7 +1541,7 @@ namespace AZ
     {
         const size_t sizeWithBlockHeaders = size + 3 * sizeof(block_header); // two fences plus one fake
 
-        // tree_system_alloc() will have an return an offset that is a multiple of OS_VIRTUAL_PAGE_SIZE which is 64KiB
+        // tree_system_alloc() will return an offset that is a multiple of OS_VIRTUAL_PAGE_SIZE which is 64KiB
         // The following tree_add_block() call will add a dummy block at the beginning of the allocated offset
         // which has a size of 0 which including the block header would put the offset of the real block header at
         // a multiple of 16(sizeof block_header) and the actual memory address for use at a multiple of 32
