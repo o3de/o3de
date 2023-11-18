@@ -75,7 +75,7 @@ namespace AZ
             }
 
             // Tell the FrameGraph which RHI QueryPool, and which RHI Queries need to be used.
-            [[maybe_unused]] RHI::ResultCode resultCode = frameGraph.UseQueryPool(m_queryPool->m_rhiQueryPool, rhiQueryIndices.value(), m_attachmentType, m_attachmentAccess);
+            [[maybe_unused]] RHI::ResultCode resultCode = frameGraph.UseQueryPool(m_queryPool->m_rhiQueryPool->GetDeviceQueryPool(RHI::MultiDevice::DefaultDeviceIndex), rhiQueryIndices.value(), m_attachmentType, m_attachmentAccess);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to add the queries to the scope builder");
 
             // Invalidate the ScopeId.
@@ -223,7 +223,7 @@ namespace AZ
             // Calculate the amount of RHI Queries used for this RPI Query.
             const uint32_t queryIndicesCount = rhiQueryIndices.m_max - rhiQueryIndices.m_min + 1u;
             AZ_Assert((queryIndicesCount % m_queryPool->GetQueriesPerResult()) == 0u,
-                "The amount of RHI::SingleDeviceQuery indices used for the RPI::Query is not a multiple of the number of RHI::Queries required to calculate a single result.");
+                "The amount of RHI::MultiDeviceQuery indices used for the RPI::Query is not a multiple of the number of RHI::Queries required to calculate a single result.");
 
             // Calculate the number of query groups.
             const uint32_t subQueryIndexCount = queryIndicesCount / m_queryPool->GetQueriesPerResult();
