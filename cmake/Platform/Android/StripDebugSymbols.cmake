@@ -12,7 +12,7 @@ endif()
 
 # cmake command arguments (not including the first 2 arguments of '-P', 'StripDebugSymbols.cmake')
 
-set(GNU_STRIP_TOOL ${CMAKE_ARGV3})          # GNU_STRIP_TOOL      : The location of the gnu strip tool (e.g. /usr/bin/strip)
+set(LLVM_STRIP_TOOL ${CMAKE_ARGV3})          # LLVM_STRIP_TOOL      : The location of the llvm strip tool (e.g. <ndk-root>/toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-strip.exe)
 set(STRIP_TARGET ${CMAKE_ARGV4})            # STRIP_TARGET        : The built binary to process
 set(TARGET_TYPE ${CMAKE_ARGV5})             # TARGET_TYPE         : The target type (STATIC_LIBRARY, MODULE_LIBRARY, SHARED_LIBRARY, EXECUTABLE, or APPLICATION)
 
@@ -26,4 +26,4 @@ endif()
 
 message(VERBOSE "Stripping debug symbols from ${STRIP_TARGET}")
 
-execute_process(COMMAND ${GNU_STRIP_TOOL} --strip-debug ${STRIP_TARGET})
+execute_process(COMMAND ${LLVM_STRIP_TOOL} --strip-debug ${STRIP_TARGET})
