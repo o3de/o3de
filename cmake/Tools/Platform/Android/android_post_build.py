@@ -24,7 +24,10 @@ ANDROID_ARCH = 'arm64-v8a'
 
 ASSET_MODE_PAK     = 'PAK'
 ASSET_MODE_LOOSE   = 'LOOSE'
+SUPPORTED_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE]
 ASSET_PLATFORM_KEY = 'android'
+
+SUPPORTED_BUILD_CONFIGS = ['debug', 'profile', 'release']
 
 MINIMUM_ANDROID_GRADLE_PLUGIN_VER = Version("8.0")
 
@@ -229,10 +232,10 @@ if __name__ == '__main__':
         parser.add_argument('android_app_root', type=str, help="The base of the 'app' in the O3DE generated gradle script.")
         parser.add_argument('--native-build-folder',  type=str, help="The native builder intermediate folder (for AGP version 7.x and newer)",
                             default='o3de')
-        parser.add_argument('--build-config', type=str, help="The build configuration for the native build.", required=True)
+        parser.add_argument('--build-config', type=str, help="The build configuration for the native build.", required=True, choices=SUPPORTED_BUILD_CONFIGS)
         parser.add_argument('--project-root', type=str, help="The project root.", required=True)
         parser.add_argument('--gradle-version', type=str, help="The version of gradle.", required=True)
-        parser.add_argument('--asset-mode', type=str, help="The asset mode of deployment (LOOSE, PAK, VFS)", default='LOOSE', choices=['LOOSE', 'PAK', 'VFS'])
+        parser.add_argument('--asset-mode', type=str, help="The asset mode of deployment", default=ASSET_MODE_LOOSE, choices=SUPPORTED_ASSET_MODES)
         parser.add_argument('--asset-bundle-folder', type=str, help="The sub folder from the project root where the pak files are located (For Pak Asset Mode)",
                             default="AssetBundling/Bundles")
 
