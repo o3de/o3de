@@ -427,10 +427,11 @@ def generate_android_project(args: argparse) -> int:
 
 def add_args(subparsers) -> None:
     """
-    add_args is called to add subparsers arguments to each command such that it can be
-    a central python file such as o3de.py.
-    It can be run from the o3de.py script as follows
-    call add_args and execute: python o3de.py register --engine-path "C:/o3de"
+    add_args is called to add subparsers for the following commands to the central o3de.py command processor:
+
+    - android_configure
+    - android_generate
+
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
 
@@ -493,7 +494,6 @@ def add_args(subparsers) -> None:
                                              help=f"Enable debug level logging for this script.",
                                              action='store_true')
     android_configure_subparser.set_defaults(func=configure_android_options)
-
 
     #
     # Configure the subparser for 'android_generate'
