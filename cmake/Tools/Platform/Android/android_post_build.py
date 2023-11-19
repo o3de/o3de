@@ -193,7 +193,6 @@ def post_build_action(android_app_root: Path, native_build_folder: str, build_co
     :param project_root:        The root of the project that the APK is being built for
     :param gradle_version:      The version of gradle used to build the APK (for validation)
     :param build_config:        The native build configuration (Debug, Profile, Release)
-    :param is_monolithic:       Flag marking the deployment is for monolithic builds
     :param asset_mode:          The desired asset mode to determine the layout rules
     :param asset_bundle_folder: (For PAK asset modes) the location of where the PAK files are expected.
     """

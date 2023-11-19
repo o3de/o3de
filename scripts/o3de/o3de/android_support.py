@@ -704,7 +704,7 @@ class AndroidSigningConfig(object):
         return f"{tab_prefix}storeFile file('{self._store_file.as_posix()}')\n" \
                f"{tab_prefix}storePassword '{self._store_password}'\n" \
                f"{tab_prefix}keyPassword '{self._key_password}'\n" \
-               f"{tab_prefix}keyAlias '{self._key_alias}'\n"
+               f"{tab_prefix}keyAlias '{self._key_alias}'"
 
 
 JAVA_VERSION_REGEX = re.compile(r'.*(\w)\s(version)\s*\"?([\d\_\.]+)', re.MULTILINE)
@@ -930,24 +930,8 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
     syncLYLayoutMode{config}.mustRunAfter {{
         tasks.findAll {{ task->task.name.contains('strip{config}DebugSymbols') }}
     }}
-
-"""
-
-CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR = """
-     task copyRegistryFolder{config}(type: Copy) {{
-        from ('build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}/Registry')
-        into ('{asset_layout_folder}/registry')
-        include ('*.setreg')
-    }}
-
-    merge{config}Assets.dependsOn copyRegistryFolder{config}
-"""
-
-CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR = """
-
-    copyRegistryFolder{config}.mustRunAfter {{
-        tasks.findAll {{ task->task.name.contains('syncLYLayoutMode{config}') }}
-    }}
+    
+    mergeProfileAssets.dependsOn syncLYLayoutMode{config}
 """
 
 DEFAULT_CONFIG_CHANGES = [
@@ -1575,10 +1559,8 @@ class AndroidProjectGenerator(object):
             # 'main' folder so they will be included into the APK. Otherwise
             # do the layout under a different folder so it's created, but not
             # copied into the APK.
-            layout_folder = 'app/src/main/assets'
-
             python_full_path = self._engine_root / 'python' / PYTHON_SCRIPT
-            syncLayoutCommandLineSource = [f'{python_full_path.resolve().as_posix()}',
+            sync_layout_command_line_source = [f'{python_full_path.resolve().as_posix()}',
                                             'android_post_build.py', az_android_dst_path.resolve().as_posix(),  # android_app_root
                                             '--project-root', self._project_path.as_posix(),
                                             '--native-build-folder', self._native_build_path,
@@ -1587,29 +1569,27 @@ class AndroidProjectGenerator(object):
                                             '--asset-mode', self._asset_mode,
                                             '--asset-bundle-folder', self._src_pak_file_path]
 
-            syncLayoutCommandLine = ','.join([f"'{arg}'" for arg in syncLayoutCommandLineSource])
+            sync_layout_command_line = ','.join([f"'{arg}'" for arg in sync_layout_command_line_source])
 
             gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
                 CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=(self._engine_root / 'cmake/Tools/Platform/Android').resolve().as_posix(),
-                                                                 full_command_line=syncLayoutCommandLine,
+                                                                 full_command_line=sync_layout_command_line,
                                                                  config=native_config)
-
-            # Copy over settings registry files from the Registry folder with build output directory
-            gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
-                CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR.format(config=native_config,
-                                                                    config_lower=native_config_lower,
-                                                                    asset_layout_folder=(self._build_dir / layout_folder).resolve().as_posix())
-            gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
-                CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR.format(config=native_config)
 
             gradle_build_env[f'SIGNING_{native_config_upper}_CONFIG'] = f'signingConfig signingConfigs.{native_config_lower}' if self._signing_config else ''
 
         if self._signing_config:
             gradle_build_env['SIGNING_CONFIGS'] = f"""
     signingConfigs {{
-        debug {{{self._signing_config.to_template_string(3)}}}
-        profile {{{self._signing_config.to_template_string(3)}}}
-        release {{{self._signing_config.to_template_string(3)}}}
+        debug {{
+{self._signing_config.to_template_string(3)}
+        }}
+        profile {{
+{self._signing_config.to_template_string(3)}
+        }}
+        release {{
+{self._signing_config.to_template_string(3)}
+        }}
     }}
 """
         else:
