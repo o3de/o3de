@@ -330,6 +330,7 @@ class AndroidSDKManager(object):
         def version(self)->Version:
             return self._version
 
+        @property
         def description(self) -> str:
             return self._description
 
@@ -573,7 +574,7 @@ class AndroidSDKManager(object):
         package_result_list = self.get_package_list(package_install_path, AndroidSDKManager.PackageCategory.INSTALLED)
         if package_result_list:
             installed_package_detail = package_result_list[0]
-            logging.info(f"{installed_package_detail.description} (version {installed_package_detail.version}) Detected")
+            logger.info(f"{installed_package_detail.description} (version {installed_package_detail.version}) Detected")
             return installed_package_detail
 
         # Make sure the package name is available
@@ -590,7 +591,7 @@ class AndroidSDKManager(object):
         available_package_to_install = package_result_list[0]  # For multiple hits, resolve to the first item which will be the latest version
 
         # Perform the package installation
-        logging.info(f"Installing {available_package_to_install.description} ...")
+        logger.info(f"Installing {available_package_to_install.description} ...")
         self.call_sdk_manager(['--install', available_package_to_install.path])
 
         # Refresh the tracked SDK Contents
@@ -600,7 +601,7 @@ class AndroidSDKManager(object):
         package_result_list = self.get_package_list(package_install_path, AndroidSDKManager.PackageCategory.INSTALLED)
         if package_result_list:
             installed_package_detail = package_result_list[0]
-            logging.info(f"{installed_package_detail.description} (version {installed_package_detail.version}) Installed")
+            logger.info(f"{installed_package_detail.description} (version {installed_package_detail.version}) Installed")
             return installed_package_detail
         else:
             raise AndroidToolError(f"Unable to verify package at {available_package_to_install.path}")
@@ -1323,15 +1324,15 @@ class AndroidProjectGenerator(object):
                                 encoding=DEFAULT_WRITE_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS)
 
-            logging.info('Generated default {}'.format(dst_file.name))
+            logger.info('Generated default {}'.format(dst_file.name))
         else:
-            logging.info('Skipped {} (file exists)'.format(dst_file.name))
+            logger.info('Skipped {} (file exists)'.format(dst_file.name))
 
     def prepare_gradle_wrapper(self):
         """
         Generate the gradle wrapper by calling the validated version of gradle.
         """
-        logging.info('Preparing Gradle Wrapper')
+        logger.info('Preparing Gradle Wrapper')
 
         if self._gradle_path:
             gradle_wrapper_cmd = [self._gradle_path]
@@ -1643,7 +1644,7 @@ class AndroidProjectGenerator(object):
         settings_gradle_file.write_text(settings_gradle_content,
                                         encoding=DEFAULT_READ_ENCODING,
                                         errors=ENCODING_ERROR_HANDLINGS)
-        logging.info("Generated settings.gradle -> %s", str(settings_gradle_file.resolve()))
+        logger.info("Generated settings.gradle -> %s", str(settings_gradle_file.resolve()))
 
         # Write the default gradle.properties
 
@@ -1656,7 +1657,7 @@ class AndroidProjectGenerator(object):
         self.create_file_from_project_template(src_template_file='gradle.properties.in',
                                                template_env=grade_properties_env,
                                                dst_file=gradle_properties_file)
-        logging.info("Generated gradle.properties -> %s", str(gradle_properties_file.resolve()))
+        logger.info("Generated gradle.properties -> %s", str(gradle_properties_file.resolve()))
 
     def apply_android_builder_rules(self, az_android_dst_path, az_android_package_env):
         """

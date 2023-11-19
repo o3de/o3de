@@ -283,14 +283,28 @@ def generate_android_project(args: argparse) -> int:
                                     package_description='Google Play Licensing Library')
 
         # Make sure the requested Platform SDK (defined by API Level) is installed
-        android_platform_sdk_api_level = args.platform_sdk_api_level
+        if args.platform_sdk_api_level:
+            android_platform_sdk_api_level = args.platform_sdk_api_level
+        else:
+            android_platform_sdk_api_level = android_config.get_value(android_support.SETTINGS_PLATFORM_SDK_API.key)
+            if not android_platform_sdk_api_level:
+                raise android_support.AndroidToolError(f"The Android Platform SDK API Level was not specified in either the command argument (--platform-sdk-api-level) "
+                                                       f"nor the android settings ({android_support.SETTINGS_PLATFORM_SDK_API.key}).")
+
         platform_package_name = f"platforms;android-{android_platform_sdk_api_level}"
         platform_sdk_package = sdk_manager.install_package(package_install_path=platform_package_name,
                                                            package_description=f'Android SDK Platform {android_platform_sdk_api_level}')
         logger.info(f"Selected Android Platform API Level : {android_platform_sdk_api_level}")
 
-        # Make sure the requested Android NDK version is installed
-        android_ndk_version = args.ndk_version
+        # Make sure the NDK is specified and installed
+        if args.ndk_version:
+            android_ndk_version = args.ndk_version
+        else:
+            android_ndk_version = android_config.get_value(android_support.SETTINGS_NDK_VERSION.key)
+            if not android_ndk_version:
+                raise android_support.AndroidToolError(f"The Android NDK version was not specified in either the command argument (--ndk-version) "
+                                                       f"nor the android settings ({android_support.SETTINGS_NDK_VERSION.key}).")
+
         ndk_package_name = f"ndk;{android_ndk_version}"
         ndk_package = sdk_manager.install_package(package_install_path=ndk_package_name,
                                                   package_description=f'Android NDK version {android_ndk_version}')
@@ -451,8 +465,6 @@ def add_args(subparsers) -> None:
 
     epilog = '\n'.join(epilog_lines)
 
-
-
     android_configure_subparser = subparsers.add_parser(O3DE_COMMAND_CONFIGURE,
                                                         help='Configure the android platform settings for generating, building, and deploying android projects.',
                                                         epilog=epilog,
@@ -490,13 +502,9 @@ def add_args(subparsers) -> None:
                                                         help='Generate an android/gradle project.')
 
     # Project Name
-    if project_name:
-        android_generate_subparser.add_argument('-p', '--project', type=str, required=False,
-                                                 help="The name of the registered project to generate the android project for. If not supplied, the current detected project from the "
-                                                      f"current path ({project_name}) will be used.")
-    else:
-        android_generate_subparser.add_argument('-p', '--project', type=str, required=True,
-                                                help="The name of the registered project to generate the android project for.")
+    android_generate_subparser.add_argument('-p', '--project', type=str,
+                                             help="The name of the registered project to generate the android project for. If not supplied, this operation will attempt to "
+                                                  "resolve the project from the current directory.")
 
     # Build Directory
     android_generate_subparser.add_argument('-B', '--build-dir', type=str, required=True,
@@ -510,8 +518,7 @@ def add_args(subparsers) -> None:
                                                 default=platform_sdk_api_level)
     else:
         android_generate_subparser.add_argument('--platform-sdk-api-level', type=str,
-                                                help=f"Specify the platform SDK API Level ({android_support.SETTINGS_PLATFORM_SDK_API.key})",
-                                                required=True)
+                                                help=f"Specify the platform SDK API Level ({android_support.SETTINGS_PLATFORM_SDK_API.key})")
 
     # Android NDK Version version (https://developer.android.com/ndk/downloads)
     ndk_version = android_config.get_value(android_support.SETTINGS_NDK_VERSION.key)
@@ -521,8 +528,7 @@ def add_args(subparsers) -> None:
                                                 default=ndk_version)
     else:
         android_generate_subparser.add_argument('--ndk-version', type=str,
-                                                help=f"Specify the android NDK version ({android_support.SETTINGS_NDK_VERSION.key}).",
-                                                required=True)
+                                                help=f"Specify the android NDK version ({android_support.SETTINGS_NDK_VERSION.key}).")
 
     # Signing configuration key store file
     signconfig_store_file = android_config.get_value(android_support.SETTINGS_SIGNING_STORE_FILE.key)
