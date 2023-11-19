@@ -17,13 +17,11 @@ import pathlib
 import re
 import shutil
 import string
-import subprocess
 import sys
 import urllib.request
 from urllib.parse import ParseResult
 import uuid
 import zipfile
-from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
 from o3de import github_utils, git_utils, validation as valid
@@ -782,7 +780,8 @@ def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger 
     except Exception:  # purposefully broad
         process_logger.error("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
 
-def load_template_file(template_file_path, template_env, read_encoding:str = 'UTF-8', encoding_error_action:str='ignore') -> str:
+
+def load_template_file(template_file_path: pathlib.Path, template_env: dict, read_encoding:str = 'UTF-8', encoding_error_action:str='ignore') -> str:
     """
     Helper method to load in a template file and return the processed template based on the input template environment
     This will also handle '###' tokens to strip out of the final output completely to support things like adding
@@ -790,6 +789,8 @@ def load_template_file(template_file_path, template_env, read_encoding:str = 'UT
 
     :param template_file_path:  The path to the template file to load
     :param template_env:        The template environment dictionary for the template file to process
+    :param read_encoding:       The text encoding to use to read from the file
+    :param  encoding_error_action:  The action to take on encoding errors
     :return:    The processed content from the template file
     :raises:    FileNotFoundError: If the template file path cannot be found
     """
@@ -815,30 +816,11 @@ def remove_link(link:pathlib.PurePath):
         except OSError:
             # If unlink fails use shutil.rmtree
             def remove_readonly(func, path, _):
-                "Clear the readonly bit and reattempt the removal"
+                # Clear the readonly bit and reattempt the removal
                 os.chmod(path, stat.S_IWRITE)
                 func(path)
 
             try:
                 shutil.rmtree(link, onerror=remove_readonly)
             except shutil.Error as shutil_error:
-                raise common.LmbrCmdError(f'Error trying remove directory {link}: {shutil_error}', shutil_error.errno)
-
-
-BOOLEAN_TRUE_VALUES=('1','t','true','on', 'yes')
-BOOLEAN_FALSE_VALUES=('0', 'f', 'false', 'off', 'no')
-def convert_string_to_boolean(input:str)->bool:
-    """
-    Given a string attempt to convert it
-    :param input:   The string to attempt to convert
-    :return: Boolean representation of the input, otherwise None
-    """
-
-    input_lower = input.lower()
-    if input_lower in BOOLEAN_TRUE_VALUES:
-        return True
-    elif input_lower in BOOLEAN_FALSE_VALUES:
-        return False
-    else:
-        return None
-
+                raise RuntimeError(f'Error trying remove directory {link}: {shutil_error}', shutil_error.errno)
