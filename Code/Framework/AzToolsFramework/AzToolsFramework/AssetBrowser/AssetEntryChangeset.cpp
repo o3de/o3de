@@ -107,7 +107,6 @@ namespace AzToolsFramework
             m_changes.emplace_back(aznew RemoveFileChange(fileId));
         }
 
-
         void AssetEntryChangeset::AddSource(const AZ::Uuid& sourceUuid)
         {
             AZStd::lock_guard<AZStd::mutex> locker(m_mutex);
