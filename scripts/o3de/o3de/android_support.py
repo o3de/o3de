@@ -708,7 +708,8 @@ class AndroidSigningConfig(object):
                f"{tab_prefix}keyAlias '{self._key_alias}'"
 
 
-JAVA_VERSION_REGEX = re.compile(r'.*(\w)\s(version)\s*\"?([\d\_\.]+)', re.MULTILINE)
+JAVA_VERSION_REGEX = re.compile(r'.*(\w)\s(version)\s*\"?(?P<version>[\d\_\.]+)', re.MULTILINE)
+
 
 def validate_java_environment() -> str:
     """
@@ -743,7 +744,7 @@ def validate_java_environment() -> str:
     if java_version_match is None:
         raise AndroidToolError(f"Unable to determine java version")
 
-    java_version = java_version_match.group(3)
+    java_version = java_version_match.group('version')
     if java_home:
         logger.info(f"Detected java version {java_version} (from JAVA_HOME)")
     else:
