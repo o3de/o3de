@@ -559,8 +559,9 @@ def add_args(subparsers) -> None:
     # Asset Mode
     asset_mode = android_config.get_value(android_support.SETTINGS_ASSET_MODE.key, default=android_support.ASSET_MODE_LOOSE)
     android_generate_subparser.add_argument('--asset-mode', type=str,
-                                            help=f"The mode of asset deployment to use. Accepted values are {','.join(android_support.ASSET_MODES)}."
-                                                 f"Default: {asset_mode}",
+                                            help=f"The mode of asset deployment to use. "
+                                                 f" Default: {asset_mode}",
+                                            choices=android_support.ASSET_MODES,
                                             default=asset_mode)
 
     # Extra CMake configure args
