@@ -52,26 +52,21 @@ def copy_or_create_link(src: Path, tgt: Path):
     assert src.exists()
     assert not tgt.exists()
 
-    full_src_path = str(src.resolve().absolute())
-    full_tgt_path = str(tgt.resolve().absolute())
-
     try:
         if src.is_file():
-            shutil.copy2(src=full_src_path,
-                         dst=full_tgt_path,
-                         follow_symlinks=True)
-            logger.info(f"Copied {full_src_path} to {full_tgt_path}")
+            tgt.hardlink_to(src)
+            logger.info(f"Created hard link {str(src)} to {str(tgt)}")
         else:
             if IS_PLATFORM_WINDOWS:
                 import _winapi
-                _winapi.CreateJunction(full_src_path, full_tgt_path)
-                logger.info(f'Created Junction {full_src_path} => {full_tgt_path}')
+                _winapi.CreateJunction(str(src.resolve().absolute()), str(tgt.resolve().absolute()))
+                logger.info(f'Created Junction {str(src)} => {str(tgt)}')
             else:
                 tgt.symlink_to(src, target_is_directory=True)
-                logger.info(f'Created symbolic link {full_src_path} => {full_tgt_path}')
+                logger.info(f'Created symbolic link {str(src)} => {str(tgt)}')
 
-    except OSError as err:
-        raise AndroidPostBuildError(f"Error trying to copy/link  {src} => {tgt} : {err}")
+    except OSError as os_err:
+        raise AndroidPostBuildError(f"Error trying to link  {src} => {tgt} : {os_err}")
 
 
 def safe_clear_folder(target_folder: Path) -> None:
