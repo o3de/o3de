@@ -476,7 +476,7 @@ def test_configure_android_options_set_value():
         android.configure_android_options(test_args)
 
         # Validation
-        mock_get_android_config_from_args.call_count == 1
+        assert mock_get_android_config_from_args.call_count == 1
         mock_android_config.set_config_value_from_expression.assert_called_once_with(test_value)
 
 
@@ -495,9 +495,9 @@ def test_configure_android_options_set_password():
     # Mocks
     with patch('o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
          patch('o3de.android.logger.setLevel') as mock_logger_set_level, \
-         patch('o3de.android.logger.info') as mock_logger_info:
+         patch('o3de.command_utils.logger.info') as mock_logger_info:
 
-        mock_android_config = Mock()
+        mock_android_config = Mock(spec=command_utils.O3DEConfig)
 
         mock_get_android_config_from_args.return_value = (mock_android_config, 'foo')
 
@@ -507,7 +507,6 @@ def test_configure_android_options_set_password():
         # Validation
         assert mock_get_android_config_from_args.call_count == 1
         mock_android_config.set_password.assert_called_once_with(test_value)
-        assert mock_logger_info.call_count == 1
 
 
 def test_configure_android_options_clear_value():

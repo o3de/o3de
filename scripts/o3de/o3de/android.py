@@ -198,6 +198,7 @@ def configure_android_options(args: argparse) -> int:
             android_config.set_config_value(key=args.clear_value,
                                             value='',
                                             validate_value=False)
+            logger.info(f"Setting '{args.clear_value}' cleared.")
 
     except (command_utils.O3DEConfigError, android_support.AndroidToolError) as err:
         logger.error(str(err))

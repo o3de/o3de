@@ -292,6 +292,7 @@ class O3DEConfig(object):
         :param key:             The key of the entry to set or add.
         :param value:           The value of the entry to set or add.
         :param validate_value:  Option to validate the value validity against the key
+        :param show_log:        Option to show logging information
         :return: The previous value if the key if it is being overwritten, or None if this is a new key+value
         """
 
