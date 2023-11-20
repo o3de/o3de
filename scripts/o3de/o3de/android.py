@@ -502,11 +502,11 @@ def add_args(subparsers) -> None:
     # Configure the subparser for 'android_generate'
     #
     android_generate_subparser = subparsers.add_parser(O3DE_COMMAND_GENERATE,
-                                                        help='Generate an android/gradle project.')
+                                                       help='Generate an Android/Gradle project.')
 
     # Project Name
     android_generate_subparser.add_argument('-p', '--project', type=str,
-                                             help="The name of the registered project to generate the android project for. If not supplied, this operation will attempt to "
+                                             help="The name of the registered project to generate the Android project for. If not supplied, this operation will attempt to "
                                                   "resolve the project from the current directory.")
 
     # Build Directory
@@ -593,12 +593,12 @@ def add_args(subparsers) -> None:
     is_oculus_project = android_config.get_value(android_support.SETTINGS_OCULUS_PROJECT.key)
     if is_oculus_project:
         android_generate_subparser.add_argument('--no-oculus-project',
-                                                help=f"Turn off the flag that marks the project as an oculus project.",
+                                                help=f"Turn off the flag that marks the project as an Cculus project.",
                                                 action='store_true')
     else:
         android_generate_subparser.add_argument('--oculus-project',
-                                                help="Turn on the flag that marks the project as an oculus project. This flag enables oculus-specific settings "
-                                                     "that are required for the android project generation.",
+                                                help="Marks the project as an Oculus project. This flag enables Oculus-specific settings "
+                                                     "that are required for the Android project generation.",
                                                 action='store_true')
 
     android_generate_subparser.add_argument('--debug',

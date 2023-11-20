@@ -157,7 +157,7 @@ SETTINGS_STRIP_DEBUG            = register_setting(key='strip.debug',
                                                    is_boolean=True)
 
 SETTINGS_OCULUS_PROJECT         = register_setting(key='oculus.project',
-                                                   description='Option to set oculus-specific build options when building the APK',
+                                                   description='Option to set Oculus-specific build options when building the APK',
                                                    is_boolean=True)
 
 SETTINGS_ASSET_BUNDLE_SUBPATH   = register_setting(key='asset.bundle.subpath',
@@ -257,7 +257,7 @@ class AndroidGradlePluginRequirements(object):
 
     def validate_java_version(self, java_version:str) -> None:
         """
-        Validate a version of java against the current Android Gradle Plugin. Raise a a detailed exception if it doesnt meet the requirements.
+        Validate a version of Java against the current Android Gradle Plugin. Raise a detailed exception if it doesn't meet the requirements.
         @param java_version:    The version string reported by java (-version)
         @return: None
         """

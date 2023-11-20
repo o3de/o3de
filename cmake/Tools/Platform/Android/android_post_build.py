@@ -161,8 +161,8 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app
 
     :param project_root:            The project folder root to look for the loose assets
     :param target_layout_root:      The target layout destination of the loose assets
-    :param android_app_root_path:   The root of the 'app' project in the gradle script
-    :param native_build_folder:     The sub folder where the intermediate native project files are generated
+    :param android_app_root_path:   The root of the 'app' project in the Gradle script
+    :param native_build_folder:     The sub-folder where the intermediate native project files are generated
     :param build_config:            The build configuration used for the native build
     :param is_monolithic:           Flag marking the deployment is for monolithic builds
     """
@@ -186,10 +186,10 @@ def post_build_action(android_app_root: Path, native_build_folder: str, build_co
     Perform the post-build logic for android native builds that will prepare the output folders by laying out the asset files
     to their locations before the APK is generated.
 
-    :param android_app_root:    The root path of the 'app' project within the android gradle build script
-    :param native_build_folder: (For gradle versions 7.x+) Gradle uses an intermediate subfolder The under the 'app' project.
+    :param android_app_root:    The root path of the 'app' project within the Android Gradle build script
+    :param native_build_folder: (For Gradle versions 7.x+) Gradle uses an intermediate sub-folder The under the 'app' project.
     :param project_root:        The root of the project that the APK is being built for
-    :param gradle_version:      The version of gradle used to build the APK (for validation)
+    :param gradle_version:      The version of Gradle used to build the APK (for validation)
     :param build_config:        The native build configuration (Debug, Profile, Release)
     :param asset_mode:          The desired asset mode to determine the layout rules
     :param asset_bundle_folder: (For PAK asset modes) the location of where the PAK files are expected.
