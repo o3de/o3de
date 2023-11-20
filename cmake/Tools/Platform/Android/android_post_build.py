@@ -29,7 +29,7 @@ ASSET_PLATFORM_KEY = 'android'
 
 SUPPORTED_BUILD_CONFIGS = ['debug', 'profile', 'release']
 
-MINIMUM_ANDROID_GRADLE_PLUGIN_VER = Version("8.0")
+MINIMUM_ANDROID_GRADLE_PLUGIN_VER = Version("4.2")
 
 IS_PLATFORM_WINDOWS = platform.system() == 'Windows'
 

@@ -54,6 +54,7 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
         raise android_support.AndroidToolError(f"Missing '{android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key}' from the android settings")
 
     android_gradle_requirements = android_support.get_android_gradle_plugin_requirements(android_gradle_plugin_ver)
+    logger.info(f"Validating settings for requested version {android_gradle_requirements.version} of the Android Gradle Plugin.")
     android_gradle_requirements.validate_gradle_version(gradle_version)
     android_gradle_requirements.validate_java_version(java_version)
 
@@ -266,6 +267,7 @@ def generate_android_project(args: argparse) -> int:
             raise android_support.AndroidToolError(f"Missing '{android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key}' from the android settings")
 
         android_gradle_requirements = android_support.get_android_gradle_plugin_requirements(android_gradle_plugin_ver)
+        logger.info(f"Validating settings for requested version {android_gradle_requirements.version} of the Android Gradle Plugin.")
         android_gradle_requirements.validate_gradle_version(gradle_version)
         android_gradle_requirements.validate_java_version(java_version)
         sdk_build_tools_version = android_gradle_requirements.sdk_build_tools_version

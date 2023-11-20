@@ -945,6 +945,8 @@ class AndroidProjectGenerator(object):
         else:
             gradle_build_env['SIGNING_CONFIGS'] = ""
 
+        gradle_build_env['PROJECT_NAMESPACE_OPTION'] = ""
+
         az_android_gradle_file = az_android_dst_path / 'build.gradle'
         self.create_file_from_project_template(src_template_file='build.gradle.in',
                                                template_env=gradle_build_env,
@@ -997,6 +999,8 @@ class AndroidProjectGenerator(object):
         # TODO: Add substitution entries here if variables are added to gradle.properties.in
         # Refer to the Code/Tools/Android/ProjectBuilder/gradle.properties.in for reference.
         grade_properties_env = {}
+        grade_properties_env['GRADLE_JVM_ARGS'] = ''
+
         gradle_properties_file = self.build_dir / 'gradle.properties'
         self.create_file_from_project_template(src_template_file='gradle.properties.in',
                                                template_env=grade_properties_env,
@@ -1347,7 +1351,8 @@ class AndroidProjectGenerator(object):
                 'SIGNING_CONFIGS': '',
                 'SIGNING_DEBUG_CONFIG': '',
                 'SIGNING_PROFILE_CONFIG': '',
-                'SIGNING_RELEASE_CONFIG': ''
+                'SIGNING_RELEASE_CONFIG': '',
+                'PROJECT_NAMESPACE_OPTION': ''
             }
             build_gradle_content = common.load_template_file(template_file_path=android_project_builder_path / 'build.gradle.in',
                                                              template_env=build_gradle_env)

@@ -225,32 +225,23 @@ o3de{O3DE_SCRIPT_EXTENSION} android-register --global --set-value android_sdk_ro
 class AndroidToolError(Exception):
     pass
 
-# The ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP manages the known android plugin known to O3DE and its compatibility requirements
-# Note: This map needs to be updated in conjunction with newer versions of the Android Gradle plugins.
-ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = [
-    ( ('8.1', ) , {'gradle': '8.0',
-                   'sdk_build_tools': '33.0.1',
-                   'jdk': '17',
-                   'url': 'https://developer.android.com/build/releases/gradle-plugin'} ),
-    ( ('8.0', ) , {'gradle': '8.0',
-                   'sdk_build_tools': '30.0.3',
-                   'jdk': '17',
-                   'url': 'https://developer.android.com/build/releases/past-releases/agp-8-0-0-release-notes'} )
-]
-
-# The minimum version of gradle that this script will support
-MINIMUM_GRADLE_VERSION = Version('8.0.0')
 
 class AndroidGradlePluginRequirements(object):
     """
     This class manages the Android Gradle plugin requirements environment and represents each entry from the
     ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.
     """
-    def __init__(self, requested_agp_version:str, source_dict:dict):
-        self._agp_version = Version(requested_agp_version)
-        self._gradle_ver = Version(source_dict['gradle'])
-        self._sdk_build_tools_version = Version(source_dict['sdk_build_tools'])
-        self._jdk_version = Version(source_dict['jdk'])
+    def __init__(self,
+                 agp_version:str,
+                 gradle_version:str,
+                 sdk_build_tools_version:str,
+                 jdk_version:str,
+                 release_note_url:str):
+        self._agp_version = Version(agp_version)
+        self._gradle_ver = Version(gradle_version)
+        self._sdk_build_tools_version = Version(sdk_build_tools_version)
+        self._jdk_version = Version(jdk_version)
+        self._release_notes_url = release_note_url
 
     @property
     def gradle_ver(self) -> Version:
@@ -259,6 +250,10 @@ class AndroidGradlePluginRequirements(object):
     @property
     def sdk_build_tools_version(self) -> Version:
         return self._sdk_build_tools_version
+
+    @property
+    def version(self) -> Version:
+        return self._agp_version
 
     def validate_java_version(self, java_version:str) -> None:
         """
@@ -269,7 +264,8 @@ class AndroidGradlePluginRequirements(object):
         java_version_check = Version(java_version)
         if not java_version_check >= self._jdk_version:
             raise AndroidToolError(f"The installed version of java ({java_version_check}) does not meet the minimum version of ({self._jdk_version}) "
-                                   f"which is required by the Android Gradle Plugin version ({self._agp_version})")
+                                   f"which is required by the Android Gradle Plugin version ({self._agp_version}). Refer to the android gradle plugin "
+                                   f"release notes at {self._release_notes_url}")
 
     def validate_gradle_version(self, gradle_version:str) -> None:
         """
@@ -280,7 +276,62 @@ class AndroidGradlePluginRequirements(object):
         gradle_version_check = Version(gradle_version)
         if not gradle_version_check >= self._gradle_ver:
             raise AndroidToolError(f"The installed version of gradle ({gradle_version_check}) does not meet the minimum version of ({self._gradle_ver}) "
-                                   f"which is required by the Android Gradle Plugin version ({self._agp_version})")
+                                   f"which is required by the Android Gradle Plugin version ({self._agp_version}). Refer to the android gradle plugin "
+                                   f"release notes at {self._release_notes_url}")
+
+# The ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP manages the known android plugin known to O3DE and its compatibility requirements
+# Note: This map needs to be updated in conjunction with newer versions of the Android Gradle plugins.
+
+ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
+
+    '8.1': AndroidGradlePluginRequirements(agp_version='8.1',
+                                           gradle_version='8.0',
+                                           sdk_build_tools_version='33.0.1',
+                                           jdk_version='17',
+                                           release_note_url='https://developer.android.com/build/releases/gradle-plugin'),
+
+    '8.0': AndroidGradlePluginRequirements(agp_version='8.0',
+                                           gradle_version='8.0',
+                                           sdk_build_tools_version='30.0.3',
+                                           jdk_version='17',
+                                           release_note_url='https://developer.android.com/build/releases/past-releases/agp-8-0-0-release-notes'),
+
+    '7.4': AndroidGradlePluginRequirements(agp_version='7.4',
+                                           gradle_version='7.5',
+                                           sdk_build_tools_version='30.0.3',
+                                           jdk_version='11',
+                                           release_note_url='https://developer.android.com/build/releases/past-releases/agp-7-4-0-release-notes'),
+
+    '7.3': AndroidGradlePluginRequirements(agp_version='7.3',
+                                           gradle_version='7.4',
+                                           sdk_build_tools_version='30.0.3',
+                                           jdk_version='11',
+                                           release_note_url='https://developer.android.com/build/releases/past-releases/agp-7-3-0-release-notes'),
+
+    '7.2': AndroidGradlePluginRequirements(agp_version='7.2',
+                                           gradle_version='7.3.3',
+                                           sdk_build_tools_version='30.0.3',
+                                           jdk_version='11',
+                                           release_note_url='https://developer.android.com/build/releases/past-releases/agp-7-2-0-release-notes'),
+
+    '7.1': AndroidGradlePluginRequirements(agp_version='7.1',
+                                           gradle_version='7.2',
+                                           sdk_build_tools_version='30.0.3',
+                                           jdk_version='11',
+                                           release_note_url='https://developer.android.com/build/releases/past-releases/agp-7-1-0-release-notes'),
+
+    '7.0': AndroidGradlePluginRequirements(agp_version='7.0',
+                                           gradle_version='7.0.2',
+                                           sdk_build_tools_version='30.0.2',
+                                           jdk_version='11',
+                                           release_note_url='https://developer.android.com/build/releases/past-releases/agp-7-0-0-release-notes'),
+
+    '4.2': AndroidGradlePluginRequirements(agp_version='4.2',
+                                           gradle_version='6.7.1',
+                                           sdk_build_tools_version='30.0.2',
+                                           jdk_version='8',
+                                           release_note_url='https://developer.android.com/build/releases/past-releases/agp-4-2-0-release-notes'),
+}
 
 
 def get_android_gradle_plugin_requirements(requested_agp_version:str) -> AndroidGradlePluginRequirements:
@@ -289,16 +340,16 @@ def get_android_gradle_plugin_requirements(requested_agp_version:str) -> Android
     :param requested_agp_version:   The version of the AGP to look for the requirements
     :return: The instance of AndroidGradlePluginRequirements for the specific version of AGP
     """
+
+    global ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP
+    # The lookup map is only based on the major and minor version
     lookup_version = Version(requested_agp_version)
     lookup_version_str = f'{lookup_version.major}.{lookup_version.minor}'
-    checked_versions = []
-    for version_set, compat_grid in ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP:
-        for agp_version in version_set:
-            checked_versions.append(agp_version)
-            if agp_version == lookup_version_str:
-                return AndroidGradlePluginRequirements(requested_agp_version, compat_grid)
-    raise AndroidToolError(f"Unrecognized/unsupported android gradle plugin version {requested_agp_version} specified. Supported Versions are "
-                           f"{','.join(checked_versions)}")
+    matched_agp_requirements = ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.get(lookup_version_str)
+    if not matched_agp_requirements:
+        raise AndroidToolError(f"Unrecognized/unsupported android gradle plugin version {requested_agp_version} specified. Supported Versions are "
+            f"{', '.join(f'{version_key}.0' for version_key in ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.keys())}")
+    return matched_agp_requirements
 
 
 class AndroidSDKManager(object):
@@ -985,14 +1036,15 @@ class AndroidProjectManifestEnvironment(object):
     that were passed in or calculated from the command line arguments.
     """
 
-    def __init__(self, project_path, project_settings, android_settings, android_sdk_version_number, oculus_project:bool):
+    def __init__(self, project_path: Path, project_settings: dict, android_settings: dict, android_gradle_plugin_version: Version, android_platform_sdk_api_level: str, oculus_project: bool):
         """
         Initialize the object with the project specific parameters and values for the game project
 
-        :param project_path:                The path were the project is located
-        :param android_settings:
-        :param android_sdk_version_number:  The android SDK platform version
-        :param oculus_project:              Indicates if it's an oculus project
+        :param project_path:                    The path were the project is located
+        :param android_settings:                The android settings to key of custom values
+        :param android_gradle_plugin_version:   The version of the android gradle plugin
+        :param android_platform_sdk_api_level:  The android SDK platform version
+        :param oculus_project:                  Indicates if it's an oculus project
         """
 
         # The project name is required
@@ -1033,7 +1085,7 @@ class AndroidProjectManifestEnvironment(object):
             'ANDROID_USE_PATCH_OBB':            android_settings.get('use_patch_obb', 'false'),
             'ANDROID_ENABLE_KEEP_SCREEN_ON':    android_settings.get('enable_keep_screen_on', 'false'),
             'ANDROID_DISABLE_IMMERSIVE_MODE':   android_settings.get('disable_immersive_mode', 'false'),
-            'ANDROID_TARGET_SDK_VERSION':       android_sdk_version_number,
+            'ANDROID_TARGET_SDK_VERSION':       android_platform_sdk_api_level,
             'ICONS':                            android_settings.get('icons', None),
             'SPLASH_SCREEN':                    android_settings.get('splash_screen', None),
 
@@ -1045,7 +1097,7 @@ class AndroidProjectManifestEnvironment(object):
             'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT'],
 
             'OCULUS_INTENT_FILTER_CATEGORY':    oculus_intent_filter_category,
-            'ANDROID_MANIFEST_PACKAGE_OPTION':  ""
+            'ANDROID_MANIFEST_PACKAGE_OPTION':  '' if android_gradle_plugin_version >= Version('7.0') else f'package="{package_name}"'
         }
 
     def __getitem__(self, item):
@@ -1237,7 +1289,7 @@ class AndroidProjectGenerator(object):
         self._extra_cmake_configure_args = extra_cmake_configure_args
         self._gradle_path = gradle_path
         self._gradle_version = gradle_version
-        self._gradle_plugin_version = android_gradle_plugin_version
+        self._gradle_plugin_version = Version(android_gradle_plugin_version)
         self._gradle_custom_jvm_args = gradle_custom_jvm_args
         self._ninja_path = ninja_path
         self._strip_debug_symbols = strip_debug_symbols
@@ -1369,7 +1421,7 @@ class AndroidProjectGenerator(object):
             config.read([str(platform_settings_file.resolve(strict=True))])
             if config.has_option('android', 'android_gradle_plugin'):
                 exist_agp_version = config.get('android', 'android_gradle_plugin')
-                if exist_agp_version != self._gradle_plugin_version:
+                if exist_agp_version != str(self._gradle_plugin_version):
                     self._overwrite_existing = True
 
         platform_settings_file.open('w').write(platform_settings_content)
@@ -1434,7 +1486,11 @@ class AndroidProjectGenerator(object):
                                           'library from the Android SDK Manager and run this command again.')
 
             if 'patches' in value:
-                lib_to_patch = self._Library(libName, src_dir, self._overwrite_existing, self._signing_config)
+                lib_to_patch = self._Library(name=libName,
+                                             path=src_dir,
+                                             overwrite_existing=self._overwrite_existing,
+                                             gradle_plugin_version=self._gradle_plugin_version,
+                                             signing_config=self._signing_config)
                 for patch in value['patches']:
                     file_to_patch = self._File(patch['path'])
                     for change in patch['changes']:
@@ -1521,7 +1577,7 @@ class AndroidProjectGenerator(object):
             # Prepare the cmake argument list based on the collected android settings and each build config
             cmake_argument_list = [
                 '"-GNinja"',
-                f'"-S{template_project_path}"',
+                f'"-S{template_project_path if self._gradle_plugin_version >= Version("7.0") else str(self._engine_root.as_posix())}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
                 f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_android.cmake"',
                 '"-DLY_DISABLE_TEST_MODULES=ON"',
@@ -1543,6 +1599,9 @@ class AndroidProjectGenerator(object):
 
             if self._is_oculus_project:
                 cmake_argument_list.append('"-DANDROID_USE_OCULUS_OPENXR=ON"')
+
+            if self._gradle_plugin_version < Version('7.0'):
+                cmake_argument_list.append(f'"-DLY_PROJECTS={template_project_path}"')
 
             if self._extra_cmake_configure_args:
                 extra_cmake_configure_arg_list = [f'"{arg}"' for arg in self._extra_cmake_configure_args.split()]
@@ -1597,8 +1656,11 @@ class AndroidProjectGenerator(object):
         else:
             gradle_build_env['SIGNING_CONFIGS'] = ""
 
-        package_namespace = self._project_android_settings['package_name']
-        gradle_build_env['PROJECT_NAMESPACE'] = package_namespace
+        if self._gradle_plugin_version >= Version('7.0'):
+            package_namespace = self._project_android_settings['package_name']
+            gradle_build_env['PROJECT_NAMESPACE_OPTION'] = f'namespace "{package_namespace}"'
+        else:
+            gradle_build_env['PROJECT_NAMESPACE_OPTION'] = ''
 
         az_android_gradle_file = az_android_dst_path / 'build.gradle'
         self.create_file_from_project_template(src_template_file='build.gradle.in',
@@ -1611,7 +1673,8 @@ class AndroidProjectGenerator(object):
         az_android_package_env = AndroidProjectManifestEnvironment(project_path=self._project_path,
                                                                    project_settings=self._project_general_settings,
                                                                    android_settings=self._project_android_settings,
-                                                                   android_sdk_version_number=self._android_platform_sdk_api_level,
+                                                                   android_gradle_plugin_version=self._gradle_plugin_version,
+                                                                   android_platform_sdk_api_level=self._android_platform_sdk_api_level,
                                                                    oculus_project=self._is_oculus_project)
         self.create_file_from_project_template(src_template_file=ANDROID_MANIFEST_FILE,
                                                template_env=az_android_package_env,
@@ -1939,18 +2002,18 @@ class AndroidProjectGenerator(object):
         """
         Library class to manage the library node in android_libraries.json
         """
-        def __init__(self, name, path, overwrite_existing, signing_config=None):
+        def __init__(self, name: str, path: str, overwrite_existing: bool, gradle_plugin_version: str, signing_config=None):
             self.name = name
             self.path = Path(path)
             self.signing_config = signing_config
             self.overwrite_existing = overwrite_existing
+            self._gradle_plugin_version = gradle_plugin_version
             self.patch_files = []
             self.dependencies = []
             self.build_dependencies = []
 
         def add_file_to_patch(self, file):
             self.patch_files.append(file)
-
 
         def read_package_namespace(self):
             # Determine the library namespace (required for Android Gradle Plugin 8+)
@@ -2021,8 +2084,13 @@ class AndroidProjectGenerator(object):
                 'SIGNING_CONFIGS': '',
                 'SIGNING_DEBUG_CONFIG': '',
                 'SIGNING_PROFILE_CONFIG': '',
-                'SIGNING_RELEASE_CONFIG': ''
+                'SIGNING_RELEASE_CONFIG': '',
+                'PROJECT_NAMESPACE_OPTION': ''
             }
+
+            if self._gradle_plugin_version >= Version('7.0'):
+                build_gradle_env['PROJECT_NAMESPACE_OPTION'] = f'namespace "{name_space}"' if self._gradle_plugin_version >= Version('7.0') else ''
+
             build_gradle_content = utils.load_template_file(template_file_path=android_project_builder_path / 'build.gradle.in',
                                                              template_env=build_gradle_env)
             dest_gradle_script_file = dst_path / 'build.gradle'
