@@ -128,16 +128,15 @@ namespace AZ::RHI
         uint32_t m_offset = 0;
     };
 
-        struct MultiDeviceImageSubresourceLayout
+    struct MultiDeviceImageSubresourceLayout
+    {
+        AZ_TYPE_INFO(MultiDeviceImageSubresourceLayout, "{8AD0DC97-5AAA-470F-8853-C8A55E023CD1}");
+
+        MultiDeviceImageSubresourceLayout() = default;
+
+        void Init(RHI::MultiDevice::DeviceMask deviceMask, const SingleDeviceImageSubresourceLayout& deviceLayout)
         {
-            AZ_TYPE_INFO(MultiDeviceImageSubresourceLayout, "{8AD0DC97-5AAA-470F-8853-C8A55E023CD1}");
-            // static void Reflect(AZ::ReflectContext* context);
-
-            MultiDeviceImageSubresourceLayout() = default;
-
-            void Init(RHI::MultiDevice::DeviceMask deviceMask, const SingleDeviceImageSubresourceLayout& deviceLayout)
-            {
-                int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+            int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
             for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
             {
@@ -146,7 +145,7 @@ namespace AZ::RHI
                     m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
                 }
             }
-            }
+        }
 
         SingleDeviceImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex)
         {
