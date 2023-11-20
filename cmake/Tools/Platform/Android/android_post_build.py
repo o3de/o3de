@@ -197,7 +197,7 @@ def post_build_action(android_app_root: Path, native_build_folder: str, build_co
 
     android_app_root_path = Path(android_app_root)
     if not android_app_root_path.is_dir():
-        raise AndroidPostBuildError(f"Invalid android gradle build path: {android_app_root_path} is not a directory or does not exist.")
+        raise AndroidPostBuildError(f"Invalid Android Gradle build path: {android_app_root_path} is not a directory or does not exist.")
 
     if gradle_version < MINIMUM_ANDROID_GRADLE_PLUGIN_VER:
         raise AndroidPostBuildError(f"Android gradle plugin versions below version {MINIMUM_ANDROID_GRADLE_PLUGIN_VER} is not supported.")
@@ -228,13 +228,13 @@ def post_build_action(android_app_root: Path, native_build_folder: str, build_co
 if __name__ == '__main__':
 
     try:
-        parser = argparse.ArgumentParser(description="Android post gradle build step handler")
+        parser = argparse.ArgumentParser(description="Android post Gradle build step handler")
         parser.add_argument('android_app_root', type=str, help="The base of the 'app' in the O3DE generated gradle script.")
         parser.add_argument('--native-build-folder',  type=str, help="The native builder intermediate folder (for AGP version 7.x and newer)",
                             default='o3de')
         parser.add_argument('--build-config', type=str, help="The build configuration for the native build.", required=True, choices=SUPPORTED_BUILD_CONFIGS)
         parser.add_argument('--project-root', type=str, help="The project root.", required=True)
-        parser.add_argument('--gradle-version', type=str, help="The version of gradle.", required=True)
+        parser.add_argument('--gradle-version', type=str, help="The version of Gradle.", required=True)
         parser.add_argument('--asset-mode', type=str, help="The asset mode of deployment", default=ASSET_MODE_LOOSE, choices=SUPPORTED_ASSET_MODES)
         parser.add_argument('--asset-bundle-folder', type=str, help="The sub folder from the project root where the pak files are located (For Pak Asset Mode)",
                             default="AssetBundling/Bundles")

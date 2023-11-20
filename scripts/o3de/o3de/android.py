@@ -470,7 +470,7 @@ def add_args(subparsers) -> None:
     epilog = '\n'.join(epilog_lines)
 
     android_configure_subparser = subparsers.add_parser(O3DE_COMMAND_CONFIGURE,
-                                                        help='Configure the android platform settings for generating, building, and deploying android projects.',
+                                                        help='Configure the Android platform settings for generating, building, and deploying Android projects.',
                                                         epilog=epilog,
                                                         formatter_class=argparse.RawTextHelpFormatter)
 
@@ -481,11 +481,11 @@ def add_args(subparsers) -> None:
                                                   "Note: If both '--global' and '-p/--project' is not specified, the script will attempt to deduce the project from the "
                                                   "current working directory if possible")
     android_configure_subparser.add_argument('-l', '--list', default=False, action='store_true',
-                                             help='Display the current android settings. ')
+                                             help='Display the current Android settings. ')
     android_configure_subparser.add_argument('--validate', default=False, action='store_true',
-                                             help='Validate the settings and values in the android settings. ')
+                                             help='Validate the settings and values in the Android settings. ')
     android_configure_subparser.add_argument('--set-value', type=str, required=False,
-                                             help='Set the value for an android setting, using the format <argument>=<value>. For example: \'ndk_version=22.5*\'',
+                                             help='Set the value for an Android setting, using the format <argument>=<value>. For example: \'ndk_version=22.5*\'',
                                              metavar='VALUE')
     android_configure_subparser.add_argument('--clear-value', type=str, required=False,
                                              help='Clear a previously configured setting.',
