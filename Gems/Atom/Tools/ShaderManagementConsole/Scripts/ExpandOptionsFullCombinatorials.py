@@ -20,7 +20,16 @@ import GenerateShaderVariantListUtil
 from PySide2 import QtWidgets
 from PySide2 import QtCore
 from PySide2 import QtGui
-from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QPushButton, QMessageBox, QLabel, QGroupBox, QComboBox, QSplitter, QWidget, QLineEdit, QSpinBox
+from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QListWidget, QPushButton, QMessageBox, QLabel, QGroupBox, QComboBox, QSplitter, QWidget, QLineEdit, QSpinBox, QCheckBox, QButtonGroup, QRadioButton
+
+# globals
+numVariantsInDocument = 0
+optionsByNames = {} # dict lookup accelerator (name to descriptor)
+
+# constants
+SortAlpha = 0
+SortRank = 1
+SortCost = 2
 
 def isDocumentOpen(document_id: azlmbr.math.Uuid) -> bool:
     return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
@@ -43,13 +52,6 @@ def transferSelection(qlistSrc, qlistDst):
 
 def listItems(qlist):
     return (qlist.item(i) for i in range(0, qlist.count()))
-
-SortAlpha = 0
-SortRank = 1
-SortCost = 2
-
-# dict lookup accelerator (name to descriptor)
-optionsByNames = {}
 
 def getRank(name):
     return optionsByNames[name].GetOrder()
@@ -144,10 +146,9 @@ class DoubleList(QtCore.QObject):
         self.rightSubLbl.setText(str(self.right.count()) + " elements")
 
 class Dialog(QDialog):
-    def __init__(self, options, lastStableId):
+    def __init__(self, options):
         super().__init__()
         self.optionDescriptors = options
-        self.lastStableId = lastStableId
         self.initUI()
         self.participantNames = []
         self.listOfDigitArrays = []
@@ -199,22 +200,46 @@ class Dialog(QDialog):
         autoSelGpHL.addStretch()
         actionPaneLayout.addWidget(autoSelGp)
 
-        genBox = QGroupBox("Estimated variants generation count from current selection:")
-        genBoxVL = QVBoxLayout()
-        genBox.setLayout(genBoxVL)
-        self.estimate = QLineEdit()
-        self.estimate.setReadOnly(True)
-        genBoxVL.addWidget(self.estimate)
+        mixOptBox = QGroupBox("Generation method:")
+        mixOptBoxHL = QHBoxLayout()
+        mixOptBox.setLayout(mixOptBoxHL)
+        self.mixOpt_append = QRadioButton("Append")
+        self.mixOpt_append.setToolTip("Just add the generated combinations at the end of the variant list, with non-participating options set as dynamic")
+        self.mixOpt_append.setChecked(True)
+        self.mixOpt_multiply = QRadioButton("Multiply")
+        self.mixOpt_multiply.setToolTip("generated_combinatorials x current_variants (i.e combine by mixing)")
+        mixOptGp = QButtonGroup()
+        mixOptGp.addButton(self.mixOpt_append)
+        mixOptGp.addButton(self.mixOpt_multiply)
+        self.mixOpt_append.clicked.connect(self.refreshSelection)
+        self.mixOpt_multiply.clicked.connect(self.refreshSelection)
+        mixOptBoxHL.addWidget(self.mixOpt_append)
+        mixOptBoxHL.addWidget(self.mixOpt_multiply)
+        actionPaneLayout.addWidget(mixOptBox)
+
+        genBox = QGroupBox("Estimations from current selection:")
+        genBoxGL = QGridLayout()
+        genBox.setLayout(genBoxGL)
+        genBoxGL.addWidget(QLabel("Generation count: "), 0,0)
+        self.directGenCount = QLineEdit()
+        self.directGenCount.setReadOnly(True)
+        genBoxGL.addWidget(self.directGenCount, 0,1)
+        genBoxGL.addWidget(QLabel("Final variant count: "), 1,0)
+        self.totalVariantsPostSend = QLineEdit()
+        self.totalVariantsPostSend.setReadOnly(True)
+        genBoxGL.addWidget(self.totalVariantsPostSend, 1,1)
+        actionPaneLayout.addLayout(genBoxGL)
 
         self.coveredLbl = QLabel()
-        genBoxVL.addWidget(self.coveredLbl)
+        genBoxGL.addWidget(self.coveredLbl, 2,0)
         self.makeCostLabel()
+
+        actionPaneLayout.addWidget(genBox)
 
         genListBtn = QPushButton("Generate variant list", self)
         genListBtn.clicked.connect(self.generateVariants)
-        genBoxVL.addWidget(genListBtn)
-
-        actionPaneLayout.addWidget(genBox)
+        genListBtn.setToolTip("Enumerate the variants*options matrix, and send to document")
+        actionPaneLayout.addWidget(genListBtn)
 
         exitBtn = QPushButton("Exit", self)
         actionPaneLayout.addWidget(exitBtn)
@@ -248,17 +273,24 @@ class Dialog(QDialog):
                 count = count * p.GetValuesCount()
         return count
 
-    def refreshSelection(self):
-        '''triggered after a change in participants'''
-        count = self.calculateCombinationCountInducedByCurrentParticipants()
-        self.estimate.setText(str(count))
-        self.makeCostLabel()
+    def calculateResultVariantCountAfterExpedite(self, calculatedGenCount):
+        if self.mixOpt_append.isChecked():
+            return numVariantsInDocument + calculatedGenCount
+        elif self.mixOpt_multiply.isChecked():
+            return numVariantsInDocument * calculatedGenCount
 
     def makeCostLabel(self):
         curSum = sumCost(self.getParticipantOptionDescs())
         total = totalCost()
         percent = 0 if total == 0 else curSum * 100 // total
         self.coveredLbl.setText(f"Cost covered by current selection: {curSum}/{total} ({percent}%)")
+
+    def refreshSelection(self):
+        '''triggered after a change in participants'''
+        count = self.calculateCombinationCountInducedByCurrentParticipants()
+        self.directGenCount.setText(str(count))
+        self.makeCostLabel()
+        self.totalVariantsPostSend.setText(str(self.calculateResultVariantCountAfterExpedite(count)))
 
     def autogenSelectionBucket(self):
         '''reset right bucket to an automatically suggested content'''
@@ -311,7 +343,7 @@ class Dialog(QDialog):
         progressDialog.setMaximumWidth(400)
         progressDialog.setMaximumHeight(100)
         progressDialog.setModal(True)
-        progressDialog.setWindowTitle("Generate variant values")
+        progressDialog.setWindowTitle("Generate variants")
 
         genOptDescs = list(self.getParticipantOptionDescs())
         self.participantNames = [x.GetName() for x in genOptDescs]
@@ -376,9 +408,10 @@ def main():
         documentId
     )
 
-    lastStableId = 0 if len(variantList.shaderVariants) == 0 else variantList.shaderVariants[-1].stableId
+    global numVariantsInDocument
+    numVariantsInDocument = len(variantList.shaderVariants)
 
-    dialog = Dialog(optionDescriptors, lastStableId)
+    dialog = Dialog(optionDescriptors)
     try:
         dialog.exec()
     except:
@@ -388,17 +421,27 @@ def main():
     if numVal == 0:
         return
 
-    print(f"adding {numVal} values. ({numVal/len(dialog.participantNames)} variants)")
+    mode = "append" if dialog.mixOpt_append.isChecked() else ("multiply" if dialog.mixOpt_multiply.isChecked() else "<error>")
+    print(f"sending {numVal} values. ({numVal/len(dialog.participantNames)} new variants). in '{mode}' mode")
 
     beginEdit(documentId)
     # passing the result
-    azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
-        azlmbr.bus.Event,
-        'AppendSparseVariantSet',
-        documentId,
-        dialog.participantNames,
-        dialog.listOfDigitArrays
-    )
+    if dialog.mixOpt_append.isChecked():  # append mode
+        azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
+            azlmbr.bus.Event,
+            'AppendSparseVariantSet',
+            documentId,
+            dialog.participantNames,
+            dialog.listOfDigitArrays
+        )
+    elif dialog.mixOpt_multiply.isChecked():  # mix mode (enumerate the new variants fully with the old ones)
+        azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
+            azlmbr.bus.Event,
+            'MultiplySparseVariantSet',
+            documentId,
+            dialog.participantNames,
+            dialog.listOfDigitArrays
+        )
     endEdit(documentId)
 
 
