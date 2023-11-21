@@ -42,14 +42,14 @@ class AndroidPostBuildError(Exception):
     pass
 
 
-def copy_or_create_link(src: Path, tgt: Path):
+def create_link(src: Path, tgt: Path):
     """
-    Copy or create a link/junction depending on the source type. If this is a file, then perform file copy from the
-    source to the target. If it is a directory, then create a junction(windows) or symlink(linux) from the source to
+    Create a link/junction depending on the source type. If this is a file, then perform file copy from the
+    source to the target. If it is a directory, then create a junction(windows) or symlink(linux/mac) from the source to
     the target
 
-    :param src:             The source to copy/link from
-    :param tgt:             The target tp copy/link to
+    :param src: The source to link from
+    :param tgt: The target tp link to
     """
 
     assert src.exists()
@@ -117,7 +117,7 @@ def synchronize_folders(src: Path, tgt: Path) -> None:
     processed = 0
     for src_item in src.iterdir():
         tgt_item = tgt / src_item.name
-        copy_or_create_link(src_item, tgt_item)
+        create_link(src_item, tgt_item)
         processed += 1
 
     logger.info(f"{processed} items from {src} linked/copied to {tgt}")
@@ -155,16 +155,12 @@ def apply_pak_layout(project_root: Path, asset_bundle_folder: str, target_layout
     synchronize_folders(src_pak_file_full_path, target_layout_root)
 
 
-def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app_root_path: Path, native_build_folder: str, build_config: str) -> None:
+def apply_loose_layout(project_root: Path, target_layout_root: Path) -> None:
     """
     Apply the loose assets folder layout rules to the target assets folder
 
     :param project_root:            The project folder root to look for the loose assets
     :param target_layout_root:      The target layout destination of the loose assets
-    :param android_app_root_path:   The root of the 'app' project in the Gradle script
-    :param native_build_folder:     The sub-folder where the intermediate native project files are generated
-    :param build_config:            The build configuration used for the native build
-    :param is_monolithic:           Flag marking the deployment is for monolithic builds
     """
 
     android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY
@@ -180,43 +176,37 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path, android_app
     synchronize_folders(android_cache_folder, target_layout_root)
 
 
-def post_build_action(android_app_root: Path, native_build_folder: str, build_config: str, project_root: Path, gradle_version: Version,
+def post_build_action(android_app_root: Path, project_root: Path, gradle_version: Version,
                       asset_mode: str, asset_bundle_folder: str):
     """
     Perform the post-build logic for android native builds that will prepare the output folders by laying out the asset files
     to their locations before the APK is generated.
 
     :param android_app_root:    The root path of the 'app' project within the Android Gradle build script
-    :param native_build_folder: (For Gradle versions 7.x+) Gradle uses an intermediate sub-folder The under the 'app' project.
     :param project_root:        The root of the project that the APK is being built for
     :param gradle_version:      The version of Gradle used to build the APK (for validation)
-    :param build_config:        The native build configuration (Debug, Profile, Release)
     :param asset_mode:          The desired asset mode to determine the layout rules
     :param asset_bundle_folder: (For PAK asset modes) the location of where the PAK files are expected.
     """
 
-    android_app_root_path = Path(android_app_root)
-    if not android_app_root_path.is_dir():
-        raise AndroidPostBuildError(f"Invalid Android Gradle build path: {android_app_root_path} is not a directory or does not exist.")
+    if not android_app_root.is_dir():
+        raise AndroidPostBuildError(f"Invalid Android Gradle build path: {android_app_root} is not a directory or does not exist.")
 
     if gradle_version < MINIMUM_ANDROID_GRADLE_PLUGIN_VER:
         raise AndroidPostBuildError(f"Android gradle plugin versions below version {MINIMUM_ANDROID_GRADLE_PLUGIN_VER} is not supported.")
     logger.info(f"Applying post-build for android gradle plugin version {gradle_version}")
 
     # Validate the build directory exists
-    app_build_root = android_app_root_path / 'build'
+    app_build_root = android_app_root / 'build'
     if not app_build_root.is_dir():
         raise AndroidPostBuildError(f"Android gradle build path: {app_build_root} is not a directory or does not exist.")
 
-    target_layout_root = android_app_root_path / 'src' / 'main' / 'assets'
+    target_layout_root = android_app_root / 'src' / 'main' / 'assets'
 
     if asset_mode == ASSET_MODE_LOOSE:
 
         apply_loose_layout(project_root=project_root,
-                           target_layout_root=target_layout_root,
-                           android_app_root_path=android_app_root_path,
-                           native_build_folder=native_build_folder,
-                           build_config=build_config)
+                           target_layout_root=target_layout_root)
 
     elif asset_mode == ASSET_MODE_PAK:
 
@@ -224,15 +214,15 @@ def post_build_action(android_app_root: Path, native_build_folder: str, build_co
                          target_layout_root=target_layout_root,
                          asset_bundle_folder=asset_bundle_folder)
 
+    else:
+        raise AndroidPostBuildError(f"Invalid Asset Mode '{asset_mode}'.")
+
 
 if __name__ == '__main__':
 
     try:
         parser = argparse.ArgumentParser(description="Android post Gradle build step handler")
         parser.add_argument('android_app_root', type=str, help="The base of the 'app' in the O3DE generated gradle script.")
-        parser.add_argument('--native-build-folder',  type=str, help="The native builder intermediate folder (for AGP version 7.x and newer)",
-                            default='o3de')
-        parser.add_argument('--build-config', type=str, help="The build configuration for the native build.", required=True, choices=SUPPORTED_BUILD_CONFIGS)
         parser.add_argument('--project-root', type=str, help="The project root.", required=True)
         parser.add_argument('--gradle-version', type=str, help="The version of Gradle.", required=True)
         parser.add_argument('--asset-mode', type=str, help="The asset mode of deployment", default=ASSET_MODE_LOOSE, choices=SUPPORTED_ASSET_MODES)
@@ -241,15 +231,13 @@ if __name__ == '__main__':
 
         args = parser.parse_args(sys.argv[1:])
 
-        result_code = post_build_action(android_app_root=Path(args.android_app_root),
-                                        native_build_folder=args.native_build_folder,
-                                        build_config=args.build_config,
-                                        project_root=Path(args.project_root),
-                                        gradle_version=Version(args.gradle_version),
-                                        asset_mode=args.asset_mode,
-                                        asset_bundle_folder=args.asset_bundle_folder)
+        post_build_action(android_app_root=Path(args.android_app_root),
+                          project_root=Path(args.project_root),
+                          gradle_version=Version(args.gradle_version),
+                          asset_mode=args.asset_mode,
+                          asset_bundle_folder=args.asset_bundle_folder)
 
-        exit(result_code)
+        exit(0)
 
     except AndroidPostBuildError as err:
         logging.error(str(err))

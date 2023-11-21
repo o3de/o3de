@@ -6,6 +6,7 @@
 #
 #
 import argparse
+import collections
 import logging
 import os
 import pathlib
@@ -28,6 +29,17 @@ VALIDATION_WARNING_SIGNCONFIG_NOT_SET = "Signing configuration not set."
 VALIDATION_WARNING_SIGNCONFIG_INCOMPLETE = "Signing configuration settings is incomplete."
 VALIDATION_MISSING_PASSWORD = "Signing configuration password not set."
 
+ValidatedEnv = collections.namedtuple('ValidatedEnv', ['java_version',
+                                                       'gradle_home',
+                                                       'gradle_version',
+                                                       'cmake_path',
+                                                       'cmake_version',
+                                                       'ninja_path',
+                                                       'ninja_version',
+                                                       'android_gradle_plugin_ver',
+                                                       'sdk_build_tools_version',
+                                                       'sdk_manager'])
+
 def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
     """
     Perform basic settings and environment validation to see if there are any missing dependencies or setup steps
@@ -43,10 +55,10 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
     gradle_home, gradle_version = android_support.validate_gradle(android_config)
 
     # Validate cmake
-    android_support.validate_cmake(android_config)
+    cmake_path, cmake_version = android_support.validate_cmake(android_config)
 
     # Validate ninja
-    android_support.validate_ninja(android_config)
+    ninja_path, ninja_version = android_support.validate_ninja(android_config)
 
     # Validate the versions of gradle and ninja against the configured version of the android gradle plugin
     android_gradle_plugin_ver = android_config.get_value(android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key)
@@ -57,6 +69,8 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
     logger.info(f"Validating settings for requested version {android_gradle_requirements.version} of the Android Gradle Plugin.")
     android_gradle_requirements.validate_gradle_version(gradle_version)
     android_gradle_requirements.validate_java_version(java_version)
+
+    sdk_build_tools_version = android_gradle_requirements.sdk_build_tools_version
 
     # Verify the Android SDK setting
     sdk_manager = android_support.AndroidSDKManager(java_version, android_config)
@@ -115,6 +129,19 @@ def validate_android_config(android_config: command_utils.O3DEConfig) -> None:
 
     if signing_config_warned:
         print(f"\nType in '{O3DE_SCRIPT_PATH} {O3DE_COMMAND_CONFIGURE} --help' for more information about setting the signing config value in the settings.")
+
+    validated_env = ValidatedEnv(java_version=java_version,
+                                 gradle_home=gradle_home,
+                                 gradle_version=gradle_version,
+                                 cmake_path=cmake_path,
+                                 cmake_version=cmake_version,
+                                 ninja_path=ninja_path,
+                                 ninja_version=ninja_version,
+                                 android_gradle_plugin_ver=android_gradle_plugin_ver,
+                                 sdk_build_tools_version=sdk_build_tools_version,
+                                 sdk_manager=sdk_manager)
+    return validated_env
+
 
 
 def list_android_config(android_config: command_utils.O3DEConfig) -> None:
@@ -231,7 +258,6 @@ def generate_android_project(args: argparse) -> int:
 
     :param args:    The args from the arg parser to extract the necessary parameters for generating the project
     :return: The result code to return back
-
     """
 
     if args.debug:
@@ -249,41 +275,15 @@ def generate_android_project(args: argparse) -> int:
             raise android_support.AndroidToolError(f"Project '{project_name}' is not registered with O3DE.")
         project_settings, android_settings = android_support.read_android_settings_for_project(resolved_project_path)
 
-        # Validate Java is installed
-        java_version = android_support.validate_java_environment()
-
-        # Validate gradle
-        gradle_path, gradle_version = android_support.validate_gradle(android_config)
-
-        # Validate cmake
-        cmake_path, cmake_version = android_support.validate_cmake(android_config)
-
-        # Validate ninja
-        ninja_path, ninja_version = android_support.validate_ninja(android_config)
-
-        # Validate the versions of gradle and ninja against the configured version of the android gradle plugin
-        android_gradle_plugin_ver = android_config.get_value(android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key)
-        if not android_gradle_plugin_ver:
-            raise android_support.AndroidToolError(f"Missing '{android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key}' from the android settings")
-
-        android_gradle_requirements = android_support.get_android_gradle_plugin_requirements(android_gradle_plugin_ver)
-        logger.info(f"Validating settings for requested version {android_gradle_requirements.version} of the Android Gradle Plugin.")
-        android_gradle_requirements.validate_gradle_version(gradle_version)
-        android_gradle_requirements.validate_java_version(java_version)
-        sdk_build_tools_version = android_gradle_requirements.sdk_build_tools_version
-
-        # Verify the Android SDK setting
-        sdk_manager = android_support.AndroidSDKManager(java_version, android_config)
-
-        # Make sure that the licenses have been read and accepted
-        sdk_manager.check_licenses()
+        # Perform validation on the config and the environment
+        android_env = validate_android_config(android_config)
 
         # Make sure we have the extra android packages "market_apk_expansion" and "market_licensing" which is needed by the APK
-        sdk_manager.install_package(package_install_path='extras;google;market_apk_expansion',
-                                    package_description='Google APK Expansion Library')
+        android_env.sdk_manager.install_package(package_install_path='extras;google;market_apk_expansion',
+                                                package_description='Google APK Expansion Library')
 
-        sdk_manager.install_package(package_install_path='extras;google;market_licensing',
-                                    package_description='Google Play Licensing Library')
+        android_env.sdk_manager.install_package(package_install_path='extras;google;market_licensing',
+                                                package_description='Google Play Licensing Library')
 
         # Make sure the requested Platform SDK (defined by API Level) is installed
         if args.platform_sdk_api_level:
@@ -295,8 +295,8 @@ def generate_android_project(args: argparse) -> int:
                                                        f"nor the android settings ({android_support.SETTINGS_PLATFORM_SDK_API.key}).")
 
         platform_package_name = f"platforms;android-{android_platform_sdk_api_level}"
-        platform_sdk_package = sdk_manager.install_package(package_install_path=platform_package_name,
-                                                           package_description=f'Android SDK Platform {android_platform_sdk_api_level}')
+        platform_sdk_package = android_env.sdk_manager.install_package(package_install_path=platform_package_name,
+                                                                       package_description=f'Android SDK Platform {android_platform_sdk_api_level}')
         logger.info(f"Selected Android Platform API Level : {android_platform_sdk_api_level}")
 
         # Make sure the NDK is specified and installed
@@ -309,14 +309,14 @@ def generate_android_project(args: argparse) -> int:
                                                        f"nor the android settings ({android_support.SETTINGS_NDK_VERSION.key}).")
 
         ndk_package_name = f"ndk;{android_ndk_version}"
-        ndk_package = sdk_manager.install_package(package_install_path=ndk_package_name,
-                                                  package_description=f'Android NDK version {android_ndk_version}')
+        ndk_package = android_env.sdk_manager.install_package(package_install_path=ndk_package_name,
+                                                              package_description=f'Android NDK version {android_ndk_version}')
         logger.info(f"Selected Android NDK Version : {ndk_package.version}")
 
         # Make sure that the android build tools (based on the spec from the android gradle plugin) is installed
-        build_tools_package_name = f"build-tools;{sdk_build_tools_version}"
-        sdk_manager.install_package(package_install_path=build_tools_package_name,
-                                    package_description=f'Android Build Tools {sdk_build_tools_version}')
+        build_tools_package_name = f"build-tools;{android_env.sdk_build_tools_version}"
+        android_env.sdk_manager.install_package(package_install_path=build_tools_package_name,
+                                                package_description=f'Android Build Tools {android_env.sdk_build_tools_version}')
 
         engine_path = ENGINE_PATH
         logger.info(f'Engine Path : {engine_path}')
@@ -397,21 +397,21 @@ def generate_android_project(args: argparse) -> int:
 
         apg = android_support.AndroidProjectGenerator(engine_root=engine_path,
                                                       android_build_dir=build_folder,
-                                                      android_sdk_path=sdk_manager.get_android_sdk_path(),
-                                                      android_build_tool_version=sdk_build_tools_version,
+                                                      android_sdk_path=android_env.sdk_manager.get_android_sdk_path(),
+                                                      android_build_tool_version=android_env.sdk_build_tools_version,
                                                       android_platform_sdk_api_level=android_platform_sdk_api_level,
                                                       android_ndk_package=ndk_package,
                                                       project_name=project_name,
                                                       project_path=project_path,
                                                       project_general_settings=project_settings,
                                                       project_android_settings=android_settings,
-                                                      cmake_version=cmake_version,
-                                                      cmake_path=cmake_path,
-                                                      gradle_path=gradle_path,
-                                                      gradle_version=gradle_version,
+                                                      cmake_version=android_env.cmake_version,
+                                                      cmake_path=android_env.cmake_path,
+                                                      gradle_path=android_env.gradle_home,
+                                                      gradle_version=android_env.gradle_version,
                                                       gradle_custom_jvm_args=custom_jvm_args,
-                                                      android_gradle_plugin_version=android_gradle_plugin_ver,
-                                                      ninja_path=ninja_path,
+                                                      android_gradle_plugin_version=android_env.android_gradle_plugin_ver,
+                                                      ninja_path=android_env.ninja_path,
                                                       asset_mode=args.asset_mode,
                                                       signing_config=signing_config,
                                                       extra_cmake_configure_args=extra_cmake_args,
@@ -593,7 +593,7 @@ def add_args(subparsers) -> None:
     is_oculus_project = android_config.get_value(android_support.SETTINGS_OCULUS_PROJECT.key)
     if is_oculus_project:
         android_generate_subparser.add_argument('--no-oculus-project',
-                                                help=f"Turn off the flag that marks the project as an Cculus project.",
+                                                help=f"Turn off the flag that marks the project as an Oculus project.",
                                                 action='store_true')
     else:
         android_generate_subparser.add_argument('--oculus-project',

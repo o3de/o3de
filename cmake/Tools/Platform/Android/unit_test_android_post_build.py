@@ -29,10 +29,10 @@ def test_copy_or_create_link(tmpdir):
     tgt_level1 = tmpdir.join('tgt/level1')
     tgt_file_1 = tmpdir.join('tgt/file_1')
 
-    android_post_build.copy_or_create_link(pathlib.Path(src_file_1.realpath()),
-                                           pathlib.Path(tgt_file_1.realpath()))
-    android_post_build.copy_or_create_link(pathlib.Path(src_level1.realpath()),
-                                           pathlib.Path(tgt_level1.realpath()))
+    android_post_build.create_link(pathlib.Path(src_file_1.realpath()),
+                                   pathlib.Path(tgt_file_1.realpath()))
+    android_post_build.create_link(pathlib.Path(src_level1.realpath()),
+                                   pathlib.Path(tgt_level1.realpath()))
 
     assert pathlib.Path(tgt_level1.realpath()).exists()
     assert pathlib.Path(tgt_file_1.realpath()).exists()
@@ -159,10 +159,7 @@ def test_apply_loose_layout_no_loose_assets(tmpdir):
 
     try:
         android_post_build.apply_loose_layout(project_root=src_path,
-                                              target_layout_root=tgt_path,
-                                              android_app_root_path=pathlib.Path(tmpdir.join('dst/android/app')),
-                                              native_build_folder='o3de',
-                                              build_config='profile')
+                                              target_layout_root=tgt_path)
     except android_post_build.AndroidPostBuildError as e:
         assert 'Assets have not been built' in str(e)
     else:
@@ -181,10 +178,7 @@ def test_apply_loose_layout_success(tmpdir):
     tgt_path = pathlib.Path(tmpdir.join('dst/android/app/assets').realpath())
 
     android_post_build.apply_loose_layout(project_root=src_path,
-                                          target_layout_root=tgt_path,
-                                          android_app_root_path=pathlib.Path(tmpdir.join('dst/android/app')),
-                                          native_build_folder='o3de',
-                                          build_config='profile')
+                                          target_layout_root=tgt_path)
 
     validate_engine_android_pak = tmpdir.join('dst/android/app/assets/engine.json')
     assert pathlib.Path(validate_engine_android_pak.realpath()).exists()

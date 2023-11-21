@@ -333,6 +333,9 @@ ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
                                            release_note_url='https://developer.android.com/build/releases/past-releases/agp-4-2-0-release-notes'),
 }
 
+# Determine the latest version of the gradle plugin
+MAX_ANDROID_GRADLE_PLUGIN_VER = Version(sorted(list(ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.keys()), reverse=True)[0])
+
 
 def get_android_gradle_plugin_requirements(requested_agp_version:str) -> AndroidGradlePluginRequirements:
     """
@@ -342,9 +345,14 @@ def get_android_gradle_plugin_requirements(requested_agp_version:str) -> Android
     """
 
     global ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP
+
     # The lookup map is only based on the major and minor version
     lookup_version = Version(requested_agp_version)
     lookup_version_str = f'{lookup_version.major}.{lookup_version.minor}'
+
+    if Version(lookup_version_str) > MAX_ANDROID_GRADLE_PLUGIN_VER:
+        raise AndroidToolError(f"Android gradle plugin version {requested_agp_version} is newer than the latest version supported ({MAX_ANDROID_GRADLE_PLUGIN_VER}).")
+
     matched_agp_requirements = ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.get(lookup_version_str)
     if not matched_agp_requirements:
         raise AndroidToolError(f"Unrecognized/unsupported android gradle plugin version {requested_agp_version} specified. Supported Versions are "
@@ -896,7 +904,7 @@ def validate_cmake(android_config) -> (Path, str):
     :return:    Tuple of : The full path of the tool and the tool version
     """
     return validate_build_tool(tool_name='Cmake',
-                               tool_command='cmake',
+                               tool_command=f'cmake{EXE_EXTENSION}',
                                tool_config_key=SETTINGS_CMAKE_HOME.key,
                                tool_environment_var='CMAKE_HOME',
                                tool_config_sub_path='bin',
@@ -1624,8 +1632,6 @@ class AndroidProjectGenerator(object):
             sync_layout_command_line_source = [f'{python_full_path.resolve().as_posix()}',
                                             'android_post_build.py', az_android_dst_path.resolve().as_posix(),  # android_app_root
                                             '--project-root', self._project_path.as_posix(),
-                                            '--native-build-folder', self._native_build_path,
-                                            '--build-config', native_config_lower,
                                             '--gradle-version', self._gradle_version,
                                             '--asset-mode', self._asset_mode,
                                             '--asset-bundle-folder', self._src_pak_file_path]

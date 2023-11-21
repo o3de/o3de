@@ -25,6 +25,11 @@ def test_validate_android_config_happy_path(tmpdir):
     test_validate_java_environment_result = '1.17'
     test_android_support_validate_gradle_result = ('/home/gradle-8.4/', test_gradle_version)
 
+    test_cmake_path = "/path/cmake"
+    test_cmake_version = "3.22"
+    test_ninja_path = "/path/ninja"
+    test_ninja_version = "1.10.1"
+
     # Mocks
     with patch('o3de.android_support.validate_java_environment') as mock_validate_java_environment, \
          patch('o3de.android_support.validate_gradle') as mock_validate_gradle, \
@@ -36,8 +41,8 @@ def test_validate_android_config_happy_path(tmpdir):
 
         mock_validate_java_environment.return_value = test_validate_java_environment_result
         mock_validate_gradle.return_value = test_android_support_validate_gradle_result
-        mock_validate_cmake.return_value = None
-        mock_validate_ninja.return_value = None
+        mock_validate_cmake.return_value = (test_cmake_path, test_cmake_version)
+        mock_validate_ninja.return_value = (test_ninja_path, test_ninja_version)
 
         mock_gradle_requirements = Mock()
         mock_get_android_gradle_plugin_requirements.return_value = mock_gradle_requirements
@@ -63,7 +68,7 @@ def test_validate_android_config_happy_path(tmpdir):
         mock_android_config.get_value.side_effect = _android_config_get_value_
 
         # Call the method
-        android.validate_android_config(mock_android_config)
+        result = android.validate_android_config(mock_android_config)
 
         # Validation
         mock_gradle_requirements.validate_gradle_version.assert_called_with(test_gradle_version)
@@ -73,6 +78,12 @@ def test_validate_android_config_happy_path(tmpdir):
         mock_validate_gradle.assert_called_once_with(mock_android_config)
         mock_validate_cmake.assert_called_once_with(mock_android_config)
         mock_validate_ninja.assert_called_once_with(mock_android_config)
+
+        assert result.cmake_path == test_cmake_path
+        assert result.cmake_version == test_cmake_version
+        assert result.ninja_path == test_ninja_path
+        assert result.ninja_version == test_ninja_version
+        assert result.sdk_manager == mock_sdk_manager
 
         assert mock_warn.call_count == 0
 
@@ -84,6 +95,11 @@ def test_validate_android_config_bad_keystore_path(tmpdir):
     mock_validate_java_environment_result = '1.17'
     mock_android_support_validate_gradle_result = ('/home/gradle-8.4/', '8.4')
 
+    test_cmake_path = "/path/cmake"
+    test_cmake_version = "3.22"
+    test_ninja_path = "/path/ninja"
+    test_ninja_version = "1.10.1"
+
     # Mocks
     with patch('o3de.android_support.validate_java_environment') as mock_validate_java_environment, \
          patch('o3de.android_support.validate_gradle') as mock_validate_gradle, \
@@ -94,8 +110,8 @@ def test_validate_android_config_bad_keystore_path(tmpdir):
 
         mock_validate_java_environment.return_value = mock_validate_java_environment_result
         mock_validate_gradle.return_value = mock_android_support_validate_gradle_result
-        mock_validate_cmake.return_value = None
-        mock_validate_ninja.return_value = None
+        mock_validate_cmake.return_value = (test_cmake_path, test_cmake_version)
+        mock_validate_ninja.return_value = (test_ninja_path, test_ninja_version)
 
         mock_gradle_requirements = Mock()
         mock_get_android_gradle_plugin_requirements.return_value = mock_gradle_requirements
@@ -147,6 +163,11 @@ def test_validate_android_signing_config_warnings(tmpdir, test_sc_store_file, te
     test_validate_java_environment_result = '1.17'
     test_android_support_validate_gradle_result = ('/home/gradle-8.4/', test_gradle_version)
 
+    test_cmake_path = "/path/cmake"
+    test_cmake_version = "3.22"
+    test_ninja_path = "/path/ninja"
+    test_ninja_version = "1.10.1"
+
     # Mocks
     with patch('o3de.android_support.validate_java_environment') as mock_validate_java_environment, \
          patch('o3de.android_support.validate_gradle') as mock_validate_gradle, \
@@ -158,8 +179,8 @@ def test_validate_android_signing_config_warnings(tmpdir, test_sc_store_file, te
 
         mock_validate_java_environment.return_value = test_validate_java_environment_result
         mock_validate_gradle.return_value = test_android_support_validate_gradle_result
-        mock_validate_cmake.return_value = None
-        mock_validate_ninja.return_value = None
+        mock_validate_cmake.return_value = (test_cmake_path, test_cmake_version)
+        mock_validate_ninja.return_value = (test_ninja_path, test_ninja_version)
 
         mock_gradle_requirements = Mock()
         mock_get_android_gradle_plugin_requirements.return_value = mock_gradle_requirements
@@ -678,12 +699,7 @@ def test_generate_android_project_success(tmpdir):
     with patch('o3de.android.get_android_config_from_args') as mock_get_android_config_from_args, \
          patch('o3de.manifest.get_registered') as mock_manifest_get_registered, \
          patch('o3de.android_support.read_android_settings_for_project') as mock_read_android_settings_for_project, \
-         patch('o3de.android_support.validate_java_environment') as mock_validate_java_environment, \
-         patch('o3de.android_support.validate_gradle') as mock_validate_gradle, \
-         patch('o3de.android_support.validate_cmake') as mock_validate_cmake, \
-         patch('o3de.android_support.validate_ninja') as mock_validate_ninja, \
-         patch('o3de.android_support.get_android_gradle_plugin_requirements') as mock_get_android_gradle_plugin_requirements, \
-         patch('o3de.android_support.AndroidSDKManager') as mock_get_android_sdk_manager, \
+         patch('o3de.android.validate_android_config') as mock_validate_android_config, \
          patch('o3de.android_support.AndroidProjectGenerator') as mock_get_android_project_generator, \
          patch('o3de.android_support.AndroidSigningConfig') as mock_get_signing_config, \
          patch('o3de.android.logger.setLevel') as mock_logger_set_level, \
@@ -719,23 +735,30 @@ def test_generate_android_project_success(tmpdir):
 
         mock_project_settings = Mock()
         mock_android_settings = Mock()
+
         mock_read_android_settings_for_project.return_value = (mock_project_settings, mock_android_settings)
 
-        mock_validate_java_environment.return_value = test_java_version
-        mock_validate_gradle.return_value = (test_gradle_path, test_gradle_version)
-        mock_validate_cmake.return_value = (test_cmake_path, test_cmake_version)
-        mock_validate_ninja.return_value = (test_ninja_path, test_ninja_version)
-
         mock_android_gradle_plugin_requirements = Mock()
-        mock_get_android_gradle_plugin_requirements.return_value = mock_android_gradle_plugin_requirements
         setattr(mock_android_gradle_plugin_requirements,'sdk_build_tools_version', test_sdk_build_tools_version)
 
         mock_sdk_manager = Mock()
-        mock_get_android_sdk_manager.return_value = mock_sdk_manager
-
         mock_sdk_manager.get_android_sdk_path.return_value = test_android_sdk_path
+
         mock_ndk_package = Mock()
         mock_sdk_manager.install_package.return_value = mock_ndk_package
+
+        test_android_env = android.ValidatedEnv(java_version=test_java_version,
+                                                gradle_home=test_gradle_path,
+                                                gradle_version=test_gradle_version,
+                                                cmake_path=test_cmake_path,
+                                                cmake_version=test_cmake_version,
+                                                ninja_path=test_ninja_path,
+                                                ninja_version=test_ninja_version,
+                                                android_gradle_plugin_ver=test_android_grade_plugin_version,
+                                                sdk_build_tools_version=test_sdk_build_tools_version,
+                                                sdk_manager=mock_sdk_manager)
+        mock_validate_android_config.return_value = test_android_env
+
 
         mock_android_project_generator = Mock()
         mock_get_android_project_generator.return_value = mock_android_project_generator
@@ -751,22 +774,8 @@ def test_generate_android_project_success(tmpdir):
 
         mock_read_android_settings_for_project.assert_called_once_with(test_project_root)
 
-        mock_validate_java_environment.assert_called_once()
+        mock_validate_android_config.assert_called_once()
 
-        mock_validate_gradle.assert_called_once_with(mock_android_config)
-
-        mock_validate_cmake.assert_called_once_with(mock_android_config)
-
-        mock_validate_ninja.assert_called_once_with(mock_android_config)
-
-        mock_get_android_gradle_plugin_requirements.assert_called_once_with(test_android_grade_plugin_version)
-
-        mock_android_gradle_plugin_requirements.validate_gradle_version.assert_called_once_with(test_gradle_version)
-        mock_android_gradle_plugin_requirements.validate_java_version.assert_called_once_with(test_java_version)
-
-        mock_get_android_sdk_manager.assert_called_once_with(test_java_version, mock_android_config)
-
-        mock_sdk_manager.check_licenses.assert_called_once()
         assert mock_sdk_manager.install_package.call_count == 5
 
         mock_get_signing_config.assert_called_once_with(store_file=pathlib.Path(test_key_store_path),
