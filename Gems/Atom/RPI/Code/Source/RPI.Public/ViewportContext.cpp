@@ -369,6 +369,7 @@ namespace AZ
 
             if (pipeline)
             {
+                pipeline->UnregisterView(pipelineView);
                 pipeline->SetDefaultView(pipelineView);
             }
         }
