@@ -1053,7 +1053,7 @@ namespace AZ::Reflection
                                 return labelAttributeBuffer;
                             }
                         }
-                        else if (dataContainer->IsSequenceContainer())
+                        if (dataContainer->IsSequenceContainer())
                         {
                             // Only add a numeric label for sequence containers
                             labelAttributeBuffer = AZStd::fixed_string<128>::format("[%zu]", parentNode.m_childElementIndex);
