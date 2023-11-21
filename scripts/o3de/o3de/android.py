@@ -16,6 +16,7 @@ from getpass import getpass
 
 ENGINE_PATH = pathlib.Path(__file__).parents[3]
 O3DE_SCRIPT_PATH = f"{ENGINE_PATH}{os.sep}scripts{os.sep}o3de{android_support.O3DE_SCRIPT_EXTENSION}"
+DEFAULT_ANDROID_BUILD_FOLDER = 'build/android'
 
 logging.basicConfig(format=utils.LOG_FORMAT)
 logger = logging.getLogger('o3de.android')
@@ -510,8 +511,9 @@ def add_args(subparsers) -> None:
                                                   "resolve the project from the current directory.")
 
     # Build Directory
-    android_generate_subparser.add_argument('-B', '--build-dir', type=str, required=True,
-                                             help="The location to write the android project scripts to.")
+    android_generate_subparser.add_argument('-B', '--build-dir', type=str,
+                                             help=f"The location to write the android project scripts to. Default: '{DEFAULT_ANDROID_BUILD_FOLDER}'",
+                                             default=DEFAULT_ANDROID_BUILD_FOLDER)
 
     # Platform SDK API Level (https://developer.android.com/tools/releases/platforms)
     platform_sdk_api_level = android_config.get_value(android_support.SETTINGS_PLATFORM_SDK_API.key)

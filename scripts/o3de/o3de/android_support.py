@@ -1366,6 +1366,8 @@ class AndroidProjectGenerator(object):
 
         self.prepare_gradle_wrapper()
 
+        logger.info(f"Android project scripts written to '{self._build_dir.absolute()}'.")
+
     def create_file_from_project_template(self, src_template_file, template_env, dst_file):
         """
         Create a file from an android template file
