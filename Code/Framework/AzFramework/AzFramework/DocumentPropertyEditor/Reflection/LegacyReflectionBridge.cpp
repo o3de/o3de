@@ -1036,11 +1036,29 @@ namespace AZ::Reflection
                 {
                     const StackEntry& parentNode = m_stack[m_stack.size() - 2];
                     AZ::Serialize::IDataContainer* dataContainer = parentNode.m_classData ? parentNode.m_classData->m_container : nullptr;
-                    // Only add a label numeric label for sequence containers
-                    if (dataContainer && dataContainer->IsSequenceContainer())
+                    if (dataContainer)
                     {
-                        labelAttributeBuffer = AZStd::fixed_string<128>::format("[%zu]", parentNode.m_childElementIndex);
-                        return labelAttributeBuffer;
+                        if (auto indexedChildeOverride = Find(
+                                AZ::Name(nodeData.m_group),
+                                DocumentPropertyEditor::Nodes::Container::IndexedChildNameLabelOverride.GetName(),
+                                parentNode);
+                            indexedChildeOverride)
+                        {
+                            auto retrievedName = DocumentPropertyEditor::Nodes::Container::IndexedChildNameLabelOverride.InvokeOnDomValue(
+                                *indexedChildeOverride, parentNode.m_childElementIndex);
+
+                            if (retrievedName.IsSuccess())
+                            {
+                                labelAttributeBuffer = AZStd::fixed_string<128>::format("%s", retrievedName.GetValue().c_str());
+                                return labelAttributeBuffer;
+                            }
+                        }
+                        else if (dataContainer->IsSequenceContainer())
+                        {
+                            // Only add a numeric label for sequence containers
+                            labelAttributeBuffer = AZStd::fixed_string<128>::format("[%zu]", parentNode.m_childElementIndex);
+                            return labelAttributeBuffer;
+                        }
                     }
                 }
 
@@ -1582,9 +1600,9 @@ namespace AZ::Reflection
                 return nullptr;
             }
 
-            const AttributeDataType* Find(Name group, Name name, StackEntry& parentData) const
+            const AttributeDataType* Find(Name group, Name name, const StackEntry& parentData) const
             {
-                for (auto it = parentData.m_cachedAttributes.begin(); it != parentData.m_cachedAttributes.end(); ++it)
+                for (auto it = parentData.m_cachedAttributes.cbegin(); it != parentData.m_cachedAttributes.cend(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {
