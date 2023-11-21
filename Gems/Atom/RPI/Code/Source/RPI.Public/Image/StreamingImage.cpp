@@ -29,8 +29,7 @@ namespace AZ
         Data::Instance<StreamingImage> StreamingImage::FindOrCreate(const Data::Asset<StreamingImageAsset>& streamingImageAsset)
         {
             return Data::InstanceDatabase<StreamingImage>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(streamingImageAsset.GetId()),
-                streamingImageAsset);
+                Data::InstanceId::CreateFromAsset(streamingImageAsset), streamingImageAsset);
         }
 
         Data::Instance<StreamingImage> StreamingImage::CreateFromCpuData(
