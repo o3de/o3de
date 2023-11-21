@@ -1038,14 +1038,14 @@ namespace AZ::Reflection
                     AZ::Serialize::IDataContainer* dataContainer = parentNode.m_classData ? parentNode.m_classData->m_container : nullptr;
                     if (dataContainer)
                     {
-                        if (auto indexedChildeOverride = Find(
+                        if (auto indexedChildOverride = Find(
                                 AZ::Name(nodeData.m_group),
                                 DocumentPropertyEditor::Nodes::Container::IndexedChildNameLabelOverride.GetName(),
                                 parentNode);
-                            indexedChildeOverride)
+                            indexedChildOverride)
                         {
                             auto retrievedName = DocumentPropertyEditor::Nodes::Container::IndexedChildNameLabelOverride.InvokeOnDomValue(
-                                *indexedChildeOverride, parentNode.m_childElementIndex);
+                                *indexedChildOverride, parentNode.m_childElementIndex);
 
                             if (retrievedName.IsSuccess())
                             {
