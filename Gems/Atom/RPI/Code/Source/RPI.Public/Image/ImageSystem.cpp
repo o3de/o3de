@@ -305,7 +305,7 @@ namespace AZ
 
             auto systemAttachmentImage = RPI::AttachmentImage::Create(createImageRequest);
             m_systemAttachmentImages[format] = systemAttachmentImage;
-            return systemAttachmentImage;
+            return m_systemAttachmentImages[format];
         }
 
         bool ImageSystem::RegisterAttachmentImage(AttachmentImage* attachmentImage)
