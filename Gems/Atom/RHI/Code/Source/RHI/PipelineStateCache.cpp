@@ -81,7 +81,7 @@ namespace AZ::RHI
     }
 
     MultiDevicePipelineLibraryHandle PipelineStateCache::CreateLibrary(
-        const PipelineLibraryData* serializedData, const AZStd::string& filePath)
+        const AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>>& serializedData, const AZStd::unordered_map<int, AZStd::string>& filePaths)
     {
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
@@ -111,7 +111,7 @@ namespace AZ::RHI
         m_globalLibraryActiveBits[handle.GetIndex()] = true;
 
         GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
-        libraryEntry.m_pipelineLibraryDescriptor.Init(m_deviceMask, { serializedData, filePath });
+        libraryEntry.m_pipelineLibraryDescriptor.Init(m_deviceMask, serializedData, filePaths);
         AZ_Assert(libraryEntry.m_readOnlyCache.empty() && libraryEntry.m_pendingCache.empty(), "Library entry has entries in its caches!");
 
         return handle;
@@ -128,7 +128,7 @@ namespace AZ::RHI
 
             GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
             libraryEntry.m_readOnlyCache.clear();
-            libraryEntry.m_pipelineLibraryDescriptor.Init(m_deviceMask, { nullptr, "" });
+            libraryEntry.m_pipelineLibraryDescriptor.Init(m_deviceMask, {}, {});
 
             m_globalLibraryActiveBits[handle.GetIndex()] = false;
             m_libraryFreeList.push_back(handle);

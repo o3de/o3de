@@ -116,7 +116,9 @@ namespace AZ::RHI
         void Reset();
 
         //! Creates an internal pipeline library instance and returns its handle.
-        MultiDevicePipelineLibraryHandle CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath = "");
+        MultiDevicePipelineLibraryHandle CreateLibrary(
+            const AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>>& serializedData,
+            const AZStd::unordered_map<int, AZStd::string>& filePaths);
 
         //! Releases the pipeline library and purges it from the cache. Releases all held references to pipeline states for the library.
         void ReleaseLibrary(MultiDevicePipelineLibraryHandle handle);
