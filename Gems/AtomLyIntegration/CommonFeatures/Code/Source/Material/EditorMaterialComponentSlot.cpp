@@ -450,11 +450,6 @@ namespace AZ
             }
         }
 
-        void EditorMaterialComponentSlot::OnAssetReady(Data::Asset<Data::AssetData> asset)
-        {
-            UpdatePreview();
-        }
-
         void EditorMaterialComponentSlot::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
             UpdatePreview();
