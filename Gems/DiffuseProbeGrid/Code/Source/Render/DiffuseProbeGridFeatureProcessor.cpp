@@ -908,9 +908,7 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::OnVisualizationModelAssetReady(Data::Asset<Data::AssetData> asset)
         {
-            Data::Asset<RPI::ModelAsset> modelAsset = asset;
-
-            m_visualizationModel = RPI::Model::FindOrCreate(modelAsset);
+            m_visualizationModel = RPI::Model::FindOrCreate(asset);
             AZ_Assert(m_visualizationModel.get(), "Failed to load DiffuseProbeGrid visualization model");
             if (!m_visualizationModel)
             {
