@@ -300,8 +300,8 @@ def test_get_android_config_from_args_global():
         assert mock_warning.call_count == 0
         assert mock_get_android_config.call_count == 1
         mock_call_args = mock_get_android_config.call_args_list[0]
-        assert 'project_name' in mock_call_args.kwargs
-        assert mock_call_args.kwargs['project_name'] is None
+        assert 'project_path' in mock_call_args.kwargs
+        assert mock_call_args.kwargs['project_path'] is None
 
 
 def test_get_android_config_from_args_global_with_warning_project_name():
@@ -324,8 +324,8 @@ def test_get_android_config_from_args_global_with_warning_project_name():
         assert mock_warning.call_count == 1
         assert mock_get_android_config.call_count == 1
         mock_call_args = mock_get_android_config.call_args_list[0]
-        assert 'project_name' in mock_call_args.kwargs
-        assert mock_call_args.kwargs['project_name'] is None
+        assert 'project_path' in mock_call_args.kwargs
+        assert mock_call_args.kwargs['project_path'] is None
 
 
 def test_get_android_config_no_project_name_no_project_detected():
@@ -353,14 +353,15 @@ def test_get_android_config_no_project_name_no_project_detected():
         assert mock_info.call_count == 1
         assert re.search(r'(based on the global settings)', mock_info.call_args.args[0]) is not None
         assert mock_get_android_config.call_count == 1
-        assert 'project_name' in mock_get_android_config.call_args_list[0].kwargs
-        assert mock_get_android_config.call_args_list[0].kwargs['project_name'] is None
+        assert 'project_path' in mock_get_android_config.call_args_list[0].kwargs
+        assert mock_get_android_config.call_args_list[0].kwargs['project_path'] is None
 
 
 def test_get_android_config_no_project_name_project_detected():
 
     # Test Data
     detected_project = "Foo"
+    detected_path = '/foo'
     test_args = PropertyMock
     setattr(test_args, 'global', False)
     setattr(test_args, 'project', "")
@@ -370,7 +371,7 @@ def test_get_android_config_no_project_name_project_detected():
          patch('o3de.android.logger.info') as mock_info, \
          patch('o3de.command_utils.resolve_project_name_and_path', new_callable=MagicMock) as mock_resolve:
 
-        mock_resolve.return_value = (detected_project, '/foo')
+        mock_resolve.return_value = (detected_project, detected_path)
 
         mock_get_android_config.return_value = Mock()
 
@@ -383,21 +384,30 @@ def test_get_android_config_no_project_name_project_detected():
         assert mock_info.call_count == 1
         assert re.search(f'(based on the currently detected project \\({detected_project}\\))', mock_info.call_args.args[0]) is not None
         assert mock_get_android_config.call_count == 1
-        assert 'project_name' in mock_get_android_config.call_args_list[0].kwargs
-        assert mock_get_android_config.call_args_list[0].kwargs['project_name'] == detected_project
+        assert 'project_path' in mock_get_android_config.call_args_list[0].kwargs
+        assert mock_get_android_config.call_args_list[0].kwargs['project_path'] == detected_path
 
 
-def test_get_android_config_no_global_project_name_provided():
+def test_get_android_config_project_path(tmpdir):
+
+    tmpdir.ensure("project", dir=True)
+
 
     # Test Data
-    test_project = "Foo"
+    test_path = pathlib.Path(tmpdir.join('project').realpath())
+    test_project = 'project'
+
+
     test_args = PropertyMock
     setattr(test_args, 'global', False)
-    setattr(test_args, 'project', test_project)
+    setattr(test_args, 'project', str(test_path))
 
     # Mocks
     with patch('o3de.android_support.get_android_config') as mock_get_android_config, \
-         patch('o3de.android.logger.info') as mock_info:
+         patch('o3de.android.logger.info') as mock_info, \
+         patch('o3de.command_utils.resolve_project_name_and_path', new_callable=MagicMock) as mock_resolve:
+
+        mock_resolve.return_value = (test_project, test_path)
 
         mock_get_android_config.return_value = Mock()
 
@@ -410,8 +420,39 @@ def test_get_android_config_no_global_project_name_provided():
         assert mock_info.call_count == 1
         assert re.search(f'(will be based on project \\({test_project}\\))', mock_info.call_args.args[0]) is not None
         assert mock_get_android_config.call_count == 1
-        assert 'project_name' in mock_get_android_config.call_args_list[0].kwargs
-        assert mock_get_android_config.call_args_list[0].kwargs['project_name'] == test_project
+        assert 'project_path' in mock_get_android_config.call_args_list[0].kwargs
+        assert mock_get_android_config.call_args_list[0].kwargs['project_path'] == test_path
+
+
+def test_get_android_config_no_global_project_name_provided():
+
+    # Test Data
+    test_project = "Foo"
+    test_project_path = pathlib.Path('/foo')
+    test_args = PropertyMock
+    setattr(test_args, 'global', False)
+    setattr(test_args, 'project', test_project)
+
+    # Mocks
+    with patch('o3de.android_support.get_android_config') as mock_get_android_config, \
+         patch('o3de.manifest.get_registered') as mock_get_registered, \
+         patch('o3de.android.logger.info') as mock_info:
+
+        mock_get_android_config.return_value = Mock()
+
+        mock_get_registered.return_value = test_project_path
+
+        # Test the method
+        result, project_name = android.get_android_config_from_args(test_args)
+
+        # Validation
+        assert result == mock_get_android_config.return_value
+        assert project_name == test_project
+        assert mock_info.call_count == 1
+        assert re.search(f'(will be based on project \\({test_project}\\))', mock_info.call_args.args[0]) is not None
+        assert mock_get_android_config.call_count == 1
+        assert 'project_path' in mock_get_android_config.call_args_list[0].kwargs
+        assert mock_get_android_config.call_args_list[0].kwargs['project_path'] == test_project_path
 
 
 def test_configure_android_options_list():

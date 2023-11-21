@@ -91,7 +91,7 @@ class SettingsDescription(object):
             raise O3DEConfigError(f"Input value '{input}' not valid. {self._restricted_regex_description}")
 
 
-def resolve_project_name_and_path(starting_path: str or None = None) -> (str, Path):
+def resolve_project_name_and_path(starting_path: Path or None = None) -> (str, Path):
     """
     Attempt to resolve the project name and path attempting to find the first 'project.json' that can be discovered based on the 'starting_path'
 
@@ -134,12 +134,12 @@ class O3DEConfig(object):
     This class manages settings for o3de command line tools which are serialized globally, but can be overlayed with
     values for specified registered projects.
     """
-    def __init__(self, project_name: str or None, settings_filename: str, settings_section_name: str,
+    def __init__(self, project_path: Path or None, settings_filename: str, settings_section_name: str,
                  settings_description_list: List[SettingsDescription]):
         """
         Initialize the configuration object
 
-        :param project_name:                Optional. The name of the registered o3de-project if this object is to handle both the global settings and project-specific overrides.
+        :param project_path:                Optional. Path to the project root where the project-specific overlay settings will reside. If `None`, then this is a global only configuration with no project-specific override
         :param settings_filename:           The filename for the setting
         :param settings_section_name:       The section name that this settings object manages for the settings file
         :param settings_description_list:   The list of supported setting descriptions
@@ -164,18 +164,17 @@ class O3DEConfig(object):
             global_config_reader.add_section(self._settings_section_name)
         self._global_settings = global_config_reader[self._settings_section_name]
 
-        if project_name is None:
+        if project_path is None:
             # No project name, set to handle only the global configuration
             self._project_settings_file = None
             self._project_settings = None
             self._project_name = None
         else:
-            # The project name was specified, locate and read the project settings and use it as overlay values
-            self._project_settings_file = O3DEConfig.resolve_project_settings_file(project_name=project_name,
-                                                                                  settings_filename=settings_filename,
-                                                                                  settings_section_name=settings_section_name,
-                                                                                  create_default_if_missing=True)
-            self._project_name = project_name
+            self._project_name, project_path = resolve_project_name_and_path(project_path)
+            self._project_settings_file = project_path / settings_filename
+            if self._project_settings_file and not self._project_settings_file.is_file():
+                self._project_settings_file.write_text(f"[{settings_section_name}]\n")
+
             project_config_reader = configparser.ConfigParser()
             project_config_reader.read(self._project_settings_file.absolute())
             if not project_config_reader.has_section(self._settings_section_name):
@@ -250,39 +249,6 @@ class O3DEConfig(object):
             logger.debug(f"Missing default values applied to {global_settings}")
 
         return global_settings
-
-    @staticmethod
-    def resolve_project_settings_file(project_name: str or None,
-                                      settings_filename: str,
-                                      settings_section_name: str,
-                                      create_default_if_missing: bool = False) -> Path:
-        """
-        Resolve the location of the configuration file. The file <settings_filename> will be stored
-        in the root location of the registered project <project_name_arg>
-
-        :param project_name:                The name of the registered project to look up its root path
-        :param settings_filename:           The name of the settings file to use (or create)
-        :param settings_section_name:       The name of the settings section to use if a new settings file needs to be created
-        :param create_default_if_missing:   Flag to request that the settings file be automatically create if missing
-        :return: The path to the project-specific settings file
-        """
-        # Resolve the android settings file
-        if project_name:
-            project_path = manifest.get_registered(project_name=project_name)
-            if not project_path:
-                raise O3DEConfigError(f"Unable to resolve project named '{project_name}'. "
-                                      f"Make sure it is registered with O3DE.")
-            logger.info(f"Configuring settings for project '{project_name}' at '{project_path}'")
-            settings_path = Path(project_path) / settings_filename
-        else:
-            project_name, project_path = resolve_project_name_and_path()
-            logger.info(f"Configuring settings for project '{project_name}' at '{project_path}'")
-            settings_path = Path(project_path) / settings_filename
-
-        if create_default_if_missing and settings_path and not settings_path.is_file():
-            settings_path.write_text(f"[{settings_section_name}]\n")
-
-        return settings_path
 
     def set_config_value(self, key: str, value: str, validate_value: bool = True, show_log: bool = True) -> str:
         """

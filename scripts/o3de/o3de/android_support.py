@@ -168,16 +168,16 @@ SETTINGS_EXTRA_CMAKE_ARGS       = register_setting(key='extra.cmake.args',
                                                    description='Optional string to set additional cmake arguments during the native project generation within the android gradle build process')
 
 
-def get_android_config(project_name: str or None) -> command_utils.O3DEConfig:
+def get_android_config(project_path: Path or None) -> command_utils.O3DEConfig:
     """
     Create an android configuration a project. If a project name is provided, then attempt to look for the project and use its
     project-specific settings (if any) as an overlay to the global settings. If the project name is None, then return an
     android configuration object that only represents the global setting
 
-    :param project_name:    The name of the project to look for its project-specific setting. If None, only use the global settings.
+    :param project_path:    The path to the registered O3DE project to look for its project-specific setting. If None, only use the global settings.
     :return: The android configuration object
     """
-    return command_utils.O3DEConfig(project_name=project_name,
+    return command_utils.O3DEConfig(project_path=project_path,
                                     settings_filename=ANDROID_SETTINGS_FILE,
                                     settings_section_name=ANDROID_SETTINGS_SECTION_NAME,
                                     settings_description_list=SUPPORTED_ANDROID_SETTINGS)

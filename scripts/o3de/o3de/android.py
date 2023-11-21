@@ -175,27 +175,42 @@ def get_android_config_from_args(args: argparse) -> (command_utils.O3DEConfig, s
     """
 
     is_global = getattr(args, 'global', False)
-    project_name = getattr(args, 'project', None)
+    project = getattr(args, 'project', None)
 
     if is_global:
-        if project_name:
-            logger.warning(f"Both --global and --project ({project_name}) arguments were provided. The --project argument will "
-                         "be ignored and the execution of this command will be based on the global settings.")
-        android_config = android_support.get_android_config(project_name=None)
-    elif not project_name:
+        if project:
+            logger.warning(f"Both --global and --project ({project}) arguments were provided. The --project argument will "
+                            "be ignored and the execution of this command will be based on the global settings.")
+        android_config = android_support.get_android_config(project_path=None)
+        project_name = None
+    elif not project:
         try:
-            project_name, _ = command_utils.resolve_project_name_and_path()
+            project_name, project_path = command_utils.resolve_project_name_and_path()
         except command_utils.O3DEConfigError:
             project_name = None
         if project_name:
             logger.info(f"The execution of this command will be based on the currently detected project ({project_name}).")
-            android_config = android_support.get_android_config(project_name=project_name)
+            android_config = android_support.get_android_config(project_path=project_path)
         else:
             logger.info("The execution of this command will be based on the global settings.")
-            android_config = android_support.get_android_config(project_name=None)
+            android_config = android_support.get_android_config(project_path=None)
     else:
+        project_path = pathlib.Path(project)
+        if project_path.is_dir():
+            # If '--project' was set to a project path, then resolve the project path and name
+            project_name, project_path = command_utils.resolve_project_name_and_path(project_path)
+
+        else:
+            project_name = project
+
+            # If '--project' was not a project path, check to see if its a registered project by its name
+            project_path = manifest.get_registered(project_name=project_name)
+            if not project_path:
+                raise command_utils.O3DEConfigError(f"Unable to resolve project named '{project_name}'. "
+                                                    f"Make sure it is registered with O3DE.")
+
         logger.info(f"The execution of this command will be based on project ({project_name}).")
-        android_config = android_support.get_android_config(project_name=project_name)
+        android_config = android_support.get_android_config(project_path=project_path)
 
     return android_config, project_name
 
@@ -422,7 +437,7 @@ def generate_android_project(args: argparse) -> int:
                                                       oculus_project=is_oculus_project)
         apg.execute()
 
-    except android_support.AndroidToolError as err:
+    except (command_utils.O3DEConfigError, android_support.AndroidToolError) as err:
         logger.error(str(err))
         return 1
     else:
@@ -442,11 +457,11 @@ def add_args(subparsers) -> None:
     # Read from the android config if possible to try to display default values
     try:
         project_name, project_path = command_utils.resolve_project_name_and_path()
-        android_config = android_support.get_android_config(project_name=project_name)
+        android_config = android_support.get_android_config(project_path=project_path)
     except (android_support.AndroidToolError, command_utils.O3DEConfigError):
         logger.debug(f"No project detected at {os.getcwd()}, default settings from global config.")
         project_name = None
-        android_config = android_support.get_android_config(project_name=None)
+        android_config = android_support.get_android_config(project_path=None)
 
     #
     # Configure the subparser for 'android-configure'
@@ -507,7 +522,7 @@ def add_args(subparsers) -> None:
 
     # Project Name
     android_generate_subparser.add_argument('-p', '--project', type=str,
-                                             help="The name of the registered project to generate the Android project for. If not supplied, this operation will attempt to "
+                                             help="The name of the registered project or the full path to the O3DE project to generate the Android build scripts for. If not supplied, this operation will attempt to "
                                                   "resolve the project from the current directory.")
 
     # Build Directory
