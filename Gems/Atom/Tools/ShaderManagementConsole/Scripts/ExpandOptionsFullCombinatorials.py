@@ -12,6 +12,7 @@ import azlmbr.bus
 import azlmbr.shadermanagementconsole
 import azlmbr.shader
 import azlmbr.math
+import azlmbr.name
 import azlmbr.rhi
 import azlmbr.atom
 import azlmbr.atomtools
@@ -20,16 +21,29 @@ import GenerateShaderVariantListUtil
 from PySide2 import QtWidgets
 from PySide2 import QtCore
 from PySide2 import QtGui
-from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QListWidget, QPushButton, QMessageBox, QLabel, QGroupBox, QComboBox, QSplitter, QWidget, QLineEdit, QSpinBox, QCheckBox, QButtonGroup, QRadioButton
+from PySide2.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QListWidget, QPushButton, QMessageBox, QLabel, QGroupBox, QComboBox, QSplitter, QWidget, QLineEdit, QSpinBox, QCheckBox, QButtonGroup, QRadioButton, QAction, QMenu
 
 # globals
 numVariantsInDocument = 0
 optionsByNames = {} # dict lookup accelerator (name to descriptor)
+valueRestrictions = {} # option name to list of values that are accepted for this option (absence of registration in this dict = use the whole range)
 
 # constants
 SortAlpha = 0
 SortRank = 1
 SortCost = 2
+
+def nextElement(inlist, after):
+    """ O(N) complexity, generic utility """
+    """ nextElement(inlist=['a', 'b', 'c'], after='b') is 'c' """
+    try:
+        idx = inlist.index(after)
+        return inlist[idx + 1]
+    except:
+        return after
+
+def inclusiveRange(start, end):
+     return range(start, end + 1)
 
 def isDocumentOpen(document_id: azlmbr.math.Uuid) -> bool:
     return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
@@ -60,6 +74,7 @@ def getCost(name):
     return optionsByNames[name].GetCostEstimate()
 
 def infoStr(name):
+    '''for tooltip'''
     return f"rank: {getRank(name)} | cost: {getCost(name)}"
 
 def sumCost(descriptors):
@@ -78,6 +93,104 @@ def createOptionValue(intVal):
         azlmbr.bus.Broadcast, 'MakeShaderOptionValueFromInt',
         intVal)
 
+def intFromOptionValueName(optionName, valueNameStr):
+    n = azlmbr.name.Name(valueNameStr)
+    return toInt(optionsByNames[optionName].FindValue(n))
+
+def hasRestrictions(optionName):
+    return optionName in valueRestrictions \
+        and len(valueRestrictions[optionName]) > 0
+
+# "virtualize" access to GetMinValue to reflect the potential value-space restriction
+def getMinValue(descriptor):
+    global valueRestrictions
+    name = str(descriptor.GetName())
+    if hasRestrictions(name):
+        return createOptionValue(valueRestrictions[name][0])
+    else:
+        return descriptor.GetMinValue()
+
+# "virtualize" access to GetMaxValue to reflect the potential value-space restriction
+def getMaxValue(descriptor):
+    global valueRestrictions
+    name = str(descriptor.GetName())
+    if hasRestrictions(name):
+        return createOptionValue(valueRestrictions[name][-1])
+    else:
+        return descriptor.GetMaxValue()
+
+# same concept as above
+def getValuesCount(descriptor):
+    global valueRestrictions
+    name = str(descriptor.GetName())
+    if hasRestrictions(name):
+        return len(valueRestrictions[name])
+    else:
+        return descriptor.GetValuesCount()
+
+# "virtualize" `increment by one` to be able to jump over restricted values
+def getNextValueInt(descriptor, digit):
+    global valueRestrictions
+    name = str(descriptor.GetName())
+    if hasRestrictions(name):
+        possibles = valueRestrictions[name]
+        return nextElement(inlist=possibles, after=digit)
+    else:
+        return digit + 1
+
+def isValueRestricted(optionName, valueNameStr):
+    valAsInt = intFromOptionValueName(optionName, valueNameStr)
+    if optionName in valueRestrictions:
+        return valAsInt in valueRestrictions[optionName]
+    return False
+
+# small window to select sub-ranges into an option's possible values
+class ValueSelector(QDialog):
+    def __init__(self, optionName, optionValuesNames):
+        super().__init__()
+        self.setWindowTitle("[" + optionName + "] - restrict enumerated values")
+        self.optionName = optionName
+        self.optionValuesNames = optionValuesNames
+        self.initUI()
+
+    def initUI(self):
+        mainvl = QVBoxLayout(self)
+        self.valueList = QListWidget()
+        for idx, optVN in enumerate(self.optionValuesNames):
+            self.valueList.insertItem(idx, optVN)
+            added = self.valueList.item(idx)
+            added.setFlags(added.flags() | QtCore.Qt.ItemIsUserCheckable)
+            added.setCheckState(QtCore.Qt.Unchecked if isValueRestricted(self.optionName, optVN) else QtCore.Qt.Checked)
+        mainvl.addWidget(self.valueList)
+        twoBtnsHL = QHBoxLayout(self)
+        self.cancel = QPushButton("Cancel")
+        twoBtnsHL.addWidget(self.cancel)
+        self.ok = QPushButton("Ok")
+        twoBtnsHL.addWidget(self.ok)
+        mainvl.addLayout(twoBtnsHL)
+        self.cancel.clicked.connect(self.close)
+        self.ok.clicked.connect(self.storeRestriction)
+        self.setMaximumWidth(500)
+        self.setMaximumHeight(1100)
+        self.resize(380, 300)
+
+    # on OK click
+    def storeRestriction(self):
+        '''update the global dictionary of usable values for this option'''
+        global valueRestrictions
+        restrictedList = [intFromOptionValueName(self.optionName, x.text()) for x in listItems(self.valueList) if x.checkState() == QtCore.Qt.Unchecked]
+        if len(restrictedList) == optionsByNames[self.optionName].GetValuesCount():
+            msgBox = QMessageBox()
+            msgBox.setText("Keep at least one value")
+            msgBox.setInformativeText("Nothing to enumerate: just remove the option from the pariticipants altogether.")
+            msgBox.setStandardButtons(QMessageBox.Ok)
+            msgBox.exec()
+            return
+        # save:
+        valueRestrictions[self.optionName] = restrictedList
+        self.accept() # exit dialog
+
+# that's the control that holds 2 face to face lists doing communicating vases
 class DoubleList(QtCore.QObject):
     left = QListWidget()
     leftSubLbl = QLabel()
@@ -115,6 +228,8 @@ class DoubleList(QtCore.QObject):
         self.add.clicked.connect(lambda: self.addClick())
         self.rem.clicked.connect(lambda: self.remClick())
         self.refreshCountLabels()
+        self.right.viewport().installEventFilter(self)
+        self.right.setMouseTracking(True)
 
     def addClick(self):
         transferSelection(self.left, self.right)
@@ -145,6 +260,34 @@ class DoubleList(QtCore.QObject):
         self.leftSubLbl.setText(str(self.left.count()) + " elements")
         self.rightSubLbl.setText(str(self.right.count()) + " elements")
 
+    def refreshLabelColors(self):  # to mark value-restricted options
+        for elem in listItems(self.right):
+            if hasRestrictions(elem.text()):
+                elem.setForeground(QtGui.QColor(0xbf, 0x8f, 0xff)) # mauve
+            else:
+                elem.setForeground(QtGui.QBrush()) # default
+
+    def eventFilter(self, source, event):
+        if event.type() == QtCore.QEvent.ContextMenu and source is self.right.viewport():
+            menu = QMenu()
+            menu.addAction("Customize generated values")
+            if menu.exec_(event.globalPos()):
+                self.restrictValueSpace()
+                return True
+        return False
+
+    def restrictValueSpace(self):
+        items = self.right.selectedItems()
+        if len(items) == 1:
+            optName = items[0].text()
+            desc = optionsByNames[optName]
+            optionValuesNames = [desc.GetValueName(createOptionValue(v)).ToString() for v in inclusiveRange(toInt(desc.GetMinValue()), toInt(desc.GetMaxValue()))]
+            subdialog = ValueSelector(optName, optionValuesNames)
+            subdialog.setModal(True)
+            if subdialog.exec() == QDialog.Accepted:
+                self.changed.emit()
+                self.refreshLabelColors()
+
 class Dialog(QDialog):
     def __init__(self, options):
         super().__init__()
@@ -163,7 +306,7 @@ class Dialog(QDialog):
 
         # Create the list box on the left
         self.optionsSelector = DoubleList([x.GetName().ToString() for x in self.optionDescriptors])
-        listGroup = QGroupBox("Add desired participating options from the left bucket, to the selection bucket on the right:")
+        listGroup = QGroupBox("Add desired participating options from the left bucket, to the selection bucket on the right. Right click on options in the right bucket to further configure used values.")
         listGroup.setLayout(self.optionsSelector.layout)
         vsplitter = QSplitter(QtCore.Qt.Horizontal)
         vsplitter.addWidget(listGroup)
@@ -268,9 +411,9 @@ class Dialog(QDialog):
         count = 0
         for p in participants:
             if count == 0:
-                count = p.GetValuesCount()  # initial value
+                count = getValuesCount(p)  # initial value
             else:
-                count = count * p.GetValuesCount()
+                count = count * getValuesCount(p)
         return count
 
     def calculateResultVariantCountAfterExpedite(self, calculatedGenCount):
@@ -298,7 +441,7 @@ class Dialog(QDialog):
         startBucket = listItems(self.optionsSelector.left)
         expandCount = 1
         for itemWidget in startBucket:
-            newCount = expandCount * optionsByNames[itemWidget.text()].GetValuesCount()
+            newCount = expandCount * getValuesCount(optionsByNames[itemWidget.text()])
             if newCount > self.target.value():
                 break # stop here
             else:
@@ -312,15 +455,15 @@ class Dialog(QDialog):
     def allMaxedOut(digitArray, descriptorArray):
         '''verify if an array of option-values, has all values corresponding to the described max-value, for their respective option'''
         zipped = zip(digitArray, descriptorArray)
-        return all((digit == toInt(desc.GetMaxValue()) for digit, desc in zipped))
+        return all((digit == toInt(getMaxValue(desc)) for digit, desc in zipped))
 
     @staticmethod
     def increment(digit, descriptor):
         '''increment one digit in its own base-space. return pair or new digit and carry bit'''
         carry = False
-        digit = digit + 1
-        if digit > toInt(descriptor.GetMaxValue()):
-            digit = toInt(descriptor.GetMinValue())
+        digit = getNextValueInt(descriptor, digit)
+        if digit > toInt(getMaxValue(descriptor)):
+            digit = toInt(getMinValue(descriptor))
             carry = True
         return (digit, carry)
 
@@ -331,7 +474,7 @@ class Dialog(QDialog):
         for i in reversed(range(0, len(digitArray))):
             if carry:
                 digitArray[i], carry = Dialog.increment(digitArray[i], descriptorArray[i])
-    
+
     @staticmethod
     def toNames(digitArray, descriptorArray):
         return [desc.GetValueName(createOptionValue(digit)) for digit, desc in zip(digitArray, descriptorArray)]
@@ -348,7 +491,7 @@ class Dialog(QDialog):
         genOptDescs = list(self.getParticipantOptionDescs())
         self.participantNames = [x.GetName() for x in genOptDescs]
         self.listOfDigitArrays = []
-        digits = [toInt(x.GetMinValue()) for x in genOptDescs]
+        digits = [toInt(getMinValue(desc)) for desc in genOptDescs]
         c = 0
         if len(digits) > 0:
             while(True):
@@ -415,6 +558,7 @@ def main():
     try:
         dialog.exec()
     except:
+        print("exited early due to exception")
         return
 
     numVal = len(dialog.listOfDigitArrays)
