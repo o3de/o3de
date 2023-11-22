@@ -1835,6 +1835,13 @@ namespace ScriptCanvasEditor
         UpdateAssignToSelectionState();
 
         OnSaveToast toast(tabName, GetActiveGraphCanvasGraphId(), saveSuccess);
+
+        // If we are in the process of closing tabs, resume closing
+        if (m_isClosingTabs)
+        {
+            CloseNextTab();
+        }
+
         return memoryAsset;
     }
 

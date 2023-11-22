@@ -40,4 +40,8 @@ namespace AZ
     }
 }
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Private), AZ::Null::PlatformModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Atom_RHI_Null_Private, AZ::Null::PlatformModule)
+#endif

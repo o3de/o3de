@@ -208,6 +208,7 @@ namespace Multiplayer
         }
 
         MultiplayerComponent::Reflect(context);
+        NetworkTime::Reflect(context);
     }
 
     void MultiplayerSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

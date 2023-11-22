@@ -24,9 +24,9 @@ else()
 endif()
 
 ly_add_target(
-    NAME PhysXDebug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME PhysXDebug.Gem
+    OUTPUT_NAME ${gem_name}.Gem
     FILES_CMAKE
         ${physx_files}
     INCLUDE_DIRECTORIES
@@ -45,16 +45,36 @@ ly_add_target(
         Gem::PhysX
         Gem::ImGui
 )
-# use the PhysXDebug module in Clients and Servers:
-ly_create_alias(NAME PhysXDebug.Clients NAMESPACE Gem TARGETS Gem::PhysXDebug)
-ly_create_alias(NAME PhysXDebug.Servers NAMESPACE Gem TARGETS Gem::PhysXDebug)
-ly_create_alias(NAME PhysXDebug.Unified NAMESPACE Gem TARGETS Gem::PhysXDebug)
+
+# Inject the gem name into the Module source file
+if (PAL_TRAIT_PHYSX_SUPPORTED)
+    ly_add_source_properties(
+        SOURCES
+            Source/Module.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+else()
+    ly_add_source_properties(
+        SOURCES
+            Source/ModuleUnsupported.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+endif()
+
+# use the ${gem_name} module in Clients and Servers:
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME PhysXDebug.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
-        OUTPUT_NAME PhysXDebug.Editor.Gem
+        OUTPUT_NAME ${gem_name}.Editor.Gem
         FILES_CMAKE
             ${physx_editor_files}
         COMPILE_DEFINITIONS
@@ -78,8 +98,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::PhysX.Editor
             Gem::ImGui.Editor
     )
-    # use the PhysXDebug.Editor module in dev tools:
-    ly_create_alias(NAME PhysXDebug.Builders NAMESPACE Gem TARGETS Gem::PhysXDebug.Editor)
-    ly_create_alias(NAME PhysXDebug.Tools    NAMESPACE Gem TARGETS Gem::PhysXDebug.Editor)
+    # use the ${gem_name}.Editor module in dev tools:
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()

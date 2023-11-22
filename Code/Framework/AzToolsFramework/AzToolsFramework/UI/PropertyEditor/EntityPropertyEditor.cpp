@@ -135,14 +135,14 @@ namespace AzToolsFramework
     AZ_CVAR(
         bool,
         ed_enableDPEInspector,
-        false,
+        true,
         nullptr,
         AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
         "If set, enables experimental Document Property Editor support for the Entity Inspector");
 
     static bool ShouldUseDPE()
     {
-        bool dpeEnabled = false;
+        bool dpeEnabled = true;
         if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
             console->GetCvarValue(enableDPECVarName, dpeEnabled);

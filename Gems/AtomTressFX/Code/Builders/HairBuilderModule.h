@@ -32,4 +32,8 @@ namespace AZ
     } // namespace Render
 } // namespace AZ
 
-AZ_DECLARE_MODULE_CLASS(Gem_AtomTressFX_Builder, AZ::Render::Hair::HairBuilderModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Builders), AZ::Render::Hair::HairBuilderModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_AtomTressFX_Builders, AZ::Render::Hair::HairBuilderModule)
+#endif

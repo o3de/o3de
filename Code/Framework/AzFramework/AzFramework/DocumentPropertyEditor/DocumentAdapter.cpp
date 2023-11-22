@@ -112,8 +112,32 @@ namespace AZ::DocumentPropertyEditor
 
             Dom::DeltaPatchGenerationParameters patchGenerationParams;
 
-            // at most allow row replacement, a diff to replace the whole tree is almost certainly inefficient for this architecture
-            patchGenerationParams.m_allowRootReplacement = false;
+            // at most allow non-nested row replacement, a diff to replace the whole tree is almost certainly inefficient for this architecture
+            patchGenerationParams.m_allowReplacement = [](const Dom::Value& before, [[maybe_unused]] const Dom::Value& after)
+            {
+                if (before.GetType() == Dom::Type::Node)
+                {
+                    auto beforeName = before.GetNodeName();
+                    auto rowName = AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>();
+                    if (beforeName == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Adapter>())
+                    {
+                        // don't allow full adapter replacement
+                        return false;
+                    }
+                    else if (beforeName == rowName)
+                    {
+                        // don't allow nested row replacement, it's too broad and likely inefficient
+                        for (auto childIter = before.ArrayBegin(), endIter = before.ArrayEnd(); childIter != endIter; ++childIter)
+                        {
+                            if (childIter->GetNodeName() == rowName)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                return true;
+            };
 
             // Generate denormalized paths instead of EndOfArray entries (this is required by ChangedEvent)
             patchGenerationParams.m_generateDenormalizedPaths = true;

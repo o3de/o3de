@@ -406,7 +406,6 @@ namespace AZ
 
         // helper functions to manipulate block headers
         void split_block(block_header* bl, size_t size);
-        block_header* shift_block(block_header* bl, size_t offs);
         block_header* coalesce_block(block_header* bl);
 
         void* tree_system_alloc(size_t size);
@@ -416,6 +415,7 @@ namespace AZ
         block_header* tree_extract_bucket_page();
         block_header* tree_add_block(void* mem, size_t size);
         block_header* tree_grow(size_t size);
+        block_header* tree_grow_aligned(size_t size, size_t alignment);
         void tree_attach(block_header* bl);
         void tree_detach(block_header* bl);
         void tree_purge_block(block_header* bl);
@@ -1458,26 +1458,6 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::shift_block(block_header* bl, size_t offs) -> block_header*
-    {
-        HPPA_ASSERT(offs > 0);
-        block_header* prev = bl->prev();
-        bl->unlink();
-        bl = (block_header*)((char*)bl + offs);
-        bl->link_after(prev);
-        bl->set_unused();
-
-        // Shifting this block increased the size of the previous block. If
-        // that block is in use, add that extra offset to the total in use
-        // bytes for the tree
-        if (prev->used())
-        {
-            mTotalAllocatedSizeTree += offs;
-        }
-        return bl;
-    }
-
-    template<bool DebugAllocatorEnable>
     auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::coalesce_block(block_header* bl) -> block_header*
     {
         HPPA_ASSERT(!bl->used());
@@ -1557,6 +1537,116 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_grow_aligned(size_t size, size_t alignment) -> block_header*
+    {
+        const size_t sizeWithBlockHeaders = size + 3 * sizeof(block_header); // two fences plus one fake
+
+        // tree_system_alloc() will return an offset that is a multiple of OS_VIRTUAL_PAGE_SIZE which is 64KiB
+        // The following tree_add_block() call will add a dummy block at the beginning of the allocated offset
+        // which has a size of 0 which including the block header would put the offset of the real block header at
+        // a multiple of 16(sizeof block_header) and the actual memory address for use at a multiple of 32
+        //
+        // So tree_system_alloc will return an address of the form (0x10000 * N) where is N some integer
+        // mem_offset = (0x10000 * N) (multiple of 64KiB)
+        //
+        // tree_add_block() then creates a dummy_block of size 0, followed by a real_block of the actual size
+        // dummy_block_header_offset = (0x10000 * N) (multiple of 64KiB and also a multiple of 16 as well)
+        // real_block_header_offset = (0x10000 * N) + 16 (multiple of 16)
+        // real_block_memory_offset = (0x10000 * N) + 32 (multiple of 32)
+        //
+        // This means the return result tree_add_block() is a 32-byte aligned memory address
+        // So any alignment <= 32 doesn't need any additional padding memory to be supplied to tree_system_alloc to work
+
+        // Now if the alignment is 64, then a real_block_memory_offset needs to be adjusted to be a multiple of 64
+        // In order for that to occur another block(a free block) needs to be inserted between the dummy block and the real block
+        // to be at an offset that is a multiple of 64 - sizeof(block_header)
+        // The first candidate for the real block would be to have a block header at offset 48
+        // free_block_header_offset = (0x10000 * N) + 16
+        // free_block_memory_offset = (0x10000 * N) + 32
+        // real_block_header_offset = (0x10000 * N) + 48
+        // real_block_memory_offset = (0x10000 * N) + 64
+        // However there is a problem here where a free block is re-used as a free node in an intrusive_multiset
+        // to make it easier to find the memory allocation free blocks when not in use.
+        // Now because a node in an intrusive_multiset is 40 bytes(see `sizeof free_node`) then this enforces
+        // that the minimum distance between the free_block_header_offset and real_block_header_offset must be
+        // 56 bytes (sizeof(block_header) + sizeof(free_node))
+        // But as can be seen the distance from the `free_block_memory_offset` to the `real_block_header_offset`
+        // is only 16 bytes.
+        // 
+        // So the next candidate for the real block would be to have a block header at offset 112 (128 - sizeof(block_header))
+        // free_block_header_offset = (0x10000 * N) + 112
+        // free_block_memory_offset = (0x10000 * N) + 128
+        // This allow the actual real memory address to be to be 64 byte aligned, while making sure the free block
+        // has enough space(>= 40 bytes) to store a free node
+        //
+        // Now once for alignments >=128, the same amount of padding memory that is used for an alignment of 64 would work
+        // since the free_block_memory_offset would have 80 bytes of space which is greater than the 40 bytes that is required
+        // Ex. alignment=128
+        // free_block_header_offset = (0x10000 * N) + 16
+        // free_block_memory_offset = (0x10000 * N) + 32
+        // real_block_header_offset = (0x10000 * N) + 112
+        // real_block_memory_offset = (0x10000 * N) + 128
+        // Ex. alignment=256
+        // free_block_header_offset = (0x10000 * N) + 16
+        // free_block_memory_offset = (0x10000 * N) + 32
+        // real_block_header_offset = (0x10000 * N) + 244
+        // real_block_memory_offset = (0x10000 * N) + 256
+        //
+        // Now these *_aligned version of functions are only called when the alignment is > DEFAULT_ALIGNMENT (8)
+        // So when the alignment 16 or 32 the `sizeWithBlockHeaders` variable above is sufficient
+        // If the alignment is 64, then `sizeWithBlockHeaders` variable needs to make sure it account for at least an alignment of
+        // `alignment + 2 * sizeof(block header)` which is 96 bytes to allow a free_block to be inserted
+        // before the aligned offset
+        // If the alignment >= 128 , then `sizeWithBlockHeaders` variables needs to account for `alignment - 2 *sizeof(block_header)`
+        size_t sizeWithBlockHeadersAndAlignmentPadding = sizeWithBlockHeaders;
+        if (alignment == 64)
+        {
+            sizeWithBlockHeadersAndAlignmentPadding += alignment + 2 * sizeof(block_header);
+        }
+        else if (alignment > 64)
+        {
+            sizeWithBlockHeadersAndAlignmentPadding += alignment - 2 * sizeof(block_header);
+        }
+
+        const size_t newSize =
+            (sizeWithBlockHeadersAndAlignmentPadding < m_treePageSize)
+            ? AZ::SizeAlignUp(sizeWithBlockHeadersAndAlignmentPadding, m_treePageSize)
+            : sizeWithBlockHeadersAndAlignmentPadding;
+        HPPA_ASSERT(newSize >= sizeWithBlockHeaders);
+
+        if (void* mem = tree_system_alloc(newSize))
+        {
+            constexpr size_t MinRequiredSize = sizeof(block_header) + sizeof(free_node);
+            block_header* newBl = tree_add_block(mem, newSize);
+            // new block memory is only 32-byte aligned at this point
+            size_t alignmentOffs = AZ::PointerAlignUp((char*)newBl->mem(), alignment) - (char*)newBl->mem();
+            if (alignmentOffs > 0 && alignmentOffs < MinRequiredSize)
+            {
+                // Make sure the alignment offset is large enough, that a free block
+                // can be created between the new block and the previous block
+                alignmentOffs = AZ::PointerAlignUp((char*)newBl->mem() + MinRequiredSize, alignment) - (char*)newBl->mem();
+            }
+
+            if (alignmentOffs >= MinRequiredSize)
+            {
+                split_block(newBl, alignmentOffs - sizeof(block_header));
+                tree_attach(newBl);
+                newBl = newBl->next();
+            }
+
+            AZ_Assert(
+                reinterpret_cast<uintptr_t>(newBl->mem()) % alignment == 0,
+                "The allocated memory address %p is not aligned to %zu",
+                newBl->mem(),
+                alignment);
+            AZ_Assert(newBl->size() >= size, "The allocated memory size %zu is less than %zu", newBl->size(), size);
+
+            return newBl;
+        }
+        return nullptr;
+    }
+
+    template<bool DebugAllocatorEnable>
     auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_extract(size_t size) -> block_header*
     {
         // search the tree and get the smallest fitting block
@@ -1574,15 +1664,26 @@ namespace AZ
     template<bool DebugAllocatorEnable>
     auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_extract_aligned(size_t size, size_t alignment) -> block_header*
     {
-        // get the sequence of nodes from size to (size + alignment - 1) including
-        size_t sizeUpper = size + alignment;
+        // get the sequence of nodes from size to (size + sizeof(block_header) + sizeof(free_node) + (alignment - 1)) including
+        constexpr size_t MinRequiredSize = sizeof(block_header) + sizeof(free_node);
+
+        size_t sizeUpper = size + alignment + MinRequiredSize;
         auto bestNode = mFreeTree.lower_bound(size);
         auto lastNode = mFreeTree.upper_bound(sizeUpper);
         while (bestNode != lastNode)
         {
             free_node* node = &*bestNode;
-            size_t alignmentOffs = AZ::PointerAlignUp((char*)node, alignment) - (char*)node;
-            if (node->get_block()->size() >= size + alignmentOffs)
+            block_header* candidateBlock = bestNode->get_block();
+
+            size_t  alignmentOffs = AZ::PointerAlignUp((char*)node, alignment) - (char*)node;
+            if (alignmentOffs > 0 && alignmentOffs < MinRequiredSize)
+            {
+                // Make sure the alignment offset is large enough, that a free block
+                // can be created between the new block and the previous block
+                alignmentOffs = AZ::PointerAlignUp((char*)node + MinRequiredSize, alignment) - (char*)node;
+            }
+            // The alignmentOffs at this point is either 0 or >= sizeof(block_header) + sizeof(free_node)
+            if (candidateBlock->size() >= size + alignmentOffs)
             {
                 break;
             }
@@ -1598,8 +1699,29 @@ namespace AZ
         {
             bestNode = bestNode->next(); // improves removal time
         }
+
+        // Re-query the alignment offset needed to get to a block that is aligned
+        free_node* bestNodeAddress = &*bestNode;
+        size_t alignmentOffs = AZ::PointerAlignUp((char*)bestNodeAddress, alignment) - (char*)bestNodeAddress;
+        if (alignmentOffs > 0 && alignmentOffs < MinRequiredSize)
+        {
+            // Make sure the alignment offset is large enough, that a free block
+            // can be created between the new block and the previous block
+            alignmentOffs = AZ::PointerAlignUp((char*)bestNodeAddress + MinRequiredSize, alignment) - (char*)bestNodeAddress;
+        }
+
         block_header* bestBlock = bestNode->get_block();
         tree_detach(bestBlock);
+
+        // Return an block_header that points to aligned block that can be used
+        // split_block is used to create a free block for the section
+        // between the best block current memory address and the aligned memory address
+        if (alignmentOffs >= MinRequiredSize)
+        {
+            split_block(bestBlock, alignmentOffs - sizeof(block_header));
+            tree_attach(bestBlock);
+            bestBlock = bestBlock->next();
+        }
         return bestBlock;
     }
 
@@ -1698,29 +1820,26 @@ namespace AZ
             size = sizeof(free_node);
         }
         size = AZ::SizeAlignUp(size, sizeof(block_header));
-        block_header* newBl = tree_extract_aligned(size, alignment);
-        if (!newBl)
+
+        constexpr size_t MinRequiredSize = sizeof(block_header) + sizeof(free_node);
+
+        // The block header + free_node size is the minimum amount
+        // of bytes needed for a block
+        block_header* alignedBlockHeader = tree_extract_aligned(size, alignment);
+        if (alignedBlockHeader == nullptr)
         {
-            newBl = tree_grow(size + alignment);
-            if (!newBl)
+            alignedBlockHeader = tree_grow_aligned(size, alignment);
+            if (alignedBlockHeader == nullptr)
             {
                 return AllocateAddress{};
             }
         }
+
+        block_header* newBl = alignedBlockHeader;
+
         HPPA_ASSERT(newBl && newBl->size() >= size);
-        size_t alignmentOffs = AZ::PointerAlignUp((char*)newBl->mem(), alignment) - (char*)newBl->mem();
-        HPPA_ASSERT(newBl->size() >= size + alignmentOffs);
-        if (alignmentOffs >= sizeof(block_header) + sizeof(free_node))
-        {
-            split_block(newBl, alignmentOffs - sizeof(block_header));
-            tree_attach(newBl);
-            newBl = newBl->next();
-        }
-        else if (alignmentOffs > 0)
-        {
-            newBl = shift_block(newBl, alignmentOffs);
-        }
-        if (newBl->size() >= size + sizeof(block_header) + sizeof(free_node))
+
+        if (newBl->size() >= size + MinRequiredSize)
         {
             split_block(newBl, size);
             tree_attach(newBl->next());
@@ -1859,6 +1978,14 @@ namespace AZ
         block_header* prev = bl->prev();
         size_t prevSize = prev->used() ? 0 : prev->size() + sizeof(block_header);
         size_t alignmentOffs = prev->used() ? 0 : AZ::PointerAlignUp((char*)prev->mem(), alignment) - (char*)prev->mem();
+
+        constexpr size_t MinRequiredSize = sizeof(free_node) + sizeof(block_header);
+        if (alignmentOffs > 0 && alignmentOffs < MinRequiredSize)
+        {
+            // Make sure the alignment offset is large enough, that a free block
+            // can be created between the new block and the previous block
+            alignmentOffs = AZ::PointerAlignUp((char*)prev->mem() + MinRequiredSize, alignment) - (char*)prev->mem();
+        }
         if (blSize + prevSize + nextSize >= size + alignmentOffs)
         {
             HPPA_ASSERT(!prev->used());
@@ -1869,22 +1996,18 @@ namespace AZ
                 tree_detach(next);
                 next->unlink();
             }
-            if (alignmentOffs >= sizeof(block_header) + sizeof(free_node))
+            if (alignmentOffs >= MinRequiredSize)
             {
                 split_block(prev, alignmentOffs - sizeof(block_header));
                 tree_attach(prev);
                 prev = prev->next();
-            }
-            else if (alignmentOffs > 0)
-            {
-                prev = shift_block(prev, alignmentOffs);
             }
             bl = prev;
             bl->set_used();
             HPPA_ASSERT(bl->size() >= size && ((size_t)bl->mem() & (alignment - 1)) == 0);
             void* newPtr = bl->mem();
             memmove(newPtr, ptr, blSize - MEMORY_GUARD_SIZE);
-            if (bl->size() >= size + sizeof(block_header) + sizeof(free_node))
+            if (bl->size() >= size + MinRequiredSize)
             {
                 split_block(bl, size);
                 tree_attach(bl->next());

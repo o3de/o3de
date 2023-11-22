@@ -151,10 +151,12 @@ namespace AZ
 
             // build the visualization BLAS from the DiffuseProbeGridFeatureProcessor
             // Note: the BLAS is used by all DiffuseProbeGrid visualization TLAS objects
+            AZStd::vector<const RHI::RayTracingBlas*> changedBlasList;
             if (m_visualizationBlasBuilt == false)
             {
                 context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas());
                 m_visualizationBlasBuilt = true;
+                changedBlasList.push_back(diffuseProbeGridFeatureProcessor->GetVisualizationBlas().get());
             }
 
             // call BuildTopLevelAccelerationStructure for each DiffuseProbeGrid in this range
@@ -172,7 +174,7 @@ namespace AZ
                 }
 
                 // build the TLAS object
-                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas());
+                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas(), changedBlasList);
             }
         }
 
