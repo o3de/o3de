@@ -180,14 +180,16 @@ namespace AzToolsFramework::Prefab
                 AZ::Dom::Value firstRowElement = propertyRowValue[0];
                 AZ_Assert(
                     firstRowElement.IsNode() &&
-                    firstRowElement.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name &&
-                    firstRowElement["Type"].GetString() == PrefabPropertyEditorNodes::PrefabOverrideLabel::Name,
-                    "PrefabComponentAdapter::UpdateDomContents - First element in the property row is not a 'PrefabOverrideLabel'.");
+                    firstRowElement.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name,
+                    "PrefabComponentAdapter::UpdateDomContents - First element in the property row is not a PropertyEditor node.");
 
-                // Patch the first child in the row, which is going to the PrefabOverrideLabel.
-                patches.PushBack(AZ::Dom::PatchOperation::ReplaceOperation(
-                    pathToProperty / 0 / PrefabPropertyEditorNodes::PrefabOverrideLabel::IsOverridden.GetName(), AZ::Dom::Value(true)));
-                NotifyContentsChanged(patches);
+                if (firstRowElement["Type"].GetString() == PrefabPropertyEditorNodes::PrefabOverrideLabel::Name)
+                {
+                    // Patch the first child in the row, which is going to the PrefabOverrideLabel.
+                    patches.PushBack(AZ::Dom::PatchOperation::ReplaceOperation(
+                        pathToProperty / 0 / PrefabPropertyEditorNodes::PrefabOverrideLabel::IsOverridden.GetName(), AZ::Dom::Value(true)));
+                    NotifyContentsChanged(patches);
+                }
             }
         }
         else if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
