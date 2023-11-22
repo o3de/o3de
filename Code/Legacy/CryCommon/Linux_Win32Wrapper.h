@@ -13,8 +13,10 @@
 #include <AzCore/std/string/string.h>
 
 // carbonated begin (alukyanov)
-#if defined(LINUX64)
+#if defined(CARBONATED)
+#if defined(LINUX64) && !defined(ANDROID)
 #include <Linux64Specific.h>
+#endif
 #endif
 // carbonated end
 
