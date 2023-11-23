@@ -114,7 +114,6 @@ CEditorImpl::CEditorImpl()
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
-    , m_bMatEditMode(false)
     , m_bShowStatusText(true)
     , m_bInitialized(false)
     , m_bExiting(false)
@@ -498,7 +497,7 @@ void CEditorImpl::SetDataModified()
 
 void CEditorImpl::SetStatusText(const QString& pszString)
 {
-    if (m_bShowStatusText && !m_bMatEditMode && GetMainStatusBar())
+    if (m_bShowStatusText && GetMainStatusBar())
     {
         GetMainStatusBar()->SetStatusText(pszString);
     }
@@ -1336,11 +1335,6 @@ bool CEditorImpl::IsSourceControlConnected()
     }
 
     return false;
-}
-
-void CEditorImpl::SetMatEditMode(bool bIsMatEditMode)
-{
-    m_bMatEditMode = bIsMatEditMode;
 }
 
 void CEditorImpl::ShowStatusText(bool bEnable)
