@@ -478,11 +478,11 @@ namespace AZ
                     m_meshBuffers.RemoveResource(subMesh.m_bitangentShaderBufferView.get());
                     m_meshBuffers.RemoveResource(subMesh.m_uvShaderBufferView.get());
 
-                    m_materialTextures.RemoveResource(subMesh.m_baseColorImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_normalImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_metallicImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_roughnessImageView.get());
-                    m_materialTextures.RemoveResource(subMesh.m_emissiveImageView.get());
+                    m_materialTextures.RemoveResource(subMesh.m_baseColorImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                    m_materialTextures.RemoveResource(subMesh.m_normalImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                    m_materialTextures.RemoveResource(subMesh.m_metallicImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                    m_materialTextures.RemoveResource(subMesh.m_roughnessImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                    m_materialTextures.RemoveResource(subMesh.m_emissiveImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
 #endif
 
                     if (globalIndex < m_subMeshes.size() - 1)
@@ -969,27 +969,27 @@ namespace AZ
             {
                 m_materialTextureIndices.RemoveEntry(materialInfo.m_textureStartIndex);
 #if !USE_BINDLESS_SRG
-                m_materialTextures.RemoveResource(subMesh.m_baseColorImageView.get());
-                m_materialTextures.RemoveResource(subMesh.m_normalImageView.get());
-                m_materialTextures.RemoveResource(subMesh.m_metallicImageView.get());
-                m_materialTextures.RemoveResource(subMesh.m_roughnessImageView.get());
-                m_materialTextures.RemoveResource(subMesh.m_emissiveImageView.get());
+                m_materialTextures.RemoveResource(subMesh.m_baseColorImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_materialTextures.RemoveResource(subMesh.m_normalImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_materialTextures.RemoveResource(subMesh.m_metallicImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_materialTextures.RemoveResource(subMesh.m_roughnessImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_materialTextures.RemoveResource(subMesh.m_emissiveImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
 #endif
             }
 
             materialInfo.m_textureStartIndex = m_materialTextureIndices.AddEntry({
 #if USE_BINDLESS_SRG
-                subMeshMaterial.m_baseColorImageView.get() ? subMeshMaterial.m_baseColorImageView->GetBindlessReadIndex() : InvalidIndex,
-                subMeshMaterial.m_normalImageView.get() ? subMeshMaterial.m_normalImageView->GetBindlessReadIndex() : InvalidIndex,
-                subMeshMaterial.m_metallicImageView.get() ? subMeshMaterial.m_metallicImageView->GetBindlessReadIndex() : InvalidIndex,
-                subMeshMaterial.m_roughnessImageView.get() ? subMeshMaterial.m_roughnessImageView->GetBindlessReadIndex() : InvalidIndex,
-                subMeshMaterial.m_emissiveImageView.get() ? subMeshMaterial.m_emissiveImageView->GetBindlessReadIndex() : InvalidIndex
+                subMeshMaterial.m_baseColorImageView.get() ? subMeshMaterial.m_baseColorImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                subMeshMaterial.m_normalImageView.get() ? subMeshMaterial.m_normalImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                subMeshMaterial.m_metallicImageView.get() ? subMeshMaterial.m_metallicImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                subMeshMaterial.m_roughnessImageView.get() ? subMeshMaterial.m_roughnessImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                subMeshMaterial.m_emissiveImageView.get() ? subMeshMaterial.m_emissiveImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex
 #else
-                m_materialTextures.AddResource(subMeshMaterial.m_baseColorImageView.get()),
-                m_materialTextures.AddResource(subMeshMaterial.m_normalImageView.get()),
-                m_materialTextures.AddResource(subMeshMaterial.m_metallicImageView.get()),
-                m_materialTextures.AddResource(subMeshMaterial.m_roughnessImageView.get()),
-                m_materialTextures.AddResource(subMeshMaterial.m_emissiveImageView.get())
+                m_materialTextures.AddResource(subMeshMaterial.m_baseColorImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get()),
+                m_materialTextures.AddResource(subMeshMaterial.m_normalImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get()),
+                m_materialTextures.AddResource(subMeshMaterial.m_metallicImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get()),
+                m_materialTextures.AddResource(subMeshMaterial.m_roughnessImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get()),
+                m_materialTextures.AddResource(subMeshMaterial.m_emissiveImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get())
 #endif
             });
         }

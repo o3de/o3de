@@ -149,7 +149,7 @@ namespace AZ
             m_meshMovedFlag = GetParentScene()->GetViewTagBitRegistry().AcquireTag(MeshCommon::MeshMovedName);
             m_meshMotionDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->AcquireTag(MeshCommon::MotionDrawListTagName);
             m_transparentDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->AcquireTag(s_transparent_Name);
-            
+
             if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
             {
                 console->GetCvarValue("r_meshInstancingEnabled", m_enableMeshInstancing);
@@ -331,7 +331,7 @@ namespace AZ
                         // so they don't need to be updated here
                         if (!r_meshInstancingEnabled)
                         {
-                            // Unset per mesh shader options 
+                            // Unset per mesh shader options
                             if (removePerMeshShaderOptionFlags)
                             {
                                 for (RPI::MeshDrawPacketList& drawPacketList : meshDataIter->m_drawPacketListsByLod)
@@ -526,7 +526,7 @@ namespace AZ
                 }
             }
         }
-        
+
         void MeshFeatureProcessor::ResizePerViewInstanceVectors(size_t viewCount)
         {
             AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: ResizePerInstanceVectors");
@@ -641,7 +641,7 @@ namespace AZ
                 AZ_Assert(false, "Invalid mesh handle");
                 return 1;
             }
-        }        
+        }
 
 
         void MeshFeatureProcessor::AddVisibleObjectsToBuckets(
@@ -868,11 +868,11 @@ namespace AZ
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
             instanceDataBufferHandler.UpdateBuffer(perViewInstanceData.data(), static_cast<uint32_t>(perViewInstanceData.size()));
         }
-        
+
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
-                        
+
             // The per-mesh shader option flags are set in feature processors' simulate function
             // So we want to process the flags here to update the draw packets if needed.
             // Update MeshDrawPacket's shader options if PerMeshShaderOption is enabled
@@ -959,7 +959,7 @@ namespace AZ
                                     }
                                     else
                                     {
-                                        instanceGroupDataIter->m_drawPacket.UnsetShaderOption(shaderOption); 
+                                        instanceGroupDataIter->m_drawPacket.UnsetShaderOption(shaderOption);
                                     }
                                 });
                             instanceGroupDataIter->UpdateDrawPacket(*GetParentScene(), true);
@@ -1119,7 +1119,7 @@ namespace AZ
 
             return {};
         }
-        
+
         const RPI::MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
         {
             // This function is being deprecated. It's currently used to get draw packets so that we can print some
@@ -1785,7 +1785,7 @@ namespace AZ
                     for (PostCullingInstanceData& postCullingData : postCullingInstanceDataList)
                     {
                         postCullingData.m_instanceGroupHandle->RemoveAssociatedInstance(this);
-                        
+
                         // Remove instance will decrement the use-count of the instance group, and only release the instance group
                         // if nothing else is referring to it.
                         meshInstanceManager.RemoveInstance(postCullingData.m_instanceGroupHandle);
@@ -1829,7 +1829,7 @@ namespace AZ
             {
                 m_postCullingInstanceDataByLod.resize(modelLodCount);
             }
-            
+
             for (size_t modelLodIndex = 0; modelLodIndex < modelLodCount; ++modelLodIndex)
             {
                 BuildDrawPacketList(meshFeatureProcessor, modelLodIndex);
@@ -1940,7 +1940,7 @@ namespace AZ
             }
 
             auto meshMotionDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(MeshCommon::MotionDrawListTagName);
-            
+
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
                 const auto meshes = modelLod.GetMeshes();
@@ -2044,7 +2044,7 @@ namespace AZ
                     m_postCullingInstanceDataByLod[modelLodIndex].push_back(postCullingData);
 
                     // The instaceGroup needs to keep a reference of this ModelDataInstance so it can
-                    // notify the ModelDataInstance when the MeshDrawPacket is changed or get the cullable's flags 
+                    // notify the ModelDataInstance when the MeshDrawPacket is changed or get the cullable's flags
                     instanceGroupInsertResult.m_handle->AddAssociatedInstance(this);
                 }
 
@@ -2082,7 +2082,7 @@ namespace AZ
                     drawPacket.SetStencilRef(stencilRef);
                     drawPacket.SetSortKey(m_sortKey);
                     drawPacket.SetEnableDraw(meshMotionDrawListTag, m_flags.m_isDrawMotion);
-                    // Note: do not add drawPacket.Update() here. It's not needed.It may cause issue with m_shaderVariantHandler which captures 'this' pointer. 
+                    // Note: do not add drawPacket.Update() here. It's not needed.It may cause issue with m_shaderVariantHandler which captures 'this' pointer.
 
                     if (!r_meshInstancingEnabled)
                     {
@@ -2101,7 +2101,7 @@ namespace AZ
 
                 // For mesh instancing only
                 // If this model needs to draw motion, enable draw motion vector for the DrawPacket.
-                // This means any mesh instances which are using this draw packet would draw motion vector too. This is fine, just not optimized. 
+                // This means any mesh instances which are using this draw packet would draw motion vector too. This is fine, just not optimized.
                 if (r_meshInstancingEnabled && m_flags.m_isDrawMotion)
                 {
                     MeshInstanceGroupData& instanceGroupData = meshInstanceManager[instanceGroupInsertResult.m_handle];

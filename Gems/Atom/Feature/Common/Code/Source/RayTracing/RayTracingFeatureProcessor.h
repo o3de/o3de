@@ -98,11 +98,11 @@ namespace AZ
                 RayTracingSubMeshTextureFlags m_textureFlags = RayTracingSubMeshTextureFlags::None;
 
                 // material textures
-                RHI::Ptr<const RHI::SingleDeviceImageView> m_baseColorImageView;
-                RHI::Ptr<const RHI::SingleDeviceImageView> m_normalImageView;
-                RHI::Ptr<const RHI::SingleDeviceImageView> m_metallicImageView;
-                RHI::Ptr<const RHI::SingleDeviceImageView> m_roughnessImageView;
-                RHI::Ptr<const RHI::SingleDeviceImageView> m_emissiveImageView;
+                RHI::Ptr<const RHI::MultiDeviceImageView> m_baseColorImageView;
+                RHI::Ptr<const RHI::MultiDeviceImageView> m_normalImageView;
+                RHI::Ptr<const RHI::MultiDeviceImageView> m_metallicImageView;
+                RHI::Ptr<const RHI::MultiDeviceImageView> m_roughnessImageView;
+                RHI::Ptr<const RHI::MultiDeviceImageView> m_emissiveImageView;
             };
 
             //! Contains data for a single subMesh
