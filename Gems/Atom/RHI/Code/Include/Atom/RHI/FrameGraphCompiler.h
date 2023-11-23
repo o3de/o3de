@@ -81,7 +81,7 @@ namespace AZ::RHI
     class FrameGraph;
     class FrameGraphAttachmentDatabase;
     class ResourcePoolFrameAttachment;
-    class SingleDeviceTransientAttachmentPool;
+    class MultiDeviceTransientAttachmentPool;
 
     /**
         * @brief Fill this request structure and pass to FrameGraphCompiler::Compile.
@@ -94,7 +94,7 @@ namespace AZ::RHI
         FrameGraph* m_frameGraph = nullptr;
 
         /// The transient attachment pool used for transient attachment allocations. Must be a valid instance.
-        SingleDeviceTransientAttachmentPool* m_transientAttachmentPool = nullptr;
+        MultiDeviceTransientAttachmentPool* m_transientAttachmentPool = nullptr;
 
         /// The verbosity requested for compilation. Logs are emitted using the AzCore logging functions.
         FrameSchedulerLogVerbosity m_logVerbosity = FrameSchedulerLogVerbosity::None;
@@ -213,7 +213,7 @@ namespace AZ::RHI
 
         void CompileTransientAttachments(
             FrameGraph& frameGraph,
-            SingleDeviceTransientAttachmentPool& transientAttachmentPool,
+            AZ::RHI::MultiDeviceTransientAttachmentPool& transientAttachmentPool,
             FrameSchedulerCompileFlags compileFlags,
             FrameSchedulerStatisticsFlags statisticsFlags);
 

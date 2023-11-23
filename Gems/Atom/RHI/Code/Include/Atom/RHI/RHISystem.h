@@ -82,15 +82,15 @@ namespace AZ::RHI
 
         //////////////////////////////////////////////////////////////////////////
         // RHIMemoryStatisticsInterface Overrides
-        const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
+        AZStd::unordered_map<int, TransientAttachmentStatistics> GetTransientAttachmentStatistics() const override;
         const RHI::MemoryStatistics* GetMemoryStatistics() const override;
         void WriteResourcePoolInfoToJson(
-            const AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+            const AZStd::vector<RHI::MemoryStatistics::Pool>& pools,
             rapidjson::Document& doc) const override;
         AZ::Outcome<void, AZStd::string> LoadResourcePoolInfoFromJson(
-            AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
-            AZStd::vector<RHI::MemoryStatistics::Heap>& heaps, 
-            rapidjson::Document& doc, 
+            AZStd::vector<RHI::MemoryStatistics::Pool>& pools,
+            AZStd::vector<RHI::MemoryStatistics::Heap>& heaps,
+            rapidjson::Document& doc,
             const AZStd::string& fileName) const override;
         void TriggerResourcePoolAllocInfoDump() const override;
         //////////////////////////////////////////////////////////////////////////
