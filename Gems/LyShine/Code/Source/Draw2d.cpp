@@ -756,17 +756,17 @@ void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const auto* imageView = m_image ? m_image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture
         auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-        imageView = image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
+        imageView = image->GetImageView();
     }
 
     if (imageView)
     {
-        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get(), 0);
     }
 
     // Set projection matrix
@@ -817,17 +817,17 @@ void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const auto* imageView = m_image ? m_image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture
         auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-        imageView = image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
+        imageView = image->GetImageView();
     }
 
     if (imageView)
     {
-        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get(), 0);
     }
 
     // Set projection matrix
@@ -893,17 +893,17 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
     // Set texture
-    const auto* imageView = m_image ? m_image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get() : nullptr;
+    const auto* imageView = m_image ? m_image->GetImageView() : nullptr;
     if (!imageView)
     {
         // Default to white texture
         auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
-        imageView = image->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
+        imageView = image->GetImageView();
     }
 
     if (imageView)
     {
-        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get(), 0);
     }
 
     // Set projection matrix
