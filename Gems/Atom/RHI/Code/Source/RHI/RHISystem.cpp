@@ -418,7 +418,7 @@ namespace AZ::RHI
 
     /////////////////////////////////////////////////////////////////////////////
     // RHIMemoryStatisticsInterface overrides
-    const RHI::TransientAttachmentStatistics* RHISystem::GetTransientAttachmentStatistics() const
+    AZStd::unordered_map<int, TransientAttachmentStatistics> RHISystem::GetTransientAttachmentStatistics() const
     {
         return m_frameScheduler.GetTransientAttachmentStatistics();
     }

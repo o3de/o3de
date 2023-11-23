@@ -13,6 +13,8 @@
 #include <Atom/RHI/FrameScheduler.h>
 #include <AzCore/Math/Random.h>
 
+#include <Atom/RHI/RHISystemInterface.h>
+
 namespace UnitTest
 {
     using namespace AZ;
@@ -154,9 +156,12 @@ namespace UnitTest
 
             m_rootFactory.reset(aznew Factory());
 
-            RHI::Ptr<RHI::Device> device = MakeTestDevice();
+            m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
+            m_rhiSystem->InitDevices(AZ::RHI::InitDevicesFlags::SingleDevice);
+            m_rhiSystem->Init();
 
-            m_device = device;
+            m_device = AZ::RHI::RHISystemInterface::Get()->GetDevice(RHI::MultiDevice::DefaultDeviceIndex);
+
             m_state.reset(new State);
 
             {
@@ -164,7 +169,7 @@ namespace UnitTest
 
                 RHI::BufferPoolDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
-                m_state->m_bufferPool->Init(*device, desc);
+                m_state->m_bufferPool->Init(*m_device, desc);
             }
 
             for (uint32_t i = 0; i < ImportedBufferCount; ++i)
@@ -190,7 +195,7 @@ namespace UnitTest
 
                 RHI::ImagePoolDescriptor desc;
                 desc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
-                m_state->m_imagePool->Init(*device, desc);
+                m_state->m_imagePool->Init(*m_device, desc);
             }
 
             for (uint32_t i = 0; i < ImportedImageCount; ++i)
@@ -223,6 +228,8 @@ namespace UnitTest
         {
             m_state.reset();
             m_device = nullptr;
+            m_rhiSystem->Shutdown();
+            m_rhiSystem.reset();
             m_rootFactory.reset();
             RHITestFixture::TearDown();
         }
@@ -410,6 +417,7 @@ namespace UnitTest
         static const uint32_t ScopeCount = 16;
 
         AZStd::unique_ptr<Factory> m_rootFactory;
+        AZStd::unique_ptr<AZ::RHI::RHISystem> m_rhiSystem; //! Needed for the MultiDeviceTransientAttachmentPool in the FrameScheduler
         RHI::Ptr<RHI::Device> m_device;
 
         struct State
