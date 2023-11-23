@@ -422,8 +422,6 @@ set(FILES
     LogFileImpl.h
     Objects/ClassDesc.h
     Objects/DisplayContextShared.inl
-    Objects/SelectionGroup.cpp
-    Objects/SelectionGroup.h
     Objects/ObjectLoader.cpp
     Objects/ObjectLoader.h
     Objects/ObjectManager.cpp

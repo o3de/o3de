@@ -74,12 +74,6 @@ public:
     MOCK_METHOD7(NewObject, CBaseObject* (const char*, const char*, const char*, float, float, float, bool));
     MOCK_METHOD1(DeleteObject, void(CBaseObject* obj));
     MOCK_METHOD1(CloneObject, CBaseObject* (CBaseObject* ));
-    MOCK_METHOD0(GetSelection, CSelectionGroup* ());
-    MOCK_METHOD0(GetSelectedObject, CBaseObject* ());
-    MOCK_METHOD0(ClearSelection, int());
-    MOCK_METHOD1(SelectObject, void(CBaseObject*));
-    MOCK_METHOD1(LockSelection, void(bool));
-    MOCK_METHOD0(IsSelectionLocked, bool());
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());

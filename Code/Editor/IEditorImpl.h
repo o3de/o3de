@@ -139,12 +139,6 @@ public:
     // to feed memory node with all necessary data needed for export
     // (gSettings.Load() and CXTPDockingPaneManager/CXTPDockingPaneLayout Sandbox layout management)
     CSettingsManager* GetSettingsManager() override;
-    CSelectionGroup*    GetSelection() override;
-    int ClearSelection() override;
-    CBaseObject* GetSelectedObject() override;
-    void SelectObject(CBaseObject* obj) override;
-    void LockSelection(bool bLock) override;
-    bool IsSelectionLocked() override;
 
     CMusicManager* GetMusicManager() override { return m_pMusicManager; };
 

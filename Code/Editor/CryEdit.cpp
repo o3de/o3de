@@ -107,7 +107,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "StartupTraceHandler.h"
 #include "ToolsConfigPage.h"
-#include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
 #include "WaitProgress.h"
 
@@ -2521,12 +2520,6 @@ void CCryEditApp::OnViewSwitchToGameFullScreen()
 {
     ed_previewGameInFullscreen_once = true;
     OnViewSwitchToGame();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateSelected(QAction* action)
-{
-    action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -13,7 +13,6 @@
 #include "OutlinerSortFilterProxyModel.hxx"
 #include "OutlinerWidget.hxx"
 #include "OutlinerDisplayOptionsMenu.h"
-#include "Objects/SelectionGroup.h"
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplication.h>
@@ -39,17 +38,18 @@
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-#include <QGraphicsOpacityEffect>
-#include <QLabel>
-#include <QToolButton>
-#include <QMenu>
-#include <QDir>
-#include <QPainter>
 #include <QApplication>
-#include <QtCore/QPropertyAnimation>
-#include <QtCore/QTimer>
+#include <QContextMenuEvent>
+#include <QDir>
+#include <QGraphicsOpacityEffect>
 #include <QHeaderView>
 #include <QInputDialog>
+#include <QLabel>
+#include <QMenu>
+#include <QPainter>
+#include <QToolButton>
+#include <QtCore/QPropertyAnimation>
+#include <QtCore/QTimer>
 
 #include <UI/Outliner/ui_OutlinerWidget.h>
 #include <AzQtComponents/Components/StyleManager.h>
