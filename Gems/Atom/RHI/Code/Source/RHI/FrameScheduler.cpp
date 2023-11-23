@@ -20,7 +20,7 @@
 #include <Atom/RHI/ResourceInvalidateBus.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
-#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
+#include <Atom/RHI/MultiDeviceTransientAttachmentPool.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 
@@ -66,8 +66,8 @@ namespace AZ::RHI
 
         if (SingleDeviceTransientAttachmentPool::NeedsTransientAttachmentPool(descriptor.m_transientAttachmentPoolDescriptor))
         {
-            m_transientAttachmentPool = Factory::Get().CreateTransientAttachmentPool();
-            resultCode = m_transientAttachmentPool->Init(device, descriptor.m_transientAttachmentPoolDescriptor);
+            m_transientAttachmentPool = aznew MultiDeviceTransientAttachmentPool();
+            resultCode = m_transientAttachmentPool->Init(RHI::MultiDevice::AllDevices, descriptor.m_transientAttachmentPoolDescriptor);
 
             if (resultCode != ResultCode::Success)
             {
@@ -609,12 +609,12 @@ namespace AZ::RHI
         return &m_memoryStatistics;
     }
 
-    const TransientAttachmentStatistics* FrameScheduler::GetTransientAttachmentStatistics() const
+    AZStd::unordered_map<int, TransientAttachmentStatistics> FrameScheduler::GetTransientAttachmentStatistics() const
     {
         return
             CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics)
-            ? &m_transientAttachmentPool->GetStatistics()
-            : nullptr;
+            ? m_transientAttachmentPool->GetStatistics()
+            : AZStd::unordered_map<int, TransientAttachmentStatistics>();
     }
 
     double FrameScheduler::GetCpuFrameTime() const
