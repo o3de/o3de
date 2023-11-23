@@ -22,12 +22,12 @@ namespace AZ::RHI
         m_allocator = allocator ? allocator : &AllocatorInstance<SystemAllocator>::Get();
     }
 
-    void DrawPacketBuilder::SetDrawArguments(const DrawArguments& drawArguments)
+    void DrawPacketBuilder::SetDrawArguments(const SingleDeviceDrawArguments& drawArguments)
     {
         m_drawArguments = drawArguments;
     }
 
-    void DrawPacketBuilder::SetIndexBufferView(const IndexBufferView& indexBufferView)
+    void DrawPacketBuilder::SetIndexBufferView(const SingleDeviceIndexBufferView& indexBufferView)
     {
         m_indexBufferView = indexBufferView;
     }
@@ -57,7 +57,7 @@ namespace AZ::RHI
         SetViewports(AZStd::span<const Viewport>(&viewport, 1));
     }
 
-    void DrawPacketBuilder::AddShaderResourceGroup(const ShaderResourceGroup* shaderResourceGroup)
+    void DrawPacketBuilder::AddShaderResourceGroup(const SingleDeviceShaderResourceGroup* shaderResourceGroup)
     {
         if (Validation::IsEnabled())
         {
@@ -65,7 +65,7 @@ namespace AZ::RHI
             {
                 if (m_shaderResourceGroups[i] == shaderResourceGroup)
                 {
-                    AZ_Warning("DrawPacketCompiler", false, "Duplicate ShaderResourceGroup added to draw packet.");
+                    AZ_Warning("DrawPacketCompiler", false, "Duplicate SingleDeviceShaderResourceGroup added to draw packet.");
                     return;
                 }
             }
@@ -118,8 +118,8 @@ namespace AZ::RHI
             AZStd::alignment_of<DrawPacket>::value);
 
         const VirtualAddress drawItemsOffset = linearAllocator.Allocate(
-            sizeof(DrawItem) * m_drawRequests.size(),
-            AZStd::alignment_of<DrawItem>::value);
+            sizeof(SingleDeviceDrawItem) * m_drawRequests.size(),
+            AZStd::alignment_of<SingleDeviceDrawItem>::value);
 
         const VirtualAddress drawItemSortKeysOffset = linearAllocator.Allocate(
             sizeof(DrawItemSortKey) * m_drawRequests.size(),
@@ -134,20 +134,20 @@ namespace AZ::RHI
             AZStd::alignment_of<DrawFilterMask>::value);
 
         const VirtualAddress shaderResourceGroupsOffset = linearAllocator.Allocate(
-            sizeof(const ShaderResourceGroup*) * m_shaderResourceGroups.size(),
-            AZStd::alignment_of<const ShaderResourceGroup*>::value);
+            sizeof(const SingleDeviceShaderResourceGroup*) * m_shaderResourceGroups.size(),
+            AZStd::alignment_of<const SingleDeviceShaderResourceGroup*>::value);
 
         const VirtualAddress uniqueShaderResourceGroupsOffset = linearAllocator.Allocate(
-            sizeof(const ShaderResourceGroup*) * m_drawRequests.size(),
-            AZStd::alignment_of<const ShaderResourceGroup*>::value);
+            sizeof(const SingleDeviceShaderResourceGroup*) * m_drawRequests.size(),
+            AZStd::alignment_of<const SingleDeviceShaderResourceGroup*>::value);
 
         const VirtualAddress rootConstantsOffset = linearAllocator.Allocate(
             sizeof(uint8_t) * m_rootConstants.size(),
             AZStd::alignment_of<uint8_t>::value);
 
         const VirtualAddress streamBufferViewsOffset = linearAllocator.Allocate(
-            sizeof(StreamBufferView) * m_streamBufferViewCount,
-            AZStd::alignment_of<StreamBufferView>::value);
+            sizeof(SingleDeviceStreamBufferView) * m_streamBufferViewCount,
+            AZStd::alignment_of<SingleDeviceStreamBufferView>::value);
 
         const VirtualAddress scissorOffset = linearAllocator.Allocate(
             sizeof(Scissor) * m_scissors.size(),
@@ -167,7 +167,7 @@ namespace AZ::RHI
 
         if (shaderResourceGroupsOffset.IsValid())
         {
-            auto shaderResourceGroups = reinterpret_cast<const ShaderResourceGroup**>(allocationData + shaderResourceGroupsOffset.m_ptr);
+            auto shaderResourceGroups = reinterpret_cast<const SingleDeviceShaderResourceGroup**>(allocationData + shaderResourceGroupsOffset.m_ptr);
             for (size_t i = 0; i < m_shaderResourceGroups.size(); ++i)
             {
                 shaderResourceGroups[i] = m_shaderResourceGroups[i];
@@ -179,7 +179,7 @@ namespace AZ::RHI
 
         if (uniqueShaderResourceGroupsOffset.IsValid())
         {
-            auto shaderResourceGroups = reinterpret_cast<const ShaderResourceGroup**>(allocationData + uniqueShaderResourceGroupsOffset.m_ptr);
+            auto shaderResourceGroups = reinterpret_cast<const SingleDeviceShaderResourceGroup**>(allocationData + uniqueShaderResourceGroupsOffset.m_ptr);
             for (size_t i = 0; i < m_drawRequests.size(); ++i)
             {
                 shaderResourceGroups[i] = m_drawRequests[i].m_uniqueShaderResourceGroup;
@@ -214,7 +214,7 @@ namespace AZ::RHI
             drawPacket->m_viewportsCount = aznumeric_caster(m_viewports.size());
         }
 
-        auto drawItems = reinterpret_cast<DrawItem*>(allocationData + drawItemsOffset.m_ptr);
+        auto drawItems = reinterpret_cast<SingleDeviceDrawItem*>(allocationData + drawItemsOffset.m_ptr);
         auto drawItemSortKeys = reinterpret_cast<DrawItemSortKey*>(allocationData + drawItemSortKeysOffset.m_ptr);
         auto drawListTags = reinterpret_cast<DrawListTag*>(allocationData + drawListTagsOffset.m_ptr);
         auto drawFilterMasks = reinterpret_cast<DrawFilterMask*>(allocationData + drawFilterMasksOffset.m_ptr);
@@ -240,7 +240,7 @@ namespace AZ::RHI
                 drawListTagDisabled = drawListTagDisabled || (drawRequest.m_listTag == disabledTag);
             }
 
-            DrawItem& drawItem = drawItems[i];
+            SingleDeviceDrawItem& drawItem = drawItems[i];
             drawItem.m_enabled = !drawListTagDisabled;
             drawItem.m_arguments = m_drawArguments;
             drawItem.m_stencilRef = drawRequest.m_stencilRef;
@@ -261,7 +261,7 @@ namespace AZ::RHI
 
         if (streamBufferViewsOffset.IsValid())
         {
-            auto streamBufferViews = reinterpret_cast<StreamBufferView*>(allocationData + streamBufferViewsOffset.m_ptr);
+            auto streamBufferViews = reinterpret_cast<SingleDeviceStreamBufferView*>(allocationData + streamBufferViewsOffset.m_ptr);
 
             drawPacket->m_streamBufferViews = streamBufferViews;
             drawPacket->m_streamBufferViewCount = aznumeric_caster(m_streamBufferViewCount);
@@ -275,7 +275,7 @@ namespace AZ::RHI
                     drawItems[i].m_streamBufferViews = streamBufferViews;
                     drawItems[i].m_streamBufferViewCount = aznumeric_caster(drawRequest.m_streamBufferViews.size());
 
-                    for (const StreamBufferView& streamBufferView : drawRequest.m_streamBufferViews)
+                    for (const SingleDeviceStreamBufferView& streamBufferView : drawRequest.m_streamBufferViews)
                     {
                         *streamBufferViews++ = streamBufferView;
                     }
@@ -311,12 +311,12 @@ namespace AZ::RHI
         SetViewports(AZStd::span<const Viewport>(original->m_viewports, original->m_viewportsCount));
         for (uint8_t i = 0; i < original->m_shaderResourceGroupCount; ++i)
         {
-            const ShaderResourceGroup* const* srg = original->m_shaderResourceGroups + i;
+            const SingleDeviceShaderResourceGroup* const* srg = original->m_shaderResourceGroups + i;
             AddShaderResourceGroup(*srg);
         }
         for (uint8_t i = 0; i < original->m_drawItemCount; ++i)
         {
-            const DrawItem* drawItem = original->m_drawItems + i;
+            const SingleDeviceDrawItem* drawItem = original->m_drawItems + i;
             DrawRequest drawRequest;
             drawRequest.m_drawFilterMask = *(original->m_drawFilterMasks + i);
             drawRequest.m_listTag = *(original->m_drawListTags + i);

@@ -46,7 +46,7 @@ namespace AZ::RHI
         friend class DrawPacketBuilder;
         friend class UnitTest::DrawPacketTest;
     public:
-        using DrawItemVisitor = AZStd::function<void(DrawListTag, DrawItemProperties)>;
+        using DrawItemVisitor = AZStd::function<void(DrawListTag, SingleDeviceDrawItemProperties)>;
 
         //! Draw packets cannot be move constructed or copied, as they contain an additional memory payload.
         //! Use DrawPacketBuilder::Clone to copy a draw packet.
@@ -61,14 +61,14 @@ namespace AZ::RHI
         //! Returns the index associated with the given DrawListTag
         s32 GetDrawListIndex(DrawListTag drawListTag) const;
 
-        //! Returns the DrawItem at the given index
-        DrawItem* GetDrawItem(size_t index);
+        //! Returns the SingleDeviceDrawItem at the given index
+        SingleDeviceDrawItem* GetDrawItem(size_t index);
 
-        //! Returns the DrawItem associated with the given DrawListTag
-        DrawItem* GetDrawItem(DrawListTag drawListTag);
+        //! Returns the SingleDeviceDrawItem associated with the given DrawListTag
+        SingleDeviceDrawItem* GetDrawItem(DrawListTag drawListTag);
 
         //! Returns the draw item and its properties associated with the provided index.
-        DrawItemProperties GetDrawItemProperties(size_t index) const;
+        SingleDeviceDrawItemProperties GetDrawItemProperties(size_t index) const;
 
         //! Returns the draw list tag associated with the provided index, used to filter the draw item into an appropriate pass.
         DrawListTag GetDrawListTag(size_t index) const;
@@ -96,7 +96,7 @@ namespace AZ::RHI
         DrawListMask m_drawListMask = 0;
 
         // The index buffer view used when the draw call is indexed.
-        IndexBufferView m_indexBufferView;
+        SingleDeviceIndexBufferView m_indexBufferView;
 
         uint8_t m_drawItemCount = 0;
         uint8_t m_streamBufferViewCount = 0;
@@ -107,7 +107,7 @@ namespace AZ::RHI
         uint8_t m_viewportsCount = 0;
 
         // List of draw items.
-        DrawItem* m_drawItems = nullptr;
+        SingleDeviceDrawItem* m_drawItems = nullptr;
 
         // List of draw item sort keys associated with the draw item index.
         const DrawItemSortKey* m_drawItemSortKeys = nullptr;
@@ -119,16 +119,16 @@ namespace AZ::RHI
         const DrawFilterMask* m_drawFilterMasks = nullptr;
 
         // List of shader resource groups shared by all draw items.
-        const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
+        const SingleDeviceShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
 
         // List of shader resource groups that aren't shared, but unique for each draw item.
-        const ShaderResourceGroup* const* m_uniqueShaderResourceGroups = nullptr;
+        const SingleDeviceShaderResourceGroup* const* m_uniqueShaderResourceGroups = nullptr;
 
         // List of inline constants shared by all draw items.
         const uint8_t* m_rootConstants = nullptr;
 
         // The list of stream buffer views. Each draw item has a view into the array.
-        const StreamBufferView* m_streamBufferViews = nullptr;
+        const SingleDeviceStreamBufferView* m_streamBufferViews = nullptr;
 
         // Optional list of scissors to be used by all draw items.
         const Scissor* m_scissors = nullptr;

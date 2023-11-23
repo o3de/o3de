@@ -46,7 +46,7 @@ namespace AZ
 
             // shader
             Data::Instance<RPI::Shader> m_shader;
-            const RHI::PipelineState* m_pipelineState = nullptr;
+            const RHI::SingleDevicePipelineState* m_pipelineState = nullptr;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_objectSrgLayout;
             RHI::DispatchDirect m_dispatchArgs;
 

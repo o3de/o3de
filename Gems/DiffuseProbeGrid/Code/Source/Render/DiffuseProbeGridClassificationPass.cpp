@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
@@ -62,7 +62,7 @@ namespace AZ
                 RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
                 const auto& shaderVariant = shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
                 shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-                const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+                const RHI::SingleDevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
                 AZ_Assert(pipelineState, "Failed to acquire pipeline state");
 
                 RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
@@ -178,10 +178,10 @@ namespace AZ
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
 
-                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetClassificationSrg()->GetRHIShaderResourceGroup();
+                const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetClassificationSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                RHI::DispatchItem dispatchItem;
+                RHI::SingleDeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = shader.m_dispatchArgs;
                 dispatchItem.m_pipelineState = shader.m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount());

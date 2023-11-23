@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
 
 #include <Atom/RHI/MultiDeviceObject.h>
 
@@ -23,8 +23,8 @@ namespace AZ::RHI
     //! devices) as well as a MultiDevicePipelineState
     struct MultiDeviceIndirectBufferSignatureDescriptor
     {
-        //! Returns the device-specific IndirectBufferSignatureDescriptor for the given index
-        IndirectBufferSignatureDescriptor GetDeviceIndirectBufferSignatureDescriptor(int deviceIndex) const;
+        //! Returns the device-specific SingleDeviceIndirectBufferSignatureDescriptor for the given index
+        SingleDeviceIndirectBufferSignatureDescriptor GetDeviceIndirectBufferSignatureDescriptor(int deviceIndex) const;
 
         const MultiDevicePipelineState* m_pipelineState{ nullptr };
         IndirectBufferLayout m_layout;
@@ -48,7 +48,7 @@ namespace AZ::RHI
         MultiDeviceIndirectBufferSignature() = default;
         virtual ~MultiDeviceIndirectBufferSignature() = default;
 
-        //! Initialize an IndirectBufferSignature object.
+        //! Initialize an SingleDeviceIndirectBufferSignature object.
         //! @param deviceMask The deviceMask denoting all devices that will contain the signature.
         //! @param descriptor Descriptor with the necessary information for initializing the signature.
         //! @return A result code denoting the status of the call. If successful, the MultiDeviceIndirectBufferSignature is considered

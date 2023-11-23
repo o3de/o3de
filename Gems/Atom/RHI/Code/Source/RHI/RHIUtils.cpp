@@ -178,7 +178,7 @@ namespace AZ::RHI
     const char BuffersListAttribStr[] = "BuffersList";
     const char ImagesListAttribStr[] = "ImagesList";
 
-    // Buffer and Image attributes
+    // SingleDeviceBuffer and SingleDeviceImage attributes
     const char BufferNameAttribStr[] = "BufferName";
     const char ImageNameAttribStr[] = "ImageName";
     const char SizeInBytesAttribStr[] = "SizeInBytes";
@@ -229,7 +229,7 @@ namespace AZ::RHI
             for (const auto& buffer : pool.m_buffers)
             {
                 rapidjson::Value bufferObject(rapidjson::kObjectType);
-                bufferObject.AddMember(BufferNameAttribStr, rapidjson::StringRef(!buffer.m_name.IsEmpty()?buffer.m_name.GetCStr():"Unnamed Buffer"), doc.GetAllocator());
+                bufferObject.AddMember(BufferNameAttribStr, rapidjson::StringRef(!buffer.m_name.IsEmpty()?buffer.m_name.GetCStr():"Unnamed SingleDeviceBuffer"), doc.GetAllocator());
                 bufferObject.AddMember(SizeInBytesAttribStr, static_cast<uint64_t>(buffer.m_sizeInBytes), doc.GetAllocator());
                 bufferObject.AddMember(BindFlagsAttribStr, static_cast<uint32_t>(buffer.m_bindFlags), doc.GetAllocator());
                 buffersArray.PushBack(bufferObject, doc.GetAllocator());
@@ -240,7 +240,7 @@ namespace AZ::RHI
             for (const auto& image : pool.m_images)
             {
                 rapidjson::Value imageObject(rapidjson::kObjectType);
-                imageObject.AddMember(ImageNameAttribStr, rapidjson::StringRef(!image.m_name.IsEmpty()?image.m_name.GetCStr():"Unnamed Image"), doc.GetAllocator());
+                imageObject.AddMember(ImageNameAttribStr, rapidjson::StringRef(!image.m_name.IsEmpty()?image.m_name.GetCStr():"Unnamed SingleDeviceImage"), doc.GetAllocator());
                 imageObject.AddMember(SizeInBytesAttribStr, static_cast<uint64_t>(image.m_sizeInBytes), doc.GetAllocator());
                 imageObject.AddMember(BindFlagsAttribStr, static_cast<uint32_t>(image.m_bindFlags), doc.GetAllocator());
                 imagesArray.PushBack(imageObject, doc.GetAllocator());

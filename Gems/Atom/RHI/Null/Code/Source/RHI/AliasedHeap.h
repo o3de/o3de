@@ -31,8 +31,8 @@ namespace AZ
             // RHI::AliasedHeap
             AZStd::unique_ptr<RHI::AliasingBarrierTracker> CreateBarrierTrackerInternal() override { return nullptr;}
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::AliasedHeapDescriptor& descriptor) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitImageInternal([[maybe_unused]] const RHI::ImageInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitBufferInternal([[maybe_unused]] const RHI::BufferInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitImageInternal([[maybe_unused]] const RHI::SingleDeviceImageInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitBufferInternal([[maybe_unused]] const RHI::SingleDeviceBufferInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return RHI::ResultCode::Success;}
             //////////////////////////////////////////////////////////////////////////
         };
     }

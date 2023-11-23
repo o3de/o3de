@@ -12,7 +12,7 @@
 #include <Atom/RHI/ConstantsData.h>
 #include <Atom/RHI/MultiDeviceBuffer.h>
 #include <Atom/RHI/MultiDeviceImage.h>
-#include <Atom/RHI/ShaderResourceGroupData.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupData.h>
 #include <AzCore/std/containers/variant.h>
 
 namespace AZ::RHI
@@ -120,13 +120,13 @@ namespace AZ::RHI
         bool SetConstantData(const void* bytes, uint32_t byteCount);
         bool SetConstantData(const void* bytes, uint32_t byteOffset, uint32_t byteCount);
 
-        //! Returns the device-specific ShaderResourceGroupData for the given index
-        const ShaderResourceGroupData& GetDeviceShaderResourceGroupData(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceShaderResourceGroupData for the given index
+        const SingleDeviceShaderResourceGroupData& GetDeviceShaderResourceGroupData(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceShaderResourceGroupData",
                 m_deviceShaderResourceGroupDatas.find(deviceIndex) != m_deviceShaderResourceGroupDatas.end(),
-                "No ShaderResourceGroupData found for device index %d\n",
+                "No SingleDeviceShaderResourceGroupData found for device index %d\n",
                 deviceIndex);
 
             return m_deviceShaderResourceGroupDatas.at(deviceIndex);
@@ -139,9 +139,9 @@ namespace AZ::RHI
         //! Returns the shader resource layout for this group.
         const ShaderResourceGroupLayout* GetLayout() const;
 
-        using ResourceType = ShaderResourceGroupData::ResourceType;
+        using ResourceType = SingleDeviceShaderResourceGroupData::ResourceType;
 
-        using ResourceTypeMask = ShaderResourceGroupData::ResourceTypeMask;
+        using ResourceTypeMask = SingleDeviceShaderResourceGroupData::ResourceTypeMask;
 
         //! Reset the update mask
         void ResetUpdateMask();
@@ -182,7 +182,7 @@ namespace AZ::RHI
         ConstPtr<ShaderResourceGroupLayout> m_shaderResourceGroupLayout;
 
         //! A map of all device-specific ShaderResourceGroupDatas, indexed by the device index
-        AZStd::unordered_map<int, ShaderResourceGroupData> m_deviceShaderResourceGroupDatas;
+        AZStd::unordered_map<int, SingleDeviceShaderResourceGroupData> m_deviceShaderResourceGroupDatas;
     };
 
     template<typename T>

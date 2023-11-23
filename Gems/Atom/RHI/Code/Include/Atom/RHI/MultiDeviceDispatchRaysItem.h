@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/MultiDeviceRayTracingPipelineState.h>
 #include <Atom/RHI/MultiDeviceRayTracingShaderTable.h>
@@ -21,8 +21,8 @@ namespace AZ::RHI
     class MultiDeviceRayTracingPipelineState;
     class MultiDeviceRayTracingShaderTable;
     class MultiDeviceShaderResourceGroup;
-    class ImageView;
-    class BufferView;
+    class SingleDeviceImageView;
+    class SingleDeviceBufferView;
 
     //! Encapsulates all the necessary information for doing a ray tracing dispatch call.
     class MultiDeviceDispatchRaysItem
@@ -37,13 +37,13 @@ namespace AZ::RHI
             {
                 if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
                 {
-                    m_deviceDispatchRaysItems.emplace(deviceIndex, DispatchRaysItem{});
+                    m_deviceDispatchRaysItems.emplace(deviceIndex, SingleDeviceDispatchRaysItem{});
                 }
             }
         }
 
-        //! Returns the device-specific DispatchRaysItem for the given index
-        const DispatchRaysItem& GetDeviceDispatchRaysItem(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceDispatchRaysItem for the given index
+        const SingleDeviceDispatchRaysItem& GetDeviceDispatchRaysItem(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceDispatchItem",
@@ -91,7 +91,7 @@ namespace AZ::RHI
                 dispatchRaysItem.m_shaderResourceGroupCount = shaderResourceGroupCount;
 
                 auto [it, insertOK]{ m_deviceShaderResourceGroups.emplace(
-                    deviceIndex, AZStd::vector<ShaderResourceGroup*>(shaderResourceGroupCount)) };
+                    deviceIndex, AZStd::vector<SingleDeviceShaderResourceGroup*>(shaderResourceGroupCount)) };
 
                 auto& [index, deviceShaderResourceGroup]{ *it };
 
@@ -114,11 +114,11 @@ namespace AZ::RHI
         }
 
     private:
-        //! A DeviceMask denoting on which devices a device-specific DispatchRaysItem should be generated
+        //! A DeviceMask denoting on which devices a device-specific SingleDeviceDispatchRaysItem should be generated
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
-        //! A map of all device-specific DispatchRaysItem, indexed by the device index
-        AZStd::unordered_map<int, DispatchRaysItem> m_deviceDispatchRaysItems;
+        //! A map of all device-specific SingleDeviceDispatchRaysItem, indexed by the device index
+        AZStd::unordered_map<int, SingleDeviceDispatchRaysItem> m_deviceDispatchRaysItems;
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
-        AZStd::unordered_map<int, AZStd::vector<ShaderResourceGroup*>> m_deviceShaderResourceGroups;
+        AZStd::unordered_map<int, AZStd::vector<SingleDeviceShaderResourceGroup*>> m_deviceShaderResourceGroups;
     };
 } // namespace AZ::RHI

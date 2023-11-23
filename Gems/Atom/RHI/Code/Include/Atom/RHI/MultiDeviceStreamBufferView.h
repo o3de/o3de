@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/containers/span.h>
 
@@ -26,12 +26,12 @@ namespace AZ::RHI
 
         MultiDeviceStreamBufferView(const MultiDeviceBuffer& buffer, uint32_t byteOffset, uint32_t byteCount, uint32_t byteStride);
 
-        //! Returns the device-specific StreamBufferView for the given index
-        StreamBufferView GetDeviceStreamBufferView(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceStreamBufferView for the given index
+        SingleDeviceStreamBufferView GetDeviceStreamBufferView(int deviceIndex) const
         {
             AZ_Assert(m_mdBuffer, "No MultiDeviceBuffer available\n");
 
-            return StreamBufferView(*m_mdBuffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_byteStride);
+            return SingleDeviceStreamBufferView(*m_mdBuffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_byteStride);
         }
 
         //! Returns the hash of the view. This hash is precomputed at creation time.

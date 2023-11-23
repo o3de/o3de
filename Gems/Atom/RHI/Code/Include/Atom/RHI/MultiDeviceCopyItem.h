@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/CopyItem.h>
+#include <Atom/RHI/SingleDeviceCopyItem.h>
 #include <Atom/RHI/MultiDeviceBuffer.h>
 #include <Atom/RHI/MultiDeviceImage.h>
 #include <Atom/RHI/MultiDeviceQueryPool.h>
@@ -19,13 +19,13 @@ namespace AZ::RHI
     {
         MultiDeviceCopyBufferDescriptor() = default;
 
-        //! Returns the device-specific CopyBufferDescriptor for the given index
-        CopyBufferDescriptor GetDeviceCopyBufferDescriptor(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceCopyBufferDescriptor for the given index
+        SingleDeviceCopyBufferDescriptor GetDeviceCopyBufferDescriptor(int deviceIndex) const
         {
             AZ_Assert(m_mdSourceBuffer, "Not initialized with source MultiDeviceBuffer\n");
             AZ_Assert(m_mdDestinationBuffer, "Not initialized with destination MultiDeviceBuffer\n");
 
-            return CopyBufferDescriptor{ m_mdSourceBuffer ? m_mdSourceBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
+            return SingleDeviceCopyBufferDescriptor{ m_mdSourceBuffer ? m_mdSourceBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
                                          m_sourceOffset,
                                          m_mdDestinationBuffer ? m_mdDestinationBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
                                          m_destinationOffset,
@@ -44,13 +44,13 @@ namespace AZ::RHI
     {
         MultiDeviceCopyImageDescriptor() = default;
 
-        //! Returns the device-specific CopyImageDescriptor for the given index
-        CopyImageDescriptor GetDeviceCopyImageDescriptor(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceCopyImageDescriptor for the given index
+        SingleDeviceCopyImageDescriptor GetDeviceCopyImageDescriptor(int deviceIndex) const
         {
             AZ_Assert(m_mdSourceImage, "Not initialized with source MultiDeviceImage\n");
             AZ_Assert(m_mdDestinationImage, "Not initialized with destination MultiDeviceImage\n");
 
-            return CopyImageDescriptor{ m_mdSourceImage ? m_mdSourceImage->GetDeviceImage(deviceIndex).get() : nullptr,
+            return SingleDeviceCopyImageDescriptor{ m_mdSourceImage ? m_mdSourceImage->GetDeviceImage(deviceIndex).get() : nullptr,
                                         m_sourceSubresource,
                                         m_sourceOrigin,
                                         m_sourceSize,
@@ -73,13 +73,13 @@ namespace AZ::RHI
     {
         MultiDeviceCopyBufferToImageDescriptor() = default;
 
-        //! Returns the device-specific CopyBufferToImageDescriptor for the given index
-        CopyBufferToImageDescriptor GetDeviceCopyBufferToImageDescriptor(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceCopyBufferToImageDescriptor for the given index
+        SingleDeviceCopyBufferToImageDescriptor GetDeviceCopyBufferToImageDescriptor(int deviceIndex) const
         {
             AZ_Assert(m_mdSourceBuffer, "Not initialized with source MultiDeviceBuffer\n");
             AZ_Assert(m_mdDestinationImage, "Not initialized with destination MultiDeviceImage\n");
 
-            return CopyBufferToImageDescriptor{ m_mdSourceBuffer ? m_mdSourceBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
+            return SingleDeviceCopyBufferToImageDescriptor{ m_mdSourceBuffer ? m_mdSourceBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
                                                 m_sourceOffset,
                                                 m_sourceBytesPerRow,
                                                 m_sourceBytesPerImage,
@@ -104,13 +104,13 @@ namespace AZ::RHI
     {
         MultiDeviceCopyImageToBufferDescriptor() = default;
 
-        //! Returns the device-specific CopyImageToBufferDescriptor for the given index
-        CopyImageToBufferDescriptor GetDeviceCopyImageToBufferDescriptor(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceCopyImageToBufferDescriptor for the given index
+        SingleDeviceCopyImageToBufferDescriptor GetDeviceCopyImageToBufferDescriptor(int deviceIndex) const
         {
             AZ_Assert(m_mdSourceImage, "Not initialized with source MultiDeviceImage\n");
             AZ_Assert(m_mdDestinationBuffer, "Not initialized with destination MultiDeviceBuffer\n");
 
-            return CopyImageToBufferDescriptor{ m_mdSourceImage ? m_mdSourceImage->GetDeviceImage(deviceIndex).get() : nullptr,
+            return SingleDeviceCopyImageToBufferDescriptor{ m_mdSourceImage ? m_mdSourceImage->GetDeviceImage(deviceIndex).get() : nullptr,
                                                 m_sourceSubresource,
                                                 m_sourceOrigin,
                                                 m_sourceSize,
@@ -139,13 +139,13 @@ namespace AZ::RHI
     {
         MultiDeviceCopyQueryToBufferDescriptor() = default;
 
-        //! Returns the device-specific CopyQueryToBufferDescriptor for the given index
-        CopyQueryToBufferDescriptor GetDeviceCopyQueryToBufferDescriptor(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceCopyQueryToBufferDescriptor for the given index
+        SingleDeviceCopyQueryToBufferDescriptor GetDeviceCopyQueryToBufferDescriptor(int deviceIndex) const
         {
             AZ_Assert(m_mdSourceQueryPool, "Not initialized with source MultiDeviceQueryPool\n");
             AZ_Assert(m_mdDestinationBuffer, "Not initialized with destination MultiDeviceBuffer\n");
 
-            return CopyQueryToBufferDescriptor{ m_mdSourceQueryPool ? m_mdSourceQueryPool->GetDeviceQueryPool(deviceIndex).get() : nullptr,
+            return SingleDeviceCopyQueryToBufferDescriptor{ m_mdSourceQueryPool ? m_mdSourceQueryPool->GetDeviceQueryPool(deviceIndex).get() : nullptr,
                                                 m_firstQuery,
                                                 m_queryCount,
                                                 m_mdDestinationBuffer ? m_mdDestinationBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr,
@@ -209,23 +209,23 @@ namespace AZ::RHI
         {
         }
 
-        //! Returns the device-specific CopyItem for the given index
-        CopyItem GetDeviceCopyItem(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceCopyItem for the given index
+        SingleDeviceCopyItem GetDeviceCopyItem(int deviceIndex) const
         {
             switch (m_type)
             {
             case CopyItemType::Buffer:
-                return CopyItem(m_mdBuffer.GetDeviceCopyBufferDescriptor(deviceIndex));
+                return SingleDeviceCopyItem(m_mdBuffer.GetDeviceCopyBufferDescriptor(deviceIndex));
             case CopyItemType::Image:
-                return CopyItem(m_mdImage.GetDeviceCopyImageDescriptor(deviceIndex));
+                return SingleDeviceCopyItem(m_mdImage.GetDeviceCopyImageDescriptor(deviceIndex));
             case CopyItemType::BufferToImage:
-                return CopyItem(m_mdBufferToImage.GetDeviceCopyBufferToImageDescriptor(deviceIndex));
+                return SingleDeviceCopyItem(m_mdBufferToImage.GetDeviceCopyBufferToImageDescriptor(deviceIndex));
             case CopyItemType::ImageToBuffer:
-                return CopyItem(m_mdImageToBuffer.GetDeviceCopyImageToBufferDescriptor(deviceIndex));
+                return SingleDeviceCopyItem(m_mdImageToBuffer.GetDeviceCopyImageToBufferDescriptor(deviceIndex));
             case CopyItemType::QueryToBuffer:
-                return CopyItem(m_mdQueryToBuffer.GetDeviceCopyQueryToBufferDescriptor(deviceIndex));
+                return SingleDeviceCopyItem(m_mdQueryToBuffer.GetDeviceCopyQueryToBufferDescriptor(deviceIndex));
             default:
-                return CopyItem();
+                return SingleDeviceCopyItem();
             }
         }
 

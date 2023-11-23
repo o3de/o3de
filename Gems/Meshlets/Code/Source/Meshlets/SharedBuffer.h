@@ -13,7 +13,7 @@
 
 #include <Atom/RHI/FreeListAllocator.h>
 #include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 

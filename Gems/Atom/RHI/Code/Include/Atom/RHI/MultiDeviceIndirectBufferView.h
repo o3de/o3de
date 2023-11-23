@@ -8,8 +8,8 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Bits.h>
-#include <Atom/RHI/IndirectBufferView.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferView.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/MultiDeviceIndirectBufferSignature.h>
 #include <AzCore/Utils/TypeHash.h>
 
@@ -32,13 +32,13 @@ namespace AZ::RHI
             uint32_t byteCount,
             uint32_t byteStride);
 
-        //! Returns the device-specific IndirectBufferView for the given index
-        IndirectBufferView GetDeviceIndirectBufferView(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceIndirectBufferView for the given index
+        SingleDeviceIndirectBufferView GetDeviceIndirectBufferView(int deviceIndex) const
         {
             AZ_Error("MultiDeviceIndirectBufferView", m_mdSignature, "No MultiDeviceIndirectBufferSignature available\n");
             AZ_Error("MultiDeviceIndirectBufferView", m_mdBuffer, "No MultiDeviceBuffer available\n");
 
-            return IndirectBufferView(
+            return SingleDeviceIndirectBufferView(
                 *m_mdBuffer->GetDeviceBuffer(deviceIndex),
                 *m_mdSignature->GetDeviceIndirectBufferSignature(deviceIndex),
                 m_byteOffset,

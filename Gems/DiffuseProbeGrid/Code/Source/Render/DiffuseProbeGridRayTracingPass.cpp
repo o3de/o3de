@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -87,7 +87,7 @@ namespace AZ
             AZ_Error( "DiffuseProbeGridRayTracingPass", m_globalSrgLayout != nullptr, "Failed to find RayTracingGlobalSrg layout for shader [%s]", shaderFilePath.c_str());
 
             // build the ray tracing pipeline state descriptor
-            RHI::RayTracingPipelineStateDescriptor descriptor;
+            RHI::SingleDeviceRayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
                 ->PipelineState(m_globalPipelineState.get())
                 ->MaxPayloadSize(96)
@@ -157,7 +157,7 @@ namespace AZ
             if (!m_rayTracingShaderTable)
             {
                 RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-                RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
+                RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
                 m_rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();
                 m_rayTracingShaderTable->Init(*device.get(), rayTracingBufferPools);
@@ -181,7 +181,7 @@ namespace AZ
                 // TLAS
                 {
                     AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
-                    const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
+                    const RHI::Ptr<RHI::SingleDeviceBuffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
                     if (rayTracingTlasBuffer)
                     {
                         [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
@@ -324,7 +324,7 @@ namespace AZ
                 // scene changed, need to rebuild the shader table
                 m_rayTracingRevision = rayTracingRevision;
 
-                AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
+                AZStd::shared_ptr<RHI::SingleDeviceRayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::SingleDeviceRayTracingShaderTableDescriptor>();
 
                 if (rayTracingFeatureProcessor->GetSubMeshCount())
                 {
@@ -357,13 +357,13 @@ namespace AZ
                 {
                     AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
 
-                    const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
+                    const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),
                         rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup(),
                         rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()
                     };
 
-                    RHI::DispatchRaysItem dispatchRaysItem;
+                    RHI::SingleDeviceDispatchRaysItem dispatchRaysItem;
                     dispatchRaysItem.m_arguments.m_direct.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
                     dispatchRaysItem.m_arguments.m_direct.m_height = AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount());
                     dispatchRaysItem.m_arguments.m_direct.m_depth = 1;

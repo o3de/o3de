@@ -166,7 +166,7 @@ namespace AZ::Render
             m_starsVertexBuffer->UpdateData(m_starsMeshData.data(), bufferSize);
         }
 
-        m_meshStreamBufferViews[0] = RHI::StreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize);
+        m_meshStreamBufferViews[0] = RHI::SingleDeviceStreamBufferView(*m_starsVertexBuffer->GetRHIBuffer(), 0, bufferSize, elementSize);
 
         UpdateDrawPacket();
     }
@@ -280,7 +280,7 @@ namespace AZ::Render
                 const Data::Instance<RPI::ShaderResourceGroup>& srg,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 const RHI::DrawListTag& drawListTag,
-                const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
+                const AZStd::span<const AZ::RHI::SingleDeviceStreamBufferView>& streamBufferViews,
                 uint32_t vertexCount)
     {
         RHI::DrawLinear drawLinear;

@@ -12,7 +12,7 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h>
 #include <SkinnedMesh/SkinnedMeshShaderOptionsCache.h>
 
-#include <Atom/RHI/DispatchItem.h>
+#include <Atom/RHI/SingleDeviceDispatchItem.h>
 #include <AtomCore/Instance/Instance.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 
@@ -64,7 +64,7 @@ namespace AZ
 
             bool Init();
 
-            const RHI::DispatchItem& GetRHIDispatchItem() const;
+            const RHI::SingleDeviceDispatchItem& GetRHIDispatchItem() const;
 
             Data::Instance<RPI::Buffer> GetBoneTransforms() const;
             uint32_t GetVertexCount() const;
@@ -75,7 +75,7 @@ namespace AZ
             // SkinnedMeshShaderOptionNotificationBus::Handler
             void OnShaderReinitialized(const CachedSkinnedMeshShaderOptions* cachedShaderOptions) override;
 
-            RHI::DispatchItem m_dispatchItem;
+            RHI::SingleDeviceDispatchItem m_dispatchItem;
 
             // The skinning shader used for this instance
             Data::Instance<RPI::Shader> m_skinningShader;

@@ -29,7 +29,7 @@ namespace AZ
             m_secondaryCommands.resize(commandListCount);
 
             m_workRequest.m_swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-            for (RHI::SwapChain* swapchainBase : scope.GetSwapChainsToPresent())
+            for (RHI::SingleDeviceSwapChain* swapchainBase : scope.GetSwapChainsToPresent())
             {
                 m_workRequest.m_swapChainsToPresent.emplace_back(static_cast<SwapChain*>(swapchainBase));
             }

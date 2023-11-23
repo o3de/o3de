@@ -45,7 +45,7 @@ namespace AZ::RHI
 
     void MultiDeviceBuffer::Shutdown()
     {
-        IterateObjects<Buffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
+        IterateObjects<SingleDeviceBuffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
         {
             deviceBuffer->Shutdown();
         });
@@ -55,14 +55,14 @@ namespace AZ::RHI
 
     void MultiDeviceBuffer::InvalidateViews()
     {
-        IterateObjects<Buffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
+        IterateObjects<SingleDeviceBuffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
         {
             deviceBuffer->InvalidateViews();
         });
     }
 
-    //! Given a device index, return the corresponding BufferView for the selected device
-    const RHI::Ptr<RHI::BufferView> MultiDeviceBufferView::GetDeviceBufferView(int deviceIndex) const
+    //! Given a device index, return the corresponding SingleDeviceBufferView for the selected device
+    const RHI::Ptr<RHI::SingleDeviceBufferView> MultiDeviceBufferView::GetDeviceBufferView(int deviceIndex) const
     {
         return m_buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(m_descriptor);
     }

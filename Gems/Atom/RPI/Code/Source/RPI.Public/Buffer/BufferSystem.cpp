@@ -76,7 +76,7 @@ namespace AZ
             m_initialized = false;
         }
         
-        RHI::Ptr<RHI::BufferPool> BufferSystem::GetCommonBufferPool(CommonBufferPoolType poolType)
+        RHI::Ptr<RHI::SingleDeviceBufferPool> BufferSystem::GetCommonBufferPool(CommonBufferPoolType poolType)
         {
             const uint8_t index = static_cast<uint8_t>(poolType);
             if (!m_commonPools[index])
@@ -95,7 +95,7 @@ namespace AZ
             }
             auto* device = RHI::RHISystemInterface::Get()->GetDevice();
             
-            RHI::Ptr<RHI::BufferPool> bufferPool = RHI::Factory::Get().CreateBufferPool();
+            RHI::Ptr<RHI::SingleDeviceBufferPool> bufferPool = RHI::Factory::Get().CreateBufferPool();
 
             RHI::BufferPoolDescriptor bufferPoolDesc;
             switch (poolType)
@@ -180,7 +180,7 @@ namespace AZ
                 bufferId = Uuid::CreateRandom();
             }
 
-            RHI::Ptr<RHI::BufferPool> bufferPool = GetCommonBufferPool(descriptor.m_poolType);
+            RHI::Ptr<RHI::SingleDeviceBufferPool> bufferPool = GetCommonBufferPool(descriptor.m_poolType);
 
             if (!bufferPool)
             {

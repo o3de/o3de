@@ -29,7 +29,7 @@ namespace AZ::RHI
         switch (sortType)
         {
         case DrawListSortType::KeyThenDepth:
-            AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+            AZStd::sort(drawList.begin(), drawList.end(), [](const SingleDeviceDrawItemProperties& a, const SingleDeviceDrawItemProperties& b)
                 {
                     if (a.m_sortKey != b.m_sortKey)
                     {
@@ -41,7 +41,7 @@ namespace AZ::RHI
             break;
 
         case DrawListSortType::KeyThenReverseDepth:
-            AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+            AZStd::sort(drawList.begin(), drawList.end(), [](const SingleDeviceDrawItemProperties& a, const SingleDeviceDrawItemProperties& b)
                 {
                     if (a.m_sortKey != b.m_sortKey)
                     {
@@ -53,7 +53,7 @@ namespace AZ::RHI
             break;
 
         case DrawListSortType::DepthThenKey:
-            AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+            AZStd::sort(drawList.begin(), drawList.end(), [](const SingleDeviceDrawItemProperties& a, const SingleDeviceDrawItemProperties& b)
                 {
                     if (a.m_depth != b.m_depth)
                     {
@@ -65,7 +65,7 @@ namespace AZ::RHI
             break;
 
         case DrawListSortType::ReverseDepthThenKey:
-            AZStd::sort(drawList.begin(), drawList.end(), [](const DrawItemProperties& a, const DrawItemProperties& b)
+            AZStd::sort(drawList.begin(), drawList.end(), [](const SingleDeviceDrawItemProperties& a, const SingleDeviceDrawItemProperties& b)
                 {
                     if (a.m_depth != b.m_depth)
                     {

@@ -279,7 +279,7 @@ namespace ImageProcessingAtom
             const auto mipSize = (m_imageObject->GetDepth(0) == 1)
                 ? RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1)
                 : RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip), m_imageObject->GetDepth(mip));
-            RHI::ImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(mipSize, format);
+            RHI::SingleDeviceImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(mipSize, format);
             const auto mipSizeInBytes = layout.m_bytesPerImage * mipSize.m_depth;
             builder.BeginMip(layout);
 

@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/MultiDevicePipelineLibrary.h>
-#include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/SingleDevicePipelineLibrary.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -77,9 +77,9 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        return IterateObjects<PipelineLibrary>([&](auto deviceIndex, auto devicePipelineLibrary)
+        return IterateObjects<SingleDevicePipelineLibrary>([&](auto deviceIndex, auto devicePipelineLibrary)
         {
-            AZStd::vector<const PipelineLibrary*> deviceLibrariesToMerge;
+            AZStd::vector<const SingleDevicePipelineLibrary*> deviceLibrariesToMerge;
 
             for (int i = 0; i < librariesToMerge.size(); ++i)
             {
@@ -87,7 +87,7 @@ namespace AZ::RHI
 
                 if (it != librariesToMerge[i]->m_deviceObjects.end())
                 {
-                    deviceLibrariesToMerge.emplace_back(static_cast<const PipelineLibrary*>(it->second.get()));
+                    deviceLibrariesToMerge.emplace_back(static_cast<const SingleDevicePipelineLibrary*>(it->second.get()));
                 }
             }
 
@@ -113,7 +113,7 @@ namespace AZ::RHI
     {
         bool result = false;
 
-        IterateObjects<PipelineLibrary>([&result]([[maybe_unused]]auto deviceIndex, auto devicePipelineLibrary)
+        IterateObjects<SingleDevicePipelineLibrary>([&result]([[maybe_unused]]auto deviceIndex, auto devicePipelineLibrary)
         {
             result |= devicePipelineLibrary->IsMergeRequired();
         });

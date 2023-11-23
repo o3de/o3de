@@ -7,7 +7,7 @@
  */
 
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <Atom/Utils/Utils.h>

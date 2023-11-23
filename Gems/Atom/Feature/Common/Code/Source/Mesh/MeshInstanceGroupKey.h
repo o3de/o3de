@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include<Atom/RHI/DrawItem.h>
+#include<Atom/RHI/SingleDeviceDrawItem.h>
 #include<AtomCore/Instance/InstanceId.h>
 
 namespace AZ
