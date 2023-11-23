@@ -25,7 +25,7 @@ namespace AZ
             ~ImGuiTransientAttachmentProfiler() = default;
 
             //! Draws the stats for the provided transient attachments.
-            bool Draw(const AZ::RHI::TransientAttachmentStatistics& stats);
+            bool Draw(const AZStd::unordered_map<int, RHI::TransientAttachmentStatistics>& statistics);
 
         private:
             // Draw the stats for one heap.
