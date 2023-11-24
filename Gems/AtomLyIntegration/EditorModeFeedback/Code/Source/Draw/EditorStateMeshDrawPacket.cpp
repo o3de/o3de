@@ -128,7 +128,7 @@ namespace AZ::Render
         drawPacketBuilder.Begin(nullptr);
 
         drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
-        drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView);
+        drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex));
         drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
         drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
@@ -140,7 +140,7 @@ namespace AZ::Render
         // We have to keep a list of these outside the loops that collect all the shaders because the SingleDeviceDrawPacketBuilder
         // keeps pointers to StreamBufferViews until SingleDeviceDrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
         // that the memory won't be relocated when new entries are added.
-        AZStd::fixed_vector<RPI::ModelLod::StreamBufferViewList, RHI::SingleDeviceDrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
+        AZStd::fixed_vector<RPI::ModelLod::TempStreamBufferViewList, RHI::SingleDeviceDrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
 
         m_perDrawSrgs.clear();
 

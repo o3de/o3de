@@ -82,8 +82,8 @@ namespace AZ
                         return RHI::ResultCode::InvalidOperation;
                     }
 
-                    meshInstance.m_indexBufferView = RHI::SingleDeviceIndexBufferView(
-                        *indexBuffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get(),
+                    meshInstance.m_indexBufferView = RHI::MultiDeviceIndexBufferView(
+                        *indexBuffer->GetRHIBuffer(),
                         bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
                         bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize,
                         indexFormat);
@@ -302,7 +302,7 @@ namespace AZ
 
                         RHI::Format dummyStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
-                        RHI::SingleDeviceStreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
+                        RHI::MultiDeviceStreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
                         streamBufferViewsOut.push_back(dummyBuffer);
                     }
                     else
@@ -328,8 +328,97 @@ namespace AZ
                         // Note, don't use iter->m_semantic as it can be a UV name matching.
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, iter->m_format);
 
-                        RHI::SingleDeviceStreamBufferView bufferView(*m_buffers[iter->m_bufferIndex]->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get(), iter->m_byteOffset, iter->m_byteCount, iter->m_stride);
+                        RHI::MultiDeviceStreamBufferView bufferView(*m_buffers[iter->m_bufferIndex]->GetRHIBuffer(), iter->m_byteOffset, iter->m_byteCount, iter->m_stride);
                         streamBufferViewsOut.push_back(bufferView);
+                    }
+                }
+            }
+
+            if (success)
+            {
+                layoutOut = layoutBuilder.End();
+
+                success &= RHI::ValidateStreamBufferViews(layoutOut, streamBufferViewsOut);
+            }
+
+            return success;
+        }
+
+        bool ModelLod::GetStreamsForMesh(
+            RHI::InputStreamLayout& layoutOut,
+            TempStreamBufferViewList& streamBufferViewsOut,
+            UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
+            const ShaderInputContract& contract,
+            size_t meshIndex,
+            const MaterialModelUvOverrideMap& materialModelUvMap,
+            const MaterialUvNameMap& materialUvNameMap) const
+        {
+            streamBufferViewsOut.clear();
+
+            RHI::InputStreamLayoutBuilder layoutBuilder;
+
+            const Mesh& mesh = m_meshes[meshIndex];
+
+            bool success = true;
+
+            // Searching for the first UV in the mesh, so it can be used to paired with tangent/bitangent stream
+            auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
+            auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);
+            if (uvStreamTangentBitmaskOut)
+            {
+                uvStreamTangentBitmaskOut->Reset();
+            }
+
+            for (auto& contractStreamChannel : contract.m_streamChannels)
+            {
+                auto iter = FindMatchingStream(meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv, firstUv, uvStreamTangentBitmaskOut);
+
+                if (iter == mesh.m_streamInfo.end())
+                {
+                    if (contractStreamChannel.m_isOptional)
+                    {
+                        // The configuration of the dummy input stream is a bit touchy, and could result in crashes or validation failures that are platform-specific.
+                        // If you modify this code, be sure to test with "-rhi-device-validation=enable" on every platform.
+                        // Here are some criteria that we've noticed before, even for empty buffers:
+                        // Metal: Mesh stream formats need to be at least 4 byte aligned.
+                        // Vulkan: Mesh stream data type (float vs uint) must match the shader, or validation errors are reported
+                        //        ("does not match vertex shader input type")
+                        // Vulkan: We can't just use a null buffer pointer because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
+                        // Dx12: Mesh stream data type (float vs uint) must match the shader, or validation warnings are reported
+                        //       ("the matching entry in the Input Layout declaration ... specifies mismatched format").
+                        //
+                        // The stride value does not seem to matter, just the Format type. Still, we use GetFormatSize to set an accurate stride.
+
+                        RHI::Format dummyStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
+                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
+                        RHI::MultiDeviceStreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
+                        streamBufferViewsOut.push_back(dummyBuffer.GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex));
+                    }
+                    else
+                    {
+                        AZ_Warning("Mesh", false, "Mesh does not have all the required input streams. Missing '%s'.", contractStreamChannel.m_semantic.ToString().c_str());
+                        success = false;
+                    }
+                }
+                else
+                {
+                    // Note, we may need to iterate on the details of this validation. It might not be correct for all use cases.
+                    if (RHI::GetFormatComponentCount(iter->m_format) < contractStreamChannel.m_componentCount)
+                    {
+                        AZ_Error("Mesh", false, "Mesh format (%s) for stream '%s' provides %d components but the shader requires %d.",
+                                 RHI::ToString(iter->m_format),
+                                 contractStreamChannel.m_semantic.ToString().c_str(),
+                                 RHI::GetFormatComponentCount(iter->m_format),
+                                 contractStreamChannel.m_componentCount);
+                        success = false;
+                    }
+                    else
+                    {
+                        // Note, don't use iter->m_semantic as it can be a UV name matching.
+                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, iter->m_format);
+
+                        RHI::MultiDeviceStreamBufferView bufferView(*m_buffers[iter->m_bufferIndex]->GetRHIBuffer(), iter->m_byteOffset, iter->m_byteCount, iter->m_stride);
+                        streamBufferViewsOut.push_back(bufferView.GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex));
                     }
                 }
             }
