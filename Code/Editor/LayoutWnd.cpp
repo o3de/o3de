@@ -102,7 +102,6 @@ CLayoutWnd::CLayoutWnd(QSettings* settings, QWidget* parent)
     m_layout = (EViewLayout) - 1;
 
     m_maximizedViewId = 0;
-    m_infoBarSize = QSize(0, 0);
 
     connect(qApp, &QApplication::focusChanged, this, &CLayoutWnd::OnFocusChanged);
 
