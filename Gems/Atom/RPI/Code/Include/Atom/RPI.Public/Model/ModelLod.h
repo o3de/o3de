@@ -13,6 +13,8 @@
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
 #include <Atom/RHI/SingleDeviceDrawItem.h>
+#include <Atom/RHI/MultiDeviceIndexBufferView.h>
+#include <Atom/RHI/MultiDeviceStreamBufferView.h>
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -70,7 +72,7 @@ namespace AZ
             struct Mesh final
             {
                 RHI::SingleDeviceDrawArguments m_drawArguments;
-                RHI::SingleDeviceIndexBufferView m_indexBufferView;
+                RHI::MultiDeviceIndexBufferView m_indexBufferView;
 
                 StreamInfoList m_streamInfo;
 
@@ -81,7 +83,8 @@ namespace AZ
                 Data::Instance<Material> m_material;
             };
 
-            using StreamBufferViewList = AZStd::fixed_vector<RHI::SingleDeviceStreamBufferView, RHI::Limits::Pipeline::StreamCountMax>;
+            using StreamBufferViewList = AZStd::fixed_vector<RHI::MultiDeviceStreamBufferView, RHI::Limits::Pipeline::StreamCountMax>;
+            using TempStreamBufferViewList = AZStd::fixed_vector<RHI::SingleDeviceStreamBufferView, RHI::Limits::Pipeline::StreamCountMax>;
 
             AZ_INSTANCE_DATA(ModelLod, "{3C796FC9-2067-4E0F-A660-269F8254D1D5}");
             AZ_CLASS_ALLOCATOR(ModelLod, AZ::SystemAllocator);
@@ -108,6 +111,21 @@ namespace AZ
                 const MaterialModelUvOverrideMap& materialModelUvMap = {},
                 const MaterialUvNameMap& materialUvNameMap = {}) const;
 
+           //! Fills a InputStreamLayout and StreamBufferViewList for the set of streams that satisfy a ShaderInputContract.
+           // @param uvStreamTangentBitmaskOut a mask processed during UV stream matching, and later to determine which tangent/bitangent stream to use.
+           // @param contract the contract that defines the expected inputs for a shader, used to determine which streams are optional.
+           // @param meshIndex the index of the mesh to search in.
+           // @param materialModelUvMap a map of UV name overrides, which can be supplied to bind a specific mesh stream name to a different material shader stream name.
+           // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
+            bool GetStreamsForMesh(
+                RHI::InputStreamLayout& layoutOut,
+                ModelLod::StreamBufferViewList& streamBufferViewsOut,
+                UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
+                const ShaderInputContract& contract,
+                size_t meshIndex,
+                const MaterialModelUvOverrideMap& materialModelUvMap = {},
+                const MaterialUvNameMap& materialUvNameMap = {}) const;
+
             //! Fills a InputStreamLayout and StreamBufferViewList for the set of streams that satisfy a ShaderInputContract.
             // @param uvStreamTangentBitmaskOut a mask processed during UV stream matching, and later to determine which tangent/bitangent stream to use.
             // @param contract the contract that defines the expected inputs for a shader, used to determine which streams are optional.
@@ -116,7 +134,7 @@ namespace AZ
             // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
             bool GetStreamsForMesh(
                 RHI::InputStreamLayout& layoutOut,
-                ModelLod::StreamBufferViewList& streamBufferViewsOut,
+                ModelLod::TempStreamBufferViewList& streamBufferViewsOut,
                 UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
                 const ShaderInputContract& contract,
                 size_t meshIndex,

@@ -262,7 +262,7 @@ namespace AZ
             drawPacketBuilder.Begin(nullptr);
 
             drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
-            drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView);
+            drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex));
             drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
             drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
@@ -274,7 +274,7 @@ namespace AZ
             // We have to keep a list of these outside the loops that collect all the shaders because the SingleDeviceDrawPacketBuilder
             // keeps pointers to StreamBufferViews until SingleDeviceDrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
             // that the memory won't be relocated when new entries are added.
-            AZStd::fixed_vector<ModelLod::StreamBufferViewList, RHI::SingleDeviceDrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
+            AZStd::fixed_vector<ModelLod::TempStreamBufferViewList, RHI::SingleDeviceDrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
 
             // The root constants are shared by all draw items in the draw packet. We must populate them with default values.
             // The draw packet builder needs to know where the data is coming from during appendShader, but it's not actually read
