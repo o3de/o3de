@@ -957,8 +957,8 @@ namespace AZ
                 0);
             AZ_Assert(result, "Failed to retrieve DiffuseProbeGrid visualization mesh stream buffer views");
 
-            m_visualizationVB = streamBufferViews[0];
-            m_visualizationIB = mesh.m_indexBufferView;
+            m_visualizationVB = streamBufferViews[0].GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex);
+            m_visualizationIB = mesh.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex);
 
             // create the BLAS object
             RHI::SingleDeviceRayTracingBlasDescriptor blasDescriptor;
