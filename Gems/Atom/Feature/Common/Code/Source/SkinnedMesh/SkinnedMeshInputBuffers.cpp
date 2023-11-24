@@ -58,8 +58,7 @@ namespace AZ
             return asset;
         }
 
-        RHI::BufferViewDescriptor SkinnedMeshInputLod::CreateInputViewDescriptor(
-            SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::SingleDeviceStreamBufferView& streamBufferView)
+        RHI::BufferViewDescriptor SkinnedMeshInputLod::CreateInputViewDescriptor(SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::MultiDeviceStreamBufferView &streamBufferView)
         {
             RHI::BufferViewDescriptor descriptor;
             uint32_t elementOffset = streamBufferView.GetByteOffset() / streamBufferView.GetByteStride();
@@ -108,30 +107,22 @@ namespace AZ
                 const SkinnedMeshVertexStreamInfo* streamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamInfo(
                     inputLayout.GetStreamChannels()[meshStreamIndex].m_semantic);
 
-                const RHI::SingleDeviceStreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
+                const RHI::MultiDeviceStreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
                 if (streamInfo && streamBufferView.GetByteCount() > 0)
                 {
                     RHI::BufferViewDescriptor descriptor =
                         CreateInputViewDescriptor(streamInfo->m_enum, streamInfo->m_elementFormat, streamBufferView);
 
-                    AZ::RHI::Ptr<AZ::RHI::SingleDeviceBufferView> bufferView = RHI::Factory::Get().CreateBufferView();
+                    AZ::RHI::Ptr<AZ::RHI::MultiDeviceBufferView> bufferView = aznew RHI::MultiDeviceBufferView(const_cast<RHI::MultiDeviceBuffer*>(streamBufferView.GetBuffer()), descriptor);
                     {
                         // Initialize the buffer view
                         AZStd::string bufferViewName = AZStd::string::format(
                             "%s_lod%" PRIu32 "_mesh%" PRIu32 "_%s", modelName, lodIndex, meshIndex,
                             streamInfo->m_shaderResourceGroupName.GetCStr());
                         bufferView->SetName(Name(bufferViewName));
-                        RHI::ResultCode resultCode = bufferView->Init(*streamBufferView.GetBuffer(), descriptor);
 
-                        if (resultCode == RHI::ResultCode::Success)
-                        {
-                            // Keep track of which streams exist for the current mesh
-                            meshHasInputStream[static_cast<uint8_t>(streamInfo->m_enum)] = true;
-                        }
-                        else
-                        {
-                            AZ_Error("MorphTargetInputBuffers", false, "Failed to initialize buffer view %s.", bufferViewName.c_str());
-                        }
+                        // Keep track of which streams exist for the current mesh
+                        meshHasInputStream[static_cast<uint8_t>(streamInfo->m_enum)] = true;
                     }
 
                     // Add the buffer view along with the shader resource group name, which will be used to bind it to the srg later
@@ -443,7 +434,7 @@ namespace AZ
                     "Failed to find shader input index for '%s' in the skinning compute shader per-instance SRG.",
                     nameViewPair.m_srgName.GetCStr());
 
-                [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(srgIndex, nameViewPair.m_bufferView.get());
+                [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(srgIndex, nameViewPair.m_bufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
 
                 AZ_Error("SkinnedMeshInputBuffers", success, "Failed to bind buffer view for %s", nameViewPair.m_srgName.GetCStr());
             }
