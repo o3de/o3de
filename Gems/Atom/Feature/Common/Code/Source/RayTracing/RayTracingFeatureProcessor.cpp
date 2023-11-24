@@ -322,8 +322,8 @@ namespace AZ
                 blasDescriptor.Build()
                     ->Geometry()
                         ->VertexFormat(subMesh.m_positionFormat)
-                        ->VertexBuffer(subMesh.m_positionVertexBufferView)
-                        ->IndexBuffer(subMesh.m_indexBufferView)
+                        ->VertexBuffer(subMesh.m_positionVertexBufferView.GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex))
+                        ->IndexBuffer(subMesh.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex))
                         ->BuildFlags(buildFlags)
                 ;
 
@@ -380,12 +380,12 @@ namespace AZ
                 meshInfo.m_bufferStartIndex = m_meshBufferIndices.AddEntry(
                 {
 #if USE_BINDLESS_SRG
-                    subMesh.m_indexShaderBufferView.get() ? subMesh.m_indexShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_positionShaderBufferView.get() ? subMesh.m_positionShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_normalShaderBufferView.get() ? subMesh.m_normalShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_tangentShaderBufferView.get() ? subMesh.m_tangentShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_bitangentShaderBufferView.get() ? subMesh.m_bitangentShaderBufferView->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_uvShaderBufferView.get() ? subMesh.m_uvShaderBufferView->GetBindlessReadIndex() : InvalidIndex
+                    subMesh.m_indexShaderBufferView.get() ? subMesh.m_indexShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_positionShaderBufferView.get() ? subMesh.m_positionShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_normalShaderBufferView.get() ? subMesh.m_normalShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_tangentShaderBufferView.get() ? subMesh.m_tangentShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_bitangentShaderBufferView.get() ? subMesh.m_bitangentShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                    subMesh.m_uvShaderBufferView.get() ? subMesh.m_uvShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex
 #else
                     m_meshBuffers.AddResource(subMesh.m_indexShaderBufferView.get()),
                     m_meshBuffers.AddResource(subMesh.m_positionShaderBufferView.get()),
