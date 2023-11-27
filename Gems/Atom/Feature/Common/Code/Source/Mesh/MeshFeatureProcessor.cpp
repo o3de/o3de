@@ -949,6 +949,7 @@ namespace AZ
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
             meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
+            meshDataHandle->m_flags.m_keepBufferAssetsInMemory = descriptor.m_supportRayIntersection; // Note: the MeshLoader may need to read this flag. so it needs to be assigned because meshloader is created
             meshDataHandle->m_meshLoader = AZStd::make_shared<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
             meshDataHandle->m_flags.m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
             meshDataHandle->m_flags.m_isDrawMotion = descriptor.m_isAlwaysDynamic;
@@ -1580,6 +1581,15 @@ namespace AZ
                 m_parent->RemoveRayTracingData(rayTracingFeatureProcessor);
                 m_parent->QueueInit(model);
                 m_modelChangedEvent.Signal(AZStd::move(model));
+
+                if (m_parent->m_flags.m_keepBufferAssetsInMemory)
+                {
+                    model->GetModelAsset()->AddRefBufferAssets();
+                }
+                else
+                {
+                    model->GetModelAsset()->ReleaseRefBufferAssets();
+                }
             }
             else
             {
