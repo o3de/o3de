@@ -6,7 +6,7 @@
  *
  */
 #include <Atom/RHI/Factory.h>
-#include <RHI/FrameGraphExecuteGroupMerged.h>
+#include <RHI/FrameGraphExecuteGroupPrimary.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
 
@@ -14,7 +14,7 @@ namespace AZ
 {
     namespace Vulkan
     {
-        void FrameGraphExecuteGroupMerged::Init(
+        void FrameGraphExecuteGroupPrimary::Init(
             Device& device,
             AZStd::vector<const Scope*>&& scopes)
         {
@@ -58,7 +58,7 @@ namespace AZ
             m_workRequest.m_debugLabel = "FrameGraph Merged Group";
         }
 
-        void FrameGraphExecuteGroupMerged::BeginInternal()
+        void FrameGraphExecuteGroupPrimary::BeginInternal()
         {
             m_commandList = AcquireCommandList(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             m_commandList->BeginCommandBuffer();
@@ -70,7 +70,7 @@ namespace AZ
             m_workRequest.m_commandList = m_commandList;
         }
 
-        void FrameGraphExecuteGroupMerged::EndInternal()
+        void FrameGraphExecuteGroupPrimary::EndInternal()
         {
             if (r_gpuMarkersMergeGroups)
             {
@@ -79,7 +79,7 @@ namespace AZ
             m_commandList->EndCommandBuffer();
         }
 
-        void FrameGraphExecuteGroupMerged::BeginContextInternal(
+        void FrameGraphExecuteGroupPrimary::BeginContextInternal(
             RHI::FrameGraphExecuteContext& context,
             uint32_t contextIndex)
         {
@@ -108,7 +108,7 @@ namespace AZ
             }
         }
 
-        void FrameGraphExecuteGroupMerged::EndContextInternal(
+        void FrameGraphExecuteGroupPrimary::EndContextInternal(
             RHI::FrameGraphExecuteContext& context,
             uint32_t contextIndex)
         {
@@ -127,27 +127,27 @@ namespace AZ
             commandList->EndDebugLabel();
         }
 
-        AZStd::span<const Scope* const> FrameGraphExecuteGroupMerged::GetScopes() const
+        AZStd::span<const Scope* const> FrameGraphExecuteGroupPrimary::GetScopes() const
         {
             return m_scopes;
         }
 
-        AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroupMerged::GetCommandLists() const
+        AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroupPrimary::GetCommandLists() const
         {
             return AZStd::span<const RHI::Ptr<CommandList>>(&m_commandList, 1);
         }
 
-        void FrameGraphExecuteGroupMerged::SetPrimaryCommandList(CommandList& commandList)
+        void FrameGraphExecuteGroupPrimary::SetPrimaryCommandList(CommandList& commandList)
         {
             m_commandList = &commandList;
         }
 
-        void FrameGraphExecuteGroupMerged::SetRenderPasscontexts(AZStd::span<const RenderPassContext> renderPassContexts)
+        void FrameGraphExecuteGroupPrimary::SetRenderPasscontexts(AZStd::span<const RenderPassContext> renderPassContexts)
         {
             m_renderPassContexts = renderPassContexts;
         }
 
-        void FrameGraphExecuteGroupMerged::SetName(const Name& name)
+        void FrameGraphExecuteGroupPrimary::SetName(const Name& name)
         {
             m_name = name;
         }

@@ -7,30 +7,31 @@
  */
 #pragma once
 
-#include <RHI/FrameGraphExecuteGroupHandlerBase.h>
+#include <RHI/FrameGraphExecuteGroupHandler.h>
 #include <RHI/RenderPassBuilder.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        //! Handler for one ExecuteGroupMerged. The handler is in charge of creating the
-        //! renderpasses and framebuffers that the execute group will use. The primary command list
-        //! will be pass to the execute group for recording all the work.
-        class FrameGraphExecuteGroupMergedHandler final
-            : public FrameGraphExecuteGroupHandlerBase
+        //! Handler for one ExecuteGroupPrimary (That contain one or multiple scopes).
+        //! The handler is in charge of creating the renderpasses and framebuffers that
+        //! each scope in the execute group will use. These are not shared among the scopes.
+        //! It also contains the primary command list that each scope uses for recording its work.
+        class FrameGraphExecuteGroupPrimaryHandler final
+            : public FrameGraphExecuteGroupHandler
         {
-            using Base = FrameGraphExecuteGroupHandlerBase;
+            using Base = FrameGraphExecuteGroupHandler;
 
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupMergedHandler, AZ::SystemAllocator);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupPrimaryHandler, AZ::SystemAllocator);
 
-            FrameGraphExecuteGroupMergedHandler() = default;
-            ~FrameGraphExecuteGroupMergedHandler() = default;
+            FrameGraphExecuteGroupPrimaryHandler() = default;
+            ~FrameGraphExecuteGroupPrimaryHandler() = default;
 
         private:
             //////////////////////////////////////////////////////////////////////////
-            // FrameGraphExecuteGroupHandlerBase
+            // FrameGraphExecuteGroupHandler
             RHI::ResultCode InitInternal(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups) override;
             void EndInternal() override;
             //////////////////////////////////////////////////////////////////////////

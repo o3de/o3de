@@ -8,8 +8,8 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <RHI/CommandList.h>
 #include <RHI/Device.h>
-#include <RHI/FrameGraphExecuteGroupMergedHandler.h>
-#include <RHI/FrameGraphExecuteGroupMerged.h>
+#include <RHI/FrameGraphExecuteGroupPrimaryHandler.h>
+#include <RHI/FrameGraphExecuteGroupPrimary.h>
 #include <RHI/RenderPass.h>
 #include <RHI/RenderPassBuilder.h>
 #include <RHI/Scope.h>
@@ -18,11 +18,12 @@ namespace AZ
 {
     namespace Vulkan
     {
-        RHI::ResultCode FrameGraphExecuteGroupMergedHandler::InitInternal(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
+        RHI::ResultCode FrameGraphExecuteGroupPrimaryHandler::InitInternal(
+            Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
         {
             AZ_Assert(executeGroups.size() == 1, "Too many execute groups when initializing context");
-            FrameGraphExecuteGroupMerged* group = static_cast<FrameGraphExecuteGroupMerged*>(executeGroups.back());
-            AZ_Assert(group, "Invalid execute group for FrameGraphExecuteGroupMergedHandler");
+            FrameGraphExecuteGroupPrimary* group = static_cast<FrameGraphExecuteGroupPrimary*>(executeGroups.back());
+            AZ_Assert(group, "Invalid execute group for FrameGraphExecuteGroupPrimaryHandler");
             // Creates the renderpasses and framebuffers that will be used.
             auto groupScopes = group->GetScopes();
             m_renderPassContexts.resize(groupScopes.size());
@@ -48,10 +49,10 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void FrameGraphExecuteGroupMergedHandler::EndInternal()
+        void FrameGraphExecuteGroupPrimaryHandler::EndInternal()
         {
             AZ_Assert(m_executeGroups.size() == 1, "Too many execute groups when initializing context");
-            FrameGraphExecuteGroupBase* group = static_cast<FrameGraphExecuteGroupBase*>(m_executeGroups.back());
+            FrameGraphExecuteGroup* group = static_cast<FrameGraphExecuteGroup*>(m_executeGroups.back());
             AddWorkRequest(group->GetWorkRequest());
             //Merged handler will only have one commandlist.
             m_workRequest.m_commandList = group->GetCommandLists()[0];

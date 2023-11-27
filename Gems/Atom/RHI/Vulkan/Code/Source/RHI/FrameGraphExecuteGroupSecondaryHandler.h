@@ -7,31 +7,33 @@
  */
 #pragma once
 
-#include <RHI/FrameGraphExecuteGroupHandlerBase.h>
+#include <RHI/FrameGraphExecuteGroupHandler.h>
 #include <RHI/RenderPassBuilder.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        //! Handler for a list of ExecuteGroups that are part of the same graph group.
-        //! All the execute groups share the same renderpass and each of the groups correspond to
-        //! a subpass of the renderpass. Each execute group uses one or more secondary command list.
-        //! The handler owns the primary command list that will execute the secondary command list of each execute group.
-        class FrameGraphExecuteGroupHandler final
-            : public FrameGraphExecuteGroupHandlerBase
+        //! Handler for a list of ExecuteGroupSecondary that are part of the same graph group.
+        //! All the execute groups share the same renderpass (if they use one) and each of 
+        //! the groups correspond to a subpass of the renderpass (if they use one). Also each 
+        //! execute group uses one or more secondary command list to record their work.
+        //! The handler owns the primary command list that will execute the secondary command
+        //! lists of each execute group.
+        class FrameGraphExecuteGroupSecondaryHandler final
+            : public FrameGraphExecuteGroupHandler
         {
-            using Base = FrameGraphExecuteGroupHandlerBase;
+            using Base = FrameGraphExecuteGroupHandler;
 
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupHandler, AZ::SystemAllocator);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupSecondaryHandler, AZ::SystemAllocator);
 
-            FrameGraphExecuteGroupHandler() = default;
-            ~FrameGraphExecuteGroupHandler() = default;
+            FrameGraphExecuteGroupSecondaryHandler() = default;
+            ~FrameGraphExecuteGroupSecondaryHandler() = default;
 
         private:
             //////////////////////////////////////////////////////////////////////////
-            // FrameGraphExecuteGroupHandlerBase
+            // FrameGraphExecuteGroupHandler
             RHI::ResultCode InitInternal(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups) override;
             void EndInternal() override;
             //////////////////////////////////////////////////////////////////////////

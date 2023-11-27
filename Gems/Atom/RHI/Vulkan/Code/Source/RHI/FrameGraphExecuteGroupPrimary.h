@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <RHI/FrameGraphExecuteGroupBase.h>
+#include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/RenderPassBuilder.h>
 
 namespace AZ
@@ -17,17 +17,17 @@ namespace AZ
         class CommandList;
 
         //! Execute group that uses one primary command list to record the work of multiple scopes.
-        //! The renderpasses and framebuffers are created by the FrameGraphExecuteGroupMergedHandler but they
+        //! The renderpasses and framebuffers (if needed) are created by the FrameGraphExecuteGroupPrimaryHandler but they
         //! are managed (start and end) by the class itself.
-        class FrameGraphExecuteGroupMerged final
-            : public FrameGraphExecuteGroupBase
+        class FrameGraphExecuteGroupPrimary final
+            : public FrameGraphExecuteGroup
         {
-            using Base = FrameGraphExecuteGroupBase;
+            using Base = FrameGraphExecuteGroup;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupMerged, AZ::PoolAllocator);
-            AZ_RTTI(FrameGraphExecuteGroupMerged, "{85DE8F45-3CA1-4FD9-9B0E-EE98518D2717}", Base);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupPrimary, AZ::PoolAllocator);
+            AZ_RTTI(FrameGraphExecuteGroupPrimary, "{85DE8F45-3CA1-4FD9-9B0E-EE98518D2717}", Base);
 
-            FrameGraphExecuteGroupMerged() = default;
+            FrameGraphExecuteGroupPrimary() = default;
 
             void Init(Device& device, AZStd::vector<const Scope*>&& scopes);
             //! Set the command list that the group will use.
@@ -38,7 +38,7 @@ namespace AZ
             void SetName(const Name& name);
 
             //////////////////////////////////////////////////////////////////////////
-            // FrameGraphExecuteGroupBase
+            // FrameGraphExecuteGroup
             AZStd::span<const Scope* const> GetScopes() const override;
             AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const override;
             //////////////////////////////////////////////////////////////////////////

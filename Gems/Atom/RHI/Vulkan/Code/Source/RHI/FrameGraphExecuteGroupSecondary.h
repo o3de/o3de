@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
-#include <RHI/FrameGraphExecuteGroupBase.h>
+#include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/RenderPassBuilder.h>
 
 namespace AZ
@@ -24,18 +23,18 @@ namespace AZ
         struct RenderPassContext;
 
         //! Execute group for one scope that uses one or more secondary command lists to
-        //! record it's work. Renderpass and framebuffers are handled by the FrameGraphExecuteGroupHandler.
-        class FrameGraphExecuteGroup final
-            : public FrameGraphExecuteGroupBase
+        //! record it's work. Renderpass and framebuffers (if needed) are handled by the FrameGraphExecuteGroupSecondaryHandler.
+        class FrameGraphExecuteGroupSecondary final
+            : public FrameGraphExecuteGroup
         {
-            using Base = FrameGraphExecuteGroupBase;
+            using Base = FrameGraphExecuteGroup;
 
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroup, AZ::SystemAllocator);
-            AZ_RTTI(FrameGraphExecuteGroup, "{D3BDC3AC-06A7-4067-9E71-0DBB3A80B188}", Base);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupSecondary, AZ::SystemAllocator);
+            AZ_RTTI(FrameGraphExecuteGroupSecondary, "{D3BDC3AC-06A7-4067-9E71-0DBB3A80B188}", Base);
 
-            FrameGraphExecuteGroup() = default;
-            ~FrameGraphExecuteGroup() = default;
+            FrameGraphExecuteGroupSecondary() = default;
+            ~FrameGraphExecuteGroupSecondary() = default;
 
             void Init(Device& device,
                 const Scope& scope,
@@ -43,7 +42,7 @@ namespace AZ
                 RHI::JobPolicy globalJobPolicy);
 
             //////////////////////////////////////////////////////////////////////////
-            // FrameGraphExecuteGroupBase
+            // FrameGraphExecuteGroup
             AZStd::span<const Scope* const> GetScopes() const override;
             AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const override;
             //////////////////////////////////////////////////////////////////////////

@@ -21,13 +21,13 @@ namespace AZ
         //! It encapsulates the common functionality for Execute groups
         //! like the work request that will be used and the hardwareQueueClass for
         //! all scopes in the group.
-        class FrameGraphExecuteGroupBase
+        class FrameGraphExecuteGroup
             : public RHI::FrameGraphExecuteGroup
         {
             using Base = RHI::FrameGraphExecuteGroup;
         public:
-            FrameGraphExecuteGroupBase() = default;
-            AZ_RTTI(FrameGraphExecuteGroupBase, "{8F39B46F-37D3-4026-AB1A-A78F646F311B}", Base);
+            FrameGraphExecuteGroup() = default;
+            AZ_RTTI(FrameGraphExecuteGroup, "{8F39B46F-37D3-4026-AB1A-A78F646F311B}", Base);
 
             void InitBase(Device& device, const RHI::GraphGroupId& groupId, RHI::HardwareQueueClass hardwareQueueClass);
 

@@ -10,7 +10,7 @@
 #include <RHI/CommandList.h>
 #include <RHI/CommandPool.h>
 #include <RHI/Device.h>
-#include <RHI/FrameGraphExecuteGroup.h>
+#include <RHI/FrameGraphExecuteGroupSecondary.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
 
@@ -18,7 +18,7 @@ namespace AZ
 {
     namespace Vulkan
     {
-        void FrameGraphExecuteGroup::Init(
+        void FrameGraphExecuteGroupSecondary::Init(
             Device& device,
             const Scope& scope,
             uint32_t commandListCount,
@@ -49,12 +49,12 @@ namespace AZ
             m_workRequest.m_debugLabel = AZStd::string::format("Framegraph %s Group", m_scope->GetId().GetCStr());
         }
 
-        void FrameGraphExecuteGroup::BeginInternal()
+        void FrameGraphExecuteGroupSecondary::BeginInternal()
         {
             // Nothing to do.
         }
 
-        void FrameGraphExecuteGroup::BeginContextInternal(RHI::FrameGraphExecuteContext& context, uint32_t contextIndex)
+        void FrameGraphExecuteGroupSecondary::BeginContextInternal(RHI::FrameGraphExecuteContext& context, uint32_t contextIndex)
         {
             AZ_Assert(m_scope, "Scope is null.");
             AZ_Assert(m_scope->GetFrameGraph(), "FrameGraph is null.");            
@@ -72,7 +72,7 @@ namespace AZ
             m_scope->Begin(*commandList);
         }
 
-        void FrameGraphExecuteGroup::EndContextInternal(RHI::FrameGraphExecuteContext& context, [[maybe_unused]] uint32_t contextIndex)
+        void FrameGraphExecuteGroupSecondary::EndContextInternal(RHI::FrameGraphExecuteContext& context, [[maybe_unused]] uint32_t contextIndex)
         {
             CommandList& commandList = static_cast<CommandList&>(*context.GetCommandList());
             m_scope->End(commandList);
@@ -80,21 +80,21 @@ namespace AZ
             commandList.EndCommandBuffer();
         }
 
-        void FrameGraphExecuteGroup::EndInternal()
+        void FrameGraphExecuteGroupSecondary::EndInternal()
         {
         }
 
-        AZStd::span<const Scope* const> FrameGraphExecuteGroup::GetScopes() const
+        AZStd::span<const Scope* const> FrameGraphExecuteGroupSecondary::GetScopes() const
         {
             return AZStd::span<const Scope* const>(&m_scope, 1);
         }
 
-        AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroup::GetCommandLists() const
+        AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroupSecondary::GetCommandLists() const
         {
             return m_secondaryCommands;
         }
 
-        void FrameGraphExecuteGroup::SetRenderContext(const RenderPassContext& renderPassContext, uint32_t subpassIndex /*= 0*/)
+        void FrameGraphExecuteGroupSecondary::SetRenderContext(const RenderPassContext& renderPassContext, uint32_t subpassIndex /*= 0*/)
         {
             m_renderPassContext = renderPassContext;
             m_subpassIndex = subpassIndex;

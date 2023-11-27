@@ -9,7 +9,6 @@
 
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
-#include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -29,13 +28,13 @@ namespace AZ
         //! Contain the common functionality for all type of handlers like
         //! the execute groups are handled and the work request that will be send
         //! to the command queue.
-        class FrameGraphExecuteGroupHandlerBase
+        class FrameGraphExecuteGroupHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupHandlerBase, AZ::SystemAllocator);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupHandler, AZ::SystemAllocator);
 
-            FrameGraphExecuteGroupHandlerBase() = default;
-            virtual ~FrameGraphExecuteGroupHandlerBase() = default;
+            FrameGraphExecuteGroupHandler() = default;
+            virtual ~FrameGraphExecuteGroupHandler() = default;
 
             RHI::ResultCode Init(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups);
             void End();

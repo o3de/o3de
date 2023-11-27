@@ -5,36 +5,36 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/FrameGraphExecuteGroupBase.h>
+#include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/Device.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        void FrameGraphExecuteGroupBase::InitBase(Device& device, const RHI::GraphGroupId& groupId, RHI::HardwareQueueClass hardwareQueueClass)
+        void FrameGraphExecuteGroup::InitBase(Device& device, const RHI::GraphGroupId& groupId, RHI::HardwareQueueClass hardwareQueueClass)
         {
             m_device = &device;
             m_groupId = groupId;
             m_hardwareQueueClass = hardwareQueueClass;
         }
 
-        const ExecuteWorkRequest& FrameGraphExecuteGroupBase::GetWorkRequest() const
+        const ExecuteWorkRequest& FrameGraphExecuteGroup::GetWorkRequest() const
         {
             return m_workRequest;
         }
 
-        RHI::HardwareQueueClass FrameGraphExecuteGroupBase::GetHardwareQueueClass() const
+        RHI::HardwareQueueClass FrameGraphExecuteGroup::GetHardwareQueueClass() const
         {
             return m_hardwareQueueClass;
         }
 
-        const RHI::GraphGroupId& FrameGraphExecuteGroupBase::GetGroupId() const
+        const RHI::GraphGroupId& FrameGraphExecuteGroup::GetGroupId() const
         {
             return m_groupId;
         }
 
-        RHI::Ptr<CommandList> FrameGraphExecuteGroupBase::AcquireCommandList(VkCommandBufferLevel level) const
+        RHI::Ptr<CommandList> FrameGraphExecuteGroup::AcquireCommandList(VkCommandBufferLevel level) const
         {
             return m_device->AcquireCommandList(m_hardwareQueueClass, level);
         }
