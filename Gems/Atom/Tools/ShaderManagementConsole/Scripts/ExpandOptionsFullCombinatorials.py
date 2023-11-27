@@ -40,7 +40,7 @@ def nextElement(inlist, after):
         idx = inlist.index(after)
         return inlist[idx + 1]
     except:
-        return after
+        return after + 1  # need to return something comparable to `end` so that the test "digit > maxValue(desc)" in the `increment` function may pass
 
 def inclusiveRange(start, end):
      return range(start, end + 1)
@@ -99,7 +99,14 @@ def intFromOptionValueName(optionName, valueNameStr):
 
 def hasRestrictions(optionName):
     return optionName in valueRestrictions \
-        and len(valueRestrictions[optionName]) > 0
+        and len(valueRestrictions[optionName]) < optionsByNames[optionName].GetValuesCount() # if everything is "checked" that's no restriction
+
+# check if a value should be skipped for counting (not included in enumeration because it's unchecked)
+def isValueRestricted(optionName, valueNameStr):
+    valAsInt = intFromOptionValueName(optionName, valueNameStr)
+    if hasRestrictions(optionName):
+        return valAsInt not in valueRestrictions[optionName]
+    return False
 
 # "virtualize" access to GetMinValue to reflect the potential value-space restriction
 def getMinValue(descriptor):
@@ -138,12 +145,6 @@ def getNextValueInt(descriptor, digit):
     else:
         return digit + 1
 
-def isValueRestricted(optionName, valueNameStr):
-    valAsInt = intFromOptionValueName(optionName, valueNameStr)
-    if optionName in valueRestrictions:
-        return valAsInt in valueRestrictions[optionName]
-    return False
-
 # small window to select sub-ranges into an option's possible values
 class ValueSelector(QDialog):
     def __init__(self, optionName, optionValuesNames):
@@ -178,8 +179,8 @@ class ValueSelector(QDialog):
     def storeRestriction(self):
         '''update the global dictionary of usable values for this option'''
         global valueRestrictions
-        restrictedList = [intFromOptionValueName(self.optionName, x.text()) for x in listItems(self.valueList) if x.checkState() == QtCore.Qt.Unchecked]
-        if len(restrictedList) == optionsByNames[self.optionName].GetValuesCount():
+        restrictedList = [intFromOptionValueName(self.optionName, x.text()) for x in listItems(self.valueList) if x.checkState() == QtCore.Qt.Checked]
+        if len(restrictedList) == 0:
             msgBox = QMessageBox()
             msgBox.setText("Keep at least one value")
             msgBox.setInformativeText("Nothing to enumerate: just remove the option from the pariticipants altogether.")
