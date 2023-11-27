@@ -716,6 +716,7 @@ namespace AzFramework
             }
 
             AZ::IO::FixedMaxPath projectUserPath;
+            
             // carbonated begin (mp-469): Add the ability to change the 'user' dir
 #if defined(CARBONATED)
             bool hasCliUserDirOverride = false;
