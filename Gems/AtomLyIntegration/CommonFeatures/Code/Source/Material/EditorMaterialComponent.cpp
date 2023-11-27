@@ -12,9 +12,11 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Material/EditorMaterialComponent.h>
 #include <Material/EditorMaterialComponentExporter.h>
@@ -23,8 +25,10 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QAction>
+#include <QApplication>
 #include <QCursor>
 #include <QMenu>
+#include <QProgressDialog>
 AZ_POP_DISABLE_WARNING
 
 namespace AZ
@@ -399,21 +403,75 @@ namespace AZ
             // Display the export dialog so that the user can configure how they want different materials to be exported
             if (EditorMaterialComponentExporter::OpenExportDialog(exportItems))
             {
+                // Create progress dialog to report the status of each material being generated.
+                QWidget* activeWindow = nullptr;
+                AzToolsFramework::EditorWindowRequestBus::BroadcastResult(
+                    activeWindow, &AzToolsFramework::EditorWindowRequests::GetAppMainWindow);
+
+                QProgressDialog progressDialog(activeWindow);
+                progressDialog.setWindowFlags(progressDialog.windowFlags() & ~Qt::WindowCloseButtonHint);
+                progressDialog.setWindowTitle(QObject::tr("Generating source materials"));
+                progressDialog.setLabelText(QObject::tr("Generating materials"));
+                progressDialog.setWindowModality(Qt::WindowModal);
+                progressDialog.setMaximumSize(400, 100);
+                progressDialog.setMinimum(0);
+                progressDialog.setMaximum(exportItems.size());
+                progressDialog.setMinimumDuration(0);
+                progressDialog.setAutoClose(false);
+                progressDialog.show();
+
                 AzToolsFramework::ScopedUndoBatch undoBatch("Generating materials.");
 
                 for (const EditorMaterialComponentExporter::ExportItem& exportItem : exportItems)
                 {
+                    // Creating material source data from a product asset and resaving it as a new source material.
                     if (!EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
                     {
+                        // This file was skipped because it was either marked to not be exported, not be overwritten, or another error occurred.
+                        progressDialog.setValue(progressDialog.value() + 1);
+                        QApplication::processEvents();
                         continue;
                     }
 
-                    const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0);
-                    if (assetIdOutcome)
+                    // After saving the source file, wait for it to be added to the catalog and processed by the AP so that a valid asset
+                    // can be assigned to the material component without spamming warning messages.
+                    AZ::Data::AssetInfo assetInfo;
+                    while (true)
+                    {
+                        if (progressDialog.wasCanceled())
+                        {
+                            // The user canceled the operation from the progress dialog.
+                            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+                        }
+
+                        // Attempt to resolve the asset info from the anticipated asset id.
+                        assetInfo = {};
+                        if (const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0); assetIdOutcome)
+                        {
+                            const auto& assetId = assetIdOutcome.GetValue();
+                            if (assetId.IsValid())
+                            {
+                                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                                    assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+                                if (assetInfo.m_assetId.IsValid())
+                                {
+                                    // The asset is only valid and loadable once it has been added to the asset catalog.
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Process other application events while waiting in this loop
+                        QApplication::processEvents();
+                        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
+                    }
+
+                    // Valid asset info has been found for the file that was just saved so it can be assigned to the material component.
+                    if (assetInfo.m_assetId.IsValid())
                     {
                         for (const auto& materialPair : originalMaterials)
                         {
-                            // We need to check whether replaced material corresponds to this slot's default material.
+                            // We need to check if replaced material corresponds to this slot's default material.
                             const Data::AssetId originalAssetId = materialPair.second.m_materialAsset.GetId();
                             if (originalAssetId == exportItem.GetOriginalAssetId())
                             {
@@ -426,12 +484,16 @@ namespace AZ
 
                                         MaterialComponentRequestBus::Event(
                                             entityId, &MaterialComponentRequestBus::Events::SetMaterialAssetId, materialPair.first,
-                                            assetIdOutcome.GetValue());
+                                            assetInfo.m_assetId);
                                     }
                                 }
                             }
                         }
                     }
+
+                    // Increment and update the progress dialog
+                    progressDialog.setValue(progressDialog.value() + 1);
+                    QApplication::processEvents();
                 }
             }
 
