@@ -226,7 +226,7 @@ namespace Camera
     {
         m_entityId = entityId;
 
-        // Let's the set the camera default transforms:
+        // Let's set the camera default transforms:
         AZ::TransformBus::EventResult(m_xrCameraToBaseSpaceTm, m_entityId, &AZ::TransformBus::Handler::GetWorldTM);
         m_xrBaseSpaceToHeadTm = AZ::Transform::CreateIdentity();
         m_xrHeadToLeftEyeTm = AZ::Transform::CreateIdentity();
@@ -701,12 +701,15 @@ namespace Camera
 
         AZ::TransformBus::Event(m_entityId, &AZ::TransformBus::Handler::SetWorldTM, mainCameraWorldTm);
 
+        // Update camera world matrix for the main pipeline.
         m_atomCameraViewGroup->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(mainCameraWorldTm));
 
+        // Update camera world matrix for the left eye pipeline.
         m_xrHeadToLeftEyeTm = headToleftEyeTm;
         const auto leftEyeWorldTm = mainCameraWorldTm * headToleftEyeTm;
         m_atomCameraViewGroup->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(leftEyeWorldTm), AZ::RPI::ViewType::XrLeft);
 
+        // Update camera world matrix for the right eye pipeline.
         m_xrHeadToRightEyeTm = headToRightEyeTm;
         const auto rightEyeWorldTm = mainCameraWorldTm * headToRightEyeTm;
         m_atomCameraViewGroup->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(rightEyeWorldTm), AZ::RPI::ViewType::XrRight);
