@@ -717,7 +717,6 @@ namespace AzFramework
 
             AZ::IO::FixedMaxPath projectUserPath;
 
-            // carbonated begin (mp-469): Add the ability to change the 'user' dir
 #if defined(CARBONATED)
             bool hasCliUserDirOverride = false;
 
@@ -772,7 +771,6 @@ namespace AzFramework
                 projectLogPath = projectUserPath / "log";
             }
 #endif
-            // carbonated end
 
             fileIoBase->SetAlias("@log@", projectLogPath.c_str());
             fileIoBase->CreatePath(projectLogPath.c_str());
