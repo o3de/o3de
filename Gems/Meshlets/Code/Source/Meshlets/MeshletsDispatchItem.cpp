@@ -48,7 +48,7 @@ namespace AZ
             {
                 RHI::PipelineStateDescriptorForDispatch pipelineDesc;
                 m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId).ConfigurePipelineState(pipelineDesc);
-                m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc);
+                m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
             }
         }
 
@@ -59,7 +59,7 @@ namespace AZ
             {
                 RHI::PipelineStateDescriptorForDispatch pipelineDesc;
                 m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId).ConfigurePipelineState(pipelineDesc);
-                m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc);
+                m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
             }
         }
 

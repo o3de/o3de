@@ -64,7 +64,7 @@ namespace AZ
                 Data::Instance<RPI::ShaderResourceGroup> srg = nullptr
             );
 
-            static Data::Instance<RHI::SingleDeviceBufferView> CreateSharedBufferView(
+            static Data::Instance<RHI::MultiDeviceBufferView> CreateSharedBufferView(
                 const char* warningHeader,
                 SrgBufferDescriptor& bufferDesc,
                 Data::Instance<Meshlets::SharedBufferAllocation>& bufferAllocator
@@ -72,12 +72,12 @@ namespace AZ
 
             static bool BindBufferViewToSrg(
                 [[maybe_unused]] const char* warningHeader,
-                Data::Instance<RHI::SingleDeviceBufferView> bufferView,
+                Data::Instance<RHI::MultiDeviceBufferView> bufferView,
                 SrgBufferDescriptor& bufferDesc,
                 Data::Instance<RPI::ShaderResourceGroup> srg
             );
 
-            static Data::Instance<RHI::SingleDeviceBufferView> CreateSharedBufferViewAndBindToSrg(
+            static Data::Instance<RHI::MultiDeviceBufferView> CreateSharedBufferViewAndBindToSrg(
                 const char* warningHeader,
                 SrgBufferDescriptor& bufferDesc,
                 Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator,

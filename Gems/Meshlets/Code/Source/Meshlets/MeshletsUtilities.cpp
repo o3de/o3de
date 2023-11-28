@@ -120,7 +120,7 @@ namespace AZ
                 return false;
             }
 
-            if (!srg->SetBufferView(bufferIndex, buffer->GetBufferView()))
+            if (!srg->SetBufferView(bufferIndex, buffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
             {
                 AZ_Error(warningHeader, false, "Failed to bind buffer view for [%s]", bufferDesc.m_bufferName.GetCStr());
                 return false;
@@ -144,7 +144,7 @@ namespace AZ
         }
 
         // Returns the buffer view instance as well as the buffer allocator
-        Data::Instance<RHI::SingleDeviceBufferView> UtilityClass::CreateSharedBufferView(
+        Data::Instance<RHI::MultiDeviceBufferView> UtilityClass::CreateSharedBufferView(
             const char* warningHeader,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator)
@@ -154,7 +154,7 @@ namespace AZ
             if (!outputBufferAllocator)
             {
                 AZ_Error(warningHeader, false, "Shared buffer out of memory for [%s]", bufferDesc.m_bufferName.GetCStr());
-                return Data::Instance<RHI::SingleDeviceBufferView>();
+                return Data::Instance<RHI::MultiDeviceBufferView>();
             }
 
             // Create the buffer view into the shared buffer - it will be used as a separate buffer
@@ -173,7 +173,7 @@ namespace AZ
             viewDescriptor.m_ignoreFrameAttachmentValidation = true;
 
             RHI::MultiDeviceBuffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
-            Data::Instance<RHI::SingleDeviceBufferView> bufferView = RHI::Factory::Get().CreateBufferView();
+            Data::Instance<RHI::MultiDeviceBufferView> bufferView = aznew RHI::MultiDeviceBufferView(rhiBuffer, viewDescriptor);
             RHI::ResultCode resultCode = bufferView->Init(*rhiBuffer, viewDescriptor);
 
             if (resultCode != RHI::ResultCode::Success)
@@ -187,7 +187,7 @@ namespace AZ
 
         bool UtilityClass::BindBufferViewToSrg(
             [[maybe_unused]] const char* warningHeader,
-            Data::Instance<RHI::SingleDeviceBufferView> bufferView,
+            Data::Instance<RHI::MultiDeviceBufferView> bufferView,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<RPI::ShaderResourceGroup> srg)
         {
@@ -205,7 +205,7 @@ namespace AZ
                 return false;
             }
 
-            if (!srg->SetBufferView(bufferIndex, bufferView.get()))
+            if (!srg->SetBufferView(bufferIndex, bufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
             {
                 AZ_Error(warningHeader, false, "Failed to bind buffer view for [%s]", bufferDesc.m_bufferName.GetCStr());
                 return false;
@@ -213,14 +213,14 @@ namespace AZ
             return true;
         }
 
-        Data::Instance<RHI::SingleDeviceBufferView> UtilityClass::CreateSharedBufferViewAndBindToSrg(
+        Data::Instance<RHI::MultiDeviceBufferView> UtilityClass::CreateSharedBufferViewAndBindToSrg(
             const char* warningHeader,
             SrgBufferDescriptor& bufferDesc,
             Data::Instance<Meshlets::SharedBufferAllocation>& outputBufferAllocator,
             Data::Instance<RPI::ShaderResourceGroup> srg)
         {
             // BufferView creation
-            Data::Instance<RHI::SingleDeviceBufferView> bufferView = CreateSharedBufferView(warningHeader, bufferDesc, outputBufferAllocator);
+            Data::Instance<RHI::MultiDeviceBufferView> bufferView = CreateSharedBufferView(warningHeader, bufferDesc, outputBufferAllocator);
 
             if (srg && !BindBufferViewToSrg(warningHeader, bufferView, bufferDesc, srg))
             {
