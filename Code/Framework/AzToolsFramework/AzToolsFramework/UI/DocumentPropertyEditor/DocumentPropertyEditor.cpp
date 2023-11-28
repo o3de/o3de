@@ -53,6 +53,8 @@ namespace AzToolsFramework
         : QHBoxLayout(parent)
         , m_depth(-1)
     {
+        setContentsMargins(0, 0, 0, 0);
+        setSpacing(0);
     }
 
     void DPELayout::Init(int depth, bool enforceMinWidth, [[maybe_unused]] QWidget* parentWidget)
@@ -1353,6 +1355,9 @@ namespace AzToolsFramework
     {
         QWidget* scrollSurface = new QWidget(this);
         m_layout = new QVBoxLayout(scrollSurface);
+        m_layout->setContentsMargins(0, 0, 0, 0);
+        m_layout->setSpacing(2);
+
         setWidget(scrollSurface);
         setWidgetResizable(true);
 
