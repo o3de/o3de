@@ -278,14 +278,18 @@ namespace AZ
 
         void EditorMaterialComponentSlot::ExportMaterial(const AZStd::string& exportPath, bool overwrite)
         {
+            EditorMaterialComponentExporter::ProgressDialog progressDialog("Generating materials", "Generating material...", 1);
+
             EditorMaterialComponentExporter::ExportItem exportItem(GetDefaultAssetId(), GetLabel(), exportPath);
             exportItem.SetOverwrite(overwrite);
 
             if (EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
             {
-                if (const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0))
+                const AZ::Data::AssetInfo assetInfo = progressDialog.ProcessItem(exportItem);
+                if (assetInfo.m_assetId.IsValid())
                 {
-                    SetAssetId(assetIdOutcome.GetValue());
+                    SetAssetId(assetInfo.m_assetId);
+                    progressDialog.CompleteItem();
                 }
             }
         }
