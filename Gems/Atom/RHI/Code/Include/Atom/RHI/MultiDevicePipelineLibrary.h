@@ -116,7 +116,7 @@ namespace AZ::RHI
         //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance
         //! for a specific device
         //! @param deviceIndex Denotes from which device the serialized data should be retrieved
-        auto GetSerializedDatas() const
+        auto GetSerializedDataMap() const
         {
             AZStd::unordered_map<int, ConstPtr<PipelineLibraryData>> serializedData;
 

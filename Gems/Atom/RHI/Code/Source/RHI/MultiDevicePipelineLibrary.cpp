@@ -128,14 +128,14 @@ namespace AZ::RHI
             return false;
         }
 
-        bool result = false;
+        bool result = true;
 
         IterateObjects<SingleDevicePipelineLibrary>(
             [&result, &filePaths]([[maybe_unused]] auto deviceIndex, auto devicePipelineLibrary)
             {
                 auto deviceResult{ devicePipelineLibrary->SaveSerializedData(filePaths.at(deviceIndex)) };
                 AZ_Error("MultiDevicePipelineLibrary", deviceResult, "SaveSerializedData failed for device %d", deviceIndex);
-                result |= deviceResult;
+                result &= deviceResult;
             });
 
         return result;

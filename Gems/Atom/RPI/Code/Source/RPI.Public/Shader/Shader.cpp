@@ -75,7 +75,7 @@ namespace AZ
             Shutdown();
         }
 
-        static bool GetPipelineLibraryPath(
+        static bool GetPipelineLibraryPaths(
             AZStd::unordered_map<int, AZStd::string>& pipelineLibraryPaths,
             size_t pipelineLibraryPathLength,
             const ShaderAsset& shaderAsset)
@@ -149,7 +149,7 @@ namespace AZ
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
             m_pipelineStateType = shaderAsset.GetPipelineStateType();
 
-            GetPipelineLibraryPath(m_pipelineLibraryPaths, AZ_MAX_PATH_LEN, *m_asset);
+            GetPipelineLibraryPaths(m_pipelineLibraryPaths, AZ_MAX_PATH_LEN, *m_asset);
 
             {
                 AZStd::unique_lock<decltype(m_variantCacheMutex)> lock(m_variantCacheMutex);
@@ -325,17 +325,18 @@ namespace AZ
         {
             if (!m_pipelineLibraryPaths.empty())
             {
+                RHI::ConstPtr<RHI::MultiDevicePipelineLibrary> pipelineLibrary = m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle);
+                if (!pipelineLibrary)
+                {
+                    return;
+                }
+
                 auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
                 for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
                 {
                     RHI::Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                    RHI::ConstPtr<RHI::MultiDevicePipelineLibrary> pipelineLibrary = m_pipelineStateCache->GetMergedLibrary(m_pipelineLibraryHandle);
-                    if (!pipelineLibrary)
-                    {
-                        return;
-                    }
                     RHI::ConstPtr<RHI::SingleDevicePipelineLibrary> pipelineLib = pipelineLibrary->GetDevicePipelineLibrary(deviceIndex);
 
                     // Check if explicit file load/save operation is needed as the RHI backend api may not support it

@@ -399,25 +399,7 @@ namespace AZ::RHI
 
         // We no longer have the lock, but we own compilation of the pipeline state. Use the
         // thread-local library to perform compilation without blocking other threads.
-        switch (descriptor.GetType())
-        {
-        case PipelineStateType::Draw:
-            resultCode = pipelineState->Init(m_deviceMask, static_cast<const PipelineStateDescriptorForDraw&>(descriptor), pipelineLibrary);
-            break;
-
-        case PipelineStateType::Dispatch:
-            resultCode =
-                pipelineState->Init(m_deviceMask, static_cast<const PipelineStateDescriptorForDispatch&>(descriptor), pipelineLibrary);
-            break;
-
-        case PipelineStateType::RayTracing:
-            resultCode =
-                pipelineState->Init(m_deviceMask, static_cast<const PipelineStateDescriptorForRayTracing&>(descriptor), pipelineLibrary);
-            break;
-
-        default:
-            AZ_Assert(false, "Invalid pipeline state descriptor type specified.");
-        }
+        resultCode = pipelineState->Init(m_deviceMask, descriptor, pipelineLibrary);
 
         pipelineState->SetName(name);
 
