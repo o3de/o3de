@@ -208,7 +208,7 @@ namespace AZ
                 const RHI::SingleDeviceIndexBufferView& indexBufferView,
                 const StreamBufferViewsForAllStreams& streamBufferViews,
                 RHI::DrawListTag drawListTag,
-                const AZ::RHI::SingleDevicePipelineState* pipelineState,
+                const AZ::RHI::MultiDevicePipelineState* pipelineState,
                 RHI::DrawItemSortKey sortKey);
 
         private: // data
