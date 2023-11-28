@@ -206,7 +206,7 @@
                 "Exclude Install": {
                     "glob": "install/*"
                 },
-                // Exlude Gems inside Projects, their Assets folders will still be included
+                // Exclude Gems inside Projects, their Assets folders will still be included
                 "Exclude Gems": {
                     "glob": "Gems/*"
                 },
