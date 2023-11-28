@@ -143,16 +143,6 @@ namespace AZ::RHI
 
             imagePtr->Init(GetDeviceMask());
 
-            IterateObjects<SingleDeviceTransientAttachmentPool>(
-                [&imagePtr, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
-                {
-                    imagePtr->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateImage(descriptor);
-                    if (imagePtr->GetDeviceImage(deviceIndex))
-                    {
-                        imagePtr->SetDescriptor(imagePtr->GetDeviceImage(deviceIndex)->GetDescriptor());
-                    }
-                });
-
             imagePtr->SetName(descriptor.m_attachmentId);
             m_cache.Insert(static_cast<uint64_t>(hash), AZStd::move(imagePtr));
             if (!descriptor.m_attachmentId.IsEmpty())
@@ -160,6 +150,16 @@ namespace AZ::RHI
                 m_reverseLookupHash.emplace(descriptor.m_attachmentId, hash);
             }
         }
+
+        IterateObjects<SingleDeviceTransientAttachmentPool>(
+            [&image, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
+            {
+                image->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateImage(descriptor);
+                if (image->GetDeviceImage(deviceIndex))
+                {
+                    image->SetDescriptor(image->GetDeviceImage(deviceIndex)->GetDescriptor());
+                }
+            });
 
         return image;
     }
@@ -187,16 +187,6 @@ namespace AZ::RHI
 
             bufferPtr->Init(GetDeviceMask());
 
-            IterateObjects<SingleDeviceTransientAttachmentPool>(
-                [&bufferPtr, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
-                {
-                    bufferPtr->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateBuffer(descriptor);
-                    if (bufferPtr->GetDeviceBuffer(deviceIndex))
-                    {
-                        bufferPtr->SetDescriptor(bufferPtr->GetDeviceBuffer(deviceIndex)->GetDescriptor());
-                    }
-                });
-
             bufferPtr->SetName(descriptor.m_attachmentId);
             m_cache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferPtr));
             if (!descriptor.m_attachmentId.IsEmpty())
@@ -204,6 +194,16 @@ namespace AZ::RHI
                 m_reverseLookupHash.emplace(descriptor.m_attachmentId, hash);
             }
         }
+
+        IterateObjects<SingleDeviceTransientAttachmentPool>(
+            [&buffer, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
+            {
+                buffer->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateBuffer(descriptor);
+                if (buffer->GetDeviceBuffer(deviceIndex))
+                {
+                    buffer->SetDescriptor(buffer->GetDeviceBuffer(deviceIndex)->GetDescriptor());
+                }
+            });
 
         return buffer;
     }
