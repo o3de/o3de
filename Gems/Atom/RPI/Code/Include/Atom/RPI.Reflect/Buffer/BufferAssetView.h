@@ -32,6 +32,9 @@ namespace AZ
 
             const Data::Asset<BufferAsset>& GetBufferAsset() const;
 
+            void LoadBufferAsset();
+            void ReleaseBufferAsset();
+
         private:
             RHI::BufferViewDescriptor m_bufferViewDescriptor;
             Data::Asset<BufferAsset> m_bufferAsset;

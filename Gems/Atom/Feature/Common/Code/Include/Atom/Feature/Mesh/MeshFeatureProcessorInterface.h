@@ -99,6 +99,7 @@ namespace AZ
             bool m_useForwardPassIblSpecular = false;
             bool m_isAlwaysDynamic = false;
             bool m_excludeFromReflectionCubeMaps = false;
+            bool m_supportRayIntersection = false;
         };
 
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying

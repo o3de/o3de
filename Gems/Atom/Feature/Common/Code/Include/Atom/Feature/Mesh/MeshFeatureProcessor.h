@@ -175,6 +175,7 @@ namespace AZ
                 bool m_hasForwardPassIblSpecularMaterial : 1;
                 bool m_needsSetRayTracingData : 1;
                 bool m_hasRayTracingReflectionProbe : 1;
+                bool m_keepBufferAssetsInMemory : 1;            // If true, we need to keep BufferAssets referenced by ModelAsset stay in memory. This is needed when editor use RayIntersection
             } m_flags;
         };
 
