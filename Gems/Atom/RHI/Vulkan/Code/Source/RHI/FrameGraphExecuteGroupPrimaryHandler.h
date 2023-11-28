@@ -14,9 +14,9 @@ namespace AZ
 {
     namespace Vulkan
     {
-        //! Handler for one ExecuteGroupPrimary (That contain one or multiple scopes).
-        //! The handler is in charge of creating the renderpasses and framebuffers that
-        //! each scope in the execute group will use. These are not shared among the scopes.
+        //! Handler for one ExecuteGroupPrimary (contains one or more scopes).
+        //! The handler is in charge of creating renderpasses and framebuffers that
+        //! each scope in the execute group will use. These are not shared among scopes.
         //! It also contains the primary command list that each scope uses for recording its work.
         class FrameGraphExecuteGroupPrimaryHandler final
             : public FrameGraphExecuteGroupHandler
