@@ -235,13 +235,8 @@ namespace ScriptCanvasEditor
 
         SourceHandle GraphTabBar::FindTabByPath(AZStd::string_view path) const
         {
-            auto candidateOption = ScriptCanvasEditor::CompleteDescription(SourceHandle::FromRelativePath(nullptr, {}, path));
-            if (!candidateOption)
-            {
-                return {};
-            }
-
-            auto candidate = *candidateOption;
+            SourceHandle candidate;
+            candidate = SourceHandle::MarkAbsolutePath(candidate, path);
 
             for (int index = 0; index < count(); ++index)
             {

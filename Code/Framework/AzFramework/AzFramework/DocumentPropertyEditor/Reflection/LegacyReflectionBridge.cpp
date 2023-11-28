@@ -1405,7 +1405,8 @@ namespace AZ::Reflection
                         nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::ParentContainer, *parentContainer });
 
                         const auto inheritedAttributes = { DescriptorAttributes::ParentContainerInstance,
-                                                               AZ::Reflection::DescriptorAttributes::ContainerIndex };
+                                                           DescriptorAttributes::ParentContainerCanBeModified,
+                                                           AZ::Reflection::DescriptorAttributes::ContainerIndex };
 
                         for (const auto& attributeName : inheritedAttributes)
                         {
