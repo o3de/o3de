@@ -24,9 +24,9 @@ namespace AZ
     {
         class Device;
 
-        //! Base class for the handler classes that manage the execute groups.
-        //! Contain the common functionality for all type of handlers like
-        //! the execute groups are handled and the work request that will be send
+        //! Base class for handler classes that manage frame graph execute groups.
+        //! Contains common functionality for all types of handlers including
+        //! how execute groups are handled and how work requests are sent
         //! to the command queue.
         class FrameGraphExecuteGroupHandler
         {
