@@ -10,146 +10,143 @@
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
 
-namespace AZ
+namespace AZ::Vulkan
 {
-    namespace Vulkan
+    void FrameGraphExecuteGroupPrimary::Init(
+        Device& device,
+        AZStd::vector<const Scope*>&& scopes)
     {
-        void FrameGraphExecuteGroupPrimary::Init(
-            Device& device,
-            AZStd::vector<const Scope*>&& scopes)
+        AZ_Assert(!scopes.empty(), "Empty list of scopes for Merged group");
+        // Use the max graphGroup id as the id of the execute group.
+        RHI::GraphGroupId groupId = scopes.back()->GetFrameGraphGroupId();
+        AZStd::for_each(scopes.begin(), scopes.end(), [&groupId](const Scope* scope)
         {
-            AZ_Assert(!scopes.empty(), "Empty list of scopes for Merged group");
-            // Use the max graphGroup id as the id of the execute group.
-            RHI::GraphGroupId groupId = scopes.back()->GetFrameGraphGroupId();
-            AZStd::for_each(scopes.begin(), scopes.end(), [&groupId](const Scope* scope)
+            groupId = AZStd::max(groupId, scope->GetFrameGraphGroupId());
+        });
+
+        Base::InitBase(device, groupId, scopes.back()->GetHardwareQueueClass());
+
+        m_scopes = AZStd::move(scopes);
+
+        auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
+        AZStd::vector<InitMergedRequest::ScopeEntry> scopeEntries;
+        scopeEntries.reserve(m_scopes.size());
+        for (const Scope* scope : m_scopes)
+        {
+            scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
+            swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
+            for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
             {
-                groupId = AZStd::max(groupId, scope->GetFrameGraphGroupId());
-            });
-
-            Base::InitBase(device, groupId, scopes.back()->GetHardwareQueueClass());
-
-            m_scopes = AZStd::move(scopes);
-
-            auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
-            AZStd::vector<InitMergedRequest::ScopeEntry> scopeEntries;
-            scopeEntries.reserve(m_scopes.size());
-            for (const Scope* scope : m_scopes)
-            {
-                scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
-                swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
-                for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
-                {
-                    swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
-                }
-                const auto& waitSemaphores = scope->GetWaitSemaphores();
-                const auto& signalSemaphores = scope->GetSignalSemaphores();
-                const auto& signalFences = scope->GetSignalFences();
-
-                m_workRequest.m_semaphoresToWait.insert(m_workRequest.m_semaphoresToWait.end(), waitSemaphores.begin(), waitSemaphores.end());
-                m_workRequest.m_semaphoresToSignal.insert(m_workRequest.m_semaphoresToSignal.end(), signalSemaphores.begin(), signalSemaphores.end());
-                m_workRequest.m_fencesToSignal.insert(m_workRequest.m_fencesToSignal.end(), signalFences.begin(), signalFences.end());
+                swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
             }
+            const auto& waitSemaphores = scope->GetWaitSemaphores();
+            const auto& signalSemaphores = scope->GetSignalSemaphores();
+            const auto& signalFences = scope->GetSignalFences();
 
-            InitMergedRequest request;
-            request.m_scopeEntries = scopeEntries.data();
-            request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
-            Base::Init(request);
-
-            m_workRequest.m_debugLabel = "FrameGraph Merged Group";
+            m_workRequest.m_semaphoresToWait.insert(m_workRequest.m_semaphoresToWait.end(), waitSemaphores.begin(), waitSemaphores.end());
+            m_workRequest.m_semaphoresToSignal.insert(m_workRequest.m_semaphoresToSignal.end(), signalSemaphores.begin(), signalSemaphores.end());
+            m_workRequest.m_fencesToSignal.insert(m_workRequest.m_fencesToSignal.end(), signalFences.begin(), signalFences.end());
         }
 
-        void FrameGraphExecuteGroupPrimary::BeginInternal()
+        InitMergedRequest request;
+        request.m_scopeEntries = scopeEntries.data();
+        request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
+        Base::Init(request);
+
+        m_workRequest.m_debugLabel = "FrameGraph Merged Group";
+    }
+
+    void FrameGraphExecuteGroupPrimary::BeginInternal()
+    {
+        m_commandList = AcquireCommandList(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+        m_commandList->BeginCommandBuffer();
+        if (r_gpuMarkersMergeGroups)
         {
-            m_commandList = AcquireCommandList(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-            m_commandList->BeginCommandBuffer();
-            if (r_gpuMarkersMergeGroups)
-            {
-                m_commandList->BeginDebugLabel(m_commandList->GetName().GetCStr());
-            }
+            m_commandList->BeginDebugLabel(m_commandList->GetName().GetCStr());
+        }
             
-            m_workRequest.m_commandList = m_commandList;
-        }
+        m_workRequest.m_commandList = m_commandList;
+    }
 
-        void FrameGraphExecuteGroupPrimary::EndInternal()
+    void FrameGraphExecuteGroupPrimary::EndInternal()
+    {
+        if (r_gpuMarkersMergeGroups)
         {
-            if (r_gpuMarkersMergeGroups)
-            {
-                m_commandList->EndDebugLabel();
-            }
-            m_commandList->EndCommandBuffer();
+            m_commandList->EndDebugLabel();
         }
+        m_commandList->EndCommandBuffer();
+    }
 
-        void FrameGraphExecuteGroupPrimary::BeginContextInternal(
-            RHI::FrameGraphExecuteContext& context,
-            uint32_t contextIndex)
+    void FrameGraphExecuteGroupPrimary::BeginContextInternal(
+        RHI::FrameGraphExecuteContext& context,
+        uint32_t contextIndex)
+    {
+        AZ_Assert(static_cast<uint32_t>(m_lastCompletedScope + 1) == contextIndex, "Contexts must be recorded in order!");
+
+        const Scope* scope = m_scopes[contextIndex];
+        m_commandList->SetName(m_name);
+        m_commandList->BeginDebugLabel(scope->GetMarkerLabel().data());
+        context.SetCommandList(*m_commandList);
+
+        scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Aliasing);
+        scope->ProcessClearRequests(*m_commandList);
+        scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Prologue);
+        scope->ResetQueryPools(*m_commandList);
+        scope->Begin(*m_commandList);
+
+        // Begin the render pass if the scope uses one.
+        const RenderPassContext& renderPassContext = m_renderPassContexts[contextIndex];
+        if (scope->UsesRenderpass())
         {
-            AZ_Assert(static_cast<uint32_t>(m_lastCompletedScope + 1) == contextIndex, "Contexts must be recorded in order!");
-
-            const Scope* scope = m_scopes[contextIndex];
-            m_commandList->SetName(m_name);
-            m_commandList->BeginDebugLabel(scope->GetMarkerLabel().data());
-            context.SetCommandList(*m_commandList);
-
-            scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Aliasing);
-            scope->ProcessClearRequests(*m_commandList);
-            scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Prologue);
-            scope->ResetQueryPools(*m_commandList);
-            scope->Begin(*m_commandList);
-
-            // Begin the render pass if the scope uses one.
-            const RenderPassContext& renderPassContext = m_renderPassContexts[contextIndex];
-            if (scope->UsesRenderpass())
-            {
-                CommandList::BeginRenderPassInfo beginInfo;
-                beginInfo.m_clearValues = renderPassContext.m_clearValues;
-                beginInfo.m_frameBuffer = renderPassContext.m_framebuffer.get();
-                beginInfo.m_subpassContentType = VK_SUBPASS_CONTENTS_INLINE;
-                m_commandList->BeginRenderPass(beginInfo);
-            }
+            CommandList::BeginRenderPassInfo beginInfo;
+            beginInfo.m_clearValues = renderPassContext.m_clearValues;
+            beginInfo.m_frameBuffer = renderPassContext.m_framebuffer.get();
+            beginInfo.m_subpassContentType = VK_SUBPASS_CONTENTS_INLINE;
+            m_commandList->BeginRenderPass(beginInfo);
         }
+    }
 
-        void FrameGraphExecuteGroupPrimary::EndContextInternal(
-            RHI::FrameGraphExecuteContext& context,
-            uint32_t contextIndex)
+    void FrameGraphExecuteGroupPrimary::EndContextInternal(
+        RHI::FrameGraphExecuteContext& context,
+        uint32_t contextIndex)
+    {
+        m_lastCompletedScope = contextIndex;
+
+        const Scope* scope = m_scopes[contextIndex];
+        CommandList* commandList = static_cast<CommandList*>(context.GetCommandList());
+        if (commandList->IsInsideRenderPass())
         {
-            m_lastCompletedScope = contextIndex;
-
-            const Scope* scope = m_scopes[contextIndex];
-            CommandList* commandList = static_cast<CommandList*>(context.GetCommandList());
-            if (commandList->IsInsideRenderPass())
-            {
-                commandList->EndRenderPass();
-            }
-            scope->ResolveMSAAAttachments(*commandList);
-            scope->End(*commandList);
-            scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Epilogue);
-
-            commandList->EndDebugLabel();
+            commandList->EndRenderPass();
         }
+        scope->ResolveMSAAAttachments(*commandList);
+        scope->End(*commandList);
+        scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Epilogue);
 
-        AZStd::span<const Scope* const> FrameGraphExecuteGroupPrimary::GetScopes() const
-        {
-            return m_scopes;
-        }
+        commandList->EndDebugLabel();
+    }
 
-        AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroupPrimary::GetCommandLists() const
-        {
-            return AZStd::span<const RHI::Ptr<CommandList>>(&m_commandList, 1);
-        }
+    AZStd::span<const Scope* const> FrameGraphExecuteGroupPrimary::GetScopes() const
+    {
+        return m_scopes;
+    }
 
-        void FrameGraphExecuteGroupPrimary::SetPrimaryCommandList(CommandList& commandList)
-        {
-            m_commandList = &commandList;
-        }
+    AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroupPrimary::GetCommandLists() const
+    {
+        return AZStd::span<const RHI::Ptr<CommandList>>(&m_commandList, 1);
+    }
 
-        void FrameGraphExecuteGroupPrimary::SetRenderPasscontexts(AZStd::span<const RenderPassContext> renderPassContexts)
-        {
-            m_renderPassContexts = renderPassContexts;
-        }
+    void FrameGraphExecuteGroupPrimary::SetPrimaryCommandList(CommandList& commandList)
+    {
+        m_commandList = &commandList;
+    }
 
-        void FrameGraphExecuteGroupPrimary::SetName(const Name& name)
-        {
-            m_name = name;
-        }
+    void FrameGraphExecuteGroupPrimary::SetRenderPasscontexts(AZStd::span<const RenderPassContext> renderPassContexts)
+    {
+        m_renderPassContexts = renderPassContexts;
+    }
+
+    void FrameGraphExecuteGroupPrimary::SetName(const Name& name)
+    {
+        m_name = name;
     }
 }

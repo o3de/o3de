@@ -14,48 +14,45 @@
 #include <RHI/RenderPassBuilder.h>
 #include <RHI/Scope.h>
 
-namespace AZ
+namespace AZ::Vulkan
 {
-    namespace Vulkan
+    RHI::ResultCode FrameGraphExecuteGroupPrimaryHandler::InitInternal(
+        Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
     {
-        RHI::ResultCode FrameGraphExecuteGroupPrimaryHandler::InitInternal(
-            Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups)
+        AZ_Assert(executeGroups.size() == 1, "Too many execute groups when initializing context");
+        FrameGraphExecuteGroupPrimary* group = static_cast<FrameGraphExecuteGroupPrimary*>(executeGroups.back());
+        AZ_Assert(group, "Invalid execute group for FrameGraphExecuteGroupPrimaryHandler");
+        // Creates the renderpasses and framebuffers that will be used.
+        auto groupScopes = group->GetScopes();
+        m_renderPassContexts.resize(groupScopes.size());
+        for (uint32_t i = 0; i < groupScopes.size(); ++i)
         {
-            AZ_Assert(executeGroups.size() == 1, "Too many execute groups when initializing context");
-            FrameGraphExecuteGroupPrimary* group = static_cast<FrameGraphExecuteGroupPrimary*>(executeGroups.back());
-            AZ_Assert(group, "Invalid execute group for FrameGraphExecuteGroupPrimaryHandler");
-            // Creates the renderpasses and framebuffers that will be used.
-            auto groupScopes = group->GetScopes();
-            m_renderPassContexts.resize(groupScopes.size());
-            for (uint32_t i = 0; i < groupScopes.size(); ++i)
+            const Scope* scope = groupScopes[i];
+            if (!scope->UsesRenderpass())
             {
-                const Scope* scope = groupScopes[i];
-                if (!scope->UsesRenderpass())
-                {
-                    continue;
-                }
-
-                RenderPassBuilder builder(device, 1);
-                builder.AddScopeAttachments(*scope);
-                // This will update the m_renderPassContexts with the proper renderpass and framebuffer.
-                RHI::ResultCode result = builder.End(m_renderPassContexts[i]);
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
-                m_renderPassContexts[i].SetName(scope->GetName());
+                continue;
             }
 
-            // Set the renderpass contexts.
-            group->SetRenderPasscontexts(m_renderPassContexts);
-
-            return RHI::ResultCode::Success;
+            RenderPassBuilder builder(device, 1);
+            builder.AddScopeAttachments(*scope);
+            // This will update the m_renderPassContexts with the proper renderpass and framebuffer.
+            RHI::ResultCode result = builder.End(m_renderPassContexts[i]);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            m_renderPassContexts[i].SetName(scope->GetName());
         }
 
-        void FrameGraphExecuteGroupPrimaryHandler::EndInternal()
-        {
-            AZ_Assert(m_executeGroups.size() == 1, "Too many execute groups when initializing context");
-            FrameGraphExecuteGroup* group = static_cast<FrameGraphExecuteGroup*>(m_executeGroups.back());
-            AddWorkRequest(group->GetWorkRequest());
-            //Merged handler will only have one commandlist.
-            m_workRequest.m_commandList = group->GetCommandLists()[0];
-        }
+        // Set the renderpass contexts.
+        group->SetRenderPasscontexts(m_renderPassContexts);
+
+        return RHI::ResultCode::Success;
+    }
+
+    void FrameGraphExecuteGroupPrimaryHandler::EndInternal()
+    {
+        AZ_Assert(m_executeGroups.size() == 1, "Too many execute groups when initializing context");
+        FrameGraphExecuteGroup* group = static_cast<FrameGraphExecuteGroup*>(m_executeGroups.back());
+        AddWorkRequest(group->GetWorkRequest());
+        //Merged handler will only have one commandlist.
+        m_workRequest.m_commandList = group->GetCommandLists()[0];
     }
 }
