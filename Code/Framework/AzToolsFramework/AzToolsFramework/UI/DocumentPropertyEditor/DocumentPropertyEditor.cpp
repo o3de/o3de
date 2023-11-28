@@ -501,6 +501,7 @@ namespace AzToolsFramework
                 auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget);
                 if (!handlerInfo.IsNull())
                 {
+                    m_columnLayout->removeWidget(childWidget);
                     DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
                 else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
@@ -655,6 +656,7 @@ namespace AzToolsFramework
             }
             else if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
             {
+                m_columnLayout->removeWidget(childWidget);
                 RemoveCachedAttributes(childIndex);
                 if (!newOwner)
                 {
@@ -1000,6 +1002,7 @@ namespace AzToolsFramework
                         // check if this patch has morphed the PropertyHandler into a different type
                         if (handlerId != handlerInfo.handlerId)
                         {
+                            m_columnLayout->removeWidget(childWidget);
                             DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                             m_columnLayout->RemoveSharePriorColumn(childIndex);
 

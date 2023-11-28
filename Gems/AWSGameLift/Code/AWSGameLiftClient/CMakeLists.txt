@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME AWSGameLift.Client.Static STATIC
+    NAME ${gem_name}.Client.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         awsgamelift_client_files.cmake
@@ -30,7 +30,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AWSGameLift.Clients ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Clients ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         awsgamelift_client_shared_files.cmake
@@ -43,15 +43,24 @@ ly_add_target(
             Gem::Multiplayer.Common.Static
             3rdParty::AWSNativeSDK::GameLiftClient
         PUBLIC
-            Gem::AWSGameLift.Client.Static
+            Gem::${gem_name}.Client.Static
     RUNTIME_DEPENDENCIES
         Gem::AWSCore.Clients
 )
 
-# Load the "Gem::AWSGameLift" module in all types of applications.
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AWSGameLiftClientModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# Load the "Gem::${gem_name}" module in all types of applications.
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME AWSGameLift.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+        NAME ${gem_name}.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             awsgamelift_client_editor_files.cmake
@@ -75,23 +84,23 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Multiplayer.Unified.Static
                 3rdParty::AWSNativeSDK::GameLiftClient
         RUNTIME_DEPENDENCIES
-                Gem::AWSGameLift.Clients
+                Gem::${gem_name}.Clients
     )
 
     ly_create_alias(
-        NAME AWSGameLift.Tools
+        NAME ${gem_name}.Tools
         NAMESPACE Gem
         TARGETS
-            Gem::AWSGameLift.Editor
+            Gem::${gem_name}.Editor
             Gem::AWSCore.Tools
     )
 
     ly_create_alias(
-        NAME AWSGameLift.Builders
+        NAME ${gem_name}.Builders
         NAMESPACE Gem
         TARGETS
             Gem::AWSCore.Builders
-            Gem::AWSGameLift.Clients
+            Gem::${gem_name}.Clients
     )
 endif()
 
@@ -100,7 +109,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME AWSGameLift.Client.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Client.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             awsgamelift_client_tests_files.cmake
@@ -116,14 +125,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzCore
                 AZ::AzTest
                 Gem::AWSCore
-                Gem::AWSGameLift.Client.Static
+                Gem::${gem_name}.Client.Static
                 Gem::Multiplayer.Unified.Static
                 3rdParty::AWSNativeSDK::GameLiftClient
                 AZ::AWSNativeSDKTestLibs
     )
-    # Add AWSGameLift.Client.Tests to googletest
+    # Add ${gem_name}.Client.Tests to googletest
     ly_add_googletest(
-        NAME Gem::AWSGameLift.Client.Tests
+        NAME Gem::${gem_name}.Client.Tests
         LABELS REQUIRES_tiaf
     )
 endif()

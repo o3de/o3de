@@ -131,4 +131,8 @@ namespace GradientSignal
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_GradientSignalEditor, GradientSignal::GradientSignalEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), GradientSignal::GradientSignalEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_GradientSignal_Editor, GradientSignal::GradientSignalEditorModule)
+#endif

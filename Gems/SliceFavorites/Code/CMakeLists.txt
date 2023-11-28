@@ -11,7 +11,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ly_add_target(
-    NAME SliceFavorites.Editor.Static STATIC
+    NAME ${gem_name}.Editor.Static STATIC
     NAMESPACE Gem
     AUTOMOC
     AUTOUIC
@@ -33,7 +33,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME SliceFavorites.Editor GEM_MODULE
+    NAME ${gem_name}.Editor GEM_MODULE
 
     NAMESPACE Gem
     FILES_CMAKE
@@ -46,8 +46,17 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core
-            Gem::SliceFavorites.Editor.Static
+            Gem::${gem_name}.Editor.Static
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/SliceFavoritesModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # the above module is for use in Tools only (no need to load it in builders)
-ly_create_alias(NAME SliceFavorites.Tools    NAMESPACE Gem TARGETS Gem::SliceFavorites.Editor)
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)

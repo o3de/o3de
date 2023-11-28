@@ -39,7 +39,8 @@ namespace PythonAssetBuilder
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(PythonAssetBuilder_0a5fda05323649009444bb7c3ee2b9c4, PythonAssetBuilder::PythonAssetBuilderModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), PythonAssetBuilder::PythonAssetBuilderModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_PythonAssetBuilder_Editor, PythonAssetBuilder::PythonAssetBuilderModule)
+#endif

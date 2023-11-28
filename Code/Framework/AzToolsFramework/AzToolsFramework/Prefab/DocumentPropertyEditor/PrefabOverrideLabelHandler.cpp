@@ -32,7 +32,7 @@ namespace AzToolsFramework::Prefab
     {
         static QIcon s_overrideIcon(QStringLiteral(":/Entity/entity_modified_as_override.svg"));
         static QIcon s_emptyIcon;
-        static QSize s_iconSize(7, 7);
+        static QSize s_iconSize(6, 6);
 
         using PrefabPropertyEditorNodes::PrefabOverrideLabel;
 

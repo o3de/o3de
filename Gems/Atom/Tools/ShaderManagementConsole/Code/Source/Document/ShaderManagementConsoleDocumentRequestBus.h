@@ -36,6 +36,18 @@ namespace ShaderManagementConsole
         //! and         matrixOfValues is [ 0,1, 1,0 ]    # flattened values-subrect matrix
         virtual void AppendSparseVariantSet(AZStd::vector<AZ::Name> optionHeaders, AZStd::vector<AZ::Name> matrixOfValues) = 0;
 
+        //! Mix-expand a batch of variants
+        //! Like the function above the options, the argument and matrix layout work in the same fashion.
+        //! The difference is that instead of append, this will "multiply" the current variants in the document,
+        //! with the given new variants (matrix rows).
+        //! So if you have 10 current variants in your document, and pass a matrix of 4 options x 2 rows,
+        //! The final document will have 20 variants.
+        //! If the matrixOfValues specifies option values that are already set by the current variants,
+        //! the current option values will be overwritten and lost.
+        //! The matrixOfValues is expected to be a full enumeration in the current usage client: the ExpandOptionsFullCOmbinatorials.py script
+        //! Therefore losing previous values is not a problem since a full enumeration will necessarily cover the previous values as well.
+        virtual void MultiplySparseVariantSet(AZStd::vector<AZ::Name> optionHeaders, AZStd::vector<AZ::Name> matrixOfValues) = 0;
+
         //! Uniquifies and recompacts stableID space
         virtual void DefragmentVariantList() = 0;
 

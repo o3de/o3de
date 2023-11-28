@@ -25,7 +25,7 @@ endif()
 
 
 ly_add_target(
-    NAME Atom_RHI_Vulkan.Glad.Static STATIC
+    NAME ${gem_name}.Glad.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_vulkan_glad_files.cmake
@@ -44,7 +44,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_RHI_Vulkan.Reflect STATIC
+    NAME ${gem_name}.Reflect STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_vulkan_reflect_common_files.cmake
@@ -60,12 +60,12 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::Atom_RHI.Reflect
-            Gem::Atom_RHI_Vulkan.Glad.Static
+            Gem::${gem_name}.Glad.Static
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Atom_RHI_Vulkan.Builders.Static STATIC
+        NAME ${gem_name}.Builders.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_vulkan_builders_common_files.cmake
@@ -80,11 +80,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AssetBuilderSDK
                 Gem::Atom_RHI.Reflect
-                Gem::Atom_RHI_Vulkan.Reflect
+                Gem::${gem_name}.Reflect
     )
 
     ly_add_target(
-        NAME Atom_RHI_Vulkan.Builders GEM_MODULE
+        NAME ${gem_name}.Builders GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -100,8 +100,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 Gem::Atom_RHI.Reflect
                 Gem::Atom_RHI.Public
-                Gem::Atom_RHI_Vulkan.Reflect
-                Gem::Atom_RHI_Vulkan.Builders.Static
+                Gem::${gem_name}.Reflect
+                Gem::${gem_name}.Builders.Static
                 Gem::Atom_RHI.Edit
         )
 
@@ -110,7 +110,7 @@ endif()
 if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
 
     # Create alias for Atom RHI Vulkan private Gem Module
-    ly_create_alias(NAME Atom_RHI_Vulkan.Private NAMESPACE Gem)
+    ly_create_alias(NAME ${gem_name}.Private NAMESPACE Gem)
 
     return() # Do not create the rest of the targets
 
@@ -119,7 +119,7 @@ endif()
 
 
 ly_add_target(
-    NAME Atom_RHI_Vulkan.Private.Static STATIC
+    NAME ${gem_name}.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_vulkan_private_common_files.cmake
@@ -140,8 +140,8 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzFramework.NativeUI
             Gem::Atom_RHI.Reflect
-            Gem::Atom_RHI_Vulkan.Reflect
-            Gem::Atom_RHI_Vulkan.Glad.Static
+            Gem::${gem_name}.Reflect
+            Gem::${gem_name}.Glad.Static
             3rdParty::amd_vma
             ${AFTERMATH_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 
@@ -150,7 +150,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_RHI_Vulkan.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_vulkan_private_common_shared_files.cmake
@@ -162,8 +162,16 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Atom_RHI_Vulkan.Private.Static
+            Gem::${gem_name}.Private.Static
             Gem::Atom_RHI.Public
             ${VULKAN_VALIDATION_LAYER}
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/RHI/Module.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})

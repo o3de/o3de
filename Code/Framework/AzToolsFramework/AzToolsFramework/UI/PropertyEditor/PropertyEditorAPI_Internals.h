@@ -371,13 +371,23 @@ namespace AzToolsFramework
             AZ_Assert(serializeContext, "Serialization context not available");
 
             AZ::TypeId typeId;
+            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
+            if (typeIdAttribute != node.MemberEnd())
+            {
+                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+            }
+
             auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
-            if (value.has_value())
+            if (value.has_value() && (!value->IsObject() || !value->ObjectEmpty()))
             {
                 if (auto valueToType = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()); valueToType)
                 {
                     m_proxyValue = *valueToType;
-                    typeId = m_proxyClassData.m_typeId;
+
+                    if (typeId.IsNull())
+                    {
+                        typeId = m_proxyClassData.m_typeId;
+                    }
                 }
                 else if (auto valueToPointerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(value.value()); valueToPointerObject && valueToPointerObject->IsValid())
                 {
@@ -414,17 +424,9 @@ namespace AzToolsFramework
                 }
             }
 
-            if (typeId.IsNull())
+            if (typeId.IsNull() && value.has_value())
             {
-                auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
-                if (typeIdAttribute != node.MemberEnd())
-                {
-                    typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
-                }
-                else if (value.has_value())
-                {
-                    typeId = AZ::Dom::Utils::GetValueTypeId(value.value());
-                }
+                typeId = AZ::Dom::Utils::GetValueTypeId(value.value());
             }
 
             // Set the m_genericClassInfo (if any) for our type in case the property handler needs to access it
