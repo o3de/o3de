@@ -233,6 +233,66 @@ namespace AZ
 
                 return true;
             }
+
+            ProgressDialog::ProgressDialog(const AZStd::string& title, const AZStd::string& label, const int itemCount)
+            {
+                QWidget* activeWindow = nullptr;
+                AzToolsFramework::EditorWindowRequestBus::BroadcastResult(
+                    activeWindow, &AzToolsFramework::EditorWindowRequests::GetAppMainWindow);
+
+                m_progressDialog.reset(new QProgressDialog(activeWindow));
+                m_progressDialog->setWindowFlags(m_progressDialog->windowFlags() & ~Qt::WindowCloseButtonHint);
+                m_progressDialog->setWindowTitle(QObject::tr(title.c_str()));
+                m_progressDialog->setLabelText(QObject::tr(label.c_str()));
+                m_progressDialog->setWindowModality(Qt::WindowModal);
+                m_progressDialog->setMaximumSize(400, 100);
+                m_progressDialog->setMinimum(0);
+                m_progressDialog->setMaximum(itemCount);
+                m_progressDialog->setMinimumDuration(0);
+                m_progressDialog->setAutoClose(false);
+                m_progressDialog->show();
+            }
+
+            AZ::Data::AssetInfo ProgressDialog::ProcessItem(const ExportItem& exportItem)
+            {
+                while (true)
+                {
+                    AZ::Data::AssetInfo assetInfo{};
+                    if (m_progressDialog->wasCanceled())
+                    {
+                        // The user canceled the operation from the progress dialog.
+                        return assetInfo;
+                    }
+
+                    // Attempt to resolve the asset info from the anticipated asset id.
+                    if (const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0); assetIdOutcome)
+                    {
+                        if (const auto& assetId = assetIdOutcome.GetValue(); assetId.IsValid())
+                        {
+                            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                                assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+                            if (assetInfo.m_assetId.IsValid())
+                            {
+                                // The asset is only valid and loadable once it has been added to the asset catalog.
+                                return assetInfo;
+                            }
+                        }
+                    }
+
+                    // Process other application events while waiting in this loop
+                    QApplication::processEvents();
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
+                }
+
+                return {};
+            }
+
+            void ProgressDialog::CompleteItem()
+            {
+                m_progressDialog->setValue(m_progressDialog->value() + 1);
+                QApplication::processEvents();
+            }
+
         } // namespace EditorMaterialComponentExporter
     } // namespace Render
 } // namespace AZ
