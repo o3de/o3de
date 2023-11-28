@@ -39,19 +39,33 @@ namespace AZ
         {
             AZStd::string GetExportPathByAssetId(const AZ::Data::AssetId& assetId, const AZStd::string& materialSlotName)
             {
-                AZStd::string exportPath;
                 if (assetId.IsValid())
                 {
+                    // Exported materials will be created in the same folder, using the same base name, as the originating source asset for
+                    // the material being converted. We need to get the source asset path from the asset ID and then remove the extension and
+                    // any invalid characters.
+                    AZ::IO::FixedMaxPath path{ AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId) };
+                    AZStd::string filename = path.Stem().Native();
 
-                    exportPath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
-                    AZ::StringFunc::Path::StripExtension(exportPath);
-                    exportPath += "_";
-                    exportPath += AZ::RPI::AssetUtils::SanitizeFileName(materialSlotName);
-                    exportPath += ".";
-                    exportPath += AZ::RPI::MaterialSourceData::Extension;
-                    AZ::StringFunc::Path::Normalize(exportPath);
+                    // The material slot name is appended to the base file name. Material slot names should be guaranteed to be unique. This
+                    // will ensure that the generated files are also unique and that it is easy to identify the corresponding material.
+                    filename += "_";
+                    filename += materialSlotName;
+
+                    // Explicitly replacing dots in file names with underscores because not all builders or code is set up to handle extra
+                    // dots and file names when determining extensions. The sanitized function does not currently remove dots from file
+                    // names.
+                    AZ::StringFunc::Replace(filename, ".", "_");
+                    filename = AZ::RPI::AssetUtils::SanitizeFileName(filename);
+
+                    //  The originating source file could have been an fbx or other model format. Therefore, the extension must be replaced
+                    //  with the material source data extension.
+                    filename += ".";
+                    filename += AZ::RPI::MaterialSourceData::Extension;
+                    path.ReplaceFilename(AZ::IO::PathView{ filename });
+                    return path.LexicallyNormal().String();
                 }
-                return exportPath;
+                return {};
             }
 
             bool OpenExportDialog(ExportItemsContainer& exportItems)
