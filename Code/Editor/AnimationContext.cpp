@@ -572,14 +572,6 @@ void CAnimationContext::Update()
         }
     }
 
-    if (m_bAutoRecording)
-    {
-        // This is auto recording mode.
-        // Send sync with physics event to all selected entities.
-        // TODO - Replace?
-        // GetIEditor()->GetSelection()->SendEvent(EVENT_PHYSICS_GETSTATE);
-    }
-
     if (fabs(m_lastTimeChangedNotificationTime - m_currTime) > 0.001f)
     {
         NotifyTimeChangedListenersUsingCurrTime();
