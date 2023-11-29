@@ -165,7 +165,7 @@ namespace AZ::RHI
         //!                   it will defer to the platform for parallel dispatch support.
         void Execute(JobPolicy jobPolicy);
 
-        //! Returns the timing statistics for the previous frame.
+        //! Returns a map of timing statistics for the previous frame, index with the device index.
         AZStd::unordered_map<int, TransientAttachmentStatistics> GetTransientAttachmentStatistics() const;
 
         //! Returns current CPU frame to frame time in milliseconds.
