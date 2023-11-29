@@ -17,31 +17,47 @@ SETLOCAL
 SET CMD_DIR=%~dp0
 SET CMD_DIR=%CMD_DIR:~0,-1%
 
-SET PYTHONHOME=%CMD_DIR%\runtime\python-3.10.5-rev1-windows\python
+REM Calculate the path to the expected python venv for the current engine located at %CMD_DIR%\.. 
+REM The logic in LYPython will generate a unique ID based on the absolute path of the current engine
+REM so that the venv will not collide with any other versions of O3DE installed on the current machine
 
-IF EXIST "%PYTHONHOME%" GOTO PYTHONHOME_EXISTS
+REM Run the custom cmake command script to calculate the ID based on %CMD_DIR%\.. 
 
-ECHO Python not found in %CMD_DIR%
-ECHO Try running %CMD_DIR%\get_python.bat first.
-exit /B 1
+SET CALC_PATH=%CMD_DIR%\..\cmake\CalculateEnginePathId.cmake
+FOR /F %%g IN ('cmake -P %CALC_PATH% %CMD_DIR%\..') DO SET ENGINE_ID=%%g
+IF NOT "%ENGINE_ID%" == "" GOTO ENGINE_ID_CALCULATED
+echo
+echo Unable to calculate engine ID
+exit /b 1
 
-:PYTHONHOME_EXISTS
+:ENGINE_ID_CALCULATED
 
-SET PYTHON=%PYTHONHOME%\python.exe
-SET PYTHON_ARGS=%*
-
+REM Set the expected location of the python venv for this engine and the locations of the critical scripts/executables 
+REM needed to run python within the venv properly
+SET PYTHON_VENV=%USERPROFILE%\.o3de\3rdParty\venv\%ENGINE_ID%
+SET PYTHON_VENV_ACTIVATE=%PYTHON_VENV%\Scripts\activate.bat
+SET PYTHON_VENV_DEACTIVATE=%PYTHON_VENV%\Scripts\deactivate.bat
 IF [%1] EQU [debug] (
-    SET PYTHON=%PYTHONHOME%\python_d.exe
-    SET PYTHON_ARGS=%PYTHON_ARGS:~6%
+    SET PYTHON_VENV_PYTHON=%PYTHON_VENV%\Scripts\python_d.exe
+    SET PYTHON_ARGS=%*:~6%
+) ELSE (
+    SET PYTHON_VENV_PYTHON=%PYTHON_VENV%\Scripts\python.exe
+    SET PYTHON_ARGS=%*
 )
+IF EXIST %PYTHON_VENV_PYTHON% GOTO PYTHON_VENV_EXISTS
+ECHO Python has not been setup completely for O3DE. 
+ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
+exit /b 1
 
-IF EXIST "%PYTHON%" GOTO PYTHON_EXISTS
 
-ECHO Could not find python executable at %PYTHON%
-exit /B 1
+:PYTHON_VENV_EXISTS
+REM Execute the python call from the arguments within the python venv environment
 
-:PYTHON_EXISTS
+call %PYTHON_VENV_ACTIVATE%
 
-SET PYTHONNOUSERSITE=1
-"%PYTHON%" %PYTHON_ARGS%
-exit /B %ERRORLEVEL%
+call "%PYTHON_VENV_PYTHON%" %PYTHON_ARGS%
+SET PYTHON_RESULT=%ERRORLEVEL%
+
+call %PYTHON_VENV_DEACTIVATE%
+
+exit /B %PYTHON_RESULT%

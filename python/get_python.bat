@@ -46,9 +46,14 @@ IF NOT !ERRORLEVEL!==0 (
     )
 )
 
+REM If the %LY_3RDPARTY_PATH% is not set, then default it to %USERPROFILE%/.o3de/3rdParty
+IF "" == "%LY_3RDPARTY_PATH%" (
+    SET LY_3RDPARTY_PATH=%USERPROFILE%\.o3de\3rdParty
+)
+
 REM output the version number for forensic logging
 cmake --version
-cmake -DPAL_PLATFORM_NAME:string=Windows -D "LY_3RDPARTY_PATH:string=%CMD_DIR%" -P "%CMD_DIR%\get_python.cmake"
+cmake -DPAL_PLATFORM_NAME:string=Windows -D "LY_3RDPARTY_PATH:string=%LY_3RDPARTY_PATH%" -D "LY_ROOT_FOLDER=%CMD_DIR%\.." -P "%CMD_DIR%\get_python.cmake"
 
 if ERRORLEVEL 1 (
     ECHO ERROR: Unable to fetch python using cmake.  
