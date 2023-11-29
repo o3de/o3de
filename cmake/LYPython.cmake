@@ -251,7 +251,6 @@ endfunction()
 # We need to download the associated Python package early and install the venv 
 ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
 ly_download_associated_package(Python)
-find_package(Python ${LY_PYTHON_VERSION} REQUIRED)
 ly_setup_python_venv()
 
 if (NOT CMAKE_SCRIPT_MODE_FILE)
@@ -260,9 +259,9 @@ if (NOT CMAKE_SCRIPT_MODE_FILE)
     # note - if you want to use a normal python via FindPython instead of the LY package above,
     # you may have to declare the below variables after find_package, as the project scripts are 
     # looking for the below variables specifically.
+    find_package(Python ${LY_PYTHON_VERSION} REQUIRED)
 
     # verify the required variables are present:
-
     if (NOT EXISTS "${PYTHON_VENV_PATH}/" OR NOT Python_EXECUTABLE OR NOT Python_HOME OR NOT Python_PATHS)
         message(SEND_ERROR "Python installation not valid expected to find all of the following variables set:")
         message(STATUS "    Python_EXECUTABLE:  ${Python_EXECUTABLE}")

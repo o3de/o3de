@@ -16,28 +16,57 @@ while [[ -h "$SOURCE" ]]; do
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-if [[ "$OSTYPE" == *"darwin"* ]]; then
-    PYTHON=$DIR/runtime/python-3.10.5-rev2-darwin/Python.framework/Versions/3.10/bin/python3
-elif [[ "$OSTYPE" == "msys" ]]; then
-    PYTHON=$DIR/runtime/python-3.10.5-rev1-windows/python/python.exe
+
+# Locate and make sure cmake is in the patch
+if [[ "$OSTYPE" = *"darwin"* ]];
+then
+    PAL=Mac
+    CMAKE_FOLDER_RELATIVE_TO_ROOT=CMake.app/Contents/bin
 else
-    LINUX_HOST_ARCHITECTURE=$( uname -m )
-    if [[ "$LINUX_HOST_ARCHITECTURE" == "aarch64" ]]; then
-        PYTHON=$DIR/runtime/python-3.10.5-rev4-linux-aarch64/python/bin/python
-    elif [[ "$LINUX_HOST_ARCHITECTURE" == "x86_64" ]]; then
-        PYTHON=$DIR/runtime/python-3.10.5-rev4-linux/python/bin/python
-    else
-        echo "Linux host architecture ${LINUX_HOST_ARCHITECTURE} not supported."
+    PAL=Linux
+    CMAKE_FOLDER_RELATIVE_TO_ROOT=bin
+fi
+
+if ! [ -x "$(command -v cmake)" ]; then
+    if [ -z ${LY_CMAKE_PATH} ]; then
+        echo "ERROR: Could not find cmake on the PATH and LY_CMAKE_PATH is not defined, cannot continue."
+        echo "Please add cmake to your PATH, or define LY_CMAKE_PATH"
+        exit 1
+    fi
+
+    export PATH=$LY_CMAKE_PATH:$PATH
+    if ! [ -x "$(command -v cmake)" ]; then
+        echo "ERROR: Could not find cmake on the PATH or at the known location: $LY_CMAKE_PATH"
+        echo "Please add cmake to the environment PATH or place it at the above known location."
         exit 1
     fi
 fi
 
-if [[ -e "$PYTHON" ]];
+CALC_PATH=$DIR/../cmake/CalculateEnginePathId.cmake
+LY_ROOT_FOLDER=$DIR/..
+ENGINE_ID=$(cmake -P $CALC_PATH $LY_ROOT_FOLDER)
+
+if [ "$LY_3RDPARTY_PATH" == "" ]
 then
-    PYTHONNOUSERSITE=1 "$PYTHON" "$@"
-    exit $?
+    LY_3RDPARTY_PATH=$HOME/.o3de/3rdParty
 fi
 
-echo "Python not found in $DIR"
-echo "Try running $DIR/get_python.sh first."
-exit 1
+# Set the expected location of the python venv for this engine and the locations of the critical scripts/executables 
+# needed to run python within the venv properly
+PYTHON_VENV=$LY_3RDPARTY_PATH/venv/$ENGINE_ID
+PYTHON_VENV_ACTIVATE=$PYTHON_VENV/bin/activate
+PYTHON_VENV_PYTHON=$PYTHON_VENV/bin/python
+if [ ! -f $PYTHON_VENV_PYTHON ]
+then
+    echo "Python has not been downloaded/configured yet."    
+    echo "Try running $DIR/get_python.sh first."
+    exit /b 1
+fi
+
+PYTHONPATH=""
+
+echo source $PYTHON_VENV_ACTIVATE
+source $PYTHON_VENV_ACTIVATE
+
+PYTHONNOUSERSITE=1 "$PYTHON_VENV_PYTHON" "$@"
+exit $?
