@@ -154,12 +154,20 @@ namespace AZ::RHI
         IterateObjects<SingleDeviceTransientAttachmentPool>(
             [&image, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
             {
-                image->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateImage(descriptor);
-                if (image->GetDeviceImage(deviceIndex))
+                auto deviceImage{ deviceTransientAttachmentPool->ActivateImage(descriptor) };
+                if (deviceImage)
                 {
-                    image->SetDescriptor(image->GetDeviceImage(deviceIndex)->GetDescriptor());
+                    image->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateImage(descriptor);
+                    image->SetDescriptor(deviceImage->GetDescriptor());
                 }
             });
+
+        if (image->m_deviceObjects.empty())
+        {
+            // Remove the invalid image from the cache
+            RemoveFromCache(descriptor.m_attachmentId);
+            return nullptr;
+        }
 
         return image;
     }
@@ -198,12 +206,20 @@ namespace AZ::RHI
         IterateObjects<SingleDeviceTransientAttachmentPool>(
             [&buffer, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
             {
-                buffer->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateBuffer(descriptor);
-                if (buffer->GetDeviceBuffer(deviceIndex))
+                auto deviceBuffer{ deviceTransientAttachmentPool->ActivateBuffer(descriptor) };
+                if (deviceBuffer)
                 {
-                    buffer->SetDescriptor(buffer->GetDeviceBuffer(deviceIndex)->GetDescriptor());
+                    buffer->m_deviceObjects[deviceIndex] = deviceBuffer;
+                    buffer->SetDescriptor(deviceBuffer->GetDescriptor());
                 }
             });
+
+        if (buffer->m_deviceObjects.empty())
+        {
+            // Remove the invalid buffer from the cache
+            RemoveFromCache(descriptor.m_attachmentId);
+            return nullptr;
+        }
 
         return buffer;
     }
