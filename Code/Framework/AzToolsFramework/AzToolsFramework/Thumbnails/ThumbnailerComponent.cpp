@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -25,14 +26,8 @@ namespace AzToolsFramework
         ThumbnailerComponent::ThumbnailerComponent()
             : m_missingThumbnail(new MissingThumbnail())
             , m_loadingThumbnail(new LoadingThumbnail())
-            , m_currentJobsCount(0)
-            , m_maxThumbnailJobs(AZStd::max(8, static_cast<int>(AZStd::thread::hardware_concurrency())))
+            , m_maxThumbnailJobs(4)
         {
-            // Increase the maximum number of QThreads to support the number of
-            // concurrent jobs needed here.
-            int currentMaxThreadCount = QThreadPool::globalInstance()->maxThreadCount();
-            int newMaxThreadCount = AZStd::max<int>(currentMaxThreadCount, m_maxThumbnailJobs + 1);
-            QThreadPool::globalInstance()->setMaxThreadCount(newMaxThreadCount);
         }
 
         ThumbnailerComponent::~ThumbnailerComponent()
@@ -41,6 +36,7 @@ namespace AzToolsFramework
             m_providers.clear();
             m_missingThumbnail.reset();
             m_loadingThumbnail.reset();
+            m_thumbnailsBeingLoaded.clear();
         }
 
         void ThumbnailerComponent::Activate()
@@ -116,49 +112,57 @@ namespace AzToolsFramework
                         return thumbnail;
                     }
 
-                    // if we already have the maximum number of concurrent jobs running
-                    // return the loading thumbnail.
-                    if (m_currentJobsCount > m_maxThumbnailJobs)
-                    {
-                        return m_loadingThumbnail;
-                    }
-
-                    // if thumbnail is not loaded, start loading it, meanwhile return loading thumbnail
-                    if (thumbnail->GetState() == Thumbnail::State::Unloaded)
-                    {
-                        ++m_currentJobsCount;
-                        // listen to the loading signal, so the anyone using it will update loading animation
-                        AzQtComponents::StyledBusyLabel* busyLabel = {};
-                        AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
-                        connect(m_loadingThumbnail.data(), &Thumbnail::Updated, key.data(), &ThumbnailKey::ThumbnailUpdatedSignal);
-                        connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, this, &ThumbnailerComponent::RedrawThumbnail);
-
-                        // once the thumbnail is loaded, disconnect it from loading thumbnail
-                        connect(thumbnail.data(), &Thumbnail::Updated, this, [this, key, thumbnail, busyLabel]()
-                            {
-                                disconnect(m_loadingThumbnail.data(), nullptr, key.data(), nullptr);
-                                disconnect(busyLabel, nullptr, this, nullptr);
-                                disconnect(thumbnail.data(), nullptr, nullptr, nullptr);
-
-                                connect(thumbnail.data(), &Thumbnail::Updated, key.data(), &ThumbnailKey::ThumbnailUpdatedSignal);
-                                connect(key.data(), &ThumbnailKey::UpdateThumbnailSignal, thumbnail.data(), &Thumbnail::Update);
-
-                                key->SetReady(true);
-                                m_currentJobsCount--;
-                                Q_EMIT key->ThumbnailUpdatedSignal();
-                            });
-
-                        thumbnail->Load();
-                    }
-
                     if (thumbnail->GetState() == Thumbnail::State::Failed)
                     {
                         return m_missingThumbnail;
                     }
 
+                    // If a thumbnail is loading or the max number of jobs has been reached then return the loading image.
+                    if (thumbnail->GetState() == Thumbnail::State::Loading ||
+                        m_thumbnailsBeingLoaded.contains(thumbnail) ||
+                        m_thumbnailsBeingLoaded.size() >= m_maxThumbnailJobs)
+                    {
+                        return m_loadingThumbnail;
+                    }
+
+                    // If the thumbnail is not loaded then schedule it to be loaded using a job. Signals will be sent once the load is
+                    // complete to update the image.
+                    if (thumbnail->GetState() == Thumbnail::State::Unloaded)
+                    {
+                        // Connect thumbnailer component to the busy label repaint signal to notify the asset browser as it changes. 
+                        AzQtComponents::StyledBusyLabel* busyLabel = {};
+                        AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
+                        connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, this, &ThumbnailerComponent::RepaintThumbnail);
+
+                        // As the loading thumbnail animates it needs to notify anything using this thumbnail to update. 
+                        connect(m_loadingThumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
+
+                        // The ThumbnailUpdated signal should be sent whenever the thumbnail has loaded or failed. In both cases,
+                        // disconnect from all of the signals.
+                        connect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, this, [this, key, thumbnail, busyLabel]()
+                            {
+                                disconnect(m_loadingThumbnail.data(), nullptr, key.data(), nullptr);
+                                disconnect(busyLabel, nullptr, this, nullptr);
+                                disconnect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
+
+                                connect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
+                                connect(key.data(), &ThumbnailKey::ThumbnailUpdateRequested, thumbnail.data(), &Thumbnail::Update);
+                                key->SetReady(true);
+                                m_thumbnailsBeingLoaded.erase(thumbnail);
+                            });
+
+                        // Add the thumbnail to the set of thumbnails in progress then queue the job to load it. The job will send the
+                        // ThumbnailUpdated signal from the main thread when complete.
+                        m_thumbnailsBeingLoaded.insert(thumbnail);
+                        auto job = AZ::CreateJobFunction([thumbnail]() { thumbnail->Load(); }, true);
+                        job->Start();
+                        
+                    }
+
                     return m_loadingThumbnail;
                 }
             }
+
             return m_missingThumbnail;
         }
 
@@ -175,7 +179,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        void ThumbnailerComponent::RedrawThumbnail()
+        void ThumbnailerComponent::RepaintThumbnail()
         {
             AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
         }
