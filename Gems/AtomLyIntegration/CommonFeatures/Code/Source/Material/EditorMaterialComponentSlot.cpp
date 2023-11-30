@@ -167,7 +167,17 @@ namespace AZ
 
         AZStd::vector<char> EditorMaterialComponentSlot::GetPreviewPixmapData() const
         {
+            // Don't display a custom image if there is no material asset assigned to this slot.
             if (!GetActiveAssetId().IsValid())
+            {
+                return {};
+            }
+
+            // Don't display a custom image if no properties have been overridden. It will fall back to the default thumbnail.
+            bool hasPropertiesOverridden = false;
+            MaterialComponentRequestBus::EventResult(
+                hasPropertiesOverridden, m_entityId, &MaterialComponentRequestBus::Events::HasPropertiesOverridden, m_id);
+            if (!hasPropertiesOverridden)
             {
                 return {};
             }
@@ -462,6 +472,15 @@ namespace AZ
         void EditorMaterialComponentSlot::UpdatePreview() const
         {
             m_updatePreview = false;
+
+            bool hasPropertiesOverridden = false;
+            MaterialComponentRequestBus::EventResult(
+                hasPropertiesOverridden, m_entityId, &MaterialComponentRequestBus::Events::HasPropertiesOverridden, m_id);
+            if (!hasPropertiesOverridden)
+            {
+                return;
+            }
+
             EditorMaterialSystemComponentRequestBus::Broadcast(
                 &EditorMaterialSystemComponentRequestBus::Events::RenderMaterialPreview, m_entityId, m_id);
         }
