@@ -13,8 +13,8 @@
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/MultiDeviceIndexBufferView.h>
 #include <Atom/RHI/MultiDeviceStreamBufferView.h>
-#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/MultiDeviceRayTracingBufferPools.h>
 #include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/SingleDeviceImageView.h>
 #include <AzCore/Math/Color.h>
@@ -116,7 +116,7 @@ namespace AZ
                 AZ::Color m_irradianceColor = AZ::Color(1.0f);
 
                 // ray tracing Blas
-                RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_blas;
+                RHI::Ptr<RHI::MultiDeviceRayTracingBlas> m_blas;
 
                 // material data
                 AZ::Color m_baseColor = AZ::Color(0.0f);
@@ -214,8 +214,8 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> GetRayTracingMaterialSrg() const { return m_rayTracingMaterialSrg; }
 
             //! Retrieves the RayTracingTlas
-            const RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& GetTlas() const { return m_tlas; }
-            RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& GetTlas() { return m_tlas; }
+            const RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& GetTlas() const { return m_tlas; }
+            RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& GetTlas() { return m_tlas; }
 
             //! Retrieves the revision number of the ray tracing data.
             //! This is used to determine if the RayTracingShaderTable needs to be rebuilt.
@@ -227,7 +227,7 @@ namespace AZ
             }
 
             //! Retrieves the buffer pools used for ray tracing operations.
-            RHI::SingleDeviceRayTracingBufferPools& GetBufferPools() { return *m_bufferPools; }
+            RHI::MultiDeviceRayTracingBufferPools& GetBufferPools() { return *m_bufferPools; }
 
             //! Retrieves the total number of ray tracing meshes.
             uint32_t GetSubMeshCount() const { return m_subMeshCount; }
@@ -246,7 +246,7 @@ namespace AZ
 
             struct SubMeshBlasInstance
             {
-                RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_blas;
+                RHI::Ptr<RHI::MultiDeviceRayTracingBlas> m_blas;
             };
 
             struct MeshBlasInstance
@@ -284,10 +284,10 @@ namespace AZ
             SubMeshVector m_subMeshes;
 
             // buffer pools used in ray tracing operations
-            RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> m_bufferPools;
+            RHI::Ptr<RHI::MultiDeviceRayTracingBufferPools> m_bufferPools;
 
             // ray tracing acceleration structure (TLAS)
-            RHI::Ptr<RHI::SingleDeviceRayTracingTlas> m_tlas;
+            RHI::Ptr<RHI::MultiDeviceRayTracingTlas> m_tlas;
 
             // RayTracingScene and RayTracingMaterial asset and Srgs
             Data::Asset<RPI::ShaderAsset> m_rayTracingSrgAsset;
