@@ -147,6 +147,13 @@ namespace MaterialCanvas
         // Instantiate the dynamic node manager to register all dynamic node configurations and data types used in this tool
         m_dynamicNodeManager.reset(aznew AtomToolsFramework::DynamicNodeManager(m_toolId));
 
+        // Creating default sampler state with settings common to pre-existing material types.
+        AZ::RHI::SamplerState defaultSamplerState{};
+        defaultSamplerState.m_filterMin = AZ::RHI::FilterMode::Linear;
+        defaultSamplerState.m_filterMag = AZ::RHI::FilterMode::Linear;
+        defaultSamplerState.m_filterMip = AZ::RHI::FilterMode::Linear;
+        defaultSamplerState.m_anisotropyMax = 16;
+
         // Register all data types required by Material Canvas nodes with the dynamic node manager
         m_dynamicNodeManager->RegisterDataTypes({
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("bool"), bool{}, "bool"),
@@ -163,7 +170,7 @@ namespace MaterialCanvas
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
             AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("image"), AZ::Data::Asset<AZ::RPI::StreamingImageAsset>{}, "image"),
-            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("sampler"), AZ::RHI::SamplerState{}, "sampler"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("sampler"), defaultSamplerState, "sampler"),
         });
 
         // Search the project and gems for dynamic node configurations and register them with the manager
