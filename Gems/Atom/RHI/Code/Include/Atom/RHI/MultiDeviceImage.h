@@ -36,6 +36,7 @@ namespace AZ::RHI
         friend class MultiDeviceImagePool;
         friend class MultiDeviceTransientAttachmentPool;
         friend class MultiDeviceStreamingImagePool;
+        friend class MultiDeviceSwapChain;
 
         using Base = MultiDeviceResource;
 
