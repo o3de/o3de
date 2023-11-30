@@ -45,6 +45,7 @@ partial ShaderResourceGroup ViewSrg
         bool m_affectsGI;
         uint m_lightingChannelMask;
         float2 m_padding;
+        [[pad_to(16)]]  // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
     StructuredBuffer<SimplePointLight> m_simplePointLights;
@@ -64,7 +65,7 @@ partial ShaderResourceGroup ViewSrg
         float m_affectsGIFactor;
         bool m_affectsGI;
         uint m_lightingChannelMask;
-        float1 m_padding;
+        [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;

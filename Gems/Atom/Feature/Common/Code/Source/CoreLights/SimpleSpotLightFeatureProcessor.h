@@ -40,7 +40,6 @@ namespace AZ
             float m_affectsGIFactor = 1.0f;
             bool m_affectsGI = true;
             uint32_t m_lightingChannelMask = 1;
-            float m_padding0 = 0.0f;
         };
 
         class SimpleSpotLightFeatureProcessor final
