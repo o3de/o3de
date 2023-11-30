@@ -361,7 +361,7 @@ namespace AZ
 
             bool success = true;
 
-                   // Searching for the first UV in the mesh, so it can be used to paired with tangent/bitangent stream
+            // Searching for the first UV in the mesh, so it can be used to paired with tangent/bitangent stream
             auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
             auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);
             if (uvStreamTangentBitmaskOut)
