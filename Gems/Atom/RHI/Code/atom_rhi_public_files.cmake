@@ -223,6 +223,8 @@ set(FILES
     Source/RHI/MemoryStatisticsBuilder.cpp
     Include/Atom/RHI/SingleDeviceSwapChain.h
     Source/RHI/SingleDeviceSwapChain.cpp
+    Include/Atom/RHI/MultiDeviceSwapChain.h
+    Source/RHI/MultiDeviceSwapChain.cpp
     Include/Atom/RHI/RHISystem.h
     Include/Atom/RHI/RHISystemInterface.h
     Source/RHI/RHISystem.cpp
