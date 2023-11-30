@@ -11,5 +11,10 @@
 real3 Srgb_To_LinearSrgb(real3 color)
 {
     // Copied from CryFx's ToAccurateLinear()
+#ifdef PRE_HLSL_2021
+    // See /o3de/Gems/Atom/Feature/Common/Assets/ShaderLib/PRE_HLSL_2021.md for details.
+    return (color.xyz < 0.04045) ? color.xyz / 12.92h : pow((color.xyz + real3(0.055, 0.055, 0.055)) / real3(1.055, 1.055, 1.055), 2.4);
+#else
     return select((color.xyz < 0.04045), color.xyz / 12.92h, pow((color.xyz + real3(0.055, 0.055, 0.055)) / real3(1.055, 1.055, 1.055), 2.4));
+#endif
 }
