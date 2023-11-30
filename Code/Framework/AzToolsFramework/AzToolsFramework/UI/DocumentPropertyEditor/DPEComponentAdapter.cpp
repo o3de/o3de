@@ -131,12 +131,21 @@ namespace AZ::DocumentPropertyEditor
             return;
         }
 
-        if (m_queuedRefreshLevel == AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None)
+        switch (m_queuedRefreshLevel)
         {
-            return;
+        case AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None:
+            break;
+        case AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values:
+            NotifyResetDocument(DocumentResetType::SoftReset);
+            break;
+        case AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues:
+        case AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree:
+        case AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree_NewContent:
+            NotifyResetDocument(DocumentResetType::HardReset);
+            break;
         }
+
         m_queuedRefreshLevel = AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
-        NotifyResetDocument();
     }
 
     Dom::Value ComponentAdapter::HandleMessage(const AdapterMessage& message)
