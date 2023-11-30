@@ -51,15 +51,15 @@ namespace AZ
             m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
 
             // initialize the ray tracing buffer pools
-            m_bufferPools = RHI::SingleDeviceRayTracingBufferPools::CreateRHIRayTracingBufferPools();
-            m_bufferPools->Init(device);
+            m_bufferPools = aznew RHI::MultiDeviceRayTracingBufferPools;
+            m_bufferPools->Init(RHI::MultiDevice::AllDevices);
 
             // create TLAS attachmentId
             AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
             m_tlasAttachmentId = RHI::AttachmentId(AZStd::string::format("RayTracingTlasAttachmentId_%s", uuidString.c_str()));
 
             // create the TLAS object
-            m_tlas = AZ::RHI::SingleDeviceRayTracingTlas::CreateRHIRayTracingTlas();
+            m_tlas = aznew RHI::MultiDeviceRayTracingTlas;
 
             // load the RayTracingSrg asset asset
             m_rayTracingSrgAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>("shaderlib/atom/features/rayTracing/raytracingsrgs.azshader");
@@ -318,12 +318,12 @@ namespace AZ
             {
                 SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
 
-                RHI::SingleDeviceRayTracingBlasDescriptor blasDescriptor;
+                RHI::MultiDeviceRayTracingBlasDescriptor blasDescriptor;
                 blasDescriptor.Build()
                     ->Geometry()
                         ->VertexFormat(subMesh.m_positionFormat)
-                        ->VertexBuffer(subMesh.m_positionVertexBufferView.GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex))
-                        ->IndexBuffer(subMesh.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex))
+                        ->VertexBuffer(subMesh.m_positionVertexBufferView)
+                        ->IndexBuffer(subMesh.m_indexBufferView)
                         ->BuildFlags(buildFlags)
                 ;
 
@@ -341,11 +341,11 @@ namespace AZ
                     AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
 
                     // create the BLAS object and store it in the BLAS list
-                    RHI::Ptr<RHI::SingleDeviceRayTracingBlas> rayTracingBlas = AZ::RHI::SingleDeviceRayTracingBlas::CreateRHIRayTracingBlas();
+                    RHI::Ptr<RHI::MultiDeviceRayTracingBlas> rayTracingBlas = aznew RHI::MultiDeviceRayTracingBlas;
                     itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
 
                     // create the buffers from the BLAS descriptor
-                    rayTracingBlas->CreateBuffers(*device, &blasDescriptor, *m_bufferPools);
+                    rayTracingBlas->CreateBuffers(RHI::MultiDevice::AllDevices, &blasDescriptor, *m_bufferPools);
 
                     // store the BLAS in the mesh
                     subMesh.m_blas = rayTracingBlas;
@@ -789,7 +789,7 @@ namespace AZ
             RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_scene"));
-            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_tlas->GetTlasBuffer()->GetBufferView(bufferViewDescriptor).get());
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_tlas->GetTlasBuffer()->BuildBufferView(bufferViewDescriptor)->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
 
             // directional lights
             const auto directionalLightFP = GetParentScene()->GetFeatureProcessor<DirectionalLightFeatureProcessor>();

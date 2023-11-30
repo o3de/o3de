@@ -149,9 +149,9 @@ namespace AZ
             m_requiresRayTracingSceneSrg = (rayTracingSceneSrgLayout != nullptr);
 
             // build the ray tracing pipeline state descriptor
-            RHI::SingleDeviceRayTracingPipelineStateDescriptor descriptor;
+            RHI::MultiDeviceRayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
-                ->PipelineState(m_globalPipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get())
+                ->PipelineState(m_globalPipelineState.get())
                 ->MaxPayloadSize(m_passData->m_maxPayloadSize)
                 ->MaxAttributeSize(m_passData->m_maxAttributeSize)
                 ->MaxRecursionDepth(m_passData->m_maxRecursionDepth);
@@ -197,8 +197,8 @@ namespace AZ
             }
 
             // create the ray tracing pipeline state object
-            m_rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
-            m_rayTracingPipelineState->Init(*device.get(), &descriptor);
+            m_rayTracingPipelineState = aznew RHI::MultiDeviceRayTracingPipelineState;
+            m_rayTracingPipelineState->Init(RHI::MultiDevice::AllDevices, descriptor);
 
             // make sure the shader table rebuilds if we're hotreloading
             m_rayTracingRevision = 0;
@@ -265,10 +265,10 @@ namespace AZ
             if (!m_rayTracingShaderTable)
             {
                 RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-                RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
+                RHI::MultiDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
-                m_rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();
-                m_rayTracingShaderTable->Init(*device.get(), rayTracingBufferPools);
+                m_rayTracingShaderTable = aznew RHI::MultiDeviceRayTracingShaderTable;
+                m_rayTracingShaderTable->Init(RHI::MultiDevice::AllDevices, rayTracingBufferPools);
             }
 
             RPI::RenderPass::FrameBeginInternal(params);
@@ -285,13 +285,13 @@ namespace AZ
 
             // TLAS
             {
-                const RHI::Ptr<RHI::SingleDeviceBuffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
+                const RHI::Ptr<RHI::MultiDeviceBuffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
                 if (rayTracingTlasBuffer)
                 {
                     AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
                     if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId) == false)
                     {
-                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
+                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
                         AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
                     }
 
@@ -344,12 +344,12 @@ namespace AZ
                 // scene changed, need to rebuild the shader table
                 m_rayTracingRevision = rayTracingRevision;
 
-                AZStd::shared_ptr<RHI::SingleDeviceRayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::SingleDeviceRayTracingShaderTableDescriptor>();
+                AZStd::shared_ptr<RHI::MultiDeviceRayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::MultiDeviceRayTracingShaderTableDescriptor>();
 
                 if (rayTracingFeatureProcessor->HasGeometry())
                 {
                     // build the ray tracing shader table descriptor
-                    RHI::SingleDeviceRayTracingShaderTableDescriptor* descriptorBuild = descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
+                    RHI::MultiDeviceRayTracingShaderTableDescriptor* descriptorBuild = descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
                         ->RayGenerationRecord(AZ::Name(m_passData->m_rayGenerationShaderName.c_str()))
                         ->MissRecord(AZ::Name(m_passData->m_missShaderName.c_str()));
 
@@ -445,8 +445,9 @@ namespace AZ
 
             dispatchRaysItem.m_shaderResourceGroupCount = aznumeric_cast<uint32_t>(shaderResourceGroups.size());
             dispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups.data();
-            dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState.get();
-            dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable.get();
+            dispatchRaysItem.m_rayTracingPipelineState =
+                m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+            dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(RHI::MultiDevice::DefaultDeviceIndex).get();
             dispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             // submit the DispatchRays item

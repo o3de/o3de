@@ -19,22 +19,22 @@ namespace AZ::RHI
 {
     class SingleDeviceRayTracingBufferPools;
 
-        //! RayTracingAccelerationStructureBuildFlags
-        //!
-        //! These build flags can be used to signal to the API what kind of Ray Tracing Acceleration Structure (RTAS) build it should prefer.
-        //! For example, if skinned meshes are present in the scene, it might be best to enable a mode where the RTAS is
-        //! periodically updated and not completely rebuilt every frame. These options can be set on both BLAS objects.
-        //!
-        //! FAST_TRACE: Sets a preference to build the RTAS to have faster raytracing capabilities. Can incur longer build times.
-        //! FAST_BUILD: Sets a preference for faster build times of the Acceleration Structure over faster raytracing.
-        //! ENABLE_UPDATE: Enables incremental updating of a BLAS object. Needs to be set at BLAS creation time.
-        enum class RayTracingAccelerationStructureBuildFlags : uint32_t
-        {
-            FAST_TRACE = AZ_BIT(1),
-            FAST_BUILD = AZ_BIT(2),
-            ENABLE_UPDATE = AZ_BIT(3),
-        };
-        AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::RayTracingAccelerationStructureBuildFlags);
+    //! RayTracingAccelerationStructureBuildFlags
+    //!
+    //! These build flags can be used to signal to the API what kind of Ray Tracing Acceleration Structure (RTAS) build it should prefer.
+    //! For example, if skinned meshes are present in the scene, it might be best to enable a mode where the RTAS is
+    //! periodically updated and not completely rebuilt every frame. These options can be set on both BLAS objects.
+    //!
+    //! FAST_TRACE: Sets a preference to build the RTAS to have faster raytracing capabilities. Can incur longer build times.
+    //! FAST_BUILD: Sets a preference for faster build times of the Acceleration Structure over faster raytracing.
+    //! ENABLE_UPDATE: Enables incremental updating of a BLAS object. Needs to be set at BLAS creation time.
+    enum class RayTracingAccelerationStructureBuildFlags : uint32_t
+    {
+        FAST_TRACE = AZ_BIT(1),
+        FAST_BUILD = AZ_BIT(2),
+        ENABLE_UPDATE = AZ_BIT(3),
+    };
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::RayTracingAccelerationStructureBuildFlags);
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Bottom Level Acceleration Structure (BLAS)

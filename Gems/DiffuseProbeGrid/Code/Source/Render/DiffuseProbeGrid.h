@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
-#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -309,8 +309,8 @@ namespace AZ
             static constexpr int32_t DefaultNumRelocationIterations = 100;
 
             // visualization TLAS
-            const RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& GetVisualizationTlas() const { return m_visualizationTlas; }
-            RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& GetVisualizationTlas() { return m_visualizationTlas; }
+            const RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& GetVisualizationTlas() const { return m_visualizationTlas; }
+            RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& GetVisualizationTlas() { return m_visualizationTlas; }
 
             bool GetVisualizationTlasUpdateRequired() const;
             void ResetVisualizationTlasUpdateRequired() { m_visualizationTlasUpdateRequired = false; }
@@ -454,7 +454,7 @@ namespace AZ
             bool m_visualizationEnabled = false;
             bool m_visualizationShowInactiveProbes = false;
             float m_visualizationSphereRadius = DefaultVisualizationSphereRadius;
-            RHI::Ptr<RHI::SingleDeviceRayTracingTlas> m_visualizationTlas;
+            RHI::Ptr<RHI::MultiDeviceRayTracingTlas> m_visualizationTlas;
             bool m_visualizationTlasUpdateRequired = false;
             RHI::AttachmentId m_visualizationTlasAttachmentId;
             RHI::AttachmentId m_visualizationTlasInstancesAttachmentId;
