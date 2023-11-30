@@ -219,7 +219,6 @@ namespace AZ::RHI
 
         void CompileResourceViews(const FrameGraphAttachmentDatabase& attachmentDatabase);
 
-
         //! Remove the entry related to the provided ReverseLookupObjectType from the appropriate cache as it is probably stale now
         template<typename ReverseLookupObjectType, typename ObjectCacheType>
         void RemoveFromCache(ReverseLookupObjectType objectToRemove,

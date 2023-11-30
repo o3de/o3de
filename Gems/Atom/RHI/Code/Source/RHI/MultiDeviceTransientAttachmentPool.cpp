@@ -157,7 +157,7 @@ namespace AZ::RHI
                 auto deviceImage{ deviceTransientAttachmentPool->ActivateImage(descriptor) };
                 if (deviceImage)
                 {
-                    image->m_deviceObjects[deviceIndex] = deviceTransientAttachmentPool->ActivateImage(descriptor);
+                    image->m_deviceObjects[deviceIndex] = deviceImage;
                     image->SetDescriptor(deviceImage->GetDescriptor());
                 }
             });

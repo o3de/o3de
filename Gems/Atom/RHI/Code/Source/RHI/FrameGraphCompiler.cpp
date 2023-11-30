@@ -650,11 +650,12 @@ namespace AZ::RHI
                     descriptor.m_attachmentId = bufferFrameAttachment->GetId();
                     descriptor.m_bufferDescriptor = bufferFrameAttachment->GetBufferDescriptor();
 
-                    SingleDeviceBuffer* buffer = transientAttachmentPool.ActivateBuffer(descriptor)->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
+                    auto buffer = transientAttachmentPool.ActivateBuffer(descriptor);
                     if (allocateResources && buffer)
                     {
-                        bufferFrameAttachment->SetResource(buffer);
-                        transientBuffers[attachmentIndex] = buffer;
+                        auto deviceBuffer = buffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
+                        bufferFrameAttachment->SetResource(deviceBuffer);
+                        transientBuffers[attachmentIndex] = deviceBuffer;
                     }
                     break;
                 }
@@ -678,11 +679,12 @@ namespace AZ::RHI
                         descriptor.m_optimizedClearValue = &optimizedClearValue;
                     }
 
-                    SingleDeviceImage* image = transientAttachmentPool.ActivateImage(descriptor)->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
+                    auto image = transientAttachmentPool.ActivateImage(descriptor);
                     if (allocateResources && image)
                     {
-                        imageFrameAttachment->SetResource(image);
-                        transientImages[attachmentIndex] = image;
+                        auto deviceImage = image->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
+                        imageFrameAttachment->SetResource(deviceImage);
+                        transientImages[attachmentIndex] = deviceImage;
                     }
                     break;
                 }
