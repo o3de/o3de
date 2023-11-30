@@ -119,8 +119,8 @@ namespace AZ
             if (device->GetFeatures().m_rayTracing)
             {
                 // initialize the buffer pools for the DiffuseProbeGrid visualization
-                m_visualizationBufferPools = RHI::SingleDeviceRayTracingBufferPools::CreateRHIRayTracingBufferPools();
-                m_visualizationBufferPools->Init(device);
+                m_visualizationBufferPools = aznew RHI::MultiDeviceRayTracingBufferPools;
+                m_visualizationBufferPools->Init(RHI::MultiDevice::AllDevices);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
 
@@ -957,11 +957,11 @@ namespace AZ
                 0);
             AZ_Assert(result, "Failed to retrieve DiffuseProbeGrid visualization mesh stream buffer views");
 
-            m_visualizationVB = streamBufferViews[0].GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex);
-            m_visualizationIB = mesh.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex);
+            m_visualizationVB = streamBufferViews[0];
+            m_visualizationIB = mesh.m_indexBufferView;
 
             // create the BLAS object
-            RHI::SingleDeviceRayTracingBlasDescriptor blasDescriptor;
+            RHI::MultiDeviceRayTracingBlasDescriptor blasDescriptor;
             blasDescriptor.Build()
                 ->Geometry()
                 ->VertexFormat(PositionStreamFormat)
@@ -970,10 +970,10 @@ namespace AZ
             ;
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_visualizationBlas = AZ::RHI::SingleDeviceRayTracingBlas::CreateRHIRayTracingBlas();
+            m_visualizationBlas = aznew RHI::MultiDeviceRayTracingBlas;
             if (device->GetFeatures().m_rayTracing)
             {
-                m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);
+                m_visualizationBlas->CreateBuffers(RHI::MultiDevice::AllDevices, &blasDescriptor, *m_visualizationBufferPools);
             }
         }
 

@@ -96,9 +96,9 @@ namespace AZ
                 }
 
                 // import and attach the visualization TLAS buffers
-                RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
-                const RHI::Ptr<RHI::SingleDeviceBuffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
-                const RHI::Ptr<RHI::SingleDeviceBuffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
+                RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
+                const RHI::Ptr<RHI::MultiDeviceBuffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
+                const RHI::Ptr<RHI::MultiDeviceBuffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
                 if (tlasBuffer && tlasInstancesBuffer)
                 {
                     // TLAS buffer
@@ -106,7 +106,7 @@ namespace AZ
                         AZ::RHI::AttachmentId attachmentId = diffuseProbeGrid->GetProbeVisualizationTlasAttachmentId();
                         if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId) == false)
                         {
-                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, tlasBuffer);
+                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, tlasBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
                             AZ_Assert(result == RHI::ResultCode::Success, "Failed to import DiffuseProbeGrid visualization TLAS buffer with error %d", result);
                         }
 
@@ -126,7 +126,7 @@ namespace AZ
                         AZ::RHI::AttachmentId attachmentId = diffuseProbeGrid->GetProbeVisualizationTlasInstancesAttachmentId();
                         if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId) == false)
                         {
-                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, tlasInstancesBuffer);
+                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, tlasInstancesBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
                             AZ_Assert(result == RHI::ResultCode::Success, "Failed to import DiffuseProbeGrid visualization TLAS Instances buffer with error %d", result);
                         }
 
@@ -154,9 +154,11 @@ namespace AZ
             AZStd::vector<const RHI::SingleDeviceRayTracingBlas*> changedBlasList;
             if (m_visualizationBlasBuilt == false)
             {
-                context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas());
+                context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas()->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex));
                 m_visualizationBlasBuilt = true;
-                changedBlasList.push_back(diffuseProbeGridFeatureProcessor->GetVisualizationBlas().get());
+                changedBlasList.push_back(diffuseProbeGridFeatureProcessor->GetVisualizationBlas()
+                                              ->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex)
+                                              .get());
             }
 
             // call BuildTopLevelAccelerationStructure for each DiffuseProbeGrid in this range
@@ -174,7 +176,7 @@ namespace AZ
                 }
 
                 // build the TLAS object
-                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas(), changedBlasList);
+                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas()->GetDeviceRayTracingTlas(RHI::MultiDevice::DefaultDeviceIndex), changedBlasList);
             }
         }
 
