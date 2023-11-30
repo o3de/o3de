@@ -51,7 +51,7 @@ namespace AZ
             m_cullable.SetDebugName(AZ::Name("DiffuseProbeGrid Volume"));
 
             // create the visualization TLAS
-            m_visualizationTlas = AZ::RHI::SingleDeviceRayTracingTlas::CreateRHIRayTracingTlas();
+            m_visualizationTlas = aznew RHI::MultiDeviceRayTracingTlas;
 
             // create the grid data buffer
             m_gridDataBuffer = aznew RHI::MultiDeviceBuffer;
@@ -690,7 +690,7 @@ namespace AZ
 
             uint32_t tlasInstancesBufferByteCount = aznumeric_cast<uint32_t>(m_visualizationTlas->GetTlasInstancesBuffer()->GetDescriptor().m_byteCount);
             RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, tlasInstancesBufferByteCount / RayTracingTlasInstanceElementSize, RayTracingTlasInstanceElementSize);
-            m_visualizationPrepareSrg->SetBufferView(m_renderData->m_visualizationPrepareSrgTlasInstancesNameIndex, m_visualizationTlas->GetTlasInstancesBuffer()->GetBufferView(bufferViewDescriptor).get());
+            m_visualizationPrepareSrg->SetBufferView(m_renderData->m_visualizationPrepareSrgTlasInstancesNameIndex, m_visualizationTlas->GetTlasInstancesBuffer()->BuildBufferView(bufferViewDescriptor)->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
 
             m_visualizationPrepareSrg->SetBufferView(m_renderData->m_visualizationPrepareSrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
             m_visualizationPrepareSrg->SetImageView(m_renderData->m_visualizationPrepareSrgProbeDataNameIndex, GetProbeDataImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeDataImageViewDescriptor).get());
@@ -707,7 +707,7 @@ namespace AZ
 
             uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(m_visualizationTlas->GetTlasBuffer()->GetDescriptor().m_byteCount);
             RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
-            m_visualizationRayTraceSrg->SetBufferView(m_renderData->m_visualizationRayTraceSrgTlasNameIndex, m_visualizationTlas->GetTlasBuffer()->GetBufferView(bufferViewDescriptor).get());
+            m_visualizationRayTraceSrg->SetBufferView(m_renderData->m_visualizationRayTraceSrgTlasNameIndex, m_visualizationTlas->GetTlasBuffer()->BuildBufferView(bufferViewDescriptor)->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
 
             m_visualizationRayTraceSrg->SetBufferView(m_renderData->m_visualizationRayTraceSrgGridDataNameIndex, m_gridDataBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex)->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
             m_visualizationRayTraceSrg->SetImageView(m_renderData->m_visualizationRayTraceSrgProbeIrradianceNameIndex, GetIrradianceImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());

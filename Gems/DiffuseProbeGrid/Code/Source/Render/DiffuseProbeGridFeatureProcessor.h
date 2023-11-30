@@ -9,8 +9,8 @@
 #pragma once
 
 #include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
-#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/MultiDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Render/DiffuseProbeGrid.h>
 
@@ -98,11 +98,11 @@ namespace AZ
             DiffuseProbeGridVector& GetVisibleRealTimeProbeGrids() { return m_visibleRealTimeDiffuseProbeGrids; }
 
             // returns the RayTracingBufferPool used for the DiffuseProbeGrid visualization
-            RHI::SingleDeviceRayTracingBufferPools& GetVisualizationBufferPools() { return *m_visualizationBufferPools; }
+            RHI::MultiDeviceRayTracingBufferPools& GetVisualizationBufferPools() { return *m_visualizationBufferPools; }
 
             // returns the RayTracingBlas for the visualization model
-            const RHI::Ptr<RHI::SingleDeviceRayTracingBlas>& GetVisualizationBlas() const { return m_visualizationBlas; }
-            RHI::Ptr<RHI::SingleDeviceRayTracingBlas>& GetVisualizationBlas() { return m_visualizationBlas; }
+            const RHI::Ptr<RHI::MultiDeviceRayTracingBlas>& GetVisualizationBlas() const { return m_visualizationBlas; }
+            RHI::Ptr<RHI::MultiDeviceRayTracingBlas>& GetVisualizationBlas() { return m_visualizationBlas; }
 
             // adds a worldspace position and direction for an irradiance query, returns the index of the query result in the output buffer
             uint32_t AddIrradianceQuery(const AZ::Vector3& position, const AZ::Vector3& direction);
@@ -204,12 +204,12 @@ namespace AZ
             NotifyTextureAssetVector m_notifyTextureAssets;
 
             // visualization
-            RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> m_visualizationBufferPools;
+            RHI::Ptr<RHI::MultiDeviceRayTracingBufferPools> m_visualizationBufferPools;
             Data::Asset<RPI::ModelAsset> m_visualizationModelAsset;
-            RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_visualizationBlas;
+            RHI::Ptr<RHI::MultiDeviceRayTracingBlas> m_visualizationBlas;
             Data::Instance<RPI::Model> m_visualizationModel;
-            RHI::SingleDeviceStreamBufferView m_visualizationVB;
-            RHI::SingleDeviceIndexBufferView m_visualizationIB;
+            RHI::MultiDeviceStreamBufferView m_visualizationVB;
+            RHI::MultiDeviceIndexBufferView m_visualizationIB;
 
             // irradiance queries
             struct IrradianceQuery

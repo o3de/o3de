@@ -130,13 +130,13 @@ namespace AZ
             {
                 if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision)
                 {
-                    RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
+                    RHI::MultiDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
                     RayTracingFeatureProcessor::SubMeshVector& subMeshes = rayTracingFeatureProcessor->GetSubMeshes();
                     uint32_t rayTracingSubMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
 
                     // create the TLAS descriptor
-                    RHI::SingleDeviceRayTracingTlasDescriptor tlasDescriptor;
-                    RHI::SingleDeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+                    RHI::MultiDeviceRayTracingTlasDescriptor tlasDescriptor;
+                    RHI::MultiDeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                     uint32_t instanceIndex = 0;
                     for (auto& subMesh : subMeshes)
@@ -155,17 +155,17 @@ namespace AZ
                     }
 
                     // create the TLAS buffers based on the descriptor
-                    RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
-                    rayTracingTlas->CreateBuffers(*device, &tlasDescriptor, rayTracingBufferPools);
+                    RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
+                    rayTracingTlas->CreateBuffers(RHI::MultiDevice::AllDevices, &tlasDescriptor, rayTracingBufferPools);
 
                     // import and attach the TLAS buffer
-                    const RHI::Ptr<RHI::SingleDeviceBuffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
+                    const RHI::Ptr<RHI::MultiDeviceBuffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
                     if (rayTracingTlasBuffer && rayTracingSubMeshCount)
                     {
                         AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
                         if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId) == false)
                         {
-                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
+                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
                             AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
                         }
 
@@ -247,7 +247,7 @@ namespace AZ
                         if (blasInstance.second.m_blasBuilt == false)
                         {
                             // Always build the BLAS, if it has not previously been built
-                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
+                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex));
                             continue;
                         }
 
@@ -259,14 +259,17 @@ namespace AZ
                         if (isSkinnedMesh && (assetGuid + submeshIndex + m_frameCount) % SKINNED_BLAS_REBUILD_FRAME_INTERVAL != 0)
                         {
                             // Skinned mesh that simply needs an update
-                            context.GetCommandList()->UpdateBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
+                            context.GetCommandList()->UpdateBottomLevelAccelerationStructure(
+                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex));
                         }
                         else
                         {
                             // Fall back to building the BLAS in any case
-                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
+                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(
+                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex));
                         }
-                        changedBlasList.push_back(submeshBlasInstance.m_blas.get());
+                        changedBlasList.push_back(
+                            submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex).get());
                     }
 
                     blasInstance.second.m_blasBuilt = true;
@@ -274,7 +277,7 @@ namespace AZ
             }
 
             // build the TLAS object
-            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas(), changedBlasList);
+            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas()->GetDeviceRayTracingTlas(RHI::MultiDevice::DefaultDeviceIndex), changedBlasList);
 
             ++m_frameCount;
 
