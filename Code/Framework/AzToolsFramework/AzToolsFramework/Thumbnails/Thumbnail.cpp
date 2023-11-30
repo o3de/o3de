@@ -13,7 +13,6 @@ AZ_PUSH_DISABLE_WARNING(4127 4251 4800 4244, "-Wunknown-warning-option") // 4127
                                                                          // 4800: 'QTextBoundaryFinderPrivate *const ': forcing value to bool 'true' or 'false' (performance warning)
                                                                          // 4244: conversion from 'int' to 'qint8', possible loss of data
 #include <QtConcurrent/QtConcurrent>
-#include <QThreadPool>
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
@@ -26,6 +25,7 @@ namespace AzToolsFramework
         void ThumbnailKey::SetReady(bool ready)
         {
             m_ready = ready;
+            emit ThumbnailUpdated();
         }
 
         bool ThumbnailKey::IsReady() const
@@ -39,7 +39,7 @@ namespace AzToolsFramework
             {
                 return false;
             }
-            emit UpdateThumbnailSignal();
+            emit ThumbnailUpdateRequested();
             return true;
         }
 
@@ -61,27 +61,10 @@ namespace AzToolsFramework
             , m_state(State::Unloaded)
             , m_key(key)
         {
-            connect(&m_watcher, &QFutureWatcher<void>::finished, this, [this]()
-                {
-                    if (m_state == State::Loading)
-                    {
-                        m_state = State::Ready;
-                    }
-                    Q_EMIT Updated();
-                });
-
-            connect(&m_watcher, &QFutureWatcher<void>::canceled, this, [this]()
-                {
-                    m_state = State::Unloaded;
-                    Q_EMIT Updated();
-                });
         }
 
         Thumbnail::~Thumbnail()
         {
-            m_watcher.disconnect();
-            m_watcher.cancel();
-            m_watcher.waitForFinished();
         }
 
         bool Thumbnail::operator==(const Thumbnail& other) const
@@ -91,15 +74,11 @@ namespace AzToolsFramework
 
         void Thumbnail::Load()
         {
-            if (m_state == State::Unloaded)
-            {
-                m_state = State::Loading;
-                m_watcher.setFuture(QtConcurrent::run([this](){ LoadThread(); }));
-            }
         }
 
-        void Thumbnail::UpdateTime([[maybe_unused]] float deltaTime)
+        void Thumbnail::LoadComplete()
         {
+            QTimer::singleShot(0, this, &Thumbnail::ThumbnailUpdated);
         }
 
         const QPixmap& Thumbnail::GetPixmap() const
