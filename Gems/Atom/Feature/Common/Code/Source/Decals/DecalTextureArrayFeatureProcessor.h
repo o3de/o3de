@@ -62,6 +62,12 @@ namespace AZ
             //! Sets the position of the decal
             void SetDecalPosition(const DecalHandle handle, const AZ::Vector3& position) override;
 
+            //! Sets the color of the decal
+            void SetDecalColor(const DecalHandle handle, const AZ::Vector3& color) override;
+
+            //! Sets the factor for the decal color
+            void SetDecalColorFactor(const DecalHandle handle, float colorFactor) override;
+
             //! Sets the orientation of the decal
             void SetDecalOrientation(const DecalHandle handle, const AZ::Quaternion& orientation) override;
 

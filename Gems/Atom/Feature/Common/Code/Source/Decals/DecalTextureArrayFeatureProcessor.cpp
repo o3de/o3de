@@ -238,6 +238,39 @@ namespace AZ
             }
         }
 
+        void DecalTextureArrayFeatureProcessor::SetDecalColor(const DecalHandle handle, const AZ::Vector3& color)
+        {
+            if (handle.IsValid())
+            {
+                AZStd::array<float, 3>& writeColor = m_decalData.GetData(handle.GetIndex()).m_decalColor;
+                color.StoreToFloat3(writeColor.data());
+                m_deviceBufferNeedsUpdate = true;
+            }
+            else
+            {
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor",
+                    false,
+                    "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalColor().");
+            }
+        }
+
+        void DecalTextureArrayFeatureProcessor::SetDecalColorFactor(const DecalHandle handle, float colorFactor)
+        {
+            if (handle.IsValid())
+            {
+                m_decalData.GetData(handle.GetIndex()).m_decalColorFactor = colorFactor;
+                m_deviceBufferNeedsUpdate = true;
+            }
+            else
+            {
+                AZ_Warning(
+                    "DecalTextureArrayFeatureProcessor",
+                    false,
+                    "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalColorFactor().");
+            }
+        }
+
         void DecalTextureArrayFeatureProcessor::SetDecalHalfSize(DecalHandle handle, const Vector3& halfSize)
         {
             if (handle.IsValid())
