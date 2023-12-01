@@ -42,12 +42,4 @@ namespace Platform
         return succeeded;
     }
 
-    AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot)
-    {
-        // append lib path to Python paths
-        AZ::IO::FixedMaxPath libPath = engineRoot;
-        libPath /= AZ::IO::FixedMaxPathString::format("python/runtime/%s/python", pythonPackage);
-        libPath = libPath.LexicallyNormal();
-        return libPath.String();
-    }
 }

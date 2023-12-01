@@ -54,13 +54,4 @@ namespace Platform
         succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/" PY_VERSION_MAJOR_MINOR "/lib/python" PY_VERSION_MAJOR_MINOR "/site-packages");
         return succeeded;
     }
-
-    AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot)
-    {
-        // append lib path to Python paths
-        AZ::IO::FixedMaxPath libPath = engineRoot;
-        libPath /= AZ::IO::FixedMaxPathString::format("python/runtime/%s/Python.framework/Versions/" PY_VERSION_MAJOR_MINOR, pythonPackage);
-        libPath = libPath.LexicallyNormal();
-        return libPath.String();
-    }
 }

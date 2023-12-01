@@ -10,13 +10,6 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-# This will set python_package_name to whatever the package 'Python' is associated with
-ly_get_package_association(Python python_package_name)
-if (NOT python_package_name)
-    set(python_package_name "python-no-package-assocation-found")
-    message(WARNING "Python was not found in the package assocation list.  Did someone call ly_associate_package(xxxxxxx Python) ?")
-endif()
-    
 ly_add_target(
     NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
@@ -28,7 +21,7 @@ ly_add_target(
         Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/editorpythonbindings_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     COMPILE_DEFINITIONS
         PRIVATE
-            PY_PACKAGE="${python_package_name}" 
+            LY_3RDPARTY_PATH="${LY_3RDPARTY_PATH}"
     INCLUDE_DIRECTORIES
         PRIVATE
             .
