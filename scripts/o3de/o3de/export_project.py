@@ -18,11 +18,15 @@ import psutil
 import shutil
 import subprocess
 
-from o3de import manifest, utils
+from o3de import command_utils, manifest, utils
 from typing import List
 from enum import IntEnum
 
 LOCAL_ENGINE_PATH  = pathlib.Path(__file__).parent.parent.parent.parent
+
+PROJECT_EXPORT_SETTINGS_FILE = '.command_settings'
+PROJECT_EXPORT_SECTION_NAME = 'export_project'
+
 
 # Account for some windows-specific attributes
 CURRENT_PLATFORM = platform.system().lower()
@@ -187,6 +191,7 @@ class LauncherType(IntEnum):
     GAME = 1
     SERVER = 2
     UNIFIED = 4
+    HEADLESS_SERVER = 8
 
 # Helper API
 def get_default_asset_platform():
@@ -358,6 +363,105 @@ def _run_export_script(args: argparse, passthru_args: list) -> int:
     return _export_script(args.export_script, args.project_path, passthru_args)
 
 
+def get_project_export_config_from_args(args: argparse) -> (command_utils.O3DEConfig, str):
+    """
+    Resolve and create the appropriate O3DE config object based on whether operation is based on the global
+    settings or a project specific setting
+
+    :param args:    The args object to parse
+    :return:  Tuple of the appropriate config manager object and the project name if this is not a global settings, otherwise None
+    """
+    logger = logging.getLogger()
+
+    is_global = getattr(args, 'global', False)
+    project = getattr(args, 'project', None)
+
+    if is_global:
+        if project:
+            logger.warning(f"Both --global and --project ({project}) arguments were provided. The --project argument will "
+                            "be ignored and the execution of this command will be based on the global settings.")
+        project_export_config = get_export_project_config(project_path=None)
+        project_name = None
+    elif not project:
+        try:
+            project_name, project_path = command_utils.resolve_project_name_and_path()
+        except command_utils.O3DEConfigError:
+            project_name = None
+            project_path = None
+        if project_name:
+            logger.info(f"The execution of this command will be based on the currently detected project ({project_name}).")
+            project_export_config = get_export_project_config(project_path=project_path)
+        else:
+            logger.info("The execution of this command will be based on the global settings.")
+            project_export_config = get_export_project_config(project_path=None)
+    else:
+        project_path = pathlib.Path(project)
+        if project_path.is_dir():
+            # If '--project' was set to a project path, then resolve the project path and name
+            project_name, project_path = command_utils.resolve_project_name_and_path(project_path)
+
+        else:
+            project_name = project
+
+            # If '--project' was not a project path, check to see if its a registered project by its name
+            project_path = manifest.get_registered(project_name=project_name)
+            if not project_path:
+                raise command_utils.O3DEConfigError(f"Unable to resolve project named '{project_name}'. "
+                                                    f"Make sure it is registered with O3DE.")
+
+        logger.info(f"The execution of this command will be based on project ({project_name}).")
+        project_export_config = get_export_project_config(project_path=project_path)
+
+    return project_export_config, project_name
+
+
+def list_project_export_config(android_config: command_utils.O3DEConfig) -> None:
+    """
+    Print to stdout the current settings for android that will be applied to android operations
+
+    :param android_config: The android configuration to look up the configured settings
+    """
+
+    all_settings = android_config.get_all_values()
+
+    print("\nO3DE Project Export settings:\n")
+
+    for item, value, source in all_settings:
+        if not value:
+            continue
+        print(f"{'* ' if source else '  '}{item} = {value}")
+
+    if not android_config.is_global:
+        print(f"\n* Settings that are specific to {android_config.project_name}. Use the --global argument to see only the global settings.")
+
+def configure_project_export_options(args: argparse) -> int:
+    """
+    Configure the project-export platform settings for generating, building, and deploying android projects.
+
+    :param args:    The args from the arg parser to determine the actions
+    :return: The result code to return back
+    """
+    logger = logging.getLogger()
+
+    try:
+        project_export_config, _ = get_project_export_config_from_args(args)
+
+        if args.list:
+            list_project_export_config(project_export_config)
+        if args.set_value:
+            project_export_config.set_config_value_from_expression(args.set_value)
+        if args.clear_value:
+            project_export_config.set_config_value(key=args.clear_value,
+                                                   value='',
+                                                   validate_value=False)
+            logger.info(f"Setting '{args.clear_value}' cleared.")
+
+    except command_utils.O3DEConfigError as err:
+        logger.error(str(err))
+        return 1
+    else:
+        return 0
+
 # Argument handling
 def add_parser_args(parser) -> None:
     parser.add_argument('-es', '--export-script', type=pathlib.Path, required=True, help="An external Python script to run")
@@ -372,6 +476,53 @@ def add_parser_args(parser) -> None:
     
 
 def add_args(subparsers) -> None:
+
+    # Read from the android config if possible to try to display default values
+    try:
+        project_name, project_path = command_utils.resolve_project_name_and_path()
+        android_config = get_export_project_config(project_path=project_path)
+    except command_utils.O3DEConfigError:
+        project_name = None
+        android_config = get_export_project_config(project_path=None)
+
+    #
+    # Configure the subparser for 'export-project-configure'
+    #
+
+    # Generate the epilog string to describe the settings that can be configured
+    epilog_lines = ['Configure the default values that control the project export scripts for O3DE.',
+                    'The default settings that can be set are:',
+                    '']
+    max_key_len = 0
+    for setting in android_config.setting_descriptions:
+        max_key_len = max(len(setting.key), max_key_len)
+    max_key_len += 4
+    for setting in android_config.setting_descriptions:
+        setting_line = f"{'* ' if setting.is_password else '  '}{setting.key: <{max_key_len}} {setting.description}"
+        epilog_lines.append(setting_line)
+
+    epilog = '\n'.join(epilog_lines)
+    export_configure_subparser = subparsers.add_parser("export-project-configure",
+                                                        help='Configure the default values for the export project scripts.',
+                                                        epilog=epilog,
+                                                        formatter_class=argparse.RawTextHelpFormatter)
+
+    export_configure_subparser.add_argument('--global', default=False, action='store_true',
+                                             help='Used with the configure command, specify whether the settings are project local or global.')
+    export_configure_subparser.add_argument('-p', '--project', type=str, required=False,
+                                             help="The name of the registered project to configure the settings for. This value is ignored if '--global' was specified."
+                                                  "Note: If both '--global' and '-p/--project' is not specified, the script will attempt to deduce the project from the "
+                                                  "current working directory if possible")
+    export_configure_subparser.add_argument('-l', '--list', default=False, action='store_true',
+                                             help='Display the current Android settings. ')
+    export_configure_subparser.add_argument('--set-value', type=str, required=False,
+                                             help='Set the value for an Android setting, using the format <argument>=<value>. For example: \'ndk_version=22.5*\'',
+                                             metavar='VALUE')
+    export_configure_subparser.add_argument('--clear-value', type=str, required=False,
+                                             help='Clear a previously configured setting.',
+                                             metavar='VALUE')
+    export_configure_subparser.set_defaults(func=configure_project_export_options)
+
     export_subparser = subparsers.add_parser('export-project')
     add_parser_args(export_subparser)
 
@@ -565,6 +716,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     should_build_game_launcher = (launcher_types & LauncherType.GAME) == LauncherType.GAME
     should_build_server_launcher = (launcher_types & LauncherType.SERVER) == LauncherType.SERVER
     should_build_unified_launcher = (launcher_types & LauncherType.UNIFIED) == LauncherType.UNIFIED
+    should_build_headless_server_launcher = (launcher_types & LauncherType.SERVER) == LauncherType.HEADLESS_SERVER
 
     if not (should_build_server_launcher or should_build_game_launcher or should_build_unified_launcher):
         return
@@ -607,6 +759,8 @@ def build_game_targets(ctx: O3DEScriptExportContext,
         mono_build_args.append(f"{ctx.project_name}.GameLauncher")
     if should_build_unified_launcher:
         mono_build_args.append(f"{ctx.project_name}.UnifiedLauncher")
+    if should_build_headless_server_launcher:
+        mono_build_args.append(f"{ctx.project_name}.HeadlessServerLauncher")
 
     if ctx.cmake_additional_build_args:
         mono_build_args.extend(ctx.cmake_additional_build_args)
@@ -823,3 +977,169 @@ def validate_project_artifact_paths(project_path: pathlib.Path,
         else:
             validated_project_artifact_paths.append(validated_artifact_path)
     return validated_project_artifact_paths
+
+
+SUPPORTED_EXPORT_PROJECT_SETTINGS = []
+
+
+def register_setting(key: str, description: str, default: str = None, is_password: bool = False, is_boolean: bool = False, restricted_regex: str = None, restricted_regex_description: str = None) -> command_utils.SettingsDescription:
+    """
+    Register a new settings description for android
+
+    :param key:             The settings key used for configuration storage
+    :param description:     The description of this setting value
+    :param default:         The default value for the setting
+    :param is_password:     Flag indicating that this is a password setting
+    :param is_boolean:      Flag indicating that this is a boolean setting
+    :param restricted_regex:  (Optional) Validation regex to restrict the possible value
+    :param restricted_regex_description:  Description of the validation regex
+    :return: The new settings description
+    """
+
+    global SUPPORTED_EXPORT_PROJECT_SETTINGS
+
+    new_setting = command_utils.SettingsDescription(key=key,
+                                                    description=description,
+                                                    default=default,
+                                                    is_password=is_password,
+                                                    is_boolean=is_boolean,
+                                                    restricted_regex=restricted_regex,
+                                                    restricted_regex_description=restricted_regex_description)
+    SUPPORTED_EXPORT_PROJECT_SETTINGS.append(new_setting)
+
+    return new_setting
+
+
+BUILD_CONFIG_DEBUG = 'debug'
+BUILD_CONFIG_PROFILE = 'profile'
+BUILD_CONFIG_RELEASE = 'release'
+
+SETTINGS_PROJECT_BUILD_CONFIG     = register_setting(key='project.build.config',
+                                                     description='The CMake build configuration to use when building project binaries.',
+                                                     default=BUILD_CONFIG_PROFILE,
+                                                     restricted_regex=f'({BUILD_CONFIG_PROFILE}|{BUILD_CONFIG_RELEASE})',
+                                                     restricted_regex_description=f'Valid values are {BUILD_CONFIG_PROFILE} and {BUILD_CONFIG_RELEASE}')
+
+SETTINGS_TOOL_BUILD_CONFIG        = register_setting(key='tool.build.config',
+                                                     description='The CMake build configuration to use when building tool binaries.',
+                                                     default=BUILD_CONFIG_PROFILE,
+                                                     restricted_regex=f'({BUILD_CONFIG_PROFILE}|{BUILD_CONFIG_RELEASE})',
+                                                     restricted_regex_description=f'Valid values are {BUILD_CONFIG_PROFILE} and {BUILD_CONFIG_RELEASE}')
+
+ARCHIVE_FORMAT_NONE = 'none'
+ARCHIVE_FORMAT_ZIP = 'zip'
+ARCHIVE_FORMAT_GZIP = 'gzip'
+ARCHIVE_FORMAT_BZ2 = 'bz2'
+ARCHIVE_FORMAT_XZ = 'xz'
+
+SETTINGS_ARCHIVE_OUTPUT_FORMAT    = register_setting(key='archive.output.format',
+                                                     description=f"The output compression option to use to archive the output. '{ARCHIVE_FORMAT_NONE}' to skip creating an archive.",
+                                                     default=ARCHIVE_FORMAT_NONE,
+                                                     restricted_regex=f'({ARCHIVE_FORMAT_NONE}|{ARCHIVE_FORMAT_ZIP}|{ARCHIVE_FORMAT_GZIP}|{ARCHIVE_FORMAT_BZ2}|{ARCHIVE_FORMAT_XZ})',
+                                                     restricted_regex_description=f'Valid values are : {ARCHIVE_FORMAT_NONE}, {ARCHIVE_FORMAT_ZIP}, {ARCHIVE_FORMAT_GZIP}, {ARCHIVE_FORMAT_BZ2}, and {ARCHIVE_FORMAT_XZ}')
+
+SETTINGS_OPTION_BUILD_ASSETS      = register_setting(key='option.build.assets',
+                                                     description='The option to build all the assets for the bundle when running the export.',
+                                                     is_boolean=True,
+                                                     default='False')
+
+SETTINGS_OPTION_FAIL_ON_ASSET_ERR = register_setting(key='option.fail.on.asset.errors',
+                                                     description='Option to fail the project export process on any failed asset during asset building.',
+                                                     is_boolean=True,
+                                                     default='False')
+
+SETTINGS_SEED_LIST_PATHS          = register_setting(key='seedlist.paths',
+                                                     description='List of seed list paths (relative to the project folder) used for asset bundling. Multiple paths are separated by semi-colon (;).',
+                                                     default='')
+SETTINGS_SEED_FILE_PATHS          = register_setting(key='seedfile.paths',
+                                                     description='List of seed file paths (relative to the project folder) used for asset bundling. Multiple paths are separated by semi-colon (;).',
+                                                     default='')
+SETTINGS_DEFAULT_LEVEL_NAMES      = register_setting(key='default.level.names',
+                                                     description='List of level names to use for exporting. This will look in the {project path}/Levels folder to fetch the prefabs. Multiple level names are separated by semi-colon (;).',
+                                                     default='')
+
+SETTINGS_ADDITIONAL_GAME_PROJECT_FILE_PATTERN = register_setting(key='additional.game.project.file.pattern.to.copy',
+                                                                 description='List of file patterns to use filter files in the project directory to include in the exported game project. Multiple file patterns are separated by semi-colon (;).',
+                                                                 default='')
+SETTINGS_ADDITIONAL_SERVER_PROJECT_FILE_PATTERN = register_setting(key='additional.server.project.file.pattern.to.copy',
+                                                                   description='List of file patterns to use filter files in the project directory to include in the exported server project. Multiple file patterns are separated by semi-colon (;).',
+                                                                   default='')
+SETTINGS_ADDITIONAL_PROJECT_FILE_PATTERN = register_setting(key='additional.project.file.pattern.to.copy',
+                                                            description='List of file patterns to use filter files in the project directory to include in the exported game and server projects. Multiple file patterns are separated by semi-colon (;).',
+                                                            default='')
+
+SETTINGS_OPTION_BUILD_TOOLS       = register_setting(key='option.build.tools',
+                                                     description='The option to build O3DE toolchain executables. This will build AssetBundlerBatch and AssetProcessorBatch.',
+                                                     is_boolean=True,
+                                                     default='False')
+
+SETTINGS_DEFAULT_BUILD_TOOLS_PATH = register_setting(key='default.build.tools.path',
+                                                     description='Designates where the build files for the O3DE toolchain are generated.',
+                                                     default='build/tools')
+
+SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH = register_setting(key='default.launcher.build.path',
+                                                        description='Designates where the launcher build files (Game/Server/Unified) are generated.',
+                                                        default='build/launcher')
+
+SETTINGS_DEFAULT_ANDROID_BUILD_PATH = register_setting(key='default.android.build.path',
+                                                       description='Designates where the android build files are generated.',
+                                                       default='build/game_android')
+
+SETTINGS_DEFAULT_IOS_BUILD_PATH = register_setting(key='default.ios.build.path',
+                                                   description='Designates where the iOS build files are generated.',
+                                                   default='build/game_ios')
+
+SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES = register_setting(key='option.allow.registry.overrides',
+                                                            description='When configuring cmake builds, this determines if the script allows for overriding registry settings from external sources.',
+                                                            is_boolean=True,
+                                                            default='False')
+
+SETTINGS_DEFAULT_ASSET_BUNDLING_PATH = register_setting(key='asset.bundling.path',
+                                                        description='Designates where the artifacts from the asset bundling process will be written to before creation of the package.',
+                                                        default='build/asset_bundling')
+
+SETTINGS_MAX_BUNDLE_SIZE = register_setting(key='max.size',
+                                            description='The maximum size of a given asset bundle.',
+                                            default="2048",
+                                            restricted_regex=f'([0-9]+)',
+                                            restricted_regex_description=f'Value must be a whole number.')
+
+SETTINGS_OPTION_BUILD_GAME_LAUNCHER  = register_setting(key='option.build.game.launcher',
+                                                        description='The option to build an exported game launcher.',
+                                                        is_boolean=True,
+                                                        default='True')
+
+SETTINGS_OPTION_BUILD_SERVER_LAUNCHER = register_setting(key='option.build.server.launcher',
+                                                         description='The option to build an exported server launcher.',
+                                                         is_boolean=True,
+                                                         default='True')
+
+SETTINGS_OPTION_BUILD_HEADLESS_SERVER_LAUNCHER = register_setting(key='option.build.headless.server.launcher',
+                                                                  description='The option to build an exported headless server launcher.',
+                                                                  is_boolean=True,
+                                                                  default='False')
+
+SETTINGS_OPTION_BUILD_UNIFIED_SERVER_LAUNCHER = register_setting(key='option.build.unified.launcher',
+                                                                 description='The option to build an exported unified launcher.',
+                                                                 is_boolean=True,
+                                                                 default='True')
+
+SETTINGS_OPTION_ENGINE_CENTRIC = register_setting(key='option.engine.centric',
+                                                  description='Option use the engine-centric work flow to export the project.',
+                                                  is_boolean=True,
+                                                  default='False')
+
+
+def get_export_project_config(project_path: pathlib.Path or None) -> command_utils.O3DEConfig:
+    """
+    Create an android configuration a project. If a project name is provided, then attempt to look for the project and use its
+    project-specific settings (if any) as an overlay to the global settings. If the project name is None, then return an
+    android configuration object that only represents the global setting
+
+    :param project_path:    The path to the registered O3DE project to look for its project-specific setting. If None, only use the global settings.
+    :return: The android configuration object
+    """
+    return command_utils.O3DEConfig(project_path=project_path,
+                                    settings_filename=PROJECT_EXPORT_SETTINGS_FILE,
+                                    settings_section_name=PROJECT_EXPORT_SECTION_NAME,
+                                    settings_description_list=SUPPORTED_EXPORT_PROJECT_SETTINGS)
