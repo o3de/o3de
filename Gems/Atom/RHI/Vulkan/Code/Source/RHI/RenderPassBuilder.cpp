@@ -51,6 +51,11 @@ namespace AZ
 
         void RenderPassBuilder::AddScopeAttachments(const Scope& scope)
         {
+            if (!scope.UsesRenderpass())
+            {
+                return;
+            }
+
             auto setAttachmentStoreActionFunc = [this](const uint32_t attachmentIndex, const RHI::AttachmentLoadStoreAction& loadStoreAction)
             {
                 auto& attachmentLoadStoreAction = m_renderpassDesc.m_attachments[attachmentIndex].m_loadStoreAction;
@@ -332,6 +337,11 @@ namespace AZ
 
             builtContext.m_clearValues = AZStd::move(m_clearValues);
             return RHI::ResultCode::Success;
+        }
+
+        bool RenderPassBuilder::CanBuild() const
+        {
+            return m_renderpassDesc.m_subpassCount > 0;
         }
 
         void RenderPassBuilder::AddSubpassDependency(uint32_t srcSubpass, uint32_t dstSubpass, const Scope::Barrier& barrier)

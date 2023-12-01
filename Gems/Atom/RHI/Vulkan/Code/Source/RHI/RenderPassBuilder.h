@@ -48,6 +48,9 @@ namespace AZ
             //! Builds the renderpass and framebuffer from the information collected from the scopes.
             RHI::ResultCode End(RenderPassContext& builtContext);
 
+            //! Returns if the builder has the attachments to build the framebuffer and renderpass.
+            bool CanBuild() const;
+
         private:
             // Adds the subpass dependencies for a resource view that is being used in a subpass.
             // It will use the information about barriers (prologue and epilogue) that the scope contains.
