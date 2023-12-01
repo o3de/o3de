@@ -1352,7 +1352,7 @@ namespace AZ::Reflection
                                 {
                                     for (auto it = classEditorData->m_attributes.begin(); it != classEditorData->m_attributes.end(); ++it)
                                     {
-                                        checkAttribute(it, nodeData.m_instanceToInvoke, isParentAttribute);
+                                        checkAttribute(it, nodeData.m_instance, isParentAttribute);
                                     }
                                 }
                             }
