@@ -78,6 +78,7 @@ namespace AZ::RHI
                         {
                             m_type = PipelineStateType::Dispatch;
                         }
+                        break;
                     }
                 case PipelineStateType::RayTracing:
                     {
@@ -90,10 +91,11 @@ namespace AZ::RHI
                         {
                             m_type = PipelineStateType::RayTracing;
                         }
+                        break;
                     }
                 default:
                     {
-                        AZ_Error("MultiDevicePipelineState", false, "MultiDevicePipelineState already initialized!");
+                        AZ_Error("MultiDevicePipelineState", false, "Unknown PipelineStateType!");
                         resultCode = ResultCode::InvalidArgument;
                         break;
                     }

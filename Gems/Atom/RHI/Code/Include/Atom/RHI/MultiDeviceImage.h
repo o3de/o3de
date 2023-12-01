@@ -17,9 +17,7 @@ namespace AZ::RHI
 {
     class ImageFrameAttachment;
     class MultiDeviceShaderResourceGroup;
-    class ImageView;
     class MultiDeviceImageView;
-    struct ImageViewDescriptor;
 
     //! MultiDeviceImage represents a collection of MultiDeviceImage Subresources, where each subresource comprises a one to three
     //! dimensional grid of pixels. Images are divided into an array of mip-map chains. A mip map chain is
@@ -120,9 +118,10 @@ namespace AZ::RHI
         AZ_RTTI(MultiDeviceImageView, "{C837818B-2A4D-49F2-A37E-349494A9C9B7}", Object);
         virtual ~MultiDeviceImageView() = default;
 
-        MultiDeviceImageView(const RHI::MultiDeviceImage* image, ImageViewDescriptor descriptor)
+        MultiDeviceImageView(const RHI::MultiDeviceImage* image, ImageViewDescriptor descriptor, AZStd::unordered_map<int, Ptr<RHI::ImageView>>&& cache)
             : m_image{ image }
             , m_descriptor{ descriptor }
+            , m_cache{AZStd::move(cache)}
         {
         }
 
@@ -146,5 +145,7 @@ namespace AZ::RHI
         const RHI::MultiDeviceImage* m_image;
         //! The corresponding ImageViewDescriptor for this view.
         ImageViewDescriptor m_descriptor;
+        //! ImageView cache
+        AZStd::unordered_map<int, Ptr<RHI::ImageView>> m_cache;
     };
 } // namespace AZ::RHI

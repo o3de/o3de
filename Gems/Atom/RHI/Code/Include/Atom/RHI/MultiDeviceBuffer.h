@@ -71,9 +71,10 @@ namespace AZ::RHI
         AZ_RTTI(MultiDeviceBufferView, "{CD764967-6AC1-4B9D-9573-498FA61F8F84}", Object);
         virtual ~MultiDeviceBufferView() = default;
 
-        MultiDeviceBufferView(const RHI::MultiDeviceBuffer* buffer, BufferViewDescriptor descriptor)
+        MultiDeviceBufferView(const RHI::MultiDeviceBuffer* buffer, BufferViewDescriptor descriptor, AZStd::unordered_map<int, Ptr<RHI::BufferView>>&& cache)
             : m_buffer{ buffer }
             , m_descriptor{ descriptor }
+            , m_cache{AZStd::move(cache)}
         {
         }
 
@@ -97,5 +98,7 @@ namespace AZ::RHI
         const RHI::MultiDeviceBuffer* m_buffer;
         //! The corresponding BufferViewDescriptor for this view.
         BufferViewDescriptor m_descriptor;
+        //! BufferView cache
+        AZStd::unordered_map<int, Ptr<RHI::BufferView>> m_cache;
     };
 } // namespace AZ::RHI

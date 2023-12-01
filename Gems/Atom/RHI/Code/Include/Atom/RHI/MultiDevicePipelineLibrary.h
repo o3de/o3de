@@ -23,7 +23,10 @@ namespace AZ::RHI
     //! MultiDevicePipelineLibrary
     struct MultiDevicePipelineLibraryDescriptor
     {
-        void Init(MultiDevice::DeviceMask deviceMask, const PipelineLibraryDescriptor& descriptor)
+        void Init(
+            MultiDevice::DeviceMask deviceMask,
+            const AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>>& serializedData,
+            const AZStd::unordered_map<int, AZStd::string>& filePaths)
         {
             int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
@@ -31,7 +34,10 @@ namespace AZ::RHI
             {
                 if (CheckBit(AZStd::to_underlying(deviceMask), static_cast<u8>(deviceIndex)))
                 {
-                    m_devicePipelineLibraryDescriptors[deviceIndex] = descriptor;
+                    m_devicePipelineLibraryDescriptors[deviceIndex] = {
+                        serializedData.contains(deviceIndex) ? serializedData.at(deviceIndex) : nullptr,
+                        filePaths.contains(deviceIndex) ? filePaths.at(deviceIndex) : AZStd::string("")
+                    };
                 }
             }
         }
@@ -106,6 +112,26 @@ namespace AZ::RHI
                 return nullptr;
             }
         }
+
+        //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance
+        //! for a specific device
+        //! @param deviceIndex Denotes from which device the serialized data should be retrieved
+        auto GetSerializedDataMap() const
+        {
+            AZStd::unordered_map<int, ConstPtr<PipelineLibraryData>> serializedData;
+
+            IterateObjects<PipelineLibrary>(
+                [&serializedData]([[maybe_unused]] auto deviceIndex, auto devicePipelineLibrary)
+                {
+                    serializedData[deviceIndex] = devicePipelineLibrary->GetSerializedData();
+                });
+
+            return serializedData;
+        }
+
+        //! Saves the platform-specific data to disk using the device-specific filePath provided. This is done through RHI backend drivers
+        //! for each device.
+        bool SaveSerializedData(const AZStd::unordered_map<int, AZStd::string>& filePaths) const;
 
         //! Returns whether the current library need to be merged
         //! Returns true if any of the device-specific PipelineLibrary objects needs to be merged
