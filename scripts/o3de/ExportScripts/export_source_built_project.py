@@ -215,7 +215,7 @@ if "o3de_context" in globals():
         else:
             export_config = exp.get_export_project_config(project_path=o3de_context.project_path)
     except command_utils.O3DEConfigError:
-        o3de_logger.debug(f"No project detected at {os.getcwd()}, default settings from global config.")
+        o3de_logger.debug(f"No project detected at {os.getcwd()}, getting default settings from global config instead.")
         project_name = None
         export_config = exp.get_export_project_config(project_path=None)
 
