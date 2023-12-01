@@ -16,7 +16,7 @@
 #include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/ScopeProducerEmpty.h>
-#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
+#include <Atom/RHI/MultiDeviceTransientAttachmentPool.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
@@ -165,8 +165,8 @@ namespace AZ::RHI
         //!                   it will defer to the platform for parallel dispatch support.
         void Execute(JobPolicy jobPolicy);
 
-        //! Returns the timing statistics for the previous frame.
-        const TransientAttachmentStatistics* GetTransientAttachmentStatistics() const;
+        //! Returns a map of timing statistics for the previous frame, index with the device index.
+        AZStd::unordered_map<int, TransientAttachmentStatistics> GetTransientAttachmentStatistics() const;
 
         //! Returns current CPU frame to frame time in milliseconds.
         double GetCpuFrameTime() const;
@@ -218,7 +218,7 @@ namespace AZ::RHI
         Ptr<FrameGraphCompiler> m_frameGraphCompiler;
         Ptr<FrameGraphExecuter> m_frameGraphExecuter;
 
-        Ptr<SingleDeviceTransientAttachmentPool> m_transientAttachmentPool;
+        Ptr<MultiDeviceTransientAttachmentPool> m_transientAttachmentPool;
 
         AZStd::sys_time_t m_lastFrameEndTime{};
         MemoryStatistics m_memoryStatistics;
