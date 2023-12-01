@@ -415,14 +415,14 @@ def get_project_export_config_from_args(args: argparse) -> (command_utils.O3DECo
     return project_export_config, project_name
 
 
-def list_project_export_config(android_config: command_utils.O3DEConfig) -> None:
+def list_project_export_config(export_config: command_utils.O3DEConfig) -> None:
     """
-    Print to stdout the current settings for android that will be applied to android operations
+    Print to stdout the current settings for export that will be applied to the project export scripts
 
-    :param android_config: The android configuration to look up the configured settings
+    :param export_config: The export configuration to look up the configured settings
     """
 
-    all_settings = android_config.get_all_values()
+    all_settings = export_config.get_all_values()
 
     print("\nO3DE Project Export settings:\n")
 
@@ -431,12 +431,13 @@ def list_project_export_config(android_config: command_utils.O3DEConfig) -> None
             continue
         print(f"{'* ' if source else '  '}{item} = {value}")
 
-    if not android_config.is_global:
-        print(f"\n* Settings that are specific to {android_config.project_name}. Use the --global argument to see only the global settings.")
+    if not export_config.is_global:
+        print(f"\n* Settings that are specific to {export_config.project_name}. Use the --global argument to see only the global settings.")
+
 
 def configure_project_export_options(args: argparse) -> int:
     """
-    Configure the project-export platform settings for generating, building, and deploying android projects.
+    Configure the project-export settings for the project export scripts
 
     :param args:    The args from the arg parser to determine the actions
     :return: The result code to return back
@@ -477,13 +478,13 @@ def add_parser_args(parser) -> None:
 
 def add_args(subparsers) -> None:
 
-    # Read from the android config if possible to try to display default values
+    # Read from the export config if possible to try to display default values
     try:
         project_name, project_path = command_utils.resolve_project_name_and_path()
-        android_config = get_export_project_config(project_path=project_path)
+        export_config = get_export_project_config(project_path=project_path)
     except command_utils.O3DEConfigError:
         project_name = None
-        android_config = get_export_project_config(project_path=None)
+        export_config = get_export_project_config(project_path=None)
 
     #
     # Configure the subparser for 'export-project-configure'
@@ -494,10 +495,10 @@ def add_args(subparsers) -> None:
                     'The default settings that can be set are:',
                     '']
     max_key_len = 0
-    for setting in android_config.setting_descriptions:
+    for setting in export_config.setting_descriptions:
         max_key_len = max(len(setting.key), max_key_len)
     max_key_len += 4
-    for setting in android_config.setting_descriptions:
+    for setting in export_config.setting_descriptions:
         setting_line = f"{'* ' if setting.is_password else '  '}{setting.key: <{max_key_len}} {setting.description}"
         epilog_lines.append(setting_line)
 
@@ -514,9 +515,9 @@ def add_args(subparsers) -> None:
                                                   "Note: If both '--global' and '-p/--project' is not specified, the script will attempt to deduce the project from the "
                                                   "current working directory if possible")
     export_configure_subparser.add_argument('-l', '--list', default=False, action='store_true',
-                                             help='Display the current Android settings. ')
+                                             help='Display the current project export settings. ')
     export_configure_subparser.add_argument('--set-value', type=str, required=False,
-                                             help='Set the value for an Android setting, using the format <argument>=<value>. For example: \'ndk_version=22.5*\'',
+                                             help='Set the value for an project export setting, using the format <argument>=<value>. For example: \'max.size=2048\'',
                                              metavar='VALUE')
     export_configure_subparser.add_argument('--clear-value', type=str, required=False,
                                              help='Clear a previously configured setting.',
@@ -984,7 +985,7 @@ SUPPORTED_EXPORT_PROJECT_SETTINGS = []
 
 def register_setting(key: str, description: str, default: str = None, is_password: bool = False, is_boolean: bool = False, restricted_regex: str = None, restricted_regex_description: str = None) -> command_utils.SettingsDescription:
     """
-    Register a new settings description for android
+    Register a new settings description for project export
 
     :param key:             The settings key used for configuration storage
     :param description:     The description of this setting value
@@ -1132,12 +1133,12 @@ SETTINGS_OPTION_ENGINE_CENTRIC = register_setting(key='option.engine.centric',
 
 def get_export_project_config(project_path: pathlib.Path or None) -> command_utils.O3DEConfig:
     """
-    Create an android configuration a project. If a project name is provided, then attempt to look for the project and use its
-    project-specific settings (if any) as an overlay to the global settings. If the project name is None, then return an
-    android configuration object that only represents the global setting
+    Create a project export configuration a project. If a project name is provided, then attempt to look for the project and use its
+    project-specific settings (if any) as an overlay to the global settings. If the project name is None, then return a project export
+    configuration object that only represents the global setting
 
     :param project_path:    The path to the registered O3DE project to look for its project-specific setting. If None, only use the global settings.
-    :return: The android configuration object
+    :return: The project export configuration object
     """
     return command_utils.O3DEConfig(project_path=project_path,
                                     settings_filename=PROJECT_EXPORT_SETTINGS_FILE,
