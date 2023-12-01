@@ -114,7 +114,7 @@ PSOutput MainPS(VSOutput IN)
     // Should use srgb anytime after tonemapping
     if (o_srgbWrite)
     {
-        resColor.xyz = LinearSrgb_To_Srgb(resColor.xyz);
+        resColor.xyz = LinearSrgb_To_SrgbF(resColor.xyz);
     }
 
     // If the o_modulate option is not None it means that the verts have two texture indicies. The second texture is used to

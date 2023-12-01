@@ -45,7 +45,7 @@ VertexOutput MainVS(in VertexInput input)
 {
     VertexOutput output;
     output.Position = mul(float4(input.Position, 0.0f, 1.0f), ObjectSrg::m_projectionMatrix);
-    output.Color = float4(Srgb_To_LinearSrgb(input.Color.rgb), input.Color.a);
+    output.Color = float4(Srgb_To_LinearSrgbF(input.Color.rgb), input.Color.a);
     output.UV = input.UV;
     return output;
 }
