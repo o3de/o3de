@@ -8,10 +8,12 @@
 
 import argparse
 import logging
+import os
 import sys
 
 import o3de.export_project as exp
 import o3de.manifest as manifest
+import o3de.command_utils as command_utils
 import pathlib
 
 from typing import List
@@ -218,6 +220,18 @@ if "o3de_context" in globals():
     global o3de_context
     global o3de_logger
 
+    # Resolve the export config
+    try:
+        if o3de_context is None:
+            project_name, project_path = command_utils.resolve_project_name_and_path()
+            export_config = exp.get_export_project_config(project_path=project_name)
+        else:
+            export_config = exp.get_export_project_config(project_path=o3de_context.project_path)
+    except command_utils.O3DEConfigError:
+        o3de_logger.debug(f"No project detected at {os.getcwd()}, getting default settings from global config instead.")
+        project_name = None
+        export_config = exp.get_export_project_config(project_path=None)
+
     def parse_args(o3de_context: exp.O3DEScriptExportContext):
 
         parser = argparse.ArgumentParser(
@@ -230,47 +244,154 @@ if "o3de_context" in globals():
         )
         parser.add_argument(exp.CUSTOM_SCRIPT_HELP_ARGUMENT,default=False,action='store_true',help='Show this help message and exit.')
         parser.add_argument('-out', '--output-path', type=pathlib.Path, required=True, help='Path that describes the final resulting Release Directory path location.')
-        parser.add_argument('-cfg', '--config', type=str, default='profile', choices=['release', 'profile'],
-                            help='The CMake build configuration to use when building project binaries.  Tool binaries built with this script will always be built with the profile configuration.')
-        parser.add_argument('-tcfg', '--tool-config', type=str, default='profile', choices=['release', 'profile', 'debug'],
+
+        default_project_build_config = export_config.get_value(key=exp.SETTINGS_PROJECT_BUILD_CONFIG.key,
+                                                               default=exp.SETTINGS_PROJECT_BUILD_CONFIG.default)
+        parser.add_argument('-cfg', '--config', type=str, default=default_project_build_config, choices=[exp.BUILD_CONFIG_RELEASE, exp.BUILD_CONFIG_PROFILE],
+                            help='The CMake build configuration to use when building project binaries.')
+
+        # tool.build.config / SETTINGS_TOOL_BUILD_CONFIG
+        default_tool_build_config = export_config.get_value(key=exp.SETTINGS_TOOL_BUILD_CONFIG.key,
+                                                            default=exp.SETTINGS_TOOL_BUILD_CONFIG.default)
+        parser.add_argument('-tcfg', '--tool-config', type=str, default=default_tool_build_config, choices=[exp.BUILD_CONFIG_RELEASE, exp.BUILD_CONFIG_PROFILE, exp.BUILD_CONFIG_DEBUG],
                             help='The CMake build configuration to use when building tool binaries.')
+
+        # archive.output.format / SETTINGS_ARCHIVE_OUTPUT_FORMAT
+        default_archive_output_format = export_config.get_value(key=exp.SETTINGS_ARCHIVE_OUTPUT_FORMAT.key,
+                                                                default=exp.SETTINGS_ARCHIVE_OUTPUT_FORMAT.default)
         parser.add_argument('-a', '--archive-output',  type=str,
                             help="Option to create a compressed archive the output. "
                                  "Specify the format of archive to create from the output directory. If 'none' specified, no archiving will occur.",
-                            choices=["none", "zip", "gzip", "bz2", "xz"], default="none")
-        parser.add_argument('-assets', '--should-build-assets', default=False, action='store_true',
-                            help='Toggles building all assets for the bundle.')
-        parser.add_argument('-foa', '--fail-on-asset-errors', default=False, action='store_true',
-                            help='Option to fail the project export process on any failed asset during asset building (applicable if --should-build-assets is true)')
-        parser.add_argument('-sl', '--seedlist', type=pathlib.Path, dest='seedlist_paths', action='append',
-                                help='Path to a seed list file for asset bundling. Specify multiple times for each seed list.')
-        parser.add_argument('-sf', '--seedfile', type=pathlib.Path, dest='seedfile_paths', action='append',
-                            help='Path to a seed file for asset bundling. Example seed files are levels or prefabs.')
-        parser.add_argument('-lvl', '--level-name', type=str, dest='level_names', action='append',
-                            help='The name of the level you want to export. This will look in <o3de_project_path>/Levels to fetch the right level prefab.')
-        parser.add_argument('-gpfp', '--game-project-file-pattern-to-copy', type=str, dest='game_project_file_patterns_to_copy', action='append',
-                                help="Any additional file patterns located in the project directory. File patterns will be relative to the project path. Will be included in GameLauncher.")
-        parser.add_argument('-spfp', '--server-project-file-pattern-to-copy', type=str, dest='server_project_file_patterns_to_copy', action='append',
-                                help="Any additional file patterns located in the project directory. File patterns will be relative to the project path. Will be included in ServerLauncher.")
-        parser.add_argument('-pfp', '--project-file-pattern-to-copy', type=str, dest='project_file_patterns_to_copy', action='append',
-                                help="Any additional file patterns located in the project directory. File patterns will be relative to the project path.")
-        parser.add_argument('-bt', '--build-tools', default=False, action='store_true',
-                            help="Specifies whether to build O3DE toolchain executables. This will build AssetBundlerBatch, AssetProcessorBatch.")
-        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=None,
-                            help='Designates where the build files for the O3DE toolchain are generated. If not specified, default is <o3de_project_path>/build/tools.')
-        parser.add_argument('-lbp', '--launcher-build-path', type=pathlib.Path, default=None,
-                            help="Designates where the launcher build files (Game/Server/Unified) are generated. If not specified, default is <o3de_project_path>/build/launcher.")
-        parser.add_argument('-regovr', '--allow-registry-overrides', default=False, type = bool,
-                            help="When configuring cmake builds, this determines if the script allows for overriding registry settings from external sources.")
-        parser.add_argument('-abp', '--asset-bundling-path', type=pathlib.Path, default=None,
-                            help="Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, default is <o3de_project_path>/build/asset_bundling.")
-        parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=2048, help='Specify the maximum size of a given asset bundle.')
-        parser.add_argument('-nogame', '--no-game-launcher', action='store_true', help='This flag skips building the Game Launcher on a platform if not needed.')
-        parser.add_argument('-noserver', '--no-server-launcher', action='store_true', help='This flag skips building the Server Launcher on a platform if not needed.')
-        parser.add_argument('-noheadless', '--no-headless-server-launcher', action='store_true', help='This flag skips building the Headless Server Launcher on a platform if not needed.')
-        parser.add_argument('-nounified', '--no-unified-launcher', action='store_true', help='This flag skips building the Unified Launcher on a platform if not needed.')
+                            choices=[exp.ARCHIVE_FORMAT_NONE, exp.ARCHIVE_FORMAT_ZIP, exp.ARCHIVE_FORMAT_GZIP, exp.ARCHIVE_FORMAT_BZ2, exp.ARCHIVE_FORMAT_XZ],
+                            default=default_archive_output_format)
+
+        # option.build.assets / SETTINGS_OPTION_BUILD_ASSETS
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_ASSETS.key,
+                                           enable_override_arg=['-assets', '--should-build-assets'],
+                                           enable_override_desc='Build and update all assets before bundling.',
+                                           disable_override_arg=['-noassets', '--skip-build-assets'],
+                                           disable_override_desc='Skip building of assets and use assets that were already built.')
+
+        # option.fail.on.asset.errors / SETTINGS_OPTION_FAIL_ON_ASSET_ERR
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_FAIL_ON_ASSET_ERR.key,
+                                           enable_override_arg=['-foa', '--fail-on-asset-errors'],
+                                           enable_override_desc='Fail the export if there are errors during the building of assets. (Only relevant if assets are set to be built).',
+                                           disable_override_arg=['-coa', '--continue-on-assets-errors'],
+                                           disable_override_desc='Continue export even if there are errors during the building of assets. (Only relevant if assets are set to be built).')
+
+        export_config.add_multi_part_argument(argument=['-sl', '--seedlist'],
+                                              parser=parser,
+                                              key=exp.SETTINGS_SEED_LIST_PATHS.key,
+                                              dest='seedlist_paths',
+                                              description='Path to a seed list file for asset bundling. Specify multiple times for each seed list.',
+                                              is_path_type=True)
+
+        export_config.add_multi_part_argument(argument=['-sf', '--seedfile'],
+                                              parser=parser,
+                                              key=exp.SETTINGS_SEED_FILE_PATHS.key,
+                                              dest='seedfile_paths',
+                                              description='Path to a seed file for asset bundling. Example seed files are levels or prefabs.',
+                                              is_path_type=True)
+
+        export_config.add_multi_part_argument(argument=['-lvl', '--level-name'],
+                                              parser=parser,
+                                              key=exp.SETTINGS_DEFAULT_LEVEL_NAMES.key,
+                                              dest='level_names',
+                                              description='The name of the level you want to export. This will look in <o3de_project_path>/Levels to fetch the right level prefab.',
+                                              is_path_type=False)
+
+        export_config.add_multi_part_argument(argument=['-gpfp', '--game-project-file-pattern-to-copy'],
+                                              parser=parser,
+                                              key=exp.SETTINGS_ADDITIONAL_GAME_PROJECT_FILE_PATTERN.key,
+                                              dest='game_project_file_patterns_to_copy',
+                                              description='Any additional file patterns located in the project directory. File patterns will be relative to the project path. Will be included in GameLauncher.',
+                                              is_path_type=False)
+
+        export_config.add_multi_part_argument(argument=['-spfp', '--server-project-file-pattern-to-copy'],
+                                              parser=parser,
+                                              key=exp.SETTINGS_ADDITIONAL_SERVER_PROJECT_FILE_PATTERN.key,
+                                              dest='server_project_file_patterns_to_copy',
+                                              description='Any additional file patterns located in the project directory. File patterns will be relative to the project path. Will be included in ServerLauncher.',
+                                              is_path_type=False)
+
+        export_config.add_multi_part_argument(argument=['-pfp', '--project-file-pattern-to-copy'],
+                                              parser=parser,
+                                              key=exp.SETTINGS_ADDITIONAL_PROJECT_FILE_PATTERN.key,
+                                              dest='project_file_patterns_to_copy',
+                                              description='Any additional file patterns located in the project directory. File patterns will be relative to the project path.',
+                                              is_path_type=False)
+
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_TOOLS.key,
+                                           enable_override_arg=['-bt', '--build-tools'],
+                                           enable_override_desc="Enable the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
+                                                                "The tools will be built into the location specified by the '--tools-build-path' argument",
+                                           disable_override_arg=['-sbt', '--skip-build-tools'],
+                                           disable_override_desc="Skip the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
+                                                                 "The tools must be already available at the location specified by the '--tools-build-path' argument.")
+
+        default_build_tools_path = export_config.get_value(exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.default)
+        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=pathlib.Path(default_build_tools_path),
+                            help=f'Designates where the build files for the O3DE toolchain are generated. If not specified, default is {default_build_tools_path}')
+
+        default_launcher_build_path = export_config.get_value(exp.SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH.default)
+        parser.add_argument('-lbp', '--launcher-build-path', type=pathlib.Path, default=pathlib.Path(default_launcher_build_path),
+                            help=f"Designates where the launcher build files (Game/Server/Unified) are generated. If not specified, default is {default_launcher_build_path}.")
+
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES.key,
+                                           enable_override_arg=['-regovr', '--allow-registry-overrides'],
+                                           enable_override_desc="Allow overriding registry settings from external sources during the cmake build configuration.",
+                                           disable_override_arg=['-noregovr', '--disallow-registry-overrides'],
+                                           disable_override_desc="Disallow overriding registry settings from external sources during the cmake build configuration.")
+
+        default_asset_bundling_path = export_config.get_value(exp.SETTINGS_DEFAULT_ASSET_BUNDLING_PATH.key, exp.SETTINGS_DEFAULT_ASSET_BUNDLING_PATH.default)
+        parser.add_argument('-abp', '--asset-bundling-path', type=pathlib.Path, default=pathlib.Path(default_asset_bundling_path),
+                            help=f"Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, default is {default_asset_bundling_path}.")
+
+        default_max_size = export_config.get_value(exp.SETTINGS_MAX_BUNDLE_SIZE.key, exp.SETTINGS_MAX_BUNDLE_SIZE.default)
+        parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=int(default_max_size),
+                            help=f"Specify the maximum size of a given asset bundle.. If not specified, default is {default_max_size}.")
+
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_GAME_LAUNCHER.key,
+                                           enable_override_arg=['-game', '--game-launcher'],
+                                           enable_override_desc="Enable the building and inclusion of the Game Launcher.",
+                                           disable_override_arg=['--nogame', '--no-game-launcher'],
+                                           disable_override_desc="Disable the building and inclusion of the Game Launcher if not needed.")
+
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_SERVER_LAUNCHER.key,
+                                           enable_override_arg=['-server', '--server-launcher'],
+                                           enable_override_desc="Enable the building and inclusion of the Server Launcher.",
+                                           disable_override_arg=['--noserver', '--no-server-launcher'],
+                                           disable_override_desc="Disable the building and inclusion of the Server Launcher if not needed.")
+
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_HEADLESS_SERVER_LAUNCHER.key,
+                                           enable_override_arg=['-headless', '--headless-server-launcher'],
+                                           enable_override_desc="Enable the building and inclusion of the Headless Server Launcher.",
+                                           disable_override_arg=['--noheadless', '--no-headless-server-launcher'],
+                                           disable_override_desc="Disable the building and inclusion of the Headless Server Launcher if not needed.")
+
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_UNIFIED_SERVER_LAUNCHER.key,
+                                           enable_override_arg=['-unified', '--unified-launcher'],
+                                           enable_override_desc="Enable the building and inclusion of the Unified Launcher.",
+                                           disable_override_arg=['--nounified', '--no-unified-launcher'],
+                                           disable_override_desc="Disable the building and inclusion of the Unified Launcher if not needed.")
+
         parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
-        parser.add_argument('-ec', '--engine-centric', action='store_true', default=False, help='Option use the engine-centric work flow to export the project.')
+
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_ENGINE_CENTRIC.key,
+                                           enable_override_arg=['-ec', '--engine-centric'],
+                                           enable_override_desc="Enable the engine-centric work flow to export the project.",
+                                           disable_override_arg=['-pc', '--project-centric'],
+                                           disable_override_desc="Enable the project-centric work flow to export the project.")
+
         parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
         if o3de_context is None:
             parser.print_help()
@@ -284,31 +405,77 @@ if "o3de_context" in globals():
         return parsed_args
     
     args = parse_args(o3de_context)
+
+    option_build_tools = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                 key=exp.SETTINGS_OPTION_BUILD_TOOLS.key,
+                                                                 enable_attribute='build_tools',
+                                                                 disable_attribute='skip_build_tools')
+
+    option_build_assets = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                  key=exp.SETTINGS_OPTION_BUILD_ASSETS.key,
+                                                                  enable_attribute='build_assets',
+                                                                  disable_attribute='skip_build_assets')
+
+    fail_on_asset_errors = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                   key=exp.SETTINGS_OPTION_FAIL_ON_ASSET_ERR.key,
+                                                                   enable_attribute='stop_on_asset_errors',
+                                                                   disable_attribute='continue_on_assets_errors')
+
+    option_build_game_launcher = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                         key=exp.SETTINGS_OPTION_BUILD_GAME_LAUNCHER.key,
+                                                                         enable_attribute='game_launcher',
+                                                                         disable_attribute='no_game_launcher')
+
+    option_build_server_launcher = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                           key=exp.SETTINGS_OPTION_BUILD_SERVER_LAUNCHER.key,
+                                                                           enable_attribute='server_launcher',
+                                                                           disable_attribute='no_server_launcher')
+
+    option_build_headless_server_launcher = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                                    key=exp.SETTINGS_OPTION_BUILD_HEADLESS_SERVER_LAUNCHER.key,
+                                                                                    enable_attribute='headless_server_launcher',
+                                                                                    disable_attribute='no_headless_server_launcher')
+
+    option_build_unified_launcher = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                            key=exp.SETTINGS_OPTION_BUILD_UNIFIED_SERVER_LAUNCHER.key,
+                                                                            enable_attribute='unified_launcher',
+                                                                            disable_attribute='no_unified_launcher')
+
+    option_build_engine_centric = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                          key=exp.SETTINGS_OPTION_ENGINE_CENTRIC.key,
+                                                                          enable_attribute='engine_centric',
+                                                                          disable_attribute='project_centric')
+
+    option_allow_registry_overrrides = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                               key=exp.SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES.key,
+                                                                               enable_attribute='allow_registry_overrides',
+                                                                               disable_attribute='disallow_registry_overrides')
+
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
     try:
         export_standalone_project(ctx=o3de_context,
                                   selected_platform=args.platform,
                                   output_path=args.output_path,
-                                  should_build_tools=args.build_tools,
+                                  should_build_tools=option_build_tools,
                                   build_config=args.config,
                                   tool_config=args.tool_config,
-                                  seedlist_paths=[] if not args.seedlist_paths else args.seedlist_paths,
-                                  seedfile_paths=[] if not args.seedfile_paths else args.seedfile_paths,
-                                  level_names=[] if not args.level_names else args.level_names,
-                                  game_project_file_patterns_to_copy=[] if not args.game_project_file_patterns_to_copy else args.game_project_file_patterns_to_copy,
-                                  server_project_file_patterns_to_copy=[] if not args.server_project_file_patterns_to_copy else args.server_project_file_patterns_to_copy,
-                                  project_file_patterns_to_copy=[] if not args.project_file_patterns_to_copy else args.project_file_patterns_to_copy,
+                                  seedlist_paths=args.seedlist_paths,
+                                  seedfile_paths=args.seedfile_paths,
+                                  level_names=args.level_names,
+                                  game_project_file_patterns_to_copy=args.game_project_file_patterns_to_copy,
+                                  server_project_file_patterns_to_copy=args.server_project_file_patterns_to_copy,
+                                  project_file_patterns_to_copy=args.project_file_patterns_to_copy,
                                   asset_bundling_path=args.asset_bundling_path,
                                   max_bundle_size=args.max_bundle_size,
-                                  should_build_all_assets=args.should_build_assets,
-                                  fail_on_asset_errors=args.fail_on_asset_errors,
-                                  should_build_game_launcher=not args.no_game_launcher,
-                                  should_build_server_launcher=not args.no_server_launcher,
-                                  should_build_unified_launcher=not args.no_unified_launcher,
-                                  should_build_headless_server_launcher=not args.no_headless_server_launcher,
-                                  engine_centric=args.engine_centric,
-                                  allow_registry_overrides=args.allow_registry_overrides,
+                                  should_build_all_assets=option_build_assets,
+                                  fail_on_asset_errors=fail_on_asset_errors,
+                                  should_build_game_launcher=option_build_game_launcher,
+                                  should_build_server_launcher=option_build_server_launcher,
+                                  should_build_headless_server_launcher=option_build_headless_server_launcher,
+                                  should_build_unified_launcher=option_build_unified_launcher,
+                                  engine_centric=option_build_engine_centric,
+                                  allow_registry_overrides=option_allow_registry_overrrides,
                                   tools_build_path=args.tools_build_path,
                                   launcher_build_path=args.launcher_build_path,
                                   archive_output_format=args.archive_output,
