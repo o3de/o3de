@@ -126,7 +126,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     if should_build_unified_launcher:
         launcher_type |= exp.LauncherType.UNIFIED
     if should_build_headless_server_launcher:
-        launcher_type |= exp.LauncherType.HEADLESS
+        launcher_type |= exp.LauncherType.HEADLESS_SERVER
 
     if launcher_type != 0:
         exp.build_game_targets(ctx=ctx,
