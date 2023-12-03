@@ -113,7 +113,7 @@ namespace AZ
 
             const VkResult result =
                 device.GetContext().CreateImageView(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImageView);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);

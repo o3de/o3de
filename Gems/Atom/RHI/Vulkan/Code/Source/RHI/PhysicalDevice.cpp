@@ -30,7 +30,7 @@ namespace AZ
 
             uint32_t physicalDeviceCount = 0;
             result = instance.GetContext().EnumeratePhysicalDevices(instance.GetNativeInstance(), &physicalDeviceCount, nullptr);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
             if (physicalDeviceCount == 0)
             {
                 AZ_Error("Vulkan", false, "No Vulkan compatible physical devices were found!");
@@ -42,7 +42,7 @@ namespace AZ
 
             result =
                 instance.GetContext().EnumeratePhysicalDevices(instance.GetNativeInstance(), &physicalDeviceCount, physicalDevices.data());
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             if (ConvertResult(result) != RHI::ResultCode::Success)
             {

@@ -152,7 +152,7 @@ namespace AZ
 
             const VkResult result =
                 device.GetContext().CreateBufferView(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeBufferView);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 

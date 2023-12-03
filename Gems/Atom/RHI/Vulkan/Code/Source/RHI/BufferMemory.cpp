@@ -34,7 +34,7 @@ namespace AZ
                 &createInfo.m_vkCreateInfo,
                 &m_vkBuffer);
 
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
@@ -62,8 +62,8 @@ namespace AZ
                 &m_vkBuffer,
                 &vmaAlloc,
                 nullptr);
-            
-            AssertSuccess(vkResult);
+
+            VK_RESULT_ASSERT(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
