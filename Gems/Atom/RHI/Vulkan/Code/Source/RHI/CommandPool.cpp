@@ -56,7 +56,7 @@ namespace AZ
         RHI::ResultCode CommandPool::BuildNativeCommandPool()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            
+
             VkCommandPoolCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
             createInfo.pNext = nullptr;
@@ -65,7 +65,7 @@ namespace AZ
 
             const VkResult result = device.GetContext().CreateCommandPool(
                 device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeCommandPool);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             return ConvertResult(result);
         }
@@ -79,8 +79,8 @@ namespace AZ
         {
             RHI::Ptr<CommandList> cmdList;
             // Search the free list first
-            auto it = AZStd::find_if(m_freeCommandLists.begin(), m_freeCommandLists.end(), [&level](const RHI::Ptr<CommandList>& cmdList) 
-            { 
+            auto it = AZStd::find_if(m_freeCommandLists.begin(), m_freeCommandLists.end(), [&level](const RHI::Ptr<CommandList>& cmdList)
+            {
                 return cmdList->m_descriptor.m_level == level;
             });
 
@@ -123,7 +123,7 @@ namespace AZ
             }
             m_freeCommandLists.insert(m_freeCommandLists.end(), AZStd::make_move_iterator(m_commandLists.begin()), AZStd::make_move_iterator(m_commandLists.end()));
             m_commandLists.clear();
-            AssertSuccess(device.GetContext().ResetCommandPool(device.GetNativeDevice(), m_nativeCommandPool, 0));
-        }        
+            VK_RESULT_ASSERT(device.GetContext().ResetCommandPool(device.GetNativeDevice(), m_nativeCommandPool, 0));
+        }
     }
 }
