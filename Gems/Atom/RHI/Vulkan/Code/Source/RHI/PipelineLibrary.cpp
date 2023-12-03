@@ -44,7 +44,7 @@ namespace AZ
 
             const VkResult result = device.GetContext().CreatePipelineCache(
                 device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativePipelineCache);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             SetName(GetName());
@@ -79,7 +79,7 @@ namespace AZ
 
             const VkResult result = device.GetContext().MergePipelineCaches(
                 device.GetNativeDevice(), m_nativePipelineCache, static_cast<uint32_t>(pipelineCaches.size()), pipelineCaches.data());
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             return ConvertResult(result);
         }
@@ -90,7 +90,7 @@ namespace AZ
 
             size_t dataSize = 0;
             VkResult result = device.GetContext().GetPipelineCacheData(device.GetNativeDevice(), m_nativePipelineCache, &dataSize, nullptr);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
             if (result != VK_SUCCESS)
             {
                 return RHI::ConstPtr<RHI::PipelineLibraryData>();
@@ -98,7 +98,7 @@ namespace AZ
 
             AZStd::vector<uint8_t> data(dataSize);
             result = device.GetContext().GetPipelineCacheData(device.GetNativeDevice(), m_nativePipelineCache, &dataSize, data.data());
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             return RHI::PipelineLibraryData::Create(AZStd::move(data));
         }

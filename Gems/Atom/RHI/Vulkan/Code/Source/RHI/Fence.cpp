@@ -117,7 +117,7 @@ namespace AZ
 
                 const VkResult result =
                     device.GetContext().CreateFence(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeFence);
-                AssertSuccess(result);
+                VK_RESULT_ASSERT(result);
 
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
                 m_signalEvent.SetValue(readyToWait);
@@ -197,7 +197,8 @@ namespace AZ
                     // According to the standard we can't wait until the event (like VkSubmitQueue) happens first.
                     m_signalEvent.Wait();
                     auto& device = static_cast<Device&>(GetDevice());
-                    AssertSuccess(device.GetContext().WaitForFences(device.GetNativeDevice(), 1, &m_nativeFence, VK_FALSE, UINT64_MAX));
+                    [[maybe_unused]] VkResult vkResult = device.GetContext().WaitForFences(device.GetNativeDevice(), 1, &m_nativeFence, VK_FALSE, UINT64_MAX);
+                    VK_RESULT_ASSERT(vkResult);
                 }
                 break;
             case FenceType::TimelineSemaphore:
@@ -228,7 +229,8 @@ namespace AZ
                 {
                     m_signalEvent.SetValue(false);
                     auto& device = static_cast<Device&>(GetDevice());
-                    AssertSuccess(device.GetContext().ResetFences(device.GetNativeDevice(), 1, &m_nativeFence));
+                    [[maybe_unused]] VkResult vkResult = device.GetContext().ResetFences(device.GetNativeDevice(), 1, &m_nativeFence);
+                    VK_RESULT_ASSERT(vkResult);
                 }
                 break;
             case FenceType::TimelineSemaphore:

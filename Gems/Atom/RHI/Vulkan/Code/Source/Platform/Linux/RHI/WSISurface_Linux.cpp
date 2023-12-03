@@ -40,7 +40,7 @@ namespace AZ
             createInfo.connection = xcb_connection;
             createInfo.window = static_cast<xcb_window_t>(m_descriptor.m_windowHandle.GetIndex());
             const VkResult result = instance.GetContext().CreateXcbSurfaceKHR(instance.GetNativeInstance(), &createInfo, VkSystemAllocator::Get(), &m_nativeSurface);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
 
             return ConvertResult(result);
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND

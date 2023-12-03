@@ -128,7 +128,7 @@ namespace AZ
             const VkResult result = static_cast<Device&>(GetDevice())
                                         .GetContext()
                                         .QueueSubmit(m_nativeQueue, submitCount, submitCount ? &submitInfo : nullptr, nativeFence);
-            AssertSuccess(result);
+            VK_RESULT_ASSERT(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             // Signal all signaling semaphores that they can be used.
@@ -153,7 +153,7 @@ namespace AZ
                     GetDevice().SetDeviceRemoved();
                 }
 #endif
-                AssertSuccess(result);
+                VK_RESULT_ASSERT(result);
             }
         }
 
