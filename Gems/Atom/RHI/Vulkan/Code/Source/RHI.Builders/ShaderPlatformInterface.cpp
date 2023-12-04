@@ -161,7 +161,7 @@ namespace AZ
             ByProducts& byProducts) const
         {
             // Shader compiler executable
-            static const char* dxcRelativePath = AZ_TRAIT_ATOM_SHADERBUILDER_DXC;
+            const auto dxcRelativePath = RHI::GetDirectXShaderCompilerPath(AZ_TRAIT_ATOM_SHADERBUILDER_DXC);
 
             // -Fo "Output file"
             AZStd::string shaderOutputFile;
