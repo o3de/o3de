@@ -26,7 +26,7 @@ namespace AZ
         Data::Instance<AttachmentImage> AttachmentImage::FindOrCreate(const Data::Asset<AttachmentImageAsset>& imageAsset)
         {
             return Data::InstanceDatabase<AttachmentImage>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAsset(imageAsset), imageAsset);
+                Data::InstanceId::CreateFromAssetId(imageAsset.GetId()), imageAsset);
         }
 
         Data::Instance<AttachmentImage> AttachmentImage::Create(
