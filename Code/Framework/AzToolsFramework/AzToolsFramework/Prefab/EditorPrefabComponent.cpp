@@ -32,6 +32,8 @@ namespace AzToolsFramework
                 {
                     editContext->Class<EditorPrefabComponent>("Prefab Component", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
+                        ->Attribute(AZ::Edit::Attributes::HideIcon, true)
                         ->Attribute(
                             AZ::Edit::Attributes::SliceFlags,
                             AZ::Edit::SliceFlags::HideOnAdd | AZ::Edit::SliceFlags::PushWhenHidden |
