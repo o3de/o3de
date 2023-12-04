@@ -33,6 +33,7 @@ namespace AZ
             : public Data::AssetData
         {
             friend class ModelLodAssetCreator;
+            friend class ModelAsset;
 
         public:
             static constexpr size_t LodCountMax = 10;
@@ -54,6 +55,8 @@ namespace AZ
             class Mesh final
             {
                 friend class ModelLodAssetCreator;
+                friend class ModelLodAsset;
+
             public:
                 AZ_TYPE_INFO(Mesh, "{55A91F9A-2F71-4B75-B2F7-565087DD2DBD}");
                 AZ_CLASS_ALLOCATOR(Mesh, AZ::SystemAllocator);
@@ -122,6 +125,10 @@ namespace AZ
             private:
                 template<class T>
                 AZStd::span<const T> GetBufferTyped(const BufferAssetView& bufferAssetView) const;
+                                
+                // Load/Release all the buffer assets referenced by this mesh
+                void LoadBufferAssets();
+                void ReleaseBufferAssets();
 
                 AZ::Name m_name;
                 AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
@@ -164,6 +171,10 @@ namespace AZ
                 // to by using MeshFeatureProcessor::ConnectModelChangeEventHandler().
                 return false;
             }
+
+            // Load/release all BufferAssets used by this ModelLodAsset
+            void LoadBufferAssets();
+            void ReleaseBufferAssets();
             
             AZStd::vector<Mesh> m_meshes;
             AZ::Aabb m_aabb = AZ::Aabb::CreateNull();

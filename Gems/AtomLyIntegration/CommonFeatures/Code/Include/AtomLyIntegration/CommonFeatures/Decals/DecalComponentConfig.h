@@ -30,6 +30,9 @@ namespace AZ
             float m_normalMapOpacity = 1.0f;
             // Decals with a larger sort key appear over top of smaller sort keys            
             uint8_t m_sortKey = DefaultDecalSortKey;
+
+            AZ::Vector3 m_decalColor = AZ::Vector3::CreateOne();
+            float m_decalColorFactor = 1.0f;
         };
     }
 }

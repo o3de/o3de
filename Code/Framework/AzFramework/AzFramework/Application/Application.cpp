@@ -717,12 +717,10 @@ namespace AzFramework
 
             AZ::IO::FixedMaxPath projectUserPath;
 
-            // carbonated begin (mp-469): Add the ability to change the 'user' dir
-
+#if defined(CARBONATED)
             bool hasCliUserDirOverride = false;
 
             AZStd::string userDirName("user");
-#if defined(CARBONATED)
             const int argC = GetArgC() ? *GetArgC() : 0;
             char** argV = GetArgV() ? *GetArgV() : nullptr;            
             // This isn't particularly elegant, but check for the user_dir override here.  Needs to be done early so that the aliases
@@ -739,7 +737,6 @@ namespace AzFramework
                     }
                 }
             }
-#endif
 
             if (hasCliUserDirOverride)
             {
@@ -749,6 +746,7 @@ namespace AzFramework
             {
                 projectUserPath = engineRootPath.Append(userDirName);
             }
+
             fileIoBase->SetAlias("@user@", projectUserPath.c_str());
             fileIoBase->CreatePath(projectUserPath.c_str());
             CreateUserCache(projectUserPath, *fileIoBase);
@@ -758,8 +756,21 @@ namespace AzFramework
             {
                 projectLogPath = projectUserPath / "log";
             }
+#else
+            if (!m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            {
+                projectUserPath = engineRootPath / "user";
+            }
+            fileIoBase->SetAlias("@user@", projectUserPath.c_str());
+            fileIoBase->CreatePath(projectUserPath.c_str());
+            CreateUserCache(projectUserPath, *fileIoBase);
 
-            // carbonated end
+            AZ::IO::FixedMaxPath projectLogPath;
+            if (!m_settingsRegistry->Get(projectLogPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
+            {
+                projectLogPath = projectUserPath / "log";
+            }
+#endif
 
             fileIoBase->SetAlias("@log@", projectLogPath.c_str());
             fileIoBase->CreatePath(projectLogPath.c_str());
