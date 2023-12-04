@@ -97,7 +97,7 @@ def test_compile_project_fixture(test_create_project_fixture, context):
     launcher_target = f"{project_name}.GameLauncher"
 
     # configure
-    result = context.run([str(cmake_path),'-B', str(context.project_build_path), '-S', '.', '-G', 'Visual Studio 16 2019'], cwd=context.project_path)
+    result = context.run([str(cmake_path),'-B', str(context.project_build_path), '-S', '.'], cwd=context.project_path)
     assert result.returncode == 0
     assert (context.project_build_path / f'{project_name}.sln').is_file()
 

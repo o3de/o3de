@@ -650,13 +650,14 @@ namespace AZ
             if (m_descriptor.m_level == VK_COMMAND_BUFFER_LEVEL_SECONDARY)
             {
                 AZ_Assert(inheritance, "Null inheritance info");
-                const RenderPass* renderPass = inheritance->m_frameBuffer->GetRenderPass();
+                const RenderPass* renderPass = inheritance->m_frameBuffer ? inheritance->m_frameBuffer->GetRenderPass() : nullptr;
                 inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                inheritanceInfo.renderPass = renderPass->GetNativeRenderPass();
+                inheritanceInfo.renderPass = renderPass ? renderPass->GetNativeRenderPass() : VK_NULL_HANDLE;
                 inheritanceInfo.subpass = inheritance->m_subpass;
-                inheritanceInfo.framebuffer = inheritance->m_frameBuffer->GetNativeFramebuffer();
+                inheritanceInfo.framebuffer =
+                    inheritance->m_frameBuffer ? inheritance->m_frameBuffer->GetNativeFramebuffer() : VK_NULL_HANDLE;
                 beginInfo.pInheritanceInfo = &inheritanceInfo;
-                beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                beginInfo.flags |= renderPass ? VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT : 0;
                 m_state.m_framebuffer = inheritance->m_frameBuffer;
                 m_state.m_subpassIndex = inheritance->m_subpass;
             }
