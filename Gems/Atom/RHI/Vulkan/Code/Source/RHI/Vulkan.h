@@ -105,7 +105,7 @@ namespace AZ
                 return result;\
             }
 
-        #define VK_RESULT_ASSERT(result) AZ_Assert(result == VK_SUCCESS ,"ASSERT: Vulkan API method failed: %s", AZ::Vulkan::GetResultString(result))
+        #define VK_RESULT_ASSERT(result) AZ_Assert((result) == VK_SUCCESS ,"ASSERT: Vulkan API method failed: %s", AZ::Vulkan::GetResultString(result))
 
         /// Checks whether the result is successful; if not, reports the error and returns false. Otherwise, returns true.
         bool IsSuccess(VkResult result);
