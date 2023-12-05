@@ -9,12 +9,12 @@
 
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/MultiDeviceBuffer.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/containers/span.h>
 
 namespace AZ::RHI
 {
-    class MultiDeviceBuffer;
     class InputStreamLayout;
 
     //! Provides a view into a multi-device buffer, to be used as vertex stream. The content of the view is a contiguous

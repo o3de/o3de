@@ -120,6 +120,27 @@ namespace AZ::RHI
         bool SetConstantData(const void* bytes, uint32_t byteCount);
         bool SetConstantData(const void* bytes, uint32_t byteOffset, uint32_t byteCount);
 
+        //! Returns constant data for the given shader input index as a template type.
+        //! The stride of T must match the size of the constant input region. The number
+        //! of elements in the returned span is the number of evenly divisible elements.
+        //! If the strides do not match, an empty span is returned.
+        template <typename T>
+        AZStd::span<const T> GetConstantArray(ShaderInputConstantIndex inputIndex) const;
+
+        //! Returns the constant data as type 'T' returned by value. The size of the constant region
+        //! must match the size of T exactly. Otherwise, an empty instance is returned.
+        template <typename T>
+        T GetConstant(ShaderInputConstantIndex inputIndex) const;
+
+        //! Treats the constant input as an array of type T, returning the element by value at the
+        //! specified array index. The size of the constant region must equally partition into an
+        //! array of type T. Otherwise, an empty instance is returned.
+        template <typename T>
+        T GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const;
+
+        //! Returns constant data for the given shader input index as a span of bytes.
+        AZStd::span<const uint8_t> GetConstantRaw(ShaderInputConstantIndex inputIndex) const;
+
         //! Returns the device-specific ShaderResourceGroupData for the given index
         const ShaderResourceGroupData& GetDeviceShaderResourceGroupData(int deviceIndex) const
         {
@@ -181,6 +202,13 @@ namespace AZ::RHI
 
         ConstPtr<ShaderResourceGroupLayout> m_shaderResourceGroupLayout;
 
+        //! The backing data store of constants used only for the getters, actual storage happens in the single device SRGs.
+        ConstantsData m_constantsData;
+
+        //! Mask used to check whether to compile a specific resource type. This mask is managed by RPI and copied over to the RHI every
+        //! frame.
+        uint32_t m_updateMask = 0;
+
         //! A map of all device-specific ShaderResourceGroupDatas, indexed by the device index
         AZStd::unordered_map<int, ShaderResourceGroupData> m_deviceShaderResourceGroupDatas;
     };
@@ -190,7 +218,7 @@ namespace AZ::RHI
     {
         EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
 
-        bool isValidAll = true;
+        bool isValidAll = m_constantsData.SetConstant(inputIndex, value);
 
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
@@ -205,7 +233,7 @@ namespace AZ::RHI
     {
         EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
 
-        bool isValidAll = true;
+        bool isValidAll = m_constantsData.SetConstant(inputIndex, value, arrayIndex);
 
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
@@ -220,7 +248,7 @@ namespace AZ::RHI
     {
         EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
 
-        bool isValidAll = true;
+        bool isValidAll = m_constantsData.SetConstantMatrixRows(inputIndex, value, rowCount);
 
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
@@ -238,7 +266,7 @@ namespace AZ::RHI
             EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
         }
 
-        bool isValidAll = true;
+        bool isValidAll = m_constantsData.SetConstantArray(inputIndex, values);
 
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
@@ -246,6 +274,24 @@ namespace AZ::RHI
         }
 
         return isValidAll;
+    }
+
+    template <typename T>
+    AZStd::span<const T> MultiDeviceShaderResourceGroupData::GetConstantArray(ShaderInputConstantIndex inputIndex) const
+    {
+        return m_constantsData.GetConstantArray<T>(inputIndex);
+    }
+
+    template <typename T>
+    T MultiDeviceShaderResourceGroupData::GetConstant(ShaderInputConstantIndex inputIndex) const
+    {
+        return m_constantsData.GetConstant<T>(inputIndex);
+    }
+
+    template <typename T>
+    T MultiDeviceShaderResourceGroupData::GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const
+    {
+        return m_constantsData.GetConstant<T>(inputIndex, arrayIndex);
     }
 
     template<typename TShaderInput, typename TShaderInputDescriptor>

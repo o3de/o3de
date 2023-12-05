@@ -338,6 +338,11 @@ namespace AZ::RHI
         return isValidAll;
     }
 
+    AZStd::span<const uint8_t> MultiDeviceShaderResourceGroupData::GetConstantRaw(ShaderInputConstantIndex inputIndex) const
+    {
+        return m_constantsData.GetConstantRaw(inputIndex);
+    }
+
     void MultiDeviceShaderResourceGroupData::EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask)
     {
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)

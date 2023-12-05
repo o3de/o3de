@@ -65,7 +65,17 @@ namespace AZ::RHI
         IterateObjects<Buffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
         {
             deviceBuffer->InvalidateViews();
+                                           });
+    }
+
+    bool MultiDeviceBuffer::IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor)
+    {
+        bool isInResourceCache{true};
+        IterateObjects<Buffer>([&isInResourceCache, &bufferViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
+        {
+            isInResourceCache &= deviceBuffer->IsInResourceCache(bufferViewDescriptor);
         });
+        return isInResourceCache;
     }
 
     //! Given a device index, return the corresponding BufferView for the selected device

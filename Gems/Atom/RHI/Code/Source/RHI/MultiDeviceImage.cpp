@@ -107,6 +107,16 @@ namespace AZ::RHI
         });
     }
 
+    bool MultiDeviceImage::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
+    {
+        bool isInResourceCache{true};
+        IterateObjects<Image>([&isInResourceCache, &imageViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        {
+            isInResourceCache &= deviceImage->IsInResourceCache(imageViewDescriptor);
+        });
+        return isInResourceCache;
+    }
+
     //! Given a device index, return the corresponding BufferView for the selected device
     const RHI::Ptr<RHI::ImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
     {
