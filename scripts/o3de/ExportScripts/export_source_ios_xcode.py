@@ -56,7 +56,7 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
         
     # Optionally process the assets
     if not skip_asset_processing:
-        asset_processor_batch_path = exp.get_asset_processor_batch_path(tools_build_folder, True)
+        asset_processor_batch_path = exp.get_asset_processor_batch_path(tools_build_folder, required=True)
         exp.process_command([ str(asset_processor_batch_path), '--platforms=ios',
                         '--project-path', ctx.project_path ], cwd=ctx.project_path)
 
