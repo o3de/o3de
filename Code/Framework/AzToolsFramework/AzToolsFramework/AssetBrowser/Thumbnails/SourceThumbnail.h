@@ -41,9 +41,7 @@ namespace AzToolsFramework
             Q_OBJECT
         public:
             SourceThumbnail(SharedThumbnailKey key);
-
-        protected:
-            void LoadThread() override;
+            void Load() override;
 
         private:
             static QMutex m_mutex;
