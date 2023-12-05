@@ -845,6 +845,18 @@ namespace
         }
     }
 
+    int PyClearSelection()
+    {
+        int numSel = 0;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            numSel, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntitiesCount);
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList());
+
+        return numSel;
+    }
+
     AZ::Vector3 PyGetObjectPosition(const char* pName)
     {
         CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
@@ -944,6 +956,7 @@ namespace AzToolsFramework
             };
             addLegacyGeneral(behaviorContext->Method("get_all_objects", PyGetAllObjects, nullptr, "Gets the list of names of all objects in the whole level."));
 
+            addLegacyGeneral(behaviorContext->Method("clear_selection", PyClearSelection, nullptr, "Clears selection."));
             addLegacyGeneral(behaviorContext->Method("delete_object", PyDeleteObject, nullptr, "Deletes a specified object."));
 
             addLegacyGeneral(behaviorContext->Method("get_position", PyGetObjectPosition, nullptr, "Gets the position of an object."));
