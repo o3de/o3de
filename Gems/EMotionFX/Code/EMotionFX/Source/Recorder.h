@@ -14,7 +14,6 @@
 #include <AzCore/Math/Color.h>
 #include "BaseObject.h"
 #include <MCore/Source/Attribute.h>
-#include "MCore/Source/Color.h"
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/File.h>
 #include <MCore/Source/Vector.h>

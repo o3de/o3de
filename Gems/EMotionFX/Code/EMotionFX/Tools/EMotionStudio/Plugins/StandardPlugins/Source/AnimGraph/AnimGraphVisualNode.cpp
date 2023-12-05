@@ -123,7 +123,7 @@ namespace EMStudio
             for (size_t i = 0; i < numSyncPoints; ++i)
             {
                 // get the event color from the preset manager
-                syncCol = presetManager->GetEventColor(syncTrack->GetEvent(i).GetEventDatas());
+                syncCol = AzQtComponents::toQColor(presetManager->GetEventColor(syncTrack->GetEvent(i).GetEventDatas()));
 
                 painter.setPen(syncCol);
                 painter.setBrush(syncCol);
