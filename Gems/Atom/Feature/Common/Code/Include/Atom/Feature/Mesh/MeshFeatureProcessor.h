@@ -215,6 +215,7 @@ namespace AZ
             bool ReleaseMesh(MeshHandle& meshHandle) override;
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
+            void PrintDrawPacketInfo(const MeshHandle& meshHandle) override;
             void SetDrawItemEnabled(const MeshHandle& meshHandle, RHI::DrawListTag drawListTag, bool enabled) override;
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;

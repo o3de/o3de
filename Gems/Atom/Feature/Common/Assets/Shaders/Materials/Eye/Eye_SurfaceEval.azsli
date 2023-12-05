@@ -200,6 +200,11 @@ Surface EvaluateSurface_Eye(
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
     surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
 
+    // ------- Occlusion -------
+    
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture);
+    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture);
+
     // ------- Transmission -------
 
     real2 transmissionUv = uvs[MaterialSrg::m_transmissionThicknessMapUvIndex];

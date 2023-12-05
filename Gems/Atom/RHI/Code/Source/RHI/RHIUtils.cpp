@@ -474,4 +474,16 @@ namespace AZ::RHI
         outputFile.Write(jsonStringBuffer.GetString(), jsonStringBuffer.GetSize());
         outputFile.Close();
     }
+
+    RHI::DrawListTagRegistry* GetDrawListTagRegistry()
+    {
+        RHI::DrawListTagRegistry* drawListTagRegistry = RHI::RHISystemInterface::Get()->GetDrawListTagRegistry();
+        return drawListTagRegistry;
+    }
+
+    Name GetDrawListName(DrawListTag drawListTag)
+    {
+        RHI::DrawListTagRegistry* drawListTagRegistry = GetDrawListTagRegistry();
+        return drawListTagRegistry->GetName(drawListTag);
+    }
 }
