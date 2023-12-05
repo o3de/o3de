@@ -51,7 +51,7 @@ namespace AZ::RHI
     DrawItemProperties DrawPacket::GetDrawItemProperties(size_t index) const
     {
         AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
-        return DrawItemProperties(&m_drawItems[index], m_drawItemSortKeys[index], m_drawFilterMasks[index]);
+        return DrawItemProperties{&m_drawItems[index], m_drawItemSortKeys[index], m_drawFilterMasks[index]};
     }
 
     DrawListTag DrawPacket::GetDrawListTag(size_t index) const

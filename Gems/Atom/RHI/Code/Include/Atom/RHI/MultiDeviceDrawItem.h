@@ -295,8 +295,7 @@ namespace AZ::RHI
         {
             AZ_Assert(m_mdItem, "Not initialized with MultiDeviceDrawItem\n");
 
-            DrawItemProperties result{ &m_mdItem->GetDeviceDrawItem(deviceIndex), m_sortKey, m_drawFilterMask };
-            result.m_depth = m_depth;
+            DrawItemProperties result{ &m_mdItem->GetDeviceDrawItem(deviceIndex), m_sortKey, m_drawFilterMask, m_depth };
 
             return result;
         }
