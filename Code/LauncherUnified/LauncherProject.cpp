@@ -9,6 +9,8 @@
 // note that this is the only file pulled into a launcher target that has the
 // defines set such as LY_CMAKE_TARGET, and LY_PROJECT_NAME, other files come from a static library
 // which do not provide those defines.
+// note that the tests use a mock implementation of this file, see Tests/Test.cpp
+// If you modify this file or the interface launcher.h, make sure to update the mock implementation as well.
 
 #include <AzCore/std/string/string_view.h>
 
