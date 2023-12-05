@@ -36,7 +36,6 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                               should_build_all_assets: bool = True,
                               should_build_game_launcher: bool = True,
                               should_build_server_launcher: bool = True,
-                              should_build_headless_server_launcher: bool = True,
                               should_build_unified_launcher: bool = True,
                               allow_registry_overrides: bool = False,
                               tools_build_path: pathlib.Path | None =None,
@@ -67,7 +66,6 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param should_build_all_assets:                 Option to build/process all the assets for the game
     :param should_build_game_launcher:              Option to build the game launcher package
     :param should_build_server_launcher:            Option to build the server launcher package
-    :param should_build_headless_server_launcher:   Option to build the headless server launcher package
     :param should_build_unified_launcher:           Option to build the unified launcher package
     :param allow_registry_overrides:                Option to allow registry overrides in the build process
     :param tools_build_path:                        Optional build path to build the tools. (Will default to build/tools if not supplied)
@@ -125,8 +123,6 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
         launcher_type |= exp.LauncherType.SERVER
     if should_build_unified_launcher:
         launcher_type |= exp.LauncherType.UNIFIED
-    if should_build_headless_server_launcher:
-        launcher_type |= exp.LauncherType.HEADLESS_SERVER
 
     if launcher_type != 0:
         exp.build_game_targets(ctx=ctx,
@@ -356,12 +352,6 @@ if "o3de_context" in globals():
                                            disable_override_arg=['--noserver', '--no-server-launcher'],
                                            disable_override_desc="Disable the building and inclusion of the Server Launcher if not needed.")
 
-        export_config.add_boolean_argument(parser=parser,
-                                           key=exp.SETTINGS_OPTION_BUILD_HEADLESS_SERVER_LAUNCHER.key,
-                                           enable_override_arg=['-headless', '--headless-server-launcher'],
-                                           enable_override_desc="Enable the building and inclusion of the Headless Server Launcher.",
-                                           disable_override_arg=['--noheadless', '--no-headless-server-launcher'],
-                                           disable_override_desc="Disable the building and inclusion of the Headless Server Launcher if not needed.")
 
         export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_BUILD_UNIFIED_SERVER_LAUNCHER.key,
@@ -376,6 +366,8 @@ if "o3de_context" in globals():
                                            enable_override_desc="Enable the engine-centric work flow to export the project.",
                                            disable_override_arg=['-pc', '--project-centric'],
                                            disable_override_desc="Enable the project-centric work flow to export the project.")
+
+        parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
 
         parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
         if o3de_context is None:
@@ -416,10 +408,6 @@ if "o3de_context" in globals():
                                                                            enable_attribute='server_launcher',
                                                                            disable_attribute='no_server_launcher')
 
-    option_build_headless_server_launcher = export_config.get_parsed_boolean_option(parsed_args=args,
-                                                                                    key=exp.SETTINGS_OPTION_BUILD_HEADLESS_SERVER_LAUNCHER.key,
-                                                                                    enable_attribute='headless_server_launcher',
-                                                                                    disable_attribute='no_headless_server_launcher')
 
     option_build_unified_launcher = export_config.get_parsed_boolean_option(parsed_args=args,
                                                                             key=exp.SETTINGS_OPTION_BUILD_UNIFIED_SERVER_LAUNCHER.key,
@@ -438,6 +426,9 @@ if "o3de_context" in globals():
 
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
+    else:
+        o3de_logger.setLevel(logging.INFO)
+
     try:
         export_standalone_project(ctx=o3de_context,
                                   selected_platform=args.platform,
@@ -457,7 +448,6 @@ if "o3de_context" in globals():
                                   fail_on_asset_errors=fail_on_asset_errors,
                                   should_build_game_launcher=option_build_game_launcher,
                                   should_build_server_launcher=option_build_server_launcher,
-                                  should_build_headless_server_launcher=option_build_headless_server_launcher,
                                   should_build_unified_launcher=option_build_unified_launcher,
                                   engine_centric=option_build_engine_centric,
                                   allow_registry_overrides=option_allow_registry_overrrides,

@@ -191,7 +191,6 @@ class LauncherType(IntEnum):
     GAME = 1
     SERVER = 2
     UNIFIED = 4
-    HEADLESS_SERVER = 8
 
 # Helper API
 def get_default_asset_platform():
@@ -717,7 +716,6 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     should_build_game_launcher = (launcher_types & LauncherType.GAME) == LauncherType.GAME
     should_build_server_launcher = (launcher_types & LauncherType.SERVER) == LauncherType.SERVER
     should_build_unified_launcher = (launcher_types & LauncherType.UNIFIED) == LauncherType.UNIFIED
-    should_build_headless_server_launcher = (launcher_types & LauncherType.SERVER) == LauncherType.HEADLESS_SERVER
 
     if not (should_build_server_launcher or should_build_game_launcher or should_build_unified_launcher):
         return
@@ -760,8 +758,6 @@ def build_game_targets(ctx: O3DEScriptExportContext,
         mono_build_args.append(f"{ctx.project_name}.GameLauncher")
     if should_build_unified_launcher:
         mono_build_args.append(f"{ctx.project_name}.UnifiedLauncher")
-    if should_build_headless_server_launcher:
-        mono_build_args.append(f"{ctx.project_name}.HeadlessServerLauncher")
 
     if ctx.cmake_additional_build_args:
         mono_build_args.extend(ctx.cmake_additional_build_args)
@@ -1115,10 +1111,6 @@ SETTINGS_OPTION_BUILD_SERVER_LAUNCHER = register_setting(key='option.build.serve
                                                          is_boolean=True,
                                                          default='True')
 
-SETTINGS_OPTION_BUILD_HEADLESS_SERVER_LAUNCHER = register_setting(key='option.build.headless.server.launcher',
-                                                                  description='The option to build an exported headless server launcher.',
-                                                                  is_boolean=True,
-                                                                  default='False')
 
 SETTINGS_OPTION_BUILD_UNIFIED_SERVER_LAUNCHER = register_setting(key='option.build.unified.launcher',
                                                                  description='The option to build an exported unified launcher.',
