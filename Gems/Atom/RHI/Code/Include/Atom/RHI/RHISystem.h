@@ -64,6 +64,7 @@ namespace AZ::RHI
         //////////////////////////////////////////////////////////////////////////
         // RHISystemInterface Overrides
         RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) override;
+        //! Add a new virtual device (referencing the same physical device as an existing device marked by deviceIndexToVirtualize)
         [[nodiscard]] AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) override;
         int GetDeviceCount() override;
         RHI::DrawListTagRegistry* GetDrawListTagRegistry() override;
