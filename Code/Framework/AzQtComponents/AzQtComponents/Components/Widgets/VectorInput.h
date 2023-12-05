@@ -106,6 +106,7 @@ namespace AzQtComponents
 
         void onSpinBoxEditingFinished();
 
+        virtual void changeEvent(QEvent* event) override;
     private:
         struct DeferredSetValue
         {
