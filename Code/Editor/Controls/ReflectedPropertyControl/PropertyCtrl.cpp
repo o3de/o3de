@@ -10,7 +10,6 @@
 
 // Editor
 #include "PropertyCtrl.h"
-#include "PropertyGenericCtrl.h"
 #include "PropertyMiscCtrl.h"
 #include "PropertyMotionCtrl.h"
 
@@ -20,14 +19,6 @@ void RegisterReflectedVarHandlers()
     if (!registered)
     {
         registered = true;
-        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew SequencePropertyHandler());
-        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew SequenceIdPropertyHandler());
-        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew LocalStringPropertyHandler());
-        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew LightAnimationPropertyHandler());
         AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
             &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew UserPopupWidgetHandler());
         AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
