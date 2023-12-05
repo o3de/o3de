@@ -277,7 +277,7 @@
                                             "guid": "{7B12D830-4138-51C2-8612-3ED5B4DFA23A}",
                                             "subId": 1000
                                         },
-                                        "assetHint": "Textures/UtilCharts/test_chart_norm.tif"
+                                        "assetHint": "textures/utilcharts/test_chart_norm.tif.streamingimage"
                                     }
                                 }
                             }

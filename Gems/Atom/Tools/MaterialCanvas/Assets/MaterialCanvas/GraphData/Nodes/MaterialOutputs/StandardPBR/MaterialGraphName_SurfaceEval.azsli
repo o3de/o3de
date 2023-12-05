@@ -43,7 +43,7 @@ Surface EvaluateSurface_MaterialGraphName(
     // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
     const bool placeHolder = MaterialSrg::m_placeHolder;
 
-    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor, inEmissive, inAlpha, inDiffuseAmbientOcclusion, inSpecularOcclusion, inClearCoatFactor, inClearCoatRoughness, inClearCoatNormal, 
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor, inEmissive, inAlpha, inOpacityFactor, inDiffuseAmbientOcclusion, inSpecularOcclusion, inClearCoatFactor, inClearCoatRoughness, inClearCoatNormal, 
     real3 inNormal = normalWS;
     real3 inBaseColor = {1.0, 1.0, 1.0};
     real inMetallic = 0.0;
@@ -51,6 +51,7 @@ Surface EvaluateSurface_MaterialGraphName(
     real inSpecularF0Factor = 0.0;
     real3 inEmissive = {0.0, 0.0, 0.0};
     real inAlpha = 1.0;
+    real inOpacityFactor = 1.0;
     real inDiffuseAmbientOcclusion = 1.0;
     real inSpecularOcclusion = 1.0;
     real inClearCoatFactor = 0.0;
@@ -59,6 +60,8 @@ Surface EvaluateSurface_MaterialGraphName(
     // O3DE_GENERATED_INSTRUCTIONS_END
 
     #undef O3DE_MC_UV
+
+    CheckClipping((real)inAlpha, (real)inOpacityFactor);
 
     Surface surface;
     surface.position = positionWS;
@@ -77,13 +80,11 @@ Surface EvaluateSurface_MaterialGraphName(
     }
 #endif
 
-    surface.alpha = inAlpha;
+    surface.alpha = (real)inAlpha * (real)inOpacityFactor;
     surface.emissiveLighting = inEmissive;
     surface.diffuseAmbientOcclusion = inDiffuseAmbientOcclusion;
     surface.specularOcclusion = inSpecularOcclusion;
     surface.opacityAffectsSpecularFactor = o_opacity_affects_specular_factor;
-
-    CheckClipping(surface.alpha, 0.5);
 
     // ------- Clearcoat -------
 
