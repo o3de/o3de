@@ -432,6 +432,14 @@ endfunction()
 # This function exports a file that is used only in script-only mode to supply that list
 # of extra DLLs to copy along with the game.
 function(ly_setup_3p_dependencies)
+
+    # 3p dependency generation is only relevant to installer builds, which is expected to happen only if no project is being built
+    # prevent this code from running in non-instlaler-builds, otherwise it will try to hang these commands off a non-existant generic
+    # game launcher target (which itself is also only relevant to installer builds for script-only mode.)
+    if (LY_PROJECTS)
+        return()
+    endif()
+
     unset(list_of_files_to_process)
     unset(expected_output_files)
     set(final_3p_output_dir "${CMAKE_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}")
