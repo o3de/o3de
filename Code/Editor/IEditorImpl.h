@@ -122,7 +122,6 @@ public:
     bool IsInPreviewMode() override;
     bool IsInConsolewMode() override;
     bool IsInLevelLoadTestMode() override;
-    bool IsInMatEditMode() override { return m_bMatEditMode; }
 
     //! Enables/Disable updates of editor.
     void EnableUpdate(bool enable) override { m_bUpdates = enable; };
@@ -249,8 +248,6 @@ public:
     bool IsSourceControlAvailable() override;
     //! Only returns true if source control is both available AND currently connected and functioning
     bool IsSourceControlConnected() override;
-    //! Setup Material Editor mode
-    void SetMatEditMode(bool bIsMatEditMode);
     void ReduceMemory() override;
     ESystemConfigPlatform GetEditorConfigPlatform() const override;
     void ReloadTemplates() override;
@@ -331,10 +328,6 @@ protected:
     QString m_selectFileBuffer;
     QString m_levelNameBuffer;
 
-
-    //! True if the editor is in material edit mode. Fast preview of materials.
-    //! In this mode only very limited functionality is available.
-    bool m_bMatEditMode;
     bool m_bShowStatusText;
     bool m_bInitialized;
     bool m_bExiting;

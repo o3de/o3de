@@ -65,7 +65,6 @@ public:
     MOCK_METHOD0(IsInPreviewMode, bool());
     MOCK_METHOD0(IsInConsolewMode, bool());
     MOCK_METHOD0(IsInLevelLoadTestMode, bool());
-    MOCK_METHOD0(IsInMatEditMode, bool());
     MOCK_METHOD1(EnableUpdate, void(bool));
     MOCK_METHOD0(GetFileVersion, SFileVersion());
     MOCK_METHOD0(GetProductVersion, SFileVersion());
