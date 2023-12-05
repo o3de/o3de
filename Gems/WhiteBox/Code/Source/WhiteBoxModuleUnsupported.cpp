@@ -9,7 +9,15 @@
 #include <AzCore/Module/Module.h>
 
 #if defined(WHITE_BOX_EDITOR)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Module)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_WhiteBoxEditorModule, AZ::Module)
+#endif
+#else
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Module)
 #else
 AZ_DECLARE_MODULE_CLASS(Gem_WhiteBox, AZ::Module)
+#endif
 #endif

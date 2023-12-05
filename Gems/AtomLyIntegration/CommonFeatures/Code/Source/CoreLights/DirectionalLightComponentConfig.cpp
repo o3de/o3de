@@ -131,7 +131,7 @@ namespace AZ
 
         bool DirectionalLightComponentConfig::IsEsmDisabled() const
         {
-            return !m_shadowEnabled || m_shadowFilterMethod != ShadowFilterMethod::Esm || m_shadowFilterMethod != ShadowFilterMethod::EsmPcf;
+            return !m_shadowEnabled || (m_shadowFilterMethod != ShadowFilterMethod::Esm && m_shadowFilterMethod != ShadowFilterMethod::EsmPcf);
         }
 
         AZ::Crc32 DirectionalLightComponentConfig::UpdateCascadeFarDepths()

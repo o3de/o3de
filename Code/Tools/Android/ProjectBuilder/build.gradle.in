@@ -8,6 +8,7 @@
 apply plugin: "com.android.${TARGET_TYPE}"
 
 android {
+    ${PROJECT_NAMESPACE_OPTION}
 ${SIGNING_CONFIGS}
     compileSdkVersion sdkVer
     buildToolsVersion buildToolsVer

@@ -46,5 +46,8 @@ namespace AZ
     } // namespace Meshlets
 } // namespace AZ
 
-
-AZ_DECLARE_MODULE_CLASS(Gem_Meshlets, AZ::Meshlets::MeshletsEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), AZ::Meshlets::MeshletsEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Meshlets_Editor, AZ::Meshlets::MeshletsEditorModule)
+#endif

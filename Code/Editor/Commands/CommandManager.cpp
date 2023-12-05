@@ -477,13 +477,6 @@ void CEditorCommandManager::LogCommand(const AZStd::string& fullCmdName, const C
 
     cmdLine += ")";
 
-    // If it's not SandBox main editor (one case is the standalone material editor triggered by 3ds Max exporter),
-    // we should not cast it into main editor for further operation.
-    if (GetIEditor()->IsInMatEditMode())
-    {
-        return;
-    }
-
     // Then, register it to the terminal.
     QtViewPane* scriptTermPane = QtViewPaneManager::instance()->GetPane(SCRIPT_TERM_WINDOW_NAME);
     if (!scriptTermPane)

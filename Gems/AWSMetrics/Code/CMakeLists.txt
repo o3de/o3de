@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME AWSMetrics.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         awsmetrics_files.cmake
@@ -26,7 +26,7 @@ ly_add_target(
 )
 
 ly_add_target( 
-    NAME AWSMetrics ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         awsmetrics_shared_files.cmake
@@ -39,55 +39,64 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            Gem::AWSMetrics.Static
+            Gem::${gem_name}.Static
 )
 
-# Load the "Gem::AWSMetrics" module in all types of applications.
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AWSMetricsModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# Load the "Gem::${gem_name}" module in all types of applications.
 ly_create_alias(
-    NAME AWSMetrics.Servers
+    NAME ${gem_name}.Servers
     NAMESPACE Gem
     TARGETS
         Gem::AWSCore.Servers
-        Gem::AWSMetrics
+        Gem::${gem_name}
 )
 
 ly_create_alias(
-    NAME AWSMetrics.Clients
+    NAME ${gem_name}.Clients
     NAMESPACE Gem
     TARGETS
         Gem::AWSCore.Clients
-        Gem::AWSMetrics
+        Gem::${gem_name}
 )
 
 ly_create_alias(
-    NAME AWSMetrics.Unified
+    NAME ${gem_name}.Unified
     NAMESPACE Gem
     TARGETS
         Gem::AWSCore.Unified
-        Gem::AWSMetrics
+        Gem::${gem_name}
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(
-        NAME AWSMetrics.Tools
+        NAME ${gem_name}.Tools
         NAMESPACE Gem
         TARGETS
             Gem::AWSCore.Tools
-            Gem::AWSMetrics.Editor
+            Gem::${gem_name}.Editor
     )
 
     ly_create_alias(
-        NAME AWSMetrics.Builders
+        NAME ${gem_name}.Builders
         NAMESPACE Gem
         TARGETS
             Gem::AWSCore.Builders
-            Gem::AWSMetrics
+            Gem::${gem_name}
     )
 endif()
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target( 
-    NAME AWSMetrics.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         awsmetrics_editor_files.cmake
@@ -108,8 +117,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AWSCore
             3rdParty::AWSNativeSDK::Core
     RUNTIME_DEPENDENCIES
-            Gem::AWSMetrics
-)
+            Gem::${gem_name}
+    )
 endif()
 
 ################################################################################
@@ -117,7 +126,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME AWSMetrics.Tests MODULE
+        NAME ${gem_name}.Tests MODULE
         NAMESPACE Gem
         FILES_CMAKE
             awsmetrics_tests_files.cmake
@@ -131,12 +140,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzCore
                 AZ::AzFramework
-                Gem::AWSMetrics.Static
+                Gem::${gem_name}.Static
         RUNTIME_DEPENDENCIES
             Gem::AWSCore
     )
     ly_add_googletest(
-        NAME Gem::AWSMetrics.Tests
+        NAME Gem::${gem_name}.Tests
         LABELS REQUIRES_tiaf
     )
 endif()

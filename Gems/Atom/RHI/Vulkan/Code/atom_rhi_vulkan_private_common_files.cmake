@@ -48,16 +48,16 @@ set(FILES
     Source/RHI/FrameGraphCompiler.h
     Source/RHI/FrameGraphExecuteGroupHandler.cpp
     Source/RHI/FrameGraphExecuteGroupHandler.h
-    Source/RHI/FrameGraphExecuteGroupHandlerBase.cpp
-    Source/RHI/FrameGraphExecuteGroupHandlerBase.h
-    Source/RHI/FrameGraphExecuteGroupMergedHandler.cpp
-    Source/RHI/FrameGraphExecuteGroupMergedHandler.h
-    Source/RHI/FrameGraphExecuteGroupBase.cpp
-    Source/RHI/FrameGraphExecuteGroupBase.h
+    Source/RHI/FrameGraphExecuteGroupPrimaryHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupPrimaryHandler.h
+    Source/RHI/FrameGraphExecuteGroupSecondaryHandler.cpp
+    Source/RHI/FrameGraphExecuteGroupSecondaryHandler.h
     Source/RHI/FrameGraphExecuteGroup.cpp
     Source/RHI/FrameGraphExecuteGroup.h
-    Source/RHI/FrameGraphExecuteGroupMerged.cpp
-    Source/RHI/FrameGraphExecuteGroupMerged.h
+    Source/RHI/FrameGraphExecuteGroupPrimary.cpp
+    Source/RHI/FrameGraphExecuteGroupPrimary.h
+    Source/RHI/FrameGraphExecuteGroupSecondary.cpp
+    Source/RHI/FrameGraphExecuteGroupSecondary.h
     Source/RHI/FrameGraphExecuter.cpp
     Source/RHI/FrameGraphExecuter.h
     Source/RHI/Image.cpp

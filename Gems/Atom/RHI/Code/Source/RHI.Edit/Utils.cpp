@@ -22,6 +22,7 @@
 #include <AzCore/Math/Sha1.h>
 #include <AzCore/Platform.h>
 #include <AzCore/std/time.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -497,6 +498,25 @@ namespace AZ::RHI
         AzFramework::StringFunc::Path::Join(tempFolder.c_str(), outputFile.c_str(), outputFile);
         AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
         return outputFile;
+    }
+
+    AZStd::string GetDirectXShaderCompilerPath(const char* defaultPathToDxc)
+    {
+        // To quickly test changes to the DXC compiler or as a workaround to the default.
+        static constexpr char DxcOverridePathKey[] = "/O3DE/Atom/DxcOverridePath";
+
+        if (auto setReg = AZ::Interface<SettingsRegistryInterface>::Get())
+        {
+            AZStd::string overridePath;
+            if (setReg->Get(overridePath, DxcOverridePathKey))
+            {
+                AZ_TraceOnce("CustomDxc", "DXC executable override specified, using %s.\n", overridePath.c_str());
+                return overridePath;
+            }
+        }
+
+        AZ_Assert(defaultPathToDxc != nullptr, "Invalid default path to DXC.");
+        return AZStd::string(defaultPathToDxc);
     }
 
     namespace CommandLineArgumentUtils
