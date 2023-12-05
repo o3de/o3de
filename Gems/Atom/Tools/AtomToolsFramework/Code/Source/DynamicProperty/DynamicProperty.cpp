@@ -154,16 +154,7 @@ namespace AtomToolsFramework
                 AddEditDataAttribute(AZ::Edit::Attributes::Handler, m_config.m_customHandler);
             }
 
-            ApplyRangeEditDataAttributesWithTypeCheck<int8_t>();
-            ApplyRangeEditDataAttributesWithTypeCheck<uint8_t>();
-            ApplyRangeEditDataAttributesWithTypeCheck<int16_t>();
-            ApplyRangeEditDataAttributesWithTypeCheck<uint16_t>();
-            ApplyRangeEditDataAttributesWithTypeCheck<int32_t>();
-            ApplyRangeEditDataAttributesWithTypeCheck<uint32_t>();
-            ApplyRangeEditDataAttributesWithTypeCheck<int64_t>();
-            ApplyRangeEditDataAttributesWithTypeCheck<uint64_t>();
-            ApplyRangeEditDataAttributesWithTypeCheck<float>();
-            ApplyRangeEditDataAttributesWithTypeCheck<double>();
+            ApplyRangeEditDataAttributesToNumericTypes();
 
             if (m_value.is<AZ::Vector2>() || m_value.is<AZ::Vector3>() || m_value.is<AZ::Vector4>())
             {
@@ -310,8 +301,15 @@ namespace AtomToolsFramework
 
     bool DynamicProperty::IsValueInteger() const
     {
-        return m_value.is<int8_t>() || m_value.is<uint8_t>() || m_value.is<int16_t>() || m_value.is<uint16_t>() || m_value.is<int32_t>() ||
-            m_value.is<uint32_t>() || m_value.is<int64_t>() || m_value.is<uint64_t>();
+        return
+            m_value.is<int8_t>() || m_value.is<uint8_t>() ||
+            m_value.is<int16_t>() || m_value.is<uint16_t>() ||
+            m_value.is<int32_t>() || m_value.is<uint32_t>() ||
+            m_value.is<int64_t>() || m_value.is<uint64_t>() ||
+            m_value.is<AZ::s8>() || m_value.is<AZ::u8>() ||
+            m_value.is<AZ::s16>() || m_value.is<AZ::u16>() ||
+            m_value.is<AZ::s32>() || m_value.is<AZ::u32>() ||
+            m_value.is<AZ::s64>() || m_value.is<AZ::u64>();
     }
 
     template<typename AttributeValueType>
@@ -327,42 +325,60 @@ namespace AtomToolsFramework
             AZ::Edit::AttributePair(crc, aznew AttributeFixedMemberFunction<AttributeMemberFunctionType>(this, memberFunction)));
     }
 
+    bool DynamicProperty::ApplyRangeEditDataAttributesToNumericTypes()
+    {
+        if (ApplyRangeEditDataAttributesToNumericType<int8_t>() || ApplyRangeEditDataAttributesToNumericType<uint8_t>() ||
+            ApplyRangeEditDataAttributesToNumericType<int16_t>() || ApplyRangeEditDataAttributesToNumericType<uint16_t>() ||
+            ApplyRangeEditDataAttributesToNumericType<int32_t>() || ApplyRangeEditDataAttributesToNumericType<uint32_t>() ||
+            ApplyRangeEditDataAttributesToNumericType<int64_t>() || ApplyRangeEditDataAttributesToNumericType<uint64_t>() ||
+            ApplyRangeEditDataAttributesToNumericType<AZ::s8>() || ApplyRangeEditDataAttributesToNumericType<AZ::u8>() ||
+            ApplyRangeEditDataAttributesToNumericType<AZ::s16>() || ApplyRangeEditDataAttributesToNumericType<AZ::u16>() ||
+            ApplyRangeEditDataAttributesToNumericType<AZ::s32>() || ApplyRangeEditDataAttributesToNumericType<AZ::u32>() ||
+            ApplyRangeEditDataAttributesToNumericType<AZ::s64>() || ApplyRangeEditDataAttributesToNumericType<AZ::u64>() ||
+            ApplyRangeEditDataAttributesToNumericType<float>() || ApplyRangeEditDataAttributesToNumericType<double>())
+        {
+            return true;
+        }
+        return false;
+    }
+
     template<typename AttributeValueType>
-    void DynamicProperty::ApplyRangeEditDataAttributesWithTypeCheck()
+    bool DynamicProperty::ApplyRangeEditDataAttributesToNumericType()
     {
         if (m_value.is<AttributeValueType>())
         {
             ApplyRangeEditDataAttributes<AttributeValueType>();
             ApplySliderEditDataAttributes<AttributeValueType>();
+            return true;
         }
+        return false;
     }
 
     template<typename AttributeValueType>
     void DynamicProperty::ApplyRangeEditDataAttributes()
     {
         // Slider and spin box controls require both minimum and maximum ranges to be entered in order to override the default values set
-        // to 0 and 100. They must also be set in a certain order because of clamping that is done as the attributes are applied. If no
-        // value was specified in the property config then numeric limits will be used.
-        AddEditDataAttribute(
-            AZ::Edit::Attributes::Min,
-            m_config.m_min.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_min)
-                                                    : AZStd::numeric_limits<AttributeValueType>::lowest());
-        AddEditDataAttribute(
-            AZ::Edit::Attributes::Max,
-            m_config.m_max.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_max)
-                                                    : AZStd::numeric_limits<AttributeValueType>::max());
-        AddEditDataAttribute(
-            AZ::Edit::Attributes::SoftMin,
-            m_config.m_softMin.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_softMin)
-                                                        : AZStd::numeric_limits<AttributeValueType>::lowest());
-        AddEditDataAttribute(
-            AZ::Edit::Attributes::SoftMax,
-            m_config.m_softMax.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_softMax)
-                                                        : AZStd::numeric_limits<AttributeValueType>::max());
-        AddEditDataAttribute(
-            AZ::Edit::Attributes::Step,
-            m_config.m_step.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_step)
-                                                     : AZStd::numeric_limits<AttributeValueType>::epsilon());
+        // to 0 and 100. They must also be set in a certain order because of clamping that is done as the attributes are applied.
+        if (m_config.m_min.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::Min, AZStd::any_cast<AttributeValueType>(m_config.m_min));
+        }
+        if (m_config.m_max.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::Max, AZStd::any_cast<AttributeValueType>(m_config.m_max));
+        }
+        if (m_config.m_softMin.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::SoftMin, AZStd::any_cast<AttributeValueType>(m_config.m_softMin));
+        }
+        if (m_config.m_softMax.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::SoftMax, AZStd::any_cast<AttributeValueType>(m_config.m_softMax));
+        }
+        if (m_config.m_step.is<AttributeValueType>())
+        {
+            AddEditDataAttribute(AZ::Edit::Attributes::Step, AZStd::any_cast<AttributeValueType>(m_config.m_step));
+        }
     }
 
     template<typename AttributeValueType>
