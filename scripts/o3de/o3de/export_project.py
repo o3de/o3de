@@ -695,10 +695,10 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        build_config: str,
                        game_build_path: pathlib.Path,
                        engine_centric: bool,
-                       monolithic_build: bool,
                        launcher_types: int,
                        allow_registry_overrides: bool,
                        tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
+                       monolithic_build:bool = True,
                        logger: logging.Logger = None) -> None:
     """
     Build the launchers for the project (game, server, unified, headless)
