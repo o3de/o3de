@@ -62,6 +62,10 @@ namespace AzToolsFramework
             bool AreComponentRequiredServicesMet(const AZ::Component* component, const AZ::Entity::ComponentArrayType& existingComponents)
             {
                 auto componentDescriptor = GetComponentDescriptor(component);
+                if (!componentDescriptor)
+                {
+                    return false;
+                }
 
                 AZ::ComponentDescriptor::DependencyArrayType requiredServices;
                 componentDescriptor->GetRequiredServices(requiredServices, component);
@@ -101,7 +105,7 @@ namespace AzToolsFramework
                     providedService != providedServices.end(); ++providedService)
                 {
                     AZ::EntityUtils::RemoveDuplicateServicesOfAndAfterIterator(
-                        providedService, 
+                        providedService,
                         providedServices,
                         component ? component->GetEntity() : nullptr);
                     for (auto existingComponent : existingComponents)
@@ -507,7 +511,7 @@ namespace AzToolsFramework
                 {
                     delete removedComponent;
                 }
-                
+
                 EntityCompositionNotificationBus::Broadcast(&EntityCompositionNotificationBus::Events::OnEntityCompositionChanged, entityIds);
             }
 
@@ -627,7 +631,7 @@ namespace AzToolsFramework
                         // Repackage the single-entity result into the overall result
                         entityComponentsResult = addExistingComponentsResult.GetValue();
                     }
-                    
+
                 }
             }
 
@@ -679,7 +683,7 @@ namespace AzToolsFramework
                         skipped = true;
                     }
                 }
-                
+
                 if (!skipped)
                 {
                     // If it's not an "editor component" then wrap it in a GenericComponentWrapper.
@@ -687,7 +691,7 @@ namespace AzToolsFramework
                     {
                         component = aznew Components::GenericComponentWrapper(component);
                     }
-                
+
                     // Obliterate any existing component id to allow the entity to set the id
                     component->SetId(AZ::InvalidComponentId);
 
