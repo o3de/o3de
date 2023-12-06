@@ -65,16 +65,23 @@ namespace AZ::RHI
             return m_mdGeometries;
         }
 
+        [[nodiscard]] const RayTracingAccelerationStructureBuildFlags& GetBuildFlags() const
+        {
+            return m_mdBuildFlags;
+        }
+
         //! Build operations
         MultiDeviceRayTracingBlasDescriptor* Build();
         MultiDeviceRayTracingBlasDescriptor* Geometry();
         MultiDeviceRayTracingBlasDescriptor* VertexBuffer(const RHI::MultiDeviceStreamBufferView& vertexBuffer);
         MultiDeviceRayTracingBlasDescriptor* VertexFormat(RHI::Format vertexFormat);
         MultiDeviceRayTracingBlasDescriptor* IndexBuffer(const RHI::MultiDeviceIndexBufferView& indexBuffer);
+        MultiDeviceRayTracingBlasDescriptor* BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags& buildFlags);
 
     private:
         MultiDeviceRayTracingGeometryVector m_mdGeometries;
         MultiDeviceRayTracingGeometry* m_mdBuildContext = nullptr;
+        RayTracingAccelerationStructureBuildFlags m_mdBuildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
     };
 
     //! MultiDeviceRayTracingBlas
@@ -115,6 +122,7 @@ namespace AZ::RHI
     {
         uint32_t m_instanceID = 0;
         uint32_t m_hitGroupIndex = 0;
+        uint32_t m_instanceMask = 0x1; // Setting this to 1 to be backwards-compatible
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
         bool m_transparent = false;
@@ -177,6 +185,7 @@ namespace AZ::RHI
         MultiDeviceRayTracingTlasDescriptor* Build();
         MultiDeviceRayTracingTlasDescriptor* Instance();
         MultiDeviceRayTracingTlasDescriptor* InstanceID(uint32_t instanceID);
+        MultiDeviceRayTracingTlasDescriptor* InstanceMask(uint32_t instanceMask);
         MultiDeviceRayTracingTlasDescriptor* HitGroupIndex(uint32_t hitGroupIndex);
         MultiDeviceRayTracingTlasDescriptor* Transform(const AZ::Transform& transform);
         MultiDeviceRayTracingTlasDescriptor* NonUniformScale(const AZ::Vector3& nonUniformScale);
