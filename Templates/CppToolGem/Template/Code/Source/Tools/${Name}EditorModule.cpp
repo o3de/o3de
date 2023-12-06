@@ -53,4 +53,8 @@ namespace ${SanitizedCppName}
     };
 }// namespace ${SanitizedCppName}
 
-AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}, ${SanitizedCppName}::${SanitizedCppName}EditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), ${SanitizedCppName}::${SanitizedCppName}EditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}_Editor, ${SanitizedCppName}::${SanitizedCppName}EditorModule)
+#endif

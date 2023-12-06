@@ -9,7 +9,7 @@
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
-    NAME Atom_AtomBridge.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atombridge_files.cmake
@@ -31,7 +31,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_AtomBridge ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atombridge_shared_files.cmake
@@ -47,7 +47,7 @@ ly_add_target(
             ENABLE_ATOM_DEBUG_DISPLAY=1
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Atom_AtomBridge.Static
+            Gem::${gem_name}.Static
     RUNTIME_DEPENDENCIES
         Gem::Atom_RHI.Private
         Gem::Atom_RPI.Private
@@ -56,15 +56,24 @@ ly_add_target(
         Gem::Atom_Bootstrap
         Gem::Atom_Component_DebugCamera
         Gem::AtomImGuiTools
-        Gem::AtomLyIntegration_CommonFeatures
+        Gem::CommonFeaturesAtom
         Gem::EMotionFX_Atom
         Gem::ImguiAtom
         Gem::AtomFont
         Gem::AtomViewportDisplayInfo
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AtomBridgeModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 ly_add_target(
-    NAME Atom_AtomBridge.Headless ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Headless ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atombridge_shared_files.cmake
@@ -79,7 +88,7 @@ ly_add_target(
             O3DE_HEADLESS_SERVER=1
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Atom_AtomBridge.Static
+            Gem::${gem_name}.Static
     RUNTIME_DEPENDENCIES
         Gem::Atom_RHI.Private
         Gem::Atom_RPI.Private
@@ -88,18 +97,18 @@ ly_add_target(
         Gem::Atom_Bootstrap
         Gem::Atom_Component_DebugCamera
         Gem::AtomImGuiTools
-        Gem::AtomLyIntegration_CommonFeatures
+        Gem::CommonFeaturesAtom
         Gem::EMotionFX_Atom
         Gem::ImguiAtom
         Gem::AtomFont
         Gem::AtomViewportDisplayInfo
 )
 
-# Any 'runtime-like' applications should use Gem::Atom_AtomBridge:
-ly_create_alias(NAME Atom_AtomBridge.Clients NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
-ly_create_alias(NAME Atom_AtomBridge.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
-ly_create_alias(NAME Atom_AtomBridge.Unified NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
-ly_create_alias(NAME Atom_AtomBridge.HeadlessServers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Headless)
+# Any 'runtime-like' applications should use Gem::${gem_name}:
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.HeadlessServers NAMESPACE Gem TARGETS Gem::${gem_name}.Headless)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
@@ -111,7 +120,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     endforeach()
 
     ly_add_target(
-        NAME Atom_AtomBridge.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+        NAME ${gem_name}.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atombridge_editor_files.cmake
@@ -129,7 +138,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AssetBuilderSDK
                 Gem::Atom_Utils.Static
-                Gem::Atom_AtomBridge.Static
+                Gem::${gem_name}.Static
         RUNTIME_DEPENDENCIES
             Gem::Atom_RHI.Private
             Gem::Atom_RPI.Builders
@@ -139,10 +148,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::Atom_Feature_Common.Builders
             Gem::Atom_Feature_Common.Editor
             Gem::Atom_Bootstrap
-            Gem::Atom_Asset_Shader.Builders
+            Gem::AtomShader.Builders
             Gem::Atom_Component_DebugCamera
             Gem::AtomImGuiTools
-            Gem::AtomLyIntegration_CommonFeatures.Editor
+            Gem::CommonFeaturesAtom.Editor
             Gem::EMotionFX_Atom.Editor
             Gem::ImageProcessingAtom.Editor
             Gem::ImguiAtom
@@ -156,8 +165,17 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::ShaderManagementConsole.Builders
     )
 
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/AtomBridgeEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
 
-    # Any 'tool' and 'builder' type applications should use Gem::Atom_AtomBridge.Editor:
-    ly_create_alias(NAME Atom_AtomBridge.Builders NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Editor)
-    ly_create_alias(NAME Atom_AtomBridge.Tools    NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Editor)
+
+    # Any 'tool' and 'builder' type applications should use Gem::${gem_name}.Editor:
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 endif()

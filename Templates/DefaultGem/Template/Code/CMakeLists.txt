@@ -78,6 +78,19 @@ ly_add_target(
             Gem::${gem_name}.Private.Object
 )
 
+# Include the gem name into the Client Module source file
+# for use with the AZ_DECLARE_MODULE_CLASS macro
+# This is to allow renaming of the gem to also cause
+# the CreateModuleClass_Gem_<gem-name> function which
+# is used to bootstrap the gem in monolithic builds to link to the new gem name
+ly_add_source_properties(
+SOURCES
+    Source/Clients/${Name}Module.cpp
+PROPERTY COMPILE_DEFINITIONS
+    VALUES
+        O3DE_GEM_NAME=${gem_name}
+        O3DE_GEM_VERSION=${gem_version})
+
 # By default, we will specify that the above target ${gem_name} would be used by
 # Client and Server type targets when this gem is enabled.  If you don't want it
 # active in Clients or Servers by default, delete one of both of the following lines:
@@ -148,6 +161,19 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::${gem_name}.Editor.Private.Object
     )
+
+    # Include the gem name into the Editor Module source file
+    # for use with the AZ_DECLARE_MODULE_CLASS macro
+    # This is to allow renaming of the gem to also cause
+    # the CreateModuleClass_Gem_<gem-name> function which
+    # is used to bootstrap the gem in monolithic builds to link to the new gem name
+    ly_add_source_properties(
+    SOURCES
+        Source/Tools/${Name}EditorModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
     # By default, we will specify that the above target ${gem_name} would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it

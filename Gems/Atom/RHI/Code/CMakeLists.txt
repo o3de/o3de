@@ -20,7 +20,7 @@ if(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME Atom_RHI.Reflect STATIC
+    NAME ${gem_name}.Reflect STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_reflect_files.cmake
@@ -38,7 +38,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_RHI.Public STATIC
+    NAME ${gem_name}.Public STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_public_files.cmake
@@ -54,13 +54,13 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            Gem::Atom_RHI.Reflect
+            Gem::${gem_name}.Reflect
         PUBLIC
             ${RENDERDOC_DEPENDENCY}
 )
 
 ly_add_target(
-    NAME Atom_RHI.Private.Static STATIC
+    NAME ${gem_name}.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_private_files.cmake
@@ -74,11 +74,11 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AtomCore
-            Gem::Atom_RHI.Public
+            Gem::${gem_name}.Public
 )
 
 ly_add_target(
-    NAME Atom_RHI.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_private_shared_files.cmake
@@ -90,14 +90,23 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            Gem::Atom_RHI.Public
-            Gem::Atom_RHI.Private.Static
+            Gem::${gem_name}.Public
+            Gem::${gem_name}.Private.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Module.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     if (ATOM_RHI_TRAIT_BUILD_SUPPORTS_EDIT)
         ly_add_target(
-            NAME Atom_RHI.Edit STATIC
+            NAME ${gem_name}.Edit STATIC
             NAMESPACE Gem
             FILES_CMAKE
                 atom_rhi_edit_files.cmake
@@ -110,7 +119,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 PRIVATE
                     AZ::AzToolsFramework
                     AZ::AtomCore
-                    Gem::Atom_RHI.Public
+                    Gem::${gem_name}.Public
         )
     endif()
 endif()
@@ -122,7 +131,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     if (ATOM_RHI_TRAIT_BUILD_SUPPORTS_TEST)
         ly_add_target(
-            NAME Atom_RHI.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 atom_rhi_tests_files.cmake
@@ -134,18 +143,18 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzFramework
-                    Gem::Atom_RHI.Edit
-                    Gem::Atom_RHI.Public
+                    Gem::${gem_name}.Edit
+                    Gem::${gem_name}.Public
                     Gem::Atom_Feature_Common.Public
         )
         ly_add_googletest(
-            NAME Gem::Atom_RHI.Tests
+            NAME Gem::${gem_name}.Tests
             LABELS REQUIRES_tiaf
         )
 
         ly_add_target_files(
             TARGETS
-                Atom_RHI.Tests
+                ${gem_name}.Tests
             FILES
                 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/UtilsTestsData/DummyTransformColor.MainPS.dx12.dxil.txt
                 ${CMAKE_CURRENT_SOURCE_DIR}/Tests/UtilsTestsData/DummyTransformColor.MainPS.vulkan.spirv.txt

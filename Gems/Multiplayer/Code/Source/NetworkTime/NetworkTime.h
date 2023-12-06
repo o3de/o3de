@@ -17,9 +17,11 @@ namespace Multiplayer
 {
     //! Implementation of the INetworkTime interface.
     class NetworkTime
-        : public INetworkTime
+        : public INetworkTimeRequestBus::Handler
     {
     public:
+        static void Reflect(AZ::ReflectContext* context);
+
         NetworkTime();
         virtual ~NetworkTime();
 

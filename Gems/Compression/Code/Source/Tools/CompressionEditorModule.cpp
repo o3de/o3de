@@ -64,4 +64,8 @@ namespace Compression
     };
 }// namespace Compression
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Compression::CompressionEditorModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Compression, Compression::CompressionEditorModule)
+#endif

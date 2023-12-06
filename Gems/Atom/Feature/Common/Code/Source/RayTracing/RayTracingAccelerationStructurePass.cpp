@@ -42,7 +42,7 @@ namespace AZ
 
         void RayTracingAccelerationStructurePass::BuildInternal()
         {
-            InitScope(RHI::ScopeId(GetPathName()));
+            InitScope(RHI::ScopeId(GetPathName()), AZ::RHI::HardwareQueueClass::Compute);
         }
 
         void RayTracingAccelerationStructurePass::FrameBeginInternal(FramePrepareParams params)
@@ -50,7 +50,7 @@ namespace AZ
             m_timestampResult = RPI::TimestampResult();
             if(GetScopeId().IsEmpty())
             {
-                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Graphics);
+                InitScope(RHI::ScopeId(GetPathName()), RHI::HardwareQueueClass::Compute);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
@@ -234,6 +234,7 @@ namespace AZ
             BeginScopeQuery(context);
 
             // build newly added or skinned BLAS objects
+            AZStd::vector<const AZ::RHI::RayTracingBlas*> changedBlasList;
             RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
             for (auto& blasInstance : blasInstances)
             {
@@ -265,6 +266,7 @@ namespace AZ
                             // Fall back to building the BLAS in any case
                             context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
                         }
+                        changedBlasList.push_back(submeshBlasInstance.m_blas.get());
                     }
 
                     blasInstance.second.m_blasBuilt = true;
@@ -272,7 +274,7 @@ namespace AZ
             }
 
             // build the TLAS object
-            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas());
+            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas(), changedBlasList);
 
             ++m_frameCount;
 

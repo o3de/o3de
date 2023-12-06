@@ -28,15 +28,15 @@ namespace AZ
             m_descriptor = descriptor;
             const size_t alignedByteCodeSize = ((descriptor.m_bytecode.size() + 3) / 4) * 4;
             // pCode is declared as uint32_t*, and remained bytes should be padded by 0.
-            m_alignedByteCode.resize(alignedByteCodeSize, 0);
-            memcpy(m_alignedByteCode.data(), descriptor.m_bytecode.data(), descriptor.m_bytecode.size());
+            AZStd::vector<uint32_t> alignedByteCode(alignedByteCodeSize, 0);
+            memcpy(alignedByteCode.data(), descriptor.m_bytecode.data(), descriptor.m_bytecode.size());
 
             VkShaderModuleCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
             createInfo.pNext = nullptr;
             createInfo.flags = 0;
             createInfo.codeSize = descriptor.m_bytecode.size();
-            createInfo.pCode = m_alignedByteCode.data();
+            createInfo.pCode = alignedByteCode.data();
 
             const VkResult result =
                 static_cast<Device&>(GetDevice())
@@ -77,7 +77,6 @@ namespace AZ
                 device.GetContext().DestroyShaderModule(device.GetNativeDevice(), m_nativeShaderModule, VkSystemAllocator::Get());
                 m_nativeShaderModule = VK_NULL_HANDLE;
             }
-            m_alignedByteCode.clear();
 
             Base::Shutdown();
         }

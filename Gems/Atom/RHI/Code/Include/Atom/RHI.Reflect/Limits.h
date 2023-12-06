@@ -70,7 +70,7 @@ namespace AZ::RHI
     {
         namespace Memory
         {
-            constexpr uint64_t StagingBufferBudgetInBytes          = 128ul * 1024 * 1024;
+            constexpr uint64_t StagingBufferBudgetInBytes          = 0u;
             constexpr uint64_t AsyncQueueStagingBufferSizeInBytes  = 4ul   * 1024 * 1024;
             constexpr uint64_t MediumStagingBufferPageSizeInBytes  = 2ul   * 1024 * 1024;
             constexpr uint64_t LargestStagingBufferPageSizeInBytes = 128ul * 1024 * 1024;

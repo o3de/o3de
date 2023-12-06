@@ -846,9 +846,24 @@ function(ly_setup_assets)
                     # to allow it to be installed next to the gem.json
                     set(gem_scratch_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/install/${gem_install_dest_dir}")
 
+                    # 1. Create the base CMakeLists.txt that will just include a cmake file per platform
+                    string(CONFIGURE [[
+                    @cmake_copyright_comment@
+                    o3de_read_json_key(GEM_TYPE ${CMAKE_CURRENT_SOURCE_DIR}/gem.json "type")
+                    if (GEM_TYPE STREQUAL "Asset")
+                        include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+                    endif()
+                    ]] subdirectory_cmakelist_content @ONLY)
+                    
+
+                    # Store off the generated CMakeLists.txt into a DIRECTORY property based on the subdirectory being visited
+                    # In the ly_setup_assets() function, it generates an empty CMakeLists.txt into the gem root directory
+                    # if one does not exist by checking if this property is set
+                    set_property(DIRECTORY "${absolute_target_source_dir}" APPEND_STRING PROPERTY O3DE_SUBDIRECTORY_CMAKELIST_CONTENT "${subdirectory_cmakelist_content}")
+                    
                     # copy the empty CMakeList.txt into the gem root directory, to allow add_subdirectory
                     # calls to succeed on the gem root in the install layout
-                    file(CONFIGURE OUTPUT "${gem_scratch_binary_dir}/CMakeLists.txt" CONTENT [[@cmake_copyright_comment@]] @ONLY)
+                    file(WRITE "${gem_scratch_binary_dir}/CMakeLists.txt" "${subdirectory_cmakelist_content}")
 
                     ly_install(FILES "${gem_scratch_binary_dir}/CMakeLists.txt"
                         DESTINATION ${gem_install_dest_dir}

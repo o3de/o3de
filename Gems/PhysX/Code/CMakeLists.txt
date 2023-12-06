@@ -26,7 +26,7 @@ else()
 endif()
 
 ly_add_target(
-    NAME PhysX.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         ${physx_files}
@@ -51,9 +51,9 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME PhysX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
-    OUTPUT_NAME PhysX.Gem
+    OUTPUT_NAME ${gem_name}.Gem
     FILES_CMAKE
         ${physx_shared_files}
     COMPILE_DEFINITIONS
@@ -66,21 +66,40 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::PhysX.Static
+            Gem::${gem_name}.Static
             Gem::LmbrCentral.API
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
 
-# use the PhysX module in clients and servers:
-ly_create_alias(NAME PhysX.Clients NAMESPACE Gem TARGETS Gem::PhysX)
-ly_create_alias(NAME PhysX.Servers NAMESPACE Gem TARGETS Gem::PhysX)
-ly_create_alias(NAME PhysX.Unified NAMESPACE Gem TARGETS Gem::PhysX)
+# Inject the gem name into the Module source file
+if(PAL_TRAIT_PHYSX_SUPPORTED)
+    ly_add_source_properties(
+        SOURCES
+            Source/Module.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+else()
+    ly_add_source_properties(
+        SOURCES
+            Source/ModuleUnsupported.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+endif()
+
+# use the ${gem_name} module in clients and servers:
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME PhysX.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         AUTOMOC
         AUTOUIC
@@ -113,17 +132,17 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneData
                 Legacy::CryCommon
                 Gem::LmbrCentral.Editor
-                Gem::PhysX.NumericalMethods
-                Gem::PhysX.Static
-                Gem::AtomLyIntegration_CommonFeatures.Static
+                Gem::${gem_name}.NumericalMethods
+                Gem::${gem_name}.Static
+                Gem::CommonFeaturesAtom.Static
         RUNTIME_DEPENDENCIES
             AZ::SceneCore
     )
 
     ly_add_target(
-        NAME PhysX.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
-        OUTPUT_NAME PhysX.Editor.Gem
+        OUTPUT_NAME ${gem_name}.Editor.Gem
         AUTOMOC
         FILES_CMAKE
             physx_editor_shared_files.cmake
@@ -139,12 +158,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::PhysX.Editor.Static
+                Gem::${gem_name}.Editor.Static
     )
 
-    # use the PhysX.Editor module in dev tools:
-    ly_create_alias(NAME PhysX.Builders NAMESPACE Gem TARGETS Gem::PhysX.Editor)
-    ly_create_alias(NAME PhysX.Tools    NAMESPACE Gem TARGETS Gem::PhysX.Editor)
+    # use the ${gem_name}.Editor module in dev tools:
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()
 
@@ -153,9 +172,9 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME PhysX.Mocks HEADERONLY
+        NAME ${gem_name}.Mocks HEADERONLY
         NAMESPACE Gem
-        OUTPUT_NAME PhysX.Mocks.Gem
+        OUTPUT_NAME ${gem_name}.Mocks.Gem
         FILES_CMAKE
             physx_mocks_files.cmake
         INCLUDE_DIRECTORIES
@@ -164,9 +183,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
 
     ly_add_target(
-        NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
-        OUTPUT_NAME PhysX.Tests.Gem
+        OUTPUT_NAME ${gem_name}.Tests.Gem
         FILES_CMAKE
             physx_tests_files.cmake
         INCLUDE_DIRECTORIES
@@ -176,34 +195,34 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTestShared
                 AZ::AzTest
-                Gem::PhysX.Static
+                Gem::${gem_name}.Static
                 Gem::LmbrCentral
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
     )
 
     ly_add_googletest(
-        NAME Gem::PhysX.Tests
+        NAME Gem::${gem_name}.Tests
         LABELS REQUIRES_tiaf
     )
 
-    # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the PhysX.Tests project.
+    # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the ${gem_name}.Tests project.
     # Currently jenkins has a 1500sec(25min) timeout, our benchmarks can sometimes take over 1500sec and cause a build failure for timeout.
     # Jenkins currently doesn't upload the results of the benchmarks, so this is ok.
     if(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS)
         ly_add_googlebenchmark(
-            NAME Gem::PhysX.Benchmarks
-            TARGET Gem::PhysX.Tests
+            NAME Gem::${gem_name}.Benchmarks
+            TARGET Gem::${gem_name}.Tests
         )
     endif()
 
-    list(APPEND testTargets PhysX.Tests)
+    list(APPEND testTargets ${gem_name}.Tests)
     
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME PhysX.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
-            OUTPUT_NAME PhysX.Editor.Tests.Gem
+            OUTPUT_NAME ${gem_name}.Editor.Tests.Gem
             FILES_CMAKE
                 physx_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
@@ -218,14 +237,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzToolsFrameworkTestCommon
                     AZ::AzManipulatorTestFramework.Static
-                    Gem::PhysX.Static
-                    Gem::PhysX.Mocks
-                    Gem::PhysX.Editor.Static
+                    Gem::${gem_name}.Static
+                    Gem::${gem_name}.Mocks
+                    Gem::${gem_name}.Editor.Static
             RUNTIME_DEPENDENCIES
                 Gem::LmbrCentral.Editor
         )
         ly_add_googletest(
-            NAME Gem::PhysX.Editor.Tests
+            NAME Gem::${gem_name}.Editor.Tests
             LABELS REQUIRES_tiaf
         )
     endif()
