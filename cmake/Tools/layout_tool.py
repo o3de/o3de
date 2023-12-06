@@ -137,7 +137,7 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
             if asset_mode == ASSET_MODE_PAK:
                 # Validate that we have pak files
                 project_paks = project_asset_path.glob("*.pak")
-                pak_count = len(project_paks)
+                pak_count = len(list(project_paks))
 
                 if pak_count == 0:
                     warning_count += _warn("No pak files found for PAK mode deployment")

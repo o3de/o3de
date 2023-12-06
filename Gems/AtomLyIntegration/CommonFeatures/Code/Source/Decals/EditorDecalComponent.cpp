@@ -70,6 +70,10 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<uint8_t>::min())
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<uint8_t>::max())
 
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &DecalComponentConfig::m_decalColor, "Decal Color", "Decal Color can be applied as a multiplier")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_decalColorFactor, "Decal Color Factor", "The factor associated with decal color which also acts as a multiplier. ")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 5.f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &DecalComponentConfig::m_materialAsset, "Material", "The material of the decal.")
                         ;
                 }

@@ -52,7 +52,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         uint m_shadowIndex; 
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        float m_padding;
+        [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 
     struct PointLight
@@ -157,6 +158,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         uint m_sortKeyPacked;
         uint m_textureArrayIndex;
         uint m_textureIndex;
+        float3 m_decalColor;
+        float m_decalColorFactor;
+        [[pad_to(16)]]
     };
     
     StructuredBuffer<Decal> m_decals;

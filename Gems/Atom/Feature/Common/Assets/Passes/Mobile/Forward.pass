@@ -66,31 +66,35 @@
                 {
                     "Name": "LightingAttachment",
                     "SizeSource": {
-                      "Source": {
-                        "Pass": "Parent",
-                        "Attachment": "PipelineOutput"
-                      }
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "PipelineOutput"
+                        }
                     },
-                  "MultisampleSource": {
-                    "Pass": "Parent",
-                    "Attachment": "PipelineOutput"
-                  },
+                    "MultisampleSource": {
+                      "Pass": "Parent",
+                      "Attachment": "PipelineOutput"
+                    },
                     "ImageDescriptor": {
-                      "Format": "R16G16B16A16_FLOAT",
-                      "SharedQueueMask": "Graphics"
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "ShaderReadWrite",
+                            "Color"
+                        ]
                     }
                 },
                 {
                     "Name": "DepthAttachment",
                     "SizeSource": {
-                      "Source": {
-                        "Pass": "Parent",
-                        "Attachment": "PipelineOutput"
-                      }
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "PipelineOutput"
+                        }
                     },
                     "ImageDescriptor": {
-                      "Format": "D32_FLOAT_S8X24_UINT",
-                      "SharedQueueMask": "Graphics"
+                        "Format": "D32_FLOAT_S8X24_UINT",
+                        "SharedQueueMask": "Graphics"
                     }
                 },
                 {
@@ -103,11 +107,11 @@
             ],
             "Connections": [
                 {
-                  "LocalSlot": "DepthStencilOutput",
-                  "AttachmentRef": {
-                    "Pass": "This",
-                    "Attachment": "DepthAttachment"
-                  }
+                    "LocalSlot": "DepthStencilOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DepthAttachment"
+                    }
                 },
                 {
                     "LocalSlot": "LightingOutput",
