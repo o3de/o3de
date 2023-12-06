@@ -439,7 +439,7 @@ namespace UnitTest
                 // Attempt to a larger amount of data than is supported.
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstant(floatValueIndex, AZ::Vector4::CreateOne());
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
                     EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<float>(floatValueIndex), floatValue);
@@ -447,7 +447,7 @@ namespace UnitTest
                 // Attempt to assign a smaller amount of data than is supported.
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstant(floatValueIndex, uint8_t(0));
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
                     EXPECT_EQ(srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstant<float>(floatValueIndex), floatValue);
@@ -458,7 +458,7 @@ namespace UnitTest
                 // Assign index that overflows array.
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstant(float4ValueIndex, 5.0f, 5);
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 ValidateFloat4Values();
 
@@ -472,7 +472,7 @@ namespace UnitTest
 
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstant(float4ValueIndex, Test(), 1);
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 ValidateFloat4Values();
 
@@ -488,7 +488,7 @@ namespace UnitTest
                 float float6Values[] = { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f };
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstantArray<float>(float4ValueIndex, { float6Values, AZ_ARRAY_SIZE(float6Values) });
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 ValidateFloat4Values();
 
@@ -496,7 +496,7 @@ namespace UnitTest
                 float float1Value[] = { 5.0f };
                 AZ_TEST_START_ASSERTTEST;
                 srgData.SetConstantArray<float>(float4ValueIndex, { float1Value, AZ_ARRAY_SIZE(float1Value) });
-                AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+                AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
 
                 ValidateFloat4Values();
             }
@@ -593,7 +593,7 @@ namespace UnitTest
 
             AZ_TEST_START_ASSERTTEST;
             EXPECT_FALSE(srgData.SetConstant(vector2index, vector3));
-            AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+            AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 AZStd::span<const uint8_t> resutV3 = srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantRaw(vector2index);
@@ -606,7 +606,7 @@ namespace UnitTest
 
             AZ_TEST_START_ASSERTTEST;
             EXPECT_FALSE(srgData.SetConstant(vector3index, vector4));
-            AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+            AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 AZStd::span<const uint8_t> resutV4 = srgData.GetDeviceShaderResourceGroupData(deviceIndex).GetConstantRaw(vector3index);
@@ -619,7 +619,7 @@ namespace UnitTest
 
             AZ_TEST_START_ASSERTTEST;
             EXPECT_FALSE(srgData.SetConstant(vector4index, vector3));
-            AZ_TEST_STOP_ASSERTTEST(DeviceCount);
+            AZ_TEST_STOP_ASSERTTEST(DeviceCount + 1);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 AZStd::span<const uint8_t> resutV3FromIndex4 =

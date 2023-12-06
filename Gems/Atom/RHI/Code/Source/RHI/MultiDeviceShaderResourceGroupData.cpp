@@ -26,8 +26,9 @@ namespace AZ::RHI
 
     MultiDeviceShaderResourceGroupData::MultiDeviceShaderResourceGroupData(
         MultiDevice::DeviceMask deviceMask, const ShaderResourceGroupLayout* layout)
-        : m_shaderResourceGroupLayout(layout)
-        , m_deviceMask(deviceMask)
+        : m_deviceMask(deviceMask)
+        , m_shaderResourceGroupLayout(layout)
+        , m_constantsData(layout->GetConstantsLayout())
     {
         auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
 

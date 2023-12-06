@@ -264,16 +264,6 @@ namespace AZ::RHI
 
     struct MultiDeviceDrawItemProperties
     {
-        MultiDeviceDrawItemProperties() = default;
-
-        MultiDeviceDrawItemProperties(
-            const MultiDeviceDrawItem* item, DrawItemSortKey sortKey = 0, DrawFilterMask filterMask = DrawFilterMaskDefaultValue)
-            : m_mdItem{ item }
-            , m_sortKey{ sortKey }
-            , m_drawFilterMask{ filterMask }
-        {
-        }
-
         bool operator==(const MultiDeviceDrawItemProperties& rhs) const
         {
             return m_mdItem == rhs.m_mdItem && m_sortKey == rhs.m_sortKey && m_depth == rhs.m_depth &&
@@ -305,10 +295,10 @@ namespace AZ::RHI
         //! A sorting key of this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         DrawItemSortKey m_sortKey = 0;
+        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
+        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
         //! A depth value this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         float m_depth = 0.0f;
-        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
-        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
     };
 } // namespace AZ::RHI
