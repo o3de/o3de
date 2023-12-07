@@ -78,6 +78,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float m_irisDepth; //Distance from the center of the Eye to the center of the Iris-XZ plane.
     float m_eyeIrisRadius; // Radius of the Iris, measured from the center of the Pupil (imagine a Circle in the XZ plane).
     float m_limbusSize;
+    float m_irisUvScale;
 
     // Index of refraction of the Inner Eye. This is the sequence
     // of mediums the light has to travel: Air -> Cornea -> Aqueus Humor -> Pupil/Iris Plane.
