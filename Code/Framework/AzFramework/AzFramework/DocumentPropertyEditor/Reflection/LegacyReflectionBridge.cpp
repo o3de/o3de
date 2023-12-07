@@ -1424,6 +1424,7 @@ namespace AZ::Reflection
 
                         const auto inheritedAttributes = { DescriptorAttributes::ParentContainerInstance,
                                                            DescriptorAttributes::ParentContainerCanBeModified,
+                                                           PropertyEditor::NameLabelOverride.GetName(),
                                                            AZ::Reflection::DescriptorAttributes::ContainerIndex };
 
                         for (const auto& attributeName : inheritedAttributes)
@@ -1431,7 +1432,23 @@ namespace AZ::Reflection
                             auto inheritedAttribute = Find(group, attributeName, parentNode);
                             if (inheritedAttribute)
                             {
-                                nodeData.m_cachedAttributes.push_back({ group, attributeName, *inheritedAttribute });
+                                auto existingAttribute = Find(group, attributeName, nodeData);
+                                if (existingAttribute)
+                                {
+                                    if (existingAttribute->IsNull() || (existingAttribute->IsObject() && existingAttribute->ObjectEmpty()) || (existingAttribute->IsString() && !existingAttribute->GetStringLength()))
+                                    {
+                                        // overwrite existing empty value
+                                        *existingAttribute = *inheritedAttribute;
+                                    }
+                                    else
+                                    {
+                                        // do nothing! Do not overwrite existing non-empty values
+                                    }
+                                }
+                                else
+                                {
+                                    nodeData.m_cachedAttributes.push_back({ group, attributeName, *inheritedAttribute });
+                                }
                             }
                         }
                     }
@@ -1603,6 +1620,19 @@ namespace AZ::Reflection
             const AttributeDataType* Find(Name group, Name name, const StackEntry& parentData) const
             {
                 for (auto it = parentData.m_cachedAttributes.cbegin(); it != parentData.m_cachedAttributes.cend(); ++it)
+                {
+                    if (it->m_group == group && it->m_name == name)
+                    {
+                        return &(it->m_value);
+                    }
+                }
+                return nullptr;
+            }
+
+            // non-const Find that can be used to overwrite existing attributes
+            AttributeDataType* Find(Name group, Name name, StackEntry& parentData)
+            {
+                for (auto it = parentData.m_cachedAttributes.begin(); it != parentData.m_cachedAttributes.end(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {
