@@ -123,7 +123,7 @@ namespace AzToolsFramework
 
             m_pixmap.load(iconPathToUse);
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
-            Thumbnail::LoadComplete();
+            QueueThumbnailUpdated();
         }
 
         //////////////////////////////////////////////////////////////////////////

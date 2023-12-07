@@ -51,7 +51,7 @@ namespace AzToolsFramework
             auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / folderIcon;
             m_pixmap.load(absoluteIconPath.c_str());
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
-            Thumbnail::LoadComplete();
+            QueueThumbnailUpdated();
         }
 
         //////////////////////////////////////////////////////////////////////////
