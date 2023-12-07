@@ -209,6 +209,7 @@ def post_build_action(android_app_root: Path, project_root: Path, gradle_version
     :param asset_mode:          The desired asset mode to determine the layout rules
     :param asset_bundle_folder: (For PAK asset modes) the location of where the PAK files are expected.
     """
+
     if not android_app_root.is_dir():
         raise AndroidPostBuildError(f"Invalid Android Gradle build path: {android_app_root} is not a directory or does not exist.")
 
