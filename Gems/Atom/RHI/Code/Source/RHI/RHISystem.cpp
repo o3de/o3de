@@ -260,6 +260,8 @@ namespace AZ::RHI
             return AZStd::nullopt;
         }
 
+        // We need to pass a non-const PhysicalDevice& to Device::Init(), hence this detour is needed to locate
+        // the corresponding PhysicalDevice without const
         RHI::Ptr<RHI::PhysicalDevice> selectedPhysicalDevice;
         for (RHI::Ptr<RHI::PhysicalDevice>& physicalDevice : RHI::Factory::Get().EnumeratePhysicalDevices())
         {
