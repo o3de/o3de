@@ -13,7 +13,6 @@
 AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: conditional expression is constant
                                                                     // 4251: 'QLocale::d': class 'QSharedDataPointer<QLocalePrivate>' needs to have dll-interface to be used by clients of class 'QLocale'
                                                                     // 4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-#include <QFutureWatcher>
 #include <QObject>
 #include <QPixmap>
 AZ_POP_DISABLE_WARNING
@@ -49,10 +48,10 @@ namespace AzToolsFramework
             virtual bool Equals(const ThumbnailKey* other) const;
 
         Q_SIGNALS:
-            //! Updated signal is dispatched whenever thumbnail data was changed. Anyone using this thumbnail should listen to this.
-            void ThumbnailUpdatedSignal() const;
+            //! This signal is sent whenever the thumbnail image where data has changed.
+            void ThumbnailUpdated() const;
             //! Force update mapped thumbnails
-            void UpdateThumbnailSignal() const;
+            void ThumbnailUpdateRequested() const;
 
         private:
             bool m_ready = false;
@@ -84,25 +83,22 @@ namespace AzToolsFramework
             Thumbnail(SharedThumbnailKey key);
             ~Thumbnail() override;
             bool operator == (const Thumbnail& other) const;
-            void Load();
-            virtual void UpdateTime(float deltaTime);
+            virtual void Load();
+            virtual void LoadComplete();
             const QPixmap& GetPixmap() const;
             SharedThumbnailKey GetKey() const;
             State GetState() const;
 
         Q_SIGNALS:
-            void Updated() const;
+            void ThumbnailUpdated() const;
 
         public Q_SLOTS:
             virtual void Update() {}
 
         protected:
-            QFutureWatcher<void> m_watcher;
-            State m_state;
+            AZStd::atomic<State> m_state;
             SharedThumbnailKey m_key;
             QPixmap m_pixmap;
-
-            virtual void LoadThread() {}
         };
 
         typedef QSharedPointer<Thumbnail> SharedThumbnail;
@@ -166,16 +162,10 @@ namespace AzToolsFramework
         template<class ThumbnailType, class Hasher = AZStd::hash<SharedThumbnailKey>, class EqualKey = AZStd::equal_to<SharedThumbnailKey>>
         class ThumbnailCache
             : public ThumbnailProvider
-            , public AZ::TickBus::Handler
         {
         public:
             ThumbnailCache();
             ~ThumbnailCache() override;
-
-            //////////////////////////////////////////////////////////////////////////
-            // TickBus
-            //////////////////////////////////////////////////////////////////////////
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             bool GetThumbnail(SharedThumbnailKey key, SharedThumbnail& thumbnail) override;
 

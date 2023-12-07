@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry EvaluateVertexGeometry_MaterialGraphName_Depth
+#endif
+
+#include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+
+
+float4 GenerateWorldPosition(
+    float4x4 objectToWorld,
+    float3x3 objectToWorldIT,
+    float3 position,
+    real3 normal,
+    real4 tangent,
+    float2 uv0,
+    float2 uv1)
+{
+    const float4 positionWS = mul(objectToWorld, float4(position, 1.0));
+    const real3 bitangent = cross(normal, tangent.xyz);
+
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(normal), real4(tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+
+    const float3 O3DE_MC_POSITION = position;
+    const float3 O3DE_MC_NORMAL = normal;
+    const float3 O3DE_MC_TANGENT = tangent.xyz;
+    const float3 O3DE_MC_BITANGENT = bitangent;
+    const float3 O3DE_MC_POSITION_WS = positionWS.xyz;
+    const float3 O3DE_MC_NORMAL_WS = normalWS;
+    const float3 O3DE_MC_TANGENT_WS = tangentWS;
+    const float3 O3DE_MC_BITANGENT_WS = bitangentWS;
+    #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
+
+    // m_placeHolder keeps MaterialSrg from being compiled out when iterating on graphs
+    const bool placeHolder = MaterialSrg::m_placeHolder;
+
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
+    float3 inPositionOffset = {0.0, 0.0, 0.0};
+    // O3DE_GENERATED_INSTRUCTIONS_END
+
+    #undef O3DE_MC_UV
+
+    return float4((float3)positionWS + (float3)inPositionOffset, 1.0);
+}
+
+VsOutput EvaluateVertexGeometry_MaterialGraphName_Depth(VsInput IN, VsSystemValues SV)
+{
+    const float4 worldPosition = GenerateWorldPosition(
+        GetObjectToWorldMatrix(SV.m_instanceId),
+        GetObjectToWorldMatrixInverseTranspose(SV.m_instanceId),
+        IN.m_position,
+        real3(IN.m_normal),
+        real4(IN.m_tangent),
+        IN.m_uv0,
+        IN.m_uv1);
+
+    VsOutput output;
+    output.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+    output.m_worldPos = worldPosition.xyz;
+    output.m_worldPosPrev = GenerateWorldPosition(
+        GetObjectToWorldMatrixPrev(SV.m_instanceId),
+        transpose((float3x3)GetObjectToWorldMatrixPrev(SV.m_instanceId)),
+        o_prevPosition_isBound ? IN.m_optional_prevPosition : IN.m_position,
+        real3(IN.m_normal),
+        real4(IN.m_tangent),
+        IN.m_uv0,
+        IN.m_uv1).xyz;
+#endif
+
+    return output;
+}

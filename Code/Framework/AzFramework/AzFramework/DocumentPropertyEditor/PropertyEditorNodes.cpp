@@ -73,7 +73,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(Container::RemoveNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::ClearNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::ContainerCanBeModified);
-        system->RegisterNodeAttribute<PropertyEditor>(Container::PromptOnContainerClear);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::IndexedChildNameLabelOverride);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);

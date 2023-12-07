@@ -334,7 +334,7 @@ namespace AZ
                 for (size_t lutIndex = 0; lutIndex < numLuts; lutIndex++)
                 {
                     LutBlendItem& lutBlendItem = settings->GetLutBlendItem(lutIndex);
-                    const auto assetId = lutBlendItem.m_assetId.GetId();
+                    const auto assetId = lutBlendItem.m_asset.GetId();
 
                     if (assetId.IsValid())
                     {
@@ -343,7 +343,7 @@ namespace AZ
                         if (!m_colorGradingLuts[current].m_lutStreamingImage)
                         {
                             AZ_Warning("BlendColorGradingLutsPass", false, "Unable to load grading LUT from asset %s",
-                                lutBlendItem.m_assetId.ToString<AZStd::string>().c_str());
+                                lutBlendItem.m_asset.ToString<AZStd::string>().c_str());
                             // Skip this LUT
                             continue;
                         }

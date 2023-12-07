@@ -273,7 +273,22 @@ namespace AzToolsFramework
 
         void AssetBrowserListView::Update()
         {
-            update();
+            if (!m_updateRequested)
+            {
+                m_updateRequested = true;
+                QTimer::singleShot(
+                    0,
+                    this,
+                    [this]()
+                    {
+                        m_updateRequested = false;
+                        if (model())
+                        {
+                            model()->layoutChanged();
+                        }
+                        update();
+                    });
+            }
         }
 
         void AssetBrowserListView::OnAssetBrowserComponentReady()

@@ -181,7 +181,7 @@ class Window(QtWidgets.QDialog):
                                                'substance',
                                                'resources',
                                                'atom',
-                                               'StandardPBR_AllProperties.material')
+                                               'StandardPBR_AllProperties.json')
         else:
             self._default_material_path = default_material_path
 

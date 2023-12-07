@@ -71,6 +71,17 @@ namespace Audio
         return akTransform;
     }
 
+#if AK_WWISESDK_VERSION_MAJOR >= 2022
+    inline void ATLTransformToAkTransform(const SATLWorldPosition& atlTransform, AkWorldTransform& akWorldTransform)
+    {
+        akWorldTransform.Set(
+            AZVec3ToAkVector(atlTransform.GetPositionVec()),
+            AZVec3ToAkVector(atlTransform.GetForwardVec().GetNormalized()), // Wwise SDK requires that the Orientation vectors
+            AZVec3ToAkVector(atlTransform.GetUpVec().GetNormalized())       // are normalized prior to sending to the apis.
+        );
+    }
+#endif // AK_WWISESDK_VERSION_MAJOR >= 2022
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     inline void ATLTransformToAkTransform(const SATLWorldPosition& atlTransform, AkTransform& akTransform)
     {
@@ -90,6 +101,9 @@ namespace Audio
             "Object", "Event", "Structure", "Media", "GameObject", "Processing", "ProcessingPlugin", "Streaming", "StreamingIO",
             "SpatialAudio", "SpatialAudioGeometry", "SpatialAudioPaths", "GameSim", "MonitorQueue", "Profiler", "FilePackage",
             "SoundEngine", "Integration"
+#if AK_WWISESDK_VERSION_MAJOR >= 2022
+            , "JobMgr"
+#endif // AK_WWISESDK_VERSION_MAJOR >= 2022
         };
 
         static_assert(AZ_ARRAY_SIZE(MemoryManagerCategories) == AkMemID_NUM,

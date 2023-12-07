@@ -40,7 +40,7 @@ site.addsitedir(_MAYA_SCRIPTS)
 from atom_mat import AtomMaterial as atomMAT
 
 _ATOM_MAT_TEMPLATE = atomMAT(Path(_MAYA_SCRIPTS,
-                                  'StandardPBR_AllProperties.material').resolve())
+                                  'StandardPBR_AllProperties.json').resolve())
 
 _model_asset_dir = Path(_REL_ROOT, 'Objects/Characters/Peccy').resolve()
 _atom_mat_path = Path(_REL_ROOT, 'Objects/Characters/Peccy').resolve()
