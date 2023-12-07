@@ -7,6 +7,7 @@
 #
 
 import argparse
+import glob
 import logging
 import os
 import sys
@@ -89,6 +90,14 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     default_base_build_path = ctx.engine_path / 'build' if engine_centric else ctx.project_path / 'build'
     
     if is_installer_sdk:
+            # Check if we have any monolithic entries if building monolithic
+            monolithic_artifacts = glob.glob(f'cmake/Platform/{exp.get_platform_installer_folder_name()}/Monolithic/ConfigurationTypes_*.cmake',
+                      root_dir=ctx.engine_path)
+            has_monolithic_artifacts = len(monolithic_artifacts) > 0
+
+            if monolithic_build and not has_monolithic_artifacts:
+                logger.error("Trying to create monolithic build, but no monolithic artifacts are detected in the engine installation! Please re-run the script with '-nomonolithic' and '-config profile'.")
+                return 1
             tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / tool_config / 'Default'
     
     if not tools_build_path:
