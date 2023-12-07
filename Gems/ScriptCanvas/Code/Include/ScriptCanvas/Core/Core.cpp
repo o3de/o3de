@@ -242,7 +242,8 @@ namespace ScriptCanvas
     {
         return m_data && m_data == other.m_data
             || !m_id.IsNull() && m_id == other.m_id
-            || !m_relativePath.empty() && m_relativePath == other.m_relativePath;
+            || !m_relativePath.empty() && m_relativePath == other.m_relativePath
+            || !m_absolutePath.empty() && m_absolutePath == other.m_absolutePath;
     }
 
     void SourceHandle::Clear()
