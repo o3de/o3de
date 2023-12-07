@@ -573,6 +573,10 @@
                 "Path": "Passes/Mobile/ShadowParent.pass"
             },
             {
+                "Name": "MobilePostProcessParentTemplate",
+                "Path": "Passes/Mobile/PostProcessParent.pass"
+            },
+            {
                 "Name": "KawaseShadowBlurTemplate",
                 "Path": "Passes/KawaseShadowBlur.pass"
             },
