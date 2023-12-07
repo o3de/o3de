@@ -89,6 +89,8 @@ namespace AZ::Render
                 ->Event("GetAffectsGIFactor", &AreaLightRequestBus::Events::GetAffectsGIFactor)
                 ->Event("SetAffectsGIFactor", &AreaLightRequestBus::Events::SetAffectsGIFactor)
 
+                ->Event("GetLightingChannelMask", &AreaLightRequestBus::Events::GetLightingChannelMask)
+                ->Event("SetLightingChannelMask", &AreaLightRequestBus::Events::SetLightingChannelMask)
                 ->VirtualProperty("AttenuationRadius", "GetAttenuationRadius", "SetAttenuationRadius")
                 ->VirtualProperty("Color", "GetColor", "SetColor")
                 ->VirtualProperty("EmitsLightBothDirections", "GetEmitsLightBothDirections", "SetEmitsLightBothDirections")
@@ -109,7 +111,8 @@ namespace AZ::Render
                 ->VirtualProperty("ShadowCachingMode", "GetShadowCachingMode", "SetShadowCachingMode")
 
                 ->VirtualProperty("AffectsGI", "GetAffectsGI", "SetAffectsGI")
-                ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor");
+                ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor")
+                ->VirtualProperty("LightingChannelMask", "GetLightingChannelMask", "SetLightingChannelMask");
         }
     }
 
@@ -261,6 +264,7 @@ namespace AZ::Render
         AttenuationRadiusChanged();
         ShuttersChanged();
         ShadowsChanged();
+        LightingChannelMaskChanged();
 
         if (m_lightShapeDelegate)
         {
@@ -338,6 +342,18 @@ namespace AZ::Render
             }
         }
     }
+
+    void AreaLightComponentController::LightingChannelMaskChanged()
+    {
+        uint32_t lightingChannel = 0;
+        lightingChannel = static_cast<uint32_t>(m_configuration.m_lightingChannel0) |
+            static_cast<uint32_t>(m_configuration.m_lightingChannel1) << 1 | static_cast<uint32_t>(m_configuration.m_lightingChannel2) << 2;
+        m_configuration.m_lightingChannelMask = lightingChannel;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetLightingChannelMask(m_configuration.m_lightingChannelMask);
+        }
+    }    
 
     void AreaLightComponentController::AutoCalculateAttenuationRadius()
     {
@@ -647,6 +663,20 @@ namespace AZ::Render
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetAffectsGIFactor(affectsGIFactor);
+        }
+    }
+	
+    uint32_t AreaLightComponentController::GetLightingChannelMask() const
+    {
+        return m_configuration.m_lightingChannelMask;
+    }
+
+    void AreaLightComponentController::SetLightingChannelMask(uint32_t lightingChannelMask)
+    {
+        m_configuration.m_lightingChannelMask = lightingChannelMask;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetLightingChannelMask(m_configuration.m_lightingChannelMask);
         }
     }
 

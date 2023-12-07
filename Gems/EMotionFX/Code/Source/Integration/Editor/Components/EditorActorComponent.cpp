@@ -60,6 +60,10 @@ namespace EMotionFX
                     ->Field("BBoxConfig", &EditorActorComponent::m_bboxConfig)
                     ->Field("ExcludeFromReflectionCubeMaps", &EditorActorComponent::m_excludeFromReflectionCubeMaps)
                     ->Field("RayTracingEnabled", &EditorActorComponent::m_rayTracingEnabled)
+                    ->Field("LightingChannelMask", &EditorActorComponent::m_lightingChannelMask)
+                    ->Field("LightingChannel0", &EditorActorComponent::m_lightingChannel0)
+                    ->Field("LightingChannel1", &EditorActorComponent::m_lightingChannel1)
+                    ->Field("LightingChannel2", &EditorActorComponent::m_lightingChannel2)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -167,6 +171,17 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::AddEditorMaterialComponent)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorActorComponent::GetEditorMaterialComponentVisibility)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Lighting Channels")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_lightingChannel0, "Channel 0", "Lighting channel 0.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_lightingChannel1, "Channel 1", "Lighting channel 1.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_lightingChannel2, "Channel 2", "Lighting channel 2.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
                         ;
                 }
             }
@@ -188,6 +203,7 @@ namespace EMotionFX
             , m_attachmentType(AttachmentType::None)
             , m_attachmentJointIndex(0)
             , m_lodLevel(0)
+            , m_lightingChannelMask(1)
             , m_actorAsset(AZ::Data::AssetLoadBehavior::NoLoad)
             , m_excludeFromReflectionCubeMaps(true)
             , m_rayTracingEnabled(true)
@@ -502,6 +518,20 @@ namespace EMotionFX
             }
         }
 
+        void EditorActorComponent::LightingChannelMaskChanged()
+        {
+            uint32_t lightingChannel = 0;
+            lightingChannel = static_cast<uint32_t>(m_lightingChannel0) |
+                static_cast<uint32_t>(m_lightingChannel1) << 1 |
+                static_cast<uint32_t>(m_lightingChannel2) << 2;
+            m_lightingChannelMask = lightingChannel;
+
+            if (m_actorInstance)
+            {
+                m_actorInstance->SetLightingChannelMask(m_lightingChannelMask);
+            }
+        }
+
         void EditorActorComponent::LaunchAnimationEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
         {
             // call to open must be done before LoadCharacter
@@ -721,6 +751,7 @@ namespace EMotionFX
             cfg.m_renderFlags = m_renderFlags;
             cfg.m_excludeFromReflectionCubeMaps = m_excludeFromReflectionCubeMaps;
             cfg.m_rayTracingEnabled = m_rayTracingEnabled;
+            cfg.m_lightingChannelMask = m_lightingChannelMask;
 
             gameEntity->AddComponent(aznew ActorComponent(&cfg));
         }
@@ -986,6 +1017,8 @@ namespace EMotionFX
             // Force an update of node transforms so we can get an accurate bounding box.
             m_actorInstance->UpdateTransformations(0.0f, true, false);
             OnBBoxConfigChanged(); // Apply BBox config
+
+            LightingChannelMaskChanged();
 
             // Creating the render actor AFTER both actor asset and mesh asset loaded.
             RenderBackend* renderBackend = AZ::Interface<RenderBackendManager>::Get()->GetRenderBackend();

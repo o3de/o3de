@@ -43,7 +43,8 @@ partial ShaderResourceGroup ViewSrg
         float3 m_rgbIntensityCandelas;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
 
     StructuredBuffer<SimplePointLight> m_simplePointLights;
@@ -61,7 +62,8 @@ partial ShaderResourceGroup ViewSrg
         float m_cosOuterConeAngle; // cosine of the inner cone angle
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float1 m_padding;
     };
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
@@ -79,7 +81,8 @@ partial ShaderResourceGroup ViewSrg
         uint3 m_shadowIndices;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float3 m_padding;
+        uint m_lightingChannelMask;
+        float2 m_padding;
     };
 
     StructuredBuffer<PointLight> m_pointLights;
@@ -159,7 +162,8 @@ partial ShaderResourceGroup ViewSrg
         uint m_shadowIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
 
     StructuredBuffer<DiskLight> m_diskLights;
@@ -177,7 +181,8 @@ partial ShaderResourceGroup ViewSrg
         float m_invAttenuationRadiusSquared; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
 
     StructuredBuffer<CapsuleLight> m_capsuleLights;
@@ -197,7 +202,8 @@ partial ShaderResourceGroup ViewSrg
         uint m_flags; // See QuadLightFlag enum
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float2 m_padding;
+        uint m_lightingChannelMask;
+        float m_padding;
     };
 
     StructuredBuffer<QuadLight> m_quadLights;
@@ -212,7 +218,8 @@ partial ShaderResourceGroup ViewSrg
         float3 m_rgbIntensityNits;
         float m_invAttenuationRadiusSquared; // negative sign bit indicates double sided.
         float3 m_direction;
-        float m_padding0;
+        uint m_lightingChannelMask;
+
     };
 
     StructuredBuffer<PolygonLight> m_polygonLights;

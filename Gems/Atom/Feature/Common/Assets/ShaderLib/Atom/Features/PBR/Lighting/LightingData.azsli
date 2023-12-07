@@ -16,7 +16,9 @@
 class LightingData
 {
     LightCullingTileIterator tileIterator;
-    
+        
+    uint lightingChannels;
+
     // Lighting outputs
     real3 diffuseLighting;
     real3 specularLighting;
@@ -72,6 +74,8 @@ void LightingData::Init(real3 positionWS, real3 normal, real roughnessLinear, fl
     emissiveLighting = real3(0.0, 0.0, 0.0);
     diffuseAmbientOcclusion = 1.0;
     specularOcclusion = 1.0;
+    
+    lightingChannels = 0xFFFFFFFF;
 
     dirToCamera = normalize(viewPosition - positionWS);
 

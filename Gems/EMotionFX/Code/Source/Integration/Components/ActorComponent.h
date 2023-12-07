@@ -95,6 +95,8 @@ namespace EMotionFX
                 BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
 
                 bool m_excludeFromReflectionCubeMaps = true;
+				
+                uint32_t m_lightingChannelMask = 1;
 
                 static void Reflect(AZ::ReflectContext* context);
             };

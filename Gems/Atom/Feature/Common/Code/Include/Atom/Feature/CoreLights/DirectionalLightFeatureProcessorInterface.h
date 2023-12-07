@@ -184,6 +184,8 @@ namespace AZ
             //! Specifies the contribution of this light to the diffuse global illumination in the scene.
             virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
 
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
         };
     } // namespace Render
 } // namespace AZ

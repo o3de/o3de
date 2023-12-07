@@ -75,6 +75,10 @@ namespace AZ
             // Global Illumination
             bool m_affectsGI = true;
             float m_affectsGIFactor = 1.0f;
+            uint32_t m_lightingChannelMask = 1;
+            bool m_lightingChannel0 = true;
+            bool m_lightingChannel1 = false;
+            bool m_lightingChannel2 = false;
 
             // The following functions provide information to an EditContext...
 

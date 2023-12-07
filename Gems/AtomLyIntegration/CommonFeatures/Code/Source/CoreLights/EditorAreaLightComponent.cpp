@@ -101,6 +101,16 @@ namespace AZ
                         ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_attenuationRadius, "Radius", "The distance at which this light no longer has an affect.")
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsAttenuationRadiusModeAutomatic)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
+                        
+                        ->ClassElement(Edit::ClassElements::Group, "Lighting Channels")
+                            ->Attribute(Edit::Attributes::AutoExpand, true)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
+                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightingChannel0, "Channel 0", "Lighting channel 0.")
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
+                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightingChannel1, "Channel 1", "Lighting channel 1.")
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
+                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightingChannel2, "Channel 2", "Lighting channel 2.")
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
 
                         ->ClassElement(Edit::ClassElements::Group, "Shutters")
                             ->Attribute(Edit::Attributes::AutoExpand, true)

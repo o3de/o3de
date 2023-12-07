@@ -52,6 +52,7 @@ namespace AZ
             void SetQuadDimensions(LightHandle handle, float width, float height) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
             void SetQuadData(LightHandle handle, const QuadLightData& data) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer()const;

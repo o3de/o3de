@@ -46,12 +46,20 @@ void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
         lightingData.tileIterator.LoadAdvance();
     
         ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
+        if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+        {
+            continue;
+        }
         ApplySimplePointLight(light, surface, lightingData);
     }
 #else
     for(uint lightIndex = 0; lightIndex < ViewSrg::m_simplePointLightCount; lightIndex++)
     {
         ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[lightIndex];
+        if(!IsSameLightChannel(lightingData.lightingChannels, light.m_lightingChannelMask))
+        {
+            continue;
+        }
         ApplySimplePointLight(light, surface, lightingData);
     }
 #endif

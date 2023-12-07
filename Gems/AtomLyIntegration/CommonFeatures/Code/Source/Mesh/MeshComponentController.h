@@ -54,6 +54,11 @@ namespace AZ
             RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
             float m_minimumScreenCoverage = 1.0f / 1080.0f;
             float m_qualityDecayRate = 0.5f;
+
+            uint32_t m_lightingChannelMask = 1;
+            bool m_lightingChannel0 = true;
+            bool m_lightingChannel1 = false;
+            bool m_lightingChannel2 = false;
         };
 
         class MeshComponentController final
@@ -178,6 +183,8 @@ namespace AZ
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
 
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
+
+            void LightingChannelMaskChanged();
 
             Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;

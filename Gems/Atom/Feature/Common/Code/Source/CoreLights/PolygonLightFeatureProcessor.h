@@ -49,6 +49,7 @@ namespace AZ
             void SetPolygonPoints(LightHandle handle, const Vector3* vectices, const uint32_t vertexCount, const Vector3& direction) override;
             void SetLightEmitsBothDirections(LightHandle handle, bool lightEmitsBothDirections) override;
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer()const;
             const Data::Instance<RPI::Buffer> GetLightPointBuffer()const;

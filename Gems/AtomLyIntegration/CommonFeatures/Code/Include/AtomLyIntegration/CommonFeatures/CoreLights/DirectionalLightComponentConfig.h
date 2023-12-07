@@ -141,6 +141,11 @@ namespace AZ
             bool m_affectsGI = true;
             float m_affectsGIFactor = 1.0f;
 
+            // Lighting channel
+            uint32_t m_lightingChannelMask = 1;
+            bool m_lightingChannel0 = true;
+            bool m_lightingChannel1 = false;
+            bool m_lightingChannel2 = false;
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
             bool IsShadowDisabled() const;

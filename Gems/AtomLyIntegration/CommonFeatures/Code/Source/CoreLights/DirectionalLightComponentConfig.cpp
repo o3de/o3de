@@ -21,7 +21,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DirectionalLightComponentConfig, ComponentConfig>()
-                    ->Version(9) // Added AffectsGI
+                    ->Version(10) // Added AffectsGI
                     ->Field("Color", &DirectionalLightComponentConfig::m_color)
                     ->Field("IntensityMode", &DirectionalLightComponentConfig::m_intensityMode)
                     ->Field("Intensity", &DirectionalLightComponentConfig::m_intensity)
@@ -48,6 +48,10 @@ namespace AZ
                     ->Field("FullscreenBlurDepthFalloffStrength", &DirectionalLightComponentConfig::m_fullscreenBlurDepthFalloffStrength)
                     ->Field("Affects GI", &DirectionalLightComponentConfig::m_affectsGI)
                     ->Field("Affects GI Factor", &DirectionalLightComponentConfig::m_affectsGIFactor)
+                    ->Field("LightingChannelMask", &DirectionalLightComponentConfig::m_lightingChannelMask)
+                    ->Field("LightingChannel0", &DirectionalLightComponentConfig::m_lightingChannel0)
+                    ->Field("LightingChannel1", &DirectionalLightComponentConfig::m_lightingChannel1)
+                    ->Field("LightingChannel2", &DirectionalLightComponentConfig::m_lightingChannel2)
                     ;
             }
         }

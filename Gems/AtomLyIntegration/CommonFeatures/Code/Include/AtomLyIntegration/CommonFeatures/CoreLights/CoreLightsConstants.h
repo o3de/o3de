@@ -27,6 +27,13 @@ namespace AZ
             Automatic,
         };
 
+        enum class LightingChannelsItem : uint32_t
+        {
+            LightChannel0,
+            LightChannel1,
+            LightChannel2,
+        };
+
         inline void CoreLightConstantsReflect(ReflectContext* context)
         {
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))

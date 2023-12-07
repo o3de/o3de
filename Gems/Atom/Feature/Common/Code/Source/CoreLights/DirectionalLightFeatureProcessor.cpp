@@ -660,6 +660,14 @@ namespace AZ
             m_lightBufferNeedsUpdate = true;
         }
 
+        void DirectionalLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DirectionalLightFeatureProcessor::SetLightingChannelMask().");
+
+            m_lightData.GetData(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+            m_lightBufferNeedsUpdate = true;
+        }
+
         void DirectionalLightFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
             RPI::SceneNotification::RenderPipelineChangeType changeType)
         {

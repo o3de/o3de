@@ -125,6 +125,7 @@ namespace EMotionFX
             AZ::Crc32 OnAttachmentTargetChanged();
             AZ::Crc32 OnAttachmentTargetJointSelect();
             void OnBBoxConfigChanged();
+            void LightingChannelMaskChanged();
             bool AttachmentTargetVisibility();
             bool AttachmentTargetJointVisibility();
             AZStd::string AttachmentJointButtonText();
@@ -190,6 +191,11 @@ namespace EMotionFX
 
             ActorAsset::ActorInstancePtr        m_actorInstance;            ///< Live actor instance.
             AZStd::unique_ptr<RenderActorInstance> m_renderActorInstance;
+
+            uint32_t m_lightingChannelMask = 1;
+            bool m_lightingChannel0 = true;
+            bool m_lightingChannel1 = false;
+            bool m_lightingChannel2 = false;
 
             AZ::Render::ModelReloadedEvent::Handler m_modelReloadedEventHandler;
 
