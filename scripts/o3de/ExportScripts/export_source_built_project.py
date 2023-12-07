@@ -81,7 +81,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     """
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
-    
+
     # Use a provided logger or get the current system one
     if not logger:
         logger = logging.getLogger()
