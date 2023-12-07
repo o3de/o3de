@@ -382,13 +382,12 @@ if "o3de_context" in globals():
                                            disable_override_arg=['-pc', '--project-centric'],
                                            disable_override_desc="Enable the project-centric work flow to export the project.")
 
-        # parser.add_argument('-nomonolithic', '--no-monolithic-build', action='store_true', help='Build the project binaries as shared libraries (as opposed to default monolithic build).')
         export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_BUILD_MONOLITHICALLY.key,
                                            enable_override_arg=['-mono', '--monolithic'],
-                                           enable_override_desc="Build the launchers monolithically into a single executable.",
+                                           enable_override_desc="Build the launchers monolithically into a launcher executable.",
                                            disable_override_arg=['-nomono', '--non-monolithic'],
-                                           disable_override_desc="Build the launchers non-monolithically, i.e. a single executable and individual modules per Gem.")
+                                           disable_override_desc="Build the launchers non-monolithically, i.e. a launcher executable alongside individual modules per Gem.")
 
 
         parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
