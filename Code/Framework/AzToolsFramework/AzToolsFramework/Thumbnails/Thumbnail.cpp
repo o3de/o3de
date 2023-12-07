@@ -25,7 +25,7 @@ namespace AzToolsFramework
         void ThumbnailKey::SetReady(bool ready)
         {
             m_ready = ready;
-            emit ThumbnailUpdated();
+            QTimer::singleShot(0, this, &ThumbnailKey::ThumbnailUpdated);
         }
 
         bool ThumbnailKey::IsReady() const
@@ -76,7 +76,7 @@ namespace AzToolsFramework
         {
         }
 
-        void Thumbnail::LoadComplete()
+        void Thumbnail::QueueThumbnailUpdated()
         {
             QTimer::singleShot(0, this, &Thumbnail::ThumbnailUpdated);
         }

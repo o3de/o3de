@@ -84,7 +84,6 @@ namespace AzToolsFramework
             ~Thumbnail() override;
             bool operator == (const Thumbnail& other) const;
             virtual void Load();
-            virtual void LoadComplete();
             const QPixmap& GetPixmap() const;
             SharedThumbnailKey GetKey() const;
             State GetState() const;
@@ -96,6 +95,7 @@ namespace AzToolsFramework
             virtual void Update() {}
 
         protected:
+            virtual void QueueThumbnailUpdated();
             AZStd::atomic<State> m_state;
             SharedThumbnailKey m_key;
             QPixmap m_pixmap;

@@ -69,13 +69,13 @@ namespace ImageProcessingAtom
         {
             m_pixmap = thumbnailImage;
             m_state = State::Ready;
-            Thumbnail::LoadComplete();
+            QueueThumbnailUpdated();
         }
 
         void ImageThumbnail::ThumbnailFailedToRender()
         {
             m_state = State::Failed;
-            Thumbnail::LoadComplete();
+            QueueThumbnailUpdated();
         }
 
         void ImageThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
