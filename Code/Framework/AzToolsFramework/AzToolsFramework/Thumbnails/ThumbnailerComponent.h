@@ -68,8 +68,6 @@ namespace AzToolsFramework
             SharedThumbnail m_missingThumbnail;
             //! Default loading thumbnail used when thumbnail is found by is not yet generated
             SharedThumbnail m_loadingThumbnail;
-            //! Maximum number of concurrent jobs allowed.
-            int m_maxThumbnailJobs{};
             //! Current number of jobs running.
             AZStd::set<SharedThumbnail> m_thumbnailsBeingLoaded;
         };

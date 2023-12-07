@@ -26,7 +26,6 @@ namespace AzToolsFramework
         ThumbnailerComponent::ThumbnailerComponent()
             : m_missingThumbnail(new MissingThumbnail())
             , m_loadingThumbnail(new LoadingThumbnail())
-            , m_maxThumbnailJobs(4)
         {
         }
 
@@ -50,6 +49,7 @@ namespace AzToolsFramework
             m_providers.clear();
             m_missingThumbnail.reset();
             m_loadingThumbnail.reset();
+            m_thumbnailsBeingLoaded.clear();
         }
 
         void ThumbnailerComponent::Reflect(AZ::ReflectContext* context)
@@ -118,9 +118,7 @@ namespace AzToolsFramework
                     }
 
                     // If a thumbnail is loading or the max number of jobs has been reached then return the loading image.
-                    if (thumbnail->GetState() == Thumbnail::State::Loading ||
-                        m_thumbnailsBeingLoaded.contains(thumbnail) ||
-                        m_thumbnailsBeingLoaded.size() >= m_maxThumbnailJobs)
+                    if (thumbnail->GetState() == Thumbnail::State::Loading || m_thumbnailsBeingLoaded.contains(thumbnail))
                     {
                         return m_loadingThumbnail;
                     }
@@ -134,14 +132,10 @@ namespace AzToolsFramework
                         AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
                         connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, this, &ThumbnailerComponent::RepaintThumbnail);
 
-                        // As the loading thumbnail animates it needs to notify anything using this thumbnail to update. 
-                        connect(m_loadingThumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
-
                         // The ThumbnailUpdated signal should be sent whenever the thumbnail has loaded or failed. In both cases,
                         // disconnect from all of the signals.
                         connect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, this, [this, key, thumbnail, busyLabel]()
                             {
-                                disconnect(m_loadingThumbnail.data(), nullptr, key.data(), nullptr);
                                 disconnect(busyLabel, nullptr, this, nullptr);
                                 disconnect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
 
