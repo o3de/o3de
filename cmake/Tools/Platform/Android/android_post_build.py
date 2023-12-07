@@ -75,7 +75,7 @@ def create_link(src: Path, tgt: Path):
 def safe_clear_folder(target_folder: Path) -> None:
     """
     This function is OBSOLETE. The functionality has been replaced with a single call to remove_link_to_directory().
-    The code has been preserved because may become useful in the future should we need tp recursively
+    The code has been preserved because may become useful in the future should we need to recursively
     erase the content of a directory.
     Safely clean the contents of a folder. If items are links/junctions, then attempt to unlink, but if the
     items are non-linked, then perform a deletion.
@@ -181,6 +181,7 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path) -> None:
     :param project_root:            The project folder root to look for the loose assets
     :param target_layout_root:      The target layout destination of the loose assets
     """
+
     android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY
     engine_json_marker = android_cache_folder / 'engine.json'
     if not engine_json_marker.is_file():
@@ -191,7 +192,8 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path) -> None:
     remove_link_to_directory(target_layout_root)
 
 
-    ## Copy/Link the contents to the target folder
+    # Create a symlink or junction {target_layout_root} to this
+    # project Cache folder for the android platform {android_cache_folder}.
     create_link(android_cache_folder, target_layout_root)
 
 
