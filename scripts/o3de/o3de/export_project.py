@@ -694,6 +694,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        launcher_types: int,
                        allow_registry_overrides: bool,
                        tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
+                       monolithic_build:bool = True,
                        logger: logging.Logger = None) -> None:
     """
     Build the launchers for the project (game, server, unified)
@@ -737,10 +738,10 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     if ctx.cmake_additional_configure_args:
         cmake_configure_command.extend(ctx.cmake_additional_configure_args)
 
-    cmake_configure_command.extend(["-DLY_MONOLITHIC_GAME=1",
+    cmake_configure_command.extend([ f"-DLY_MONOLITHIC_GAME={'0' if not monolithic_build else '1'}",
                                     f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"])
     if logger:
-        logger.info(f"Generating (monolithic) project the build folder for project {ctx.project_name}")
+        logger.info(f"Generating {'monolithic' if monolithic_build else 'non-monolithic'} build folder for project {ctx.project_name}")
     ret = process_command(cmake_configure_command)
     if ret != 0:
         raise ExportProjectError(f"Error generating projects for project {ctx.project_name}.")
