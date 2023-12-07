@@ -30,7 +30,7 @@ namespace AZ::RHI
         virtual ~MultiDeviceSwapChain() = default;
 
         //! Initializes the swap chain, making it ready for attachment.
-        ResultCode Init(MultiDevice::DeviceMask deviceMask, const SwapChainDescriptor& descriptor);
+        ResultCode Init(int deviceIndex, const SwapChainDescriptor& descriptor);
 
         //! Returns the device-specific SwapChain for the given index
         inline Ptr<SwapChain> GetDeviceSwapChain(int deviceIndex) const
