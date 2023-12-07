@@ -71,33 +71,9 @@ def create_link(src: Path, tgt: Path):
     except OSError as os_err:
         raise AndroidPostBuildError(f"Error trying to link  {tgt} => {src} : {os_err}")
 
-
-def safe_clear_folder(target_folder: Path) -> None:
-    """
-    This function is OBSOLETE. The functionality has been replaced with a single call to remove_link_to_directory().
-    The code has been preserved because may become useful in the future should we need to recursively
-    erase the content of a directory.
-    Safely clean the contents of a folder. If items are links/junctions, then attempt to unlink, but if the
-    items are non-linked, then perform a deletion.
-
-    :param target_folder:   Folder to safely clear
-    :param delete_folders:  Optional set of folders to perform a delete on instead of an unlink
-    """
-
-    if not target_folder.exists():
-        logger.warn(f"Nothing to clean. '{target_folder}' does not exist")
-        return
-
-    if not target_folder.is_dir():
-        logger.warn(f"Unable to clean '{target_folder}', target is not a directory")
-        return
-
-    for target_item in target_folder.iterdir():
-        try:
-            target_item.unlink()
-        except OSError as os_err:
-            raise AndroidPostBuildError(f"Error trying to unlink/delete {target_item}: {os_err}")
-
+# deprecated: The functionality has been replaced with a single call to remove_link_to_directory()
+# Go to commit e302882 to get this functionality back.
+# def safe_clear_folder(target_folder: Path) -> None:
 
 def remove_link_to_directory(link_to_directory: Path) -> None:
     """
@@ -113,33 +89,9 @@ def remove_link_to_directory(link_to_directory: Path) -> None:
             raise AndroidPostBuildError(f"Error trying to unlink/delete {link_to_directory}: {os_err}")
 
 
-def synchronize_folders(src: Path, tgt: Path) -> None:
-    """
-    This function is OBSOLETE. The functionality has been replaced with a single call to create_link().
-    The code has been preserved because may become useful in the future when we need to support copying files instead of links/junctions.
-    Create a copy of a source folder 'src' to a target folder 'tgt', but use the following rules:
-    1. Make sure that a 'tgt' folder exists
-    2. For each item in the 'src' folder, call 'copy_or_create_link' to apply a copy or link of the items to the
-       target folder 'tgt'
-
-    :param src:             The source folder to synchronize from
-    :param tgt:             The target folder to synchronize to
-    """
-
-    assert not tgt.is_file()
-    assert src.is_dir()
-
-    # Make sure the target folder exists
-    tgt.mkdir(parents=True, exist_ok=True)
-
-    # Iterate through the items in the source folder and copy to the target folder
-    processed = 0
-    for src_item in src.iterdir():
-        tgt_item = tgt / src_item.name
-        create_link(src_item, tgt_item)
-        processed += 1
-
-    logger.info(f"{processed} items from {src} linked/copied to {tgt}")
+# deprecated: The functionality has been replaced with a single call to create_link()
+# Go to commit e302882 to get this functionality back.
+# def synchronize_folders(src: Path, tgt: Path) -> None:
 
 
 def apply_pak_layout(project_root: Path, asset_bundle_folder: str, target_layout_root: Path) -> None:
