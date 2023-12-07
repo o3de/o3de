@@ -79,7 +79,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     """
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
-
+    
     # Use a provided logger or get the current system one
     if not logger:
         logger = logging.getLogger()
@@ -87,14 +87,18 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
 
     # Calculate the tools and game build paths
     default_base_build_path = ctx.engine_path / 'build' if engine_centric else ctx.project_path / 'build'
-    if not tools_build_path:
-        if is_installer_sdk:
+    
+    if is_installer_sdk:
             tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / tool_config / 'Default'
-        else:
-            tools_build_path = default_base_build_path / 'tools'
-    if not launcher_build_path:
+    
+    if not tools_build_path:
+        tools_build_path = default_base_build_path / 'tools'
+    if not launcher_build_path or not launcher_build_path.is_absolute() or \
+        not (launcher_build_path.is_relative() and pathlib.Path.cwd() in [ctx.engine_path, ctx.project_path]):
         launcher_build_path = default_base_build_path / 'launcher'
-    if not asset_bundling_path:
+    
+    if not asset_bundling_path or not asset_bundling_path.is_absolute() or \
+        not (asset_bundling_path.is_relative() and pathlib.Path.cwd() in [ctx.engine_path, ctx.project_path]):
         asset_bundling_path = default_base_build_path / 'asset_bundling'
 
     # Resolve (if possible) and validate any provided seedlist files
@@ -197,8 +201,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                                              expected_bundles_path / f'engine_{selected_platform}.pak'],
                                             export_layout=export_layout,
                                             archive_output_format=archive_output_format,
-                                            logger=logger)      
-
+                                            logger=logger)
 
 # This code is only run by the 'export-project' O3DE CLI command
 if "o3de_context" in globals():
