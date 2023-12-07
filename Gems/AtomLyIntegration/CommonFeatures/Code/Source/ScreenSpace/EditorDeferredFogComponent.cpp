@@ -67,7 +67,7 @@ namespace AZ
 
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &DeferredFogComponentConfig::m_fogEndDistance,
                             "Fog End Distance", "At what distance from the viewer does the fog take over and mask the background scene out")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Min, &DeferredFogComponentConfig::m_fogStartDistance)
                             ->Attribute(AZ::Edit::Attributes::Max, 5000.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
