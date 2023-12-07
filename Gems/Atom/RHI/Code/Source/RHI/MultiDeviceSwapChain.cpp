@@ -29,7 +29,7 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode MultiDeviceSwapChain::Init(MultiDevice::DeviceMask deviceMask, const SwapChainDescriptor& descriptor)
+    ResultCode MultiDeviceSwapChain::Init(int deviceIndex, const SwapChainDescriptor& descriptor)
     {
         if (!ValidateDescriptor(descriptor))
         {
@@ -41,6 +41,8 @@ namespace AZ::RHI
             m_xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
             AZ_Assert(m_xrSystem, "XR System is null");
         }
+
+        MultiDevice::DeviceMask deviceMask{ 1u << deviceIndex };
 
         SwapChainDimensions nativeDimensions = descriptor.m_dimensions;
         ResultCode resultCode = MultiDeviceResourcePool::Init(
