@@ -1139,6 +1139,10 @@ SETTINGS_OPTION_ENGINE_CENTRIC = register_setting(key='option.engine.centric',
                                                   is_boolean=True,
                                                   default='False')
 
+SETTINGS_OPTION_BUILD_MONOLITHICALLY = register_setting(key='option.build.monolithic',
+                                                        description='The option to build the launchers monolithically vs non-monolithically.',
+                                                        is_boolean=True,
+                                                        default='True')
 
 def get_export_project_config(project_path: pathlib.Path or None) -> command_utils.O3DEConfig:
     """
