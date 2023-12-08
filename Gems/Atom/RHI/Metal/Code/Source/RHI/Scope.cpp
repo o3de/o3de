@@ -340,17 +340,14 @@ namespace AZ
 
         void Scope::End(
             CommandList& commandList,
-            AZ::u32 commandListIndex,
-            AZ::u32 commandListCount) const
+            bool signalFencesForAliasedResources) const
         {
             AZ_PROFILE_FUNCTION(RHI);
             commandList.FlushEncoder();
             
-            //Check if the scope is part of merged group (i.e FrameGraphExecuteGroupMerged). For non-merged
-            //groups (i.e FrameGraphExecuteGroup) we handle signalling at the end of the group within FrameGraphExecuteGroup::EndInternal
-            //The reason for this is that you can only signal fences once the parallel encoders (within FrameGraphExecuteGroup) are flushed
-            const bool isScopePartOfMergedGroup = commandListCount == 1;
-            if (isScopePartOfMergedGroup)
+            //Signal all the fences related to aliased resources. This is to ensure that the GPU does not start work for
+            //scopes that overlap memory with other scopes that are still being worked on.
+            if (signalFencesForAliasedResources)
             {
                 SignalAllResourceFences(commandList);
             }
