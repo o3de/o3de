@@ -354,6 +354,7 @@ real2 BlendLayers(real2 layer1, real2 layer2, real2 layer3, real3 blendWeights)
 {
     return layer1 * blendWeights.r + layer2 * blendWeights.g + layer3 * blendWeights.b;
 }
+
 real3 BlendLayers(real3 layer1, real3 layer2, real3 layer3, real3 blendWeights)
 {
     return layer1 * blendWeights.r + layer2 * blendWeights.g + layer3 * blendWeights.b;
@@ -481,7 +482,7 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     real layerDepthBlendDistance = 0.0;
     real3 blendWeightValues = GetBlendWeights(blendSource, blendMaskValues, layerDepthValues, layerDepthBlendDistance);
     
-    real depth = BlendLayers(layerDepthValues.r, layerDepthValues.g, layerDepthValues.b, blendWeightValues);
+    real depth = BlendLayers((real3)layerDepthValues.r, (real3)layerDepthValues.g, (real3)layerDepthValues.b, (real3)blendWeightValues);
 
     return DepthResultAbsolute(float(depth));
 }
