@@ -64,6 +64,7 @@ namespace AzToolsFramework
                 auto componentDescriptor = GetComponentDescriptor(component);
                 if (!componentDescriptor)
                 {
+                    AZ_Error("Editor", false, "failed to get ComponentDescriptor for component %s.", component->RTTI_GetTypeName());
                     return false;
                 }
 
