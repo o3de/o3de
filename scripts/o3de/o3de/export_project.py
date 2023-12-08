@@ -25,7 +25,10 @@ from enum import IntEnum
 LOCAL_ENGINE_PATH  = pathlib.Path(__file__).parent.parent.parent.parent
 
 # Account for some windows-specific attributes
-CURRENT_PLATFORM = platform.system().lower()
+CURRENT_PLATFORM_NAME_WITH_CASE = platform.system()  # used to find the Installer binaries folder.
+CURRENT_PLATFORM = CURRENT_PLATFORM_NAME_WITH_CASE.lower()
+
+ALL_AVAILABLE_ARCHIVE_FORMATS = ["none"] + [name for name, description in shutil.get_archive_formats()]
 
 if CURRENT_PLATFORM == 'windows':
     EXECUTABLE_EXTENSION = '.exe'
@@ -541,6 +544,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        build_config: str,
                        game_build_path: pathlib.Path,
                        engine_centric: bool,
+                       monolithic_build: bool,
                        launcher_types: int,
                        allow_registry_overrides: bool,
                        tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
@@ -552,6 +556,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     @param build_config:                The build config to build (profile or release)
     @param game_build_path:             The cmake build folder target
     @engine_centric:                    Option to generate/build an engine-centric workflow
+    @monolithic_build:                  Option to build as one executable (smaller) or to use individual dll/shared libraries instead (larger)
     @additional_cmake_configure_options:List of additional configure arguments to pass to cmake during the cmake project generation process
     @param launcher_types:              The launcher type options (bit mask from the LauncherType enum) to specify which launcher types to build
     @param allow_registry_overrides:    Custom Flag argument for 'DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES' to pass down to the project generation
@@ -589,10 +594,13 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     if ctx.cmake_additional_configure_args:
         cmake_configure_command.extend(ctx.cmake_additional_configure_args)
 
-    cmake_configure_command.extend(["-DLY_MONOLITHIC_GAME=1",
-                                    f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"])
+    cmake_configure_command.extend([
+            f"-DLY_MONOLITHIC_GAME={'0' if not monolithic_build else '1'}",
+            f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"
+        ])
+
     if logger:
-        logger.info(f"Generating (monolithic) project the build folder for project {ctx.project_name}")
+        logger.info(f"Generating {'monolithic' if monolithic_build else 'non-monolithic'} build folder for project {ctx.project_name}")
     ret = process_command(cmake_configure_command)
     if ret != 0:
         raise ExportProjectError(f"Error generating projects for project {ctx.project_name}.")

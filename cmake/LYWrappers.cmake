@@ -573,14 +573,23 @@ function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
 
     # Interface dependencies may require to find_packages. So far, we are just using packages for 3rdParty, so we will
     # search for those and automatically bring those packages. The naming convention used is 3rdParty::PackageName::OptionalInterface
+    unset(all_thirdparty_dependencies_found)
+
     foreach(dependency ${ly_THIRD_PARTY_LIBRARIES})
         string(REPLACE "::" ";" dependency_list ${dependency})
         list(GET dependency_list 0 dependency_namespace)
         if(${dependency_namespace} STREQUAL "3rdParty")
+            list(APPEND all_thirdparty_dependencies_found ${dependency})
             if (NOT TARGET ${dependency})
                 if (O3DE_SCRIPT_ONLY)
                     # we don't actually need 3p deps to try to download the package or call find_package.
-                    add_library(${dependency} IMPORTED INTERFACE GLOBAL)
+                    # instead we use pre-created part-of-the-installer 3p targets baked in from the above list
+                    # which will have been made at install time.
+                    # instead, we execute a pregenerated file that was created as part of install to 
+                    # create this target:
+                    string(REPLACE "::" "__" CLEAN_TARGET_NAME "${dependency}")  
+                    # not all 3ps actually exist as real targets, so this is an OPTIONAL include.
+                    include(${LY_ROOT_FOLDER}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/${CLEAN_TARGET_NAME}.cmake OPTIONAL)
                 else()
                     list(GET dependency_list 1 dependency_package)
                     list(LENGTH dependency_list dependency_list_length)
@@ -601,6 +610,16 @@ function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
 
     foreach(dependency IN LISTS packages_with_components)
         find_package(${dependency} REQUIRED MODULE COMPONENTS ${${dependency}_components})
+    endforeach()
+    
+    foreach(dependency ${all_thirdparty_dependencies_found})
+        if (TARGET ${dependency})
+            # keep track of all the 3p dependencies we actually depended on.
+            get_property(o3de_all_3rdparty_targets GLOBAL PROPERTY O3DE_ALL_3RDPARTY_TARGETS)
+            if(NOT ${dependency} IN_LIST o3de_all_3rdparty_targets)
+                set_property(GLOBAL APPEND PROPERTY O3DE_ALL_3RDPARTY_TARGETS "${dependency}")
+            endif()
+        endif()
     endforeach()
 endfunction()
 
