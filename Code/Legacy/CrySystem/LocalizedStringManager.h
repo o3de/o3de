@@ -43,6 +43,10 @@ public:
 
     const char* GetLanguage() override;
     bool SetLanguage(const char* sLanguage) override;
+#if defined(CARBONATED)
+    void RemoveAllSupportedLanguages() override;
+    void AddSupportedLanguage(const AZStd::string& langName) override;
+#endif
 
     int GetLocalizationFormat() const override;
     AZStd::string GetLocalizedSubtitleFilePath(const AZStd::string& localVideoPath, const AZStd::string& subtitleFileExtension) const override;
@@ -56,6 +60,10 @@ public:
     bool LoadExcelXmlSpreadsheet(const char* sFileName, bool bReload = false) override;
     void ReloadData() override;
     void FreeData() override;
+#if defined(CARBONATED)
+    LocalizedFont GetLocalizedFont(const char* fontAssetPath, float fontSize) override;
+    void LoadFontMappingData();
+#endif
 
     bool LocalizeString_s(const AZStd::string& sString, AZStd::string& outLocalizedString, bool bEnglish = false) override;
     bool LocalizeString_ch(const char* sString, AZStd::string& outLocalizedString, bool bEnglish = false) override;
@@ -90,6 +98,10 @@ public:
 
     void GetLoadedTags(TLocalizationTagVec& tagVec);
     void FreeLocalizationData();
+
+#if !defined(_RELEASE)
+    static void LocalizationDumpLoadedInfo(IConsoleCmdArgs* pArgs);
+#endif //#if !defined(_RELEASE)
 
 private:
     void SetAvailableLocalizationsBitfield(const ILocalizationManager::TLocalizationBitfield availableLocalizations);
@@ -184,6 +196,9 @@ private:
 
     //Keys as CRC32. Strings previously, but these proved too large
     using StringsKeyMap = VectorMap<uint32, SLocalizedStringEntry*>;
+#if defined(CARBONATED)
+    typedef VectorMap<uint32, LocalizedFont>   FontsKeyMap;
+#endif
 
     struct SLanguage
     {
@@ -194,6 +209,9 @@ private:
         StringsKeyMap m_keysMap;
         TLocalizedStringEntries m_vLocalizedStrings;
         THuffmanCoders m_vEncoders;
+#if defined(CARBONATED)
+        FontsKeyMap m_fontMapping;
+#endif
     };
 
     struct SFileInfo
@@ -260,6 +278,10 @@ private:
     // CVARs
     int m_cvarLocalizationDebug;
     int m_cvarLocalizationEncode;   //Encode/Compress translated text to save memory
+// Gruber patch begin	
+    int m_cvarLocalizationFormat;
+    int m_cvarLocalizationTest;		   
+// Gruber patch end
 
     //The localizations that are available for this SKU. Used for determining what to show on a language select screen or whether to show one at all
     TLocalizationBitfield m_availableLocalizations;

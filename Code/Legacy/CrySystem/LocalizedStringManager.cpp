@@ -37,6 +37,8 @@ const char c_sys_localization_debug[] = "sys_localization_debug";
 const char c_sys_localization_encode[] = "sys_localization_encode";
 #endif // !defined(_RELEASE)
 
+const char c_sys_localization_test[] = "sys_localization_test";
+
 #define LOC_WINDOW "Localization"
 const char* c_sys_localization_format = "sys_localization_format";
 AZ_CVAR(int32_t, sys_localization_format, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -44,6 +46,10 @@ AZ_CVAR(int32_t, sys_localization_format, 0, nullptr, AZ::ConsoleFunctorFlags::N
         "    0: O3DE Legacy Localization (Excel 2003)\n"
         "    1: AGS XML\n"
         "Default is 1 (AGS Xml)");
+
+#if defined(CARBONATED)
+const char* LOCALIZATION_FONTMAPPING_FILE_NAME = "fontmapping.agsxml";
+#endif
 
 enum ELocalizedXmlColumns
 {
@@ -204,6 +210,55 @@ static void TestFormatMessage ([[maybe_unused]] IConsoleCmdArgs* pArgs)
 }
 #endif //#if !defined(_RELEASE)
 
+
+//////////////////////////////////////////////////////////////////////////
+#if !defined(_RELEASE)
+void CLocalizedStringsManager::LocalizationDumpLoadedInfo([[maybe_unused]] IConsoleCmdArgs* pArgs)
+{
+    // Gruber patch. LVB. There is no CrySizerImpl
+#if 0
+    CLocalizedStringsManager* pLoca = (CLocalizedStringsManager*) gEnv->pSystem->GetLocalizationManager();
+
+    const char* pTagName = "";
+    for (TTagFileNames::iterator tagit = pLoca->m_tagFileNames.begin(); tagit != pLoca->m_tagFileNames.end(); ++tagit)
+    {
+        CryLogAlways("Tag %s (%d)", tagit->first.c_str(), tagit->second.id);
+
+        int entries = 0;
+        CrySizerImpl* pSizer = new CrySizerImpl();
+
+        for (tmapFilenames::iterator it = pLoca->m_loadedTables.begin(); it != pLoca->m_loadedTables.end(); it++)
+        {
+            if (tagit->second.id == it->second.nTagID)
+            {
+                CryLogAlways("\t%s", it->first.c_str());
+            }
+
+            if (pLoca->m_pLanguage)
+            {
+                const uint32 numEntries = pLoca->m_pLanguage->m_vLocalizedStrings.size();
+                for (int32 i = numEntries - 1; i >= 0; i--)
+                {
+                    SLocalizedStringEntry* entry = pLoca->m_pLanguage->m_vLocalizedStrings[i];
+                    if (tagit->second.id == entry->nTagID)
+                    {
+                        entries++;
+                        entry->GetMemoryUsage((ICrySizer*) pSizer);
+                    }
+                }
+            }
+        }
+
+        // This line messes up Uncrustify so turn it off: *INDENT-OFF*
+        CryLogAlways("\t\tEntries %d, Approx Size %" PRISIZE_T "Kb", entries, pSizer->GetTotalSize() / 1024);
+        // turn it back on again: *INDENT-ON*
+
+        SAFE_RELEASE(pSizer);
+    }
+#endif
+}
+
+#endif //#if !defined(_RELEASE)
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -212,6 +267,10 @@ static void TestFormatMessage ([[maybe_unused]] IConsoleCmdArgs* pArgs)
 CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
     : m_cvarLocalizationDebug(0)
     , m_cvarLocalizationEncode(1)
+// Gruber patch begin
+    , m_cvarLocalizationTest(0)
+    , m_cvarLocalizationFormat(1)		 
+// Gruber patch end
     , m_availableLocalizations(0)
 {
     m_pSystem = pSystem;
@@ -242,8 +301,23 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
         "0: No encoding, store as wide strings\n"
         "1: Huffman encode translated text, saves approx 30% with a small runtime performance cost\n"
         "Default is 1.");
+
+    REGISTER_CVAR2(c_sys_localization_test, &m_cvarLocalizationTest, m_cvarLocalizationTest, VF_CHEAT,
+        "Toggles test mode for localization.  Provides mechanism to render localization token instead of text as a way to check which text are localized.\n"
+        "Usage: sys_localization_test [0..2]\n"
+        "0: No test mode, regular token translation\n"
+        "1: Use token name rather than translation\n"
+        "2: Use language name rather than translation\n"
+        "Default is 0 (off).");
+
+    REGISTER_COMMAND("LocalizationDumpLoadedInfo", LocalizationDumpLoadedInfo, VF_NULL, "Dump out into about the loaded localization files");
 #endif //#if !defined(_RELEASE)
 
+    REGISTER_CVAR2(c_sys_localization_format, &m_cvarLocalizationFormat, m_cvarLocalizationFormat, VF_NULL,
+        "Usage: sys_localization_format [0..1]\n"
+        "    0: Crytek Legacy Localization (Excel 2003)\n"
+        "    1: AGS XML\n"
+        "Default is 1 (AGS Xml)");																							
     //Check that someone hasn't added a language ID without a language name
     assert(PLATFORM_INDEPENDENT_LANGUAGE_NAMES[ ILocalizationManager::ePILID_MAX_OR_INVALID - 1 ] != 0);
 
@@ -269,7 +343,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
             }
         }
     }
-
+/* Gruber patch begin.
     int32_t localizationFormat{};
     if (auto console = AZ::Interface<AZ::IConsole>::Get();
         console !=nullptr)
@@ -277,7 +351,9 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
         console->GetCvarValue(c_sys_localization_format, localizationFormat);
     }
     AZ_Warning("Localization", !(localizationFormat == 0 && availableLanguages == 0 && ProjectUsesLocalization()), "No localization files found!");
-
+*/
+    AZ_Warning("Localization", !(m_cvarLocalizationFormat == 0 && availableLanguages == 0 && ProjectUsesLocalization()), "No localization files found!");
+// Gruber patch end
     SetAvailableLocalizationsBitfield(availableLanguages);
     LocalizationManagerRequestBus::Handler::BusConnect();
 }
@@ -321,6 +397,9 @@ void CLocalizedStringsManager::FreeLocalizationData()
         std::for_each(m_languages[i]->m_vLocalizedStrings.begin(), m_languages[i]->m_vLocalizedStrings.end(), stl::container_object_deleter());
         m_languages[i]->m_keysMap.clear();
         m_languages[i]->m_vLocalizedStrings.clear();
+#if defined(CARBONATED)
+        m_languages[i]->m_fontMapping.clear();
+#endif
     }
     m_loadedTables.clear();
 }
@@ -451,9 +530,33 @@ bool CLocalizedStringsManager::SetLanguage(const char* sLanguage)
     return (true);
 }
 
+#if defined(CARBONATED)
+//////////////////////////////////////////////////////////////////////////
+void CLocalizedStringsManager::RemoveAllSupportedLanguages()
+{
+    SetAvailableLocalizationsBitfield(0);
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CLocalizedStringsManager::AddSupportedLanguage(const AZStd::string& langName)
+{
+    ILocalizationManager::EPlatformIndependentLanguageID id = PILIDFromLangName(langName);
+    if (id == ILocalizationManager::ePILID_MAX_OR_INVALID)
+    {
+        AZ_Warning(LOC_WINDOW, false, "Unsupported language: %s", langName.c_str());
+        return;
+    }
+
+    ILocalizationManager::TLocalizationBitfield availableLocalizations = m_availableLocalizations;
+    availableLocalizations |= ILocalizationManager::LocalizationBitfieldFromPILID(id);
+    SetAvailableLocalizationsBitfield(availableLocalizations);
+    AZ_TracePrintf(LOC_WINDOW, "Add supported language: %s", langName.c_str());
+}
+#endif
 //////////////////////////////////////////////////////////////////////////
 int CLocalizedStringsManager::GetLocalizationFormat() const
 {
+/* Gruber patch begin	
     int32_t localizationFormat{};
     if (auto console = AZ::Interface<AZ::IConsole>::Get();
         console !=nullptr)
@@ -461,6 +564,9 @@ int CLocalizedStringsManager::GetLocalizationFormat() const
         console->GetCvarValue(c_sys_localization_format, localizationFormat);
     }
     return localizationFormat;
+*/
+    return m_cvarLocalizationFormat;
+// Gruber patch end
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -718,7 +824,12 @@ bool CLocalizedStringsManager::LoadLocalizationDataByTag(
         return false;
     }
 
+#if defined(CARBONATED)
+    // Give a chance to reload an already loaded tag if bReload is true.
+    if (!bReload && it->second.loaded)
+#else
     if (it->second.loaded)
+#endif
     {
         CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "[LocError] LoadLocalizationDataByTag - Already loaded tag '%s'", sTag);
         return true;
@@ -727,20 +838,22 @@ bool CLocalizedStringsManager::LoadLocalizationDataByTag(
     bool bResult = true;
 
     stack_string const sLocalizationFolder(PathUtil::GetLocalizationFolder());
-
+/* Gruber patch begin
     int32_t localizationFormat{};
     if (auto console = AZ::Interface<AZ::IConsole>::Get();
         console !=nullptr)
     {
         console->GetCvarValue(c_sys_localization_format, localizationFormat);
     }
-
+*/
     LoadFunc loadFunction = GetLoadFunction();
     TStringVec& vEntries = it->second.filenames;
     for (TStringVec::iterator it2 = vEntries.begin(); it2 != vEntries.end(); ++it2)
     {
         //Only load files of the correct type for the configured format
-        if ((localizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (localizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
+		// Gruber patch
+        //if ((localizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (localizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
+        if ((m_cvarLocalizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (m_cvarLocalizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
         {
             bResult &= (this->*loadFunction)(it2->c_str(), it->second.id, bReload);
         }
@@ -874,6 +987,9 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
 //////////////////////////////////////////////////////////////////////////
 bool CLocalizedStringsManager::LoadAllLocalizationData(bool bReload)
 {
+#if defined(CARBONATED)
+    LoadFontMappingData();
+#endif
     for (TTagFileNames::iterator it = m_tagFileNames.begin(); it != m_tagFileNames.end(); ++it)
     {
         if(!LoadLocalizationDataByTag(it->first.c_str(), bReload))
@@ -1734,13 +1850,16 @@ CLocalizedStringsManager::LoadFunc CLocalizedStringsManager::GetLoadFunction() c
     CRY_ASSERT_MESSAGE(gEnv && gEnv->pConsole, "System environment or console missing!");
     if (gEnv && gEnv->pConsole)
     {
+/* Gruber patch begin		
         int32_t localizationFormat{};
         if (auto console = AZ::Interface<AZ::IConsole>::Get();
             console !=nullptr)
         {
             console->GetCvarValue(c_sys_localization_format, localizationFormat);
         }
-        if(localizationFormat == 1)
+        if(localizationFormat == 1)*/
+        if(m_cvarLocalizationFormat == 1)			
+// Gruber patch end
         {
             return &CLocalizedStringsManager::DoLoadAGSXmlDocument;
         }
@@ -1757,6 +1876,9 @@ void CLocalizedStringsManager::ReloadData()
     {
         (this->*loadFunction)((*it).first.c_str(), (*it).second.nTagID, true);
     }
+#if defined(CARBONATED)
+    LoadFontMappingData();
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1771,6 +1893,114 @@ void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocaliz
         CryLog("<Localization> Add new string <%u> with ID %d to <%s>", keyCRC32, nId, pLanguage->sLanguage.c_str());
     }
 }
+
+#if defined(CARBONATED)
+//////////////////////////////////////////////////////////////////////////
+LocalizedFont CLocalizedStringsManager::GetLocalizedFont(const char* fontAssetPath, float fontSize)
+{
+     AZStd::string fontAssetPathWithSize;
+    // Try Font + Size
+    fontAssetPathWithSize.format("%s:%d", fontAssetPath, (int)fontSize);
+     AZStd::to_lower(fontAssetPathWithSize.begin(), fontAssetPathWithSize.end());
+    auto keyCRC = AZ::Crc32(fontAssetPathWithSize);
+    auto it = m_pLanguage->m_fontMapping.find(keyCRC);
+    if (it == m_pLanguage->m_fontMapping.end())
+    {
+        // Try just Font
+        it = m_pLanguage->m_fontMapping.find(AZ::Crc32(fontAssetPath));
+    }
+
+    // If there is no font mapping just return the original Font + Size
+    if (it == m_pLanguage->m_fontMapping.end())
+    {
+        return LocalizedFont(fontAssetPath, fontSize);
+    }
+
+    LocalizedFont locFont = it->second;
+    // If there is font mapping without size we will return the mapped Font + original Size
+    if (locFont.size == 0)
+    {
+        locFont.size = fontSize;
+    }
+
+    return locFont;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CLocalizedStringsManager::LoadFontMappingData()
+{
+    const  AZStd::string localizationFolder(PathUtil::GetLocalizationRoot());
+    const  AZStd::string& languageFolder = m_pLanguage->sLanguage;
+    AZStd::string path = localizationFolder.c_str() + languageFolder + PathUtil::GetSlash() + LOCALIZATION_FONTMAPPING_FILE_NAME;
+
+    XmlNodeRef root = m_pSystem->LoadXmlFromFile(path.c_str());
+    if (!root)
+    {
+        AZ_TracePrintf(LOC_WINDOW, "Loading Font Mapping File %s failed!", LOCALIZATION_FONTMAPPING_FILE_NAME);
+        return;
+    }
+
+    if (!root->isTag("fontmapping"))
+    {
+        AZ_TracePrintf(LOC_WINDOW, "Root tag not found. Loading Font Mapping File %s failed!", LOCALIZATION_FONTMAPPING_FILE_NAME);
+        return;
+    }
+
+    if (root->getChildCount() == 0)
+    {
+        return;
+    }
+
+    m_pLanguage->m_fontMapping.reserve(root->getChildCount());
+    for (int i = 0; i < root->getChildCount(); i++)
+    {
+        XmlNodeRef font = root->getChild(i);
+        if (!font->isTag("font"))
+        {
+            AZ_TracePrintf(LOC_WINDOW, "Unexpected tag %s", font->getTag());
+            continue;
+        }
+
+        XmlString sFontName;
+        if (!font->getAttr("name", sFontName))
+        {
+            AZ_TracePrintf(LOC_WINDOW, "Font tag must have a name attribute");
+            continue;
+        }
+
+        XmlNodeRef localized = font->findChild("localized");
+        if (localized == nullptr)
+        {
+            AZ_TracePrintf(LOC_WINDOW, "Font tag must have at least a one <localized> attribute");
+            continue;
+        }
+
+        XmlString sLocalizedFontName;
+        if (!localized->getAttr("name", sLocalizedFontName))
+        {
+            AZ_TracePrintf(LOC_WINDOW, "Localized tag must have a name attribute");
+            continue;
+        }
+
+         AZStd::string key;
+        int fontSize = 0;
+        font->getAttr("size", fontSize);
+        if (fontSize > 0)
+        {
+            key.format("%s:%d", sFontName.c_str(), fontSize);
+        }
+        else
+        {
+            key.format("%s", sFontName.c_str());
+        }
+
+        float localizedFontSize = 0;
+        localized->getAttr("size", localizedFontSize);
+
+        m_pLanguage->m_fontMapping.insert(std::make_pair(AZ::Crc32(key.c_str()), LocalizedFont(sLocalizedFontName.c_str(), localizedFontSize)));
+    }
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 bool CLocalizedStringsManager::LocalizeString_ch(const char* sString, AZStd::string& outLocalizedString, bool bEnglish)
@@ -2017,6 +2247,21 @@ bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, AZStd::string& 
 
             if (entry != NULL)
             {
+// Gruber patch begin				
+                switch (m_cvarLocalizationTest)
+                {
+                case 0:  // Ignore the cvar, continue localization as expected
+                    break;
+                case 1:  // Display the label without localizing.  Ex: @ui_hello
+                    outLocalString = sLabel;
+                    return true;
+                case 2: // Change the text to be current language setting.  Ex: @english
+                    outLocalString.format("@%s", m_pLanguage->sLanguage.c_str());
+                    return true;
+                default:
+                    break;
+                }
+// Gruber patch end
                 AZStd::string translatedText = entry->GetTranslatedText(m_pLanguage);
                 if ((bEnglish || translatedText.empty()) && entry->pEditorExtension != NULL)
                 {
@@ -2645,7 +2890,26 @@ namespace
         UnixTimeToFileTime(unixtime, &filetime);
         FileTimeToSystemTime(&filetime, systemtime);
     }
-}
+
+    time_t UnixTimeFromFileTime(const FILETIME* filetime)
+    {
+        LONGLONG longlong = filetime->dwHighDateTime;
+        longlong <<= 32;
+        longlong |= filetime->dwLowDateTime;
+        longlong -= 116444736000000000;
+        return longlong / 10000000;
+    }
+
+    time_t UnixTimeFromSystemTime(const SYSTEMTIME* systemtime)
+    {
+        // convert systemtime to filetime
+        FILETIME filetime;
+        SystemTimeToFileTime(systemtime, &filetime);
+        // convert filetime to unixtime
+        time_t unixtime = UnixTimeFromFileTime(&filetime);
+        return unixtime;
+    }
+};
 
 void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, AZStd::string& outTimeString)
 {
