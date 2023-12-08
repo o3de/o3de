@@ -292,6 +292,7 @@ namespace AZ::Reflection
 
                 const SerializeContext::ClassData* m_classData = nullptr;
                 const SerializeContext::ClassElement* m_classElement = nullptr;
+                const AZ::Edit::ElementData* m_elementEditData = nullptr;
                 AZStd::vector<AttributeData> m_cachedAttributes;
                 AZStd::string m_path;
                 DocumentPropertyEditor::Nodes::PropertyVisibility m_computedVisibility =
@@ -327,16 +328,6 @@ namespace AZ::Reflection
                 //! For the mapped_type of the pair<> element of an associative container,
                 //! stores the key instance address and type id
                 KeyEntry m_keyEntry;
-
-                const AZ::Edit::ElementData* GetElementEditMetadata() const
-                {
-                    if (m_classElement)
-                    {
-                        return m_classElement->m_editData;
-                    }
-
-                    return nullptr;
-                }
 
                 //! Returns an address that can be casted to the Type of the instance via a "reinterpret_cast<Type*>" cast
                 //! If the instance is storing a pointer to a Type*, that is actually a Type**
@@ -847,7 +838,6 @@ namespace AZ::Reflection
                 // Set the pointerLevel to 0 as the pointer is resolved by the AZ::Utils::ResolvePointer
                 constexpr AZ::u32 pointerLevel = 0;
 
-
                 // search up the stack for the "true parent", which is the last entry created by the serialize enumerate itself
                 AZ::PointerObject instanceToInvokeObject{ instance, classData ? classData->m_typeId : Uuid::CreateNull() };
                 for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
@@ -865,6 +855,30 @@ namespace AZ::Reflection
                 newEntry.m_createdByEnumerate = true;
 
                 StackEntry& nodeData = m_stack.emplace_back(newEntry);
+
+                if (nodeData.m_classData && !m_stack.empty())
+                {
+                    for (auto rIter = m_stack.rbegin() + 1, rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
+                    {
+                        auto& ancestorData = *rIter;
+
+                        if (ancestorData.m_classData && ancestorData.m_classData->m_editData && ancestorData.m_classData->m_editData->m_editDataProvider)
+                        {
+                            const AZ::Edit::ElementData* useData = ancestorData.m_classData->m_editData->m_editDataProvider(
+                                ancestorData.m_instance.m_address, nodeData.m_instance.m_address, nodeData.m_classData->m_typeId);
+                            if (useData)
+                            {
+                                nodeData.m_elementEditData = useData;
+                            }
+                            break;
+                        }
+                    }
+                }
+                
+                if (!nodeData.m_elementEditData && classElement)
+                {
+                    nodeData.m_elementEditData = nodeData.m_classElement->m_editData;
+                }
 
                 // Generate this node's path (will be stored in nodeData.m_path)
                 GenerateNodePath(parentData, nodeData);
@@ -926,7 +940,7 @@ namespace AZ::Reflection
                                 auto& groupStackEntry = groupPair.second.value();
                                 groupStackEntry.m_group = groupPair.first;
 
-                                if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement)
+                                if (groupStackEntry.m_elementEditData->m_serializeClassElement)
                                 {
                                     groupStackEntry.m_skipHandler = true;
                                 }
@@ -1063,9 +1077,9 @@ namespace AZ::Reflection
                 }
 
                 // No overrides, so check the element edit data, class data, and class element
-                if (const auto metadata = nodeData.GetElementEditMetadata(); metadata && metadata->m_name)
+                if (nodeData.m_elementEditData && nodeData.m_elementEditData->m_name)
                 {
-                    return metadata->m_name;
+                    return nodeData.m_elementEditData->m_name;
                 }
                 else if (nodeData.m_classData)
                 {
@@ -1288,9 +1302,9 @@ namespace AZ::Reflection
                     // 1) Class element edit data attributes (EditContext from the given row of a class)
                     // 2) Class element data attributes (SerializeContext from the given row of a class)
                     // 3) Class data attributes (the base attributes of a class)
-                    if (nodeData.m_classElement)
+                    if (nodeData.m_elementEditData)
                     {
-                        if (const AZ::Edit::ElementData* elementEditData = nodeData.m_classElement->m_editData; elementEditData != nullptr)
+                        if (const AZ::Edit::ElementData* elementEditData = nodeData.m_elementEditData; elementEditData != nullptr)
                         {
                             if (!isParentAttribute)
                             {
@@ -1310,7 +1324,9 @@ namespace AZ::Reflection
                                 checkAttribute(it, nodeData.m_instanceToInvoke, isParentAttribute);
                             }
                         }
-
+                    }
+                    if (nodeData.m_classElement)
+                    {
                         for (auto it = nodeData.m_classElement->m_attributes.begin(); it != nodeData.m_classElement->m_attributes.end();
                              ++it)
                         {
@@ -1521,7 +1537,7 @@ namespace AZ::Reflection
 
                 // If this node has no edit data and is not the child of a container, only show its children
                 auto parentData = m_stack.end() - 2;
-                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData &&
+                if (nodeData.m_classElement && !nodeData.m_elementEditData &&
                     (parentData->m_classData && !parentData->m_classData->m_container))
                 {
                     visibility = DocumentPropertyEditor::Nodes::PropertyVisibility::ShowChildrenOnly;
@@ -1529,7 +1545,7 @@ namespace AZ::Reflection
 
                 nodeData.m_computedVisibility = visibility;
                 nodeData.m_cachedAttributes.push_back(
-                    { group, PropertyEditor::Visibility.GetName(), Dom::Utils::ValueFromType(visibility) });
+                    { group, PropertyEditor::Visibility.GetName(), Dom::Utils::ValueFromType(nodeData.m_computedVisibility) });
             }
 
             void InheritChangeNotify(StackEntry& parentData, StackEntry& nodeData)
