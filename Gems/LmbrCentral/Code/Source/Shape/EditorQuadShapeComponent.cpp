@@ -9,6 +9,7 @@
 #include "QuadShapeComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzToolsFramework/ComponentModes/QuadComponentMode.h>
 #include "EditorQuadShapeComponent.h"
 #include "EditorShapeComponentConverters.h"
 #include "ShapeDisplay.h"
@@ -22,6 +23,7 @@ namespace LmbrCentral
             serializeContext->Class<EditorQuadShapeComponent, EditorBaseShapeComponent>()
                 ->Version(1)
                 ->Field("QuadShape", &EditorQuadShapeComponent::m_quadShape)
+                ->Field("ComponentMode", &EditorQuadShapeComponent::m_componentModeDelegate)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -39,7 +41,12 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorQuadShapeComponent::ConfigurationChanged)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorQuadShapeComponent::m_componentModeDelegate,
+                        "Component Mode",
+                        "Quad Shape Component Mode")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }
     }
@@ -67,6 +74,12 @@ namespace LmbrCentral
         EditorBaseShapeComponent::Activate();
         m_quadShape.Activate(GetEntityId());
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
+        const AZ::EntityComponentIdPair entityComponentIdPair(GetEntityId(), GetId());
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
+        AzToolsFramework::QuadManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
+
+        m_componentModeDelegate.ConnectWithSingleComponentMode<EditorQuadShapeComponent, AzToolsFramework::QuadComponentMode>(
+            entityComponentIdPair, this);
     }
 
     void EditorQuadShapeComponent::Deactivate()
@@ -74,6 +87,8 @@ namespace LmbrCentral
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         m_quadShape.Deactivate();
         EditorBaseShapeComponent::Deactivate();
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::QuadManipulatorRequestBus::Handler::BusDisconnect();
     }
 
     void EditorQuadShapeComponent::DisplayEntityViewport(
@@ -97,6 +112,49 @@ namespace LmbrCentral
         ShapeComponentNotificationsBus::Event(
             GetEntityId(), &ShapeComponentNotificationsBus::Events::OnShapeChanged,
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+    }
+
+    AZ::Vector3 EditorQuadShapeComponent::GetTranslationOffset() const
+    {
+        return m_quadShape.GetTranslationOffset();
+    }
+
+    void EditorQuadShapeComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
+    {
+        m_quadShape.SetTranslationOffset(translationOffset);
+        ConfigurationChanged();
+    }
+
+    AZ::Transform EditorQuadShapeComponent::GetManipulatorSpace() const
+    {
+        return GetWorldTM();
+    }
+
+    AZ::Quaternion EditorQuadShapeComponent::GetRotationOffset() const
+    {
+        return AZ::Quaternion::CreateIdentity();
+    }
+
+    float EditorQuadShapeComponent::GetWidth() const
+    {
+        return m_quadShape.GetQuadWidth();
+    }
+
+    void EditorQuadShapeComponent::SetWidth(float width)
+    {
+        m_quadShape.SetQuadWidth(width);
+        ConfigurationChanged();
+    }
+
+    float EditorQuadShapeComponent::GetHeight() const
+    {
+        return m_quadShape.GetQuadHeight();
+    }
+
+    void EditorQuadShapeComponent::SetHeight(float width)
+    {
+        m_quadShape.SetQuadHeight(width);
+        ConfigurationChanged();
     }
 
     void EditorQuadShapeComponent::BuildGameEntity(AZ::Entity* gameEntity)
