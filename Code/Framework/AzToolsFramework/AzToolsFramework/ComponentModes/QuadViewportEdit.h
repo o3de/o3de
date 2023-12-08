@@ -42,7 +42,6 @@ namespace AzToolsFramework
         void SetQuadWidth(float width);
         void SetQuadHeight(float height);
 
-        bool m_isMouseDown = false;
         AZStd::shared_ptr<LinearManipulator> m_widthManipulator;
         AZStd::shared_ptr<LinearManipulator> m_heightManipulator;
 
