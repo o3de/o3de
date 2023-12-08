@@ -39,6 +39,7 @@ namespace ImageProcessingAtom
     ImagePreviewer::ImagePreviewer(QWidget* parent)
         : Previewer(parent)
         , m_ui(new Ui::ImagePreviewerClass())
+        , m_imageAssetLoader(aznew Utils::AsyncImageAssetLoader())
     {
         m_ui->setupUi(this);
         Clear();
@@ -216,29 +217,29 @@ namespace ImageProcessingAtom
         m_fileinfo = QString::fromUtf8(product->GetName().c_str());
         m_fileinfo += GetFileSize(product->GetRelativePath().c_str());
 
-        CreateAndDisplayTextureItemAsync(
-        [assetId = product->GetAssetId()]
-        () -> CreateDisplayTextureResult
-        {
-            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> imageAsset = Utils::LoadImageAsset(assetId);
-            IImageObjectPtr image = Utils::LoadImageFromImageAsset(imageAsset);
+        m_imageAssetLoader->QueueAsset(
+            product->GetAssetId(),
+            [this](const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset) {
+                CreateAndDisplayTextureItemAsync([asset]() -> CreateDisplayTextureResult
+                {
+                    IImageObjectPtr image = Utils::LoadImageFromImageAsset(asset);
+                    if (image)
+                    {
+                        // Add product image info
+                        AZStd::string productInfo;
+                        GetImageInfoString(asset, productInfo);
 
-            if (image)
-            {
-                // Add product image info
-                AZStd::string productInfo;
-                GetImageInfoString(imageAsset, productInfo);
+                        QString fileInfo = QStringLiteral("\r\n");
+                        fileInfo += productInfo.c_str();
 
-                QString fileInfo = QStringLiteral("\r\n");
-                fileInfo += productInfo.c_str();
-
-                return { ConvertImageForPreview(image), fileInfo };
-            }
-            else
-            {
-                return { nullptr, "" };
-            }
-        });
+                        return { ConvertImageForPreview(image), fileInfo };
+                    }
+                    else
+                    {
+                        return { nullptr, "" };
+                    }
+                });
+            });
 
         DisplayTextureItem();
     }
