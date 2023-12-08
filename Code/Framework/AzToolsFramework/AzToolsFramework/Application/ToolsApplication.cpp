@@ -42,6 +42,7 @@
 #include <AzToolsFramework/ComponentModes/CapsuleComponentMode.h>
 #include <AzToolsFramework/ComponentModes/CylinderComponentMode.h>
 #include <AzToolsFramework/ComponentModes/SphereComponentMode.h>
+#include <AzToolsFramework/ComponentModes/QuadComponentMode.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
@@ -427,6 +428,7 @@ namespace AzToolsFramework
         CapsuleComponentMode::Reflect(context);
         SphereComponentMode::Reflect(context);
         CylinderComponentMode::Reflect(context);
+        QuadComponentMode::Reflect(context);
 
         ViewportInteraction::ViewportInteractionReflect(context);
         ViewportEditorModeNotifications::Reflect(context);

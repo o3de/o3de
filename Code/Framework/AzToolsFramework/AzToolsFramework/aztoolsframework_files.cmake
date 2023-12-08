@@ -256,6 +256,7 @@ set(FILES
     Manipulators/PaintBrushManipulator.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
+    Manipulators/QuadManipulatorRequestBus.h
     Manipulators/RadiusManipulatorRequestBus.h
     Manipulators/RotationManipulators.cpp
     Manipulators/RotationManipulators.h
@@ -668,6 +669,10 @@ set(FILES
     ComponentModes/CylinderComponentMode.h 
     ComponentModes/CylinderViewportEdit.cpp 
     ComponentModes/CylinderViewportEdit.h 
+    ComponentModes/QuadComponentMode.cpp 
+    ComponentModes/QuadComponentMode.h 
+    ComponentModes/QuadViewportEdit.cpp 
+    ComponentModes/QuadViewportEdit.h 
     ComponentModes/ShapeComponentModeBus.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
