@@ -20,7 +20,7 @@ namespace AzToolsFramework
         const AZ::Vector3 WidthManipulatorAxis = AZ::Vector3::CreateAxisX();
         const AZ::Vector3 HeightManipulatorAxis = AZ::Vector3::CreateAxisY();
         const float MinQuadWidth = 0.001f;
-        const float MinQuadHeight = 0.002f;
+        const float MinQuadHeight = 0.001f;
 
         const float ResetQuadHeight = 1.0f;
         const float ResetQuadWidth = 1.0f;
@@ -116,12 +116,10 @@ namespace AzToolsFramework
 
         LinearManipulator::MouseActionCallback leftMoustDownHandler = [this]([[maybe_unused]] const LinearManipulator::Action& action)
         {
-            m_isMouseDown = true;
             BeginEditing();
         };
         LinearManipulator::MouseActionCallback leftMoustUpHandler = [this]([[maybe_unused]] const LinearManipulator::Action& action)
         {
-            m_isMouseDown = false;
             EndEditing();
         };
 
@@ -176,7 +174,7 @@ namespace AzToolsFramework
                     const AZ::Vector3 manipulatorPosition =
                         GetPositionInManipulatorFrame(m_heightManipulator->GetSpace().GetUniformScale(), localTransform, action);
 
-                    const float oldQuadWidth = GetQuadWidth();
+                    const float oldQuadWidth = GetQuadHeight();
                     const float newAxisLength =
                         AZ::GetMax(0.5f * QuadViewportEditConstants::MinQuadHeight, manipulatorPosition.Dot(action.m_fixed.m_axis));
                     const float oldAxisLength = 0.5f * oldQuadWidth;
