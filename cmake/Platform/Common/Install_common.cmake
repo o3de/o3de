@@ -96,7 +96,11 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 endif()
 
                 unset(rel_include_dir)
-                cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
+                if(include_directory_child_of_build)
+                    cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE rel_include_dir)
+                else()
+                    cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
+                endif()
                 cmake_path(APPEND rel_include_dir "..")
                 cmake_path(NORMAL_PATH rel_include_dir OUTPUT_VARIABLE destination_dir)
 
