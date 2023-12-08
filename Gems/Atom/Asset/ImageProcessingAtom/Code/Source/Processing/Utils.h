@@ -37,6 +37,10 @@ namespace ImageProcessingAtom
 
             AsyncImageAssetLoader() = default;
             ~AsyncImageAssetLoader();
+
+            //! Queue an asset to be loaded asynchronously. The callback will be executed on the main thread once the asset is ready or fails.
+            //! @param assetId ID of the image asset to be loaded.
+            //! @param callback Callback function to execute once the asset is ready or fails.
             void QueueAsset(const AZ::Data::AssetId& assetId, const Callback& callback);
 
         private:
