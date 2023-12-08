@@ -59,21 +59,9 @@ namespace AzToolsFramework
         InstallBaseShapeViewportEditFunctions(quadViewportEdit.get(), m_entityComponentIdPair);
         InstallQuadViewportEditFunctions(quadViewportEdit.get(), m_entityComponentIdPair);
         m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)] = AZStd::move(quadViewportEdit);
-        if (m_allowAsymmetricalEditing)
-        {
-            auto shapeTranslationOffsetViewportEdit = AZStd::make_unique<ShapeTranslationOffsetViewportEdit>();
-            InstallBaseShapeViewportEditFunctions(shapeTranslationOffsetViewportEdit.get(), m_entityComponentIdPair);
-            m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::TranslationOffset)] =
-                AZStd::move(shapeTranslationOffsetViewportEdit);
-            SetupCluster();
-            SetShapeSubMode(ShapeComponentModeRequests::SubMode::Dimensions);
-        }
-        else
-        {
-            m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup(g_mainManipulatorManagerId);
-            m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->AddEntityComponentIdPair(
-                m_entityComponentIdPair);
-        }
+        m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->Setup(g_mainManipulatorManagerId);
+        m_subModes[static_cast<AZ::u32>(ShapeComponentModeRequests::SubMode::Dimensions)]->AddEntityComponentIdPair(
+            m_entityComponentIdPair);
         ShapeComponentModeRequestBus::Handler::BusConnect(m_entityComponentIdPair);
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
     }
