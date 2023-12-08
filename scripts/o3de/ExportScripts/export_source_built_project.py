@@ -382,7 +382,14 @@ if "o3de_context" in globals():
                                            disable_override_arg=['-pc', '--project-centric'],
                                            disable_override_desc="Enable the project-centric work flow to export the project.")
 
-        parser.add_argument('-nomonolithic', '--no-monolithic-build', action='store_true', help='Build the project binaries as shared libraries (as opposed to default monolithic build).')
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_MONOLITHICALLY.key,
+                                           enable_override_arg=['-mono', '--monolithic'],
+                                           enable_override_desc="Build the launchers monolithically into a launcher executable.",
+                                           disable_override_arg=['-nomono', '--non-monolithic'],
+                                           disable_override_desc="Build the launchers non-monolithically, i.e. a launcher executable alongside individual modules per Gem.")
+
+
         parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
 
         parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
@@ -440,6 +447,11 @@ if "o3de_context" in globals():
                                                                                enable_attribute='allow_registry_overrides',
                                                                                disable_attribute='disallow_registry_overrides')
 
+    option_build_monolithically = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                          key=exp.SETTINGS_OPTION_BUILD_MONOLITHICALLY.key,
+                                                                          enable_attribute='monolithic',
+                                                                          disable_attribute='non_monolithic')
+
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
     else:
@@ -470,7 +482,7 @@ if "o3de_context" in globals():
                                   tools_build_path=args.tools_build_path,
                                   launcher_build_path=args.launcher_build_path,
                                   archive_output_format=args.archive_output,
-                                  monolithic_build=not args.no_monolithic_build,
+                                  monolithic_build=option_build_monolithically,
                                   logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
