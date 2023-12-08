@@ -53,7 +53,7 @@ namespace AzToolsFramework
     }
 
     QuadComponentMode::QuadComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
-        : BaseShapeComponentMode(entityComponentIdPair, componentType, true)
+        : BaseShapeComponentMode(entityComponentIdPair, componentType, false)
     {
         auto quadViewportEdit = AZStd::make_unique<QuadViewportEdit>();
         InstallBaseShapeViewportEditFunctions(quadViewportEdit.get(), m_entityComponentIdPair);
