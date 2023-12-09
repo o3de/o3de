@@ -219,26 +219,25 @@ namespace ImageProcessingAtom
 
         m_imageAssetLoader->QueueAsset(
             product->GetAssetId(),
-            [this](const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset) {
-                CreateAndDisplayTextureItemAsync([asset]() -> CreateDisplayTextureResult
-                {
-                    IImageObjectPtr image = Utils::LoadImageFromImageAsset(asset);
-                    if (image)
+            [this](const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset)
+            {
+                CreateAndDisplayTextureItemAsync(
+                    [asset]() -> CreateDisplayTextureResult
                     {
-                        // Add product image info
-                        AZStd::string productInfo;
-                        GetImageInfoString(asset, productInfo);
+                        if (IImageObjectPtr image = Utils::LoadImageFromImageAsset(asset); image)
+                        {
+                            // Add product image info
+                            AZStd::string productInfo;
+                            GetImageInfoString(asset, productInfo);
 
-                        QString fileInfo = QStringLiteral("\r\n");
-                        fileInfo += productInfo.c_str();
+                            QString fileInfo = QStringLiteral("\r\n");
+                            fileInfo += productInfo.c_str();
 
-                        return { ConvertImageForPreview(image), fileInfo };
-                    }
-                    else
-                    {
+                            return { ConvertImageForPreview(image), fileInfo };
+                        }
+
                         return { nullptr, "" };
-                    }
-                });
+                    });
             });
 
         DisplayTextureItem();
@@ -251,27 +250,22 @@ namespace ImageProcessingAtom
         m_fileinfo += GetFileSize(source->GetFullPath().c_str());
 
         CreateAndDisplayTextureItemAsync(
-        [fullPath = source->GetFullPath()]
-        () -> CreateDisplayTextureResult
-        {
-            IImageObjectPtr image = IImageObjectPtr(LoadImageFromFile(fullPath));
-
-            if (image)
+            [fullPath = source->GetFullPath()]() -> CreateDisplayTextureResult
             {
-                // Add source image info
-                AZStd::string sourceInfo;
-                GetImageInfoString(image, sourceInfo);
+                if (IImageObjectPtr image = IImageObjectPtr(LoadImageFromFile(fullPath)); image)
+                {
+                    // Add source image info
+                    AZStd::string sourceInfo;
+                    GetImageInfoString(image, sourceInfo);
 
-                QString fileInfo = QStringLiteral("\r\n");
-                fileInfo += sourceInfo.c_str();
+                    QString fileInfo = QStringLiteral("\r\n");
+                    fileInfo += sourceInfo.c_str();
 
-                return { ConvertImageForPreview(image), fileInfo };
-            }
-            else
-            {
+                    return { ConvertImageForPreview(image), fileInfo };
+                }
+
                 return { nullptr, "" };
-            }
-        });
+            });
 
         DisplayTextureItem();
     }
@@ -363,6 +357,6 @@ namespace ImageProcessingAtom
         }
         return result;
     }
-}//namespace ImageProcessingAtom
+} // namespace ImageProcessingAtom
 
 #include <Source/Previewer/moc_ImagePreviewer.cpp>

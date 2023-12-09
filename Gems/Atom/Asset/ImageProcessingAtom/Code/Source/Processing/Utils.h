@@ -29,7 +29,7 @@ namespace ImageProcessingAtom
 
         bool NeedAlphaChannel(EAlphaContent alphaContent);
 
-        //! Load image assets in the background and execute callbacks when complete. 
+        //! Load image assets in the background and execute callbacks when complete.
         class AsyncImageAssetLoader : public AZ::Data::AssetBus::MultiHandler
         {
         public:
@@ -38,7 +38,8 @@ namespace ImageProcessingAtom
             AsyncImageAssetLoader() = default;
             ~AsyncImageAssetLoader();
 
-            //! Queue an asset to be loaded asynchronously. The callback will be executed on the main thread once the asset is ready or fails.
+            //! Queue an asset to be loaded asynchronously. The callback will be executed on the main thread once the asset is ready or
+            //! fails.
             //! @param assetId ID of the image asset to be loaded.
             //! @param callback Callback function to execute once the asset is ready or fails.
             void QueueAsset(const AZ::Data::AssetId& assetId, const Callback& callback);
@@ -55,4 +56,4 @@ namespace ImageProcessingAtom
             AssetCallbackMap m_assetCallbackMap;
         };
     } // namespace Utils
-}
+} // namespace ImageProcessingAtom
