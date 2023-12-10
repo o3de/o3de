@@ -21,6 +21,11 @@ namespace AZ::RHI
     //!
     //! The frame scheduler controls presentation of the swap chain. The user may attach a swap chain to a scope
     //! in order to render to the current image.
+    //!
+    //! Although a multi-device resource class, we still enforce single-device behavior, as a SwapChain is tied to a
+    //! specific window. This is done by initializing it with a device index, which sets the correspondings bit in the
+    //! deviceMask. The need for a multi-device class arises from the interoperability within a multi-device context,
+    //! especially attachments and the FrameGraph.
     class MultiDeviceSwapChain : public MultiDeviceImagePoolBase
     {
     public:
@@ -30,6 +35,8 @@ namespace AZ::RHI
         virtual ~MultiDeviceSwapChain() = default;
 
         //! Initializes the swap chain, making it ready for attachment.
+        //! As the SwapChain uses multi-device resources on just a single device,
+        //! it is explicitly initialized with just a deviceIndex
         ResultCode Init(int deviceIndex, const SwapChainDescriptor& descriptor);
 
         //! Returns the device-specific SwapChain for the given index
