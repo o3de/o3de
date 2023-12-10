@@ -150,7 +150,6 @@ namespace AzToolsFramework
                         m_thumbnailsBeingLoaded.insert(thumbnail);
                         auto job = AZ::CreateJobFunction([thumbnail]() { thumbnail->Load(); }, true);
                         job->Start();
-                        
                     }
 
                     return m_loadingThumbnail;

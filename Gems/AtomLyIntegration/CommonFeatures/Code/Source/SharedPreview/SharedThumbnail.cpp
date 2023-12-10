@@ -64,7 +64,7 @@ namespace AZ
 
         void SharedThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
         {
-            if (m_assetInfo.m_assetId == assetId && m_state == State::Ready)
+            if (m_assetInfo.m_assetId == assetId && (m_state == State::Ready || m_state == State::Failed))
             {
                 m_state = State::Unloaded;
                 Load();

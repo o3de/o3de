@@ -60,7 +60,7 @@ namespace ImageProcessingAtom
         void ImageThumbnail::Load()
         {
             m_state = State::Loading;
-            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::Event(
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
                 AZ::RPI::StreamingImageAsset::RTTI_Type(), &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail,
                 m_key, ImageThumbnailSize);
         }
@@ -80,7 +80,7 @@ namespace ImageProcessingAtom
 
         void ImageThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
         {
-            if (m_state == State::Ready && m_assetIds.find(assetId) != m_assetIds.end())
+            if (m_assetIds.contains(assetId) && (m_state == State::Ready || m_state == State::Failed))
             {
                 m_state = State::Unloaded;
                 Load();
