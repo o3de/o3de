@@ -287,6 +287,73 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                 mock_get_asset_bundler_path.reset_mock()
                 mock_bundle_assets.reset_mock()
 
+@pytest.mark.parametrize("test_seedlists, test_seedfiles, test_levelnames",[
+    pytest.param([],[],[]),
+    pytest.param([pathlib.Path("C:\\test\\test.seedlist")],[pathlib.Path("C:\\test1\\test.seed")],[]),
+    pytest.param([pathlib.Path("C:\\test\\test.seedlist")],[pathlib.Path("C:\\test1\\test.seed")],["main"]),
+    pytest.param([pathlib.Path("C:\\test\\test.seedlist")],[],["main"]),
+    pytest.param([pathlib.Path("C:\\test\\test.seedlist")],[],["MAIN"]),
+    pytest.param([pathlib.Path("C:\\test\\test.seedlist")],[],["main",'second'])
+])
+def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfiles, test_levelnames):
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+
+    test_o3de_base_path = test_project_path
+    test_relative_base_path = pathlib.PurePath('this/is/relative')
+    test_absolute_base_path  = tmp_path / "other"
+
+    assert test_absolute_base_path.is_absolute()
+
+    test_output_path = tmp_path / "output"
+    test_tools_sdk_path = (test_engine_path / 'bin/Windows/profile/Default')
+
+    with patch('o3de.manifest.is_sdk_engine', return_value=True) as mock_is_sdk_engine,\
+         patch('o3de.export_project.has_monolithic_artifacts', return_value=True) as mock_has_mono_artifacts,\
+         patch('o3de.export_project.get_platform_installer_folder_name', return_value="Windows") as mock_platform_folder_name,\
+         patch('o3de.export_project.validate_project_artifact_paths', return_value=test_seedlists) as mock_validate_project_artifacts,\
+         patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
+         patch('o3de.export_project.build_export_toolchain') as mock_build_export_toolchain,\
+         patch('o3de.export_project.build_game_targets') as mock_build_game_targets,\
+         patch('o3de.export_project.get_asset_processor_batch_path') as mock_get_asset_processor_path,\
+         patch('o3de.export_project.build_assets') as mock_build_assets,\
+         patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
+         patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
+        
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+
+        mock_platform = 'pc'
+        export_standalone_project(mock_ctx,
+                                mock_platform,
+                                test_output_path,
+                                False, 
+                                "release",
+                                'profile',
+                                test_seedlists,
+                                test_seedfiles,
+                                test_levelnames)
+        
+        combined_seedfiles = test_seedfiles 
+        for ln in test_levelnames:
+            combined_seedfiles.append(test_project_path / f'Cache/{mock_platform}/levels' / ln.lower() / (ln.lower() + ".spawnable"))
+        
+        mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
+                                              selected_platform=mock_platform,
+                                              seedlist_paths=test_seedlists,
+                                              seedfile_paths=combined_seedfiles,
+                                              tools_build_path=test_tools_sdk_path,
+                                              engine_centric=False,
+                                              asset_bundling_path=test_o3de_base_path / 'build/asset_bundling',
+                                              using_installer_sdk=True,
+                                              tool_config='profile',
+                                              max_bundle_size=2048)
+        
+
 @pytest.mark.parametrize("is_engine_centric, use_sdk, has_monolithic, use_monolithic", [
     pytest.param(False, True, True, True),
     pytest.param(False, True, True, False),
@@ -820,7 +887,6 @@ def test_export_standalone_parse_args_should_require_output(tmpdir):
 
         export_standalone_parse_args(mock_ctx, test_export_config)
 
-# Note: Uncomment this exhaustive test for when you need to check a lot of parameter combinations. This is time consuming, but useful for flushing out erroneous outliers
 @pytest.mark.parametrize('dum_fail_asset_err', [True, False])
 @pytest.mark.parametrize('dum_build_tools', [True, False])
 @pytest.mark.parametrize('dum_build_assets', [True, False])
@@ -1093,12 +1159,12 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                     should_build_tools=check_tool_build,
                                     build_config=check_build_config,
                                     tool_config=check_tool_config,
-                                    seedlist_paths=args.seedlist_paths,
-                                    seedfile_paths=args.seedfile_paths,
-                                    level_names=args.level_names,
-                                    game_project_file_patterns_to_copy=args.game_project_file_patterns_to_copy,
-                                    server_project_file_patterns_to_copy=args.server_project_file_patterns_to_copy,
-                                    project_file_patterns_to_copy=args.project_file_patterns_to_copy,
+                                    seedlist_paths=[],
+                                    seedfile_paths=[],
+                                    level_names=[],
+                                    game_project_file_patterns_to_copy=[],
+                                    server_project_file_patterns_to_copy=[],
+                                    project_file_patterns_to_copy=[],
                                     asset_bundling_path=args.asset_bundling_path,
                                     max_bundle_size=2048,
                                     should_build_all_assets=check_asset_build,
@@ -1113,5 +1179,118 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                     archive_output_format=check_archive_format,
                                     monolithic_build=check_mono,
                                     logger=mock_logger)
-                    
                     mock_export_func.reset_mock()
+
+@pytest.mark.parametrize("seedlists, seedfiles, levelnames, gamefile_patterns, serverfile_patterns, project_patterns",[
+    pytest.param([],[],[], [], [], []),
+    pytest.param(["C:\\test\\test.seedlist"],["C:\\test2\\seed.seed"],['main'], ['game.cfg'], ['server.cfg'], ['licensing/test*.txt']),
+    pytest.param(["C:\\test\\test.seedlist", "C:\\test\\test2.seedlist"],["C:\\test2\\seed.seed","C:\\test2\\seed2.seed"],['main', 'second', 'THIRD'], ['game.cfg', 'music/test*.mp3'], ['access_ctrls.xml','server.cfg'], ['licensing/test*.txt', 'dependency.graph']),
+])
+def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnames, gamefile_patterns, serverfile_patterns, project_patterns):
+    tmpdir.ensure('.o3de', dir=True)
+
+    test_project_name = "TestProject"
+    test_project_path = tmpdir/ 'O3DE' / "project"
+    test_engine_path = tmpdir/ 'O3DE' / "engine"
+
+    dummy_project_file = test_project_path / 'project.json'
+    dummy_project_file.ensure()
+    with dummy_project_file.open('w') as dpf:
+        dpf.write("""
+{
+    "project_name": "TestProject",
+    "project_id": "{11111111-1111-AAAA-AA11-111111111111}"
+}
+""")
+
+    dummy_commands_file = tmpdir / '.o3de' / '.command_settings'
+    with dummy_commands_file.open('w') as dcf:
+        dcf.write(create_dummy_commands_settings_file())
+    
+    with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder,\
+         patch('o3de.export_project.get_default_asset_platform', return_value='pc') as mock_get_asset_platform,\
+         patch('export_source_built_project.export_standalone_project') as mock_export_func:
+        
+        mock_get_o3de_folder.return_value = pathlib.Path(tmpdir.join('.o3de').realpath())
+
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+        
+        mock_logger = create_autospec(logging.Logger)
+        test_export_config = exp.get_export_project_config(project_path=None)
+
+        mock_platform='mac'
+
+        mock_bundle_size = 777
+
+        mock_ctx.args = ['--output-path', str(tmpdir / 'output'), "--max-bundle-size", str(mock_bundle_size),
+                         '-lbp', str(pathlib.PurePath('LauncherBuilds/Packages')),
+                         '-tbp', str(tmpdir / 'tool_builds'),
+                         '-abp', str(tmpdir / 'assets/bundling/paks'),
+                         '-pl', mock_platform]
+        
+        for ln in levelnames:
+            mock_ctx.args += ['-lvl', ln]
+        
+        for gp in gamefile_patterns:
+            mock_ctx.args += ['-gpfp', gp]
+        
+        for sp in serverfile_patterns:
+            mock_ctx.args += ['-spfp', sp]
+        
+        for pp in project_patterns:
+            mock_ctx.args += ['-pfp', pp]
+        
+        verify_seedlists = []
+        for sl in seedlists:
+            mock_ctx.args += ['-sl',  sl]
+            verify_seedlists += [pathlib.Path(sl)]
+        
+        verify_seedfiles = []
+        for sf in seedfiles:
+            mock_ctx.args += ['-sf', sf]
+            verify_seedfiles += [pathlib.Path(sf)]
+
+        args = export_standalone_parse_args(mock_ctx, test_export_config)
+
+        assert 'level_names' in args and getattr(args, 'level_names')  == levelnames
+
+        assert 'game_project_file_patterns_to_copy' in args and getattr(args, 'game_project_file_patterns_to_copy') == gamefile_patterns
+
+        assert 'server_project_file_patterns_to_copy' in args and getattr(args, 'server_project_file_patterns_to_copy') == serverfile_patterns
+
+        assert 'project_file_patterns_to_copy' in args and getattr(args, 'project_file_patterns_to_copy') == project_patterns
+    
+        assert 'seedlist_paths' in args and getattr(args, 'seedlist_paths') == verify_seedlists
+        assert 'seedfile_paths' in args and getattr(args, 'seedfile_paths') == verify_seedfiles
+
+        export_standalone_run_command(mock_ctx, args, test_export_config, mock_logger)
+
+        mock_export_func.assert_called_once_with(ctx=mock_ctx,
+                        selected_platform='mac',
+                        output_path=tmpdir/'output',
+                        should_build_tools=False,
+                        build_config='profile',
+                        tool_config='profile',
+                        seedlist_paths=verify_seedlists,
+                        seedfile_paths=verify_seedfiles,
+                        level_names=levelnames,
+                        game_project_file_patterns_to_copy=gamefile_patterns,
+                        server_project_file_patterns_to_copy=serverfile_patterns,
+                        project_file_patterns_to_copy=project_patterns,
+                        asset_bundling_path=tmpdir / 'assets/bundling/paks',
+                        max_bundle_size=mock_bundle_size,
+                        should_build_all_assets=False,
+                        fail_on_asset_errors=False,
+                        should_build_game_launcher=True,
+                        should_build_server_launcher=True,
+                        should_build_unified_launcher=True,
+                        engine_centric=False,
+                        allow_registry_overrides=False,
+                        tools_build_path=tmpdir / 'tool_builds',
+                        launcher_build_path=pathlib.PurePath('LauncherBuilds/Packages'),
+                        archive_output_format='none',
+                        monolithic_build=False,
+                        logger=mock_logger)
