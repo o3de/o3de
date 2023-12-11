@@ -131,6 +131,7 @@ namespace AZ
                 RHI::SwapChainDimensions dimensions = defaultSwapChain->GetDescriptor().m_dimensions;
                 dimensions.m_imageWidth = renderSize.m_width;
                 dimensions.m_imageHeight = renderSize.m_height;
+                // Note: there is only one bit set in the mask, so we simply get the device index with log2
                 dimensions.m_imageFormat = GetSwapChainFormat(*RHI::RHISystemInterface::Get()->GetDevice(static_cast<int>(log2(static_cast<float>(defaultSwapChain->GetDeviceMask())))));
 
                 FillWindowState(dimensions.m_imageWidth, dimensions.m_imageHeight);
