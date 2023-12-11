@@ -252,6 +252,40 @@ namespace AZ::RHI
         m_frameScheduler.EndFrame();
     }
 
+    AZStd::optional<int> RHISystem::AddVirtualDevice(int deviceIndexToVirtualize)
+    {
+        if (deviceIndexToVirtualize >= m_devices.size())
+        {
+            AZ_Error("RHISystem", false, "Invalid device index, cannot add virtual device");
+            return AZStd::nullopt;
+        }
+
+        // We need to pass a non-const PhysicalDevice& to Device::Init(), hence this detour is needed to locate
+        // the corresponding PhysicalDevice without const
+        RHI::Ptr<RHI::PhysicalDevice> selectedPhysicalDevice;
+        for (RHI::Ptr<RHI::PhysicalDevice>& physicalDevice : RHI::Factory::Get().EnumeratePhysicalDevices())
+        {
+            if (physicalDevice.get() == &m_devices[deviceIndexToVirtualize]->GetPhysicalDevice())
+            {
+                selectedPhysicalDevice = physicalDevice;
+                break;
+            }
+        }
+
+        RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
+        auto virtualDeviceIndex{ static_cast<int>(m_devices.size()) };
+        if (device->Init(virtualDeviceIndex, *selectedPhysicalDevice) == RHI::ResultCode::Success)
+        {
+            m_devices.emplace_back(AZStd::move(device));
+            return virtualDeviceIndex;
+        }
+        else
+        {
+            AZ_Error("RHISystem", false, "Failed to initialize virtual device");
+            return AZStd::nullopt;
+        }
+    }
+
     RHI::Device* RHISystem::GetDevice(int deviceIndex)
     {
         if (deviceIndex < m_devices.size())

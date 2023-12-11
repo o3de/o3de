@@ -43,6 +43,10 @@
             "isTemplated": false
         },
         {
+            "file": "Levels/start/start.prefab",
+            "isTemplated": false
+        },
+        {
             "file": "Platform/Android/android_project.cmake",
             "isTemplated": false
         },
@@ -259,6 +263,18 @@
             "isTemplated": false
         },
         {
+            "file": "package.bat",
+            "isTemplated": true
+        },
+        {
+            "file": "package.sh",
+            "isTemplated": true
+        },
+        {
+            "file": "AssetBundling/SeedLists/Example.seed",
+            "isTemplated": false
+        },
+        {
             "file": "game.cfg",
             "isTemplated": false
         },
@@ -276,10 +292,22 @@
             "dir": "Assets"
         },
         {
+            "dir": "AssetBundling"
+        },
+        {
+            "dir": "AssetBundling/SeedLists"
+        },
+        {
             "dir": "cmake"
         },
         {
             "dir": "Config"
+        },
+        {
+            "dir": "Levels"
+        },
+        {
+            "dir": "Levels/start"
         },
         {
             "dir": "Platform"

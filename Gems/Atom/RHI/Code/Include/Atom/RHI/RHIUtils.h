@@ -18,6 +18,8 @@
 #include <Atom/RHI.Reflect/Format.h>
 
 #include <Atom/RHI/Device.h>
+#include <Atom/RHI/DrawList.h>
+#include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
@@ -68,5 +70,11 @@ namespace AZ::RHI
     //! Intended to be used for gpu memory failure debugging.
     //! Available externally to the RHI through the RHIMemoryStatisticsInterface
     void DumpPoolInfoToJson();
+
+    //! Utility function to get the DrawListTagRegistry
+    RHI::DrawListTagRegistry* GetDrawListTagRegistry();
+ 
+    //! Utility function to get the Name associated with a DrawListTag
+    Name GetDrawListName(DrawListTag drawListTag);
 }
 

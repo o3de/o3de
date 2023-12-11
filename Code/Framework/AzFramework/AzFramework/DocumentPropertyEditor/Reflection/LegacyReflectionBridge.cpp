@@ -1036,11 +1036,29 @@ namespace AZ::Reflection
                 {
                     const StackEntry& parentNode = m_stack[m_stack.size() - 2];
                     AZ::Serialize::IDataContainer* dataContainer = parentNode.m_classData ? parentNode.m_classData->m_container : nullptr;
-                    // Only add a label numeric label for sequence containers
-                    if (dataContainer && dataContainer->IsSequenceContainer())
+                    if (dataContainer)
                     {
-                        labelAttributeBuffer = AZStd::fixed_string<128>::format("[%zu]", parentNode.m_childElementIndex);
-                        return labelAttributeBuffer;
+                        if (auto indexedChildOverride = Find(
+                                AZ::Name(nodeData.m_group),
+                                DocumentPropertyEditor::Nodes::Container::IndexedChildNameLabelOverride.GetName(),
+                                parentNode);
+                            indexedChildOverride)
+                        {
+                            auto retrievedName = DocumentPropertyEditor::Nodes::Container::IndexedChildNameLabelOverride.InvokeOnDomValue(
+                                *indexedChildOverride, parentNode.m_childElementIndex);
+
+                            if (retrievedName.IsSuccess())
+                            {
+                                labelAttributeBuffer = AZStd::fixed_string<128>::format("%s", retrievedName.GetValue().c_str());
+                                return labelAttributeBuffer;
+                            }
+                        }
+                        if (dataContainer->IsSequenceContainer())
+                        {
+                            // Only add a numeric label for sequence containers
+                            labelAttributeBuffer = AZStd::fixed_string<128>::format("[%zu]", parentNode.m_childElementIndex);
+                            return labelAttributeBuffer;
+                        }
                     }
                 }
 
@@ -1334,7 +1352,7 @@ namespace AZ::Reflection
                                 {
                                     for (auto it = classEditorData->m_attributes.begin(); it != classEditorData->m_attributes.end(); ++it)
                                     {
-                                        checkAttribute(it, nodeData.m_instanceToInvoke, isParentAttribute);
+                                        checkAttribute(it, nodeData.m_instance, isParentAttribute);
                                     }
                                 }
                             }
@@ -1406,6 +1424,7 @@ namespace AZ::Reflection
 
                         const auto inheritedAttributes = { DescriptorAttributes::ParentContainerInstance,
                                                            DescriptorAttributes::ParentContainerCanBeModified,
+                                                           PropertyEditor::NameLabelOverride.GetName(),
                                                            AZ::Reflection::DescriptorAttributes::ContainerIndex };
 
                         for (const auto& attributeName : inheritedAttributes)
@@ -1413,7 +1432,23 @@ namespace AZ::Reflection
                             auto inheritedAttribute = Find(group, attributeName, parentNode);
                             if (inheritedAttribute)
                             {
-                                nodeData.m_cachedAttributes.push_back({ group, attributeName, *inheritedAttribute });
+                                auto existingAttribute = Find(group, attributeName, nodeData);
+                                if (existingAttribute)
+                                {
+                                    if (existingAttribute->IsNull() || (existingAttribute->IsObject() && existingAttribute->ObjectEmpty()) || (existingAttribute->IsString() && !existingAttribute->GetStringLength()))
+                                    {
+                                        // overwrite existing empty value
+                                        *existingAttribute = *inheritedAttribute;
+                                    }
+                                    else
+                                    {
+                                        // do nothing! Do not overwrite existing non-empty values
+                                    }
+                                }
+                                else
+                                {
+                                    nodeData.m_cachedAttributes.push_back({ group, attributeName, *inheritedAttribute });
+                                }
                             }
                         }
                     }
@@ -1582,7 +1617,20 @@ namespace AZ::Reflection
                 return nullptr;
             }
 
-            const AttributeDataType* Find(Name group, Name name, StackEntry& parentData) const
+            const AttributeDataType* Find(Name group, Name name, const StackEntry& parentData) const
+            {
+                for (auto it = parentData.m_cachedAttributes.cbegin(); it != parentData.m_cachedAttributes.cend(); ++it)
+                {
+                    if (it->m_group == group && it->m_name == name)
+                    {
+                        return &(it->m_value);
+                    }
+                }
+                return nullptr;
+            }
+
+            // non-const Find that can be used to overwrite existing attributes
+            AttributeDataType* Find(Name group, Name name, StackEntry& parentData)
             {
                 for (auto it = parentData.m_cachedAttributes.begin(); it != parentData.m_cachedAttributes.end(); ++it)
                 {
