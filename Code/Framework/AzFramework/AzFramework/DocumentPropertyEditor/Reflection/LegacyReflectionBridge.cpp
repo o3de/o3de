@@ -645,7 +645,7 @@ namespace AZ::Reflection
                                 pointerLevel,
                                 nodeData.m_classData,
                                 UIElement,
-                                nodeData.m_elementEditData);
+                                UIElement->m_editData);
 
                             AZStd::string pathString = nodeData.m_path;
 
@@ -847,7 +847,7 @@ namespace AZ::Reflection
                 // Prepare the node references for the handlers.
                 StackEntry& parentData = m_stack.back();
 
-                const AZ::Edit::ElementData* elementEditData = nullptr;
+                const AZ::Edit::ElementData* elementEditData = (classElement ? classElement->m_editData : nullptr);
                 if (classElement)
                 {
                     // Ensure our instance pointer is resolved and safe to bind to member attributes.
@@ -863,7 +863,7 @@ namespace AZ::Reflection
 
                     if (classData && !m_stack.empty())
                     {
-                        for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
+                        for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); (rIter != rEnd && !elementEditData); ++rIter)
                         {
                             auto& ancestorData = *rIter;
 
@@ -876,12 +876,7 @@ namespace AZ::Reflection
                                 {
                                     elementEditData = overrideData;
                                 }
-                                break;
                             }
-                        }
-                        if (!elementEditData && classElement)
-                        {
-                            elementEditData = classElement->m_editData;
                         }
                     }
 
