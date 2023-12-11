@@ -406,7 +406,7 @@ namespace AZ
                 AzToolsFramework::ScopedUndoBatch undoBatch("Generating materials.");
 
                 // Create progress dialog to report the status of each material being generated.
-                EditorMaterialComponentExporter::ProgressDialog progressDialog("Generating materials", "Generating material...", (int)exportItems.size());
+                EditorMaterialComponentExporter::ProgressDialog progressDialog("Generating materials", "Generating material...", static_cast<int>(exportItems.size())); // carbonated (carbonated/port/main23101)
 
                 for (const EditorMaterialComponentExporter::ExportItem& exportItem : exportItems)
                 {
