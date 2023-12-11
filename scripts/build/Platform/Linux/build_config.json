@@ -387,12 +387,39 @@
       "CMAKE_TARGET": "install"
     }
   },
+  "install_20_release": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "ubuntu-20-packaging"
+    },
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build/linux_mono",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_MONOLITHIC_GAME=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+      "CMAKE_TARGET": "install"
+    }
+  },
+  "install_22_release": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NODE_LABEL": "ubuntu-22-packaging"
+    },
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build/linux_mono",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_MONOLITHIC_GAME=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+      "CMAKE_TARGET": "install"
+    }
+  },
   "installer_pipe": {
     "TAGS": [
       "periodic-clean-weekly-internal",
       "nightly-installer"
     ],
     "steps": [
+      "install_20_release",
       "installer"
     ]
   },
@@ -407,10 +434,20 @@
       "OUTPUT_DIRECTORY": "build/linux",
       "O3DE_PACKAGE_TYPE": "DEB",
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
-      "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license",
+      "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license -DCPACK_INSTALLED_DIRECTORIES='${WORKSPACE}/o3de/install;/CORE'",
       "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
       "CMAKE_TARGET": "all"
     }
+  },
+  "snap_pipe": {
+    "TAGS": [
+      "periodic-clean-weekly-internal",
+      "nightly-installer"
+    ],
+    "steps": [
+      "install_22_release",
+      "snap_package"
+    ]
   },
   "snap_package": {
     "TAGS": [
@@ -426,9 +463,20 @@
       "OUTPUT_DIRECTORY": "build/linux",
       "O3DE_PACKAGE_TYPE": "SNAP",
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+      "EXTRA_CMAKE_OPTIONS": "-DCPACK_INSTALLED_DIRECTORIES='${WORKSPACE}/o3de/install;/CORE'",
       "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
       "CMAKE_TARGET": "all"
     }
+  },
+  "snap_core20_pipe": {
+    "TAGS": [
+      "periodic-clean-weekly-internal",
+      "nightly-installer"
+    ],
+    "steps": [
+      "install_20_release",
+      "snap_core20_package"
+    ]
   },
   "snap_core20_package": {
     "TAGS": [
