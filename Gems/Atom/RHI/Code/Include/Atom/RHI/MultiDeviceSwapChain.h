@@ -31,6 +31,7 @@ namespace AZ::RHI
     public:
         AZ_CLASS_ALLOCATOR(MultiDeviceSwapChain, AZ::SystemAllocator, 0);
         AZ_RTTI(MultiDeviceSwapChain, "{EB2B3AE5-41C0-4833-ABAD-4D964547029C}", Object);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(SwapChain);
         MultiDeviceSwapChain() = default;
         virtual ~MultiDeviceSwapChain() = default;
 
@@ -38,18 +39,6 @@ namespace AZ::RHI
         //! As the SwapChain uses multi-device resources on just a single device,
         //! it is explicitly initialized with just a deviceIndex
         ResultCode Init(int deviceIndex, const SwapChainDescriptor& descriptor);
-
-        //! Returns the device-specific SwapChain for the given index
-        inline Ptr<SwapChain> GetDeviceSwapChain(int deviceIndex) const
-        {
-            AZ_Error(
-                "MultiDeviceSwapChain",
-                m_deviceSwapChains.find(deviceIndex) != m_deviceSwapChains.end(),
-                "No DeviceSwapChain found for device index %d\n",
-                deviceIndex);
-
-            return m_deviceSwapChains.at(deviceIndex);
-        }
 
         //! Presents the swap chain to the display, and rotates the images.
         void Present();
@@ -133,8 +122,5 @@ namespace AZ::RHI
 
         //! Cache the XR system at initialization time
         RHI::XRRenderingInterface* m_xrSystem = nullptr;
-
-        //! A map of all device-specific SwapChains, indexed by the device index
-        AZStd::unordered_map<int, Ptr<SwapChain>> m_deviceSwapChains;
     };
 } // namespace AZ::RHI
