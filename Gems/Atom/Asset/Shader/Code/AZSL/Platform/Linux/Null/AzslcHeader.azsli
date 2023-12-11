@@ -14,3 +14,12 @@
 //Linux supports unbounded array
 #define UNBOUNDED_SIZE
 
+
+ // Full floats for null rhi
+ #define real float
+ #define real2 float2
+ #define real3 float3
+ #define real4 float4
+ #define real3x3 float3x3
+ #define real3x4 float3x4
+ 
