@@ -90,7 +90,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 # under the default component since they are shared across permutations/configs.
                 cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${include_directory} NORMALIZE include_directory_child_of_build)
                 if(NOT include_directory_child_of_build)
-                    set(include_directory_component ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+                set(include_directory_component ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
                 else()
                     set(include_directory_component ${LY_INSTALL_PERMUTATION_COMPONENT})
                 endif()
@@ -200,7 +200,17 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         string(GENEX_STRIP ${include} include_genex_expr)
         if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
             # Make the include path relative to the source dir where the target will be declared
-            cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${include} NORMALIZE include_directory_child_of_build)
+            if(include_directory_child_of_build)
+                # Some autogen files are placed in the build folder so remove the build folder prefix
+                # and use it to calculated the relative path  
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE rel_include)
+                cmake_path(SET base_path ${LY_ROOT_FOLDER})
+                cmake_path(APPEND base_path ${rel_include} OUTPUT_VARIABLE absolute_include)
+                cmake_path(RELATIVE_PATH absolute_include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            else()
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            endif()
             list(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${target_include}")
         endif()
     endforeach()
