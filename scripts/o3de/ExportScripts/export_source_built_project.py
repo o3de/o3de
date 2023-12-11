@@ -107,21 +107,21 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     elif not tools_build_path.is_absolute():
         tools_build_path = default_base_path / tools_build_path
     
-    logger.debug(f"Tools build path set to {tools_build_path}")
+    logger.info(f"Tools build path set to {tools_build_path}")
 
     if not launcher_build_path:
         launcher_build_path = default_base_path / 'build/launcher'
     elif not launcher_build_path.is_absolute():
         launcher_build_path = default_base_path / launcher_build_path
     
-    logger.debug(f"Launcher build path set to {launcher_build_path}")
+    logger.info(f"Launcher build path set to {launcher_build_path}")
     
     if not asset_bundling_path:
         asset_bundling_path = default_base_path / 'build/asset_bundling'
     elif not asset_bundling_path.is_absolute():
         asset_bundling_path = default_base_path / asset_bundling_path
     
-    logger.debug(f"Asset bundling path set to {asset_bundling_path}")
+    logger.info(f"Asset bundling path set to {asset_bundling_path}")
 
     # Resolve (if possible) and validate any provided seedlist files
     validated_seedslist_paths = exp.validate_project_artifact_paths(project_path=ctx.project_path,
