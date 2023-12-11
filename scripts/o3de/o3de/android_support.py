@@ -689,7 +689,6 @@ class AndroidSDKManager(object):
         if license_accepted_match:
             logger.info(license_accepted_match.group(1))
         else:
-            print(result.stdout)
             raise AndroidToolError("Unable to determine the Android SDK Package license state. \n"
                                    f"Please run '{self._android_command_line_tools_sdkmanager_path} --licenses' to troubleshoot the issue.\n")
 
