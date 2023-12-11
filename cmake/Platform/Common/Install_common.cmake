@@ -89,11 +89,10 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 # is per-permutation, we need to install such headers per permutation. For the other cases, we can install
                 # under the default component since they are shared across permutations/configs.
                 cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${include_directory} NORMALIZE include_directory_child_of_build)
-                if(NOT include_directory_child_of_build)
+
+                # In order to combine profile and release monolithic, we use the CORE component
+                # because CPack will fail if it finds duplicated content in CORE and DEFAULT/MONOLITHIC
                 set(include_directory_component ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
-                else()
-                    set(include_directory_component ${LY_INSTALL_PERMUTATION_COMPONENT})
-                endif()
 
                 unset(rel_include_dir)
                 if(include_directory_child_of_build)
