@@ -96,6 +96,8 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
 
                 unset(rel_include_dir)
                 if(include_directory_child_of_build)
+                    # We need to use the path relative to the binary folder otherwise you will get an invalid 
+                    # relative path if the build folder is outside the engine root.
                     cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE rel_include_dir)
                 else()
                     cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
@@ -202,7 +204,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
             cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${include} NORMALIZE include_directory_child_of_build)
             if(include_directory_child_of_build)
                 # Some autogen files are placed in the build folder so remove the build folder prefix
-                # and use it to calculated the relative path  
+                # and use it to calculate the relative path  
                 cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE rel_include)
                 cmake_path(SET base_path ${LY_ROOT_FOLDER})
                 cmake_path(APPEND base_path ${rel_include} OUTPUT_VARIABLE absolute_include)
