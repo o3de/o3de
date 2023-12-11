@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 #include <Atom/RHI/MultiDeviceImagePoolBase.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
 namespace AZ::RHI
@@ -40,7 +40,7 @@ namespace AZ::RHI
         ResultCode Init(int deviceIndex, const SwapChainDescriptor& descriptor);
 
         //! Returns the device-specific SwapChain for the given index
-        inline Ptr<SwapChain> GetDeviceSwapChain(int deviceIndex) const
+        inline Ptr<SingleDeviceSwapChain> GetDeviceSwapChain(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceSwapChain",
@@ -135,6 +135,6 @@ namespace AZ::RHI
         RHI::XRRenderingInterface* m_xrSystem = nullptr;
 
         //! A map of all device-specific SwapChains, indexed by the device index
-        AZStd::unordered_map<int, Ptr<SwapChain>> m_deviceSwapChains;
+        AZStd::unordered_map<int, Ptr<SingleDeviceSwapChain>> m_deviceSwapChains;
     };
 } // namespace AZ::RHI

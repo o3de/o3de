@@ -157,7 +157,7 @@ namespace AZ::RHI
 
         RHI::SwapChainDimensions nativeDimensions;
 
-        IterateObjects<SwapChain>(
+        IterateObjects<SingleDeviceSwapChain>(
             [&resultCode, &nativeDimensions, &dimensions]([[maybe_unused]]auto deviceIndex, auto deviceSwapChain)
             {
                 resultCode = deviceSwapChain->Resize(dimensions);
