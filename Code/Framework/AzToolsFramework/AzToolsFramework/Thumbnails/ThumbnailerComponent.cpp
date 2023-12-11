@@ -112,7 +112,7 @@ namespace AzToolsFramework
                         return thumbnail;
                     }
 
-                    if (thumbnail->GetState() == Thumbnail::State::Failed)
+                    if (thumbnail->GetState() == Thumbnail::State::Failed && !thumbnail->CanAttemptReload())
                     {
                         return m_missingThumbnail;
                     }
