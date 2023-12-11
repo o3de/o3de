@@ -92,8 +92,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     if is_installer_sdk:
         # Check if we have any monolithic entries if building monolithic
         if monolithic_build and not exp.has_monolithic_artifacts(ctx):
-            logger.error("Trying to create monolithic build, but no monolithic artifacts are detected in the engine installation! Please re-run the script with '-nomonolithic' and '-config profile'.")
-            return
+            logger.error("Trying to create monolithic build, but no monolithic artifacts are detected in the engine installation! Please re-run the script with '--non-monolithic' and '-config profile'.")
+            raise exp.ExportProjectError("Trying to build monolithic without libraries.")
         tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / tool_config / 'Default'
     
     # Note, when resolving the relative paths used for the export process, there is a debate about 
@@ -106,16 +106,22 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
         tools_build_path = default_base_path / 'build/tools'
     elif not tools_build_path.is_absolute():
         tools_build_path = default_base_path / tools_build_path
+    
+    logger.debug(f"Tools build path set to {tools_build_path}")
 
     if not launcher_build_path:
         launcher_build_path = default_base_path / 'build/launcher'
     elif not launcher_build_path.is_absolute():
         launcher_build_path = default_base_path / launcher_build_path
     
+    logger.debug(f"Launcher build path set to {launcher_build_path}")
+    
     if not asset_bundling_path:
         asset_bundling_path = default_base_path / 'build/asset_bundling'
     elif not asset_bundling_path.is_absolute():
         asset_bundling_path = default_base_path / asset_bundling_path
+    
+    logger.debug(f"Asset bundling path set to {asset_bundling_path}")
 
     # Resolve (if possible) and validate any provided seedlist files
     validated_seedslist_paths = exp.validate_project_artifact_paths(project_path=ctx.project_path,
@@ -321,13 +327,13 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
                                                                  "The tools must be already available at the location specified by the '--tools-build-path' argument.")
 
         
-        # Do not supply a default path for the tools build path. This should be inferred by the export script based on engine installation.
-        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=None,
-                            help=f'Designates where the build files for the O3DE toolchain are generated. If not specified, the path is inferred based on engine installation.')
+        default_tools_build_path = export_config.get_value(exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.default)
+        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=pathlib.Path(default_tools_build_path),
+                            help=f"Designates where the build files for the O3DE toolchain are generated. If not specified, default is '{default_tools_build_path}'.")
 
-        # Do not supply a default path for the launcher build path. This should be inferred by the export script based on engine installation.
-        parser.add_argument('-lbp', '--launcher-build-path', type=pathlib.Path, default=None,
-                            help=f"Designates where the launcher build files (Game/Server/Unified) are generated. If not specified, the path is inferred based on engine installation.")
+        default_launcher_build_path = export_config.get_value(exp.SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH.default)
+        parser.add_argument('-lbp', '--launcher-build-path', type=pathlib.Path, default=pathlib.Path(default_launcher_build_path),
+                            help=f"Designates where the launcher build files (Game/Server/Unified) are generated. If not specified, default is '{default_launcher_build_path}'.")
 
         export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES.key,
@@ -336,9 +342,9 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
                                            disable_override_arg=['-noregovr', '--disallow-registry-overrides'],
                                            disable_override_desc="Disallow overriding registry settings from external sources during the cmake build configuration.")
 
-        # Do not supply a default path for the asset bundling path. This should be inferred by the export script based on engine installation.
-        parser.add_argument('-abp', '--asset-bundling-path', type=pathlib.Path, default=None,
-                            help=f"Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, the path is inferred based on engine installation.")
+        default_asset_bundling_path = export_config.get_value(exp.SETTINGS_DEFAULT_ASSET_BUNDLING_PATH.key, exp.SETTINGS_DEFAULT_ASSET_BUNDLING_PATH.default)
+        parser.add_argument('-abp', '--asset-bundling-path', type=pathlib.Path, default=pathlib.Path(default_asset_bundling_path),
+                            help=f"Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, default is '{default_asset_bundling_path}'.")
 
         default_max_size = export_config.get_value(exp.SETTINGS_MAX_BUNDLE_SIZE.key, exp.SETTINGS_MAX_BUNDLE_SIZE.default)
         parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=int(default_max_size),
@@ -481,8 +487,6 @@ def export_standalone_run_command(o3de_context, args, export_config: command_uti
 # This code is only run by the 'export-project' O3DE CLI command
 
 if "o3de_context" in globals():
-    import pprint
-    pp = pprint.PrettyPrinter(indent=3)
     global o3de_context
     global o3de_logger
 
@@ -490,7 +494,7 @@ if "o3de_context" in globals():
     try:
         if o3de_context is None:
             project_name, project_path = command_utils.resolve_project_name_and_path()
-            export_config = exp.get_export_project_config(project_path=project_name)
+            export_config = exp.get_export_project_config(project_path=project_path)
         else:
             export_config = exp.get_export_project_config(project_path=o3de_context.project_path)
     except command_utils.O3DEConfigError:
@@ -501,3 +505,5 @@ if "o3de_context" in globals():
     args = export_standalone_parse_args(o3de_context, export_config)
 
     export_standalone_run_command(o3de_context, args, export_config, o3de_logger)
+    o3de_logger.info("Finished exporting project")
+    sys.exit(0)

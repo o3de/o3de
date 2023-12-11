@@ -1089,6 +1089,18 @@ SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES = register_setting(key='option.allow.re
                                                             is_boolean=True,
                                                             default='False')
 
+SETTINGS_DEFAULT_BUILD_TOOLS_PATH = register_setting(key='default.build.tools.path',
+                                                     description='Designates where the build files for the O3DE toolchain are generated.',
+                                                     default='build/tools')
+
+SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH = register_setting(key='default.launcher.build.path',
+                                                        description='Designates where the launcher build files (Game/Server/Unified) are generated.',
+                                                        default='build/launcher')
+
+SETTINGS_DEFAULT_ASSET_BUNDLING_PATH = register_setting(key='asset.bundling.path',
+                                                        description='Designates where the artifacts from the asset bundling process will be written to before creation of the package.',
+                                                        default='build/asset_bundling')
+
 SETTINGS_MAX_BUNDLE_SIZE = register_setting(key='max.size',
                                             description='The maximum size of a given asset bundle.',
                                             default="2048",
