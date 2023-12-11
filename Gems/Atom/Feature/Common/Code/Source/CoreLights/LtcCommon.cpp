@@ -34,13 +34,15 @@ namespace AZ::Render
 
         AZ_Error("LtcCommon", srg->GetId().IsValid(), "Srg used to load matrices must have a valid Id.");
 
-        auto callback = [srg](Data::Asset<Data::AssetData> asset, bool success, const char* srgName)
+        auto callback = [srg](Data::Asset<Data::AssetData> asset, const char* srgName)
         {
-            RHI::ShaderInputImageIndex index = srg->FindShaderInputImageIndex(Name(srgName));
-            if (success && index.IsValid())
+            if (asset.IsReady())
             {
-                auto streamingImageInstance = RPI::StreamingImage::FindOrCreate(asset);
-                srg->SetImage(index, streamingImageInstance);
+                if (const RHI::ShaderInputImageIndex index = srg->FindShaderInputImageIndex(Name(srgName)); index.IsValid())
+                {
+                    auto streamingImageInstance = RPI::StreamingImage::FindOrCreate(asset);
+                    srg->SetImage(index, streamingImageInstance);
+                }
             }
         };
 
@@ -48,10 +50,12 @@ namespace AZ::Render
         const AZ::Uuid& srgGuid = srg->GetId().GetGuid();
         if (m_assetLoaders.find(srgGuid) == m_assetLoaders.end())
         {
-            m_assetLoaders[srgGuid].push_back(RPI::AssetUtils::AsyncAssetLoader::Create<RPI::StreamingImageAsset>(
-                s_LtcGgxAmplificationPath, 0, AZStd::bind(callback, AZStd::placeholders::_1, AZStd::placeholders::_2, "m_ltcAmplification")));
-            m_assetLoaders[srgGuid].push_back(RPI::AssetUtils::AsyncAssetLoader::Create<RPI::StreamingImageAsset>(
-                s_LtcGgxMatrixPath, 0, AZStd::bind(callback, AZStd::placeholders::_1, AZStd::placeholders::_2, "m_ltcMatrix")));
+            auto& assetLoaders = m_assetLoaders[srgGuid];
+            assetLoaders.reserve(2);
+            assetLoaders.emplace_back(RPI::AssetUtils::AsyncAssetLoader::Create<RPI::StreamingImageAsset>(
+                s_LtcGgxAmplificationPath, 0, AZStd::bind(callback, AZStd::placeholders::_1, "m_ltcAmplification")));
+            assetLoaders.emplace_back(RPI::AssetUtils::AsyncAssetLoader::Create<RPI::StreamingImageAsset>(
+                s_LtcGgxMatrixPath, 0, AZStd::bind(callback, AZStd::placeholders::_1, "m_ltcMatrix")));
         }
     }
 } // namespace AZ::Render

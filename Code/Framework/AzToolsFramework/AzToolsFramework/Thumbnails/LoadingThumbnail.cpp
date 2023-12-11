@@ -23,7 +23,7 @@ namespace AzToolsFramework
             : Thumbnail(MAKE_TKEY(ThumbnailKey))
         {
             m_pixmap = QPixmap(LoadingThumbnailSize, LoadingThumbnailSize);
-            m_pixmap .fill(Qt::black);
+            m_pixmap.fill(Qt::black);
             m_state = State::Ready;
         }
    } // namespace Thumbnailer
