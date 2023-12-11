@@ -561,7 +561,7 @@ namespace AZ::Reflection
                                         pointerLevel,
                                         nullptr,
                                         currElement.m_serializeClassElement,
-                                        nullptr);
+                                        currElement.m_serializeClassElement->m_editData);
 
                                     nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
 
@@ -583,7 +583,7 @@ namespace AZ::Reflection
                                         pointerLevel,
                                         nodeData.m_classData,
                                         UIElement,
-                                        nodeData.m_elementEditData);
+                                        UIElement->m_editData);
 
                                     nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
                                 }
@@ -970,7 +970,7 @@ namespace AZ::Reflection
                                 auto& groupStackEntry = groupPair.second.value();
                                 groupStackEntry.m_group = groupPair.first;
 
-                                if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement)
+                                if (groupStackEntry.m_elementEditData->m_serializeClassElement)
                                 {
                                     groupStackEntry.m_skipHandler = true;
                                 }
@@ -987,8 +987,7 @@ namespace AZ::Reflection
                             for (const auto& groupEntry : nodeData.m_groupEntries[groupPair.first])
                             {
                                 if (groupPair.second.has_value() &&
-                                    groupPair.second.value().m_classElement->m_editData->m_serializeClassElement ==
-                                        groupEntry.m_classElement)
+                                    groupPair.second.value().m_elementEditData->m_serializeClassElement == groupEntry.m_classElement)
                                 {
                                     // skip the bool that represented the group toggle, it's already in-line with the group
                                     continue;
@@ -1477,7 +1476,9 @@ namespace AZ::Reflection
                                 auto existingAttribute = Find(group, attributeName, nodeData);
                                 if (existingAttribute)
                                 {
-                                    if (existingAttribute->IsNull() || (existingAttribute->IsObject() && existingAttribute->ObjectEmpty()) || (existingAttribute->IsString() && !existingAttribute->GetStringLength()))
+                                    if (existingAttribute->IsNull() ||
+                                        (existingAttribute->IsObject() && existingAttribute->ObjectEmpty()) ||
+                                        (existingAttribute->IsString() && !existingAttribute->GetStringLength()))
                                     {
                                         // overwrite existing empty value
                                         *existingAttribute = *inheritedAttribute;
