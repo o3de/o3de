@@ -258,6 +258,7 @@ namespace PhysX
     void EditorArticulationLinkComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+        provided.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
         provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
         provided.push_back(AZ_CRC_CE("ArticulationLinkService"));
     }
