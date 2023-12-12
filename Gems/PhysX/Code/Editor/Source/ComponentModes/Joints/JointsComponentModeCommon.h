@@ -62,6 +62,8 @@ namespace PhysX::JointsComponentModeCommon
         static const AZStd::string_view LinearLimits;
         static const AZStd::string_view EnableLimits;
         static const AZStd::string_view EnableSoftLimits;
+        static const AZStd::string_view EnableMotor;
+        static const AZStd::string_view DriveForceLimit;
     };
 
     //! A pairing of Sub component Names, and Id.
