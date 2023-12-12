@@ -12,8 +12,8 @@
 
 namespace AZ::Render
 {
-    static const char* s_LtcGgxMatrixPath = "textures/ltc/ltc_mat_lutrgba32f.dds.streamingimage";
-    static const char* s_LtcGgxAmplificationPath = "textures/ltc/ltc_amp_lutrg32f.dds.streamingimage";
+    static constexpr const char* s_LtcGgxMatrixPath = "textures/ltc/ltc_mat_lutrgba32f.dds.streamingimage";
+    static constexpr const char* s_LtcGgxAmplificationPath = "textures/ltc/ltc_amp_lutrg32f.dds.streamingimage";
 
     LtcCommon::LtcCommon()
     {
@@ -22,6 +22,7 @@ namespace AZ::Render
 
     LtcCommon::~LtcCommon()
     {
+        m_assetLoaders.clear();
         Interface<ILtcCommon>::Unregister(this);
     }
 

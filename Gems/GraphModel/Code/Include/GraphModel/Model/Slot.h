@@ -73,6 +73,8 @@ namespace GraphModel
             return AZStd::string::format("GraphModelSlotId(%s,%d)", m_name.c_str(), m_subId);
         }
 
+        AZStd::string ToString() const;
+
         SlotName m_name;
         SlotSubId m_subId = 0;
     };

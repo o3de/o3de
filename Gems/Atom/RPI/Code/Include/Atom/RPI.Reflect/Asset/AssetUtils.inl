@@ -56,7 +56,8 @@ namespace AZ
                     return;
                 }
 
-                m_asset.Create(assetId, AZ::Data::AssetLoadBehavior::PreLoad, true);
+                m_asset = AZ::Data::AssetManager::Instance().GetAsset<AssetDataT>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                m_asset.QueueLoad();
                 Data::AssetBus::Handler::BusConnect(assetId);
             }
         } // namespace AssetUtils
