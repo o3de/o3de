@@ -218,9 +218,8 @@ namespace AZ
                 jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
-
-                response.m_createJobOutputs.push_back(jobDescriptor);
-            }  // for all request.m_enabledPlatforms
+                response.m_createJobOutputs.emplace_back(AZStd::move(jobDescriptor));
+            } // for all request.m_enabledPlatforms
 
             AZ_Printf(
                 ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),

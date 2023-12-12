@@ -25,7 +25,7 @@ namespace AzToolsFramework
         void ThumbnailKey::SetReady(bool ready)
         {
             m_ready = ready;
-            emit ThumbnailUpdated();
+            QTimer::singleShot(0, this, &ThumbnailKey::ThumbnailUpdated);
         }
 
         bool ThumbnailKey::IsReady() const
@@ -76,9 +76,10 @@ namespace AzToolsFramework
         {
         }
 
-        void Thumbnail::LoadComplete()
+        void Thumbnail::QueueThumbnailUpdated()
         {
             QTimer::singleShot(0, this, &Thumbnail::ThumbnailUpdated);
+            m_lastTimeUpdated = AZStd::chrono::steady_clock::now();
         }
 
         const QPixmap& Thumbnail::GetPixmap() const
@@ -96,6 +97,15 @@ namespace AzToolsFramework
             return m_state;
         }
 
+        AZStd::chrono::steady_clock::time_point Thumbnail::GetLastTimeUpdated() const
+        {
+            return m_lastTimeUpdated;
+        }
+
+        bool Thumbnail::CanAttemptReload() const
+        {
+            return AZStd::chrono::steady_clock::now() > m_lastTimeUpdated + AZStd::chrono::milliseconds(5000);
+        }
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
 

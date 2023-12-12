@@ -130,7 +130,7 @@ namespace AzToolsFramework
                 m_pixmap = QPixmap();
             }
             m_readyForUpdate = true;
-            emit ThumbnailUpdated();
+            QueueThumbnailUpdated();
         }
 
         void SourceControlThumbnail::Update()
