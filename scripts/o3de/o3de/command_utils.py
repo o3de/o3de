@@ -84,7 +84,7 @@ class SettingsDescription(object):
 
     def validate_value(self, input):
         if self._is_password:
-            raise O3DEConfigError(f"Input value for '{self._key}' must be set through the password setting argument.")
+            logger.debug(f"Input value for '{self._key}' is a password. If extra security is required, use the --set-password setting argument.")
         if self._is_boolean:
             evaluate_boolean_from_setting(input)
         if self._restricted_regex and not self._restricted_regex.match(input):
