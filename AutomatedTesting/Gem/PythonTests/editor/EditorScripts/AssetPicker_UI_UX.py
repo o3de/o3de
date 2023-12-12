@@ -66,8 +66,8 @@ def AssetPicker_UI_UX():
         file_path = ["AutomatedTesting", "Assets", "Objects", "Foliage"]
 
         def select_entity_by_name(entity_name):
-            searchFilter2 = entity.SearchFilter()
-            searchFilter2.names = [entity_name]
+            searchFilter = entity.SearchFilter()
+            searchFilter.names = [entity_name]
             entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
             editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitySelected', entities[0])
             

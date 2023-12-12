@@ -97,8 +97,8 @@ def ComponentCRUD_Add_Delete_Components():
             QtTest.QTest.keyClick(tree, Qt.Key_Enter, Qt.NoModifier)
         
         def select_entity_by_name(entity_name):
-            searchFilter2 = entity.SearchFilter()
-            searchFilter2.names = [entity_name]
+            searchFilter = entity.SearchFilter()
+            searchFilter.names = [entity_name]
             entities = entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
             editor.ToolsApplicationRequestBus(bus.Broadcast, 'MarkEntitySelected', entities[0])
 
