@@ -390,6 +390,42 @@ namespace ImageProcessingAtom
                         || alphaContent == EAlphaContent::eAlphaContent_OnlyBlackAndWhite
                         || alphaContent == EAlphaContent::eAlphaContent_Greyscale);
         }
-    }
 
+        AsyncImageAssetLoader::~AsyncImageAssetLoader()
+        {
+             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
+        }
+
+        void AsyncImageAssetLoader::QueueAsset(const AZ::Data::AssetId& assetId, const Callback& callback)
+        {
+             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> asset;
+             asset.Create(assetId, AZ::Data::AssetLoadBehavior::PreLoad, true);
+             m_assetCallbackMap.emplace(assetId, AssetCallbackPair{ asset, callback });
+             AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
+        }
+
+        void AsyncImageAssetLoader::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+             HandleAssetNotification(asset);
+        }
+
+        void AsyncImageAssetLoader::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+             HandleAssetNotification(asset);
+        }
+
+        void AsyncImageAssetLoader::HandleAssetNotification(AZ::Data::Asset<AZ::Data::AssetData> asset)
+        {
+             if (auto itr = m_assetCallbackMap.find(asset.GetId()); itr != m_assetCallbackMap.end())
+             {
+                if (auto& callback = itr->second.second; callback)
+                {
+                    callback(asset);
+                }
+
+                m_assetCallbackMap.erase(itr);
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect(itr->first);
+             }
+        }
+    } // namespace Utils
 } // namespace ImageProcessingAtom

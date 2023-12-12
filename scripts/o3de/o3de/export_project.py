@@ -201,11 +201,16 @@ def get_default_asset_platform():
 
 def get_platform_installer_folder_name(selected_platform=None):
     if not selected_platform:
-        selected_platform = CURRENT_PLATFORM
+        selected_platform = get_default_asset_platform()
     host_platform_to_installer_name_map = {'pc': 'Windows',
                                            'linux': 'Linux',
                                            'mac': 'Mac'}
     return host_platform_to_installer_name_map.get(selected_platform, "")
+
+def has_monolithic_artifacts(context: O3DEScriptExportContext):
+    monolithic_artifacts = glob.glob(f'cmake/Platform/{get_platform_installer_folder_name()}/Monolithic/ConfigurationTypes_*.cmake',
+                                    root_dir=context.engine_path)
+    return len(monolithic_artifacts) > 0
 
 def process_command(args: list,
                     cwd: pathlib.Path = None,
@@ -1071,14 +1076,6 @@ SETTINGS_OPTION_BUILD_TOOLS       = register_setting(key='option.build.tools',
                                                      is_boolean=True,
                                                      default='False')
 
-SETTINGS_DEFAULT_BUILD_TOOLS_PATH = register_setting(key='default.build.tools.path',
-                                                     description='Designates where the build files for the O3DE toolchain are generated.',
-                                                     default='build/tools')
-
-SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH = register_setting(key='default.launcher.build.path',
-                                                        description='Designates where the launcher build files (Game/Server/Unified) are generated.',
-                                                        default='build/launcher')
-
 SETTINGS_DEFAULT_ANDROID_BUILD_PATH = register_setting(key='default.android.build.path',
                                                        description='Designates where the android build files are generated.',
                                                        default='build/game_android')
@@ -1091,6 +1088,14 @@ SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES = register_setting(key='option.allow.re
                                                             description='When configuring cmake builds, this determines if the script allows for overriding registry settings from external sources.',
                                                             is_boolean=True,
                                                             default='False')
+
+SETTINGS_DEFAULT_BUILD_TOOLS_PATH = register_setting(key='default.build.tools.path',
+                                                     description='Designates where the build files for the O3DE toolchain are generated.',
+                                                     default='build/tools')
+
+SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH = register_setting(key='default.launcher.build.path',
+                                                        description='Designates where the launcher build files (Game/Server/Unified) are generated.',
+                                                        default='build/launcher')
 
 SETTINGS_DEFAULT_ASSET_BUNDLING_PATH = register_setting(key='asset.bundling.path',
                                                         description='Designates where the artifacts from the asset bundling process will be written to before creation of the package.',
@@ -1123,6 +1128,10 @@ SETTINGS_OPTION_ENGINE_CENTRIC = register_setting(key='option.engine.centric',
                                                   is_boolean=True,
                                                   default='False')
 
+SETTINGS_OPTION_BUILD_MONOLITHICALLY = register_setting(key='option.build.monolithic',
+                                                        description='The option to build the launchers monolithically vs non-monolithically.',
+                                                        is_boolean=True,
+                                                        default='True')
 
 def get_export_project_config(project_path: pathlib.Path or None) -> command_utils.O3DEConfig:
     """
