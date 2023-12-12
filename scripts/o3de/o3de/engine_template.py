@@ -1726,6 +1726,12 @@ def create_project(project_path: pathlib.Path,
         logger.error(f'Project name cannot be a restricted name. {project_name}')
         return 1
 
+    # the generic launcher (and the engine, often) are referred to as o3de, so prevent the user from 
+    # accidentally creating a confusing error situation.
+    if project_name.lower() == 'o3de':
+        logger.error(f"Project name cannot be 'o3de' as this is reserved for the generic launcher.")
+        return 1
+
     # project restricted name
     if project_restricted_name and not project_restricted_path:
         gem_restricted_path = manifest.get_registered(restricted_name=project_restricted_name)

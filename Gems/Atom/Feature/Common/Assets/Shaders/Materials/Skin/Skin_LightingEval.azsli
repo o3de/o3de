@@ -17,10 +17,10 @@
 
 #include "../BasePBR/BasePBR_LightingEval.azsli"
 
-void InitializeLightingData_SkinPBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
+void InitializeLightingData_SkinPBR(inout Surface surface, float4 screenPosition, float3 viewPosition, inout LightingData lightingData)
 {
     // --- Base PBR ---
-    InitializeLightingData_BasePBR(surface, screenPosition, lightingData);
+    InitializeLightingData_BasePBR(surface, screenPosition, viewPosition, lightingData);
 
     // --- Skin PBR ---
 
@@ -28,10 +28,10 @@ void InitializeLightingData_SkinPBR(inout Surface surface, float4 screenPosition
     lightingData.specularOcclusion = surface.specularOcclusion;
 }
 
-LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPosition)
+LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPosition, float3 viewPosition)
 {
     LightingData lightingData;
-    InitializeLightingData_SkinPBR(surface, screenPosition, lightingData);
+    InitializeLightingData_SkinPBR(surface, screenPosition, viewPosition, lightingData);
     CalculateLighting_BasePBR(surface, screenPosition, lightingData);
     return lightingData;
 }

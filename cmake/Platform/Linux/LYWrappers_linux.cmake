@@ -9,19 +9,24 @@
 set(LY_STRIP_DEBUG_SYMBOLS FALSE CACHE BOOL "Flag to strip debug symbols from the (non-debug) output binaries")
 set(LY_DEBUG_SYMBOLS_FILE_EXTENSION "dbg" CACHE STRING "Extension for generated debug symbol files")
 
-# Check if 'strip' is available so that debug symbols can be stripped from output libraries and executables.
-find_program(GNU_STRIP_TOOL strip)
-if (NOT GNU_STRIP_TOOL)
-    message(WARNING "Unable to locate 'strip' tool needed to strip debug symbols from the output target(s). "
-                    "Debug symbols will not be removed from output libraries and executables.")
-endif()
+# in script only mode, we have no compiler or compiler tools and are always in a situation
+# where a project is being built versus a pre-built version of the engine.  This means that
+# stripping and copying should not be attempted.
+if (NOT O3DE_SCRIPT_ONLY)
+    # Check if 'strip' is available so that debug symbols can be stripped from output libraries and executables.
+    find_program(GNU_STRIP_TOOL strip)
+    if (NOT GNU_STRIP_TOOL)
+        message(WARNING "Unable to locate 'strip' tool needed to strip debug symbols from the output target(s). "
+                        "Debug symbols will not be removed from output libraries and executables.")
+    endif()
 
-# Check if 'objcopy' is available so that debug symbols can be extracted from output libraries and executables.
-find_program(GNU_OBJCOPY objcopy)
-if (NOT GNU_OBJCOPY)
-    message(WARNING "Unable to locate 'objcopy' tool needed to extract debug symbols from the output target(s). "
-                    "Debug symbols will not be removed from output libraries and executables. Make sure that "
-                    "'objcopy' is installed.")
+    # Check if 'objcopy' is available so that debug symbols can be extracted from output libraries and executables.
+    find_program(GNU_OBJCOPY objcopy)
+    if (NOT GNU_OBJCOPY)
+        message(WARNING "Unable to locate 'objcopy' tool needed to extract debug symbols from the output target(s). "
+                        "Debug symbols will not be removed from output libraries and executables. Make sure that "
+                        "'objcopy' is installed.")
+    endif()
 endif()
 
 

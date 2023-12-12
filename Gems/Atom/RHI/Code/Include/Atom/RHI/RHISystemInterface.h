@@ -46,6 +46,8 @@ namespace AZ::RHI
 
         virtual RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) = 0;
 
+        [[nodiscard]] virtual AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) = 0;
+
         virtual int GetDeviceCount() = 0;
 
         virtual RHI::DrawListTagRegistry* GetDrawListTagRegistry() = 0;

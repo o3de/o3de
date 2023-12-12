@@ -411,7 +411,26 @@ namespace O3DELauncher
             // Settings registry must be available at this point in order to continue
             return ReturnCode::ErrValidation;
         }
-        const AZStd::string_view buildTargetName = GetBuildTargetName();
+
+        // Save the build target name (usually myprojectname_gamelauncher, or myprojectname_serverlauncher, etc)
+        // into the specialization list, so that the regset files for xxxxx.myprojectname_gamelauncher are included in the loaded set.
+        // in generic mode, this needs to be updated to a name based on the project name, so it is not a string view, here.
+        AZ::SettingsRegistryInterface::FixedValueString buildTargetName(GetBuildTargetName());
+
+        // retrieve the project name as specified by the actual project.json (or updated from command line)
+        AZ::SettingsRegistryInterface::FixedValueString updatedProjectName = AZ::Utils::GetProjectName();
+        if (IsGenericLauncher())
+        {
+            constexpr AZStd::string_view O3DEPrefix = "O3DE_";
+            // this will always be the value O3DE_xxxxx where xxxxx is the type of target ("GameLauncher/ServerLauncher/UnifiedLauncher/etc")
+            // and O3DE is a placeholder for the project name.  Replace the "O3DE_" part with "{ProjectName}_" (keeping the underscore).
+            if (buildTargetName.starts_with(O3DEPrefix))
+            {
+                auto replacementName = AZ::SettingsRegistryInterface::FixedValueString::format(
+                    "%.*s_", aznumeric_cast<int>(updatedProjectName.size()), updatedProjectName.data());
+                buildTargetName.replace(0, O3DEPrefix.size(), replacementName);
+            }
+        }
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 
         //Store the launcher type to the Settings Registry
@@ -432,7 +451,7 @@ namespace O3DELauncher
         AZ_TracePrintf("Launcher", R"(Running project "%.*s")" "\n"
             R"(The project name has been successfully set in the Settings Registry at key "%s/project_name")"
             R"( for Launcher target "%.*s")" "\n",
-            aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data(),
+            aznumeric_cast<int>(updatedProjectName.size()), updatedProjectName.data(),
             AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
             aznumeric_cast<int>(buildTargetName.size()), buildTargetName.data());
 

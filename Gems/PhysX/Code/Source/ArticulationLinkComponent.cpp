@@ -49,6 +49,7 @@ namespace PhysX
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
         provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        provided.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
         provided.push_back(AZ_CRC_CE("ArticulationLinkService"));
     }
 
@@ -169,12 +170,19 @@ namespace PhysX
             }
         }
 
+        FillSimulatedBodyHandle();
+
         ArticulationJointRequestBus::Handler::BusConnect(GetEntityId());
         ArticulationSensorRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
+
+        Physics::RigidBodyNotificationBus::Event(
+            GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled, GetEntityId());
     }
 
     void ArticulationLinkComponent::Deactivate()
     {
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         ArticulationSensorRequestBus::Handler::BusDisconnect();
         ArticulationJointRequestBus::Handler::BusDisconnect();
 
@@ -199,6 +207,9 @@ namespace PhysX
 
         // set the behavior when the parent's transform changes back to default, since physics is no longer controlling the transform
         GetEntity()->GetTransform()->SetOnParentChangedBehavior(AZ::OnParentChangedBehavior::Update);
+
+        Physics::RigidBodyNotificationBus::Event(
+            GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled, GetEntityId());
     }
 #endif
 
@@ -496,7 +507,7 @@ namespace PhysX
         physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
         PHYSX_SCENE_WRITE_LOCK(pxScene);
         m_articulation->release();
-        
+
         m_sensorIndicesByEntityId.clear();
     }
 
@@ -509,7 +520,7 @@ namespace PhysX
             },
             aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Physics));
     }
-    
+
     void ArticulationLinkComponent::PostPhysicsTick([[maybe_unused]] float fixedDeltaTime)
     {
         AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
@@ -866,6 +877,80 @@ namespace PhysX
         }
         return AZ::Vector3::CreateZero();
     }
+
+
+    const AzPhysics::SimulatedBody* ArticulationLinkComponent::GetSimulatedBodyConst() const
+    {
+        const AZ::Entity* rootEntity = GetArticulationRootEntity();
+        const auto rootComponent = rootEntity->FindComponent<ArticulationLinkComponent>();
+
+        return AZ::Interface<AzPhysics::SceneInterface>::Get()->GetSimulatedBodyFromHandle(
+            rootComponent->m_attachedSceneHandle, GetSimulatedBodyHandle());
+    }
+
+    AzPhysics::SimulatedBody* ArticulationLinkComponent::GetSimulatedBody()
+    {
+        return const_cast<AzPhysics::SimulatedBody*>(GetSimulatedBodyConst());
+    }
+
+    AzPhysics::SimulatedBodyHandle ArticulationLinkComponent::GetSimulatedBodyHandle() const
+    {
+        return m_bodyHandle;
+    }
+
+    void ArticulationLinkComponent::FillSimulatedBodyHandle()
+    {
+        const AZ::Entity* rootEntity = GetArticulationRootEntity();
+        AZ_Assert(rootEntity, "Articulation root entity is null");
+        const auto rootComponent = rootEntity->FindComponent<ArticulationLinkComponent>();
+        AZ_Assert(rootComponent, "Articulation root entity has not ArticulationLinkComponent");
+
+        for (auto articulationHandle : rootComponent->GetSimulatedBodyHandles())
+        {
+            auto simulatedBody = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetSimulatedBodyFromHandle(
+                rootComponent->m_attachedSceneHandle, articulationHandle);
+            if (simulatedBody)
+            {
+                if (simulatedBody->GetEntityId() == GetEntityId())
+                {
+                    m_bodyHandle = articulationHandle;
+                    return;
+                }
+            }
+            else
+            {
+                AZ_Error("ArticulationLinkComponent", false, "Failed to get simulated body from simulated body handle");
+            }
+        }
+
+        AZ_Error("ArticulationLinkComponent", false, "No simulated body handle found");
+    }
+
+    void ArticulationLinkComponent::EnablePhysics()
+    {
+        AZ_Error("ArticulationLinkComponent", false, "Articulation links don't support enabling and disabling physics yet. Physics is always enabled.");
+    }
+
+    void ArticulationLinkComponent::DisablePhysics()
+    {
+        AZ_Error("ArticulationLinkComponent", false, "Articulation links don't support enabling and disabling physics yet. Physics is always enabled.");
+    }
+
+    bool ArticulationLinkComponent::IsPhysicsEnabled() const
+    {
+        return true;
+    }
+
+    AZ::Aabb ArticulationLinkComponent::GetAabb() const
+    {
+        return GetSimulatedBodyConst()->GetAabb();
+    }
+
+    AzPhysics::SceneQueryHit ArticulationLinkComponent::RayCast(const AzPhysics::RayCastRequest& request)
+    {
+        return GetSimulatedBody()->RayCast(request);
+    }
+
 #else
     void ArticulationLinkComponent::Activate() {}
     void ArticulationLinkComponent::Deactivate() {}
