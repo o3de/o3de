@@ -449,7 +449,7 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
-  "install_release": {
+  "install_mono_release": {
     "TAGS": [],
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {
@@ -466,7 +466,7 @@
       "nightly-installer"
     ],
     "steps": [
-      "install_release",
+      "install_mono_release",
       "installer",
       "installer_test"
     ]
