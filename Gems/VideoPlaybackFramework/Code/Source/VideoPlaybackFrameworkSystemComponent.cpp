@@ -91,6 +91,7 @@ namespace VideoPlaybackFramework
                 ->Event("Stop", &VideoPlaybackRequestBus::Events::Stop)
 #if defined(CARBONATED)
                 ->Event("ResetPlayback", &VideoPlaybackRequestBus::Events::ResetPlayback)
+                ->Event("ClearResourcesAndHide", &VideoPlaybackRequestBus::Events::ClearResourcesAndHide)
                 ->Event("LoadVideo", &VideoPlaybackRequestBus::Events::LoadVideo)
 #endif
                 ->Event("IsPlaying", &VideoPlaybackRequestBus::Events::IsPlaying)

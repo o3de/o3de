@@ -50,6 +50,11 @@ namespace VideoPlaybackFramework
         virtual void ResetPlayback() = 0;
 
         /*
+        * Clear resources and hide the video, this works for mobile native player only
+        */
+        virtual void ClearResourcesAndHide() {}
+
+        /*
         * Load the video with given path name, and play video if auto play is active
         */
         virtual void LoadVideo() = 0;
