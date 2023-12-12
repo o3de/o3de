@@ -67,22 +67,12 @@ namespace ShaderManagementConsole
 
     AZ::u32 ShaderManagementConsoleDocument::AddOneVariantRow()
     {
-        auto shaderAssetResult =
-            AZ::RPI::AssetUtils::LoadAsset<AZ::RPI::ShaderAsset>(m_absolutePath,
-                                                                 m_shaderVariantListSourceData.m_shaderFilePath);
-        if (shaderAssetResult)
-
-        {
-            AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderAssetResult.GetValue();
-            AZStd::vector<AZ::RPI::ShaderOptionDescriptor> options = shaderAsset->GetShaderOptionGroupLayout()->GetShaderOptions();
-            AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-            variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
-                ? 1  // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
-                : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
-            m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
-            return variantInfo.m_stableId;
-        }
-        return {};
+        AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
+        variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
+            ? 1  // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
+            : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
+        m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
+        return variantInfo.m_stableId;
     }
 
     // Utility used in sparse-variant-set functions
