@@ -218,8 +218,11 @@ namespace Audio
     {
         switch (codecType)
         {
+// Wwise version 2022.x does not include AKCODECID_AAC
+#if defined(AKCODECID_AAC)
         case eACT_AAC:
             return AKCODECID_AAC;
+#endif // defined(AKCODECID_AAC)
         case eACT_ADPCM:
             return AKCODECID_ADPCM;
         case eACT_PCM:

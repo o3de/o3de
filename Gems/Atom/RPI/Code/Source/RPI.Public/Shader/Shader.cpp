@@ -37,17 +37,9 @@ namespace AZ
                 return nullptr;
             }
 
-            // Create the InstanceId by combining data from the asset ID, asset pointer, and super variant index. Using the asset pointer
-            // will help make the instance ID more unique for different versions of the same asset. It is possible to use a more robust
-            // value, like a hash of the data from the asset.
-            struct InstanceIdData
-            {
-                const Data::AssetId m_assetId{};
-                const Data::AssetData* m_assetPtr{};
-                const uint32_t m_shaderSupervariantIndex{};
-            };
-            const InstanceIdData instanceIdData{ shaderAsset.GetId(), shaderAsset.GetData(), supervariantIndex.GetIndex() };
-            const Data::InstanceId instanceId = Data::InstanceId::CreateData(&instanceIdData, sizeof(instanceIdData));
+            // Create the instance ID using the shader asset with an additional unique identifier from the Super variant index.
+            const Data::InstanceId instanceId =
+                Data::InstanceId::CreateFromAsset(shaderAsset, { supervariantIndex.GetIndex() });
 
             // retrieve the shader instance from the Instance database
             return Data::InstanceDatabase<Shader>::Instance().FindOrCreate(instanceId, shaderAsset, &anySupervariantName);
@@ -55,7 +47,7 @@ namespace AZ
 
         Data::Instance<Shader> Shader::FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset)
         {
-            return FindOrCreate(shaderAsset, AZ::Name { "" });
+            return FindOrCreate(shaderAsset, AZ::Name{ "" });
         }
 
         Data::Instance<Shader> Shader::CreateInternal([[maybe_unused]] ShaderAsset& shaderAsset, const AZStd::any* anySupervariantName)
@@ -215,7 +207,7 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Shader::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
-            m_asset = Data::static_pointer_cast<ShaderAsset>(asset);
+            m_asset = asset;
 
             if (ShaderReloadDebugTracker::IsEnabled())
             {
@@ -227,7 +219,6 @@ namespace AZ
             }
             Init(*m_asset.Get());
             ShaderReloadNotificationBus::Event(asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
-
         }
         ///////////////////////////////////////////////////////////////////////
 

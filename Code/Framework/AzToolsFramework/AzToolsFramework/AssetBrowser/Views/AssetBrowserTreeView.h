@@ -150,6 +150,7 @@ namespace AzToolsFramework
             bool m_expandToEntriesByDefault = false;
 
             bool m_applySnapshot = true;
+            bool m_updateRequested = false;
 
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;

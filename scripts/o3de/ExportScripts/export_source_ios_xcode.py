@@ -8,9 +8,11 @@
 
 import argparse
 import logging
+import os
 import sys
 
 import o3de.export_project as exp
+import o3de.command_utils as command_utils
 import pathlib
 
 def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
@@ -54,7 +56,7 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
         
     # Optionally process the assets
     if not skip_asset_processing:
-        asset_processor_batch_path = exp.get_asset_processor_batch_path(tools_build_folder, True)
+        asset_processor_batch_path = exp.get_asset_processor_batch_path(tools_build_folder, required=True)
         exp.process_command([ str(asset_processor_batch_path), '--platforms=ios',
                         '--project-path', ctx.project_path ], cwd=ctx.project_path)
 
@@ -74,6 +76,18 @@ if "o3de_context" in globals():
     global o3de_context
     global o3de_logger
 
+    # Resolve the export config
+    try:
+        if o3de_context is None:
+            project_name, project_path = command_utils.resolve_project_name_and_path()
+            export_config = exp.get_export_project_config(project_path=project_name)
+        else:
+            export_config = exp.get_export_project_config(project_path=o3de_context.project_path)
+    except command_utils.O3DEConfigError:
+        o3de_logger.debug(f"No project detected at {os.getcwd()}, default settings from global config.")
+        project_name = None
+        export_config = exp.get_export_project_config(project_path=None)
+
     def parse_args(o3de_context: exp.O3DEScriptExportContext):
         parser = argparse.ArgumentParser(
                     prog=f'o3de.py export-project -es {__file__}',
@@ -84,17 +98,32 @@ if "o3de_context" in globals():
                     add_help=False
         )
 
-        default_tools_path = o3de_context.project_path / 'build/tools'
-        default_ios_path = o3de_context.project_path / 'build/game_ios'
         parser.add_argument(exp.CUSTOM_SCRIPT_HELP_ARGUMENT, default=False, action='store_true', help='Show this help message and exit.')
-        parser.add_argument('-bt', '--build-tools', default=True, action='store_true',
-                            help="Specifies whether to build O3DE toolchain executables. This will build AssetBundlerBatch, AssetProcessorBatch.")
-        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=default_tools_path,
-                                help=f'Designates where the build files for the O3DE toolchain are generated. If not specified, default is {default_tools_path}.')
-        parser.add_argument('-ibp', '--ios-build-path', type=pathlib.Path, default=default_ios_path,
-                                help=f'Designates where the build files for the O3DE toolchain are generated. If not specified, default is {default_ios_path}.')
-        parser.add_argument('-assets', '--skip-asset-processing', default=False, action='store_true',
-                                help='Toggles processing all assets for the iOS build.')
+
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_TOOLS.key,
+                                           enable_override_arg=['-bt', '--build-tools'],
+                                           enable_override_desc="Enable the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
+                                                                "The tools will be built into the location specified by the '--tools-build-path' argument",
+                                           disable_override_arg=['-sbt', '--skip-build-tools'],
+                                           disable_override_desc="Skip the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
+                                                                 "The tools must be already available at the location specified by the '--tools-build-path' argument.")
+
+        default_build_tools_path = export_config.get_value(exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.default)
+        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=pathlib.Path(default_build_tools_path),
+                            help=f'Designates where the build files for the O3DE toolchain are generated. If not specified, default is {default_build_tools_path}')
+
+        default_ios_path = export_config.get_value(exp.SETTINGS_DEFAULT_IOS_BUILD_PATH.key, exp.SETTINGS_DEFAULT_IOS_BUILD_PATH.default)
+        parser.add_argument('-ibp', '--ios-build-path', type=pathlib.Path, default=pathlib.Path(default_ios_path),
+                            help=f'Designates where the build files for the O3DE toolchain are generated. If not specified, default is {default_ios_path}')
+
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_ASSETS.key,
+                                           enable_override_arg=['-assets', '--should-build-assets'],
+                                           enable_override_desc='Build and update all iOS assets before bundling.',
+                                           disable_override_arg=['-noassets', '--skip-build-assets'],
+                                           disable_override_desc='Skip building of iOS assets and use assets that were already built.')
+
         parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
         if o3de_context is None:
             parser.print_help()
@@ -106,16 +135,27 @@ if "o3de_context" in globals():
             exit(0)
 
         return parsed_args
-    
+
     args = parse_args(o3de_context)
+
+    option_build_tools = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                 key=exp.SETTINGS_OPTION_BUILD_TOOLS.key,
+                                                                 enable_attribute='build_tools',
+                                                                 disable_attribute='skip_build_tools')
+
+    option_build_assets = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                  key=exp.SETTINGS_OPTION_BUILD_ASSETS.key,
+                                                                  enable_attribute='build_assets',
+                                                                  disable_attribute='skip_build_assets')
+
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
     try:
         export_ios_xcode_project(ctx=o3de_context,
                                  tools_build_folder=args.tools_build_path,
                                  ios_build_folder=args.ios_build_path,
-                                 should_build_tools=args.build_tools,
-                                 skip_asset_processing=args.skip_asset_processing,
+                                 should_build_tools=option_build_tools,
+                                 skip_asset_processing=not option_build_assets,
                                  logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)

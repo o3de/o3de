@@ -604,7 +604,7 @@ namespace AZ
             Data::AssetId shaderAssetId, const AZStd::string& shaderFilePath, const AZStd::string& supervariantName)
         {
             auto shaderAsset = FindShaderAsset(shaderAssetId, shaderFilePath);
-            if (!shaderAsset)
+            if (!shaderAsset.IsReady())
             {
                 return nullptr;
             }

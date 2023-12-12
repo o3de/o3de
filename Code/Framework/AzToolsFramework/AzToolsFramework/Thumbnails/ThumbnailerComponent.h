@@ -50,7 +50,7 @@ namespace AzToolsFramework
             SharedThumbnail GetThumbnail(SharedThumbnailKey thumbnailKey) override;
             bool IsLoading(SharedThumbnailKey thumbnailKey) override;
 
-            void RedrawThumbnail();
+            void RepaintThumbnail();
 
         private:
             struct ProviderCompare
@@ -69,9 +69,9 @@ namespace AzToolsFramework
             //! Default loading thumbnail used when thumbnail is found by is not yet generated
             SharedThumbnail m_loadingThumbnail;
             //! Maximum number of concurrent jobs allowed.
-            int m_maxThumbnailJobs;
+            int m_maxThumbnailJobs{};
             //! Current number of jobs running.
-            int m_currentJobsCount;
+            AZStd::set<SharedThumbnail> m_thumbnailsBeingLoaded;
         };
     } // Thumbnailer
 } // namespace AssetBrowser

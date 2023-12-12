@@ -895,6 +895,21 @@ namespace AZ
             }
         }
 
+        AZStd::vector<MaterialTypeSourceData::ShaderVariantReferenceData> MaterialTypeSourceData::GetShaderReferences() const
+        {
+            AZStd::vector<ShaderVariantReferenceData> shaderReferences;
+
+            shaderReferences.insert(shaderReferences.end(), m_shaderCollection.begin(), m_shaderCollection.end());
+
+            for (const auto& pipelinePair : m_pipelineData)
+            {
+                shaderReferences.insert(
+                    shaderReferences.end(), pipelinePair.second.m_shaderCollection.begin(), pipelinePair.second.m_shaderCollection.end());
+            }
+
+            return shaderReferences;
+        }
+
         bool MaterialTypeSourceData::AddShaders(
             MaterialTypeAssetCreator& materialTypeAssetCreator,
             const Name& materialPipelineName,

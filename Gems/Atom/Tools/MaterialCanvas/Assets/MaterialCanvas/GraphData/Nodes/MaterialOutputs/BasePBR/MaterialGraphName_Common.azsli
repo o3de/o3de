@@ -8,34 +8,6 @@
  
 #pragma once
 
-#ifndef ENABLE_CLEAR_COAT
-#define ENABLE_CLEAR_COAT 0
-#endif
-
-#ifndef ENABLE_TRANSMISSION
-#define ENABLE_TRANSMISSION 0
-#endif
-
-#ifndef ENABLE_AREA_LIGHT_VALIDATION
-#define ENABLE_AREA_LIGHT_VALIDATION 0
-#endif
-
-#ifndef ENABLE_SHADER_DEBUGGING
-#define ENABLE_SHADER_DEBUGGING 1
-#endif
-
-#ifndef OUTPUT_SUBSURFACE
-#define OUTPUT_SUBSURFACE 0
-#endif
-
-#ifndef OUTPUT_DEPTH
-#define OUTPUT_DEPTH 0
-#endif
-
-#ifndef FORCE_OPAQUE
-#define FORCE_OPAQUE 1
-#endif
-
 #ifndef ENABLE_PARALLAX
 // Disabled until parallax depth functions can be rewritten to not pass in the heightmap or sampler from the material SRG
 #define ENABLE_PARALLAX 0
@@ -56,7 +28,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
-#include <../Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli>
 
 option bool o_normal_override_enabled = false;
 
@@ -83,12 +55,20 @@ bool NeedsTangentFrame()
     return true;
 }
 
-#include <../Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexData.azsli>
 #include "MaterialGraphName_VertexEval.azsli"
 
-#include <../Shaders/Materials/BasePBR/BasePBR_PixelGeometryData.azsli>
-#include <../Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryData.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
 
-#include <../Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
 #include "MaterialGraphName_SurfaceEval.azsli"
 
+#else
+
+#include "MaterialGraphName_DepthVertexData.azsli"
+#include "MaterialGraphName_DepthVertexEval.azsli"
+
+#endif

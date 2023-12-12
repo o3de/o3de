@@ -30,6 +30,7 @@ namespace AtomToolsFramework
         AssetStatusReporterState Update();
         AssetStatusReporterState GetCurrentState() const;
         AZStd::string GetCurrentStateName() const;
+        AZStd::string GetCurrentStatusMessage() const;
         AZStd::string GetCurrentPath() const;
 
     private:

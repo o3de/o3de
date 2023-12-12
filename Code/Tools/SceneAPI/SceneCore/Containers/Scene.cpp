@@ -148,6 +148,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Constructor<const AZStd::string&>()
+                            ->Attribute(AZ::Script::Attributes::DefaultConstructorOverrideIndex, 0)
                         ->Property("name", BehaviorValueGetter(&Scene::m_name), nullptr)
                         ->Property("manifestFilename", BehaviorValueGetter(&Scene::m_manifestFilename), nullptr)
                         ->Property("sourceFilename", BehaviorValueGetter(&Scene::m_sourceFilename), nullptr)

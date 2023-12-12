@@ -13,7 +13,7 @@
 AZ_CVAR(
     bool,
     ed_enableInspectorOverrideManagement,
-    false,
+    true,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental prefab override support in the Entity Inspector");
@@ -21,7 +21,7 @@ AZ_CVAR(
 AZ_CVAR(
     bool,
     ed_enableOutlinerOverrideManagement,
-    false,
+    true,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental prefab override support in the Outliner");
@@ -44,7 +44,7 @@ namespace AzToolsFramework::Prefab
 
     bool IsOutlinerOverrideManagementEnabled()
     {
-        bool isOutlinerOverrideManagementEnabled = false;
+        bool isOutlinerOverrideManagementEnabled = true;
         if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
             console->GetCvarValue("ed_enableOutlinerOverrideManagement", isOutlinerOverrideManagementEnabled);
@@ -54,7 +54,7 @@ namespace AzToolsFramework::Prefab
 
     bool IsInspectorOverrideManagementEnabled()
     {
-        bool isInspectorOverrideManagementEnabled = false;
+        bool isInspectorOverrideManagementEnabled = true;
         if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
             console->GetCvarValue("ed_enableInspectorOverrideManagement", isInspectorOverrideManagementEnabled);

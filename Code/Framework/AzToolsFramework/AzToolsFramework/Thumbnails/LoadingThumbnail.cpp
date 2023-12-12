@@ -40,15 +40,10 @@ namespace AzToolsFramework
             BusDisconnect();
         }
 
-        void LoadingThumbnail::UpdateTime(float)
+        void LoadingThumbnail::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         {
             m_pixmap = m_loadingMovie.currentPixmap();
-            Q_EMIT Updated();
-        }
-
-        void LoadingThumbnail::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
-        {
-            UpdateTime(deltaTime);
+            emit ThumbnailUpdated();
         }
 
     } // namespace Thumbnailer

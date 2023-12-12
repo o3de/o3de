@@ -138,57 +138,6 @@ namespace AzToolsFramework::Prefab
             {
                 instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(true);
             }
-
-
-            AZ::Dom::Path serializedPath = propertyChangeInfo.path / AZ::Reflection::DescriptorAttributes::SerializedPath;
-
-            AZ::Dom::Path relativePathFromOwningPrefab(PrefabDomUtils::EntitiesName);
-            relativePathFromOwningPrefab /= m_entityAlias;
-            relativePathFromOwningPrefab /= PrefabDomUtils::ComponentsName;
-            relativePathFromOwningPrefab /= m_componentAlias;
-
-            AZ::Dom::Value serializedPathValue = GetContents()[serializedPath];
-            AZ_Assert(serializedPathValue.IsString(), "PrefabComponentAdapter::UpdateDomContents - SerialziedPath attribute value is not a string.");
-
-            relativePathFromOwningPrefab /= AZ::Dom::Path(serializedPathValue.GetString());
-
-            auto prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
-            if (prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityId))
-            {
-                // Normal component edit, so invoke the base behavior that updates the source template.
-                ComponentAdapter::UpdateDomContents(propertyChangeInfo);
-            }
-            else if (prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(m_entityId))
-            {
-                // This is for an override, so in addition to the default replace operation,
-                // we need to also patch in the PrefabOverrideLabel in case the change doesn't
-                // trigger a refresh in the adapter.
-                AZ::Dom::Patch patches(
-                    { AZ::Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
-
-                AZ::Dom::Path pathToProperty = propertyChangeInfo.path;
-
-                // Get the path to parent row and its value.
-                pathToProperty.Pop();
-                AZ::Dom::Value propertyRowValue = GetContents()[pathToProperty];
-
-                AZ_Assert(
-                    propertyRowValue.IsNode() &&
-                    propertyRowValue.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::Row::Name,
-                    "PrefabComponentAdapter::UpdateDomContents - Parent path to property doesn't map to a 'Row' node. ");
-
-                AZ::Dom::Value firstRowElement = propertyRowValue[0];
-                AZ_Assert(
-                    firstRowElement.IsNode() &&
-                    firstRowElement.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name &&
-                    firstRowElement["Type"].GetString() == PrefabPropertyEditorNodes::PrefabOverrideLabel::Name,
-                    "PrefabComponentAdapter::UpdateDomContents - First element in the property row is not a 'PrefabOverrideLabel'.");
-
-                // Patch the first child in the row, which is going to the PrefabOverrideLabel.
-                patches.PushBack(AZ::Dom::PatchOperation::ReplaceOperation(
-                    pathToProperty / 0 / PrefabPropertyEditorNodes::PrefabOverrideLabel::IsOverridden.GetName(), AZ::Dom::Value(true)));
-                NotifyContentsChanged(patches);
-            }
         }
         else if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
         {
@@ -200,6 +149,57 @@ namespace AzToolsFramework::Prefab
             // The EndUndoBatch will get called from PropertyManagerComponent::OnEditingFinished, so we can just clear
             // out our reference to the undo batch here.
             m_currentUndoBatch = nullptr;
+        }
+        AZ::Dom::Path serializedPath = propertyChangeInfo.path / AZ::Reflection::DescriptorAttributes::SerializedPath;
+
+        AZ::Dom::Path relativePathFromOwningPrefab(PrefabDomUtils::EntitiesName);
+        relativePathFromOwningPrefab /= m_entityAlias;
+        relativePathFromOwningPrefab /= PrefabDomUtils::ComponentsName;
+        relativePathFromOwningPrefab /= m_componentAlias;
+
+        AZ::Dom::Value serializedPathValue = GetContents()[serializedPath];
+        AZ_Assert(
+            serializedPathValue.IsString(), "PrefabComponentAdapter::UpdateDomContents - SerialziedPath attribute value is not a string.");
+
+        relativePathFromOwningPrefab /= AZ::Dom::Path(serializedPathValue.GetString());
+
+        auto prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+        if (prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityId))
+        {
+            // Normal component edit, so invoke the base behavior that updates the source template.
+            ComponentAdapter::UpdateDomContents(propertyChangeInfo);
+        }
+        else if (prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(m_entityId))
+        {
+            // This is for an override, so in addition to the default replace operation,
+            // we need to also patch in the PrefabOverrideLabel in case the change doesn't
+            // trigger a refresh in the adapter.
+            AZ::Dom::Patch patches(
+                { AZ::Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
+
+            AZ::Dom::Path pathToProperty = propertyChangeInfo.path;
+
+            // Get the path to parent row and its value.
+            pathToProperty.Pop();
+            AZ::Dom::Value propertyRowValue = GetContents()[pathToProperty];
+
+            AZ_Assert(
+                propertyRowValue.IsNode() && propertyRowValue.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::Row::Name,
+                "PrefabComponentAdapter::UpdateDomContents - Parent path to property doesn't map to a 'Row' node. ");
+
+            AZ::Dom::Value firstRowElement = propertyRowValue[0];
+            AZ_Assert(
+                firstRowElement.IsNode() &&
+                    firstRowElement.GetNodeName().GetStringView() == AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Name,
+                "PrefabComponentAdapter::UpdateDomContents - First element in the property row is not a PropertyEditor node.");
+
+            if (firstRowElement["Type"].GetString() == PrefabPropertyEditorNodes::PrefabOverrideLabel::Name)
+            {
+                // Patch the first child in the row, which is going to the PrefabOverrideLabel.
+                patches.PushBack(AZ::Dom::PatchOperation::ReplaceOperation(
+                    pathToProperty / 0 / PrefabPropertyEditorNodes::PrefabOverrideLabel::IsOverridden.GetName(), AZ::Dom::Value(true)));
+                NotifyContentsChanged(patches);
+            }
         }
     }
 

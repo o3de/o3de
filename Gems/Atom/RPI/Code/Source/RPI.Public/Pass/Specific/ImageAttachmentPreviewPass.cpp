@@ -256,12 +256,18 @@ namespace AZ
             m_needsShaderLoad = false;
 
             // Load Shader
-            const char* ShaderPath = "shaders/imagepreview.azshader";
+            constexpr const char* ShaderPath = "shaders/imagepreview.azshader";
             Data::Asset<ShaderAsset> shaderAsset = RPI::FindShaderAsset(ShaderPath);
+            if (!shaderAsset.IsReady())
+            {
+                AZ_Error("PassSystem", false, "[ImageAttachmentsPreviewPass]: Failed to load shader '%s'!", GetPathName().GetCStr(), ShaderPath);
+                return;
+            }
+
             m_shader = Shader::FindOrCreate(shaderAsset);
             if (m_shader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[ImageAttachmentsPreviewPass]: Failed to load shader '%s'!", ShaderPath);
+                AZ_Error("PassSystem", false, "[ImageAttachmentsPreviewPass]: Failed to create shader instance from asset '%s'!", ShaderPath);
                 return;
             }
 

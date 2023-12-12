@@ -729,7 +729,22 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::Update()
         {
-            update();
+            if (!m_updateRequested)
+            {
+                m_updateRequested = true;
+                QTimer::singleShot(
+                    0,
+                    this,
+                    [this]()
+                    {
+                        m_updateRequested = false;
+                        if (model())
+                        {
+                            model()->layoutChanged();
+                        }
+                        update();
+                    });
+            }
         }
 
         void AssetBrowserTreeView::DeleteEntries()

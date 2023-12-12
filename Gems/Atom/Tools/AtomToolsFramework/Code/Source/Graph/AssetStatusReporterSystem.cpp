@@ -28,7 +28,9 @@ namespace AtomToolsFramework
                 while (m_threadRunning)
                 {
                     Update();
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
+
+                    // Sleep briefly to give AP time to update and other possible threads time to make AssetSystemJobRequestBus requests
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
                 }
             });
 
@@ -107,8 +109,7 @@ namespace AtomToolsFramework
             reporterIt->second->Update();
 
             // Create a string message from the current status.
-            const AZStd::string statusMessage = AZStd::string::format(
-                "%s (%s)", reporterIt->second->GetCurrentPath().c_str(), reporterIt->second->GetCurrentStateName().c_str());
+            const AZStd::string statusMessage = reporterIt->second->GetCurrentStatusMessage();
 
             // If the message has not changed since the last update then send it to the main windows status bar.
             if (m_lastStatusMessage != statusMessage)
@@ -127,7 +128,7 @@ namespace AtomToolsFramework
             // Any complete or canceled requests will get moved to the inactive list.
             if (reporterIt->second->GetCurrentState() != AssetStatusReporterState::Processing)
             {
-                m_inactiveReporterTable.push_back(*reporterIt);
+                m_inactiveReporterTable.emplace_back(AZStd::move(*reporterIt));
                 m_activeReporterTable.erase(reporterIt);
                 m_lastStatusMessage.clear();
             }
