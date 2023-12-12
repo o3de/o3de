@@ -10,6 +10,7 @@ import pytest
 import pathlib
 from unittest.mock import patch, create_autospec, MagicMock, Mock, PropertyMock
 from o3de.export_project import O3DEScriptExportContext, LauncherType
+import json
 import logging
 import configparser
 
@@ -18,7 +19,7 @@ import o3de.utils as utils
 from o3de import command_utils
 utils.prepend_to_system_path(pathlib.Path(__file__).parent.parent.parent / 'ExportScripts')
 from export_source_built_project import export_standalone_project, export_standalone_parse_args, export_standalone_run_command,\
-                                        generate_launcher_startup_script
+                                        generate_launcher_startup_setreg_patch
 
 def test_should_fail_immediately_for_installer_mono_build_with_no_artifacts(tmp_path):
     test_project_name = "TestProject"
@@ -33,7 +34,7 @@ def test_should_fail_immediately_for_installer_mono_build_with_no_artifacts(tmp_
         patch('o3de.export_project.has_monolithic_artifacts', return_value=False) as mock_has_mono_artifacts,\
         patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
         pytest.raises(exp.ExportProjectError),\
-        patch('export_source_built_project.generate_launcher_startup_script') as mock_launch_script:
+        patch('export_source_built_project.generate_launcher_startup_setreg_patch') as mock_launch_script:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
         mock_ctx.project_path = test_project_path
@@ -54,6 +55,7 @@ def test_should_fail_immediately_for_installer_mono_build_with_no_artifacts(tmp_
         mock_is_sdk_engine.assert_called_once_with(engine_path=mock_ctx.engine_path)
         mock_has_mono_artifacts.assert_called_once_with(mock_ctx)
         mock_kill_processes.assert_not_called()
+        mock_launch_script.assert_not_called()
 
 
 @pytest.mark.parametrize("is_engine_centric, use_sdk, should_build_tools_flag, has_monolithic, use_monolithic, expect_toolchain_build_called", [
@@ -120,7 +122,7 @@ def test_build_tools_combinations(tmp_path, is_engine_centric, use_sdk, should_b
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger,\
-         patch('export_source_built_project.generate_launcher_startup_script') as mock_launch_script:
+         patch('export_source_built_project.generate_launcher_startup_setreg_patch') as mock_launch_script:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
         mock_ctx.project_path = test_project_path
@@ -177,6 +179,7 @@ def test_build_tools_combinations(tmp_path, is_engine_centric, use_sdk, should_b
                                                                         engine_centric=is_engine_centric,
                                                                         tool_config="profile",
                                                                         logger=mock_logger)
+                    
                 else:
                     mock_build_export_toolchain.assert_not_called()
             
@@ -228,7 +231,7 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
          patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
-         patch('export_source_built_project.generate_launcher_startup_script') as mock_launch_script:
+         patch('export_source_built_project.generate_launcher_startup_setreg_patch') as mock_launch_script:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
         mock_ctx.project_path = test_project_path
@@ -354,7 +357,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
          patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
-         patch('export_source_built_project.generate_launcher_startup_script') as mock_launch_script:
+         patch('export_source_built_project.generate_launcher_startup_setreg_patch') as mock_launch_script:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
         mock_ctx.project_path = test_project_path
@@ -435,7 +438,7 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger,\
-         patch('export_source_built_project.generate_launcher_startup_script') as mock_launch_script:
+         patch('export_source_built_project.generate_launcher_startup_setreg_patch') as mock_launch_script:
 
 
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -592,7 +595,7 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger,\
-         patch('export_source_built_project.generate_launcher_startup_script') as mock_launch_script:
+         patch('export_source_built_project.generate_launcher_startup_setreg_patch') as mock_launch_script:
         
 
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -722,6 +725,15 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
     def reset_cache():
         nonlocal setup_dir_cache
         setup_dir_cache = []
+    
+    gen_setregpatch_cache = []
+    def cache_gen_params(*args):
+        nonlocal gen_setregpatch_cache
+        gen_setregpatch_cache.append(args)
+    
+    def reset_gen_cache():
+        nonlocal gen_setregpatch_cache
+        gen_setregpatch_cache = []
 
     test_project_name = "TestProject"
     test_project_path = tmp_path / "project"
@@ -752,7 +764,7 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
          patch('o3de.export_project.bundle_assets', return_value=bundle_output_path) as mock_bundle_assets,\
          patch('o3de.export_project.setup_launcher_layout_directory', side_effect=cache_params) as mock_setup_launcher_layout_directory,\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger,\
-         patch('export_source_built_project.generate_launcher_startup_script') as mock_launch_script:
+         patch('export_source_built_project.generate_launcher_startup_setreg_patch', side_effect=cache_gen_params) as mock_launch_script:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
         mock_ctx.project_path = test_project_path
@@ -875,48 +887,42 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                         
                         assert settings_remaining == 0
 
+                        if buildconf == 'profile':
+                            # test the setregpatch
+                            settings_remaining = settings_count
+                            for argset in gen_setregpatch_cache:
+                                assert argset[0] == mock_ctx.project_name
+                                output_path = argset[1]
+                                
+                                registry_folder_name = output_path.name
+                                assert registry_folder_name == 'Registry'
+
+                                package_folder_name = output_path.parent.name
+                                for stub in launcher_stubs:
+                                    if package_folder_name == f'{mock_ctx.project_name}{stub}' and launcher_map[stub] & check_launcher_type > 0:
+                                        settings_remaining -= 1
+                                        break
+                            assert settings_remaining == 0
+
                     reset_cache()
+                    reset_gen_cache()
                     mock_setup_launcher_layout_directory.reset_mock()
 
-linux_startup_script = """
-# This game was exported using profile mode.
-# Profile games try to open the AssetProcessor by default, but PAK files must be used for portability, so disable connecting to asset processor
-# Use a release mode configuration to avoid having to use this script
 
-./TestProject.GameLauncher  -bg_ConnectToAssetProcessor=0 -sys_PakPriority=2
-"""
-windows_startup_script = """
-REM This game was exported using profile mode.
-REM Profile games try to open the AssetProcessor by default, but PAK files must be used for portability, so disable connecting to asset processor
-REM Use a release mode configuration to avoid having to use this script
-
-.\TestProject.GameLauncher.exe  -bg_ConnectToAssetProcessor=0 -sys_PakPriority=2
-"""
-@pytest.mark.parametrize('platform', ['pc','linux'])
-@pytest.mark.parametrize('project_name',['TestProject'])
-@pytest.mark.parametrize('launcher_type', [LauncherType.GAME])
-@pytest.mark.parametrize('launch_flags', [['-bg_ConnectToAssetProcessor=0', '-sys_PakPriority=2']])
-@pytest.mark.parametrize('output_path', [pathlib.PurePath('game/output')])
-def test_generate_launcher_startup_script(tmp_path, platform, project_name, launcher_type, launch_flags, output_path):
+def test_generate_launcher_startup_setreg_patch(tmp_path):
     
-    generate_launcher_startup_script(platform, project_name, launcher_type, launch_flags, tmp_path / output_path)
-    script_output_file = None
-    #test the resulting scripts
-    match platform:
-        case 'pc':
-            script_output_file =tmp_path / output_path / 'TestProject.GameLauncher.START_GAME.cmd' 
-            assert script_output_file.exists()
-        case 'linux':
-            script_output_file =tmp_path / output_path / 'TestProject.GameLauncher.START_GAME.sh' 
-            assert script_output_file.exists()
+    generate_launcher_startup_setreg_patch("TestProject", tmp_path / 'game_output/Registry')
+    output_file = tmp_path / 'game_output/Registry/TestProject_export.setregpatch'
     
-    with open(script_output_file, 'r') as sf:
-        script = sf.read()
-        match platform:
-            case 'pc':
-                assert script == windows_startup_script
-            case 'linux':
-                assert script == linux_startup_script
+    assert output_file.exists()
+        
+    with open(output_file, 'r') as sf:
+        patch_list = json.load(sf)
+        assert len(patch_list) == 1
+        patch = patch_list[0]
+        assert patch['op'] == 'add'
+        assert patch['path'] == "/O3DE/Autoexec/ConsoleCommands/bg_ConnectToAssetProcessor"
+        assert patch['value'] == False
 
 #helper to generate settings file
 def create_dummy_commands_settings_file(build_config='profile', tool_config='profile', archive_format='none',

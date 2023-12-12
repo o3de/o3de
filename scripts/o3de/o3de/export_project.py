@@ -178,14 +178,10 @@ class ExportLayoutConfig(object):
     def __init__(self,
                  output_path: pathlib.Path,
                  project_file_patterns: List[str],
-                 ignore_file_patterns: List[str],
-                 launcher_type: int = 0,
-                 launch_flags: List[str] = []):
+                 ignore_file_patterns: List[str]):
         self.output_path = output_path
         self.project_file_patterns = project_file_patterns
         self.ignore_file_patterns = ignore_file_patterns
-        self.launcher_type = launcher_type
-        self.launch_flags = launch_flags
 
 
 class LauncherType(IntEnum):

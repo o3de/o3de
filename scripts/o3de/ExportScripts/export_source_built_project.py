@@ -9,6 +9,7 @@
 import argparse
 import glob
 import logging
+import json
 import os
 import sys
 
@@ -200,21 +201,17 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     if should_build_game_launcher:
         export_layouts.append(exp.ExportLayoutConfig(output_path=output_path / f'{ctx.project_name}GamePackage',
                                                      project_file_patterns=project_file_patterns_to_copy + game_project_file_patterns_to_copy,
-                                                     ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}', f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}'],
-                                                     launcher_type=exp.LauncherType.GAME,
-                                                     launch_flags=['-bg_ConnectToAssetProcessor=0', '-sys_PakPriority=2']))
+                                                     ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}', f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}']))
 
     if should_build_server_launcher:
         export_layouts.append(exp.ExportLayoutConfig(output_path=output_path / f'{ctx.project_name}ServerPackage',
                                                      project_file_patterns=project_file_patterns_to_copy + server_project_file_patterns_to_copy,
-                                                     ignore_file_patterns=[f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}', f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}'],
-                                                     launcher_type=exp.LauncherType.SERVER))
+                                                     ignore_file_patterns=[f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}', f'*.UnifiedLauncher{exp.EXECUTABLE_EXTENSION}']))
 
     if should_build_unified_launcher:
         export_layouts.append(exp.ExportLayoutConfig(output_path=output_path / f'{ctx.project_name}UnifiedPackage',
                                                      project_file_patterns=project_file_patterns_to_copy + game_project_file_patterns_to_copy + server_project_file_patterns_to_copy,
-                                                     ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}', f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}'],
-                                                     launcher_type=exp.LauncherType.UNIFIED))
+                                                     ignore_file_patterns=[f'*.ServerLauncher{exp.EXECUTABLE_EXTENSION}', f'*.GameLauncher{exp.EXECUTABLE_EXTENSION}']))
 
     # Generate the layouts and archive the packages based on the desired launcher types
     for export_layout in export_layouts:
@@ -229,29 +226,13 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                             archive_output_format=archive_output_format,
                                             logger=logger)
         if build_config == 'profile':
-            generate_launcher_startup_script(selected_platform, ctx.project_name, export_layout.launcher_type, export_layout.launch_flags, export_layout.output_path)
+            generate_launcher_startup_setreg_patch(ctx.project_name, export_layout.output_path / 'Registry')
 
-def generate_launcher_startup_script(platform, project_name, launcher_type, launch_flags, output_path):
-    launcher_name = 'GameLauncher' if launcher_type == exp.LauncherType.GAME else \
-                    ('ServerLauncher' if launcher_type == exp.LauncherType.SERVER else 'UnifiedLauncher')
-    slash = '.\\' if platform == 'pc' else './'
-
-    # We do not use pathlib in this specific instance b/c its string conversion removes the initial './', which can trip up the shell script
-    exec_path = f"{slash}{project_name}.{launcher_name}{'.exe' if platform == 'pc' else ''}"
-    script_extension = 'cmd' if platform == 'pc' else 'sh'
-    comment_type = 'REM' if platform == 'pc' else '#'
-    cmd_text = f"""
-{comment_type} This game was exported using profile mode.
-{comment_type} Profile games try to open the AssetProcessor by default, but PAK files must be used for portability, so disable connecting to asset processor
-{comment_type} Use a release mode configuration to avoid having to use this script
-
-{str(exec_path)}  {' '.join(launch_flags)}
-"""
-    output_path.mkdir(parents = True, exist_ok=True)
-    script_path = output_path / f'{project_name}.{launcher_name}.START_GAME.{script_extension}'
-    
-    with open(script_path, 'w+') as cmd_file:
-        cmd_file.write(cmd_text)
+def generate_launcher_startup_setreg_patch(project_name, output_path):
+    setregpatch = [{ "op": "add", "path": "/O3DE/Autoexec/ConsoleCommands/bg_ConnectToAssetProcessor", "value": False }]
+    output_path.mkdir(parents=True, exist_ok=True)
+    with open(output_path / f'{project_name.lower()}_export.setregpatch', 'w+') as patch_file:
+        json.dump(setregpatch, patch_file, indent=4)
 
 def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
 
