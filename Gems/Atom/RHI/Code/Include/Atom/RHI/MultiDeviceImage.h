@@ -113,7 +113,7 @@ namespace AZ::RHI
     };
 
     //! A MultiDeviceImageView is a light-weight representation of a view onto a multi-device image.
-    //! It holds an RHI::Ptr to a multi-device image as well as an ImageViewDescriptor
+    //! It holds a raw pointer to a multi-device image as well as an ImageViewDescriptor
     //! Using both, single-device ImageViews can be retrieved
     class MultiDeviceImageView : public MultiDeviceResourceView
     {
@@ -159,6 +159,9 @@ namespace AZ::RHI
         //! The corresponding ImageViewDescriptor for this view.
         ImageViewDescriptor m_descriptor;
         //! ImageView cache
+        //! This cache is necessary as the caller receives raw pointers from the ResourceCache,
+        //! which now, with multi-device objects in use, need to be held in memory as long as
+        //! the multi-device view is held.
         AZStd::unordered_map<int, Ptr<RHI::ImageView>> m_cache;
     };
 } // namespace AZ::RHI

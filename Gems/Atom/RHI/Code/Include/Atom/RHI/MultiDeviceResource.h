@@ -89,19 +89,14 @@ namespace AZ::RHI
     class MultiDeviceImage;
     class ResourceView;
 
-    /**
-     * ResourceView is a base class for views which are dependent on a Resource instance.
-     *
-     * NOTE: While initialization is separate from creation, explicit shutdown is not allowed
-     * for resource views. This is because the cost of dependency tracking with ShaderResourceGroups
-     * is too high. Instead, resource views are reference counted.
-     */
+    //! MultiDeviceResourceView is a base class for multi-device buffer and image views for
+    //! polymorphic usage of views in a generic way.
     class MultiDeviceResourceView : public Object
     {
     public:
         virtual ~MultiDeviceResourceView() = default;
 
-        /// Returns the resource associated with this view.
+        //! Returns the resource associated with this view.
         virtual const MultiDeviceResource* GetResource() const = 0;
         virtual const ResourceView* GetDeviceResourceView(int deviceIndex) const = 0;
 

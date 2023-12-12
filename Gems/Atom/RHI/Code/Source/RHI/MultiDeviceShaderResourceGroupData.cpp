@@ -28,7 +28,6 @@ namespace AZ::RHI
         MultiDevice::DeviceMask deviceMask, const ShaderResourceGroupLayout* layout)
         : m_deviceMask(deviceMask)
         , m_shaderResourceGroupLayout(layout)
-        , m_constantsData(layout->GetConstantsLayout())
     {
         auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
 
@@ -337,11 +336,6 @@ namespace AZ::RHI
         }
 
         return isValidAll;
-    }
-
-    AZStd::span<const uint8_t> MultiDeviceShaderResourceGroupData::GetConstantRaw(ShaderInputConstantIndex inputIndex) const
-    {
-        return m_constantsData.GetConstantRaw(inputIndex);
     }
 
     void MultiDeviceShaderResourceGroupData::EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask)

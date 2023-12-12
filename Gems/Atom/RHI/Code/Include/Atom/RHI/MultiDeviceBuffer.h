@@ -66,7 +66,7 @@ namespace AZ::RHI
     };
 
     //! A MultiDeviceBufferView is a light-weight representation of a view onto a multi-device buffer.
-    //! It holds an RHI::Ptr to a multi-device buffer as well as a BufferViewDescriptor
+    //! It holds a raw pointer to a multi-device buffer as well as a BufferViewDescriptor
     //! Using both, single-device BufferViews can be retrieved
     class MultiDeviceBufferView : public MultiDeviceResourceView
     {
@@ -112,6 +112,9 @@ namespace AZ::RHI
         //! The corresponding BufferViewDescriptor for this view.
         BufferViewDescriptor m_descriptor;
         //! BufferView cache
+        //! This cache is necessary as the caller receives raw pointers from the ResourceCache, 
+        //! which now, with multi-device objects in use, need to be held in memory as long as
+        //! the multi-device view is held.
         AZStd::unordered_map<int, Ptr<RHI::BufferView>> m_cache;
     };
 } // namespace AZ::RHI
