@@ -138,13 +138,14 @@ def test_build_tools_combinations(tmp_path, is_engine_centric, use_sdk, should_b
                 test_tools_build_path = None
 
             cannot_build_monolithic = (use_sdk and not has_monolithic and use_monolithic)
+            buildconf = 'release' if use_monolithic else 'profile'
             if not expect_toolchain_build_called and cannot_build_monolithic:
                 pytest.raises(exp.ExportProjectError, export_standalone_project, 
                               mock_ctx,
                               mock_platform,
                               test_output_path,
                               should_build_tools_flag,
-                              "release",
+                              buildconf,
                               "profile",
                               [],[],[],
                               monolithic_build=use_monolithic,
@@ -155,7 +156,7 @@ def test_build_tools_combinations(tmp_path, is_engine_centric, use_sdk, should_b
                                         mock_platform,
                                         test_output_path,
                                         should_build_tools_flag,
-                                        "release",
+                                        buildconf,
                                         "profile",
                                         [],[],[],
                                         monolithic_build=use_monolithic,
@@ -232,7 +233,7 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
 
         mock_platform = 'pc'
 
-        for should_build_tools, toolconf in zip([True, False, True, False],
+        for should_build_tools, buildconf in zip([True, False, True, False],
                                                 ["profile", "profile", "release", "release"]):
             for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
 
@@ -240,7 +241,7 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                 test_asset_bundling_path = None if not base_path else (base_path / 'build' / 'asset_bundling')
 
 
-                test_tools_sdk_path = (test_engine_path / 'bin/Windows' / toolconf / 'Default')
+                test_tools_sdk_path = (test_engine_path / 'bin/Windows/profile/Default')
                 
 
                 if test_tools_build_path and test_tools_build_path.is_absolute():
@@ -255,8 +256,8 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                                   mock_platform,
                                   test_output_path,
                                   should_build_tools, 
-                                  "release",
-                                  toolconf,
+                                  buildconf,
+                                  'profile',
                                   [],[],[],
                                   monolithic_build=use_monolithic,
                                   engine_centric=is_engine_centric,
@@ -269,8 +270,8 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                                         mock_platform,
                                         test_output_path,
                                         should_build_tools, 
-                                        "release",
-                                        toolconf,
+                                        buildconf,
+                                        'profile',
                                         [],[],[],
                                         monolithic_build=use_monolithic,
                                         engine_centric=is_engine_centric,
@@ -292,7 +293,7 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
 
                     mock_get_asset_bundler_path.assert_called_once_with(tools_build_path=selected_tools_build_path,
                                                                     using_installer_sdk=use_sdk,
-                                                                    tool_config=toolconf,
+                                                                    tool_config='profile',
                                                                     required=True)
                     
                     mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
@@ -303,7 +304,7 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                                                             engine_centric=is_engine_centric,
                                                             asset_bundling_path=selected_asset_bundling_path,
                                                             using_installer_sdk=use_sdk,
-                                                            tool_config=toolconf,
+                                                            tool_config='profile',
                                                             max_bundle_size=2048)
 
                 mock_get_asset_bundler_path.reset_mock()
@@ -438,12 +439,12 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
 
         mock_platform = 'pc'
 
-        for should_build_tools, toolconf in zip([True, False, True, False],
+        for should_build_tools, buildconf in zip([True, False, True, False],
                                                 ['profile', 'profile', 'release', 'release']):
             
             for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
                 test_tools_build_path = None if not base_path else base_path / 'build/tools'
-                test_tools_sdk_path = (test_engine_path / 'bin/Windows' / toolconf / 'Default')
+                test_tools_sdk_path = (test_engine_path / 'bin/Windows/profile/Default')
 
                 cannot_build_monolithic = (use_sdk and not has_monolithic and use_monolithic)
                 selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
@@ -460,8 +461,8 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                   mock_platform,
                                   test_output_path,
                                   should_build_tools, 
-                                  "release",
-                                  toolconf,
+                                  buildconf,
+                                  'profile',
                                   [],[],[],
                                   monolithic_build=use_monolithic,
                                   engine_centric=is_engine_centric,
@@ -474,8 +475,8 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                         mock_platform,
                                         test_output_path,
                                         should_build_tools, 
-                                        "release",
-                                        toolconf,
+                                        buildconf,
+                                        'profile',
                                         [],[],[],
                                         monolithic_build=use_monolithic,
                                         engine_centric=is_engine_centric,
@@ -483,7 +484,7 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                         should_build_all_assets=True)
                     mock_get_asset_processor_path.assert_called_once_with(tools_build_path=selected_tools_build_path,
                                                                         using_installer_sdk=use_sdk,
-                                                                        tool_config=toolconf,
+                                                                        tool_config='profile',
                                                                         required=True)
                     
                     mock_build_assets.assert_called_once_with(ctx=mock_ctx,
@@ -491,7 +492,7 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                                             engine_centric=is_engine_centric,
                                                             fail_on_ap_errors=False,
                                                             using_installer_sdk=use_sdk,
-                                                            tool_config=toolconf,
+                                                            tool_config='profile',
                                                             logger=mock_logger)
 
                 mock_get_asset_processor_path.reset_mock()
@@ -504,8 +505,8 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                   mock_platform,
                                   test_output_path,
                                   should_build_tools, 
-                                  "release",
-                                  toolconf,
+                                  buildconf,
+                                  'profile',
                                   [],[],[],
                                   monolithic_build=use_monolithic,
                                   engine_centric=is_engine_centric,
@@ -516,8 +517,8 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                             mock_platform,
                                             test_output_path,
                                             should_build_tools, 
-                                            "release",
-                                            toolconf,
+                                            buildconf,
+                                            'profile',
                                             [],[],[],
                                             monolithic_build=use_monolithic,
                                             engine_centric=is_engine_centric,
@@ -594,7 +595,7 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
 
         mock_platform = 'pc'
 
-        for should_build_tools, toolconf in zip([True, False, True, False],
+        for should_build_tools, buildconf in zip([True, False, True, False],
                                                 ['profile', 'profile', 'release', 'release']):
             
             for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
@@ -615,7 +616,7 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                         check_launcher_type |= LauncherType.UNIFIED
 
                     test_tools_build_path = None if not base_path else base_path / 'build/tools'
-                    test_tools_sdk_path = (test_engine_path / 'bin/Windows' / toolconf / 'Default')
+                    test_tools_sdk_path = (test_engine_path / 'bin/Windows/profile/Default')
 
                     test_launcher_build_path = None if not base_path else base_path / 'build/launcher'
 
@@ -644,8 +645,8 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                                       mock_platform,
                                       test_output_path,
                                       should_build_tools, 
-                                      "release",
-                                      toolconf,
+                                      buildconf,
+                                      'profile',
                                       [],[],[],
                                       monolithic_build=use_monolithic,
                                       engine_centric=is_engine_centric,
@@ -661,8 +662,8 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                                         mock_platform,
                                         test_output_path,
                                         should_build_tools, 
-                                        "release",
-                                        toolconf,
+                                        buildconf,
+                                        'profile',
                                         [],[],[],
                                         monolithic_build=use_monolithic,
                                         engine_centric=is_engine_centric,
@@ -676,12 +677,12 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                             mock_build_game_targets.assert_not_called()
                         else:
                             mock_build_game_targets.assert_called_once_with(ctx=mock_ctx,
-                                                                            build_config="release",
+                                                                            build_config=buildconf,
                                                                             game_build_path=selected_launcher_build_path,
                                                                             engine_centric=is_engine_centric,
                                                                             launcher_types=check_launcher_type,
                                                                             allow_registry_overrides=False,
-                                                                            tool_config=toolconf,
+                                                                            tool_config='profile',
                                                                             monolithic_build=use_monolithic,
                                                                             logger=mock_logger)
                     mock_build_game_targets.reset_mock()
@@ -758,7 +759,7 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                         "ServerPackage":LauncherType.SERVER,
                         "UnifiedPackage":LauncherType.UNIFIED}
 
-        for should_build_tools, toolconf in zip([True, False, True, False],
+        for should_build_tools, buildconf in zip([True, False, True, False],
                                                 ['profile', 'profile', 'release', 'release']):
             
             for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
@@ -780,7 +781,7 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                         check_launcher_type |= LauncherType.UNIFIED
 
                     test_tools_build_path = None if not base_path else base_path / 'build/tools'
-                    test_tools_sdk_path = (test_engine_path / 'bin/Windows' / toolconf / 'Default')
+                    test_tools_sdk_path = (test_engine_path / 'bin/Windows/profile/Default')
 
                     test_launcher_build_path = None if not base_path else base_path / 'build/launcher'
 
@@ -807,8 +808,8 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                                       mock_platform,
                                       test_output_path,
                                       should_build_tools, 
-                                      "release",
-                                      toolconf,
+                                      buildconf,
+                                      'profile',
                                       [],[],[],
                                       monolithic_build=use_monolithic,
                                       engine_centric=is_engine_centric,
@@ -824,8 +825,8 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                                         mock_platform,
                                         test_output_path,
                                         should_build_tools, 
-                                        "release",
-                                        toolconf,
+                                        buildconf,
+                                        'profile',
                                         [],[],[],
                                         monolithic_build=use_monolithic,
                                         engine_centric=is_engine_centric,
@@ -845,7 +846,7 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                             assert argset['project_path'] == mock_ctx.project_path
                             assert argset['project_name'] == mock_ctx.project_name
                             assert argset['asset_platform'] == mock_platform
-                            assert argset['build_config'] == "release"
+                            assert argset['build_config'] == buildconf
                             assert argset['archive_output_format'] == 'none'
                             assert argset['logger'] == mock_logger
                             assert argset['launcher_build_path'] == selected_launcher_build_path
