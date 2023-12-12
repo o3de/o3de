@@ -195,7 +195,7 @@ namespace AZ
 
             // Import the SwapChain
             attachmentDatabase.ImportSwapChain(
-                m_windowContext->GetSwapChainAttachmentId(m_viewType), m_windowContext->GetSwapChain(m_viewType));
+                m_windowContext->GetSwapChainAttachmentId(m_viewType), m_windowContext->GetSwapChain(m_viewType)->GetDeviceSwapChain(RHI::MultiDevice::DefaultDeviceIndex));
 
             ParentPass::FrameBeginInternal(params);
         }
