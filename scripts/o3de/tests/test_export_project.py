@@ -13,7 +13,8 @@ from unittest.mock import patch, create_autospec
 from o3de.export_project import _export_script, process_command, setup_launcher_layout_directory, \
                                  O3DEScriptExportContext, ExportLayoutConfig, build_assets, ExportProjectError, \
                                  bundle_assets, build_export_toolchain, build_game_targets, \
-                                 validate_project_artifact_paths, LauncherType, extract_cmake_custom_args
+                                 validate_project_artifact_paths, LauncherType, extract_cmake_custom_args, \
+                                 get_default_asset_platform, get_platform_installer_folder_name
 
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
@@ -271,6 +272,16 @@ def test_build_export_toolchain(tmp_path, engine_centric, additional_cmake_confi
             expected_build_args.extend(test_additional_args)
 
         assert mock_build_process_input == expected_build_args
+
+@pytest.mark.parametrize("focal_platform, focal_asset_platform, mock_platform",[
+    pytest.param("Windows", 'pc', 'windows'),
+    pytest.param("Linux", 'linux', 'linux'),
+    pytest.param("Mac", 'mac', 'darwin')
+])
+def test_platform_helpers_with_no_params(focal_platform, focal_asset_platform, mock_platform):
+    with patch('platform.system', return_value=mock_platform):
+        assert get_default_asset_platform() == focal_asset_platform
+        assert get_platform_installer_folder_name() == focal_platform
 
 
 @pytest.mark.parametrize("build_config, build_game_launcher, build_server_launcher, build_unified_launcher, allow_registry_overrides, engine_centric, additional_build_args", [

@@ -1,0 +1,25 @@
+{
+    "O3DE": {
+        "Quality": {
+            "Groups": {
+                "q_general": {
+                    "Settings": {
+                        "r_displayInfo": "0"
+                    }
+                }
+            },
+            "Devices": {
+                "Test Rules": {
+                    "Settings": {
+                        "r_displayInfo": 3
+                    },
+                    "Rules": {
+                        "Pixel 3": {
+                            "DeviceModel": "^Pixel 3.*"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
