@@ -1058,6 +1058,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AzFramework::ScriptPropertyGroup::m_name)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(nullptr, &AzFramework::ScriptPropertyGroup::m_properties, "m_properties", "Properties in this property group")->
+                            Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
                         DataElement(nullptr, &AzFramework::ScriptPropertyGroup::m_groups, "m_groups", "Subgroups in this property group")->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
