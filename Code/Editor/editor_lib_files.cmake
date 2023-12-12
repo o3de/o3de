@@ -474,9 +474,6 @@ set(FILES
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
-    Dialogs/ErrorsDlg.cpp
-    Dialogs/ErrorsDlg.h
-    Dialogs/ErrorsDlg.ui
     DisplaySettings.cpp
     DisplaySettings.h
     DisplaySettingsPythonFuncs.h

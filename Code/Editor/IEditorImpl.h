@@ -257,7 +257,6 @@ public:
     void ReduceMemory() override;
     ESystemConfigPlatform GetEditorConfigPlatform() const override;
     void ReloadTemplates() override;
-    void AddErrorMessage(const QString& text, const QString& caption);
     void ShowStatusText(bool bEnable) override;
 
     void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
@@ -316,8 +315,6 @@ protected:
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.
     CErrorReport* m_pLasLoadedLevelErrorReport;
-    //! Global instance of error report class.
-    CErrorsDlg* m_pErrorsDlg;
     //! Source control interface.
     ISourceControl* m_pSourceControl;
 

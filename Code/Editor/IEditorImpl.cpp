@@ -40,7 +40,6 @@
 
 // Editor
 #include "CryEdit.h"
-#include "Dialogs/ErrorsDlg.h"
 #include "PluginManager.h"
 #include "ViewManager.h"
 #include "DisplaySettings.h"
@@ -108,7 +107,6 @@ CEditorImpl::CEditorImpl()
     , m_pMusicManager(nullptr)
     , m_pErrorReport(nullptr)
     , m_pLasLoadedLevelErrorReport(nullptr)
-    , m_pErrorsDlg(nullptr)
     , m_pSourceControl(nullptr)
     , m_pSelectionTreeManager(nullptr)
     , m_pConsoleSync(nullptr)
@@ -290,9 +288,7 @@ CEditorImpl::~CEditorImpl()
     SAFE_DELETE(m_pAssetBrowserRequestHandler);
     SAFE_DELETE(m_assetEditorRequestsHandler);
 
-    // Game engine should be among the last things to be destroyed, as it
-    // destroys the engine.
-    SAFE_DELETE(m_pErrorsDlg);
+    // Game engine should be among the last things to be destroyed.
     SAFE_DELETE(m_pLevelIndependentFileMan);
     SAFE_DELETE(m_pGameEngine);
     // The error report must be destroyed after the game, as the engine
@@ -1379,17 +1375,6 @@ void CEditorImpl::InitFinished()
 void CEditorImpl::ReloadTemplates()
 {
     m_templateRegistry.LoadTemplates("Editor");
-}
-
-void CEditorImpl::AddErrorMessage(const QString& text, const QString& caption)
-{
-    if (!m_pErrorsDlg)
-    {
-        m_pErrorsDlg = new CErrorsDlg(GetEditorMainWindow());
-        m_pErrorsDlg->show();
-    }
-
-    m_pErrorsDlg->AddMessage(text, caption);
 }
 
 void CEditorImpl::CmdPy(IConsoleCmdArgs* pArgs)
