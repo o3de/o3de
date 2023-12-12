@@ -117,6 +117,10 @@ namespace PhysX
         {
             return m_angularLimit.m_standardLimitConfig.m_stiffness;
         }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::DriveForceLimit)
+        {
+            return m_motorConfiguration.m_driveForceLimit;
+        }
 
         return 0.0f;
     }
@@ -182,6 +186,10 @@ namespace PhysX
         {
             m_angularLimit.m_standardLimitConfig.m_isSoftLimit = value;
         }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::EnableMotor)
+        {
+            m_motorConfiguration.m_useMotor = value;
+        }
     }
 
     void EditorHingeJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
@@ -201,6 +209,10 @@ namespace PhysX
         else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             m_angularLimit.m_standardLimitConfig.m_stiffness = value;
+        }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::DriveForceLimit)
+        {
+            m_motorConfiguration.m_driveForceLimit = value;
         }
     }
 
@@ -278,7 +290,6 @@ namespace PhysX
                 points[3].SetX(size);
             }
 
-            
             debugDisplay.SetColor(s_colorSweepArc);
             const float sweepLineDisplaceFactor = 0.5f;
             const float sweepLineThickness = 1.0f * scaleMultiply;
@@ -332,4 +343,4 @@ namespace PhysX
         debugDisplay.PopMatrix(); // pop joint world transform
         debugDisplay.SetState(stateBefore);
     }
-}
+} // namespace PhysX

@@ -108,6 +108,10 @@ namespace PhysX
         {
             return m_linearLimit.m_standardLimitConfig.m_stiffness;
         }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::DriveForceLimit)
+        {
+            return m_motorConfiguration.m_driveForceLimit;
+        }
 
         return 0.0f;
     }
@@ -137,6 +141,10 @@ namespace PhysX
         {
             m_linearLimit.m_standardLimitConfig.m_isSoftLimit = value;
         }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::EnableMotor)
+        {
+            m_motorConfiguration.m_useMotor = value;
+        }
     }
 
     void EditorPrismaticJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
@@ -156,6 +164,10 @@ namespace PhysX
         else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             m_linearLimit.m_standardLimitConfig.m_stiffness = value;
+        }
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::DriveForceLimit)
+        {
+            m_motorConfiguration.m_driveForceLimit = value;
         }
     }
 
