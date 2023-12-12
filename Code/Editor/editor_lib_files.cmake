@@ -227,18 +227,6 @@ set(FILES
     res/water.bmp
     res/work_in_progress_icon.ico
     res/MannFileManagerImageList.bmp
-    res/infobar/CameraCollision-default.svg
-    res/infobar/GotoLocation-default.svg
-    res/infobar/LockScale-default.svg
-    res/infobar/LockSelection-default.svg
-    res/infobar/Mute-default.svg
-    res/infobar/NoPlayerSync-default.svg
-    res/infobar/NoPlayerSync-selected.svg
-    res/infobar/Pause-default.svg
-    res/infobar/PausePlay-default.svg
-    res/infobar/PhysicsCol-default.svg
-    res/infobar/VR-default.svg
-    res/infobar/XYZ-default.svg
     Plugin.cpp
     Plugin.h
     PluginManager.cpp
