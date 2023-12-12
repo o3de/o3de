@@ -505,5 +505,5 @@ if "o3de_context" in globals():
     args = export_standalone_parse_args(o3de_context, export_config)
 
     export_standalone_run_command(o3de_context, args, export_config, o3de_logger)
-    o3de_logger.info("Finished exporting project")
+    o3de_logger.info(f"Finished exporting project to {args.output_path}")
     sys.exit(0)
