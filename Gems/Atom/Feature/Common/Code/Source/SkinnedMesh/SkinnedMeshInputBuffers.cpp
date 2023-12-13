@@ -113,7 +113,7 @@ namespace AZ
                     RHI::BufferViewDescriptor descriptor =
                         CreateInputViewDescriptor(streamInfo->m_enum, streamInfo->m_elementFormat, streamBufferView);
 
-                    AZ::RHI::Ptr<AZ::RHI::MultiDeviceBufferView> bufferView = aznew RHI::MultiDeviceBufferView(const_cast<RHI::MultiDeviceBuffer*>(streamBufferView.GetBuffer()), descriptor);
+                    AZ::RHI::Ptr<AZ::RHI::MultiDeviceBufferView> bufferView = const_cast<RHI::MultiDeviceBuffer*>(streamBufferView.GetBuffer())->BuildBufferView(descriptor);
                     {
                         // Initialize the buffer view
                         AZStd::string bufferViewName = AZStd::string::format(

@@ -223,7 +223,7 @@ namespace AZ
                 return;
             }
 
-            m_bufferView = aznew RHI::MultiDeviceBufferView{ m_rhiBuffer.get(), m_bufferViewDescriptor };
+            m_bufferView = m_rhiBuffer.get()->BuildBufferView(m_bufferViewDescriptor);
 
             if(!m_bufferView.get())
             {
