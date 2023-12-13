@@ -13,7 +13,9 @@ REM arguments to the values based on:
 REM     --project-path %O3DE_PROJECT_PATH%      <- The path to this project for exporting
 REM     --tools-build-path %TOOLS_BUILD_PATH%   <- The location of the tools/editor build to make sure all the tools necessary 
 REM                                                for packaging are built and available (if applicable)
-REM     -out %OUTPUT_PATH%                      <- The output location for the exported project
+REM     -out %OUTPUT_PATH%                      <- The output location for the exported project. This can be set by passing in
+REM                                                a path to the arguments to this script. If not provided, it will default
+REM                                                to %O3DE_PROJECT_PATH%\ProjectPackages
 REM
 REM Feel free to adjust any of the arguments as necessary. For more information about the project export command, type in the 
 REM following command from the engine root
@@ -39,7 +41,7 @@ IF "%1" == "-h" (
     echo Usage: %0 EXPORT_PATH
     echo where:
     echo    EXPORT_PATH     The optional path to export the project package to. 
-    echo                    Default: %O3DE_PROJECT_PATH%\ProjectPackages
+    echo                    Default: %O3DE_PROJECT_PATH%ProjectPackages
     echo
     exit /B 0
 ) ELSE IF "%1" == "" (
