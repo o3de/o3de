@@ -1542,7 +1542,7 @@ namespace ScriptCanvasEditor
     {
         GraphCanvas::SceneMemberGlowOutlineConfiguration glowConfiguration;
 
-        glowConfiguration.m_blurRadius = 5;
+        glowConfiguration.m_blurRadius = 0; // #17174 using blur degrades performance
 
         glowConfiguration.m_pen = QPen();
         glowConfiguration.m_pen.setBrush(QColor(243,129,29));
