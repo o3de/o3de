@@ -9,7 +9,7 @@ REM ----------------------------------------------------------------------------
 
 REM This packaging script simplifies the project export command by defaulting the required and important
 REM arguments to the values based on:
-REM     --project-path %O3DE_PROJECT_PATH% 		<- The path to this project for exporting
+REM     --project-path %O3DE_PROJECT_PATH% 	    <- The path to this project for exporting
 REM     --config release                        <- Specify a release build for the exported project
 REM     --archive-output zip                    <- The output format of the compressed archive for the exported project
 REM     --seedlist %O3DE_PROJECT_SEEDLIST%      <- The seedlist to use to create the pak files

@@ -363,11 +363,11 @@
             "isTemplated": false
         },
         {
-            "file": "package.bat",
+            "file": "export.bat",
             "isTemplated": true
         },
         {
-            "file": "package.sh",
+            "file": "export.sh",
             "isTemplated": true
         },
         {

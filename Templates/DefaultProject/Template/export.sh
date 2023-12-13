@@ -8,7 +8,7 @@
 
 # This packaging script simplifies the project export command by defaulting the required and important
 # arguments to the values based on:
-#     --project-path %O3DE_PROJECT_PATH% 		<- The path to this project for exporting
+#     --project-path %O3DE_PROJECT_PATH%      <- The path to this project for exporting
 #     --config release                        <- Specify a release build for the exported project
 #     --archive-output zip                    <- The output format of the compressed archive for the exported project
 #     --seedlist %O3DE_PROJECT_SEEDLIST%      <- The seedlist to use to create the pak files
