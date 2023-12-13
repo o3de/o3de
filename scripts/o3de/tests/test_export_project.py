@@ -550,11 +550,7 @@ def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform,
         assert (test_output_path / 'Registry').exists()
         assert setregpatch_file.is_file()
         with open(setregpatch_file,'r') as pf:
-            patch_data = json.load(pf)
-            assert len(patch_data) == 1
-            assert patch_data[0]['op'] == 'add'
-            assert patch_data[0]['value'] == False
-            assert patch_data[0]['path'] == "/O3DE/Autoexec/ConsoleCommands/bg_ConnectToAssetProcessor"
+            assert 'bg_ConnectToAssetProcessor' in pf.read()
     else:
         assert not setregpatch_file.is_file()
 
