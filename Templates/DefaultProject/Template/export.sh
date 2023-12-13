@@ -9,11 +9,11 @@
 # This packaging script simplifies the project export command by defaulting the required and important
 # arguments to the values based on:
 #     --project-path $O3DE_PROJECT_PATH       <- The path to this project for exporting
-#     --tools-build-path %TOOLS_BUILD_PATH%   <- The location of the tools/editor build to make sure all the tools necessary 
+#     --tools-build-path $TOOLS_BUILD_PATH    <- The location of the tools/editor build to make sure all the tools necessary 
 #                                                for packaging are built and available (if applicable)
-#     -out %OUTPUT_PATH%                      <- The output location for the exported project. This can be set by passing in
+#     -out $OUTPUT_PATH                       <- The output location for the exported project. This can be set by passing in
 #                                                a path to the arguments to this script. If not provided, it will default
-#                                                to %O3DE_PROJECT_PATH%\ProjectPackages
+#                                                to $O3DE_PROJECT_PATH/ProjectPackages
 #
 # Feel free to adjust any of the arguments as necessary. For more information about the project export command, type in the 
 # following command from the engine root
@@ -27,7 +27,7 @@
 #
 # To view the settings for the current project:
 #
-# $O3DE_PATH\scripts\o3de.bat export-project-configure -p %O3DE_PROJECT_PATH% --list
+# $O3DE_PATH\scripts\o3de.bat export-project-configure -p $O3DE_PROJECT_PATH --list
 #
 #
 # Note: The location of the engine (O3DE_PATH) is hardcoded to the location of the engine that was used to generate 
@@ -53,7 +53,7 @@ then
     echo Engine path $O3DE_PATH is invalid in this script. Make sure to install the engine to $O3DE_PATH or update this script''s $O3DE_PATH to point to the installed engine path on this system.
     exit 1
 fi
-echo Using engine path at %O3DE_PATH%
+echo Using engine path at $O3DE_PATH
 
 if [[ $1 == "-h" ]]
 then
