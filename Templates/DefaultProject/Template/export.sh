@@ -37,14 +37,7 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 O3DE_PROJECT_PATH=$DIR
 echo Using project path at $O3DE_PROJECT_PATH
 
-# Query the EngineFinder.cmake to locate the path to the engine
-ENGINE_PATH_QUERY=$(cmake -P $DIR/cmake/EngineFinder.cmake)
-if [ $? -ne 0 ]; then
-    echo "Unable to determine path to the engine."
-    exit 1
-fi
-
-O3DE_PATH=$(echo ${ENGINE_PATH_QUERY:20} | sed "s/'//g")
+O3DE_PATH=${EnginePath}
 echo Using engine path at $O3DE_PATH
 
 O3DE_PROJECT_SEEDLIST=${O3DE_PROJECT_PATH}/AssetBundling/SeedLists/*.seed
