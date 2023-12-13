@@ -29,8 +29,7 @@ namespace AZ
             m_vertexDeltaBuffer = RPI::Buffer::FindOrCreate(bufferAssetView.GetBufferAsset());
             if (m_vertexDeltaBuffer)
             {
-                m_vertexDeltaBufferView =
-                    aznew RHI::MultiDeviceBufferView{ m_vertexDeltaBuffer->GetRHIBuffer(), bufferAssetView.GetBufferViewDescriptor() };
+                m_vertexDeltaBufferView = m_vertexDeltaBuffer->GetRHIBuffer()->BuildBufferView(bufferAssetView.GetBufferViewDescriptor());
                 m_vertexDeltaBufferView->SetName(Name(bufferNamePrefix + "MorphTargetVertexDeltaView"));
             }
         }
