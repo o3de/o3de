@@ -974,11 +974,6 @@ namespace AZ::Reflection
                 {
                     StackEntry& nodeData = m_stack.back();
 
-                    if (!nodeData.m_entryClosed)
-                    {
-                        m_visitor->VisitObjectEnd(*this, *this);
-                    }
-
                     // Handle groups
                     if (nodeData.m_groups.size() > 0)
                     {
@@ -1028,6 +1023,11 @@ namespace AZ::Reflection
 
                         nodeData.m_propertyToGroupMap.clear();
                         nodeData.m_groupEntries.clear();
+                    }
+
+                    if (!nodeData.m_entryClosed)
+                    {
+                        m_visitor->VisitObjectEnd(*this, *this);
                     }
 
                     auto nodePath = nodeData.m_path;
