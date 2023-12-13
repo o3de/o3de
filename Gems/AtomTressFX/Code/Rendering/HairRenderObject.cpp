@@ -124,7 +124,7 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderRead    // No need for ReadWrite in the raster fill
                     );
 
-                    m_readBuffersViews[index] = aznew RHI::MultiDeviceBufferView{ rhiBuffer, viewDescriptor };
+                    m_readBuffersViews[index] = rhiBuffer->BuildBufferView(viewDescriptor);
 
                     // Buffer binding into the raster srg
                     RHI::ShaderInputBufferIndex indexHandle = m_simSrgForRaster->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
@@ -253,7 +253,7 @@ namespace AZ
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderReadWrite
                     );
 
-                    m_dynamicBuffersViews[stream] = aznew RHI::MultiDeviceBufferView{ rhiBuffer, viewDescriptor };
+                    m_dynamicBuffersViews[stream] = rhiBuffer->BuildBufferView(viewDescriptor);
                 }
 
                 m_initialized = true;
