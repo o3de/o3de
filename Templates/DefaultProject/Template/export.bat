@@ -39,8 +39,8 @@ set TOOLS_BUILD_PATH=%O3DE_PROJECT_PATH%\build\windows
 
 echo Using project path at %O3DE_PROJECT_PATH%
 IF NOT EXIST %O3DE_PATH%\scripts\o3de.bat (
-	echo Engine path %O3DE_PATH% is invalid in this script. Make sure to install the engine to %O3DE_PATH% or update this script's 'O3DE_PATH' to point to the installed engine path on this system.
-	exit /B 1
+    echo Engine path %O3DE_PATH% is invalid in this script. Make sure to install the engine to %O3DE_PATH% or update this script's 'O3DE_PATH' to point to the installed engine path on this system.
+    exit /B 1
 )
 echo Using engine path at %O3DE_PATH%
 
