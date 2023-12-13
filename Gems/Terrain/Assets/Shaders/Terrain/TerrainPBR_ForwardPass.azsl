@@ -162,7 +162,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
 
     // Light iterator
     lightingData.tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
 
     // Shadow, Occlusion
     lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;

@@ -9,6 +9,7 @@
 import argparse
 import fnmatch
 import glob
+import json
 import logging
 import os
 import pathlib
@@ -24,7 +25,10 @@ from enum import IntEnum
 LOCAL_ENGINE_PATH  = pathlib.Path(__file__).parent.parent.parent.parent
 
 # Account for some windows-specific attributes
-CURRENT_PLATFORM = platform.system().lower()
+CURRENT_PLATFORM_NAME_WITH_CASE = platform.system()  # used to find the Installer binaries folder.
+CURRENT_PLATFORM = CURRENT_PLATFORM_NAME_WITH_CASE.lower()
+
+ALL_AVAILABLE_ARCHIVE_FORMATS = ["none"] + [name for name, description in shutil.get_archive_formats()]
 
 if CURRENT_PLATFORM == 'windows':
     EXECUTABLE_EXTENSION = '.exe'
@@ -195,6 +199,14 @@ def get_default_asset_platform():
                                             'darwin':  'mac' }
     return host_platform_to_asset_platform_map.get(platform.system().lower(), "")
 
+def get_platform_installer_folder_name(selected_platform=None):
+    if not selected_platform:
+        selected_platform = CURRENT_PLATFORM
+    host_platform_to_installer_name_map = {'pc': 'Windows',
+                                           'linux': 'Linux',
+                                           'mac': 'Mac'}
+    return host_platform_to_installer_name_map.get(selected_platform, "")
+
 def process_command(args: list,
                     cwd: pathlib.Path = None,
                     env: os._Environ = None) -> int:
@@ -266,7 +278,7 @@ def extract_cmake_custom_args(arg_list: List[str])->tuple:
                 in_cca = False
             elif arg in ('-cba', '--cmake-build-arg'):
                 in_cca = False
-                in_cca = True
+                in_cba = True
             elif arg not in ('-cca', '--cmake-configure-arg'):
                 cmake_configure_args.append(arg)
         elif in_cba:
@@ -369,31 +381,44 @@ def add_args(subparsers) -> None:
 
 
 def get_asset_processor_batch_path(tools_build_path: pathlib.Path,
+                                   using_installer_sdk: bool = False,
+                                   tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                                    required: bool = False) -> pathlib.Path:
     """
     Get the expected path to the asset processor tool
 
     @param tools_build_path:    The tools (cmake) build path to locate AssetProcessorBatch
+    @param using_installer_sdk: Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
+    @param tool_config:         The build configuration to refer to for tool binaries
     @param required:            If true, check if the asset processor actually exists on file at the expected location, and raise an error if not
     @return: Path to the asset processor tool
     """
-    asset_processor_batch_path = tools_build_path / f'bin/profile/AssetProcessorBatch{EXECUTABLE_EXTENSION}'
+    if using_installer_sdk:
+        asset_processor_batch_path = tools_build_path / f'AssetProcessorBatch{EXECUTABLE_EXTENSION}'
+    else:
+        asset_processor_batch_path = tools_build_path / f'bin/{tool_config}/AssetProcessorBatch{EXECUTABLE_EXTENSION}'
     if required and not asset_processor_batch_path.is_file():
         raise ExportProjectError(f"Missing the 'AssetProcessorBatch' tool, expected at '{asset_processor_batch_path}'")
     return asset_processor_batch_path
 
 
 def get_asset_bundler_batch_path(tools_build_path: pathlib.Path,
+                                 using_installer_sdk: bool = False,
+                                 tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                                  required: bool = False) -> pathlib.Path:
     """
     Get the expected path to the asset bundler tool
 
     @param tools_build_path:    The tools (cmake) build path to locate AssetBundlerBatch
+    @param using_installer_sdk: Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
+    @param tool_config:         The build configuration to refer to for tool binaries
     @param required:            If true, check if the asset bundler actually exists on file at the expected location, and raise an error if not
     @return: Path to the asset bundler tool
     """
-
-    asset_bundler_batch_path = tools_build_path / f'bin/profile/AssetBundlerBatch{EXECUTABLE_EXTENSION}'
+    if using_installer_sdk:
+        asset_bundler_batch_path = tools_build_path / f'AssetBundlerBatch{EXECUTABLE_EXTENSION}'
+    else:
+        asset_bundler_batch_path = tools_build_path / f'bin/{tool_config}/AssetBundlerBatch{EXECUTABLE_EXTENSION}'
     if required and not asset_bundler_batch_path.is_file():
         raise ExportProjectError(f"Missing the 'AssetBundlerBatch' tool, expected at '{asset_bundler_batch_path}'")
     return asset_bundler_batch_path
@@ -403,18 +428,22 @@ def build_assets(ctx: O3DEScriptExportContext,
                  tools_build_path: pathlib.Path,
                  engine_centric: bool,
                  fail_on_ap_errors: bool,
+                 using_installer_sdk: bool = False,
+                 tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                  logger: logging.Logger = None) -> int:
     """
     Build the assets for the project
     @param ctx:                 Export Context
     @param tools_build_path:    The tools (cmake) build path to locate AssetProcessorBatch
     @param fail_on_ap_errors:   Option to fail the whole process if an error occurs during asset processing
+    @param using_installer_sdk: Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
+    @param tool_config:         The build configuration to refer to for tool binaries
     @param logger:              Optional Logger
     @return: None
     """
 
     # Make sure `AssetProcessorBatch` is available
-    asset_processor_batch_path = get_asset_processor_batch_path(tools_build_path, required=True)
+    asset_processor_batch_path = get_asset_processor_batch_path(tools_build_path, using_installer_sdk, tool_config=tool_config, required=True)
     if not asset_processor_batch_path.exists():
         raise ExportProjectError("Missing AssetProcessorBatch. The pre-requisite tools must be built first.")
 
@@ -439,6 +468,7 @@ def build_assets(ctx: O3DEScriptExportContext,
 def build_export_toolchain(ctx: O3DEScriptExportContext,
                            tools_build_path: pathlib.Path,
                            engine_centric: bool,
+                           tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                            logger: logging.Logger = None) -> None:
     """
     Build (or rebuild) the export tool chain (AssetProcessorBatch and AssetBundlerBatch)
@@ -446,6 +476,7 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
     @param ctx:                                 Export Context
     @param tools_build_path:                    The tools (cmake) build path to create the build project for the tools
     @param engine_centric:                      Option to generate/build an engine-centric workflow
+    @param tool_config:                         The build configuration to refer to for tool binaries
     @param logger:                              Optional Logger
     @return: None
     """
@@ -464,7 +495,7 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
     if CMAKE_GENERATOR_OPTIONS:
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
     if not CMAKE_MULTI_CONFIGURATION_GENERATOR:
-        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
+        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={tool_config}'])
     if engine_centric:
         cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path}'])
     if ctx.cmake_additional_configure_args:
@@ -479,7 +510,7 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
     cmake_build_command = ["cmake", "--build", tools_build_path]
 
     if CMAKE_MULTI_CONFIGURATION_GENERATOR:
-        cmake_build_command.extend(["--config", PREREQUISITE_TOOL_BUILD_CONFIG])
+        cmake_build_command.extend(["--config", tool_config])
 
     cmake_build_command.extend(["--target", "AssetProcessorBatch", "AssetBundlerBatch"])
 
@@ -513,8 +544,10 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        build_config: str,
                        game_build_path: pathlib.Path,
                        engine_centric: bool,
+                       monolithic_build: bool,
                        launcher_types: int,
                        allow_registry_overrides: bool,
+                       tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                        logger: logging.Logger = None) -> None:
     """
     Build the launchers for the project (game, server, unified, headless)
@@ -523,9 +556,11 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     @param build_config:                The build config to build (profile or release)
     @param game_build_path:             The cmake build folder target
     @engine_centric:                    Option to generate/build an engine-centric workflow
+    @monolithic_build:                  Option to build as one executable (smaller) or to use individual dll/shared libraries instead (larger)
     @additional_cmake_configure_options:List of additional configure arguments to pass to cmake during the cmake project generation process
     @param launcher_types:              The launcher type options (bit mask from the LauncherType enum) to specify which launcher types to build
     @param allow_registry_overrides:    Custom Flag argument for 'DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES' to pass down to the project generation
+    @param tool_config:                 The build configuration to refer to for tool binaries
     @param logger:                      Optional Logger
     @return: None
     """
@@ -551,7 +586,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     if GENERATOR:
         cmake_configure_command.extend(["-G", GENERATOR])
     if not CMAKE_MULTI_CONFIGURATION_GENERATOR:
-        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
+        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={tool_config}'])
     if CMAKE_GENERATOR_OPTIONS:
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
     if engine_centric:
@@ -559,10 +594,13 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     if ctx.cmake_additional_configure_args:
         cmake_configure_command.extend(ctx.cmake_additional_configure_args)
 
-    cmake_configure_command.extend(["-DLY_MONOLITHIC_GAME=1",
-                                    f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"])
+    cmake_configure_command.extend([
+            f"-DLY_MONOLITHIC_GAME={'0' if not monolithic_build else '1'}",
+            f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"
+        ])
+
     if logger:
-        logger.info(f"Generating (monolithic) project the build folder for project {ctx.project_name}")
+        logger.info(f"Generating {'monolithic' if monolithic_build else 'non-monolithic'} build folder for project {ctx.project_name}")
     ret = process_command(cmake_configure_command)
     if ret != 0:
         raise ExportProjectError(f"Error generating projects for project {ctx.project_name}.")
@@ -598,9 +636,12 @@ def build_game_targets(ctx: O3DEScriptExportContext,
 def bundle_assets(ctx: O3DEScriptExportContext,
                   selected_platform: str,
                   seedlist_paths: List[pathlib.Path],
+                  seedfile_paths: List[pathlib.Path],
                   tools_build_path: pathlib.Path,
                   engine_centric: bool,
+                  using_installer_sdk: bool = False,
                   asset_bundling_path: pathlib.Path | None = None,
+                  tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
                   max_bundle_size: int = 2048) -> pathlib.Path:
     """
     Execute the 'bundle assets' phase of the export
@@ -608,13 +649,16 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     @param ctx:                      Export Context
     @param selected_platform:        The desired asset platform
     @param seedlist_paths:           The list of seedlist files
+    @param seedfile_paths:           The list of individual seed files
     @param tools_build_path:         The path to the tools cmake build project
+    @param using_installer_sdk:      Indicate if the tools path belongs to an installer SDK. If True, expect the path to point at the folder containing the executable.
     @param asset_bundling_path:      The path to use to write all the intermediate and final artifacts from the bundling process
+    @param tool_config:              The build configuration to refer to for tool binaries
     @param max_bundle_size:          The size limit to put on the bundle
     @return: The path to the bundle
     """
 
-    asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, required=True)
+    asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, using_installer_sdk, tool_config=tool_config, required=True)
     asset_list_path = asset_bundling_path / 'AssetLists'
 
     game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
@@ -630,6 +674,11 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     for seed in seedlist_paths:
         gen_game_asset_list_command.append("--seedListFile")
         gen_game_asset_list_command.append(str(seed))
+    
+    for seed in seedfile_paths:
+        gen_game_asset_list_command.append("--addSeed")
+        gen_game_asset_list_command.append(str(seed))
+
     ret = process_command(gen_game_asset_list_command,
                           cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
@@ -697,6 +746,7 @@ def kill_existing_processes(project_name: str):
 
 
 def setup_launcher_layout_directory(project_path: pathlib.Path,
+                                    project_name: str,
                                     asset_platform: str,
                                     launcher_build_path: pathlib.Path,
                                     build_config: str,
@@ -709,6 +759,7 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
     Setup the launcher layout directory for a path
 
     @param project_path:            The base project path
+    @param project_name:            The name of the project
     @param asset_platform:          The desired asset platform
     @param launcher_build_path:     The path where the launcher executables cmake build project was created
     @param build_config:            The build configuration to locate the launcher executables in the cmake build project
@@ -748,6 +799,9 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
     for project_file_pattern in export_layout.project_file_patterns:
         for file in glob.glob(str(pathlib.PurePath(project_path / project_file_pattern))):
             shutil.copy(file, export_layout.output_path)
+    
+    with open(export_layout.output_path / 'project.json', 'w') as project_json_file:
+        json.dump({"project_name": project_name}, project_json_file, ensure_ascii=True)
 
     # Optionally compress the layout directory into an archive if the user requests
     if archive_output_format != "none":

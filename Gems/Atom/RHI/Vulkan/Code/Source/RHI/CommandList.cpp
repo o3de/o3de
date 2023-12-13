@@ -650,13 +650,14 @@ namespace AZ
             if (m_descriptor.m_level == VK_COMMAND_BUFFER_LEVEL_SECONDARY)
             {
                 AZ_Assert(inheritance, "Null inheritance info");
-                const RenderPass* renderPass = inheritance->m_frameBuffer->GetRenderPass();
+                const RenderPass* renderPass = inheritance->m_frameBuffer ? inheritance->m_frameBuffer->GetRenderPass() : nullptr;
                 inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                inheritanceInfo.renderPass = renderPass->GetNativeRenderPass();
+                inheritanceInfo.renderPass = renderPass ? renderPass->GetNativeRenderPass() : VK_NULL_HANDLE;
                 inheritanceInfo.subpass = inheritance->m_subpass;
-                inheritanceInfo.framebuffer = inheritance->m_frameBuffer->GetNativeFramebuffer();
+                inheritanceInfo.framebuffer =
+                    inheritance->m_frameBuffer ? inheritance->m_frameBuffer->GetNativeFramebuffer() : VK_NULL_HANDLE;
                 beginInfo.pInheritanceInfo = &inheritanceInfo;
-                beginInfo.flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                beginInfo.flags |= renderPass ? VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT : 0;
                 m_state.m_framebuffer = inheritance->m_frameBuffer;
                 m_state.m_subpassIndex = inheritance->m_subpass;
             }
@@ -1149,26 +1150,6 @@ namespace AZ
             // submit the command to build the BLAS
             const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
             context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &blasBuffers.m_buildInfo, &rangeInfos);
-
-            // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
-            // are built prior to building the TLAS in BuildTopLevelAccelerationStructure()
-            VkMemoryBarrier memoryBarrier = {};
-            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-            memoryBarrier.pNext = nullptr;
-            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-
-            context.CmdPipelineBarrier(
-                GetNativeCommandBuffer(),
-                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-                0,
-                1,
-                &memoryBarrier,
-                0,
-                nullptr,
-                0,
-                nullptr);
         }
 
         void CommandList::UpdateBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas)
@@ -1186,34 +1167,38 @@ namespace AZ
             // submit the command to build the BLAS
             const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
             context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tempBuildInfo, &rangeInfos);
+        }
 
-            // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
-            // are built prior to building the TLAS in BuildTopLevelAccelerationStructure()
+        void CommandList::BuildTopLevelAccelerationStructure(
+            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList)
+        {
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
             VkMemoryBarrier memoryBarrier = {};
             memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             memoryBarrier.pNext = nullptr;
             memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
             memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
 
-            context.CmdPipelineBarrier(
-                GetNativeCommandBuffer(),
-                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-                0,
-                1,
-                &memoryBarrier,
-                0,
-                nullptr,
-                0,
-                nullptr);
-        }
+            if (!changedBlasList.empty())
+            {
+                // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
+                // are built prior to building the TLAS
+                context.CmdPipelineBarrier(
+                    GetNativeCommandBuffer(),
+                    VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                    VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                    0,
+                    1,
+                    &memoryBarrier,
+                    0,
+                    nullptr,
+                    0,
+                    nullptr);
+            }
 
-        void CommandList::BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingTlas& rayTracingTlas)
-        {
             const RayTracingTlas& vulkanRayTracingTlas = static_cast<const RayTracingTlas&>(rayTracingTlas);
             const RayTracingTlas::TlasBuffers& tlasBuffers = vulkanRayTracingTlas.GetBuffers();
-
-            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 
             // submit the command to build the TLAS
             const VkAccelerationStructureBuildRangeInfoKHR& offsetInfo = tlasBuffers.m_offsetInfo;
@@ -1222,12 +1207,6 @@ namespace AZ
 
             // we need a pipeline barrier on VK_ACCESS_ACCELERATION_STRUCTURE (both read and write) in case we are building
             // multiple TLAS objects in a command list
-            VkMemoryBarrier memoryBarrier = {};
-            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-            memoryBarrier.pNext = nullptr;
-            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-
             context.CmdPipelineBarrier(
                 GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,

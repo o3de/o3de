@@ -392,6 +392,8 @@ void LtcQuadEvaluate(
     int vertexCount = LtcQuadTransformAndClip(surface.GetDefaultNormal(), lightingData.dirToCamera, p, polygon);
     if (vertexCount == 0)
     {
+        diffuseOut = 0.0f;
+        specularOut = float3(0.0f, 0.0f, 0.0f);
         // Entire light is below the horizon.
         return;
     }
@@ -587,6 +589,8 @@ void LtcPolygonEvaluate(
 
     if (endIdx - startIdx < 3)
     {
+        diffuseOut = 0.0f;
+        specularRgbOut = float3(0.0f, 0.0f, 0.0f);
         return; // Must have at least 3 points to form a polygon.
     }
     uint originalEndIdx = endIdx; // Original endIdx may be needed for clearcoat
@@ -601,6 +605,8 @@ void LtcPolygonEvaluate(
     // Check if all points below horizon
     if (endIdx == startIdx + 1)
     {
+        diffuseOut = 0.0f;
+        specularRgbOut = float3(0.0f, 0.0f, 0.0f);
         return; 
     }
     

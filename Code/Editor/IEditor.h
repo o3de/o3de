@@ -450,8 +450,6 @@ struct IEditor
     virtual bool IsInConsolewMode() = 0;
     //! return true if editor is running the level load tests mode.
     virtual bool IsInLevelLoadTestMode() = 0;
-    //! Return true if Editor runs in the material editing mode.
-    virtual bool IsInMatEditMode() = 0;
     //! Enable/Disable updates of editor.
     virtual void EnableUpdate(bool enable) = 0;
     virtual SFileVersion GetFileVersion() = 0;

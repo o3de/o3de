@@ -11,7 +11,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ly_add_target(
-    NAME TestAssetBuilder.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         testassetbuilder_files.cmake
@@ -25,7 +25,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME TestAssetBuilder.Editor GEM_MODULE
+    NAME ${gem_name}.Editor GEM_MODULE
 
     NAMESPACE Gem
     FILES_CMAKE
@@ -35,8 +35,17 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::TestAssetBuilder.Static
+            Gem::${gem_name}.Static
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/TestAssetBuilderModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # the above module is for use in builders only
-ly_create_alias(NAME TestAssetBuilder.Builders NAMESPACE Gem TARGETS Gem::TestAssetBuilder.Editor)
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)

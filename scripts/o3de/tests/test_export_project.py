@@ -316,6 +316,7 @@ def test_build_game_targets(tmp_path, build_config, build_game_launcher, build_s
                            build_config=build_config,
                            game_build_path=test_game_build_path,
                            engine_centric=engine_centric,
+                           monolithic_build=True,
                            launcher_types=launcher_types,
                            allow_registry_overrides=allow_registry_overrides)
 
@@ -397,6 +398,7 @@ def test_bundle_assets(tmp_path, asset_platform):
         result = bundle_assets(ctx=mock_ctx,
                                selected_platform=asset_platform,
                                seedlist_paths=[test_seedlist_path],
+                               seedfile_paths=[],
                                tools_build_path=test_build_tool_path,
                                engine_centric=False,
                                asset_bundling_path=test_custom_asset_base_path,
@@ -457,12 +459,12 @@ def test_bundle_assets(tmp_path, asset_platform):
             assert mock_process_input_arglist == expected_values
 
 
-@pytest.mark.parametrize("build_config, asset_platform, project_files_to_copy, file_patterns_to_ignore, archive_format", [
-    pytest.param("profile", "pc", ["include*.cfg"], ["ExcludeMe.ServerLauncher"], "zip"),
-    pytest.param("profile", "linux", ["include_me1.cfg", "include_me2.cfg"], ["*.ServerLauncher"], "zip"),
-    pytest.param("profile", "pc", ["include*.cfg"], ["ExcludeMe.ServerLauncher"], "none"),
+@pytest.mark.parametrize("build_config, asset_platform, project_files_to_copy, file_patterns_to_ignore, archive_format, project_name", [
+    pytest.param("profile", "pc", ["include*.cfg"], ["ExcludeMe.ServerLauncher"], "zip", "testproject"),
+    pytest.param("profile", "linux", ["include_me1.cfg", "include_me2.cfg"], ["*.ServerLauncher"], "zip", "testproject"),
+    pytest.param("profile", "pc", ["include*.cfg"], ["ExcludeMe.ServerLauncher"], "none", "testproject"),
 ])
-def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform, project_files_to_copy, file_patterns_to_ignore, archive_format):
+def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform, project_files_to_copy, file_patterns_to_ignore, archive_format, project_name):
 
     test_project_path = tmp_path / "project"
     test_project_path.mkdir()
@@ -504,6 +506,7 @@ def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform,
                 ignore_file_patterns=file_patterns_to_ignore)
 
     setup_launcher_layout_directory(project_path=test_project_path,
+                                    project_name=project_name,
                                     asset_platform=test_asset_platform,
                                     launcher_build_path=test_mono_build_path,
                                     build_config=test_build_config,

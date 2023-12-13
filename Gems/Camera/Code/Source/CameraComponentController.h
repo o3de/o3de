@@ -20,6 +20,7 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/XR/XRRenderingInterface.h>
+#include <Atom/RPI.Public/XR/XRSpaceNotificationBus.h>
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 
 namespace Camera
@@ -73,6 +74,7 @@ namespace Camera
         , public AZ::TransformNotificationBus::Handler
         , public AZ::RPI::ViewportContextNotificationBus::Handler
         , public AZ::RPI::ViewProviderBus::Handler
+        , public AZ::RPI::XRSpaceNotificationBus::Handler
     {
     public:
         AZ_TYPE_INFO(CameraComponentController, "{A27A0725-8C07-4BF2-BF95-B6CB0CBD01B8}");
@@ -141,6 +143,14 @@ namespace Camera
         AZ::RPI::ViewPtr GetView() const override;
         AZ::RPI::ViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType) const override;
 
+        ///////////////////////////////////////////////////////////////////////
+        // AZ::RPI::XRSpaceNotificationBus::Handler Overrides
+        void OnXRSpaceLocationsChanged(
+            const AZ::Transform& HeadRelativeToBaseSpaceTm,
+            const AZ::Transform& LeftEyeRelativeToHeadTm,
+            const AZ::Transform& RightEyeRelativeToHeadTm) override;
+        ///////////////////////////////////////////////////////////////////////
+
     private:
         AZ_DISABLE_COPY(CameraComponentController);
 
@@ -157,8 +167,6 @@ namespace Camera
 
         // Atom integration
         AZ::RPI::ViewGroupPtr m_atomCameraViewGroup = nullptr;
-        AZ::RPI::XRRenderingInterface* m_xrSystem = nullptr;
-        AZ::u32 m_numSterescopicViews = 0;
 
         AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;
        
@@ -170,5 +178,20 @@ namespace Camera
 
         // for render to texture
         AZ::RPI::RenderPipelinePtr m_renderToTexturePipeline;
+
+        //! From this point onwards the member variables are only applicable
+        //! when the XRRenderingInterface is active.
+        AZ::RPI::XRRenderingInterface* m_xrSystem = nullptr;
+        AZ::u32 m_numSterescopicViews = 0;
+
+        // Remarks, When using the XR Gem the world camera transform will be:
+        // entityWorldTm = m_xrCameraToBaseSpaceTm * baseSpaceToHeadTm
+        // And for each Eye it will be:
+        // leftEyeWorldTm = m_xrCameraToBaseSpaceTm * baseSpaceToHeadTm * HeadToLeftEyeTm;
+        // rightEyeWorldTm = m_xrCameraToBaseSpaceTm * baseSpaceToHeadTm * HeadToRightEyeTm;
+        AZ::Transform m_xrCameraToBaseSpaceTm;
+        AZ::Transform m_xrBaseSpaceToHeadTm; // Comes from the XR System
+        AZ::Transform m_xrHeadToLeftEyeTm; // Comes from the XR System
+        AZ::Transform m_xrHeadToRightEyeTm; // Comes from the XR System
     };
 } // namespace Camera

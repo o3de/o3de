@@ -30,4 +30,8 @@ namespace AZ::Prefab
     };
 } // namespace AZ::Prefab
 
-AZ_DECLARE_MODULE_CLASS(Gem_Prefab_PrefabBuilder, AZ::Prefab::PrefabBuilderModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Builders), AZ::Prefab::PrefabBuilderModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_PrefabBuilder_Builders, AZ::Prefab::PrefabBuilderModule)
+#endif

@@ -349,6 +349,140 @@ function(ly_setup_subdirectories)
     endforeach()
 endfunction()
 
+#! ly_setup_3p_target: Export enough data such that the script-only mode knows about the runtime dependencies
+#! for the given target.  This function returns a string which is a setup function that can be called
+#! in script only mode to create a fake target for the 3p library that just includes its copy dependencies.
+function(ly_setup_3p_target OUTVAR_GENERATED_DATA_FILENAME OUTVAR_FILE_NAME_TO_GENERATE ALIAS_TARGET_NAME)
+    ly_de_alias_target(${ALIAS_TARGET_NAME} TARGET_NAME)
+    o3de_get_dependencies_for_target(
+            TARGET "${TARGET_NAME}"
+            COPY_DEPENDENCIES_VAR target_copy_dependencies
+            TARGET_DEPENDENCIES_VAR target_target_dependencies
+        )
+
+    # note that we want to actually create and register the aliased target name
+    # but get the data from the de-aliased target.  So except for the call above
+    # we use the aliased target name.
+    string(REPLACE "::" "__" CLEAN_TARGET_NAME "${ALIAS_TARGET_NAME}")  
+
+    unset(copy_dependencies_target_rel_path)
+    unset(copy_dependencies_source_file_path)
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        unset(copy_dependencies_${conf})
+    endforeach()
+
+    foreach(dependency_for_target IN LISTS target_target_dependencies)
+        if (NOT TARGET ${dependency_for_target})
+            # Sometimes, things set actual shared libraries as a target dependency instead of a copy dependency.
+            list(APPEND target_copy_dependencies "${dependency_for_target}\n")
+        endif()
+    endforeach()     
+    
+    # note that the copy dependencies are actually in pairs newline delimited, so
+    # file_to_copy_a\nwhere_to_copy_a;file_to_copy_b\nwhere_to_copy_b;...
+    foreach(copy_dependency IN LISTS target_copy_dependencies)
+        string(REPLACE "\n" ";" copy_dep_pair "${copy_dependency}")
+        list(POP_FRONT copy_dep_pair source_filepath destination_relpath)
+        list(APPEND copy_dependencies_source_file_path "${source_filepath}")
+        # a quirk of list append is that if you give it an empty element, it does nothing.
+        # use dummy element (0) to indicate its an empty path
+        if (NOT destination_relpath)
+            set(destination_relpath "0")
+        endif()
+
+        list(APPEND copy_dependencies_target_rel_path "${destination_relpath}")
+    endforeach()
+
+    # sanity check
+    if (copy_dependencies_source_file_path OR copy_dependencies_target_rel_path)
+        list(LENGTH copy_dependencies_source_file_path source_list_length)
+        list(LENGTH copy_dependencies_target_rel_path  relpath_list_lenth)
+        if (NOT source_list_length EQUAL relpath_list_lenth)
+            message(FATAL_ERROR "Programmer error - for target ${ALIAS_TARGET_NAME}, lists are supposed to be same length, but\n\
+                                ${source_list_length} source and ${relpath_list_lenth} relpath\n\
+                                source:'${copy_dependencies_source_file_path}'\n\
+                                relpath: '${copy_dependencies_target_rel_path}'")
+        endif()
+    endif()
+
+    unset(${OUTVAR_GENERATED_DATA_FILENAME} PARENT_SCOPE)
+
+    # the absolute source paths of files to copy can have generator expressions that are per-config.
+    # use file(GENERATE ...) to evaluate the genexes, by writing it as a build file
+    # since GENERATE only happens during generate step, this is as far as we can go during
+    # configure.  It will be up to a build step to read these generated files back and
+    # do a final transform that removes things like absolute paths.
+    # note that we generate a file for every 3p target, as they must exist.
+    set(generate_content "set(target_name ${ALIAS_TARGET_NAME})\n")
+    if (copy_dependencies_source_file_path)
+        string(APPEND generate_content "set(copy_dependencies_source_file_path \"${copy_dependencies_source_file_path}\")\n")
+        string(APPEND generate_content "set(copy_dependencies_target_rel_path \"${copy_dependencies_target_rel_path}\")\n")
+    endif()
+
+    file(GENERATE OUTPUT  "${CMAKE_BINARY_DIR}/install/$<CONFIG>/${PAL_PLATFORM_NAME}/${CLEAN_TARGET_NAME}.cmake" 
+                  CONTENT "${generate_content}")
+    set(${OUTVAR_GENERATED_DATA_FILENAME} "${CMAKE_BINARY_DIR}/install/$<CONFIG>/${PAL_PLATFORM_NAME}/${CLEAN_TARGET_NAME}.cmake" PARENT_SCOPE)
+    set(${OUTVAR_FILE_NAME_TO_GENERATE} ${CLEAN_TARGET_NAME} PARENT_SCOPE)
+
+endfunction()
+
+# In "Script only mode", the 3p libraries are not downloaded at all.
+# But some of them (not all) have extraneous .so or .dll files that need to be deployed
+# into the final runtime package if you intend to ship a script-only runtime.
+# This function exports a file that is used only in script-only mode to supply that list
+# of extra DLLs to copy along with the game.
+function(ly_setup_3p_dependencies)
+
+    # 3p dependency generation is only relevant to installer builds, which is expected to happen only if no project is being built
+    # prevent this code from running in non-instlaler-builds, otherwise it will try to hang these commands off a non-existant generic
+    # game launcher target (which itself is also only relevant to installer builds for script-only mode.)
+    if (LY_PROJECTS)
+        return()
+    endif()
+
+    unset(list_of_files_to_process)
+    unset(expected_output_files)
+    set(final_3p_output_dir "${CMAKE_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}")
+    get_property(o3de_all_3rdparty_targets GLOBAL PROPERTY O3DE_ALL_3RDPARTY_TARGETS)
+
+    # call the ly_setup_3p_target for each 3p target.  It will create a GENERATE step
+    # that will output a file, and also return the file name of the generated file.
+    foreach(target_3p IN LISTS o3de_all_3rdparty_targets)
+        ly_setup_3p_target(file_to_process output_filename ${target_3p})
+        if (file_to_process)
+            list(APPEND list_of_files_to_process ${file_to_process})
+            list(APPEND expected_output_files ${final_3p_output_dir}/${output_filename}.cmake)
+        endif()
+    endforeach()
+    
+    # note that generate only occurs during the generate step.  The above file will not be available until the build step
+    # so a finalization build step needs to run a script to finalize it.
+    if (list_of_files_to_process)
+        add_custom_command(
+            COMMAND ${CMAKE_COMMAND} -P 
+                "${LY_ROOT_FOLDER}/cmake/3rdParty/script-only-mode/PostProcessScriptOnlyMappings.cmake" # Script to run
+                "${final_3p_output_dir}" # the output file to make
+                ${list_of_files_to_process}
+            OUTPUT ${expected_output_files}
+            COMMENT "Updating script-only mode 3rd Party library mappings..."
+            DEPENDS ${list_of_files_to_process} 
+                    "${LY_ROOT_FOLDER}/cmake/3rdParty/script-only-mode/PostProcessScriptOnlyMappings.cmake"
+            VERBATIM
+        )
+
+        # make a custom target that depends on the above output file.
+        add_custom_target(GenerateScriptOnlyMappings DEPENDS ${expected_output_files})
+
+        # make it so that at least one real target that actually gets built depends on the above target.
+        # or else cmake won't evaluate it since nothing hangs off it.
+        add_dependencies(O3DE.GameLauncher GenerateScriptOnlyMappings)
+
+        ly_install(FILES ${expected_output_files}
+            DESTINATION "cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}"
+            COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT})
+    endif()
+endfunction()
+
 
 #! ly_setup_subdirectory: setup all targets in the subdirectory
 function(ly_setup_subdirectory absolute_target_source_dir)
@@ -651,7 +785,7 @@ endfunction()
 #! ly_setup_runtime_dependencies: install runtime dependencies
 function(ly_setup_runtime_dependencies)
 
-    # Common functions used by the bellow code
+    # Common functions used by the below code
     if(COMMAND ly_setup_runtime_dependencies_copy_function_override)
         ly_setup_runtime_dependencies_copy_function_override()
     else()
@@ -846,9 +980,24 @@ function(ly_setup_assets)
                     # to allow it to be installed next to the gem.json
                     set(gem_scratch_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/install/${gem_install_dest_dir}")
 
+                    # 1. Create the base CMakeLists.txt that will just include a cmake file per platform
+                    string(CONFIGURE [[
+                    @cmake_copyright_comment@
+                    o3de_read_json_key(GEM_TYPE ${CMAKE_CURRENT_SOURCE_DIR}/gem.json "type")
+                    if (GEM_TYPE STREQUAL "Asset")
+                        include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+                    endif()
+                    ]] subdirectory_cmakelist_content @ONLY)
+                    
+
+                    # Store off the generated CMakeLists.txt into a DIRECTORY property based on the subdirectory being visited
+                    # In the ly_setup_assets() function, it generates an empty CMakeLists.txt into the gem root directory
+                    # if one does not exist by checking if this property is set
+                    set_property(DIRECTORY "${absolute_target_source_dir}" APPEND_STRING PROPERTY O3DE_SUBDIRECTORY_CMAKELIST_CONTENT "${subdirectory_cmakelist_content}")
+                    
                     # copy the empty CMakeList.txt into the gem root directory, to allow add_subdirectory
                     # calls to succeed on the gem root in the install layout
-                    file(CONFIGURE OUTPUT "${gem_scratch_binary_dir}/CMakeLists.txt" CONTENT [[@cmake_copyright_comment@]] @ONLY)
+                    file(WRITE "${gem_scratch_binary_dir}/CMakeLists.txt" "${subdirectory_cmakelist_content}")
 
                     ly_install(FILES "${gem_scratch_binary_dir}/CMakeLists.txt"
                         DESTINATION ${gem_install_dest_dir}
@@ -960,6 +1109,7 @@ function(ly_setup_o3de_install)
     ly_setup_cmake_install()
     ly_setup_runtime_dependencies()
     ly_setup_assets()
+    ly_setup_3p_dependencies()
 
     # Misc
     ly_install(FILES

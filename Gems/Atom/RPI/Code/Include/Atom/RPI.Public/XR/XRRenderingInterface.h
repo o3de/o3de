@@ -88,6 +88,9 @@ namespace AZ::RPI
         //! Return the controller Pose data associated with provided hand Index.
         virtual RHI::ResultCode GetControllerPose(const AZ::u32 handIndex, PoseData& outPoseData) const = 0;
 
+        //! Same as above, but conveniently returns a transform.
+        virtual RHI::ResultCode GetControllerTransform(const AZ::u32 handIndex, AZ::Transform& outTransform) const = 0;
+
         //! Return the Pose data associated with front view.
         virtual RHI::ResultCode GetViewFrontPose(PoseData& outPoseData) const = 0;
 

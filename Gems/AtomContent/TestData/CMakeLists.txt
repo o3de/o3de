@@ -6,12 +6,7 @@
 #
 #
 
-# Query the gem name from the gem.json file if possible
-# otherwise fallback to using Atom_TestData
-o3de_find_ancestor_gem_root(gem_root_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
-if (NOT gem_name)
-    set(gem_name "Atom_TestData")
-endif()
+o3de_gem_setup("Atom_TestData")
 
 # This will export the path to the directory containing the gem.json
 # to the "SourcePaths" entry within the "cmake_dependencies.<project>.assetbuilder.setreg"

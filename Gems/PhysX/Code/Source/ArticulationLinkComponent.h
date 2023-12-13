@@ -22,6 +22,8 @@
 #include <Source/Articulation.h>
 #include <Source/Articulation/ArticulationLinkConfiguration.h>
 
+#include <AzFramework/Physics/PhysicsScene.h>
+
 namespace physx
 {
     class PxArticulationReducedCoordinate;
@@ -35,6 +37,7 @@ namespace PhysX
         : public AZ::Component
         , private AZ::TransformNotificationBus::Handler
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
+        , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public PhysX::ArticulationJointRequestBus::Handler
         , public PhysX::ArticulationSensorRequestBus::Handler
 #endif
@@ -82,7 +85,20 @@ namespace PhysX
         void SetSensorTransform(AZ::u32 sensorIndex, const AZ::Transform& sensorTransform) override;
         AZ::Vector3 GetForce(AZ::u32 sensorIndex) const override;
         AZ::Vector3 GetTorque(AZ::u32 sensorIndex) const override;
+        const AzPhysics::SimulatedBody* GetSimulatedBodyConst() const;
+        void FillSimulatedBodyHandle();
+
+        // SimulatedBodyComponentRequests overrides ...
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
+        void EnablePhysics() override;
+        void DisablePhysics() override;
+        bool IsPhysicsEnabled() const override;
+        AZ::Aabb GetAabb() const override;
+        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 #endif
+
+
         physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
         const AZStd::vector<AZ::u32> GetSensorIndices(const AZ::EntityId entityId);
         const physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
@@ -99,6 +115,7 @@ namespace PhysX
         void DestroyArticulation();
         void InitPhysicsTickHandler();
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
+
         const physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex) const;
         physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex);
 
@@ -126,7 +143,9 @@ namespace PhysX
 
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         AZStd::vector<AzPhysics::SimulatedBodyHandle> m_articulationLinks;
+        AzPhysics::SimulatedBodyHandle m_bodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
+        AzPhysics::SystemEvents::OnSceneRemovedEvent::Handler m_sceneRemovedHandler;
 
         using EntityIdArticulationLinkPair = AZStd::pair<AZ::EntityId, physx::PxArticulationLink*>;
         AZStd::unordered_map<AZ::EntityId, physx::PxArticulationLink*> m_articulationLinksByEntityId;

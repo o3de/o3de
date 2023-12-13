@@ -46,4 +46,8 @@ namespace RecastNavigation
     };
 }// namespace RecastNavigation
 
-AZ_DECLARE_MODULE_CLASS(Gem_RecastNavigation, RecastNavigation::RecastNavigationEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), RecastNavigation::RecastNavigationEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_RecastNavigation_Editor, RecastNavigation::RecastNavigationEditorModule)
+#endif

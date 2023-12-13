@@ -121,6 +121,7 @@ namespace AZ
             m_enabledDeviceFeatures.sparseResidencyAliased = deviceFeatures.sparseResidencyAliased;
             m_enabledDeviceFeatures.independentBlend = deviceFeatures.independentBlend;
             m_enabledDeviceFeatures.shaderStorageImageMultisample = deviceFeatures.shaderStorageImageMultisample;
+            m_enabledDeviceFeatures.shaderStorageImageReadWithoutFormat = deviceFeatures.shaderStorageImageReadWithoutFormat;
 
             if (deviceFeatures.geometryShader)
             {

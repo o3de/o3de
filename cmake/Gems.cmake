@@ -17,6 +17,69 @@ define_property(TARGET PROPERTY LY_PROJECT_NAME
     If the __NOPROJECT__ placeholder is associated with a list enabled gems, then it applies to this target regardless of this property value")
 
 
+# o3de_gem_setup: Runs a CMAKE macro that reads the nearest ancestor gem.json
+# of where the calling CMakeLists.txt is located and queries information
+# about the Gem such as the Gem name and version
+# NOTE: A CMake `macro` is used and not a `function` as it a macro
+# executes in the same scope of the caller
+# https://cmake.org/cmake/help/latest/command/macro.html#macro-vs-function
+#
+# \param:default_gem_name - Name to use for the ${gem_name} variable
+#        if a gem.json file cannot be found by searching ancestor directories
+#        or if the "gem_json" file does not contain a "gem_name" field
+#
+# \return:gem_path - Sets the ${gem_path} variable to the directory containing
+#         the gem.json that is the nearest ancestor directory of the calling CMakeLists.txt.
+#         The "nearest ancestor" also includes the current CMakeLists.txt for clarification
+# \return:gem_name - Sets the ${gem_name} variable to the "gem_name" field
+# \return:gem_version - Sets the ${gem_version} variable to the "gem_version" field
+# \return:gem_restricted_path - Sets the ${gem_restricted_path} variable
+#         to store the root directory of the Gem for the current platform if it is "restricted"
+#         (i.e Console) platform.
+# \return:gem_parent_relative_path - Sets the ${gem_parent_relative_path} variable
+#         to the relative path  o the Gem root directory within the restricted
+#         platform root directory
+#         Ex.
+#         /home/user/
+#           o3de/
+#             Gems/
+#               RayTracing/
+#                 gem.json
+#             restricted_platform_name_which_cannot_be_mentioned/
+#               Gems/
+#                 RayTracing/
+#                   restricted.json
+# \return:pal_dir - Sets the ${pal_dir} variable to the "platform
+#         abstracted layer" (PAL) version of the current directory for a specific platform
+#         For example if the directory containing the calling CMakeLists.txt
+#         is "Gems/Location/",
+#         then the PAL directory for windows is "Gems/Location/Platform/Windows/".
+#         For a restricted platfrom, the directory could be located at the path
+#         "<restricted-platform-root>/Gems/Location/Platform/<platform>/"
+macro(o3de_gem_setup default_gem_name)
+    # Query the gem name from the gem.json file if possible
+    # otherwise fallback to using the default gem name argument
+    o3de_find_ancestor_gem_root(gem_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
+    if (NOT gem_name)
+        set(gem_name "${default_gem_name}")
+    endif()
+
+    # Fallback to using the current source CMakeLists.txt directory as the gem root path
+    if (NOT gem_path)
+        set(gem_path ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
+
+    set(gem_json ${gem_path}/gem.json)
+
+    # Read the version field from the gem.json
+    set(gem_version, "0.0.0")
+    o3de_read_json_key(gem_version ${gem_json} "version")
+
+    o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
+
+    o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+endmacro()
+
 # o3de_find_ancestor_gem_root:Searches for the nearest gem root from input source_dir
 #
 # \arg:source_dir(FILEPATH) - Filepath to walk upwards from to locate a gem.json

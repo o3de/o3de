@@ -112,9 +112,9 @@ namespace AZ::RHI
 
     // A DrawItem corresponds to one draw of one mesh in one pass. Multiple draw items are bundled
     // in a DrawPacket, which corresponds to multiple draws of one mesh in multiple passes.
-    // NOTE: Do NOT use default member initialization here, as DrawItems are bulk allocated for
-    // DrawPackets and their memory aliased in DrawPacketBuilder. If you want to specify default values,
-    // do so in the DrawPacketBuilder::End() function (see DrawPacketBuilder.cpp)
+    // NOTE: Do not rely solely on default member initialization here, as DrawItems are bulk allocated for
+    // DrawPackets and their memory aliased in DrawPacketBuilder. Any default values should also be specified
+    // in the DrawPacketBuilder::End() function (see DrawPacketBuilder.cpp)
     struct DrawItem
     {
         DrawItem() = default;
@@ -132,9 +132,13 @@ namespace AZ::RHI
         {
             struct
             {
-                bool m_enabled : 1;    // Whether the Draw Item should render
+                // NOTE: If you add or update any of these flags, please update the default value of m_allFlags
+                // so that your added flags are initialized properly. Also update the default value specified in
+                // the DrawPacketBuilder::End() function (see DrawPacketBuilder.cpp). See comment above.
+
+                bool m_enabled : 1;     // Whether the Draw Item should render
             };
-            uint8_t m_allFlags = 1;
+            uint8_t m_allFlags = 1;     //< Update default value if you add flags. Also update in DrawPacketBuilder::End()
         };
 
         const PipelineState* m_pipelineState = nullptr;

@@ -416,7 +416,7 @@ void EditorViewportWidget::Update()
         return;
     }
 
-    if (m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
+    if (m_rcClient.isEmpty())
     {
         return;
     }

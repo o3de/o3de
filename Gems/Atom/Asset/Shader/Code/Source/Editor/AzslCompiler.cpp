@@ -62,7 +62,7 @@ namespace AZ
                 AZStd::string overridePath;
                 if (setReg->Get(overridePath, AzslCompilerOverridePath))
                 {
-                    AZ_TraceOnce("AzslCompiler", "AZSLc executable override specified, using %s", azslcPath.c_str());
+                    AZ_TraceOnce("AzslCompiler", "AZSLc executable override specified, using %s", overridePath.c_str());
                     azslcPath = AZStd::move(overridePath);
                 }
             }
