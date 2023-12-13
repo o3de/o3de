@@ -5,11 +5,11 @@
     "ClassData": [
         {
             "assetId": {
-                "guid": "{E989C05E-DB6F-5FDB-92C5-F7BFE3746336}",
+                "guid": "{CE9992CF-5E32-5F9D-A95B-30F64AEA6BEA}",
                 "subId": 2344825583
             },
             "platformFlags": 255,
-            "pathHint": "levels/default/defaultlevel.spawnable"
+            "pathHint": "levels/defaultlevel/defaultlevel.spawnable"
         },
         {
             "assetId": {
