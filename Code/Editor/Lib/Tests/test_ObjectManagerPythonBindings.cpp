@@ -53,19 +53,8 @@ namespace ObjectManagerPythonBindingsUnitTests
         ASSERT_TRUE(behaviorContext);
 
         EXPECT_TRUE(behaviorContext->m_methods.find("get_all_objects") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("get_names_of_selected_objects") != behaviorContext->m_methods.end());
-
-        EXPECT_TRUE(behaviorContext->m_methods.find("select_object") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("unselect_objects") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("select_objects") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("get_num_selected") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("clear_selection") != behaviorContext->m_methods.end());
-
-        EXPECT_TRUE(behaviorContext->m_methods.find("get_selection_center") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("get_selection_aabb") != behaviorContext->m_methods.end());
 
         EXPECT_TRUE(behaviorContext->m_methods.find("delete_object") != behaviorContext->m_methods.end());
-        EXPECT_TRUE(behaviorContext->m_methods.find("delete_selected") != behaviorContext->m_methods.end());
 
         EXPECT_TRUE(behaviorContext->m_methods.find("get_position") != behaviorContext->m_methods.end());
         EXPECT_TRUE(behaviorContext->m_methods.find("set_position") != behaviorContext->m_methods.end());

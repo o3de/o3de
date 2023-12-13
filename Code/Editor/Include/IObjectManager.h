@@ -18,7 +18,6 @@ class CEntityObject;
 struct DisplayContext;
 class CTrackViewAnimNode;
 class CUsedResources;
-class CSelectionGroup;
 class CObjectClassDesc;
 class CObjectArchive;
 class CViewport;
@@ -54,7 +53,6 @@ public:
     virtual CBaseObject* NewObject(CObjectArchive& archive, CBaseObject* pUndoObject = 0, bool bMakeNewId = false) = 0;
 
     virtual void DeleteObject(CBaseObject* obj) = 0;
-    virtual void DeleteSelection(CSelectionGroup* pSelection) = 0;
     virtual void DeleteAllObjects() = 0;
 
     //! Get number of objects manager by ObjectManager (not contain sub objects of groups).
@@ -89,22 +87,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Find objects which intersect with a given AABB.
     virtual void FindObjectsInAABB(const AABB& aabb, std::vector<CBaseObject*>& result) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Object Selection.
-    //////////////////////////////////////////////////////////////////////////
-    virtual bool    SelectObject(CBaseObject* obj, bool bUseMask = true) = 0;
-    virtual void    UnselectObject(CBaseObject* obj) = 0;
-
-    //! Clear default selection set.
-    //! @Return number of objects removed from selection.
-    virtual int ClearSelection() = 0;
-
-    //! Get current selection.
-    virtual CSelectionGroup*    GetSelection() const = 0;
-
-    //! Delete all objects in current selection group.
-    virtual void DeleteSelection() = 0;
 
     //! Generates uniq name base on type name of object.
     virtual QString GenerateUniqueObjectName(const QString& typeName) = 0;

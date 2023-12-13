@@ -53,7 +53,6 @@
 #include "Settings.h"
 #include "Include/IObjectManager.h"
 #include "Include/ISourceControl.h"
-#include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 
 #include "EditorFileMonitor.h"
@@ -595,20 +594,6 @@ void CEditorImpl::DeleteObject(CBaseObject* obj)
     GetObjectManager()->DeleteObject(obj);
 }
 
-CBaseObject* CEditorImpl::GetSelectedObject()
-{
-    if (m_pObjectManager->GetSelection()->GetCount() != 1)
-    {
-        return nullptr;
-    }
-    return m_pObjectManager->GetSelection()->GetObject(0);
-}
-
-void CEditorImpl::SelectObject(CBaseObject* obj)
-{
-    GetObjectManager()->SelectObject(obj);
-}
-
 IObjectManager* CEditorImpl::GetObjectManager()
 {
     return m_pObjectManager;
@@ -633,39 +618,6 @@ CSettingsManager* CEditorImpl::GetSettingsManager()
     }
 
     return m_pSettingsManager;
-}
-
-CSelectionGroup* CEditorImpl::GetSelection()
-{
-    return m_pObjectManager->GetSelection();
-}
-
-int CEditorImpl::ClearSelection()
-{
-    if (GetSelection()->IsEmpty())
-    {
-        return 0;
-    }
-    CUndo undo("Clear Selection");
-    return GetObjectManager()->ClearSelection();
-}
-
-void CEditorImpl::LockSelection(bool bLock)
-{
-    // Selection must be not empty to enable selection lock.
-    if (!GetSelection()->IsEmpty())
-    {
-        m_bSelectionLocked = bLock;
-    }
-    else
-    {
-        m_bSelectionLocked = false;
-    }
-}
-
-bool CEditorImpl::IsSelectionLocked()
-{
-    return m_bSelectionLocked;
 }
 
 CViewManager* CEditorImpl::GetViewManager()

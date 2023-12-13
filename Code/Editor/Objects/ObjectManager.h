@@ -12,7 +12,6 @@
 
 #include "IObjectManager.h"
 #include "BaseObject.h"
-#include "SelectionGroup.h"
 
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -45,12 +44,11 @@ public:
     CBaseObject* NewObject(CObjectClassDesc* cls, CBaseObject* prev = 0, const QString& file = "", const char* newObjectName = nullptr) override;
     CBaseObject* NewObject(const QString& typeName, CBaseObject* prev = 0, const QString& file = "", const char* newEntityName = nullptr) override;
 
-    void    DeleteObject(CBaseObject* obj) override;
-    void    DeleteSelection(CSelectionGroup* pSelection) override;
-    void    DeleteAllObjects() override;
+    void DeleteObject(CBaseObject* obj) override;
+    void DeleteAllObjects() override;
 
     //! Get number of objects manager by ObjectManager (not contain sub objects of groups).
-    int     GetObjectCount() const override;
+    int GetObjectCount() const override;
 
     //! Get array of objects, managed by manager (not contain sub objects of groups).
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
@@ -58,11 +56,11 @@ public:
 
     //! Send event to all objects.
     //! Will cause OnEvent handler to be called on all objects.
-    void    SendEvent(ObjectEvent event) override;
+    void SendEvent(ObjectEvent event) override;
 
     //! Send event to all objects within given bounding box.
     //! Will cause OnEvent handler to be called on objects within bounding box.
-    void    SendEvent(ObjectEvent event, const AABB& bounds) override;
+    void SendEvent(ObjectEvent event, const AABB& bounds) override;
 
     //////////////////////////////////////////////////////////////////////////
     //! Find object by ID.
@@ -78,23 +76,7 @@ public:
     //! Find objects which intersect with a given AABB.
     void FindObjectsInAABB(const AABB& aabb, std::vector<CBaseObject*>& result) const override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Object Selection.
-    //////////////////////////////////////////////////////////////////////////
-    bool    SelectObject(CBaseObject* obj, bool bUseMask = true) override;
-    void    UnselectObject(CBaseObject* obj) override;
-
-    //! Clear default selection set.
-    //! @Return number of objects removed from selection.
-    int ClearSelection() override;
-
-    //! Get current selection.
-    CSelectionGroup*    GetSelection() const override { return m_currSelection; };
-
     bool IsObjectDeletionAllowed(CBaseObject* pObject);
-
-    //! Delete all objects in selection group.
-    void DeleteSelection() override;
 
     //! Generates uniq name base on type name of object.
     QString GenerateUniqueObjectName(const QString& typeName) override;
@@ -102,9 +84,9 @@ public:
     void RegisterObjectName(const QString& name) override;
 
     //! Register XML template of runtime class.
-    void    RegisterClassTemplate(const XmlNodeRef& templ);
+    void RegisterClassTemplate(const XmlNodeRef& templ);
     //! Load class templates for specified directory,
-    void    LoadClassTemplates(const QString& path);
+    void LoadClassTemplates(const QString& path);
 
     //! Registers the ObjectManager's console variables.
     void RegisterCVars();
@@ -161,18 +143,9 @@ private:
     unsigned int m_lastComputedVisibility = 0; // when the object manager itself last updated visibility (since it also has a cache)
     int m_lastHideMask = 0;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Selection.
-    //! Current selection group.
-    CSelectionGroup* m_currSelection;
-    bool m_bSelectionChanged;
-
     // True while performing a select or deselect operation on more than one object.
     // Prevents individual undo/redo commands for every object, allowing bulk undo/redo
     bool m_processingBulkSelect = false;
-
-    //! Default selection.
-    CSelectionGroup m_defaultSelection;
 
     //////////////////////////////////////////////////////////////////////////
 

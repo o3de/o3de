@@ -25,73 +25,8 @@
 #include "ViewManager.h"
 #include "AnimationContext.h"
 #include "HitContext.h"
-#include "Objects/SelectionGroup.h"
 
 static constexpr int VIEW_DISTANCE_MULTIPLIER_MAX = 100;
-
-//////////////////////////////////////////////////////////////////////////
-//! Undo Entity Link
-class CUndoEntityLink
-    : public IUndoObject
-{
-public:
-    CUndoEntityLink(CSelectionGroup* pSelection)
-    {
-        int nObjectSize = pSelection->GetCount();
-        m_Links.reserve(nObjectSize);
-        for (int i = 0; i < nObjectSize; ++i)
-        {
-            CBaseObject* pObj = pSelection->GetObject(i);
-            if (qobject_cast<CEntityObject*>(pObj))
-            {
-                SLink link;
-                link.entityID = pObj->GetId();
-                link.linkXmlNode = XmlHelpers::CreateXmlNode("undo");
-                ((CEntityObject*)pObj)->SaveLink(link.linkXmlNode);
-                m_Links.push_back(link);
-            }
-        }
-    }
-
-protected:
-    void Release() override { delete this; };
-    int GetSize() override { return sizeof(*this); }; // Return size of xml state.
-    QString GetObjectName() override{ return ""; };
-
-    void Undo([[maybe_unused]] bool bUndo) override
-    {
-        for (int i = 0, iLinkSize = static_cast<int>(m_Links.size()); i < iLinkSize; ++i)
-        {
-            SLink& link = m_Links[i];
-            CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(link.entityID);
-            if (pObj == nullptr)
-            {
-                continue;
-            }
-            if (!qobject_cast<CEntityObject*>(pObj))
-            {
-                continue;
-            }
-            CEntityObject* pEntity = (CEntityObject*)pObj;
-            if (link.linkXmlNode->getChildCount() == 0)
-            {
-                continue;
-            }
-            pEntity->LoadLink(link.linkXmlNode->getChild(0));
-        }
-    }
-    void Redo() override{}
-
-private:
-
-    struct SLink
-    {
-        GUID entityID;
-        XmlNodeRef linkXmlNode;
-    };
-
-    std::vector<SLink> m_Links;
-};
 
 //////////////////////////////////////////////////////////////////////////
 //! Undo object for attach/detach changes
@@ -1876,19 +1811,6 @@ void CEntityObject::ClearCallbacks()
     }
 
     m_callbacks.clear();
-}
-
-void CEntityObject::StoreUndoEntityLink(CSelectionGroup* pGroup)
-{
-    if (!pGroup)
-    {
-        return;
-    }
-
-    if (CUndo::IsRecording())
-    {
-        CUndo::Record(new CUndoEntityLink(pGroup));
-    }
 }
 
 template <typename T>

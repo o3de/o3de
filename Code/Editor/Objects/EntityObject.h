@@ -25,7 +25,6 @@
 #define CLASS_RIGIDBODY_LIGHT "RigidBodyLight"
 
 class CEntityObject;
-class CSelectionGroup;
 class QMenu;
 
 /*!
@@ -195,8 +194,6 @@ public:
     {
         m_bEnableReload = bEnable;
     }
-
-    static void StoreUndoEntityLink(CSelectionGroup* pGroup);
 
 protected:
     template <typename T>

@@ -194,7 +194,6 @@ private:
     float GetAspectRatio() const override;
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
     bool IsBoundsVisible(const AABB& box) const override;
-    void CenterOnSelection() override;
     void CenterOnAABB(const AABB& aabb) override;
     void CenterOnSliceInstance() override;
     void OnTitleMenu(QMenu* menu) override;
@@ -268,7 +267,6 @@ private:
     void StopFullscreenPreview();
 
     void OnMenuCreateCameraEntityFromCurrentView();
-    void OnMenuSelectCurrentCamera();
 
     // From a series of input primitives, compose a complete mouse interaction.
     AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteractionInternal(

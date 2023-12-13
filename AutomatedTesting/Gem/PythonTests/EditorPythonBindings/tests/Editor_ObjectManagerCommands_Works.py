@@ -22,38 +22,7 @@ def Editor_ObjectManagerCommands_Works(BaseClass):
         BaseClass.check_result(currentLevelName == 'TestDependenciesLevel', "Not TestDependenciesLevel level")
     
         objs_list = general.get_all_objects()
-    
         BaseClass.check_result(len(objs_list) > 0, "get_all_objects works")
-    
-        general.clear_selection()
-        general.select_object(objs_list[0])
-    
-        selected_objs_list = general.get_names_of_selected_objects()
-    
-        BaseClass.check_result(len(selected_objs_list) == 1, "get_names_of_selected_objects works")
-    
-        select = [objs_list[1], objs_list[2]]
-        general.select_objects(select)
-    
-        selected_objs_list = general.get_names_of_selected_objects()
-    
-        BaseClass.check_result(len(selected_objs_list) == 3, f"select_objects works {selected_objs_list}")
-    
-        sel_position = general.get_selection_center()
-        sel_aabb = general.get_selection_aabb()
-        centerX = sel_position.get_property("x")
-        cornerX = sel_aabb.get_property("min").get_property("x")
-    
-        BaseClass.check_result(not(centerX == cornerX), "sel_position and sel_aabb both work")
-    
-        unselect = [objs_list[0], objs_list[2]]
-        general.unselect_objects(unselect)
-    
-        BaseClass.check_result(general.get_num_selected() == 1, "get_num_selected and unselect_objects both work")
-    
-        general.clear_selection()
-    
-        BaseClass.check_result(general.get_num_selected() == 0, "clear_selection works")
 
         def fetch_vector3_parts(vec3):
             x = vec3.get_property('x')
@@ -84,12 +53,6 @@ def Editor_ObjectManagerCommands_Works(BaseClass):
         sx2, sy2, sz2 = fetch_vector3_parts(new_scale)
     
         BaseClass.check_result((sx2 > sx1) and (sy2 > sy1) and (sz2 > sz1), "scale setter/getter works")
-    
-        general.select_object(objs_list[2])
-        general.delete_selected()
-        new_objs_list = general.get_all_objects()
-    
-        BaseClass.check_result((len(new_objs_list) < len(objs_list)), "delete_selected works")
     
         general.delete_object(objs_list[0])
         new_objs_list = general.get_all_objects()
