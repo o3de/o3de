@@ -120,6 +120,58 @@ namespace AZ::RHI
         bool SetConstantData(const void* bytes, uint32_t byteCount);
         bool SetConstantData(const void* bytes, uint32_t byteOffset, uint32_t byteCount);
 
+        //! Returns a single image view associated with the image shader input index and array offset.
+        const ConstPtr<MultiDeviceImageView>& GetImageView(ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const;
+
+        //! Returns a span of image views associated with the given image shader input index.
+        AZStd::span<const ConstPtr<MultiDeviceImageView>> GetImageViewArray(ShaderInputImageIndex inputIndex) const;
+
+        //! Returns an unbounded span of image views associated with the given buffer shader input index.
+        AZStd::span<const ConstPtr<MultiDeviceImageView>> GetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex) const;
+
+        //! Returns a single buffer view associated with the buffer shader input index and array offset.
+        const ConstPtr<MultiDeviceBufferView>& GetBufferView(ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const;
+
+        //! Returns a span of buffer views associated with the given buffer shader input index.
+        AZStd::span<const ConstPtr<MultiDeviceBufferView>> GetBufferViewArray(ShaderInputBufferIndex inputIndex) const;
+
+        //! Returns an unbounded span of buffer views associated with the given buffer shader input index.
+        AZStd::span<const ConstPtr<MultiDeviceBufferView>> GetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex) const;
+
+        //! Returns a single sampler associated with the sampler shader input index and array offset.
+        const SamplerState& GetSampler(ShaderInputSamplerIndex inputIndex, uint32_t arrayIndex) const;
+
+        //! Returns a span of samplers associated with the sampler shader input index.
+        AZStd::span<const SamplerState> GetSamplerArray(ShaderInputSamplerIndex inputIndex) const;
+
+        //! Returns constant data for the given shader input index as a template type.
+        //! The stride of T must match the size of the constant input region. The number
+        //! of elements in the returned span is the number of evenly divisible elements.
+        //! If the strides do not match, an empty span is returned.
+        template <typename T>
+        AZStd::span<const T> GetConstantArray(ShaderInputConstantIndex inputIndex) const;
+
+        //! Returns the constant data as type 'T' returned by value. The size of the constant region
+        //! must match the size of T exactly. Otherwise, an empty instance is returned.
+        template <typename T>
+        T GetConstant(ShaderInputConstantIndex inputIndex) const;
+
+        //! Treats the constant input as an array of type T, returning the element by value at the
+        //! specified array index. The size of the constant region must equally partition into an
+        //! array of type T. Otherwise, an empty instance is returned.
+        template <typename T>
+        T GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const;
+
+        //! Returns constant data for the given shader input index as a span of bytes.
+        AZStd::span<const uint8_t> GetConstantRaw(ShaderInputConstantIndex inputIndex) const;
+
+        //! Returns a {Buffer, Image, Sampler} shader resource group. Each resource type has its own separate group.
+        //!  - The size of this group matches the size provided by ShaderResourceGroupLayout::GetGroupSizeFor{Buffer, Image, Sampler}.
+        //!  - Use ShaderResourceGroupLayout::GetGroupInterval to retrieve a [min, max) interval into the span.
+        AZStd::span<const ConstPtr<MultiDeviceImageView>> GetImageGroup() const;
+        AZStd::span<const ConstPtr<MultiDeviceBufferView>> GetBufferGroup() const;
+        AZStd::span<const SamplerState> GetSamplerGroup() const;
+
         //! Returns the device-specific ShaderResourceGroupData for the given index
         const ShaderResourceGroupData& GetDeviceShaderResourceGroupData(int deviceIndex) const
         {
@@ -143,11 +195,21 @@ namespace AZ::RHI
 
         using ResourceTypeMask = ShaderResourceGroupData::ResourceTypeMask;
 
+        // Structure to hold all the bindless views and the BindlessResourceType related to it
+        struct MultiDeviceBindlessResourceViews
+        {
+            BindlessResourceType m_bindlessResourceType = AZ::RHI::BindlessResourceType::Count;
+            AZStd::vector<ConstPtr<MultiDeviceResourceView>> m_bindlessResources;
+        };
+
         //! Reset the update mask
         void ResetUpdateMask();
 
         //! Enable compilation for a resourceType specified by resourceTypeMask
         void EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask);
+
+        //! Returns the mask that is suppose to indicate which resource type was updated
+        uint32_t GetUpdateMask() const;
 
         //! Update the indirect buffer view with the indices of all the image views which reside in the global gpu heap.
         void SetBindlessViews(
@@ -167,19 +229,40 @@ namespace AZ::RHI
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex = 0);
 
-    private:
-        bool ValidateSetImageView(ShaderInputImageIndex inputIndex, const MultiDeviceImageView* imageView, uint32_t arrayIndex) const;
-        bool ValidateSetBufferView(ShaderInputBufferIndex inputIndex, const MultiDeviceBufferView* bufferView, uint32_t arrayIndex) const;
+        //! Get the size of the bindless view map
+        const uint32_t GetBindlessViewsSize() const;
 
-        template<typename TShaderInput, typename TShaderInputDescriptor>
-        bool ValidateImageViewAccess(TShaderInput inputIndex, const MultiDeviceImageView* imageView, uint32_t arrayIndex) const;
-        template<typename TShaderInput, typename TShaderInputDescriptor>
-        bool ValidateBufferViewAccess(TShaderInput inputIndex, const MultiDeviceBufferView* bufferView, uint32_t arrayIndex) const;
+        //! Return all the bindless views referenced indirectly  via SetBindlessViews api
+        const AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, MultiDeviceBindlessResourceViews>& GetBindlessResourceViews() const;
+
+    private:
+        static const ConstPtr<MultiDeviceImageView> s_nullImageView;
+        static const ConstPtr<MultiDeviceBufferView> s_nullBufferView;
+        static const SamplerState s_nullSamplerState;
 
         //! Device mask denoting on which devices the SRG data is needed
         MultiDevice::DeviceMask m_deviceMask;
 
         ConstPtr<ShaderResourceGroupLayout> m_shaderResourceGroupLayout;
+
+        //! The backing data store of bound resources for the shader resource group.
+        AZStd::vector<ConstPtr<MultiDeviceImageView>> m_imageViews;
+        AZStd::vector<ConstPtr<MultiDeviceBufferView>> m_bufferViews;
+        AZStd::vector<SamplerState> m_samplers;
+        AZStd::vector<ConstPtr<MultiDeviceImageView>> m_imageViewsUnboundedArray;
+        AZStd::vector<ConstPtr<MultiDeviceBufferView>> m_bufferViewsUnboundedArray;
+
+        // The map below is used to manage ownership of buffer and image views that aren't bound directly to the shader, but implicitly
+        // referenced through indirection constants. The key corresponds to the pair of (buffer input slot, index) where the indirection
+        // constants reside (an array of indirection buffers is supported)
+        AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, MultiDeviceBindlessResourceViews> m_bindlessResourceViews;
+
+        //! The backing data store of constants used only for the getters, actual storage happens in the single device SRGs.
+        ConstantsData m_constantsData;
+
+        //! Mask used to check whether to compile a specific resource type. This mask is managed by RPI and copied over to the RHI every
+        //! frame.
+        uint32_t m_updateMask = 0;
 
         //! A map of all device-specific ShaderResourceGroupDatas, indexed by the device index
         AZStd::unordered_map<int, ShaderResourceGroupData> m_deviceShaderResourceGroupDatas;
@@ -190,7 +273,7 @@ namespace AZ::RHI
     {
         EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
 
-        bool isValidAll{ true };
+        bool isValidAll = m_constantsData.SetConstant(inputIndex, value);
 
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
@@ -205,7 +288,7 @@ namespace AZ::RHI
     {
         EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
 
-        bool isValidAll{ true };
+        bool isValidAll = m_constantsData.SetConstant(inputIndex, value, arrayIndex);
 
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
@@ -220,7 +303,7 @@ namespace AZ::RHI
     {
         EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
 
-        bool isValidAll{ true };
+        bool isValidAll = m_constantsData.SetConstantMatrixRows(inputIndex, value, rowCount);
 
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
@@ -238,7 +321,7 @@ namespace AZ::RHI
             EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
         }
 
-        bool isValidAll{ true };
+        bool isValidAll = m_constantsData.SetConstantArray(inputIndex, values);
 
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
@@ -248,319 +331,21 @@ namespace AZ::RHI
         return isValidAll;
     }
 
-    template<typename TShaderInput, typename TShaderInputDescriptor>
-    bool MultiDeviceShaderResourceGroupData::ValidateImageViewAccess(
-        TShaderInput inputIndex, const MultiDeviceImageView* imageView, [[maybe_unused]] uint32_t arrayIndex) const
+    template <typename T>
+    AZStd::span<const T> MultiDeviceShaderResourceGroupData::GetConstantArray(ShaderInputConstantIndex inputIndex) const
     {
-        if (!Validation::IsEnabled())
-        {
-            return true;
-        }
-
-        const TShaderInputDescriptor& shaderInputImage = GetLayout()->GetShaderInput(inputIndex);
-
-        if (!imageView)
-        {
-            AZ_Error(
-                "MultiDeviceShaderResourceGroupData",
-                false,
-                "Image Array Input '%s[%d]' is null.",
-                shaderInputImage.m_name.GetCStr(),
-                arrayIndex);
-            return false;
-        }
-
-        const ImageViewDescriptor& imageViewDescriptor = imageView->GetDescriptor();
-        const MultiDeviceImage& image = *(imageView->GetImage());
-        const ImageDescriptor& imageDescriptor = image.GetDescriptor();
-        const ImageFrameAttachment* frameAttachment = image.GetFrameAttachment();
-
-        // The image must have the correct bind flags for the slot.
-        const bool isValidAccess = (shaderInputImage.m_access == ShaderInputImageAccess::Read &&
-                                    CheckBitsAll(imageDescriptor.m_bindFlags, ImageBindFlags::ShaderRead)) ||
-            (shaderInputImage.m_access == ShaderInputImageAccess::ReadWrite &&
-             CheckBitsAll(imageDescriptor.m_bindFlags, ImageBindFlags::ShaderReadWrite));
-
-        if (!isValidAccess)
-        {
-            AZ_Error(
-                "MultiDeviceShaderResourceGroupData",
-                false,
-                "Image Input '%s[%d]': Invalid 'Read / Write' access. Expected '%s'.",
-                shaderInputImage.m_name.GetCStr(),
-                arrayIndex,
-                GetShaderInputAccessName(shaderInputImage.m_access));
-            return false;
-        }
-
-        if (shaderInputImage.m_access == ShaderInputImageAccess::ReadWrite)
-        {
-            // An image view assigned to an input with read-write access must be an attachment on the frame scheduler.
-            if (!frameAttachment)
-            {
-                AZ_Error(
-                    "MultiDeviceShaderResourceGroupData",
-                    false,
-                    "Image Input '%s[%d]': MultiDeviceImage is bound to a ReadWrite shader input, "
-                    "but it is not an attachment on the frame scheduler. All GPU-writable resources "
-                    "must be declared as attachments in order to provide hazard tracking.",
-                    shaderInputImage.m_name.GetCStr(),
-                    arrayIndex,
-                    GetShaderInputAccessName(shaderInputImage.m_access));
-                return false;
-            }
-
-            // NOTE: We aren't able to validate the scope attachment here, because shader resource groups aren't directly
-            // associated with a scope. Instead, the CommandListValidator class will check that the access is correct at
-            // command list submission time.
-        }
-
-        auto checkImageType = [&imageDescriptor, &shaderInputImage, arrayIndex](ImageDimension expected)
-        {
-            if (imageDescriptor.m_dimension != expected)
-            {
-                AZ_UNUSED(shaderInputImage);
-                AZ_UNUSED(arrayIndex);
-                AZ_Error(
-                    "MultiDeviceShaderResourceGroupData",
-                    false,
-                    "Image Input '%s[%d]': The image is %dD but the shader expected %dD",
-                    shaderInputImage.m_name.GetCStr(),
-                    arrayIndex,
-                    static_cast<int>(imageDescriptor.m_dimension),
-                    static_cast<int>(expected));
-                return false;
-            }
-            return true;
-        };
-
-        switch (shaderInputImage.m_type)
-        {
-        case ShaderInputImageType::Unknown:
-            // Unable to validate.
-            break;
-
-        case ShaderInputImageType::Image1DArray:
-        case ShaderInputImageType::Image1D:
-            if (!checkImageType(ImageDimension::Image1D))
-            {
-                return false;
-            }
-            break;
-
-        case ShaderInputImageType::SubpassInput:
-            if (!checkImageType(ImageDimension::Image2D))
-            {
-                return false;
-            }
-            break;
-
-        case ShaderInputImageType::Image2DArray:
-        case ShaderInputImageType::Image2D:
-            if (!checkImageType(ImageDimension::Image2D))
-            {
-                return false;
-            }
-            if (imageDescriptor.m_multisampleState.m_samples != 1)
-            {
-                AZ_Error(
-                    "MultiDeviceShaderResourceGroupData",
-                    false,
-                    "Image Input '%s[%d]': The image has multisample count %u but the shader expected 1.",
-                    shaderInputImage.m_name.GetCStr(),
-                    arrayIndex,
-                    imageDescriptor.m_multisampleState.m_samples);
-                return false;
-            }
-            break;
-
-        case ShaderInputImageType::Image2DMultisample:
-        case ShaderInputImageType::Image2DMultisampleArray:
-            if (!checkImageType(ImageDimension::Image2D))
-            {
-                return false;
-            }
-            if (imageDescriptor.m_multisampleState.m_samples <= 1)
-            {
-                AZ_Error(
-                    "MultiDeviceShaderResourceGroupData",
-                    false,
-                    "Image Input '%s[%d]': The image has multisample count %u but the shader expected more than 1.",
-                    shaderInputImage.m_name.GetCStr(),
-                    arrayIndex,
-                    imageDescriptor.m_multisampleState.m_samples);
-                return false;
-            }
-            break;
-
-        case ShaderInputImageType::Image3D:
-            if (!checkImageType(ImageDimension::Image3D))
-            {
-                return false;
-            }
-            break;
-
-        case ShaderInputImageType::ImageCube:
-        case ShaderInputImageType::ImageCubeArray:
-            if (!checkImageType(ImageDimension::Image2D))
-            {
-                return false;
-            }
-            if (imageViewDescriptor.m_isCubemap == 0)
-            {
-                AZ_Error(
-                    "MultiDeviceShaderResourceGroupData",
-                    false,
-                    "Image Input '%s[%d]': The shader expected a cubemap.",
-                    shaderInputImage.m_name.GetCStr(),
-                    arrayIndex);
-                return false;
-            }
-            break;
-
-        default:
-            AZ_Assert(false, "Image Input '%s[%d]': Invalid image type!", shaderInputImage.m_name.GetCStr(), arrayIndex);
-            return false;
-        }
-
-        return true;
+        return m_constantsData.GetConstantArray<T>(inputIndex);
     }
 
-    template<typename TShaderInput, typename TShaderInputDescriptor>
-    bool MultiDeviceShaderResourceGroupData::ValidateBufferViewAccess(
-        TShaderInput inputIndex, const MultiDeviceBufferView* bufferView, [[maybe_unused]] uint32_t arrayIndex) const
+    template <typename T>
+    T MultiDeviceShaderResourceGroupData::GetConstant(ShaderInputConstantIndex inputIndex) const
     {
-        if (!Validation::IsEnabled())
-        {
-            return true;
-        }
+        return m_constantsData.GetConstant<T>(inputIndex);
+    }
 
-        const TShaderInputDescriptor& shaderInputBuffer = GetLayout()->GetShaderInput(inputIndex);
-        const BufferViewDescriptor& bufferViewDescriptor = bufferView->GetDescriptor();
-        const MultiDeviceBuffer& buffer = *(bufferView->GetBuffer());
-        const BufferDescriptor& bufferDescriptor = buffer.GetDescriptor();
-        const BufferFrameAttachment* frameAttachment = buffer.GetFrameAttachment();
-
-        const bool isValidAccess = (shaderInputBuffer.m_access == ShaderInputBufferAccess::Constant &&
-                                    CheckBitsAll(bufferDescriptor.m_bindFlags, BufferBindFlags::Constant)) ||
-            (shaderInputBuffer.m_access == ShaderInputBufferAccess::Read &&
-             CheckBitsAll(bufferDescriptor.m_bindFlags, BufferBindFlags::ShaderRead)) ||
-            (shaderInputBuffer.m_access == ShaderInputBufferAccess::Read &&
-             CheckBitsAll(bufferDescriptor.m_bindFlags, BufferBindFlags::RayTracingAccelerationStructure)) ||
-            (shaderInputBuffer.m_access == ShaderInputBufferAccess::ReadWrite &&
-             CheckBitsAll(bufferDescriptor.m_bindFlags, BufferBindFlags::ShaderReadWrite));
-
-        if (!isValidAccess)
-        {
-            AZ_Error(
-                "MultiDeviceShaderResourceGroupData",
-                false,
-                "Buffer Input '%s[%d]': Invalid 'Constant / Read / Write' access. Expected '%s'",
-                shaderInputBuffer.m_name.GetCStr(),
-                arrayIndex,
-                GetShaderInputAccessName(shaderInputBuffer.m_access));
-            return false;
-        }
-
-        if (shaderInputBuffer.m_access == ShaderInputBufferAccess::ReadWrite /*&& !bufferView->IgnoreFrameAttachmentValidation()*/)
-        {
-            // A buffer view assigned to an input with read-write access must be an attachment on the frame scheduler.
-            if (!frameAttachment)
-            {
-                AZ_Error(
-                    "MultiDeviceShaderResourceGroupData",
-                    false,
-                    "Buffer Input '%s[%d]': MultiDeviceBuffer is bound to a ReadWrite shader input, "
-                    "but it is not an attachment on the frame scheduler. All GPU-writable resources "
-                    "must be declared as attachments in order to provide hazard tracking.",
-                    shaderInputBuffer.m_name.GetCStr(),
-                    arrayIndex,
-                    GetShaderInputAccessName(shaderInputBuffer.m_access));
-                return false;
-            }
-
-            // NOTE: We aren't able to validate the scope attachment here, because shader resource groups aren't directly
-            // associated with a scope. Instead, the CommandListValidator class will check that the access is correct at
-            // command list submission time.
-        }
-
-        if (shaderInputBuffer.m_type == ShaderInputBufferType::Constant)
-        {
-            // For Constant type the stride (full constant buffer) must be larger or equal than the buffer view size (element size x
-            // element count).
-            if (!(shaderInputBuffer.m_strideSize >= (bufferViewDescriptor.m_elementSize * bufferViewDescriptor.m_elementCount)))
-            {
-                AZ_Error(
-                    "MultiDeviceShaderResourceGroupData",
-                    false,
-                    "Buffer Input '%s[%d]': stride size %d must be larger than or equal to the buffer view size %d",
-                    shaderInputBuffer.m_name.GetCStr(),
-                    arrayIndex,
-                    shaderInputBuffer.m_strideSize,
-                    (bufferViewDescriptor.m_elementSize * bufferViewDescriptor.m_elementCount));
-                return false;
-            }
-        }
-        else
-        {
-            // For any other type the buffer view's element size should match the stride.
-            if (shaderInputBuffer.m_strideSize != bufferViewDescriptor.m_elementSize)
-            {
-                AZ_Error(
-                    "MultiDeviceShaderResourceGroupData",
-                    false,
-                    "Buffer Input '%s[%d]': Does not match expected stride size %d",
-                    shaderInputBuffer.m_name.GetCStr(),
-                    arrayIndex,
-                    bufferViewDescriptor.m_elementSize);
-                return false;
-            }
-        }
-
-        bool isValidType = true;
-        switch (shaderInputBuffer.m_type)
-        {
-        case ShaderInputBufferType::Unknown:
-            // Unable to validate.
-            break;
-
-        case ShaderInputBufferType::Constant:
-            // Element format is not relevant for viewing a buffer as a constant buffer, any format would be valid.
-            break;
-
-        case ShaderInputBufferType::Structured:
-            isValidType &= bufferViewDescriptor.m_elementFormat == Format::Unknown;
-            break;
-
-        case ShaderInputBufferType::Typed:
-            isValidType &= bufferViewDescriptor.m_elementFormat != Format::Unknown;
-            break;
-
-        case ShaderInputBufferType::Raw:
-            isValidType &= bufferViewDescriptor.m_elementFormat == Format::R32_UINT;
-            break;
-
-        case ShaderInputBufferType::AccelerationStructure:
-            isValidType &= bufferViewDescriptor.m_elementFormat == Format::R32_UINT;
-            break;
-
-        default:
-            AZ_Assert(false, "Buffer Input '%s[%d]': Invalid buffer type!", shaderInputBuffer.m_name.GetCStr(), arrayIndex);
-            return false;
-        }
-
-        if (!isValidType)
-        {
-            AZ_Error(
-                "MultiDeviceShaderResourceGroupData",
-                false,
-                "Buffer Input '%s[%d]': Does not match expected type '%s'",
-                shaderInputBuffer.m_name.GetCStr(),
-                arrayIndex,
-                GetShaderInputTypeName(shaderInputBuffer.m_type));
-            return false;
-        }
-
-        return true;
+    template <typename T>
+    T MultiDeviceShaderResourceGroupData::GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const
+    {
+        return m_constantsData.GetConstant<T>(inputIndex, arrayIndex);
     }
 } // namespace AZ::RHI
