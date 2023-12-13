@@ -66,7 +66,7 @@ then
     exit 0
 elif [[ $1 == "" ]]
 then
-    OUTPUT_PATH=${O3DE_PROJECT_PATH}/ProjectPackages
+    OUTPUT_PATH=${O3DE_PROJECT_PATH}/build/export
 else
     OUTPUT_PATH=$1
 fi

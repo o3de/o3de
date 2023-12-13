@@ -199,6 +199,10 @@
             "isTemplated": false
         },
         {
+            "file": "Registry/user.setreg",
+            "isTemplated": false
+        },
+        {
             "file": "Resources/GameSDK.ico",
             "isTemplated": false
         },
@@ -372,7 +376,8 @@
         },
         {
             "file": "export.sh",
-            "isTemplated": true
+            "isTemplated": true,
+            "isExecutable": true
         },
         {
             "file": "AssetBundling/SeedLists/DefaultLevel.seed",

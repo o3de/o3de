@@ -45,7 +45,7 @@ IF "%1" == "-h" (
     echo
     exit /B 0
 ) ELSE IF "%1" == "" (
-    set OUTPUT_PATH=%O3DE_PROJECT_PATH%ProjectPackages
+    set OUTPUT_PATH=%O3DE_PROJECT_PATH%build\export
 ) ELSE (
     set OUTPUT_PATH=%1
 )

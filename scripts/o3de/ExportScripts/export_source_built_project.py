@@ -81,6 +81,10 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
 
+    # If the output path is a relative path, convert it to an absolute path using the project path as the base
+    if not output_path.is_absolute():
+        output_path = ctx.project_path / str(output_path)
+
     # Use a provided logger or get the current system one
     if not logger:
         logger = logging.getLogger()
