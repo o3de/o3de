@@ -22,8 +22,19 @@
 # scripts\o3de.sh export-project -es ExportScripts\export_source_built_project.py --script-help
 #
 
+# Resolve the current folder in order to resolve the project path
+SOURCE="${BASH_SOURCE[0]}"
+# While $SOURCE is a symlink, resolve it
+while [[ -h "$SOURCE" ]]; do
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$( readlink "$SOURCE" )"
+    # If $SOURCE was a relative symlink (so no "/" as prefix, need to resolve it relative to the symlink base directory
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
 O3DE_PATH=${EnginePath}
-O3DE_PROJECT_PATH=${ProjectPath}
+O3DE_PROJECT_PATH=$DIR
 O3DE_PROJECT_SEEDLIST=${O3DE_PROJECT_PATH}/AssetBundling/SeedLists/*.seed
 OUTPUT_PATH=${O3DE_PROJECT_PATH}/ProjectPackages
 
