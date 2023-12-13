@@ -9,7 +9,6 @@
 import argparse
 import glob
 import logging
-import json
 import os
 import sys
 
@@ -225,14 +224,6 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                             export_layout=export_layout,
                                             archive_output_format=archive_output_format,
                                             logger=logger)
-        if build_config == 'profile':
-            generate_launcher_startup_setreg_patch(ctx.project_name, export_layout.output_path / 'Registry')
-
-def generate_launcher_startup_setreg_patch(project_name, output_path):
-    setregpatch = [{ "op": "add", "path": "/O3DE/Autoexec/ConsoleCommands/bg_ConnectToAssetProcessor", "value": False }]
-    output_path.mkdir(parents=True, exist_ok=True)
-    with open(output_path / f'{project_name.lower()}_export.setregpatch', 'w+') as patch_file:
-        json.dump(setregpatch, patch_file, indent=4)
 
 def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
 

@@ -1,0 +1,7 @@
+[
+    {
+        "op": "add",
+        "path": "/O3DE/Autoexec/ConsoleCommands/bg_ConnectToAssetProcessor",
+        "value": false
+    }
+]
