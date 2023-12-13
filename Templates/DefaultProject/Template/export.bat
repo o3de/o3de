@@ -10,7 +10,7 @@ REM ----------------------------------------------------------------------------
 
 REM This packaging script simplifies the project export command by defaulting the required and important
 REM arguments to the values based on:
-REM     --project-path %O3DE_PROJECT_PATH% 	    <- The path to this project for exporting
+REM     --project-path %O3DE_PROJECT_PATH%      <- The path to this project for exporting
 REM     --tools-build-path %TOOLS_BUILD_PATH%   <- The location of the tools/editor build to make sure all the tools necessary 
 REM                                                for packaging are built and available (if applicable)
 REM     -out %OUTPUT_PATH%                      <- The output location for the exported project
