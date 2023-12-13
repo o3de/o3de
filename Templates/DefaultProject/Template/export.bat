@@ -61,4 +61,4 @@ IF NOT EXIST %O3DE_PATH%\scripts\o3de.bat (
 echo Using engine path at %O3DE_PATH%
 echo Exporting project to %OUTPUT_PATH%
 
-call %O3DE_PATH%\scripts\o3de.bat export-project -es ExportScripts\export_source_built_project.py --project-path %O3DE_PROJECT_PATH% --log-level INFO -assets --build-tools --tools-build-path %TOOLS_BUILD_PATH% -out %OUTPUT_PATH%
+call %O3DE_PATH%\scripts\o3de.bat export-project -es ExportScripts\export_source_built_project.py --project-path %O3DE_PROJECT_PATH% --log-level INFO --tools-build-path %TOOLS_BUILD_PATH% -out %OUTPUT_PATH%
