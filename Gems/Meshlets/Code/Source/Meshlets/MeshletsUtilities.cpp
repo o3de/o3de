@@ -173,7 +173,7 @@ namespace AZ
             viewDescriptor.m_ignoreFrameAttachmentValidation = true;
 
             RHI::MultiDeviceBuffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
-            Data::Instance<RHI::MultiDeviceBufferView> bufferView = aznew RHI::MultiDeviceBufferView(rhiBuffer, viewDescriptor);
+            Data::Instance<RHI::MultiDeviceBufferView> bufferView = rhiBuffer->BuildBufferView(viewDescriptor);
             RHI::ResultCode resultCode = bufferView->Init(*rhiBuffer, viewDescriptor);
 
             if (resultCode != RHI::ResultCode::Success)
