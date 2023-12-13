@@ -632,15 +632,6 @@ def test_extract_cmake_custom_args(input_args, expected_export_args, expected_cc
     assert result_cba_args == expected_cba
 
 
-def test_preprocess_seed_path_list_no_wildcard():
-    pass
-
-def test_preprocess_seed_path_list_absolute_path_wildcard():
-    pass
-
-def test_preprocess_seed_path_list_relative_path_wildcard():
-    pass
-
 @pytest.mark.parametrize("project_path, create_files, check_files, expected_result",[
     pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2"], ["SeedLists/seed1", "SeedLists/seed2"], ["SeedLists/seed1", "SeedLists/seed2"]),
     pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2"], ["SeedLists/seed*"], ["SeedLists/seed1", "SeedLists/seed2"]),

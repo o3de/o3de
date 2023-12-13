@@ -985,7 +985,6 @@ def preprocess_seed_path_list(project_path: pathlib.Path,
     return preprocessed_path_list
 
 
-
 def validate_project_artifact_paths(project_path: pathlib.Path,
                                     artifact_paths: List[pathlib.Path],
                                     file_description: str = "file") -> List[pathlib.Path]:
