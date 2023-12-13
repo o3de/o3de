@@ -21,7 +21,8 @@
 #
 # scripts\o3de.sh export-project -es ExportScripts\export_source_built_project.py --script-help
 #
-
+# Note: The location of the engine (O3DE_PATH) is hardcoded to the location of the engine that was used to generate 
+#       this project. The engine path must reflect the path to the engine on the local machine.
 
 # Resolve the current folder in order to resolve the project path
 SOURCE="${BASH_SOURCE[0]}"
@@ -38,7 +39,13 @@ O3DE_PROJECT_PATH=$DIR
 echo Using project path at $O3DE_PROJECT_PATH
 
 O3DE_PATH=${EnginePath}
-echo Using engine path at $O3DE_PATH
+if [ ! -f ${O3DE_PATH}/scripts/o3de.sh ]
+then
+    echo Engine path $O3DE_PATH is invalid in this script. Make sure to install the engine to $O3DE_PATH or update this script''s $O3DE_PATH to point to the installed engine path on this system.
+    exit 1
+fi
+echo Using engine path at %O3DE_PATH%
+
 
 O3DE_PROJECT_SEEDLIST=${O3DE_PROJECT_PATH}/AssetBundling/SeedLists/*.seed
 OUTPUT_PATH=${O3DE_PROJECT_PATH}/ProjectPackages

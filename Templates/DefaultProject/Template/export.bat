@@ -1,3 +1,4 @@
+@echo off
 REM --------------------------------------------------------------------------------------------------
 REM 
 REM Copyright (c) Contributors to the Open 3D Engine Project.
@@ -31,5 +32,12 @@ set O3DE_PROJECT_PATH=%~dp0
 set O3DE_PROJECT_SEEDLIST=%O3DE_PROJECT_PATH%\AssetBundling\SeedLists\*.seed
 set OUTPUT_PATH=%O3DE_PROJECT_PATH%\ProjectPackages
 set TOOLS_BUILD_PATH=%O3DE_PROJECT_PATH%\build\windows
+
+echo Using project path at %O3DE_PROJECT_PATH%
+IF NOT EXIST %O3DE_PATH%\scripts\o3de.bat (
+	echo Engine path %O3DE_PATH% is invalid in this script. Make sure to install the engine to %O3DE_PATH% or update this script's 'O3DE_PATH' to point to the installed engine path on this system.
+	exit /B 1
+)
+echo Using engine path at %O3DE_PATH%
 
 %O3DE_PATH%\scripts\o3de.bat export-project -es ExportScripts\export_source_built_project.py --project-path %O3DE_PROJECT_PATH% --log-level INFO -assets --build-tools --config release --archive-output zip --seedlist %O3DE_PROJECT_SEEDLIST% --tools-build-path %TOOLS_BUILD_PATH% -out %OUTPUT_PATH%
