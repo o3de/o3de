@@ -118,8 +118,9 @@ namespace AtomToolsFramework
 
         // Register is actually use for range-based control types.
         // If all the necessary data is present a slider control will be presented.
+        bool ApplyRangeEditDataAttributesToNumericTypes();
         template<typename AttributeValueType>
-        void ApplyRangeEditDataAttributesWithTypeCheck();
+        bool ApplyRangeEditDataAttributesToNumericType();
         template<typename AttributeValueType>
         void ApplyRangeEditDataAttributes();
         template<typename AttributeValueType>

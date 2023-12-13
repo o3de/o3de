@@ -52,7 +52,7 @@
 {
     // Dummy variables to call the above function
     real depthCS = 1.0;
-    bool isClipped;
+    bool isClipped = false;
     
     SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 }

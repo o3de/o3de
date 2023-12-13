@@ -49,8 +49,16 @@ namespace AZ
             {
             public:
                 AZStd::string GetBuilderSettingsFingerprint() const;
-                void CreateJobsHelper(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response, const MaterialTypeSourceData& materialTypeSourceData) const;
-                void ProcessJobHelper(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
+                void CreateJobsHelper(
+                    const AssetBuilderSDK::CreateJobsRequest& request,
+                    AssetBuilderSDK::CreateJobsResponse& response,
+                    const AZStd::string& materialTypeSourcePath,
+                    const MaterialTypeSourceData& materialTypeSourceData) const;
+                void ProcessJobHelper(
+                    const AssetBuilderSDK::ProcessJobRequest& request,
+                    AssetBuilderSDK::ProcessJobResponse& response,
+                    const AZStd::string& materialTypeSourcePath,
+                    MaterialTypeSourceData& materialTypeSourceData) const;
 
             private:
                 AZStd::vector<AZStd::string> GetMaterialPipelinePaths() const;
@@ -66,8 +74,16 @@ namespace AZ
             {
             public:
                 AZStd::string GetBuilderSettingsFingerprint() const;
-                void CreateJobsHelper(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response, const MaterialTypeSourceData& materialTypeSourceData) const;
-                void ProcessJobHelper(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
+                void CreateJobsHelper(
+                    const AssetBuilderSDK::CreateJobsRequest& request,
+                    AssetBuilderSDK::CreateJobsResponse& response,
+                    const AZStd::string& materialTypeSourcePath,
+                    const MaterialTypeSourceData& materialTypeSourceData) const;
+                void ProcessJobHelper(
+                    const AssetBuilderSDK::ProcessJobRequest& request,
+                    AssetBuilderSDK::ProcessJobResponse& response,
+                    const AZStd::string& materialTypeSourcePath,
+                    const MaterialTypeSourceData& materialTypeSourceData) const;
 
             private:
                 bool ShouldOutputAllPropertiesMaterial() const;

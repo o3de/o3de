@@ -56,7 +56,9 @@ namespace ShaderManagementConsole
         for (auto const& variantUsage : m_statisticData.m_shaderVariantUsage)
         {
             ShaderVariantInfo info = variantUsage.second;
-            setVerticalHeaderItem(row, new QTableWidgetItem(QString::number(info.m_count)));
+            auto* countVHeader = new QTableWidgetItem(QString::number(info.m_count));
+            countVHeader->setToolTip(tr("Count of materials x shaders using this variant ID"));
+            setVerticalHeaderItem(row, countVHeader);
 
             for (int column = 0; column < columnCount(); ++column)
             {
@@ -79,7 +81,9 @@ namespace ShaderManagementConsole
                     {
                         int count = m_statisticData.m_shaderOptionUsage[optionName][valueName];
                         AZStd::string itemText = AZStd::string::format("%s     %d", valueName.GetCStr(), count);
-                        setItem(row, column, new QTableWidgetItem(itemText.c_str()));
+                        auto* cellWidget = new QTableWidgetItem(itemText.c_str());
+                        cellWidget->setToolTip(tr(u8"value \u23B5 usage count of this value"));
+                        setItem(row, column, cellWidget);
                         break;
                     }
                 }
@@ -107,7 +111,7 @@ namespace ShaderManagementConsole
         contextMenu.exec(mapToGlobal(pos));
     }
 
-     void ShaderManagementConsoleStatisticView::ShowMaterialList(AZ::Name optionName)
+    void ShaderManagementConsoleStatisticView::ShowMaterialList(AZ::Name optionName)
     {
         AZStd::vector<AZ::Data::AssetId> materialAssetIdList;
         ShaderManagementConsoleRequestBus::BroadcastResult(
@@ -166,7 +170,7 @@ namespace ShaderManagementConsole
         if (materialList != "")
         {
             QMessageBox msgBox(AzToolsFramework::GetActiveWindow());
-            QString message = QString(tr("The materials which used %1 are listed here.\n %2 materials are using it."))
+            QString message = QString(tr("%2 materials used %1. Show details for the complete list."))
                                   .arg(optionName.GetCStr()).arg(QString::number(materialCount));
             msgBox.setText(message);
             msgBox.setDetailedText(materialList);

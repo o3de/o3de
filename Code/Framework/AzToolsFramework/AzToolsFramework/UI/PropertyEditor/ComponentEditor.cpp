@@ -161,6 +161,7 @@ namespace AzToolsFramework
 
             // this DPE is going into a scroll area, don't allow it to provide its own scrollbar
             m_dpe->SetAllowVerticalScroll(false);
+            m_dpe->SetEnforceMinWidth(false); // allow the DPE to get as small as the user prefers
             m_filterAdapter->SetSourceAdapter(m_adapter);
             m_dpe->SetAdapter(m_filterAdapter);
             connect(m_dpe, &DocumentPropertyEditor::ExpanderChangedByUser, this, &ComponentEditor::OnExpansionContractionDone);

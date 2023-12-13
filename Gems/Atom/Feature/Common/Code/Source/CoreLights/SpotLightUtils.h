@@ -40,7 +40,7 @@ namespace AZ
             template<class LightData>
             float GetBulbPositionOffset([[maybe_unused]] const LightData& light, general_)
             {
-                return 0.0f;
+                return 0.01f;
             }
 
             //! Creates the bounds for a spot light

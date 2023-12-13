@@ -28,12 +28,8 @@ namespace AzToolsFramework
             LoadingThumbnail();
             ~LoadingThumbnail() override;
 
-            void UpdateTime(float /*deltaTime*/) override;
-
-            //////////////////////////////////////////////////////////////////////////
             // TickBus
-            //////////////////////////////////////////////////////////////////////////
-            //! LoadingThumbnail is not part pf any thumbnail cache, so it needs to be updated manually
+            //! LoadingThumbnail needs to update the loading animation
             void OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/) override;
 
         private:

@@ -140,4 +140,46 @@ namespace AZ
         /// expected by the ClassData for this element
         void* ResolvePointer(void* ptr, const SerializeContext::ClassElement& classElement, const SerializeContext& context);
     } // namespace Utils
-} // namespace AzCore
+} // namespace Az
+
+
+namespace AZ::Utils
+{
+    //! Search the Edit context and Serialize Context attributes of class for the first attribute
+    //! matching the attributeId parameter
+    //! Locates attributes by searching in the following order:
+    //! 1) Class element edit data attributes (EditContext from the given row of a class)
+    //! 2) Class element data attributes (SerializeContext from the given row of a class)
+    //! 3) Edit Class data attributes (the attributes added to a EditContext reflected class "EditorData" element)
+    //! 4) Class data attributes (the base attributes of a class)
+    //! @param attributeId numeric ID of attribute to lookup. A string can be converted to an AttributeId by converting it to `AZ::Crc32`
+    //! @param classData Serialize Context reflected ClassData structure
+    //! @param classElement Serialize Context field element for the field being examined. This is added via the SerializeContext
+    //! ClassBuilder `Field` function
+    //! @param editClassData Edit Context reflected ClassData structure
+    //! @param elementEditData Edit Context data element for a specific field. This is added via the EditContext Class Builder `DataElement`
+    //! function
+    //! @return first attribute which matches the specified attribute ID or nullptr
+    AZ::Attribute* FindEditOrSerializeContextAttribute(
+        AZ::AttributeId attributeId,
+        const AZ::SerializeContext::ClassData* classData,
+        const AZ::SerializeContext::ClassElement* classElement,
+        const AZ::Edit::ClassData* editClassData,
+        const AZ::Edit::ElementData* elementEditData);
+    AZ::Attribute* FindEditOrSerializeContextAttribute(
+        AZ::AttributeId attributeId,
+        const AZ::SerializeContext::ClassData* classData,
+        const AZ::SerializeContext::ClassElement* classElement,
+        const AZ::Edit::ElementData* elementEditData);
+
+    AZ::Attribute* FindEditOrSerializeContextAttribute(
+        AZ::AttributeId attributeId,
+        const AZ::SerializeContext::ClassData* classData,
+        const AZ::SerializeContext::ClassElement* classElement,
+        const AZ::Edit::ClassData* editClassData);
+
+    AZ::Attribute* FindEditOrSerializeContextAttribute(
+        AZ::AttributeId attributeId,
+        const AZ::SerializeContext::ClassData* classData,
+        const AZ::SerializeContext::ClassElement* classElement);
+} // namespace AZ::Utils

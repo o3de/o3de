@@ -39,6 +39,12 @@
                 "GlossBias": 0.0,
                 "Streaming": false,
                 "Enable": false
+            },
+            "server": {
+                "GlossScale": 16.0,
+                "GlossBias": 0.0,
+                "Streaming": false,
+                "Enable": false
             }
         },
         "PresetsByFileMask": {

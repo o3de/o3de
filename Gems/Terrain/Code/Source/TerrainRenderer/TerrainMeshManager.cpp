@@ -152,16 +152,22 @@ namespace Terrain
         return m_isInitialized;
     }
 
+    void TerrainMeshManager::ClearSectorBuffers()
+    {
+        // RemoveRayTracedMeshes() needs to be called first since it uses pointers into the sector data stored in m_sectorLods.
+        RemoveRayTracedMeshes();
+        m_candidateSectors.clear();
+        m_sectorsThatNeedSrgCompiled.clear();
+        m_sectorLods.clear();
+    }
+
     void TerrainMeshManager::Reset()
     {
         if (m_meshMovedFlag.IsValid())
         {
             m_parentScene->GetViewTagBitRegistry().ReleaseTag(m_meshMovedFlag);
         }
-        m_candidateSectors.clear();
-        m_sectorsThatNeedSrgCompiled.clear();
-        RemoveRayTracedMeshes();
-        m_sectorLods.clear();
+        ClearSectorBuffers();
         m_xyPositions.clear();
         m_cachedDrawData.clear();
 
@@ -170,6 +176,10 @@ namespace Terrain
 
     void TerrainMeshManager::RemoveRayTracedMeshes()
     {
+        AZ_Assert(m_rayTracedItems.empty() || !m_sectorLods.empty(),
+            "RemoveRayTracedMeshes() is being called after the underlying sector data has been deleted. "
+            "The pointers stored in it are no longer valid.");
+
         for (RayTracedItem& item : m_rayTracedItems)
         {
             RtSector::MeshGroup& meshGroup = item.m_sector->m_rtData->m_meshGroups.at(item.m_meshGroupIndex);
@@ -438,10 +448,7 @@ namespace Terrain
         // Add one sector of wiggle room so to avoid thrashing updates when going back and forth over a boundary.
         m_1dSectorCount += 1;
 
-        m_sectorLods.clear();
-        m_candidateSectors.clear();
-        m_sectorsThatNeedSrgCompiled.clear();
-        RemoveRayTracedMeshes();
+        ClearSectorBuffers();
 
         const uint8_t lodCount = aznumeric_cast<uint8_t>(AZStd::ceilf(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
         m_sectorLods.reserve(lodCount);
@@ -651,10 +658,7 @@ namespace Terrain
 
     void TerrainMeshManager::OnTerrainDataDestroyBegin()
     {
-        m_sectorLods.clear();
-        m_candidateSectors.clear();
-        m_sectorsThatNeedSrgCompiled.clear();
-        RemoveRayTracedMeshes();
+        ClearSectorBuffers();
         m_rebuildSectors = true;
     }
 

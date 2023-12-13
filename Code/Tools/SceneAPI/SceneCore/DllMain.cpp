@@ -29,6 +29,7 @@
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 
 #include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/IImportGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IMeshGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISkeletonGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISkinGroup.h>
@@ -55,6 +56,7 @@
 
 #include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
 #include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
+#include <SceneAPI/SceneCore/Import/SceneImportSettings.h>
 #include <SceneAPI/SceneCore/Utilities/PatternMatcher.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 
@@ -158,6 +160,7 @@ namespace AZ
                     context->Class<AZ::SceneAPI::DataTypes::ISkeletonGroup, AZ::SceneAPI::DataTypes::IGroup>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::ISkinGroup, AZ::SceneAPI::DataTypes::ISceneNodeGroup>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::IAnimationGroup, AZ::SceneAPI::DataTypes::IGroup>()->Version(1);
+                    context->Class<AZ::SceneAPI::DataTypes::IImportGroup, AZ::SceneAPI::DataTypes::ISceneNodeGroup>()->Version(0);
 
                     // Register rule interfaces
                     context->Class<AZ::SceneAPI::DataTypes::IRule, AZ::SceneAPI::DataTypes::IManifestObject>()->Version(1);
@@ -191,6 +194,9 @@ namespace AZ
                     // Register utilities
                     AZ::SceneAPI::SceneCore::PatternMatcher::Reflect(context);
                     AZ::SceneAPI::Utilities::DebugSceneGraph::Reflect(context);
+
+                    // Register import settings
+                    AZ::SceneAPI::SceneImportSettings::Reflect(context);
                 }
             }
 

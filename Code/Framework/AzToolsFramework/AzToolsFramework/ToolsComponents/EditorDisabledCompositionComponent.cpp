@@ -66,7 +66,14 @@ namespace AzToolsFramework
                         // the template is null and the component should not be added.
                         if (component && component->GetUnderlyingComponentType() != genericComponentWrapperTypeId)
                         {
-                            componentInstance->AddDisabledComponent(component);
+                            // When a component is first added into the disabledComponents list, it will already have
+                            // a serialized identifier set, which is then used as the componentKey.
+                            // When serializing the component back in, the identifier isn't serialized with the component itself,
+                            // so we need to set it manually with the componentKey to restore the state back to what it was
+                            // at the original point of serialization.
+                            component->SetSerializedIdentifier(componentKey);
+
+                            componentInstance->m_disabledComponents.emplace(componentKey, component);
                         }
                     }
                 }
