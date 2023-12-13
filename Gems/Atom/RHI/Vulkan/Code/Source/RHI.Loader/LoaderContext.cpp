@@ -39,7 +39,7 @@ namespace AZ
             {
                 LoadLayerExtensions(descriptor);
             }
-            FilterAvailableExtensions();
+            FilterAvailableExtensions(descriptor.m_device);
             return result != 0;
         }
 
@@ -196,11 +196,13 @@ namespace AZ
             return m_context;
         }
 
-        void LoaderContext::FilterAvailableExtensions()
+        void LoaderContext::FilterAvailableExtensions(const VkDevice device)
         {
             // In some cases (like when running with the GPU profiler on Quest2) the extension is reported as available
             // but the function pointers do not load. Disable the extension if that's the case.
-            if (m_context.EXT_debug_utils && !m_context.CmdBeginDebugUtilsLabelEXT)
+            if (device != VK_NULL_HANDLE &&
+                m_context.EXT_debug_utils &&
+                m_context.CmdBeginDebugUtilsLabelEXT)
             {
                 m_context.EXT_debug_utils = 0;
             }
