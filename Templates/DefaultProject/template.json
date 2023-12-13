@@ -143,7 +143,7 @@
             "isTemplated": true
         },
         {
-            "file": "Levels/ExampleLevel/ExampleLevel.prefab",
+            "file": "Levels/Default/DefaultLevel.prefab",
             "isTemplated": false
         },
         {
@@ -371,7 +371,7 @@
             "isTemplated": true
         },
         {
-            "file": "AssetBundling/SeedLists/Example.seed",
+            "file": "AssetBundling/SeedLists/DefaultLevel.seed",
             "isTemplated": false
         },
         {
@@ -440,7 +440,7 @@
             "dir": "Levels"
         },
         {
-            "dir": "Levels/ExampleLevel"
+            "dir": "Levels/Default"
         },
         {
             "dir": "Platform"
