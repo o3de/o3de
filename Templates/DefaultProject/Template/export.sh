@@ -51,11 +51,11 @@ O3DE_PROJECT_SEEDLIST=${O3DE_PROJECT_PATH}/AssetBundling/SeedLists/*.seed
 OUTPUT_PATH=${O3DE_PROJECT_PATH}/ProjectPackages
 
 if [[ "$OSTYPE" == *"darwin"* ]]; then
-	TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/mac
+    TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/mac
 elif [[ "$OSTYPE" == "msys" ]]; then
-	TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/windows
+    TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/windows
 else
-	TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/linux
+    TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/linux
 fi
 
 ${O3DE_PATH}/scripts/o3de.sh export-project -es ExportScripts/export_source_built_project.py --project-path ${O3DE_PROJECT_PATH} --log-level INFO -assets --build-tools --config release --archive-output zip --seedlist ${O3DE_PROJECT_SEEDLIST} -out ${OUTPUT_PATH}
