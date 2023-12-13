@@ -958,6 +958,16 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
     
     with open(export_layout.output_path / 'project.json', 'w') as project_json_file:
         json.dump({"project_name": project_name}, project_json_file, ensure_ascii=True)
+    
+    if build_config == 'profile':
+        # This file is intended to be included in exported projects to prevent the asset processor from
+        # launching from the exported location. If you want to launch the asset processor anyways from an exported project,
+        # delete the copy of this file in the `Registry` subfolder found in the exported location.
+
+        setregpatch_file = pathlib.Path(__file__).parent.parent / 'ExportScripts/IgnoreAssetProcessor.profile.setregpatch'
+        (export_layout.output_path / 'Registry').mkdir(exist_ok=True) 
+        shutil.copy(setregpatch_file, export_layout.output_path / 'Registry')
+
 
     # Optionally compress the layout directory into an archive if the user requests
     if archive_output_format != "none":
