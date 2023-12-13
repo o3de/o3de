@@ -308,6 +308,9 @@ namespace AZ::Reflection
                 //! Finally if the instance being referenced is an AZ::Component**, then the m_pointerLevel is 2
                 AZ::u32 m_pointerLevel = 0;
 
+                //! Forces this node to be hidden and to show just the children.
+                bool m_showChildrenOnly = false;
+
                 const SerializeContext::ClassData* m_classData = nullptr;
                 const SerializeContext::ClassElement* m_classElement = nullptr;
                 const AZ::Edit::ElementData* m_elementEditData = nullptr;
@@ -596,7 +599,24 @@ namespace AZ::Reflection
                                 {
                                     groupName = AZStd::string::format("_GROUP[%d]", ++groupCounter);
                                     nodeData.m_groupEntries.insert(groupName);
-                                    nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::nullopt));
+
+                                    // Create a dummy group entry that will be used to correctly display all children properties and UI elements.
+                                    AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                                    UIElement->m_editData = &currElement;
+                                    UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                                    // A group is a UI node that isn't backed with a real C++ type, so its pointer level is 0.
+                                    constexpr AZ::u32 pointerLevel = 0;
+                                    StackEntry entry(
+                                        nodeData.m_instance,
+                                        nodeData.m_instance,
+                                        pointerLevel,
+                                        nodeData.m_classData,
+                                        UIElement,
+                                        UIElement->m_editData);
+                                    // Hide this dummy group and only show the children.
+                                    entry.m_showChildrenOnly = true;
+
+                                    nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
                                 }
                             }
                         }
@@ -1009,13 +1029,12 @@ namespace AZ::Reflection
 
                         nodeData.m_propertyToGroupMap.clear();
                         nodeData.m_groupEntries.clear();
-                        nodeData.m_groups.clear();
                     }
 
                     auto nodePath = nodeData.m_path;
                     m_stack.pop_back();
 
-                    // handle creation of an UI elements that were slated to come directly after this element
+                    // handle creation of any UI elements that were slated to come directly after this element
                     HandleNodeUiElementsCreation(nodePath);
                 }
 
@@ -1158,7 +1177,8 @@ namespace AZ::Reflection
 
                 // If the stack contains 2 nodes, it means we are now processing the root node. The first node is a dummy parent node.
                 // Hide the root node itself if the visitor is visiting from the instance's root.
-                if (m_stack.size() == 2 && m_visitFromRoot)
+                // Alternatively, hide if forced by the node's property.
+                if ((m_stack.size() == 2 && m_visitFromRoot) || nodeData.m_showChildrenOnly)
                 {
                     visibility = PropertyVisibility::ShowChildrenOnly;
                 }
