@@ -21,8 +21,7 @@
 #
 # scripts\o3de.sh export-project -es ExportScripts\export_source_built_project.py --script-help
 #
-# Note: The location of the engine (O3DE_PATH) is hardcoded to the location of the engine that was used to generate 
-#       this project. The engine path must reflect the path to the engine on the local machine.
+
 
 # Resolve the current folder in order to resolve the project path
 SOURCE="${BASH_SOURCE[0]}"
@@ -35,8 +34,19 @@ while [[ -h "$SOURCE" ]]; do
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-O3DE_PATH=${EnginePath}
 O3DE_PROJECT_PATH=$DIR
+echo Using project path at $O3DE_PROJECT_PATH
+
+# Query the EngineFinder.cmake to locate the path to the engine
+ENGINE_PATH_QUERY=$(cmake -P $DIR/cmake/EngineFinder.cmake)
+if [ $? -ne 0 ]; then
+    echo "Unable to determine path to the engine."
+    exit 1
+fi
+
+O3DE_PATH=$(echo ${ENGINE_PATH_QUERY:20} | sed "s/'//g")
+echo Using engine path at $O3DE_PATH
+
 O3DE_PROJECT_SEEDLIST=${O3DE_PROJECT_PATH}/AssetBundling/SeedLists/*.seed
 OUTPUT_PATH=${O3DE_PROJECT_PATH}/ProjectPackages
 
@@ -48,4 +58,4 @@ else
 	TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/linux
 fi
 
-${O3DE_PATH}/scripts/o3de.sh export-project -es ExportScripts/export_source_built_project.py --project-path ${O3DE_PROJECT_PATH} --log-level INFO -assets --build-tools --config release --archive-output zip --seedlist ${O3DE_PROJECT_SEEDLIST} -out ${OUTPUT_PATH}
+echo ${O3DE_PATH}/scripts/o3de.sh export-project -es ExportScripts/export_source_built_project.py --project-path ${O3DE_PROJECT_PATH} --log-level INFO -assets --build-tools --config release --archive-output zip --seedlist ${O3DE_PROJECT_SEEDLIST} -out ${OUTPUT_PATH}

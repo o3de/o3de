@@ -368,7 +368,7 @@
         },
         {
             "file": "export.sh",
-            "isTemplated": true
+            "isTemplated": false
         },
         {
             "file": "AssetBundling/SeedLists/DefaultLevel.seed",
