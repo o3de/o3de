@@ -6,9 +6,33 @@
 #
 #
 
+# This packaging script simplifies the project export command by defaulting the required and important
+# arguments to the values based on:
+#     --project-path %O3DE_PROJECT_PATH% 		<- The path to this project for exporting
+#     --config release                        <- Specify a release build for the exported project
+#     --archive-output zip                    <- The output format of the compressed archive for the exported project
+#     --seedlist %O3DE_PROJECT_SEEDLIST%      <- The seedlist to use to create the pak files
+#     --tools-build-path %TOOLS_BUILD_PATH%   <- The location of the tools/editor build to make sure all the tools necessary 
+#                                                for packaging are built and available (if applicable)
+#     -out %OUTPUT_PATH%                      <- The output location for the exported project
+#
+# Feel free to adjust any of the arguments as necessary. For more information about the project export command, type in the 
+# following command from the engine root
+#
+# scripts\o3de.sh export-project -es ExportScripts\export_source_built_project.py --script-help
+#
+
 O3DE_PATH=${EnginePath}
 O3DE_PROJECT_PATH=${ProjectPath}
 O3DE_PROJECT_SEEDLIST=${O3DE_PROJECT_PATH}/AssetBundling/SeedLists/*.seed
 OUTPUT_PATH=${O3DE_PROJECT_PATH}/ProjectPackages
+
+if [[ "$OSTYPE" == *"darwin"* ]]; then
+	TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/mac
+elif [[ "$OSTYPE" == "msys" ]]; then
+	TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/windows
+else
+	TOOLS_BUILD_PATH=${O3DE_PROJECT_PATH}/build/linux
+fi
 
 ${O3DE_PATH}/scripts/o3de.sh export-project -es ExportScripts/export_source_built_project.py --project-path ${O3DE_PROJECT_PATH} --log-level INFO -assets --build-tools --config release --archive-output zip --seedlist ${O3DE_PROJECT_SEEDLIST} -out ${OUTPUT_PATH}
