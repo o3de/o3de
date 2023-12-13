@@ -974,6 +974,8 @@ namespace AZ::Reflection
                 {
                     StackEntry& nodeData = m_stack.back();
 
+                    AZ_Assert(nodeData != nullptr, "LegacyReflectionBridge: Unable to retrieve nodeData in EndNode");
+
                     // Handle groups
                     if (nodeData.m_groups.size() > 0)
                     {
