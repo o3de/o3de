@@ -23,6 +23,9 @@ REM
 REM scripts\o3de.bat export-project -es ExportScripts\export_source_built_project.py --script-help
 REM
 
+REM Note: The location of the engine (O3DE_PATH) is hardcoded to the location of the engine that was used to generate 
+REM       this project. The engine path must reflect the path to the engine on the local machine.
+
 set O3DE_PATH=${EnginePath}
 set O3DE_PROJECT_PATH=%~dp0
 set O3DE_PROJECT_SEEDLIST=%O3DE_PROJECT_PATH%\AssetBundling\SeedLists\*.seed

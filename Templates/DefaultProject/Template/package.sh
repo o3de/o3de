@@ -21,6 +21,8 @@
 #
 # scripts\o3de.sh export-project -es ExportScripts\export_source_built_project.py --script-help
 #
+# Note: The location of the engine (O3DE_PATH) is hardcoded to the location of the engine that was used to generate 
+#       this project. The engine path must reflect the path to the engine on the local machine.
 
 # Resolve the current folder in order to resolve the project path
 SOURCE="${BASH_SOURCE[0]}"
