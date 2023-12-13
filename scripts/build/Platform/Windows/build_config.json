@@ -449,12 +449,24 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
+  "install_mono_release": {
+    "TAGS": [],
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build\\windows_mono",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_DISABLE_TEST_MODULES=TRUE",
+      "CMAKE_TARGET": "INSTALL",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
   "installer_pipe": { 
     "TAGS": [
       "periodic-clean-weekly-internal",
       "nightly-installer"
     ],
     "steps": [
+      "install_mono_release",
       "installer",
       "installer_test"
     ]
@@ -469,7 +481,7 @@
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows",
         "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
-        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=!INSTALLER_DOWNLOAD_URL! -DLY_INSTALLER_LICENSE_URL=!INSTALLER_DOWNLOAD_URL!/license",
+        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=!INSTALLER_DOWNLOAD_URL! -DLY_INSTALLER_LICENSE_URL=!INSTALLER_DOWNLOAD_URL!/license -DCPACK_INSTALLED_DIRECTORIES=\"!WORKSPACE!/o3de/install;/CORE\"",
         "CMAKE_TARGET": "ALL_BUILD",
         "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=\"!CPACK_UPLOAD_URL!\"",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"

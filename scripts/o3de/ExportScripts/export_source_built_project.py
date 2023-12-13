@@ -229,7 +229,6 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                             archive_output_format=archive_output_format,
                                             logger=logger)
 
-
 def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
 
         parser = argparse.ArgumentParser(

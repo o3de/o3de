@@ -6,6 +6,7 @@
 #
 #
 
+import json
 import pytest
 import pathlib
 import unittest.mock as mock
@@ -545,6 +546,14 @@ def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform,
         result_archive_file = tmp_path / f"output.{test_archive_output_format}"
         assert result_archive_file.is_file(), f"Missing <output>.{test_archive_output_format}"
 
+    setregpatch_file = test_output_path / 'Registry/IgnoreAssetProcessor.profile.setregpatch'
+    if build_config == 'profile':
+        assert (test_output_path / 'Registry').exists()
+        assert setregpatch_file.is_file()
+        with open(setregpatch_file,'r') as pf:
+            assert 'bg_ConnectToAssetProcessor' in pf.read()
+    else:
+        assert not setregpatch_file.is_file()
 
 @pytest.mark.parametrize("project_path, create_files, check_abs_files, check_rel_files, expect_error",[
     pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2"], ["project/SeedLists/seed1", "project/SeedLists/seed2"], [], False),
