@@ -146,6 +146,14 @@ def updateOptionValue(shaderVariants, targetOptionName, targetValue, stableId):
 
     return tempShaderVariants, stableId
 
+# alters the option group passed in argument by clearing internal options if predicate passes
+def clearOptions(optionGroup, predicateTakingOptionName_clearIfYes):
+    descriptors = optionGroup.GetShaderOptionDescriptors()
+    for optDesc in descriptors:
+        optionName = optDesc.GetName()
+        if predicateTakingOptionName_clearIfYes(optionName):
+            optionGroup.ClearValue(optionName)
+
 # Input is one .shader
 def create_shadervariantlist_for_shader(filename):
     
@@ -162,6 +170,7 @@ def create_shadervariantlist_for_shader(filename):
         'FindMaterialAssetsUsingShader', 
         shaderAssetInfo.relativePath
     )
+    print(f"Found {len(materialAssetIds)} material assets")
 
     shaderVariantList = azlmbr.shader.ShaderVariantListSourceData()
     shaderVariantList.shaderFilePath = shaderAssetInfo.relativePath
@@ -202,7 +211,10 @@ def create_shadervariantlist_for_shader(filename):
                         continue
 
                     shaderVariantIds.append(shaderVariantId)
-                    shaderOptionGroups.append(shaderItem.GetShaderOptionGroup())
+                    optionGroup = shaderItem.GetShaderOptionGroup()
+                    # clear the group from spuriously defaulted options by reducing it to a lean set:
+                    clearOptions(optionGroup, lambda optName_Query: not shaderItem.MaterialOwnsShaderOption(optName_Query))
+                    shaderOptionGroups.append(optionGroup)
                     
 
         progressDialog.setValue(i)
@@ -223,7 +235,7 @@ def create_shadervariantlist_for_shader(filename):
 
     # Generate the shader variant list data by collecting shader option name-value pairs.s
     shaderVariants = []
-    systemOptionDescriptor = {} 
+    systemOptionDescriptor = {}
     stableId = 1
 
     for shaderOptionGroup in shaderOptionGroups:
