@@ -48,7 +48,7 @@ function(ly_apply_debug_strip_options target)
         return()
     endif()
 
-    if (NOT ${LY_STRIP_DEBUG_SYMBOLS})
+    if (NOT LY_STRIP_DEBUG_SYMBOLS)
         return()
     endif()
 
