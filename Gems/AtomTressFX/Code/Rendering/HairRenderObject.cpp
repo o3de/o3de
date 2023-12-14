@@ -128,7 +128,7 @@ namespace AZ
 
                     // Buffer binding into the raster srg
                     RHI::ShaderInputBufferIndex indexHandle = m_simSrgForRaster->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
-                    if (!m_simSrgForRaster->SetBufferView(indexHandle, m_readBuffersViews[index]->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
+                    if (!m_simSrgForRaster->SetBufferView(indexHandle, m_readBuffersViews[index].get()))
                     {
                         AZ_Error("Hair Gem", false, "Failed to bind raster buffer view for %s", streamDesc.m_bufferName.GetCStr());
                         return false;
@@ -170,7 +170,7 @@ namespace AZ
                     RHI::ShaderInputBufferIndex indexHandle = m_simSrgForCompute->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
                     streamDesc.m_resourceShaderIndex = indexHandle.GetIndex();
 
-                    if (!m_simSrgForCompute->SetBufferView(indexHandle, m_dynamicBuffersViews[buffer]->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
+                    if (!m_simSrgForCompute->SetBufferView(indexHandle, m_dynamicBuffersViews[buffer].get()))
                     {
                         AZ_Error("Hair Gem", false, "Failed to bind compute buffer view for %s", streamDesc.m_bufferName.GetCStr());
                         return false;
@@ -497,13 +497,13 @@ namespace AZ
 
                 // Vertex streams: thickness and texture coordinates
                 desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)];
-                if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairVertexRenderParams->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
+                if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairVertexRenderParams->GetBufferView()))
                 {
                     bindSuccess = false;
                     AZ_Error("Hair Gem", false, "Failed to bind buffer view for [%s]", desc->m_bufferName.GetCStr());
                 }
                 desc = &m_hairRenderDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)];
-                if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairTexCoords->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
+                if (!m_hairRenderSrg->SetBufferView(RHI::ShaderInputBufferIndex(desc->m_resourceShaderIndex), m_hairTexCoords->GetBufferView()))
                 {
                     AZ_Error("Hair Gem", false, "Failed to bind buffer view for [%s]", desc->m_bufferName.GetCStr());
                     bindSuccess = false;
@@ -585,8 +585,8 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::SingleDeviceIndexBufferView(*m_indexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
- 
+                m_indexBufferView = RHI::SingleDeviceIndexBufferView(*m_indexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
+
                 return true;
             }
 
@@ -1145,8 +1145,8 @@ namespace AZ
                     return false;
                 }
                 // No need to compile the simSrg since it was compiled already by the Compute pass this frame
-                drawPacketBuilder.AddShaderResourceGroup(renderMaterialSrg->GetRHIShaderResourceGroup());
-                drawPacketBuilder.AddShaderResourceGroup(simSrg->GetRHIShaderResourceGroup());
+                drawPacketBuilder.AddShaderResourceGroup(renderMaterialSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
+                drawPacketBuilder.AddShaderResourceGroup(simSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
                 drawPacketBuilder.AddDrawItem(drawRequest);
 
                 const RHI::SingleDeviceDrawPacket* drawPacket = drawPacketBuilder.End();

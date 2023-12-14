@@ -151,7 +151,7 @@ namespace AZ::Render
         // Initialize our shader
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
         drawSrg->SetConstant(m_viewportSizeIndex, AzFramework::Vector2FromScreenSize(viewportSize));
-        drawSrg->SetImageView(m_textureParameterIndex, image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+        drawSrg->SetImageView(m_textureParameterIndex, image->GetImageView());
         drawSrg->Compile();
 
         // Scale icons by screen DPI

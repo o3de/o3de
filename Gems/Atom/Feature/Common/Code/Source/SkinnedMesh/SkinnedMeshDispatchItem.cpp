@@ -195,7 +195,7 @@ namespace AZ
             m_instanceSrg->SetConstant(totalNumberOfThreadsXIndex, xThreads);
 
             m_instanceSrg->Compile();
-            m_dispatchItem.m_uniqueShaderResourceGroup = m_instanceSrg->GetRHIShaderResourceGroup();
+            m_dispatchItem.m_uniqueShaderResourceGroup = m_instanceSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
             m_dispatchItem.m_pipelineState = m_skinningShader->AcquirePipelineState(pipelineStateDescriptor)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             auto& arguments = m_dispatchItem.m_arguments.m_direct;

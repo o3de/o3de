@@ -10,6 +10,8 @@
 #include <Tests/FrameGraph.h>
 #include <Tests/Factory.h>
 #include <Tests/Device.h>
+#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/MultiDeviceBufferPool.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
@@ -32,7 +34,7 @@ namespace UnitTest
         void ValidateBinding(
             const RHI::Scope* scope,
             const RHI::BufferScopeAttachment* scopeAttachment,
-            const RHI::SingleDeviceBuffer* buffer)
+            const RHI::MultiDeviceBuffer* buffer)
         {
             ASSERT_TRUE(scopeAttachment->GetPrevious() == nullptr);
             ASSERT_TRUE(scopeAttachment->GetNext() == nullptr);
@@ -53,7 +55,7 @@ namespace UnitTest
         void ValidateBinding(
             const RHI::Scope* scope,
             const RHI::ImageScopeAttachment* scopeAttachment,
-            const RHI::SingleDeviceImage* image)
+            const RHI::MultiDeviceImage* image)
         {
             ASSERT_TRUE(scopeAttachment->GetPrevious() == nullptr);
             ASSERT_TRUE(scopeAttachment->GetNext() == nullptr);
@@ -77,28 +79,32 @@ namespace UnitTest
 
             m_rootFactory.reset(aznew Factory());
 
-            RHI::Ptr<RHI::Device> device = MakeTestDevice();
+            m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
+            m_rhiSystem->InitDevices(AZ::RHI::InitDevicesFlags::SingleDevice);
+            m_rhiSystem->Init();
+
+            auto device = AZ::RHI::RHISystemInterface::Get()->GetDevice(RHI::MultiDevice::DefaultDeviceIndex);
 
             m_state.reset(new State);
 
             {
-                m_state->m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                m_state->m_bufferPool = aznew RHI::MultiDeviceBufferPool;
 
                 RHI::BufferPoolDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
-                m_state->m_bufferPool->Init(*device, desc);
+                m_state->m_bufferPool->Init(RHI::MultiDevice::DefaultDevice, desc);
             }
 
             for (uint32_t i = 0; i < BufferCount; ++i)
             {
-                RHI::Ptr<RHI::SingleDeviceBuffer> buffer;
-                buffer = RHI::Factory::Get().CreateBuffer();
+                RHI::Ptr<RHI::MultiDeviceBuffer> buffer;
+                buffer = aznew RHI::MultiDeviceBuffer;
 
                 RHI::BufferDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
                 desc.m_byteCount = BufferSize;
 
-                RHI::SingleDeviceBufferInitRequest request;
+                RHI::MultiDeviceBufferInitRequest request;
                 request.m_descriptor = desc;
                 request.m_buffer = buffer.get();
                 m_state->m_bufferPool->InitBuffer(request);
@@ -109,17 +115,17 @@ namespace UnitTest
             }
 
             {
-                m_state->m_imagePool = RHI::Factory::Get().CreateImagePool();
+                m_state->m_imagePool = aznew RHI::MultiDeviceImagePool;
 
                 RHI::ImagePoolDescriptor desc;
                 desc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
-                m_state->m_imagePool->Init(*device, desc);
+                m_state->m_imagePool->Init(RHI::MultiDevice::DefaultDevice, desc);
             }
 
             for (uint32_t i = 0; i < ImageCount; ++i)
             {
-                RHI::Ptr<RHI::SingleDeviceImage> image;
-                image = RHI::Factory::Get().CreateImage();
+                RHI::Ptr<RHI::MultiDeviceImage> image;
+                image = aznew RHI::MultiDeviceImage;
 
                 RHI::ImageDescriptor desc = RHI::ImageDescriptor::Create2D(
                     RHI::ImageBindFlags::ShaderReadWrite,
@@ -127,7 +133,7 @@ namespace UnitTest
                     ImageSize,
                     RHI::Format::R8G8B8A8_UNORM);
 
-                RHI::SingleDeviceImageInitRequest request;
+                RHI::MultiDeviceImageInitRequest request;
                 request.m_descriptor = desc;
                 request.m_image = image.get();
                 m_state->m_imagePool->InitImage(request);
@@ -151,6 +157,8 @@ namespace UnitTest
         void TearDown() override
         {
             m_state.reset();
+            m_rhiSystem->Shutdown();
+            m_rhiSystem.reset();
             m_rootFactory.reset();
             RHITestFixture::TearDown();
         }
@@ -445,24 +453,25 @@ namespace UnitTest
         static const uint32_t ImageSize = 16;
         static const uint32_t ScopeCount = 128;
 
+        AZStd::unique_ptr<AZ::RHI::RHISystem> m_rhiSystem;
         AZStd::unique_ptr<Factory> m_rootFactory;
 
         struct ImageAttachment
         {
-            RHI::Ptr<RHI::SingleDeviceImage> m_image;
+            RHI::Ptr<RHI::MultiDeviceImage> m_image;
             RHI::AttachmentId m_id;
         };
 
         struct BufferAttachment
         {
-            RHI::Ptr<RHI::SingleDeviceBuffer> m_buffer;
+            RHI::Ptr<RHI::MultiDeviceBuffer> m_buffer;
             RHI::AttachmentId m_id;
         };
 
         struct State
         {
-            RHI::Ptr<RHI::SingleDeviceBufferPool> m_bufferPool;
-            RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;
+            RHI::Ptr<RHI::MultiDeviceBufferPool> m_bufferPool;
+            RHI::Ptr<RHI::MultiDeviceImagePool> m_imagePool;
             RHI::Ptr<RHI::FrameGraphCompiler> m_frameGraphCompiler;
 
             ImageAttachment m_imageAttachments[ImageCount];

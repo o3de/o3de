@@ -12,6 +12,8 @@
 #include <Atom/RHI/SingleDeviceResourcePool.h>
 #include <Atom/RHI/SingleDeviceImagePoolBase.h>
 #include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/MultiDeviceBuffer.h>
+#include <Atom/RHI/MultiDeviceImage.h>
 #include <Atom/RHI/SingleDeviceResourceView.h>
 #include <Atom/RHI/SingleDeviceResource.h>
 #include <Atom/RHI/FrameGraph.h>
@@ -33,8 +35,8 @@ namespace AZ::RHI
 
         for (const ScopeAttachment* scopeAttachment : scope.GetAttachments())
         {
-            const SingleDeviceResourceView* resourceView = scopeAttachment->GetResourceView();
-            m_attachments[&resourceView->GetResource()].push_back(scopeAttachment);
+            auto resource = scopeAttachment->GetResourceView()->GetResource();
+            m_attachments[resource].push_back(scopeAttachment);
         }
     }
 

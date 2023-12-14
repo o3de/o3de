@@ -176,7 +176,7 @@ namespace LyShine
             auto attachmentImageId = attachmentImage->GetAttachmentId();
             if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentImageId))
             {
-                frameGraph.GetAttachmentDatabase().ImportImage(attachmentImageId, attachmentImage->GetRHIImage()->GetDeviceImage(AZ::RHI::MultiDevice::DefaultDeviceIndex));
+                frameGraph.GetAttachmentDatabase().ImportImage(attachmentImageId, attachmentImage->GetRHIImage());
             }
 
             AZ::RHI::ImageScopeAttachmentDescriptor desc;

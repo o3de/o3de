@@ -11,7 +11,7 @@
 #include <Atom/Feature/MorphTargets/MorphTargetInputBuffers.h>
 
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
-#include <Atom/RHI/SingleDeviceDispatchItem.h>
+#include <Atom/RHI/MultiDeviceDispatchItem.h>
 #include <Atom/RHI/ConstantsData.h>
 #include <AtomCore/Instance/Instance.h>
 
@@ -58,7 +58,7 @@ namespace AZ
 
             bool Init();
 
-            const RHI::SingleDeviceDispatchItem& GetRHIDispatchItem() const;
+            const AZ::RHI::SingleDeviceDispatchItem& GetRHIDispatchItem() const;
 
             void SetWeight(float weight);
             float GetWeight() const;

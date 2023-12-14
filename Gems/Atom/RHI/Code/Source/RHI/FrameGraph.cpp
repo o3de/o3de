@@ -15,7 +15,7 @@
 #include <Atom/RHI/SingleDeviceQueryPool.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/Scope.h>
-#include <Atom/RHI/SingleDeviceSwapChain.h>
+#include <Atom/RHI/MultiDeviceSwapChain.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 
 namespace AZ::RHI
@@ -134,7 +134,7 @@ namespace AZ::RHI
         {
             if (auto* lastScope = attachment->GetLastScope())
             {
-                lastScope->m_swapChainsToPresent.push_back(attachment->GetSwapChain());
+                lastScope->m_swapChainsToPresent.push_back(attachment->GetSwapChain()->GetDeviceSwapChain(RHI::MultiDevice::DefaultDeviceIndex).get());
             }
         }
 

@@ -7,23 +7,21 @@
  */
 
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <Atom/RHI/SingleDeviceSwapChain.h>
+#include <Atom/RHI/MultiDeviceSwapChain.h>
 
 namespace AZ::RHI
 {
-    SwapChainFrameAttachment::SwapChainFrameAttachment(
-        const AttachmentId& attachmentId,
-        Ptr<SingleDeviceSwapChain> swapChain)
+    SwapChainFrameAttachment::SwapChainFrameAttachment(const AttachmentId& attachmentId, Ptr<MultiDeviceSwapChain> swapChain)
         : ImageFrameAttachment(attachmentId, swapChain->GetCurrentImage())
-        , m_swapChain{AZStd::move(swapChain)}
+        , m_swapChain{ AZStd::move(swapChain) }
     {}
 
-    SingleDeviceSwapChain* SwapChainFrameAttachment::GetSwapChain()
+    MultiDeviceSwapChain* SwapChainFrameAttachment::GetSwapChain()
     {
         return m_swapChain.get();
     }
 
-    const SingleDeviceSwapChain* SwapChainFrameAttachment::GetSwapChain() const
+    const MultiDeviceSwapChain* SwapChainFrameAttachment::GetSwapChain() const
     {
         return m_swapChain.get();
     }

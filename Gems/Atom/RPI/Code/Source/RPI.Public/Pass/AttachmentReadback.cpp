@@ -155,7 +155,7 @@ namespace AZ
             m_dispatchItem.m_pipelineState = m_decomposeShader->AcquirePipelineState(pipelineStateDescriptor)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             m_dispatchItem.m_shaderResourceGroupCount = 1;
-            m_dispatchItem.m_shaderResourceGroups[0] = m_decomposeSrg->GetRHIShaderResourceGroup();
+            m_dispatchItem.m_shaderResourceGroups[0] = m_decomposeSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             // find srg input indexes
             m_decomposeInputImageIndex = m_decomposeSrg->FindShaderInputImageIndex(Name("m_msImage"));
@@ -289,9 +289,8 @@ namespace AZ
 
             m_dispatchItem.m_arguments = dispatchArgs;
 
-            const RHI::SingleDeviceImageView* imageView = context.GetImageView(m_attachmentId);
+            const RHI::MultiDeviceImageView* imageView = context.GetImageView(m_attachmentId);
             m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, imageView);
-
             imageView = context.GetImageView(m_copyAttachmentId);
             m_decomposeSrg->SetImageView(m_decomposeOutputImageIndex, imageView);
 
@@ -367,7 +366,7 @@ namespace AZ
         {
             if (m_attachmentType == RHI::AttachmentType::Buffer)
             {
-                const AZ::RHI::SingleDeviceBuffer* buffer = context.GetBuffer(m_copyAttachmentId);
+                const AZ::RHI::MultiDeviceBuffer* buffer = context.GetBuffer(m_copyAttachmentId);
 
                 RPI::CommonBufferDescriptor desc;
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
@@ -378,7 +377,7 @@ namespace AZ
 
                 // copy buffer
                 RHI::SingleDeviceCopyBufferDescriptor copyBuffer;
-                copyBuffer.m_sourceBuffer = buffer;
+                copyBuffer.m_sourceBuffer = buffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
                 copyBuffer.m_destinationBuffer = m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
                 copyBuffer.m_size = aznumeric_cast<uint32_t>(desc.m_byteCount);
 
@@ -386,8 +385,8 @@ namespace AZ
             }
             else if (m_attachmentType == RHI::AttachmentType::Image)
             {
-                // copy image to a read back buffer since only a buffer can be accessed by the host.
-                const AZ::RHI::SingleDeviceImage* image = context.GetImage(m_copyAttachmentId);
+                // copy image to read back buffer since only buffer can be accessed by host
+                const AZ::RHI::MultiDeviceImage* image = context.GetImage(m_copyAttachmentId);
                 if (!image)
                 {
                     AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());
@@ -416,7 +415,8 @@ namespace AZ
                     AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
                     imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
                     size_t totalSizeInBytes = 0;
-                    image->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
+                    image->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)
+                        ->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
                     AZ::u64 byteCount = totalSizeInBytes;
 
                     RPI::CommonBufferDescriptor desc;
@@ -431,7 +431,7 @@ namespace AZ
 
                     // copy descriptor for copying image to buffer
                     RHI::SingleDeviceCopyImageToBufferDescriptor copyImageToBuffer;
-                    copyImageToBuffer.m_sourceImage = image;
+                    copyImageToBuffer.m_sourceImage = image->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
                     copyImageToBuffer.m_sourceSize = imageSubresourceLayouts[mipSlice].m_size;
                     copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(mipSlice, 0 /*arraySlice*/, imageAspect);
                     copyImageToBuffer.m_destinationOffset = 0;

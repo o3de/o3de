@@ -135,13 +135,13 @@ namespace AZ
         {
             sceneSrg->SetBufferView(
                 m_objectToWorldBufferIndex,
-                m_objectToWorldBuffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_objectToWorldBuffer->GetBufferView());
             sceneSrg->SetBufferView(
                 m_objectToWorldInverseTransposeBufferIndex,
-                m_objectToWorldInverseTransposeBuffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_objectToWorldInverseTransposeBuffer->GetBufferView());
             sceneSrg->SetBufferView(
                 m_objectToWorldHistoryBufferIndex,
-                m_objectToWorldHistoryBuffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_objectToWorldHistoryBuffer->GetBufferView());
         }
 
         void TransformServiceFeatureProcessor::OnBeginPrepareRender()

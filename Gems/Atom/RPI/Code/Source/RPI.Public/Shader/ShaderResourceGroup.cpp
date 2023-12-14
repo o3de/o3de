@@ -115,7 +115,7 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
             m_shaderResourceGroup->SetName(m_pool->GetRHIPool()->GetName());
-            m_data = RHI::SingleDeviceShaderResourceGroupData(m_layout);
+            m_data = RHI::MultiDeviceShaderResourceGroupData(RHI::MultiDevice::AllDevices, m_layout);
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 
             // The RPI groups match the same dimensions as the RHI group.
@@ -175,7 +175,7 @@ namespace AZ
             return m_layout;
         }
 
-        RHI::SingleDeviceShaderResourceGroup* ShaderResourceGroup::GetRHIShaderResourceGroup()
+        RHI::MultiDeviceShaderResourceGroup* ShaderResourceGroup::GetRHIShaderResourceGroup()
         {
             return m_shaderResourceGroup.get();
         }
@@ -213,7 +213,7 @@ namespace AZ
 
         bool ShaderResourceGroup::SetImage(RHI::ShaderInputImageIndex inputIndex, const Data::Instance<Image>& image, uint32_t arrayIndex)
         {
-            const auto imageView = image ? image->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get() : nullptr;
+            const RHI::MultiDeviceImageView* imageView = image ? image->GetImageView() : nullptr;
 
             if (m_data.SetImageView(inputIndex, imageView, arrayIndex))
             {
@@ -289,7 +289,7 @@ namespace AZ
             return {};
         }
 
-        bool ShaderResourceGroup::SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::SingleDeviceImageView* imageView, uint32_t arrayIndex)
+        bool ShaderResourceGroup::SetImageView(RHI::ShaderInputNameIndex& inputIndex, const RHI::MultiDeviceImageView* imageView, uint32_t arrayIndex)
         {
             if (inputIndex.ValidateOrFindImageIndex(GetLayout()))
             {
@@ -298,7 +298,7 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::SingleDeviceImageView* imageView, uint32_t arrayIndex)
+        bool ShaderResourceGroup::SetImageView(RHI::ShaderInputImageIndex inputIndex, const RHI::MultiDeviceImageView* imageView, uint32_t arrayIndex)
         {
             if (m_data.SetImageView(inputIndex, imageView, arrayIndex))
             {
@@ -312,7 +312,7 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetImageViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::span<const RHI::SingleDeviceImageView* const> imageViews, uint32_t arrayIndex)
+        bool ShaderResourceGroup::SetImageViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::span<const RHI::MultiDeviceImageView* const> imageViews, uint32_t arrayIndex)
         {
             if (inputIndex.ValidateOrFindImageIndex(GetLayout()))
             {
@@ -321,7 +321,7 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetImageViewArray(RHI::ShaderInputImageIndex inputIndex, AZStd::span<const RHI::SingleDeviceImageView* const> imageViews, uint32_t arrayIndex)
+        bool ShaderResourceGroup::SetImageViewArray(RHI::ShaderInputImageIndex inputIndex, AZStd::span<const RHI::MultiDeviceImageView * const> imageViews, uint32_t arrayIndex)
         {
             if (GetLayout()->ValidateAccess(inputIndex, arrayIndex + static_cast<uint32_t>(imageViews.size()) - 1))
             {
@@ -335,12 +335,12 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetImageViewUnboundedArray(RHI::ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const RHI::SingleDeviceImageView* const> imageViews)
+        bool ShaderResourceGroup::SetImageViewUnboundedArray(RHI::ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const RHI::MultiDeviceImageView* const> imageViews)
         {
             return m_data.SetImageViewUnboundedArray(inputIndex, imageViews);
         }
 
-        bool ShaderResourceGroup::SetBufferView(RHI::ShaderInputNameIndex& inputIndex, const RHI::SingleDeviceBufferView* bufferView, uint32_t arrayIndex)
+        bool ShaderResourceGroup::SetBufferView(RHI::ShaderInputNameIndex& inputIndex, const RHI::MultiDeviceBufferView *bufferView, uint32_t arrayIndex)
         {
             if (inputIndex.ValidateOrFindBufferIndex(GetLayout()))
             {
@@ -349,7 +349,7 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetBufferView(RHI::ShaderInputBufferIndex inputIndex, const RHI::SingleDeviceBufferView* bufferView, uint32_t arrayIndex)
+        bool ShaderResourceGroup::SetBufferView(RHI::ShaderInputBufferIndex inputIndex, const RHI::MultiDeviceBufferView *bufferView, uint32_t arrayIndex)
         {
             if (m_data.SetBufferView(inputIndex, bufferView, arrayIndex))
             {
@@ -363,7 +363,7 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::span<const RHI::SingleDeviceBufferView* const> bufferViews, uint32_t arrayIndex)
+        bool ShaderResourceGroup::SetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex, AZStd::span<const RHI::MultiDeviceBufferView* const> bufferViews, uint32_t arrayIndex)
         {
             if (inputIndex.ValidateOrFindBufferIndex(GetLayout()))
             {
@@ -372,7 +372,7 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::span<const RHI::SingleDeviceBufferView* const> bufferViews, uint32_t arrayIndex)
+        bool ShaderResourceGroup::SetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex, AZStd::span<const RHI::MultiDeviceBufferView * const> bufferViews, uint32_t arrayIndex)
         {
             if (GetLayout()->ValidateAccess(inputIndex, arrayIndex + static_cast<uint32_t>(bufferViews.size()) - 1))
             {
@@ -386,7 +386,7 @@ namespace AZ
             return false;
         }
 
-        bool ShaderResourceGroup::SetBufferViewUnboundedArray(RHI::ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::span<const RHI::SingleDeviceBufferView* const> bufferViews)
+        bool ShaderResourceGroup::SetBufferViewUnboundedArray(RHI::ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::span<const RHI::MultiDeviceBufferView * const> bufferViews)
         {
             return m_data.SetBufferViewUnboundedArray(inputIndex, bufferViews);
         }
@@ -463,46 +463,50 @@ namespace AZ
             return success;
         }
 
-        const RHI::ConstPtr<RHI::SingleDeviceImageView>& ShaderResourceGroup::GetImageView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
+        const RHI::ConstPtr<RHI::MultiDeviceImageView>& ShaderResourceGroup::GetImageView(
+            RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
         {
             inputIndex.ValidateOrFindImageIndex(GetLayout());
             return GetImageView(inputIndex.GetImageIndex(), arrayIndex);
         }
 
-        const RHI::ConstPtr<RHI::SingleDeviceImageView>& ShaderResourceGroup::GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const
+        const RHI::ConstPtr<RHI::MultiDeviceImageView>& ShaderResourceGroup::GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const
         {
             return m_data.GetImageView(inputIndex, arrayIndex);
         }
 
-        AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>> ShaderResourceGroup::GetImageViewArray(RHI::ShaderInputNameIndex& inputIndex) const
+        AZStd::span<const RHI::ConstPtr<RHI::MultiDeviceImageView>> ShaderResourceGroup::GetImageViewArray(
+            RHI::ShaderInputNameIndex& inputIndex) const
         {
             inputIndex.ValidateOrFindImageIndex(GetLayout());
             return GetImageViewArray(inputIndex.GetImageIndex());
         }
 
-        AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>> ShaderResourceGroup::GetImageViewArray(RHI::ShaderInputImageIndex inputIndex) const
+        AZStd::span<const RHI::ConstPtr<RHI::MultiDeviceImageView>> ShaderResourceGroup::GetImageViewArray(RHI::ShaderInputImageIndex inputIndex) const
         {
             return m_data.GetImageViewArray(inputIndex);
         }
 
-        const RHI::ConstPtr<RHI::SingleDeviceBufferView>& ShaderResourceGroup::GetBufferView(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
+        const RHI::ConstPtr<RHI::MultiDeviceBufferView>& ShaderResourceGroup::GetBufferView(
+            RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const
         {
             inputIndex.ValidateOrFindBufferIndex(GetLayout());
             return GetBufferView(inputIndex.GetBufferIndex(), arrayIndex);
         }
 
-        const RHI::ConstPtr<RHI::SingleDeviceBufferView>& ShaderResourceGroup::GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const
+        const RHI::ConstPtr<RHI::MultiDeviceBufferView>& ShaderResourceGroup::GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const
         {
             return m_data.GetBufferView(inputIndex, arrayIndex);
         }
 
-        AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>> ShaderResourceGroup::GetBufferViewArray(RHI::ShaderInputNameIndex& inputIndex) const
+        AZStd::span<const RHI::ConstPtr<RHI::MultiDeviceBufferView>> ShaderResourceGroup::GetBufferViewArray(
+            RHI::ShaderInputNameIndex& inputIndex) const
         {
             inputIndex.ValidateOrFindBufferIndex(GetLayout());
             return GetBufferViewArray(inputIndex.GetBufferIndex());
         }
 
-        AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>> ShaderResourceGroup::GetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex) const
+        AZStd::span<const RHI::ConstPtr<RHI::MultiDeviceBufferView>> ShaderResourceGroup::GetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex) const
         {
             return m_data.GetBufferViewArray(inputIndex);
         }
@@ -519,9 +523,9 @@ namespace AZ
         bool ShaderResourceGroup::SetBuffer(RHI::ShaderInputBufferIndex inputIndex, const Data::Instance<Buffer>& buffer, uint32_t arrayIndex)
         {
             const auto bufferView =
-                buffer ? buffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex) : nullptr;
+                buffer ? buffer->GetBufferView() : nullptr;
 
-            if (m_data.SetBufferView(inputIndex, bufferView.get(), arrayIndex))
+            if (m_data.SetBufferView(inputIndex, bufferView, arrayIndex))
             {
                 const RHI::Interval interval = m_layout->GetGroupInterval(inputIndex);
 
@@ -632,23 +636,23 @@ namespace AZ
         {
             return m_data.GetConstantRaw(inputIndex);
         }
-    
+
         void ShaderResourceGroup::SetBindlessViews(
             RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
-            const RHI::SingleDeviceBufferView* indirectResourceBuffer,
-            AZStd::span<const RHI::SingleDeviceImageView* const> imageViews,
+            const RHI::MultiDeviceBufferView* indirectResourceBuffer,
+            AZStd::span<const RHI::MultiDeviceImageView* const> imageViews,
             uint32_t* outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)
         {
-            m_data.SetBindlessViews(indirectResourceBufferIndex, indirectResourceBuffer,
-                                    imageViews, outIndices, isViewReadOnly, arrayIndex);
+            m_data.SetBindlessViews(
+                indirectResourceBufferIndex, indirectResourceBuffer, imageViews, outIndices, isViewReadOnly, arrayIndex);
         }
-    
+
         void ShaderResourceGroup::SetBindlessViews(
             RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
-            const RHI::SingleDeviceBufferView* indirectResourceBuffer,
-            AZStd::span<const RHI::SingleDeviceBufferView* const> bufferViews,
+            const RHI::MultiDeviceBufferView* indirectResourceBuffer,
+            AZStd::span<const RHI::MultiDeviceBufferView* const> bufferViews,
             uint32_t* outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)

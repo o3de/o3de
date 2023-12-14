@@ -10,8 +10,8 @@
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
-#include <Atom/RHI/SingleDeviceImageView.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/MultiDeviceImage.h>
+#include <Atom/RHI/MultiDeviceBuffer.h>
 
 //! Struct used as a key for m_imageReverseLookupHash map below. The reason for using a struct instead of a hash directly is
 //! so that the map can handle hash collision correctly by using the == operator. This struct contains
@@ -224,15 +224,15 @@ namespace AZ::RHI
         void RemoveFromCache(ReverseLookupObjectType objectToRemove,
                                 AZStd::unordered_map<ReverseLookupObjectType, HashValue64>& reverseHashLookupMap,
                                 ObjectCache<ObjectCacheType>& objectCache);
-            
+
         // Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
-        SingleDeviceImageView* GetImageViewFromLocalCache(SingleDeviceImage* image, const ImageViewDescriptor& imageViewDescriptor);
-        SingleDeviceBufferView* GetBufferViewFromLocalCache(SingleDeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
+        MultiDeviceImageView* GetImageViewFromLocalCache(AZ::RHI::MultiDeviceImage* image, const ImageViewDescriptor& imageViewDescriptor);
+        MultiDeviceBufferView* GetBufferViewFromLocalCache(AZ::RHI::MultiDeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
             
         // This cache is mainly for transient resources. It adds a dependency to the resource views and hence they wont be
         // deleted at the end of the frame and re-created at the start. Mainly used as an optimization.  
-        ObjectCache<SingleDeviceImageView> m_imageViewCache;
-        ObjectCache<SingleDeviceBufferView> m_bufferViewCache;
+        ObjectCache<MultiDeviceImageView> m_imageViewCache;
+        ObjectCache<MultiDeviceBufferView> m_bufferViewCache;
             
         // The maps below are used to reverse look up view hashes so we can clear them out of m_imageViewCache/m_bufferViewCache
         // once they have been replaced with a new view instance. 

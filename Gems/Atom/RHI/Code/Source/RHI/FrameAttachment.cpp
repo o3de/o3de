@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/FrameAttachment.h>
-#include <Atom/RHI/SingleDeviceResource.h>
+#include <Atom/RHI/MultiDeviceResource.h>
 
 namespace AZ::RHI
 {
@@ -40,17 +40,17 @@ namespace AZ::RHI
         return m_lifetimeType;
     }
 
-    SingleDeviceResource* FrameAttachment::GetResource()
+    MultiDeviceResource* FrameAttachment::GetResource()
     {
         return m_resource.get();
     }
 
-    const SingleDeviceResource* FrameAttachment::GetResource() const
+    const MultiDeviceResource* FrameAttachment::GetResource() const
     {
         return m_resource.get();
     }
 
-    void FrameAttachment::SetResource(Ptr<SingleDeviceResource> resource)
+    void FrameAttachment::SetResource(Ptr<MultiDeviceResource> resource)
     {
         AZ_Assert(!m_resource, "A resource has already been assigned to this frame attachment.");
         AZ_Assert(resource, "Assigning a null resource to attachment %s.", m_attachmentId.GetCStr());

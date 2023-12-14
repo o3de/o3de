@@ -16,7 +16,7 @@ namespace AZ::RHI
     class Scope;
     class SingleDeviceShaderResourceGroup;
     struct ShaderResourceGroupBindingInfo;
-    class SingleDeviceResource;
+    class MultiDeviceResource;
     class SingleDeviceResourceView;
     class ScopeAttachment;
     class FrameAttachment;
@@ -56,7 +56,7 @@ namespace AZ::RHI
         bool ValidateView(const ValidateViewContext& context, bool ignoreAttachmentValidation) const;
         bool ValidateAttachment(const ValidateViewContext& context, const FrameAttachment* frameAttachment) const;
             
-        AZStd::unordered_map<const SingleDeviceResource*, AZStd::vector<const ScopeAttachment*>> m_attachments;
+        AZStd::unordered_map<const MultiDeviceResource*, AZStd::vector<const ScopeAttachment*>> m_attachments;
         const Scope* m_scope = nullptr;
     };
 }

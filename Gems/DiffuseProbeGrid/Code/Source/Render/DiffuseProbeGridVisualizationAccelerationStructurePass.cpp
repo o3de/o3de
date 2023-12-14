@@ -106,7 +106,7 @@ namespace AZ
                         AZ::RHI::AttachmentId attachmentId = diffuseProbeGrid->GetProbeVisualizationTlasAttachmentId();
                         if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId) == false)
                         {
-                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, tlasBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
+                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, tlasBuffer);
                             AZ_Assert(result == RHI::ResultCode::Success, "Failed to import DiffuseProbeGrid visualization TLAS buffer with error %d", result);
                         }
 
@@ -126,7 +126,7 @@ namespace AZ
                         AZ::RHI::AttachmentId attachmentId = diffuseProbeGrid->GetProbeVisualizationTlasInstancesAttachmentId();
                         if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentId) == false)
                         {
-                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, tlasInstancesBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
+                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(attachmentId, tlasInstancesBuffer);
                             AZ_Assert(result == RHI::ResultCode::Success, "Failed to import DiffuseProbeGrid visualization TLAS Instances buffer with error %d", result);
                         }
 
