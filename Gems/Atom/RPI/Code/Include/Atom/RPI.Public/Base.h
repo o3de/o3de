@@ -29,7 +29,7 @@ namespace AZ
 
     namespace RHI
     {
-        class SingleDeviceShaderResourceGroup;
+        class MultiDeviceShaderResourceGroup;
     }
 
     namespace RPI

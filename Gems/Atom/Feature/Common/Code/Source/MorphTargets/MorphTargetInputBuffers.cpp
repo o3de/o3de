@@ -41,7 +41,7 @@ namespace AZ
             AZ_Error("MorphTargetInputBuffers", srgIndex.IsValid(), "Failed to find shader input index for 'm_positionDeltas' in the skinning compute shader per-instance SRG.");
 
             [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(
-                srgIndex, m_vertexDeltaBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                srgIndex, m_vertexDeltaBufferView.get());
             AZ_Error("MorphTargetInputBuffers", success, "Failed to bind buffer view for vertex deltas");
         }
     } // namespace Render

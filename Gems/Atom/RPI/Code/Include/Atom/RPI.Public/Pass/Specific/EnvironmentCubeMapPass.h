@@ -12,7 +12,6 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/MultiDeviceImagePool.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>

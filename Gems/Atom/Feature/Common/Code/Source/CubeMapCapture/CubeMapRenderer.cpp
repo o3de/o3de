@@ -59,8 +59,8 @@ namespace AZ
 
             // store the current exposure values
             Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
-            m_previousGlobalIblExposure = sceneSrg->GetConstant<float>(m_globalIblExposureConstantIndex);
-            m_previousSkyBoxExposure = sceneSrg->GetConstant<float>(m_skyBoxExposureConstantIndex);
+            m_previousGlobalIblExposure = sceneSrg->GetConstant<float>(m_globalIblExposureConstantIndex.GetConstantIndex());
+            m_previousSkyBoxExposure = sceneSrg->GetConstant<float>(m_skyBoxExposureConstantIndex.GetConstantIndex());
 
             // add the pipeline to the scene
             m_scene->AddRenderPipeline(environmentCubeMapPipeline);

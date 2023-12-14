@@ -178,8 +178,8 @@ namespace AZ
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
 
-                const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetClassificationSrg()->GetRHIShaderResourceGroup();
-                commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
+                const RHI::MultiDeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetClassificationSrg()->GetRHIShaderResourceGroup();
+                commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex));
 
                 RHI::SingleDeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = shader.m_dispatchArgs;

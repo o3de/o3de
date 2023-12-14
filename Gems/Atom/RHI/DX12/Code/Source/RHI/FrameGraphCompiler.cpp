@@ -404,7 +404,7 @@ namespace AZ
             ResourceTransitionLoggerNull logger(bufferFrameAttachment.GetId());
 #endif
 
-            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer());
+            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
             RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
 
             if (scopeAttachment == nullptr)
@@ -477,7 +477,7 @@ namespace AZ
             ResourceTransitionLoggerNull logger(imageFrameAttachment.GetId());
 #endif
 
-            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage());
+            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
 
             if (scopeAttachment == nullptr)

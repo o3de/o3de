@@ -51,8 +51,8 @@ namespace AZ
                 m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
                 m_dispatchItem.m_shaderResourceGroupCount = 2;      // the per pass will be added by each pass.
                 m_dispatchItem.m_shaderResourceGroups = {
-                    hairGenerationSrg->GetRHIShaderResourceGroup(), // Static generation data
-                    hairSimSrg->GetRHIShaderResourceGroup()         // Dynamic data changed between passes
+                    hairGenerationSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(), // Static generation data
+                    hairSimSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()         // Dynamic data changed between passes
                 };
             }
 

@@ -11,7 +11,6 @@
 
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>

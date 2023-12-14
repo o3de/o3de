@@ -8,6 +8,7 @@
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Serialization/SerializeContext.h>
 

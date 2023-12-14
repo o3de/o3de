@@ -173,16 +173,7 @@ namespace AZ
             viewDescriptor.m_ignoreFrameAttachmentValidation = true;
 
             RHI::MultiDeviceBuffer* rhiBuffer = Meshlets::SharedBufferInterface::Get()->GetBuffer()->GetRHIBuffer();
-            Data::Instance<RHI::MultiDeviceBufferView> bufferView = rhiBuffer->BuildBufferView(viewDescriptor);
-            RHI::ResultCode resultCode = bufferView->Init(*rhiBuffer, viewDescriptor);
-
-            if (resultCode != RHI::ResultCode::Success)
-            {
-                AZ_Error(warningHeader, false, "BufferView could not be retrieved for [%s]", bufferDesc.m_bufferName.GetCStr());
-                return Data::Instance<RHI::SingleDeviceBufferView>();
-            }
-
-            return bufferView;
+            return rhiBuffer->BuildBufferView(viewDescriptor);
         }
 
         bool UtilityClass::BindBufferViewToSrg(
