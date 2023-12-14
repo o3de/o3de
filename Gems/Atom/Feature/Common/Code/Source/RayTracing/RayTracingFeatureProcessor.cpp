@@ -789,14 +789,14 @@ namespace AZ
             RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_scene"));
-            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_tlas->GetTlasBuffer()->BuildBufferView(bufferViewDescriptor)->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_tlas->GetTlasBuffer()->BuildBufferView(bufferViewDescriptor).get());
 
             // directional lights
             const auto directionalLightFP = GetParentScene()->GetFeatureProcessor<DirectionalLightFeatureProcessor>();
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_directionalLights"));
             m_rayTracingSceneSrg->SetBufferView(
                 bufferIndex,
-                directionalLightFP->GetLightBuffer()->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                directionalLightFP->GetLightBuffer()->GetBufferView());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_directionalLightCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, directionalLightFP->GetLightCount());
@@ -806,7 +806,7 @@ namespace AZ
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_simplePointLights"));
             m_rayTracingSceneSrg->SetBufferView(
                 bufferIndex,
-                simplePointLightFP->GetLightBuffer()->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                simplePointLightFP->GetLightBuffer()->GetBufferView());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_simplePointLightCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, simplePointLightFP->GetLightCount());
@@ -816,7 +816,7 @@ namespace AZ
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_simpleSpotLights"));
             m_rayTracingSceneSrg->SetBufferView(
                 bufferIndex,
-                simpleSpotLightFP->GetLightBuffer()->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                simpleSpotLightFP->GetLightBuffer()->GetBufferView());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_simpleSpotLightCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, simpleSpotLightFP->GetLightCount());
@@ -826,7 +826,7 @@ namespace AZ
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_pointLights"));
             m_rayTracingSceneSrg->SetBufferView(
                 bufferIndex,
-                pointLightFP->GetLightBuffer()->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                pointLightFP->GetLightBuffer()->GetBufferView());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_pointLightCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, pointLightFP->GetLightCount());
@@ -836,7 +836,7 @@ namespace AZ
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_diskLights"));
             m_rayTracingSceneSrg->SetBufferView(
                 bufferIndex,
-                diskLightFP->GetLightBuffer()->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                diskLightFP->GetLightBuffer()->GetBufferView());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_diskLightCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, diskLightFP->GetLightCount());
@@ -846,7 +846,7 @@ namespace AZ
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_capsuleLights"));
             m_rayTracingSceneSrg->SetBufferView(
                 bufferIndex,
-                capsuleLightFP->GetLightBuffer()->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                capsuleLightFP->GetLightBuffer()->GetBufferView());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_capsuleLightCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, capsuleLightFP->GetLightCount());
@@ -856,7 +856,7 @@ namespace AZ
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_quadLights"));
             m_rayTracingSceneSrg->SetBufferView(
                 bufferIndex,
-                quadLightFP->GetLightBuffer()->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                quadLightFP->GetLightBuffer()->GetBufferView());
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_quadLightCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, quadLightFP->GetLightCount());
@@ -878,19 +878,19 @@ namespace AZ
             if (m_meshInfoGpuBuffer.IsCurrentBufferValid())
             {
                 bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshInfo"));
-                m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshInfoGpuBuffer.GetCurrentBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshInfoGpuBuffer.GetCurrentBufferView());
             }
 
             constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_meshInfoCount"));
             m_rayTracingSceneSrg->SetConstant(constantIndex, m_subMeshCount);
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_meshBufferIndices"));
-            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshBufferIndicesGpuBuffer.GetCurrentBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+            m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_meshBufferIndicesGpuBuffer.GetCurrentBufferView());
 
             if (m_proceduralGeometryInfoGpuBuffer.IsCurrentBufferValid())
             {
                 bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_proceduralGeometryInfo"));
-                m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_proceduralGeometryInfoGpuBuffer.GetCurrentBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_rayTracingSceneSrg->SetBufferView(bufferIndex, m_proceduralGeometryInfoGpuBuffer.GetCurrentBufferView());
             }
 
 #if !USE_BINDLESS_SRG
@@ -906,10 +906,10 @@ namespace AZ
             RHI::ShaderInputBufferIndex bufferIndex;
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialInfo"));
-            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialInfoGpuBuffer.GetCurrentBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialInfoGpuBuffer.GetCurrentBufferView());
 
             bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_materialTextureIndices"));
-            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialTextureIndicesGpuBuffer.GetCurrentBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+            m_rayTracingMaterialSrg->SetBufferView(bufferIndex, m_materialTextureIndicesGpuBuffer.GetCurrentBufferView());
 
 #if !USE_BINDLESS_SRG
             RHI::ShaderInputImageUnboundedArrayIndex textureUnboundedArrayIndex = srgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name("m_materialTextures"));

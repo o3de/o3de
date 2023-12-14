@@ -220,9 +220,9 @@ namespace AZ
                 const uint8_t srgCount = 3;
                 AZStd::array<const RHI::SingleDeviceShaderResourceGroup*, 8> shaderResourceGroups =
                 {
-                    diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup(),
-                    m_shaderResourceGroup->GetRHIShaderResourceGroup(),
-                    views[0]->GetRHIShaderResourceGroup()
+                    diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
+                    m_shaderResourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
+                    views[0]->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()
                 };
 
                 RHI::SingleDeviceDispatchItem dispatchItem;

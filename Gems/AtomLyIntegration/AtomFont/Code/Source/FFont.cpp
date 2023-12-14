@@ -343,7 +343,7 @@ void AZ::FFont::DrawStringUInternal(
             //setup per draw srg
             auto drawSrg = dynamicDraw->NewDrawSrg();
             drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
-            drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontAttachmentImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+            drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontAttachmentImage->GetImageView());
             drawSrg->Compile();
 
             dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);

@@ -35,6 +35,5 @@ namespace AZ::RHI
         : m_deviceMask{ deviceMask }
         , m_deviceDrawItemPtrs{ deviceDrawItemPtrs }
     {
-
     }
 } // namespace AZ::RHI

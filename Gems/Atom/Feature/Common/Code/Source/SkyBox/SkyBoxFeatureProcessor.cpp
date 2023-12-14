@@ -90,7 +90,7 @@ namespace AZ
             if (m_buffer)
             {
                 m_sceneSrg->SetBufferView(
-                    m_physicalSkyBufferIndex, m_buffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                    m_physicalSkyBufferIndex, m_buffer->GetBufferView());
             }
         }
 

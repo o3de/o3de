@@ -21,14 +21,14 @@
 
 namespace AZ::RHI
 {
-    class SingleDeviceImage;
-    class SingleDeviceBuffer;
+    class MultiDeviceImage;
+    class MultiDeviceBuffer;
     class ImageFrameAttachment;
     class SwapChainFrameAttachment;
     class BufferFrameAttachment;
     class ImageScopeAttachment;
     class BufferScopeAttachment;
-    class SingleDeviceSwapChain;
+    class MultiDeviceSwapChain;
     struct TransientImageDescriptor;
     struct TransientBufferDescriptor;
     struct ResolveScopeAttachmentDescriptor;
@@ -42,13 +42,13 @@ namespace AZ::RHI
         void Clear();
 
         //! Imports an image into the database.
-        ResultCode ImportImage(const AttachmentId& attachmentId, Ptr<SingleDeviceImage> image);
+        ResultCode ImportImage(const AttachmentId& attachmentId, Ptr<MultiDeviceImage> image);
 
         //! Imports a swapchain into the database.
-        ResultCode ImportSwapChain(const AttachmentId& attachmentId, Ptr<SingleDeviceSwapChain> swapChain);
+        ResultCode ImportSwapChain(const AttachmentId& attachmentId, Ptr<MultiDeviceSwapChain> swapChain);
 
         //! Imports a buffer into the database.
-        ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<SingleDeviceBuffer> buffer);
+        ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<MultiDeviceBuffer> buffer);
 
         //! Creates a transient image and inserts it into the database.
         ResultCode CreateTransientImage(const TransientImageDescriptor& descriptor);

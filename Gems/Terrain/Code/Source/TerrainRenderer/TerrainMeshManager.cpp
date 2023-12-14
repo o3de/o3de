@@ -308,8 +308,8 @@ namespace Terrain
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, indexCount, 0));
         drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
-        drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup());
-        drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup());
+        drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(AZ::RHI::MultiDevice::DefaultDeviceIndex).get());
+        drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(AZ::RHI::MultiDevice::DefaultDeviceIndex).get());
 
         sector.m_perDrawSrgs.clear();
 
@@ -344,7 +344,7 @@ namespace Terrain
 
             if (drawSrg)
             {
-                drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
                 sector.m_perDrawSrgs.push_back(drawSrg);
             }
             drawPacketBuilder.AddDrawItem(drawRequest);

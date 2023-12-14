@@ -11,7 +11,7 @@
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
-#include <Atom/RHI/SingleDeviceSwapChain.h>
+#include <Atom/RHI/MultiDeviceSwapChain.h>
 namespace AZ::RHI
 {
     size_t FrameGraphAttachmentDatabase::HashScopeAttachmentPair(const ScopeId& scopeId, const AttachmentId& attachmentId)
@@ -56,7 +56,7 @@ namespace AZ::RHI
 
     ResultCode FrameGraphAttachmentDatabase::ImportSwapChain(
         const AttachmentId& attachmentId,
-        Ptr<SingleDeviceSwapChain> swapChain)
+        Ptr<MultiDeviceSwapChain> swapChain)
     {
         if (!ValidateAttachmentIsUnregistered(attachmentId))
         {
@@ -71,7 +71,7 @@ namespace AZ::RHI
 
     ResultCode FrameGraphAttachmentDatabase::ImportImage(
         const AttachmentId& attachmentId,
-        Ptr<SingleDeviceImage> image)
+        Ptr<MultiDeviceImage> image)
     {
         // Only import the attachment if it hasn't already been imported
         if (FindAttachment(attachmentId) == nullptr)
@@ -85,7 +85,7 @@ namespace AZ::RHI
 
     ResultCode FrameGraphAttachmentDatabase::ImportBuffer(
         const AttachmentId& attachmentId,
-        Ptr<SingleDeviceBuffer> buffer)
+        Ptr<MultiDeviceBuffer> buffer)
     {
         // Only import the attachment if it hasn't already been imported
         if (FindAttachment(attachmentId) == nullptr)

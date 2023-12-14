@@ -92,7 +92,7 @@ namespace AZ
         {
             if (m_bufferIndex.IsValid())
             {
-                srg->SetBufferView(m_bufferIndex, m_buffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                srg->SetBufferView(m_bufferIndex, m_buffer->GetBufferView());
             }
             if (m_elementCountIndex.IsValid())
             {

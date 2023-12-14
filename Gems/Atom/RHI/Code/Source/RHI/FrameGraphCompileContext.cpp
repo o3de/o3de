@@ -7,11 +7,9 @@
  */
 #include <Atom/RHI/FrameGraphCompileContext.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
-#include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/MultiDeviceBuffer.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/SingleDeviceImage.h>
-#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/MultiDeviceImage.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 
 namespace AZ::RHI
@@ -38,7 +36,7 @@ namespace AZ::RHI
         return 0;
     }
 
-    const SingleDeviceBufferView* FrameGraphCompileContext::GetBufferView(const ScopeAttachment* scopeAttacment) const
+    const MultiDeviceBufferView* FrameGraphCompileContext::GetBufferView(const ScopeAttachment* scopeAttacment) const
     {
         const BufferScopeAttachment* attachment = azrtti_cast<const BufferScopeAttachment*>(scopeAttacment);
         if (!attachment)
@@ -48,29 +46,29 @@ namespace AZ::RHI
         return attachment->GetBufferView();
     }
 
-    const SingleDeviceBufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId) const
+    const MultiDeviceBufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId) const
     {
         const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId);
         return GetBufferView(scopeAttacment);
     }
 
-    const SingleDeviceBufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId, const RHI::ScopeAttachmentUsage attachmentUsage) const
+    const MultiDeviceBufferView* FrameGraphCompileContext::GetBufferView(const AttachmentId& attachmentId, const RHI::ScopeAttachmentUsage attachmentUsage) const
     {
         const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId, attachmentUsage);
         return GetBufferView(scopeAttacment);
     }
 
-    const SingleDeviceBuffer* FrameGraphCompileContext::GetBuffer(const AttachmentId& attachmentId) const
+    const MultiDeviceBuffer* FrameGraphCompileContext::GetBuffer(const AttachmentId& attachmentId) const
     {
-        const SingleDeviceBufferView* bufferView = GetBufferView(attachmentId);
+        const MultiDeviceBufferView* bufferView = GetBufferView(attachmentId);
         if (bufferView)
         {
-            return &bufferView->GetBuffer();
+            return bufferView->GetBuffer();
         }
         return nullptr;
     }
 
-    const SingleDeviceImageView* FrameGraphCompileContext::GetImageView(const ScopeAttachment* scopeAttacment) const
+    const MultiDeviceImageView* FrameGraphCompileContext::GetImageView(const ScopeAttachment* scopeAttacment) const
     {
         const ImageScopeAttachment* attachment = azrtti_cast<const ImageScopeAttachment*>(scopeAttacment);
         if (!attachment)
@@ -80,24 +78,24 @@ namespace AZ::RHI
         return attachment->GetImageView();
     }
 
-    const SingleDeviceImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId, const ImageViewDescriptor& imageViewDescriptor, RHI::ScopeAttachmentUsage attachmentUsage) const
+    const MultiDeviceImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId, const ImageViewDescriptor& imageViewDescriptor, RHI::ScopeAttachmentUsage attachmentUsage) const
     {
         const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId, imageViewDescriptor, attachmentUsage);
         return GetImageView(scopeAttacment);
     }
 
-    const SingleDeviceImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId) const
+    const MultiDeviceImageView* FrameGraphCompileContext::GetImageView(const AttachmentId& attachmentId) const
     {
         const ScopeAttachment* scopeAttacment = m_attachmentDatabase->FindScopeAttachment(m_scopeId, attachmentId);
         return GetImageView(scopeAttacment);
     }
 
-    const SingleDeviceImage* FrameGraphCompileContext::GetImage(const AttachmentId& attachmentId) const
+    const MultiDeviceImage* FrameGraphCompileContext::GetImage(const AttachmentId& attachmentId) const
     {
-        const SingleDeviceImageView* imageView = GetImageView(attachmentId);
+        const MultiDeviceImageView* imageView = GetImageView(attachmentId);
         if (imageView)
         {
-            return &imageView->GetImage();
+            return imageView->GetImage();
         }
         return nullptr;
     }

@@ -402,7 +402,7 @@ namespace AZ
             drawPacketBuilder.Begin(nullptr);
             drawPacketBuilder.SetDrawArguments(drawIndexed);
             drawPacketBuilder.SetIndexBufferView(group.m_indexBufferView);
-            drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
+            drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
 
             RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
             drawRequest.m_listTag = m_shaderData.m_drawListTag;

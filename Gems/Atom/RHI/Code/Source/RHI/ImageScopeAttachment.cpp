@@ -35,12 +35,12 @@ namespace AZ::RHI
         return m_descriptor;
     }
 
-    const SingleDeviceImageView* ImageScopeAttachment::GetImageView() const
+    const MultiDeviceImageView* ImageScopeAttachment::GetImageView() const
     {
-        return static_cast<const SingleDeviceImageView*>(GetResourceView());
+        return static_cast<const MultiDeviceImageView*>(GetResourceView());
     }
 
-    void ImageScopeAttachment::SetImageView(ConstPtr<SingleDeviceImageView> imageView)
+    void ImageScopeAttachment::SetImageView(ConstPtr<MultiDeviceImageView> imageView)
     {
         SetResourceView(AZStd::move(imageView));
     }

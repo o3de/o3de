@@ -80,7 +80,7 @@ namespace AZ
             {
                 if (dispatchItem)
                 {
-                    for (RHI::SingleDeviceShaderResourceGroup* srgInDispatch : dispatchItem->m_shaderResourceGroups)
+                    for (RHI::MultiDeviceShaderResourceGroup* srgInDispatch : dispatchItem->m_shaderResourceGroups)
                     {
                         srgInDispatch->Compile()
                     }
@@ -122,7 +122,7 @@ namespace AZ
                 // In a similar way, add the dispatch high frequencies srgs.
                 for (uint32_t srg = 0; srg < dispatchItem->m_shaderResourceGroupCount; ++srg)
                 {
-                    const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup = dispatchItem->m_shaderResourceGroups[srg];
+                    const RHI::MultiDeviceShaderResourceGroup* shaderResourceGroup = dispatchItem->m_shaderResourceGroups[srg];
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
                 }
 

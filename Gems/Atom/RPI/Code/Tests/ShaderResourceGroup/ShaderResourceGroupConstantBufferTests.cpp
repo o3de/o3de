@@ -389,7 +389,7 @@ namespace UnitTest
             // MyFloat2
             EXPECT_FALSE(m_srg->SetConstantArray<float>(RHI::ShaderInputConstantIndex(13), AZStd::array<float, 3>({ 0.1f, 0.2f, 0.3f })));
 
-            AZ_TEST_STOP_ASSERTTEST(1);
+            AZ_TEST_STOP_ASSERTTEST(2);
         }
     }
 
@@ -417,7 +417,7 @@ namespace UnitTest
             // MyBool2
             EXPECT_FALSE(m_srg->SetConstant<bool>(RHI::ShaderInputConstantIndex(1), false));
 
-            AZ_TEST_STOP_ASSERTTEST(1);
+            AZ_TEST_STOP_ASSERTTEST(2);
         }
     }
 

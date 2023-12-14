@@ -8,6 +8,7 @@
 
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
+#include <Atom/RHI/MultiDeviceSwapChain.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
@@ -119,7 +120,7 @@ namespace AZ
                     m_swapChainAttachment = scopeAttachment;
                 }
                 
-                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView());
+                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
                 id<MTLTexture> imageViewMtlTexture = imageView->GetMemoryView().GetGpuAddress<id<MTLTexture>>();
                 
@@ -289,7 +290,7 @@ namespace AZ
                 //here and attach it directly to the colorAttachment. The assumption here is that this scope should be the
                 //CopyToSwapChain scope. With this way if the internal resolution differs from the window resolution the compositer
                 //within the metal driver will perform the appropriate upscale/downscale at the end.
-                const RHI::SingleDeviceSwapChain* swapChain = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&m_swapChainAttachment->GetFrameAttachment()))->GetSwapChain();
+                const RHI::SingleDeviceSwapChain* swapChain = (azrtti_cast<const RHI::SwapChainFrameAttachment*>(&m_swapChainAttachment->GetFrameAttachment()))->GetSwapChain()->GetDeviceSwapChain(RHI::MultiDevice::DefaultDeviceIndex).get();
                 SwapChain* metalSwapChain = static_cast<SwapChain*>(const_cast<RHI::SingleDeviceSwapChain*>(swapChain));
                 m_renderPassDescriptor.colorAttachments[0].texture = metalSwapChain->RequestDrawable(m_isSwapChainAndFrameCaptureEnabled);
             }

@@ -9,6 +9,7 @@
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceImage.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
 {
@@ -119,5 +120,18 @@ namespace AZ::RHI
         }
 
         return iterator->second;
+    }
+
+    void MultiDeviceImageSubresourceLayout::Init(MultiDevice::DeviceMask deviceMask, const SingleDeviceImageSubresourceLayout &deviceLayout)
+    {
+        int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+        for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
+        {
+            if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
+            {
+                m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
+            }
+        }
     }
 } // namespace AZ::RHI
