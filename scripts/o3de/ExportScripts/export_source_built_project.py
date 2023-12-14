@@ -81,6 +81,10 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
 
+    # If the output path is a relative path, convert it to an absolute path using the project path as the base
+    if not output_path.is_absolute():
+        output_path = ctx.project_path / str(output_path)
+
     # Use a provided logger or get the current system one
     if not logger:
         logger = logging.getLogger()
@@ -126,10 +130,14 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     # Resolve (if possible) and validate any provided seedlist files
     validated_seedslist_paths = exp.validate_project_artifact_paths(project_path=ctx.project_path,
                                                                     artifact_paths=seedlist_paths)
+
+    # Preprocess the seed file paths in case there are any wildcard patterns to use
+    preprocessed_seedfile_paths = exp.preprocess_seed_path_list(project_path=ctx.project_path,
+                                                                paths=seedfile_paths)
     
     # Convert level names into seed files that the asset bundler can utilize for packaging
     for level in level_names:
-        seedfile_paths.append(ctx.project_path / f'Cache/{selected_platform}/levels' / level.lower() / (level.lower() + ".spawnable"))
+        preprocessed_seedfile_paths.append(ctx.project_path / f'Cache/{selected_platform}/levels' / level.lower() / (level.lower() + ".spawnable"))
 
     # Make sure there are no running processes for the current project before continuing
     exp.kill_existing_processes(ctx.project_name)
@@ -187,7 +195,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     expected_bundles_path = exp.bundle_assets(ctx=ctx,
                                               selected_platform=selected_platform,
                                               seedlist_paths=validated_seedslist_paths,
-                                              seedfile_paths=seedfile_paths,
+                                              seedfile_paths=preprocessed_seedfile_paths,
                                               tools_build_path=tools_build_path,
                                               engine_centric=engine_centric,
                                               asset_bundling_path=asset_bundling_path,
@@ -278,14 +286,14 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
                                               parser=parser,
                                               key=exp.SETTINGS_SEED_LIST_PATHS.key,
                                               dest='seedlist_paths',
-                                              description='Path to a seed list file for asset bundling. Specify multiple times for each seed list.',
+                                              description='Path to a seed list file for asset bundling. Specify multiple times for each seed list. You can also specify wildcard patterns.',
                                               is_path_type=True)
 
         export_config.add_multi_part_argument(argument=['-sf', '--seedfile'],
                                               parser=parser,
                                               key=exp.SETTINGS_SEED_FILE_PATHS.key,
                                               dest='seedfile_paths',
-                                              description='Path to a seed file for asset bundling. Example seed files are levels or prefabs.',
+                                              description='Path to a seed file for asset bundling. Example seed files are levels or prefabs. You can also specify wildcard patterns.',
                                               is_path_type=True)
 
         export_config.add_multi_part_argument(argument=['-lvl', '--level-name'],

@@ -15,7 +15,8 @@ from o3de.export_project import _export_script, process_command, setup_launcher_
                                  O3DEScriptExportContext, ExportLayoutConfig, build_assets, ExportProjectError, \
                                  bundle_assets, build_export_toolchain, build_game_targets, \
                                  validate_project_artifact_paths, LauncherType, extract_cmake_custom_args, \
-                                 get_default_asset_platform, get_platform_installer_folder_name
+                                 get_default_asset_platform, get_platform_installer_folder_name, \
+                                 preprocess_seed_path_list
 
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
@@ -638,5 +639,37 @@ def test_extract_cmake_custom_args(input_args, expected_export_args, expected_cc
     assert result_export_args == expected_export_args
     assert result_cca_args == expected_cca
     assert result_cba_args == expected_cba
+
+
+@pytest.mark.parametrize("project_path, create_files, check_files, expected_result",[
+    pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2"], ["SeedLists/seed1", "SeedLists/seed2"], ["SeedLists/seed1", "SeedLists/seed2"]),
+    pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2"], ["SeedLists/seed*"], ["SeedLists/seed1", "SeedLists/seed2"]),
+    pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2"], ["SeedLists/seed1", "SeedLists/seed*"], ["SeedLists/seed1", "SeedLists/seed2"]),
+    pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2", "project/SeedLists/seed3"], ["SeedLists/*1"], ["SeedLists/seed1"])
+])
+def test_preprocess_seed_path_list(tmp_path, project_path, create_files, check_files, expected_result):
+
+    test_project_path = tmp_path / project_path
+    test_project_path.mkdir(parents=True, exist_ok=True)
+    for create_file in create_files:
+        create_file_path = tmp_path / create_file
+        create_file_path.parent.mkdir(parents=True, exist_ok=True)
+        create_file_path.write_text(create_file)
+
+    path_list = []
+    for check_file in check_files:
+        path_list.append(test_project_path / check_file)
+
+    expected_path_list = [test_project_path / path for path in expected_result]
+    result_path_list = preprocess_seed_path_list(project_path=test_project_path,
+                                                 paths=path_list)
+    assert expected_path_list == result_path_list
+
+    abs_path_list = []
+    for check_file in check_files:
+        abs_path_list.append(test_project_path / check_file)
+    result_path_list = preprocess_seed_path_list(project_path=test_project_path,
+                                                 paths=path_list)
+    assert expected_path_list == result_path_list
 
 
