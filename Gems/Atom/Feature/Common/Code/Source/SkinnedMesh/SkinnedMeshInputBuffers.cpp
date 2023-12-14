@@ -434,7 +434,7 @@ namespace AZ
                     "Failed to find shader input index for '%s' in the skinning compute shader per-instance SRG.",
                     nameViewPair.m_srgName.GetCStr());
 
-                [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(srgIndex, nameViewPair.m_bufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                [[maybe_unused]] bool success = perInstanceSRG->SetBufferView(srgIndex, nameViewPair.m_bufferView.get());
 
                 AZ_Error("SkinnedMeshInputBuffers", success, "Failed to bind buffer view for %s", nameViewPair.m_srgName.GetCStr());
             }

@@ -290,7 +290,8 @@ namespace Terrain
 
     }
 
-    AZ::RHI::SingleDeviceStreamBufferView TerrainMeshManager::CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
+    AZ::RHI::SingleDeviceStreamBufferView TerrainMeshManager::CreateStreamBufferView(
+        AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
     {
         return
         {
@@ -308,8 +309,8 @@ namespace Terrain
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, indexCount, 0));
         drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
-        drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup());
-        drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup());
+        drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(AZ::RHI::MultiDevice::DefaultDeviceIndex).get());
+        drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(AZ::RHI::MultiDevice::DefaultDeviceIndex).get());
 
         sector.m_perDrawSrgs.clear();
 
@@ -319,7 +320,7 @@ namespace Terrain
 
             AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawData.m_drawListTag;
-            drawRequest.m_pipelineState = drawData.m_pipelineState->GetDevicePipelineState(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
+            drawRequest.m_pipelineState = drawData.m_pipelineState;
             drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
             drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
 
@@ -344,7 +345,7 @@ namespace Terrain
 
             if (drawSrg)
             {
-                drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
                 sector.m_perDrawSrgs.push_back(drawSrg);
             }
             drawPacketBuilder.AddDrawItem(drawRequest);
@@ -640,7 +641,7 @@ namespace Terrain
 
                 auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
 
-                m_cachedDrawData.push_back({ shader, shaderOptions, pipelineState, drawListTag, drawSrgLayout, variant, materialPipelineName });
+                m_cachedDrawData.push_back({ shader, shaderOptions, pipelineState->GetDevicePipelineState(AZ::RHI::MultiDevice::DefaultDeviceIndex).get(), drawListTag, drawSrgLayout, variant, materialPipelineName });
                 return true;
             });
 

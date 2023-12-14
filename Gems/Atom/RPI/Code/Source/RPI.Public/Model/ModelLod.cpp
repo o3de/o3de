@@ -87,6 +87,7 @@ namespace AZ
                         bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
                         bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize,
                         indexFormat);
+                    meshInstance.m_sdIndexBufferView = meshInstance.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex);
 
                     RHI::DrawIndexed drawIndexed;
                     drawIndexed.m_indexCount = bufferViewDescriptor.m_elementCount;

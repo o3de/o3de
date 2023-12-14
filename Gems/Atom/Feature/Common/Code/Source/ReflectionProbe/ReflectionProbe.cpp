@@ -301,7 +301,7 @@ namespace AZ
             drawPacketBuilder.Begin(nullptr);
             drawPacketBuilder.SetDrawArguments(drawIndexed);
             drawPacketBuilder.SetIndexBufferView(m_reflectionRenderData->m_boxIndexBufferView);
-            drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup());
+            drawPacketBuilder.AddShaderResourceGroup(srg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;

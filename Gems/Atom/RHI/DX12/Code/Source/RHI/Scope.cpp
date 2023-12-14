@@ -166,7 +166,7 @@ namespace AZ
     
         bool Scope::IsResourceDiscarded(const RHI::ImageScopeAttachment& scopeAttachment) const
         {
-            const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView());
+            const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex));
             return IsInDiscardResourceRequests(imageView->GetMemory());
         }
 
@@ -207,7 +207,7 @@ namespace AZ
             for (const RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
                 const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
-                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView());
+                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex));
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
 
                 const bool isFullView           = imageView->IsFullView();
@@ -411,8 +411,8 @@ namespace AZ
                     {
                         if (imageAttachment->GetDescriptor().m_attachmentId == resolveAttachment->GetDescriptor().m_resolveAttachmentId)
                         {
-                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView());
-                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView());
+                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex));
+                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex));
                             commandList.GetCommandList()->ResolveSubresource(
                                 dstImageView->GetMemory(),
                                 0, 

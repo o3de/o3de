@@ -36,7 +36,8 @@ namespace AZ
             SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphTargetInstanceMetaData,
             float morphTargetDeltaIntegerEncoding)
-            : m_inputBuffers(inputBuffers)
+            : m_dispatchItem(RHI::MultiDevice::AllDevices)
+            , m_inputBuffers(inputBuffers)
             , m_outputBufferOffsetsInBytes(outputBufferOffsetsInBytes)
             , m_positionHistoryBufferOffsetInBytes(positionHistoryOutputBufferOffsetInBytes)
             , m_lodIndex(lodIndex)
@@ -195,24 +196,26 @@ namespace AZ
             m_instanceSrg->SetConstant(totalNumberOfThreadsXIndex, xThreads);
 
             m_instanceSrg->Compile();
-            m_dispatchItem.m_uniqueShaderResourceGroup = m_instanceSrg->GetRHIShaderResourceGroup();
-            m_dispatchItem.m_pipelineState = m_skinningShader->AcquirePipelineState(pipelineStateDescriptor)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+            m_dispatchItem.SetUniqueShaderResourceGroup(m_instanceSrg->GetRHIShaderResourceGroup());
+            m_dispatchItem.SetPipelineState(m_skinningShader->AcquirePipelineState(pipelineStateDescriptor));
 
-            auto& arguments = m_dispatchItem.m_arguments.m_direct;
-            const auto outcome = RPI::GetComputeShaderNumThreads(m_skinningShader->GetAsset(), arguments);
+            RHI::MultiDeviceDispatchArguments arguments;
+            const auto outcome = RPI::GetComputeShaderNumThreads(m_skinningShader->GetAsset(), arguments.m_direct);
             if (!outcome.IsSuccess())
             {
                 AZ_Error("SkinnedMeshInputBuffers", false, outcome.GetError().c_str());
             }
  
-            arguments.m_totalNumberOfThreadsX = xThreads;
-            arguments.m_totalNumberOfThreadsY = yThreads;
-            arguments.m_totalNumberOfThreadsZ = 1;
+            arguments.m_direct.m_totalNumberOfThreadsX = xThreads;
+            arguments.m_direct.m_totalNumberOfThreadsY = yThreads;
+            arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+
+            m_dispatchItem.SetArguments(arguments);
 
             return true;
         }
 
-        const RHI::SingleDeviceDispatchItem& SkinnedMeshDispatchItem::GetRHIDispatchItem() const
+        const RHI::MultiDeviceDispatchItem& SkinnedMeshDispatchItem::GetRHIDispatchItem() const
         {
             return m_dispatchItem;
         }

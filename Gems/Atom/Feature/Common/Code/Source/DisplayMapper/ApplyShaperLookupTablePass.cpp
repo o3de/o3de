@@ -107,7 +107,7 @@ namespace AZ
             {
                 if (m_lutResource.m_lutStreamingImage)
                 {
-                    m_shaderResourceGroup->SetImageView(m_shaderInputLutImageIndex, m_lutResource.m_lutStreamingImage->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                    m_shaderResourceGroup->SetImageView(m_shaderInputLutImageIndex, m_lutResource.m_lutStreamingImage->GetImageView());
 
                     m_shaderResourceGroup->SetConstant(m_shaderShaperTypeIndex, m_shaperParams.m_type);
                     m_shaderResourceGroup->SetConstant(m_shaderShaperBiasIndex, m_shaperParams.m_bias);

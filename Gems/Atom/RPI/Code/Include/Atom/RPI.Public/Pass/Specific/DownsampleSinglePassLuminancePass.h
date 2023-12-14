@@ -9,6 +9,7 @@
 
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
+#include <Atom/RHI/MultiDeviceImage.h>
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
 
 namespace AZ::RPI
@@ -85,7 +86,7 @@ namespace AZ::RPI
         Ptr<PassAttachment> m_counterPassAttachment;
 
         // Retainer of image views for each mip level of in/out image.
-        AZStd::array<Ptr<RHI::SingleDeviceImageView>, SpdMipLevelCountMax> m_imageViews;
+        AZStd::array<Ptr<RHI::MultiDeviceImageView>, SpdMipLevelCountMax> m_imageViews;
 
         Data::Instance<Buffer> m_globalAtomicBuffer;
     };

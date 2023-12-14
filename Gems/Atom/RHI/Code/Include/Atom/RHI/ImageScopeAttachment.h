@@ -9,11 +9,12 @@
 
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI/ScopeAttachment.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ::RHI
 {
-    class SingleDeviceImageView;
+    class MultiDeviceImageView;
     class ImageFrameAttachment;
 
     //! A specialization of a scope attachment for images. Provides
@@ -47,10 +48,10 @@ namespace AZ::RHI
         ImageScopeAttachment* GetNext();
 
         //! Returns the image view set on the scope attachment.
-        const SingleDeviceImageView* GetImageView() const;
+        const AZ::RHI::MultiDeviceImageView* GetImageView() const;
 
         //! Assigns an image view to the scope attachment.
-        void SetImageView(ConstPtr<SingleDeviceImageView> imageView);
+        void SetImageView(ConstPtr<AZ::RHI::MultiDeviceImageView> imageView);
 
         bool IsBeingResolved() const;
 

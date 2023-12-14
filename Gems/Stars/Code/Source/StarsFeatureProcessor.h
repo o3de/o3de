@@ -71,7 +71,7 @@ namespace AZ::Render
             const Data::Instance<RPI::ShaderResourceGroup>& srg,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             const RHI::DrawListTag& drawListTag,
-            const AZStd::span<const AZ::RHI::SingleDeviceStreamBufferView>& streamBufferViews,
+            const AZStd::span<const RHI::SingleDeviceStreamBufferView>& streamBufferViews,
             uint32_t vertexCount);
 
         RPI::Ptr<RPI::PipelineStateForDraw> m_meshPipelineState;

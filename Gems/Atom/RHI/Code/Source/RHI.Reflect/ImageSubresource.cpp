@@ -8,6 +8,7 @@
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -373,5 +374,18 @@ namespace AZ::RHI
     uint32_t GetImageSubresourceIndex(ImageSubresource subresource, uint32_t mipLevels)
     {
         return GetImageSubresourceIndex(subresource.m_mipSlice, subresource.m_arraySlice, mipLevels);
+    }
+
+    void MultiDeviceImageSubresourceLayout::Init(MultiDevice::DeviceMask deviceMask, const SingleDeviceImageSubresourceLayout &deviceLayout)
+    {
+        int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+        for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
+        {
+            if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
+            {
+                m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
+            }
+        }
     }
 }
