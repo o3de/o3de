@@ -74,10 +74,9 @@ namespace AZ::RHI
         AZ_RTTI(MultiDeviceBufferView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", MultiDeviceResourceView);
         virtual ~MultiDeviceBufferView() = default;
 
-        MultiDeviceBufferView(const RHI::MultiDeviceBuffer* buffer, BufferViewDescriptor descriptor, AZStd::unordered_map<int, Ptr<RHI::BufferView>>&& cache)
+        MultiDeviceBufferView(const RHI::MultiDeviceBuffer* buffer, BufferViewDescriptor descriptor)
             : m_buffer{ buffer }
             , m_descriptor{ descriptor }
-            , m_cache{AZStd::move(cache)}
         {
         }
 
@@ -115,6 +114,6 @@ namespace AZ::RHI
         //! This cache is necessary as the caller receives raw pointers from the ResourceCache, 
         //! which now, with multi-device objects in use, need to be held in memory as long as
         //! the multi-device view is held.
-        AZStd::unordered_map<int, Ptr<RHI::BufferView>> m_cache;
+        mutable AZStd::unordered_map<int, Ptr<RHI::BufferView>> m_cache;
     };
 } // namespace AZ::RHI

@@ -20,21 +20,12 @@ namespace AZ::RHI
     class MultiDeviceShaderResourceGroup;
     class MultiDeviceShaderResourceGroupPool;
 
-    //! Shader resource group data is a light abstraction over a flat table of shader resources
-    //! and shader constants. It utilizes basic reflection information from the shader resource group layout
-    //! to construct the table in the correct format for the platform-specific compile phase. The user
-    //! is expected to create instances of this class, fill data, and then push it to an SRG instance.
+    //! MultiShaderResourceGroupData is a multi-device class holding single-device ShaderResourceGroupData objects,
+    //! one for each device referenced in its deviceMask.
+    //! All calls and data are forwarded to the single-device variants, while the multi-device data is also kept locally,
+    //! including ConstantsData and Samplers.
     //!
-    //! The shader resource group (SRG) includes a set of built-in SRG constants in a single internally-managed
-    //! constant buffer. This is separate from any custom constant buffers that some SRG layouts may include
-    //! as shader resources. SRG constants can be conveniently accessed through a variety of SetConstant.
-    //!
-    //! This data structure holds strong references to the resource views bound onto it.
-    //!
-    //! NOTE [Performance Warning]: This data structure allocates memory. If compiling several SRG's in a batch,
-    //! prefer to share the data between them (i.e. within a single job).
-    //!
-    //! NOTE [SRG Constants]: The ConstantsData class is used for efficiently setting/getting the constants values of the SRG.
+    //! This data structure holds strong references to the multi-device resource views bound onto it.
     class MultiDeviceShaderResourceGroupData
     {
     public:
@@ -42,14 +33,14 @@ namespace AZ::RHI
         MultiDeviceShaderResourceGroupData() = default;
         ~MultiDeviceShaderResourceGroupData() = default;
 
-        //! Creates shader resource group data from a layout.
+        //! Creates MultiDeviceShaderResourceGroupData from a layout and initializes single-device ShaderResourceGroupData.
         explicit MultiDeviceShaderResourceGroupData(
             MultiDevice::DeviceMask deviceMask, const ShaderResourceGroupLayout* shaderResourceGroupLayout);
 
-        //! Creates shader resource group data from a pool (usable on any SRG with the same layout).
+        //! Creates MultiDeviceShaderResourceGroupData from a pool (usable on any SRG with the same layout).
         explicit MultiDeviceShaderResourceGroupData(const MultiDeviceShaderResourceGroupPool& shaderResourceGroupPool);
 
-        //! Creates shader resource group data from an SRG instance (usable on any SRG with the same layout).
+        //! Creates MultiDeviceShaderResourceGroupData from an SRG instance (usable on any SRG with the same layout).
         explicit MultiDeviceShaderResourceGroupData(const MultiDeviceShaderResourceGroup& shaderResourceGroup);
 
         AZ_DEFAULT_COPY_MOVE(MultiDeviceShaderResourceGroupData);

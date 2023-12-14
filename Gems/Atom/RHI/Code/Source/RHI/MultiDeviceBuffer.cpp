@@ -33,14 +33,7 @@ namespace AZ::RHI
 
     Ptr<MultiDeviceBufferView> MultiDeviceBuffer::BuildBufferView(const BufferViewDescriptor& bufferViewDescriptor)
     {
-        //? TODO: We currently need to cache the BufferViews (as no one else is doing that atm),
-        //?       can possibly be removed once everything handles MultiDeviceResources everywhere
-        AZStd::unordered_map<int, Ptr<RHI::BufferView>> m_cache;
-        IterateObjects<Buffer>([&bufferViewDescriptor, &m_cache](auto deviceIndex, auto deviceBuffer)
-        {
-            m_cache[deviceIndex] = deviceBuffer->GetBufferView(bufferViewDescriptor);
-        });
-        return aznew MultiDeviceBufferView{ this, bufferViewDescriptor, AZStd::move(m_cache) };
+        return aznew MultiDeviceBufferView{ this, bufferViewDescriptor };
     }
 
     const HashValue64 MultiDeviceBuffer::GetHash() const
@@ -81,12 +74,18 @@ namespace AZ::RHI
     //! Given a device index, return the corresponding BufferView for the selected device
     const RHI::Ptr<RHI::BufferView> MultiDeviceBufferView::GetDeviceBufferView(int deviceIndex) const
     {
-        AZ_Error(
-            "MultiDeviceBufferView",
-            m_cache.find(deviceIndex) != m_cache.end(),
-            "No BufferView found for device index %d\n",
-            deviceIndex);
+        auto iterator{ m_cache.find(deviceIndex) };
+        if (iterator == m_cache.end())
+        {
+            //! Buffer view is not yet in the cache
+            auto [new_iterator, inserted]{ m_cache.insert(
+                AZStd::make_pair(deviceIndex, m_buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(m_descriptor))) };
+            if (inserted)
+            {
+                return new_iterator->second;
+            }
+        }
 
-        return m_cache.at(deviceIndex);
+        return iterator->second;
     }
 } // namespace AZ::RHI
