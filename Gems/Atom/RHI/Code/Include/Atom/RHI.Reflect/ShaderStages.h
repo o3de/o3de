@@ -32,6 +32,10 @@ namespace AZ::RHI
         //! a vertex. On certain platforms like Metal, this stage may occur after tessellation.
         Vertex = 0,
 
+        //! This virtual stage contains shader stages that expand an input assembly stream and manipulate
+        //! a vertex.
+        Geometry,
+
         //! This virtual stage contains platform-specific stages for hardware tessellation. The specifics
         //! of how tessellation is achieved varies per platform. PC platforms have dedicated stages to handle this,
         //! while others utilize compute.
@@ -47,10 +51,6 @@ namespace AZ::RHI
 
         // This virtual stage represents ray tracing shaders.  On DXIL platforms this is implemented with a DXIL Library.
         RayTracing,
-        
-        //! This virtual stage contains shader stages that expand an input assembly stream and manipulate
-        //! a vertex.
-        Geometry,
 
         Count,
         GraphicsCount = Compute,
@@ -70,11 +70,11 @@ namespace AZ::RHI
     {
         None = 0,
         Vertex = AZ_BIT(static_cast<uint32_t>(ShaderStage::Vertex)),
+        Geometry = AZ_BIT(static_cast<uint32_t>(ShaderStage::Geometry)),
         Tessellation = AZ_BIT(static_cast<uint32_t>(ShaderStage::Tessellation)),
         Fragment = AZ_BIT(static_cast<uint32_t>(ShaderStage::Fragment)),
         Compute = AZ_BIT(static_cast<uint32_t>(ShaderStage::Compute)),
         RayTracing = AZ_BIT(static_cast<uint32_t>(ShaderStage::RayTracing)),
-        Geometry = AZ_BIT(static_cast<uint32_t>(ShaderStage::Geometry)),
         All = Vertex | Tessellation | Fragment | Compute | RayTracing | Geometry
     };
 
