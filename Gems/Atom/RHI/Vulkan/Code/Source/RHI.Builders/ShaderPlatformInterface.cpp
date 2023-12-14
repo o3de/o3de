@@ -55,6 +55,7 @@ namespace AZ
             bool hasRasterProgram = false;
 
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Vertex;
+            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Geometry;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Fragment;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::TessellationControl;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::TessellationEvaluation;
