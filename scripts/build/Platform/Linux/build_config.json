@@ -451,8 +451,7 @@
   },
   "snap_package": {
     "TAGS": [
-      "periodic-clean-weekly-internal",
-      "nightly-installer"
+      "periodic-clean-weekly-internal"
     ],
     "PIPELINE_ENV": {
       "NODE_LABEL": "ubuntu-22-packaging"
@@ -480,8 +479,7 @@
   },
   "snap_core20_package": {
     "TAGS": [
-      "periodic-clean-weekly-internal",
-      "nightly-installer"
+      "periodic-clean-weekly-internal"
     ],
     "PIPELINE_ENV": {
       "NODE_LABEL": "ubuntu-20-packaging"
