@@ -976,6 +976,37 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
         shutil.make_archive(export_layout.output_path, archive_output_format, root_dir=export_layout.output_path)
 
 
+def preprocess_seed_path_list(project_path: pathlib.Path,
+                              paths: List[pathlib.Path]) -> List[pathlib.Path]:
+    """
+    For seed-related paths, do a preprocessing on the files to expand out any file wildcard patterns and expand them
+    out into the result list. Note that only the '*' wildcard is supported for this operation, and it will not
+    search for the patterns recursively
+
+    @param project_path:    The base project path to use as the base for non-absolute paths
+    :param paths:           The list of paths to preprocess any wildcard '*' patterns
+    :return:    The list of processed paths with any wildcard patterns evaluated
+    """
+    preprocessed_path_list = []
+    for input_path in paths:
+        if '*' in str(input_path):
+
+            # Determine if we need to add the project path base to a relative path or not
+            if input_path.is_absolute():
+                glob_results = glob.glob(str(input_path))
+            else:
+                absolute_input_path = project_path / input_path
+                glob_results = glob.glob(str(absolute_input_path))
+
+            for glob_result in glob_results:
+                glob_path_result = pathlib.Path(glob_result)
+                if glob_path_result not in preprocessed_path_list:
+                    preprocessed_path_list.append(glob_path_result)
+        else:
+            preprocessed_path_list.append(input_path)
+    return preprocessed_path_list
+
+
 def validate_project_artifact_paths(project_path: pathlib.Path,
                                     artifact_paths: List[pathlib.Path],
                                     file_description: str = "file") -> List[pathlib.Path]:
@@ -989,7 +1020,11 @@ def validate_project_artifact_paths(project_path: pathlib.Path,
     @return: List of validate project artifact files, all absolute paths and verified to exist
     """
     validated_project_artifact_paths = []
-    for input_artifact_path in artifact_paths:
+
+    preprocessed_artifact_paths = preprocess_seed_path_list(project_path=project_path,
+                                                            paths=artifact_paths)
+
+    for input_artifact_path in preprocessed_artifact_paths:
         validated_artifact_path = None
         if input_artifact_path.is_file():
             validated_artifact_path = input_artifact_path
