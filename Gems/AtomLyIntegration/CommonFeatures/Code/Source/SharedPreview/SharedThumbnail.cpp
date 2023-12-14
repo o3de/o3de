@@ -53,18 +53,18 @@ namespace AZ
         {
             m_pixmap = thumbnailImage;
             m_state = State::Ready;
-            Thumbnail::LoadComplete();
+            QueueThumbnailUpdated();
         }
 
         void SharedThumbnail::ThumbnailFailedToRender()
         {
             m_state = State::Failed;
-            Thumbnail::LoadComplete();
+            QueueThumbnailUpdated();
         }
 
         void SharedThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
         {
-            if (m_assetInfo.m_assetId == assetId && m_state == State::Ready)
+            if (m_assetInfo.m_assetId == assetId && (m_state == State::Ready || m_state == State::Failed))
             {
                 m_state = State::Unloaded;
                 Load();

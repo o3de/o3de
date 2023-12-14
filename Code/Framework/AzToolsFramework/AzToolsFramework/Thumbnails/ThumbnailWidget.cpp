@@ -78,6 +78,7 @@ namespace AzToolsFramework
 
         void ThumbnailWidget::RepaintThumbnail()
         {
+            update();
             repaint();
         }
 

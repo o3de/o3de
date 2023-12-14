@@ -647,14 +647,28 @@ namespace AZ
         void View::BeginCulling()
         {
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-            AZ_PROFILE_SCOPE(RPI, "View: ClearMaskedOcclusionBuffer");
-            m_maskedOcclusionCulling->ClearBuffer();
+            if (m_maskedOcclusionCullingDirty)
+            {
+                AZ_PROFILE_SCOPE(RPI, "View: ClearMaskedOcclusionBuffer");
+                m_maskedOcclusionCulling->ClearBuffer();
+                m_maskedOcclusionCullingDirty = false;
+            }
 #endif
         }
 
         MaskedOcclusionCulling* View::GetMaskedOcclusionCulling()
         {
             return m_maskedOcclusionCulling;
+        }
+
+        void View::SetMaskedOcclusionCullingDirty(bool dirty)
+        {
+            m_maskedOcclusionCullingDirty = dirty;
+        }
+
+        bool View::GetMaskedOcclusionCullingDirty() const
+        {
+            return m_maskedOcclusionCullingDirty;
         }
 
         void View::TryCreateShaderResourceGroup()
