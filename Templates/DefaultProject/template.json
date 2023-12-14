@@ -199,7 +199,7 @@
             "isTemplated": false
         },
         {
-            "file": "Registry/user.setreg",
+            "file": "Registry/load_level.setreg",
             "isTemplated": false
         },
         {
