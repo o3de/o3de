@@ -48,10 +48,7 @@ namespace AZ
                     ->Field("FullscreenBlurDepthFalloffStrength", &DirectionalLightComponentConfig::m_fullscreenBlurDepthFalloffStrength)
                     ->Field("Affects GI", &DirectionalLightComponentConfig::m_affectsGI)
                     ->Field("Affects GI Factor", &DirectionalLightComponentConfig::m_affectsGIFactor)
-                    ->Field("LightingChannelMask", &DirectionalLightComponentConfig::m_lightingChannelMask)
-                    ->Field("LightingChannel0", &DirectionalLightComponentConfig::m_lightingChannel0)
-                    ->Field("LightingChannel1", &DirectionalLightComponentConfig::m_lightingChannel1)
-                    ->Field("LightingChannel2", &DirectionalLightComponentConfig::m_lightingChannel2)
+                    ->Field("LightingChannelConfig", &DirectionalLightComponentConfig::m_lightingChannelConfig)
                     ;
             }
         }

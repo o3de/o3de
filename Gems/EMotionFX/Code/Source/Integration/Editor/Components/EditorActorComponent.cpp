@@ -47,7 +47,7 @@ namespace EMotionFX
             if (serializeContext)
             {
                 serializeContext->Class<EditorActorComponent, AzToolsFramework::Components::EditorComponentBase>()
-                    ->Version(6)
+                    ->Version(7)
                     ->Field("ActorAsset", &EditorActorComponent::m_actorAsset)
                     ->Field("AttachmentType", &EditorActorComponent::m_attachmentType)
                     ->Field("AttachmentTarget", &EditorActorComponent::m_attachmentTarget)
@@ -60,15 +60,13 @@ namespace EMotionFX
                     ->Field("BBoxConfig", &EditorActorComponent::m_bboxConfig)
                     ->Field("ExcludeFromReflectionCubeMaps", &EditorActorComponent::m_excludeFromReflectionCubeMaps)
                     ->Field("RayTracingEnabled", &EditorActorComponent::m_rayTracingEnabled)
-                    ->Field("LightingChannelMask", &EditorActorComponent::m_lightingChannelMask)
-                    ->Field("LightingChannel0", &EditorActorComponent::m_lightingChannel0)
-                    ->Field("LightingChannel1", &EditorActorComponent::m_lightingChannel1)
-                    ->Field("LightingChannel2", &EditorActorComponent::m_lightingChannel2)
+                    ->Field("LightingChannelsConfig", &EditorActorComponent::m_lightingChannelConfig)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
+
                     editContext->Class<ActorComponent::BoundingBoxConfiguration>("Actor Bounding Box Config", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ActorComponent::BoundingBoxConfiguration::m_boundsType,
@@ -125,6 +123,14 @@ namespace EMotionFX
                         ->Attribute("EditCallback", &EditorActorComponent::LaunchAnimationEditor)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Render options")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(0, &EditorActorComponent::m_lightingChannelConfig,
+                                      "Lighting channel configuration", "")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+
                         ->DataElement(0, &EditorActorComponent::m_renderCharacter,
                             "Draw character", "Toggles rendering of character mesh.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
@@ -171,17 +177,6 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::AddEditorMaterialComponent)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorActorComponent::GetEditorMaterialComponentVisibility)
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Lighting Channels")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(
-                            AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_lightingChannel0, "Channel 0", "Lighting channel 0.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
-                        ->DataElement(
-                            AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_lightingChannel1, "Channel 1", "Lighting channel 1.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
-                        ->DataElement(
-                            AZ::Edit::UIHandlers::CheckBox, &EditorActorComponent::m_lightingChannel2, "Channel 2", "Lighting channel 2.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
                         ;
                 }
             }
@@ -203,7 +198,6 @@ namespace EMotionFX
             , m_attachmentType(AttachmentType::None)
             , m_attachmentJointIndex(0)
             , m_lodLevel(0)
-            , m_lightingChannelMask(1)
             , m_actorAsset(AZ::Data::AssetLoadBehavior::NoLoad)
             , m_excludeFromReflectionCubeMaps(true)
             , m_rayTracingEnabled(true)
@@ -520,15 +514,10 @@ namespace EMotionFX
 
         void EditorActorComponent::LightingChannelMaskChanged()
         {
-            uint32_t lightingChannel = 0;
-            lightingChannel = static_cast<uint32_t>(m_lightingChannel0) |
-                static_cast<uint32_t>(m_lightingChannel1) << 1 |
-                static_cast<uint32_t>(m_lightingChannel2) << 2;
-            m_lightingChannelMask = lightingChannel;
-
+            m_lightingChannelConfig.UpdateLightingChannelMask();
             if (m_actorInstance)
             {
-                m_actorInstance->SetLightingChannelMask(m_lightingChannelMask);
+                m_actorInstance->SetLightingChannelMask(m_lightingChannelConfig.GetLightingChannelMask());
             }
         }
 
@@ -751,7 +740,7 @@ namespace EMotionFX
             cfg.m_renderFlags = m_renderFlags;
             cfg.m_excludeFromReflectionCubeMaps = m_excludeFromReflectionCubeMaps;
             cfg.m_rayTracingEnabled = m_rayTracingEnabled;
-            cfg.m_lightingChannelMask = m_lightingChannelMask;
+            cfg.m_lightingChannelConfig = m_lightingChannelConfig;
 
             gameEntity->AddComponent(aznew ActorComponent(&cfg));
         }

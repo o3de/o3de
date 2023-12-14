@@ -156,7 +156,7 @@ namespace EMotionFX
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
                     ->Field("RenderFlags", &Configuration::m_renderFlags)
                     ->Field("ExcludeFromReflectionCubeMaps", &Configuration::m_excludeFromReflectionCubeMaps)
-                    ->Field("LightingChannelMask", &Configuration::m_lightingChannelMask)
+                    ->Field("LightingChannelConfig", &Configuration::m_lightingChannelConfig)
                     ->Field("RayTracingEnabled", &Configuration::m_rayTracingEnabled)
                 ;
             }
@@ -445,7 +445,7 @@ namespace EMotionFX
                 m_actorInstance.get());
 
             m_actorInstance->SetLODLevel(m_configuration.m_lodLevel);
-            m_actorInstance->SetLightingChannelMask(m_configuration.m_lightingChannelMask);
+            m_actorInstance->SetLightingChannelMask(m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
 
             // Setup initial transform and listen for transform changes.
             AZ::Transform transform = AZ::Transform::CreateIdentity();

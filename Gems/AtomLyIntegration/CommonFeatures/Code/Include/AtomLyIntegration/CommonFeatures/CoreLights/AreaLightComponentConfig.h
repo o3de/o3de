@@ -12,6 +12,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h>
 
 namespace AZ
@@ -75,10 +76,7 @@ namespace AZ
             // Global Illumination
             bool m_affectsGI = true;
             float m_affectsGIFactor = 1.0f;
-            uint32_t m_lightingChannelMask = 1;
-            bool m_lightingChannel0 = true;
-            bool m_lightingChannel1 = false;
-            bool m_lightingChannel2 = false;
+            AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
 
             // The following functions provide information to an EditContext...
 

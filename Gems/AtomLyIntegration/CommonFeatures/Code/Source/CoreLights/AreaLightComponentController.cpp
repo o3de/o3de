@@ -345,13 +345,10 @@ namespace AZ::Render
 
     void AreaLightComponentController::LightingChannelMaskChanged()
     {
-        uint32_t lightingChannel = 0;
-        lightingChannel = static_cast<uint32_t>(m_configuration.m_lightingChannel0) |
-            static_cast<uint32_t>(m_configuration.m_lightingChannel1) << 1 | static_cast<uint32_t>(m_configuration.m_lightingChannel2) << 2;
-        m_configuration.m_lightingChannelMask = lightingChannel;
+        m_configuration.m_lightingChannelConfig.UpdateLightingChannelMask();
         if (m_lightShapeDelegate)
         {
-            m_lightShapeDelegate->SetLightingChannelMask(m_configuration.m_lightingChannelMask);
+            m_lightShapeDelegate->SetLightingChannelMask(m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
         }
     }    
 
@@ -668,15 +665,15 @@ namespace AZ::Render
 	
     uint32_t AreaLightComponentController::GetLightingChannelMask() const
     {
-        return m_configuration.m_lightingChannelMask;
+        return m_configuration.m_lightingChannelConfig.GetLightingChannelMask();
     }
 
     void AreaLightComponentController::SetLightingChannelMask(uint32_t lightingChannelMask)
     {
-        m_configuration.m_lightingChannelMask = lightingChannelMask;
+        m_configuration.m_lightingChannelConfig.SetLightingChannelMask(lightingChannelMask);
         if (m_lightShapeDelegate)
         {
-            m_lightShapeDelegate->SetLightingChannelMask(m_configuration.m_lightingChannelMask);
+            m_lightShapeDelegate->SetLightingChannelMask(m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
         }
     }
 

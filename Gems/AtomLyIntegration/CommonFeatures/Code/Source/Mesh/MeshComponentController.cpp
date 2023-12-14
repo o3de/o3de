@@ -88,10 +88,7 @@ namespace AZ
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
                     ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
                     ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate)
-                    ->Field("LightingChannelMask", &MeshComponentConfig::m_lightingChannelMask)
-                    ->Field("LightingChannel0", &MeshComponentConfig::m_lightingChannel0)
-                    ->Field("LightingChannel1", &MeshComponentConfig::m_lightingChannel1)
-                    ->Field("LightingChannel2", &MeshComponentConfig::m_lightingChannel2);
+                    ->Field("LightingChannelConfig", &MeshComponentConfig::m_lightingChannelConfig);
             }
         }
 
@@ -346,11 +343,7 @@ namespace AZ
 
         void MeshComponentController::LightingChannelMaskChanged()
         {
-            uint32_t lightingChannel = 0;
-            lightingChannel = static_cast<uint32_t>(m_configuration.m_lightingChannel0) |
-                static_cast<uint32_t>(m_configuration.m_lightingChannel1) << 1 |
-                static_cast<uint32_t>(m_configuration.m_lightingChannel2) << 2;
-            m_configuration.m_lightingChannelMask = lightingChannel;
+            m_configuration.m_lightingChannelConfig.UpdateLightingChannelMask();
         }
 
         MaterialAssignmentLabelMap MeshComponentController::GetMaterialLabels() const
@@ -459,7 +452,7 @@ namespace AZ
 
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
-                m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelMask);
+                m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
                 m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);

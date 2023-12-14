@@ -103,14 +103,10 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
                         
                         ->ClassElement(Edit::ClassElements::Group, "Lighting Channels")
-                            ->Attribute(Edit::Attributes::AutoExpand, true)
-                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightingChannel0, "Channel 0", "Lighting channel 0.")
-                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightingChannel1, "Channel 1", "Lighting channel 1.")
-                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightingChannel2, "Channel 2", "Lighting channel 2.")
-                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
+                        ->DataElement(0, &AreaLightComponentConfig::m_lightingChannelConfig, "Lighting channel configuration", "")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                         ->ClassElement(Edit::ClassElements::Group, "Shutters")
                             ->Attribute(Edit::Attributes::AutoExpand, true)

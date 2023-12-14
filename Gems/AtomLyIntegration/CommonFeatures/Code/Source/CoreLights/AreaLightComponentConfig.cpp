@@ -45,10 +45,7 @@ namespace AZ
                     ->Field("Affects GI", &AreaLightComponentConfig::m_affectsGI)
                     ->Field("Affects GI Factor", &AreaLightComponentConfig::m_affectsGIFactor)
                     // Lighting channel
-                    ->Field("LightingChannelMask", &AreaLightComponentConfig::m_lightingChannelMask)
-                    ->Field("LightingChannel0", &AreaLightComponentConfig::m_lightingChannel0)
-                    ->Field("LightingChannel1", &AreaLightComponentConfig::m_lightingChannel1)
-                    ->Field("LightingChannel2", &AreaLightComponentConfig::m_lightingChannel2)
+                    ->Field("LightingChannelConfig", &AreaLightComponentConfig::m_lightingChannelConfig)
                     ;
             }
         }

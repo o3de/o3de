@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
@@ -55,10 +56,7 @@ namespace AZ
             float m_minimumScreenCoverage = 1.0f / 1080.0f;
             float m_qualityDecayRate = 0.5f;
 
-            uint32_t m_lightingChannelMask = 1;
-            bool m_lightingChannel0 = true;
-            bool m_lightingChannel1 = false;
-            bool m_lightingChannel2 = false;
+            AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
         };
 
         class MeshComponentController final

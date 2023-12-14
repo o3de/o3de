@@ -75,11 +75,13 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Max, 5.0f)
                             ->Attribute(Edit::Attributes::SoftMax, 1.0f)
                             ->Attribute(Edit::Attributes::Suffix, " deg")
+                            
                         ->ClassElement(Edit::ClassElements::Group, "Lighting Channels")
-                            ->Attribute(Edit::Attributes::AutoExpand, true)
-                            ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_lightingChannel0, "Channel 0", "Lighting channel 0.")
-                            ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_lightingChannel1, "Channel 1", "Lighting channel 1.")
-                            ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_lightingChannel2, "Channel 2", "Lighting channel 2.")
+                            ->DataElement(0, &DirectionalLightComponentConfig::m_lightingChannelConfig, "Lighting channel configuration", "")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                            
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowEnabled, "Enable Shadow", "Enable Shadow for this directional light. Only one directional light can have shadow")

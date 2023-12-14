@@ -62,6 +62,6 @@ void AddSampleContribution(
 
 bool IsSameLightChannel(uint channelA, uint channelB)
 {
-    uint bitResult = (channelA & channelB) & 0x00000007;
+    uint bitResult = channelA & channelB;
     return bitResult;
 }
