@@ -46,7 +46,7 @@ namespace AzToolsFramework
 
             static ProductAssetBrowserEntry* GetProductByAssetId(const AZ::Data::AssetId& assetId);
 
-            void ThumbnailUpdated() override;
+            void SetThumbnailDirty() override;
 
         private:
             AZ::s64 m_productId = -1;

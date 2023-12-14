@@ -973,7 +973,7 @@
 
     <Type Name="AZ::Dom::Path">
         <!-- Shows the DomPathEntry m_value variant using a view option of simple to only show the plain value !-->
-        <Intrinsic Name="size" Expression="m_entries.m_end - m_entries.m_start" />
+        <Intrinsic Name="size" Expression="m_entries.m_last - m_entries.m_start" />
         <DisplayString Condition="size() == 0">""</DisplayString>
         <DisplayString Condition="size() == 1">/{m_entries.m_start->m_value, view(simple)}</DisplayString>
         <DisplayString Condition="size() == 2">/{m_entries.m_start->m_value, view(simple)}</DisplayString>

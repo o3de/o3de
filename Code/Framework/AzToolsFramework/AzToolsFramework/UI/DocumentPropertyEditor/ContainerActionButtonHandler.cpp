@@ -23,6 +23,8 @@ namespace AzToolsFramework
         static QIcon s_iconAdd(QStringLiteral(":/stylesheet/img/UI20/add-16.svg"));
         static QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
         static QIcon s_iconClear(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
+        static QIcon s_iconUp(QStringLiteral(":/stylesheet/img/indicator-arrow-up.svg"));
+        static QIcon s_iconDown(QStringLiteral(":/stylesheet/img/indicator-arrow-down.svg"));
 
         using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
         using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
@@ -42,6 +44,14 @@ namespace AzToolsFramework
             setIcon(s_iconClear);
             setToolTip(tr("Remove all elements"));
             break;
+        case ContainerAction::MoveUp:
+            setIcon(s_iconUp);
+            setToolTip(tr("move this element up"));
+            break;
+        case ContainerAction::MoveDown:
+            setIcon(s_iconDown);
+            setToolTip(tr("move this element down"));
+            break;
         }
     }
 
@@ -52,19 +62,11 @@ namespace AzToolsFramework
 
         if (m_action == ContainerAction::Clear)
         {
-            // Default to true if the PromptOnContainerClear attribute isn't present
-            bool shouldPromptOnClear = Container::PromptOnContainerClear.ExtractFromDomNode(m_node).value_or(true);
-
-            if (shouldPromptOnClear)
+            auto result = QMessageBox::question(
+                this, QObject::tr("Clear container?"), QObject::tr("Are you sure you want to remove all elements from this container?"));
+            if (result == QMessageBox::No)
             {
-                auto result = QMessageBox::question(
-                    this,
-                    QObject::tr("Clear container?"),
-                    QObject::tr("Are you sure you want to remove all elements from this container?"));
-                if (result == QMessageBox::No)
-                {
-                    return;
-                }
+                return;
             }
         }
 

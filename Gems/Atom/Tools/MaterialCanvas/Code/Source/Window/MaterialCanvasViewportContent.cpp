@@ -240,7 +240,7 @@ namespace MaterialCanvas
         // type. Because the material asset never changes, it won't be reprocessed by the AP or treated as a unique asset in the asset
         // system. We force the viewport to create a unique material instance every time a change needs to be reflected in material canvas.
         AZ::Render::MaterialAssignment materialAssignment;
-        materialAssignment.m_materialAsset.Create(assetId);
+        materialAssignment.m_materialAsset.Create(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
         materialAssignment.m_materialInstanceMustBeUnique = true;
         AZ::Render::MaterialAssignmentMap materialAssignmentMap;
         materialAssignmentMap.emplace(AZ::Render::DefaultMaterialAssignmentId, materialAssignment);

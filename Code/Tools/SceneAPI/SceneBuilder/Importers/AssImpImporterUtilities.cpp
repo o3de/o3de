@@ -42,32 +42,6 @@ namespace AZ
                 return boneCount > 0;
             }
 
-            bool AreAllMeshesValid(const aiNode& node, const aiScene& scene)
-            {
-                for (unsigned meshIdx = 0; meshIdx < node.mNumMeshes; ++meshIdx)
-                {
-                    const aiMesh* mesh = scene.mMeshes[node.mMeshes[meshIdx]];
-                    for (unsigned int faceIdx = 0; faceIdx < mesh->mNumFaces; ++faceIdx)
-                    {
-                        aiFace face = mesh->mFaces[faceIdx];
-                        if (face.mNumIndices < 3)
-                        {
-                            // If the mesh has any faces that have less than 3 indices, mark this mesh as invalid.
-                            // This is commonly a control curve object that should be ignored by the mesh importer.
-                            // NOTE: meshes that contain more than 3 vertices are still considered a valid mesh at this step,
-                            // although they should be triangulated already in the assImp import process. Non triangulated meshes
-                            // will be ignored in the later process.
-                            AZ_Printf(Utilities::LogWindow,
-                                "Mesh on node %s has a face with %d vertices. This is likely a control curve object and therefore will be ignored.",
-                                node.mName.C_Str(),
-                                face.mNumIndices);
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-
             bool IsPivotNode(const aiString& nodeName, size_t* pos)
             {
                 AZStd::string_view name(nodeName.C_Str(), nodeName.length);

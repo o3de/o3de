@@ -89,14 +89,19 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 # is per-permutation, we need to install such headers per permutation. For the other cases, we can install
                 # under the default component since they are shared across permutations/configs.
                 cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${include_directory} NORMALIZE include_directory_child_of_build)
-                if(NOT include_directory_child_of_build)
-                    set(include_directory_component ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
-                else()
-                    set(include_directory_component ${LY_INSTALL_PERMUTATION_COMPONENT})
-                endif()
+
+                # In order to combine profile and release monolithic, we use the CORE component
+                # because CPack will fail if it finds duplicated content in CORE and DEFAULT/MONOLITHIC
+                set(include_directory_component ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
 
                 unset(rel_include_dir)
-                cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
+                if(include_directory_child_of_build)
+                    # We need to use the path relative to the binary folder otherwise you will get an invalid 
+                    # relative path if the build folder is outside the engine root.
+                    cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE rel_include_dir)
+                else()
+                    cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
+                endif()
                 cmake_path(APPEND rel_include_dir "..")
                 cmake_path(NORMAL_PATH rel_include_dir OUTPUT_VARIABLE destination_dir)
 
@@ -196,7 +201,17 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         string(GENEX_STRIP ${include} include_genex_expr)
         if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
             # Make the include path relative to the source dir where the target will be declared
-            cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${include} NORMALIZE include_directory_child_of_build)
+            if(include_directory_child_of_build)
+                # Some autogen files are placed in the build folder so remove the build folder prefix
+                # and use it to calculate the relative path  
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE rel_include)
+                cmake_path(SET base_path ${LY_ROOT_FOLDER})
+                cmake_path(APPEND base_path ${rel_include} OUTPUT_VARIABLE absolute_include)
+                cmake_path(RELATIVE_PATH absolute_include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            else()
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            endif()
             list(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${target_include}")
         endif()
     endforeach()
@@ -846,9 +861,24 @@ function(ly_setup_assets)
                     # to allow it to be installed next to the gem.json
                     set(gem_scratch_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/install/${gem_install_dest_dir}")
 
+                    # 1. Create the base CMakeLists.txt that will just include a cmake file per platform
+                    string(CONFIGURE [[
+                    @cmake_copyright_comment@
+                    o3de_read_json_key(GEM_TYPE ${CMAKE_CURRENT_SOURCE_DIR}/gem.json "type")
+                    if (GEM_TYPE STREQUAL "Asset")
+                        include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+                    endif()
+                    ]] subdirectory_cmakelist_content @ONLY)
+                    
+
+                    # Store off the generated CMakeLists.txt into a DIRECTORY property based on the subdirectory being visited
+                    # In the ly_setup_assets() function, it generates an empty CMakeLists.txt into the gem root directory
+                    # if one does not exist by checking if this property is set
+                    set_property(DIRECTORY "${absolute_target_source_dir}" APPEND_STRING PROPERTY O3DE_SUBDIRECTORY_CMAKELIST_CONTENT "${subdirectory_cmakelist_content}")
+                    
                     # copy the empty CMakeList.txt into the gem root directory, to allow add_subdirectory
                     # calls to succeed on the gem root in the install layout
-                    file(CONFIGURE OUTPUT "${gem_scratch_binary_dir}/CMakeLists.txt" CONTENT [[@cmake_copyright_comment@]] @ONLY)
+                    file(WRITE "${gem_scratch_binary_dir}/CMakeLists.txt" "${subdirectory_cmakelist_content}")
 
                     ly_install(FILES "${gem_scratch_binary_dir}/CMakeLists.txt"
                         DESTINATION ${gem_install_dest_dir}

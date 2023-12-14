@@ -34,10 +34,10 @@ namespace AzToolsFramework
         {
             if (m_key)
             {
-                disconnect(m_key.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &ThumbnailWidget::KeyUpdatedSlot);
+                disconnect(m_key.data(), nullptr, this, nullptr);
             }
             m_key = key;
-            connect(m_key.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &ThumbnailWidget::KeyUpdatedSlot);
+            connect(m_key.data(), &ThumbnailKey::ThumbnailUpdated, this, &ThumbnailWidget::RepaintThumbnail);
             repaint();
         }
 
@@ -76,8 +76,9 @@ namespace AzToolsFramework
             QWidget::paintEvent(event);
         }
 
-        void ThumbnailWidget::KeyUpdatedSlot()
+        void ThumbnailWidget::RepaintThumbnail()
         {
+            update();
             repaint();
         }
 

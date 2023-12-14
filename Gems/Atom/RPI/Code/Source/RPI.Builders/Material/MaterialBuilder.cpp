@@ -30,19 +30,19 @@ namespace AZ
 
         AZStd::string MaterialBuilder::GetBuilderSettingsFingerprint() const
         {
-            return "";
+            return AZStd::string::format(
+                "[%s %s]", MaterialBuilderName, ShouldReportMaterialAssetWarningsAsErrors() ? "WarningsAsErrorsOn" : "WarningsAsErrorsOff");
         }
 
         void MaterialBuilder::RegisterBuilder()
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 138; // Updated invalid texture UUID + error message
+            materialBuilderDescriptor.m_version = 141; // Replaced possible dependency utility function with explicit and wildcard job dependencies
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
             materialBuilderDescriptor.m_processJobFunction = AZStd::bind(&MaterialBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-
             materialBuilderDescriptor.m_analysisFingerprint = GetBuilderSettingsFingerprint();
 
             BusConnect(materialBuilderDescriptor.m_busId);
@@ -65,7 +65,8 @@ namespace AZ
             return warningsAsErrors;
         }
 
-        void MaterialBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
+        void MaterialBuilder::CreateJobs(
+            const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
             if (m_isShuttingDown)
             {
@@ -78,134 +79,116 @@ namespace AZ
             outputJobDescriptor.m_jobKey = JobKey;
             outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
 
-            AZStd::string fullSourcePath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
+            AZStd::string materialSourcePath;
+            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), materialSourcePath, true);
 
-            auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
-            if (!loadOutcome.IsSuccess())
+            // Rather than just reading the JSON document, we read the material source data structure because we need access
+            // to material type, parent material, and all of the properties to enumerate images and other dependencies.
+            const auto materialSourceDataOutcome = MaterialUtils::LoadMaterialSourceData(materialSourcePath);
+            if (!materialSourceDataOutcome)
             {
-                AZ_Error(MaterialBuilderName, false, "%s", loadOutcome.GetError().c_str());
+                AZ_Error(MaterialBuilderName, false, "Failed to load material source data: %s", materialSourcePath.c_str());
                 return;
             }
 
-            rapidjson::Document& document = loadOutcome.GetValue();
+            MaterialBuilderUtils::AddFingerprintForDependency(materialSourcePath, outputJobDescriptor);
 
-            // Note we don't use the LoadMaterial() utility function or JsonSerializer here because we don't care about fully
-            // processing the material file at this point and reporting on the many things that could go wrong. We just want
-            // to report the parent material and material type dependencies. So using rapidjson directly is actually simpler.
+            const auto& materialSourceData = materialSourceDataOutcome.GetValue();
 
-            AZStd::string materialTypePath;
-            AZStd::string parentMaterialPath;
-
-            auto& materialJson = document;
-
-            const char* const materialTypeField = "materialType";
-            const char* const parentMaterialField = "parentMaterial";
-
-            if (materialJson.IsObject() && materialJson.HasMember(materialTypeField) && materialJson[materialTypeField].IsString())
+            if (!materialSourceData.m_parentMaterial.empty())
             {
-                materialTypePath = materialJson[materialTypeField].GetString();
-            }
-
-            if (materialJson.IsObject() && materialJson.HasMember(parentMaterialField) && materialJson[parentMaterialField].IsString())
-            {
-                parentMaterialPath = materialJson[parentMaterialField].GetString();
-            }
-
-            if (!parentMaterialPath.empty())
-            {
-                // Register dependency on the parent material source file so we can load it and use it's data to build this variant material.
-                MaterialBuilderUtils::AddPossibleDependencies(
-                    request.m_sourceFile,
-                    parentMaterialPath,
+                // Register dependency on the parent material source file so we can load and use its data to build this material.
+                MaterialBuilderUtils::AddJobDependency(
+                    outputJobDescriptor,
+                    AssetUtils::ResolvePathReference(materialSourcePath, materialSourceData.m_parentMaterial),
                     JobKey,
-                    outputJobDescriptor.m_jobDependencyList,
-                    response.m_sourceFileDependencyList,
-                    false,
-                    0);
+                    {},
+                    { 0 });
             }
 
-            // Note that parentMaterialPath may have registered a dependency above, and the parent material reports dependency on the material type as well,
-            // so there is a chain that propagates automatically, at least in some cases. However, that isn't sufficient for all cases and a direct dependency
-            // on the material type is needed, because ProcessJob loads the parent material and the material type independent of each other. Otherwise, edge
-            // cases are possible, where the material type changes in some way that does not impact the parent material asset's final data, yet it does impact
-            // the child material. See https://github.com/o3de/o3de/issues/13766
-            if (!materialTypePath.empty())
+            // Note that parentMaterialPath may have registered a dependency above, and the parent material reports dependency on the
+            // material type as well, so there is a chain that propagates automatically, at least in some cases. However, that isn't
+            // sufficient for all cases and a direct dependency on the material type is needed, because ProcessJob loads the parent material
+            // and the material type independent of each other. Otherwise, edge cases are possible, where the material type changes in some
+            // way that does not impact the parent material asset's final data, yet it does impact the child material. See
+            // https://github.com/o3de/o3de/issues/13766
+            if (!materialSourceData.m_materialType.empty())
             {
-                // We usually won't load file during CreateJob since we want to keep the function fast. 
-                // But here we have to load the material type data to find the exact material type format so we could create an accurate source dependency.
-                AZStd::string resolvedMaterialPath = AssetUtils::ResolvePathReference(request.m_sourceFile.c_str(), materialTypePath.c_str());
+                // We usually won't load file during CreateJob since we want to keep the function fast. But here we have to load the
+                // material type data to find the exact material type format so we could create an accurate source dependency.
+                const auto& resolvedMaterialTypePath =
+                    AssetUtils::ResolvePathReference(materialSourcePath, materialSourceData.m_materialType);
 
-                MaterialTypeSourceData::Format materialTypeFormat = MaterialTypeSourceData::Format::Invalid;
-                MaterialUtils::ImportedJsonFiles importedJsonFiles;
-                auto materialTypeSourceData = MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialPath, nullptr, &importedJsonFiles);
-
-                if (materialTypeSourceData.IsSuccess())
+                const auto& materialTypeSourceDataOutcome = MaterialUtils::LoadMaterialTypeSourceData(resolvedMaterialTypePath);
+                if (!materialTypeSourceDataOutcome)
                 {
-                    materialTypeFormat = materialTypeSourceData.GetValue().GetFormat();
+                    AZ_Error(MaterialBuilderName, false, "Failed to load material type source data: %s", resolvedMaterialTypePath.c_str());
+                    return;
                 }
 
-                // If the material uses the "Direct" format, then there will need to be a dependency on that file.
-                // If it uses the "Abstract" format, then there will be an intermediate .materialtype and there needs to be a dependency on that file instead.
+                const auto& materialTypeSourceData = materialTypeSourceDataOutcome.GetValue();
+                const MaterialTypeSourceData::Format materialTypeFormat = materialTypeSourceData.GetFormat();
+
+                // If the material uses the "Direct" format, then there will need to be a dependency on that file. If it uses the "Abstract"
+                // format, then there will be an intermediate .materialtype and there needs to be a dependency on that file instead.
                 if (materialTypeFormat == MaterialTypeSourceData::Format::Direct)
                 {
-                    MaterialBuilderUtils::AddPossibleDependencies(
-                        request.m_sourceFile,
-                        resolvedMaterialPath,
-                        MaterialTypeBuilder::FinalStageJobKey,
-                        outputJobDescriptor.m_jobDependencyList,
-                        response.m_sourceFileDependencyList,
-                        false,
-                        0);
+                    MaterialBuilderUtils::AddJobDependency(
+                        outputJobDescriptor, resolvedMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 });
+
+                    for (const auto& shader : materialTypeSourceData.GetShaderReferences())
+                    {
+                        MaterialBuilderUtils::AddJobDependency(
+                            outputJobDescriptor,
+                            AssetUtils::ResolvePathReference(resolvedMaterialTypePath, shader.m_shaderFilePath),
+                            "Shader Asset");
+                    }
                 }
                 else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
                 {
-                    const AZStd::string intermediateMaterialTypePath =
-                        MaterialUtils::PredictIntermediateMaterialTypeSourcePath(request.m_sourceFile, materialTypePath);
+                    // Create a dependency on the abstract, pipeline, version of the material type and its products. The pipeline based
+                    // material type builder uses the 'common' asset platform ID because it produces immediate assets. The sub ID filter
+                    // should remain empty to observe all produced intermediate assets.
+                    MaterialBuilderUtils::AddJobDependency(
+                        outputJobDescriptor,
+                        resolvedMaterialTypePath,
+                        MaterialTypeBuilder::PipelineStageJobKey,
+                        AssetBuilderSDK::CommonPlatformName);
+
+                    // The abstract, pipeline material type will generate a direct material type as an intermediate source asset. This
+                    // attempts to predict where that source asset will be located in the intermediate asset folder then maps it as a
+                    // product dependency if it exists or a source dependency if it is to be created in the future.
+                    const auto& intermediateMaterialTypePath =
+                        MaterialUtils::PredictIntermediateMaterialTypeSourcePath(resolvedMaterialTypePath);
                     if (!intermediateMaterialTypePath.empty())
                     {
-                        MaterialBuilderUtils::AddPossibleDependencies(
-                            request.m_sourceFile,
-                            intermediateMaterialTypePath,
-                            MaterialTypeBuilder::FinalStageJobKey,
-                            outputJobDescriptor.m_jobDependencyList,
-                            response.m_sourceFileDependencyList,
-                            false,
-                            0);
+                        // Add the ordered product dependency for the intermediate material type source file so that the material cannot be
+                        // processed before it's complete
+                        MaterialBuilderUtils::AddJobDependency(
+                            outputJobDescriptor, intermediateMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 });
+
+                        // Add a wild card job dependency for any of the shaders generated with the material type so the material will only
+                        // be processed after they are complete
+                        auto& jobDependency = MaterialBuilderUtils::AddJobDependency(
+                            outputJobDescriptor, intermediateMaterialTypePath, "Shader Asset", {}, {}, false);
+                        jobDependency.m_sourceFile.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards;
+                        AZ::StringFunc::Replace(jobDependency.m_sourceFile.m_sourceFileDependencyPath, "_generated.materialtype", "*.shader");
                     }
                 }
-
             }
 
-            // Even though above we were able to get away without deserializing the material json, we do need to deserialize here in order
-            // to easily read the property values. Note that with the latest .material file format, it actually wouldn't be too hard to
-            // just read the raw json, it's just a map of property name to property value. But we also are maintaining backward compatible
-            // support for an older file format that nests property values rather than using a flat list. By deserializing we leave it up
-            // to the MaterialSourceData class to provide that backward compatibility (see MaterialSourceData::UpgradeLegacyFormat()).
-                    
-            auto materialSourceData = MaterialUtils::LoadMaterialSourceData(fullSourcePath, &materialJson);
-            if (materialSourceData.IsSuccess())
+            // Assign dependencies from image properties
+            for (const auto& [propertyId, propertyValue] : materialSourceData.GetPropertyValues())
             {
-                for (auto& [propertyId, propertyValue] : materialSourceData.GetValue().GetPropertyValues())
+                AZ_UNUSED(propertyId);
+
+                if (MaterialUtils::LooksLikeImageFileReference(propertyValue))
                 {
-                    AZ_UNUSED(propertyId);
-                            
-                    if (MaterialUtils::LooksLikeImageFileReference(propertyValue))
-                    {
-                        MaterialBuilderUtils::AddPossibleImageDependencies(
-                            request.m_sourceFile,
-                            propertyValue.GetValue<AZStd::string>(),
-                            outputJobDescriptor.m_jobDependencyList,
-                            response.m_sourceFileDependencyList);
-                    }
+                    MaterialBuilderUtils::AddPossibleImageDependencies(
+                        materialSourcePath, propertyValue.GetValue<AZStd::string>(), outputJobDescriptor);
                 }
-                        
             }
-            else
-            {
-                AZ_Warning(MaterialBuilderName, false, "Could not report dependencies for Image properties because the material json couldn't be loaded.");
-            }
-            
+
             // Create the output jobs for each platform
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
             {
@@ -213,7 +196,10 @@ namespace AZ
 
                 for (auto& jobDependency : outputJobDescriptor.m_jobDependencyList)
                 {
-                    jobDependency.m_platformIdentifier = platformInfo.m_identifier;
+                    if (jobDependency.m_platformIdentifier.empty())
+                    {
+                        jobDependency.m_platformIdentifier = platformInfo.m_identifier;
+                    }
                 }
 
                 response.m_createJobOutputs.push_back(outputJobDescriptor);
@@ -222,25 +208,8 @@ namespace AZ
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }
 
-        AZ::Data::Asset<MaterialAsset> MaterialBuilder::CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json) const
-        {
-            auto material = MaterialUtils::LoadMaterialSourceData(materialSourceFilePath, &json, true);
-
-            if (!material.IsSuccess())
-            {
-                return {};
-            }
-
-            auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, ShouldReportMaterialAssetWarningsAsErrors());
-            if (!materialAssetOutcome.IsSuccess())
-            {
-                return {};
-            }
-
-            return materialAssetOutcome.GetValue();
-        }
-
-        void MaterialBuilder::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
+        void MaterialBuilder::ProcessJob(
+            const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
@@ -249,61 +218,63 @@ namespace AZ
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
                 return;
             }
+
             if (m_isShuttingDown)
             {
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
                 return;
             }
 
-            AZStd::string fullSourcePath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullSourcePath, true);
+            AZStd::string materialSourcePath;
+            AzFramework::StringFunc::Path::ConstructFull(
+                request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), materialSourcePath, true);
 
-            auto loadOutcome = JsonSerializationUtils::ReadJsonFile(fullSourcePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
-            if (!loadOutcome.IsSuccess())
+            const auto& materialSourceDataOutcome = MaterialUtils::LoadMaterialSourceData(materialSourcePath);
+            if (!materialSourceDataOutcome)
             {
-                AZ_Error(MaterialBuilderName, false, "Failed to load material file: %s", loadOutcome.GetError().c_str());
+                AZ_Error(MaterialBuilderName, false, "Failed to load material source data: %s", materialSourcePath.c_str());
                 return;
             }
 
-            rapidjson::Document& document = loadOutcome.GetValue();
-
-            AZStd::string materialProductPath;
-            AZStd::string fileName;
-            AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), fileName);
-            AzFramework::StringFunc::Path::ReplaceExtension(fileName, MaterialAsset::Extension);
-
-            AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), fileName.c_str(), materialProductPath, true);
-
-            // TODO(MaterialPipeline): Try to improve MaterialBuilder to avoid transient failures when the intermediate .materialtype has not
-            // been generated yet, and avoid the annoying failure notifications. We could end ProcessJob with success instead of failure when
-            // an intermediate .materialtype is missing, maybe just output a warning instead, and report a source dependency on that file.
-            // Then when it appears later, reprocess the job, and then the material asset should show up without every reporting a failure (I think).
+            const auto& materialSourceData = materialSourceDataOutcome.GetValue();
 
             // Load the material file and create the MaterialAsset object
-            AZ::Data::Asset<MaterialAsset> materialAsset;
-            materialAsset = CreateMaterialAsset(request.m_sourceFile, document);
+            const auto& materialAssetOutcome = materialSourceData.CreateMaterialAsset(
+                Uuid::CreateRandom(), materialSourcePath, ShouldReportMaterialAssetWarningsAsErrors());
+            if (!materialAssetOutcome)
+            {
+                AZ_Error(MaterialBuilderName, false, "Failed to create material asset from source data: %s", materialSourcePath.c_str());
+                return;
+            }
 
+            const auto& materialAsset = materialAssetOutcome.GetValue();
             if (!materialAsset)
             {
                 // Errors will have been reported above
                 return;
             }
 
-            // [ATOM-13190] Change this back to ST_BINARY. It's ST_XML temporarily for debugging.
-            if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_XML, materialAsset.Get()))
+            AZStd::string materialProductPath;
+            AZStd::string fileName;
+            AzFramework::StringFunc::Path::GetFileName(materialSourcePath.c_str(), fileName);
+            AzFramework::StringFunc::Path::ReplaceExtension(fileName, MaterialAsset::Extension);
+            AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), fileName.c_str(), materialProductPath, true);
+
+            if (!AZ::Utils::SaveObjectToFile(materialProductPath, AZ::DataStream::ST_BINARY, materialAsset.Get()))
             {
                 AZ_Error(MaterialBuilderName, false, "Failed to save material to file '%s'!", materialProductPath.c_str());
                 return;
             }
 
             AssetBuilderSDK::JobProduct jobProduct;
-            if (!AssetBuilderSDK::OutputObject(materialAsset.Get(), materialProductPath, azrtti_typeid<RPI::MaterialAsset>(), 0, jobProduct))
+            if (!AssetBuilderSDK::OutputObject(
+                    materialAsset.Get(), materialProductPath, azrtti_typeid<RPI::MaterialAsset>(), 0, jobProduct))
             {
                 AZ_Error(MaterialBuilderName, false, "Failed to output product dependencies.");
                 return;
             }
 
-            response.m_outputProducts.push_back(AZStd::move(jobProduct));
+            response.m_outputProducts.emplace_back(AZStd::move(jobProduct));
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }

@@ -46,7 +46,7 @@ namespace AzToolsFramework
             SharedThumbnailKey m_key;
 
         private Q_SLOTS:
-            void KeyUpdatedSlot();
+            void RepaintThumbnail();
         };
     } // namespace Thumbnailer
 } // namespace AzToolsFramework

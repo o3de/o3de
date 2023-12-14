@@ -11,6 +11,7 @@
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
+#include <AzCore/Serialization/PointerObject.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
@@ -26,7 +27,8 @@ namespace AZ::DocumentPropertyEditor
         ReflectionAdapter* m_adapter;
         AdapterBuilder m_builder;
         // Look-up table of onChanged callbacks for handling property changes
-        AZ::Dom::DomPrefixTree<AZStd::function<Dom::Value(const Dom::Value&)>> m_onChangedCallbacks;
+        using OnChangedCallbackPrefixTree = AZ::Dom::DomPrefixTree<AZStd::function<Dom::Value(const Dom::Value&)>>;
+        OnChangedCallbackPrefixTree m_onChangedCallbacks;
 
         //! This represents a container or associative container instance and has methods
         //! for interacting with the container.
@@ -45,10 +47,18 @@ namespace AZ::DocumentPropertyEditor
             {
                 AZ_Assert(instance != nullptr, "Instance was nullptr when attempting to create a BoundContainer");
 
-                auto containerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
-                if (containerValue && !containerValue->IsNull())
+                AZ::Serialize::IDataContainer* container{};
+                if (auto containerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
+                    containerValue && !containerValue->IsNull())
                 {
-                    auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*containerValue);
+                    if (auto containerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerValue);
+                        containerObject && containerObject->m_typeId == azrtti_typeid<AZ::Serialize::IDataContainer>())
+                    {
+                        container = reinterpret_cast<AZ::Serialize::IDataContainer*>(containerObject->m_address);
+                    }
+                }
+                if (container != nullptr)
+                {
                     return AZStd::make_unique<BoundContainer>(container, instance);
                 }
                 return nullptr;
@@ -58,14 +68,14 @@ namespace AZ::DocumentPropertyEditor
             {
                 Dom::Value containerRow;
                 const auto& findContainerProcedure = [&](const AZ::Dom::Path& nodePath, const ContainerEntry& containerEntry)
-                    {
+                {
                     if (containerRow.IsNull() && containerEntry.m_container && containerEntry.m_container->m_container == m_container)
-                        {
-                            containerRow = impl->m_adapter->GetContents()[nodePath];
-                            return false;
-                        }
-                        return true;
-                    };
+                    {
+                        containerRow = impl->m_adapter->GetContents()[nodePath];
+                        return false;
+                    }
+                    return true;
+                };
 
                 // Find the row that contains the PropertyEditor for our actual container (if it exists)
                 auto visitorFlags =
@@ -197,13 +207,25 @@ namespace AZ::DocumentPropertyEditor
             {
                 AZ_Assert(instance != nullptr, "Instance was nullptr when attempting to create a ContainerElement");
 
-                auto parentContainerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
-                if (parentContainerValue && !parentContainerValue->IsNull())
+                AZ::Serialize::IDataContainer* parentContainer{};
+                if (auto parentContainerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
+                    parentContainerValue && !parentContainerValue->IsNull())
                 {
-                    auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerValue);
-
+                    auto parentContainerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerValue);
+                    if (parentContainerObject && parentContainerObject->m_typeId == azrtti_typeid<AZ::Serialize::IDataContainer>())
+                    {
+                        parentContainer = reinterpret_cast<AZ::Serialize::IDataContainer*>(parentContainerObject->m_address);
+                    }
+                }
+                if (parentContainer != nullptr)
+                {
                     auto parentContainerInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
-                    auto parentContainerInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*parentContainerInstanceValue);
+                    void* parentContainerInstance{};
+                    AZStd::optional<AZ::PointerObject> parentContainerInstanceObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerInstanceValue);
+                    if (parentContainerInstanceObject.has_value() && parentContainerInstanceObject->IsValid())
+                    {
+                        parentContainerInstance = parentContainerInstanceObject->m_address;
+                    }
 
                     // Check if this element is actually standing in for a direct child of a container. This is used in scenarios like
                     // maps, where the direct children are actually pairs of key/value, but we need to only show the value as an
@@ -211,7 +233,11 @@ namespace AZ::DocumentPropertyEditor
                     auto containerElementOverrideValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
                     if (containerElementOverrideValue)
                     {
-                        instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*containerElementOverrideValue);
+                        AZStd::optional<AZ::PointerObject> containerElementOverrideObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerElementOverrideValue);
+                        if (containerElementOverrideObject.has_value() && containerElementOverrideObject->IsValid())
+                        {
+                            instance = containerElementOverrideObject->m_address;
+                        }
                     }
 
                     return AZStd::make_unique<ContainerElement>(parentContainer, parentContainerInstance, instance);
@@ -260,6 +286,14 @@ namespace AZ::DocumentPropertyEditor
             void OnRemoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
                 m_container->RemoveElement(m_containerInstance, m_elementInstance, impl->m_serializeContext);
+                auto containerNode = GetContainerNode(impl, path);
+                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
+                impl->m_adapter->NotifyResetDocument();
+            }
+
+            void OnMoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path, AZ::s64 containerIndex, bool moveForward)
+            {
+                m_container->SwapElements(m_containerInstance, containerIndex, (moveForward ? containerIndex + 1 : containerIndex - 1));
                 auto containerNode = GetContainerNode(impl, path);
                 Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
                 impl->m_adapter->NotifyResetDocument();
@@ -425,7 +459,8 @@ namespace AZ::DocumentPropertyEditor
                 {
                     AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::ReadField);
                     // marshal this new value into a pointer for use by the Json serializer if a pointer is being stored
-                    if (auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType); marshalledPointer != nullptr)
+                    if (auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
+                        marshalledPointer != nullptr)
                     {
                         rapidjson::Document buffer;
                         JsonSerializerSettings serializeSettings;
@@ -459,7 +494,6 @@ namespace AZ::DocumentPropertyEditor
                                 resultCode.ToString("").c_str());
                             return newValue;
                         }
-
                     }
                     else
                     {
@@ -526,7 +560,8 @@ namespace AZ::DocumentPropertyEditor
                     }
                     return Dom::Utils::ValueFromType(value);
                 },
-                true, false);
+                true,
+                false);
         }
 
         void Visit(bool& value, const Reflection::IAttributes& attributes) override
@@ -589,13 +624,60 @@ namespace AZ::DocumentPropertyEditor
             VisitPrimitive(value, attributes);
         }
 
+        void CreateContainerButton(
+            Nodes::ContainerAction action,
+            bool disabled = false,
+            bool ancestorDisabled = false,
+            AZ::s64 containerIndex = -1,
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Align alignment = Nodes::PropertyEditor::Align::AlignRight)
+        {
+            m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+            m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+            m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+            m_builder.Attribute(Nodes::PropertyEditor::Alignment, alignment);
+            m_builder.Attribute(Nodes::ContainerActionButton::Action, action);
+
+            if (ancestorDisabled)
+            {
+                m_builder.Attribute(Nodes::PropertyEditor::AncestorDisabled, true);
+            }
+            if (disabled)
+            {
+                m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+            }
+            if (containerIndex != -1)
+            {
+                m_builder.Attribute(Nodes::ContainerActionButton::ContainerIndex, containerIndex);
+            }
+
+            m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
+            m_builder.EndPropertyEditor();
+        }
+
         void CheckContainerElement(void* instance, const Reflection::IAttributes& attributes)
         {
             auto parentContainerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
             auto parentContainerInstanceAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
-            if (parentContainerAttribute && !parentContainerAttribute->IsNull() &&
-                parentContainerInstanceAttribute && !parentContainerInstanceAttribute->IsNull())
+
+            AZ::Serialize::IDataContainer* parentContainer{};
+            if (parentContainerAttribute && !parentContainerAttribute->IsNull())
             {
+                if (auto parentContainerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerAttribute);
+                    parentContainerObject && parentContainerObject->m_typeId == azrtti_typeid<AZ::Serialize::IDataContainer>())
+                {
+                    parentContainer = reinterpret_cast<AZ::Serialize::IDataContainer*>(parentContainerObject->m_address);
+                }
+            }
+
+            void* parentContainerInstance{};
+            if (parentContainer != nullptr && parentContainerInstanceAttribute && !parentContainerInstanceAttribute->IsNull())
+            {
+                if (auto parentContainerInstanceObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerInstanceAttribute);
+                    parentContainerInstanceObject && parentContainerInstanceObject->IsValid())
+                {
+                    parentContainerInstance = reinterpret_cast<AZ::Serialize::IDataContainer*>(parentContainerInstanceObject->m_address);
+                }
+
                 auto containerEntry = m_containers.ValueAtPath(m_builder.GetCurrentPath(), AZ::Dom::PrefixTreeMatch::ExactPath);
                 if (containerEntry)
                 {
@@ -608,8 +690,6 @@ namespace AZ::DocumentPropertyEditor
                         ContainerEntry{ nullptr, ContainerElement::CreateContainerElement(instance, attributes) });
                 }
 
-                auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerAttribute);
-
                 bool parentCanBeModified = true;
                 if (auto parentCanBeModifiedValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerCanBeModified);
                     parentCanBeModifiedValue)
@@ -619,12 +699,6 @@ namespace AZ::DocumentPropertyEditor
 
                 if (!parentContainer->IsFixedSize() && parentCanBeModified)
                 {
-                    m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                    m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
-                    m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
-                    m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
-                    m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
-
                     bool isAncestorDisabledValue = false;
                     if (auto ancestorDisabledValue = attributes.Find(Nodes::NodeWithVisiblityControl::AncestorDisabled.GetName());
                         ancestorDisabledValue && ancestorDisabledValue->IsBool())
@@ -632,13 +706,88 @@ namespace AZ::DocumentPropertyEditor
                         isAncestorDisabledValue = ancestorDisabledValue->GetBool();
                     }
 
-                    if (isAncestorDisabledValue)
+                    if (parentContainerInstance)
                     {
-                        m_builder.Attribute(Nodes::PropertyEditor::AncestorDisabled, true);
+                        auto containerSize = static_cast<AZ::s64>(parentContainer->Size(parentContainerInstance));
+                        if (containerSize > 1 && parentContainer->IsSequenceContainer())
+                        {
+                            auto containerIndexAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerIndex);
+                            AZ_Assert(
+                                containerIndexAttribute && !containerIndexAttribute->IsNull(),
+                                "children of a sequenced container should have a ContainerIndex!");
+                            auto containerIndex = containerIndexAttribute->GetInt64();
+                            CreateContainerButton(Nodes::ContainerAction::MoveUp, !containerIndex, isAncestorDisabledValue, containerIndex);
+                            CreateContainerButton(
+                                Nodes::ContainerAction::MoveDown,
+                                containerIndex == containerSize - 1,
+                                isAncestorDisabledValue,
+                                containerIndex);
+                        }
                     }
-                    m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
-                    m_builder.EndPropertyEditor();
+                    CreateContainerButton(Nodes::ContainerAction::RemoveElement, false, isAncestorDisabledValue);
                 }
+            }
+        }
+
+        // Check if the KeyValue attribute is set and if so create a property Editor for that key
+        void CreatePropertyEditorForAssociativeContainerKey(
+            const Reflection::IAttributes& attributes, ReflectionAdapter& adapter, AdapterBuilder& builder)
+        {
+            auto keyValueAttribute = attributes.Find(Nodes::PropertyEditor::KeyValue.GetName());
+            // The element has no KeyValue attribute, so it is not part of an associative container therefore no work needs to be done
+            if (keyValueAttribute == nullptr)
+            {
+                return;
+            }
+
+            if (auto keyValueEntry = AZ::Dom::Utils::ValueToType<AZ::Reflection::LegacyReflectionInternal::KeyEntry>(*keyValueAttribute);
+                keyValueEntry&& keyValueEntry->IsValid())
+            {
+                AZ::PointerObject keyValuePointerObject = keyValueEntry->m_keyInstance;
+
+                const AZStd::vector<AZ::Reflection::LegacyReflectionInternal::AttributeData>& keyAttributes = keyValueEntry->m_keyAttributes;
+
+                // Create a lambda that can return a lambda that searches the keyAttributes vector for a specific attribute
+                auto FindAttributeCreator = [](AZ::Name group, AZ::Name name)
+                {
+                    return [group, name](const AZ::Reflection::LegacyReflectionInternal::AttributeData& attributeData) -> bool
+                    {
+                        return group == attributeData.m_group&& name == attributeData.m_name;
+                    };
+                };
+
+                AZStd::string_view keyPropertyHandlerName;
+                // First try to search for the Handler attribute to see if a custom property handler has been specified
+                if (auto handlerIt = AZStd::find_if(
+                    keyAttributes.begin(),
+                    keyAttributes.end(), FindAttributeCreator(AZ::Name{}, Reflection::DescriptorAttributes::Handler));
+                    handlerIt != keyAttributes.end())
+                {
+                    const AZ::Dom::Value& handler = handlerIt->m_value;
+                    if (handler.IsString())
+                    {
+                        keyPropertyHandlerName = handler.GetString();
+                    }
+                }
+
+                if (keyPropertyHandlerName.empty())
+                {
+                    // If the Key doesn't have a custom property handler
+                    // and it's type is an is represented by an enum use the combo box property handler
+                    if (auto enumTypeHandlerIt = AZStd::find_if(
+                        keyAttributes.begin(),
+                        keyAttributes.end(),
+                        FindAttributeCreator(AZ::Name{}, Nodes::PropertyEditor::EnumType.GetName()));
+                        enumTypeHandlerIt != keyAttributes.end() && !enumTypeHandlerIt->m_value.IsNull())
+                    {
+                        keyPropertyHandlerName = Nodes::ComboBox::Name;
+                    }
+                }
+                builder.BeginPropertyEditor(keyPropertyHandlerName, AZ::Dom::Utils::ValueFromType(keyValuePointerObject));
+                builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+                builder.Attribute(Nodes::PropertyEditor::Disabled, true);
+                builder.AddMessageHandler(&adapter, Nodes::PropertyEditor::RequestTreeUpdate);
+                builder.EndPropertyEditor();
             }
         }
 
@@ -681,7 +830,8 @@ namespace AZ::DocumentPropertyEditor
                         value = newValue.GetString();
                         return newValue;
                     },
-                    false, false);
+                    false,
+                    false);
                 return;
             }
             else if (access.GetType() == azrtti_typeid<bool>())
@@ -707,21 +857,27 @@ namespace AZ::DocumentPropertyEditor
             else
             {
                 auto containerAttribute = attributes.Find(Reflection::DescriptorAttributes::Container);
+
+                AZ::Serialize::IDataContainer* container{};
                 if (containerAttribute && !containerAttribute->IsNull())
+                {
+                    if (auto containerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerAttribute);
+                        containerObject && containerObject->m_typeId == azrtti_typeid<AZ::Serialize::IDataContainer>())
+                    {
+                        container = reinterpret_cast<AZ::Serialize::IDataContainer*>(containerObject->m_address);
+                    }
+                }
+                if (container != nullptr)
                 {
                     m_containers.SetValue(
                         m_builder.GetCurrentPath(), ContainerEntry{ BoundContainer::CreateBoundContainer(access.Get(), attributes) });
-
-                    auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*containerAttribute);
 
                     auto labelAttribute = attributes.Find(Reflection::DescriptorAttributes::Label);
                     if (labelAttribute && !labelAttribute->IsNull() && labelAttribute->IsString())
                     {
                         AZStd::string_view serializedPath = ExtractSerializedPath(attributes);
 
-                        m_adapter->CreateLabel(
-                            &m_builder, labelAttribute->GetString(),
-                            serializedPath);
+                        m_adapter->CreateLabel(&m_builder, labelAttribute->GetString(), serializedPath);
 
                         auto valueTextAttribute = attributes.Find(Nodes::Label::ValueText.GetName());
                         if (valueTextAttribute && !valueTextAttribute->IsNull() && valueTextAttribute->IsString())
@@ -755,38 +911,14 @@ namespace AZ::DocumentPropertyEditor
                         {
                             isDisabled = disabledValue->IsBool() && disabledValue->GetBool();
                         }
+                        CreateContainerButton(Nodes::ContainerAction::AddElement, isDisabled);
 
-                        bool shouldPromptOnClear = true;
-                        if (auto promptOnClearValue = attributes.Find(Nodes::Container::PromptOnContainerClear.GetName()); promptOnClearValue)
+                        if (!isDisabled)
                         {
-                            shouldPromptOnClear = promptOnClearValue->IsBool() && promptOnClearValue->GetBool();
+                            // disable the clear button if the container is already empty
+                            isDisabled = (container->Size(access.Get()) == 0);
                         }
-
-                        m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                        m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
-                        m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
-                        if (isDisabled)
-                        {
-                            m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
-                        }
-                        m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
-                        m_builder.EndPropertyEditor();
-
-                        m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                        m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
-                        m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
-                        m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
-                        m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::Clear);
-                        if (isDisabled)
-                        {
-                            m_builder.Attribute(Nodes::PropertyEditor::Disabled, true);
-                        }
-                        if (!shouldPromptOnClear)
-                        {
-                            m_builder.Attribute(Nodes::Container::PromptOnContainerClear, false);
-                        }
-                        m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
-                        m_builder.EndPropertyEditor();
+                        CreateContainerButton(Nodes::ContainerAction::Clear, isDisabled);
                     }
                 }
                 else
@@ -821,11 +953,13 @@ namespace AZ::DocumentPropertyEditor
                     }
 
                     // this needs to write the value back into the reflected object via Json serialization
-                    auto StoreValueIntoPointer = [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
+                    auto StoreValueIntoPointer =
+                        [valuePointer = access.Get(), valueType = access.GetType(), this](const Dom::Value& newValue)
                     {
                         AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::ReadField);
                         // marshal this new value into a pointer for use by the Json serializer if a pointer is being stored
-                        if (auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType); marshalledPointer != nullptr)
+                        if (auto marshalledPointer = AZ::Dom::Utils::TryMarshalValueToPointer(newValue, valueType);
+                            marshalledPointer != nullptr)
                         {
                             rapidjson::Document buffer;
                             JsonSerializerSettings serializeSettings;
@@ -859,7 +993,6 @@ namespace AZ::DocumentPropertyEditor
                                     resultCode.ToString("").c_str());
                                 return newValue;
                             }
-
                         }
                         else
                         {
@@ -876,7 +1009,6 @@ namespace AZ::DocumentPropertyEditor
                             }
                         }
 
-
                         // NB: the returned value for serialized pointer values is instancePointerValue, but since this is passed by
                         // pointer, it will not actually detect a changed dom value. Since we are already writing directly to the DOM
                         // before this step, it won't affect the calling DPE, however, other DPEs pointed at the same adapter would be
@@ -889,14 +1021,7 @@ namespace AZ::DocumentPropertyEditor
                         return newValue;
                     };
                     void* instance = access.Get();
-                    VisitValue(
-                        instancePointerValue,
-                        instance,
-                        typeSize,
-                        attributes,
-                        AZStd::move(StoreValueIntoPointer),
-                        false,
-                        hashValue);
+                    VisitValue(instancePointerValue, instance, typeSize, attributes, AZStd::move(StoreValueIntoPointer), false, hashValue);
                 }
             }
         }
@@ -1066,7 +1191,8 @@ namespace AZ::DocumentPropertyEditor
 
             if (!targetNode.IsNode() || targetNode.IsNull())
             {
-                AZ_Warning("ReflectionAdapter",
+                AZ_Warning(
+                    "ReflectionAdapter",
                     false,
                     "Failed to update disabled state for Value at path `%s`; this is not a valid node",
                     targetNodePath.ToString().c_str());
@@ -1092,10 +1218,9 @@ namespace AZ::DocumentPropertyEditor
                 }
             };
 
-            const auto propagateAttributeChangeToRow = [&](
-                const Dom::Value& parentNode,
-                const Dom::Path& parentPath,
-                AZStd::function<void(const Dom::Value&, const Dom::Path&)> procedure)
+            const auto propagateAttributeChangeToRow = [&](const Dom::Value& parentNode,
+                                                           const Dom::Path& parentPath,
+                                                           AZStd::function<void(const Dom::Value&, const Dom::Path&)> procedure)
             {
                 int index = 0;
                 for (auto child = parentNode.ArrayBegin(); child != parentNode.ArrayEnd(); ++child)
@@ -1140,7 +1265,8 @@ namespace AZ::DocumentPropertyEditor
             {
                 if (targetNode.GetNodeName() == GetNodeName<Nodes::Row>())
                 {
-                    propagateAttributeChangeToRow(targetNode,
+                    propagateAttributeChangeToRow(
+                        targetNode,
                         targetNodePath,
                         [&patch, &disabledAttributeName](const Dom::Value& node, const Dom::Path& nodePath)
                         {
@@ -1169,7 +1295,8 @@ namespace AZ::DocumentPropertyEditor
             {
                 if (targetNode.GetNodeName() == GetNodeName<Nodes::Row>())
                 {
-                    propagateAttributeChangeToRow(targetNode,
+                    propagateAttributeChangeToRow(
+                        targetNode,
                         targetNodePath,
                         [&patch, &disabledAttributeName](const Dom::Value& node, const Dom::Path& nodePath)
                         {
@@ -1237,6 +1364,16 @@ namespace AZ::DocumentPropertyEditor
                         containerEntry->m_container->OnClear(m_impl.get(), message.m_messageOrigin);
                     }
                     break;
+                case ContainerAction::MoveUp:
+                case ContainerAction::MoveDown:
+                    if (containerEntry->m_element)
+                    {
+                        auto containerIndex = Nodes::ContainerActionButton::ContainerIndex.ExtractFromDomNode(node);
+                        AZ_Assert(containerIndex.has_value(), "MoveUp and MoveDown actions must have a ContainerIndex!");
+                        containerEntry->m_element->OnMoveElement(
+                            m_impl.get(), message.m_messageOrigin, containerIndex.value(), action.value() == ContainerAction::MoveDown);
+                    }
+                    break;
                 }
             }
         };
@@ -1267,12 +1404,17 @@ namespace AZ::DocumentPropertyEditor
         };
 
         return message.Match(
-            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged,
-            Nodes::ContainerActionButton::OnActivate, handleContainerOperation,
-            Nodes::PropertyEditor::RequestTreeUpdate, handleTreeUpdate,
-            Nodes::Adapter::SetNodeDisabled, handleSetNodeDisabled,
-            Nodes::Adapter::AddContainerKey, addKeyToContainer,
-            Nodes::Adapter::RejectContainerKey, rejectKeyToContainer
-            );
+            Nodes::PropertyEditor::OnChanged,
+            handlePropertyEditorChanged,
+            Nodes::ContainerActionButton::OnActivate,
+            handleContainerOperation,
+            Nodes::PropertyEditor::RequestTreeUpdate,
+            handleTreeUpdate,
+            Nodes::Adapter::SetNodeDisabled,
+            handleSetNodeDisabled,
+            Nodes::Adapter::AddContainerKey,
+            addKeyToContainer,
+            Nodes::Adapter::RejectContainerKey,
+            rejectKeyToContainer);
     }
 } // namespace AZ::DocumentPropertyEditor

@@ -36,15 +36,12 @@ namespace ImageProcessingAtom
             //! AzToolsFramework::ThumbnailerRendererNotificationBus::Handler overrides...
             void ThumbnailRendered(const QPixmap& thumbnailImage) override;
             void ThumbnailFailedToRender() override;
-
-        protected:
-            void LoadThread() override;
+            void Load() override;
 
         private:
             // AzFramework::AssetCatalogEventBus::Handler interface overrides...
             void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
 
-            AZStd::binary_semaphore m_renderWait;
             AZStd::unordered_set<AZ::Data::AssetId> m_assetIds;
         };
 

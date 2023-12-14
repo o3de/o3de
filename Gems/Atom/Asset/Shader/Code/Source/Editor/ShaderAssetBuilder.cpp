@@ -72,7 +72,7 @@ namespace AZ
                 return fullPath;
             }
 
-            for (const auto &includeDir : includeDirectories)
+            for (const auto& includeDir : includeDirectories)
             {
                 AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
                 if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
@@ -93,7 +93,7 @@ namespace AZ
             AZStd::string fullPath;
             AzFramework::StringFunc::Path::Join(currentFolderPath.data(), normalizedRelativePath.data(), fullPath);
             includedFiles.insert(fullPath);
-            for (const auto &includeDir : includeDirectories)
+            for (const auto& includeDir : includeDirectories)
             {
                 AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
                 includedFiles.insert(fullPath);
@@ -126,7 +126,7 @@ namespace AZ
             }
 
             auto listOfRelativePaths = outcome.TakeValue();
-            for (auto relativePath : listOfRelativePaths)
+            for (const auto& relativePath : listOfRelativePaths)
             {
                 auto fullPath = DiscoverFullPath(relativePath, sourceFileFolderPath, includeDirectories);
                 if (fullPath.empty())
@@ -139,7 +139,7 @@ namespace AZ
                 }
 
                 // Add the file to the list and keep parsing recursively.
-                if (includedFiles.count(fullPath))
+                if (includedFiles.contains(fullPath))
                 {
                     continue;
                 }
@@ -179,7 +179,7 @@ namespace AZ
                 // Add the AZSL as source dependency
                 AssetBuilderSDK::SourceFileDependency azslFileDependency;
                 azslFileDependency.m_sourceFileDependencyPath = azslFullPath;
-                response.m_sourceFileDependencyList.emplace_back(azslFileDependency);
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(azslFileDependency));
             }
 
             if (!IO::FileIOBase::GetInstance()->Exists(azslFullPath.c_str()))
@@ -195,11 +195,11 @@ namespace AZ
 
             AZStd::unordered_set<AZStd::string> includedFiles;
             GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
-            for (auto includePath : includedFiles)
+            for (const auto& includePath : includedFiles)
             {
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
                 includeFileDependency.m_sourceFileDependencyPath = includePath;
-                response.m_sourceFileDependencyList.emplace_back(includeFileDependency);
+                response.m_sourceFileDependencyList.emplace_back(AZStd::move(includeFileDependency));
             }
 
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
@@ -218,9 +218,8 @@ namespace AZ
                 jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
-
-                response.m_createJobOutputs.push_back(jobDescriptor);
-            }  // for all request.m_enabledPlatforms
+                response.m_createJobOutputs.emplace_back(AZStd::move(jobDescriptor));
+            } // for all request.m_enabledPlatforms
 
             AZ_Printf(
                 ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),
@@ -727,7 +726,7 @@ namespace AZ
 
                 } // end for the supervariant
 
-                for (auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
+                for (const auto& [shaderOptionName, value] : shaderSourceData.m_shaderOptionValues)
                 {
                     shaderAssetCreator.SetShaderOptionDefaultValue(shaderOptionName, value);
                 }

@@ -43,7 +43,6 @@ namespace AZ
         //! operation is always performed.
         class Material
             : public Data::InstanceData
-            , Data::AssetBus::Handler
             , public ShaderReloadNotificationBus::MultiHandler
         {
             friend class MaterialSystem;
@@ -148,9 +147,6 @@ namespace AZ
             //! Standard init path from asset data.
             static Data::Instance<Material> CreateInternal(MaterialAsset& materialAsset);
             RHI::ResultCode Init(MaterialAsset& materialAsset);
-
-            // AssetBus overrides...
-            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
 
             ///////////////////////////////////////////////////////////////////
             // ShaderReloadNotificationBus overrides...

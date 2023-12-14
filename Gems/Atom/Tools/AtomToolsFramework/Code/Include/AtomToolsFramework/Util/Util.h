@@ -281,6 +281,25 @@ namespace AtomToolsFramework
     //! Collect a set of file paths contained within asset browser entry or URL mime data
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 
+    //! @brief Get the normalized, absolute path for a source asset by retrieving info from an absolute or relative source path 
+    //! @param path source file path for which the absolute path will be constructed 
+    //! @return absolute problem for the source file if it can be resolved, otherwise the input path 
+    AZStd::string GetAbsolutePathForSourceAsset(const AZStd::string& path);
+
+    //! @brief Create a list of all asset source files the input asset depends on
+    //! @param assetId ID of the asset for which dependencies will be collected
+    //! @return Container of absolute paths to dependency source files
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependencies(const AZ::Data::AssetInfo& sourceInfo);
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependenciesById(const AZ::Data::AssetId& assetId);
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependenciesByPath(const AZStd::string& sourcePath);
+
+    //! @brief Create a list of all asset source files that depend on the input asset
+    //! @param assetId ID of the asset for which dependence will be collected
+    //! @return Container of absolute paths to dependent source files
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependents(const AZ::Data::AssetInfo& sourceInfo);
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependentsById(const AZ::Data::AssetId& assetId);
+    AZStd::vector<AZStd::string> GetPathsForAssetSourceDependentsByPath(const AZStd::string& sourcePath);
+
     //! Invokes a visitor function on every file contained in the initial folder, optionally recursing through subfolders and visiting those files as well.
     void VisitFilesInFolder(const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse);
 

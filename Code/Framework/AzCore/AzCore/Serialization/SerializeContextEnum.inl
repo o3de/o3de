@@ -20,6 +20,8 @@ namespace AZ
             virtual int64_t GetEnumValueAsInt() const = 0;
         };
 
+        using EnumConstantBasePtr = AZStd::unique_ptr<SerializeContextEnumInternal::EnumConstantBase>;
+
         template<class EnumType>
         struct EnumConstant
             : EnumConstantBase

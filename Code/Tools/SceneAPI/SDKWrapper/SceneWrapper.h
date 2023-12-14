@@ -9,6 +9,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <SceneAPI/SDKWrapper/NodeWrapper.h>
+#include <SceneAPI/SceneCore/Import/SceneImportSettings.h>
 
 struct aiScene;
 
@@ -22,8 +23,8 @@ namespace AZ
             AZ_RTTI(SceneWrapperBase, "{703CD344-2C75-4F30-8CE2-6BDEF2511AFD}");
             virtual ~SceneWrapperBase() = default;
 
-            virtual bool LoadSceneFromFile(const char* fileName);
-            virtual bool LoadSceneFromFile(const AZStd::string& fileName);
+            virtual bool LoadSceneFromFile(const char* fileName, const SceneAPI::SceneImportSettings& importSettings = {});
+            virtual bool LoadSceneFromFile(const AZStd::string& fileName, const SceneAPI::SceneImportSettings& importSettings = {});
 
             virtual const std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() const;
             virtual std::shared_ptr<SDKNode::NodeWrapper> GetRootNode();

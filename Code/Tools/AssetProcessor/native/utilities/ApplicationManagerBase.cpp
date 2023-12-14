@@ -1524,9 +1524,8 @@ bool ApplicationManagerBase::Activate()
 
     auto notifyUuidManagerAndFileProcessor = [this](QString changedFile)
     {
-        // these are not necessarily time sensitive.
+        // this is not necessarily time sensitive.
         m_uuidManager->FileChanged(changedFile.toUtf8().constData());
-        m_fileProcessor->AssessAddedFile(changedFile);
     };
 
     QObject::connect(

@@ -24,9 +24,6 @@ namespace AZ::SceneAPI::SceneBuilder
 
     bool IsSkinnedMesh(const aiNode& node, const aiScene& scene);
 
-    // Check if the all the meshes under the node are valid meshes.
-    bool AreAllMeshesValid(const aiNode& node, const aiScene& scene);
-
     // Checks if a node name is a pivot node and optionally returns the position in the name of the pivot marker (for splitting out the parts later)
     bool IsPivotNode(const aiString& nodeName, size_t* pos = nullptr);
 
