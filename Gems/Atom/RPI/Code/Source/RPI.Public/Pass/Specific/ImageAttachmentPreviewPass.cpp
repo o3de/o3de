@@ -88,7 +88,7 @@ namespace AZ
             }
             // Import this scope producer
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
-            attachmentDatabase.ImportImage(m_destAttachmentId, m_destImage->GetRHIImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
+            attachmentDatabase.ImportImage(m_destAttachmentId, m_destImage->GetRHIImage());
         }
 
         void ImageAttachmentCopy::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -105,11 +105,11 @@ namespace AZ
         {
             // copy descriptor for copying image
             RHI::SingleDeviceCopyImageDescriptor copyImage;
-            const AZ::RHI::SingleDeviceImage* image = context.GetImage(m_srcAttachmentId);
+            const AZ::RHI::SingleDeviceImage* image = context.GetImage(m_srcAttachmentId)->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
             copyImage.m_sourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;
             copyImage.m_sourceSubresource.m_arraySlice = m_sourceArraySlice;
-            copyImage.m_destinationImage = context.GetImage(m_destAttachmentId);
+            copyImage.m_destinationImage = context.GetImage(m_destAttachmentId)->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
             
             m_copyItem = copyImage;
         }
@@ -353,7 +353,7 @@ namespace AZ
                     // So the attachment can be still previewed when the pass is disabled.
                     if (m_attachmentCopy && m_attachmentCopy->m_destImage)
                     {
-                        attachmentDatabase.ImportImage(m_attachmentCopy->m_destAttachmentId, m_attachmentCopy->m_destImage->GetRHIImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
+                        attachmentDatabase.ImportImage(m_attachmentCopy->m_destAttachmentId, m_attachmentCopy->m_destImage->GetRHIImage());
                         isAttachmentValid = true;
                     }
                 }
@@ -438,14 +438,14 @@ namespace AZ
                 float aspectRatio = 1;
 
                 // Find image type
-                const RHI::SingleDeviceImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
+                const RHI::MultiDeviceImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
                 if (!inputImageView)
                 {
                     AZ_Warning("RPI", false, "Image attachment [%s] doesn't have image view in current context", m_imageAttachmentId.GetCStr());
                 }
                 else
                 {
-                    const RHI::ImageDescriptor& desc = inputImageView->GetImage().GetDescriptor();
+                    const RHI::ImageDescriptor& desc = inputImageView->GetImage()->GetDescriptor();
                     aspectRatio = desc.m_size.m_width / static_cast<float>(desc.m_size.m_height);
 
                     if (desc.m_dimension == RHI::ImageDimension::Image2D)
@@ -478,15 +478,15 @@ namespace AZ
                 }
                 
                 // config pipeline states related to output attachment
-                const RHI::SingleDeviceImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
+                const RHI::MultiDeviceImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
                 RHI::Format outputFormat = outputImageView->GetDescriptor().m_overrideFormat;
                 if (outputFormat == RHI::Format::Unknown)
                 {
-                    outputFormat = outputImageView->GetImage().GetDescriptor().m_format;
+                    outputFormat = outputImageView->GetImage()->GetDescriptor().m_format;
                 }
                 
                 // Base viewport and scissor off of output attachment
-                RHI::Size targetImageSize = outputImageView->GetImage().GetDescriptor().m_size;
+                RHI::Size targetImageSize = outputImageView->GetImage()->GetDescriptor().m_size;
 
                 float width = m_size.GetX() * targetImageSize.m_width;
                 float height = m_size.GetY() * targetImageSize.m_height;
@@ -524,7 +524,7 @@ namespace AZ
                         continue;
                     }
                     previewInfo.m_pipelineStateDescriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_attachmentFormats[0] = outputFormat;
-                    previewInfo.m_pipelineStateDescriptor.m_renderStates.m_multisampleState = outputImageView->GetImage().GetDescriptor().m_multisampleState;
+                    previewInfo.m_pipelineStateDescriptor.m_renderStates.m_multisampleState = outputImageView->GetImage()->GetDescriptor().m_multisampleState;
 
                     // draw each image by using instancing
                     RHI::DrawLinear drawLinear;
@@ -544,7 +544,7 @@ namespace AZ
             commandList->SetScissor(m_scissor);
 
             // submit srg
-            commandList->SetShaderResourceGroupForDraw(*m_passSrg->GetRHIShaderResourceGroup());
+            commandList->SetShaderResourceGroupForDraw(*m_passSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex));
 
             // submit draw call
             for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)

@@ -88,7 +88,7 @@ namespace AZ
             {
                 if (m_displayMapperLut.m_lutImageView != nullptr)
                 {
-                    m_shaderResourceGroup->SetImageView(m_shaderInputLutImageIndex, m_displayMapperLut.m_lutImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                    m_shaderResourceGroup->SetImageView(m_shaderInputLutImageIndex, m_displayMapperLut.m_lutImageView.get());
                 }
 
                 m_shaderResourceGroup->SetConstant(m_shaderInputShaperBiasIndex, m_shaperParams.m_bias);

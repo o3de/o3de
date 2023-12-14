@@ -9,6 +9,7 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/MultiDeviceSwapChain.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
@@ -108,7 +109,7 @@ namespace AZ
             auto& queueContext = device.GetCommandQueueContext();
 
             RHI::BufferScopeAttachment* scopeAttachment = frameGraphAttachment.GetFirstScopeAttachment();
-            Buffer& buffer = static_cast<Buffer&>(*frameGraphAttachment.GetBuffer());
+            Buffer& buffer = static_cast<Buffer&>(*frameGraphAttachment.GetBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
             while (scopeAttachment)
             {
                 Scope& scope = static_cast<Scope&>(scopeAttachment->GetScope());
@@ -146,7 +147,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             auto& queueContext = device.GetCommandQueueContext();
 
-            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage());
+            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
             while (scopeAttachment)
             {
@@ -168,7 +169,7 @@ namespace AZ
                         scope,
                         clearAttachment,
                         image,
-                        static_cast<const ImageView*>(scopeAttachment->GetImageView())->GetImageSubresourceRange(),
+                        static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get())->GetImageSubresourceRange(),
                         Scope::BarrierSlot::Clear,
                         GetResourcePipelineStateFlags(*scopeAttachment),
                         GetResourceAccessFlags(*scopeAttachment),
@@ -200,7 +201,7 @@ namespace AZ
                         scope,
                         resolveSourceAttachment,
                         image,
-                        static_cast<const ImageView*>(scopeAttachment->GetImageView())->GetImageSubresourceRange(),
+                        static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get())->GetImageSubresourceRange(),
                         Scope::BarrierSlot::Resolve,
                         GetResourcePipelineStateFlags(*scopeAttachment),
                         GetResourceAccessFlags(*scopeAttachment),
@@ -213,7 +214,7 @@ namespace AZ
             // If this is the last usage of a swap chain, we require that it be in the common state for presentation.
             if (auto swapchainAttachment = azrtti_cast<RHI::SwapChainFrameAttachment*>(&imageFrameAttachment))
             {
-                SwapChain* swapChain = static_cast<SwapChain*>(swapchainAttachment->GetSwapChain());
+                SwapChain* swapChain = static_cast<SwapChain*>(swapchainAttachment->GetSwapChain()->GetDeviceSwapChain(RHI::MultiDevice::DefaultDeviceIndex).get());
 
                 // Skip adding synchronization constructs for XR swapchain as that is managed by OpenXr api
                 if (swapChain->GetDescriptor().m_isXrSwapChain)
@@ -399,7 +400,7 @@ namespace AZ
         RHI::ImageSubresourceRange FrameGraphCompiler::GetSubresourceRange(const RHI::ImageScopeAttachment& scopeAttachment) const
         {
             auto &physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
-            const auto* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView());
+            const auto* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
             auto range = RHI::ImageSubresourceRange(imageView->GetDescriptor());
             RHI::ImageAspectFlags imageAspectFlags = imageView->GetImage().GetAspectFlags();
             // If separate depth/stencil is not supported, then the barrier must ALWAYS include both image aspects (depth and stencil).

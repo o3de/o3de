@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
@@ -155,14 +154,14 @@ namespace AZ
 
             // Source Buffer
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::SingleDeviceBuffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId());
+            const AZ::RHI::SingleDeviceBuffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId())->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
             copyDesc.m_sourceBuffer = sourceBuffer;
             copyDesc.m_size = static_cast<uint32_t>(sourceBuffer->GetDescriptor().m_byteCount);
             copyDesc.m_sourceOffset = m_data.m_bufferSourceOffset;
 
             // Destination Buffer
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
-            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId());
+            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId())->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
             copyDesc.m_destinationOffset = m_data.m_bufferDestinationOffset;
 
             m_copyItem = copyDesc;
@@ -174,7 +173,7 @@ namespace AZ
 
             // Source Image
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::SingleDeviceImage* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId());
+            const AZ::RHI::SingleDeviceImage* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId())->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
             copyDesc.m_sourceImage = sourceImage;
             copyDesc.m_sourceSize = sourceImage->GetDescriptor().m_size;
             copyDesc.m_sourceOrigin = m_data.m_imageSourceOrigin;
@@ -182,7 +181,7 @@ namespace AZ
 
             // Destination Image
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
-            copyDesc.m_destinationImage = context.GetImage(copyDest.GetAttachment()->GetAttachmentId());
+            copyDesc.m_destinationImage = context.GetImage(copyDest.GetAttachment()->GetAttachmentId())->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
             copyDesc.m_destinationOrigin = m_data.m_imageDestinationOrigin;
             copyDesc.m_destinationSubresource = m_data.m_imageDestinationSubresource;
 
@@ -195,7 +194,7 @@ namespace AZ
 
             // Source Buffer
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::SingleDeviceBuffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId());
+            const AZ::RHI::SingleDeviceBuffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId())->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
             copyDesc.m_sourceBuffer = sourceBuffer;
             copyDesc.m_sourceSize = m_data.m_sourceSize;
             copyDesc.m_sourceOffset = m_data.m_bufferSourceOffset;
@@ -204,7 +203,7 @@ namespace AZ
 
             // Destination Image
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
-            copyDesc.m_destinationImage = context.GetImage(copyDest.GetAttachment()->GetAttachmentId());
+            copyDesc.m_destinationImage = context.GetImage(copyDest.GetAttachment()->GetAttachmentId())->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
             copyDesc.m_destinationOrigin = m_data.m_imageDestinationOrigin;
             copyDesc.m_destinationSubresource = m_data.m_imageDestinationSubresource;
 
@@ -217,7 +216,7 @@ namespace AZ
 
             // Source Image
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::SingleDeviceImage* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId());
+            const AZ::RHI::SingleDeviceImage* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId())->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
             copyDesc.m_sourceImage = sourceImage;
             copyDesc.m_sourceSize = sourceImage->GetDescriptor().m_size;
             copyDesc.m_sourceOrigin = m_data.m_imageSourceOrigin;
@@ -225,7 +224,7 @@ namespace AZ
 
             // Destination Buffer
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
-            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId());
+            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId())->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
             copyDesc.m_destinationOffset = m_data.m_bufferDestinationOffset;
             copyDesc.m_destinationBytesPerRow = m_data.m_bufferDestinationBytesPerRow;
             copyDesc.m_destinationBytesPerImage = m_data.m_bufferDestinationBytesPerImage;

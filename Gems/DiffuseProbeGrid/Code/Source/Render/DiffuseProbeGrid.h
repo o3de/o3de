@@ -269,7 +269,10 @@ namespace AZ
             void UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
             void UpdateRenderObjectSrg();
             void UpdateVisualizationPrepareSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
-            void UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout, const RHI::SingleDeviceImageView* outputImageView);
+            void UpdateVisualizationRayTraceSrg(
+                const Data::Instance<RPI::Shader>& shader,
+                const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
+                const RHI::MultiDeviceImageView* outputImageView);
             void UpdateQuerySrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
 
             // textures

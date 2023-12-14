@@ -67,7 +67,7 @@ namespace AZ
             AZ_Assert(m_displayMapperLut.m_lutImage != nullptr, "BakeAcesOutputTransformLutPass unable to acquire LUT image");
 
             AZ::RHI::AttachmentId imageAttachmentId = AZ::RHI::AttachmentId("DisplayMapperLutImageAttachmentId");
-            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_displayMapperLut.m_lutImage->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get());
+            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_displayMapperLut.m_lutImage.get());
             AZ_Error("BakeAcesOutputTransformLutPass", result == RHI::ResultCode::Success, "Failed to import compute buffer with error %d", result);
 
             RHI::ImageScopeAttachmentDescriptor desc;
@@ -92,7 +92,7 @@ namespace AZ
                 m_shaderResourceGroup->SetConstant(m_shaderInputSurroundGammaIndex, m_displayMapperParameters.m_surroundGamma);
                 m_shaderResourceGroup->SetConstant(m_shaderInputGammaIndex, m_displayMapperParameters.m_gamma);
 
-                m_shaderResourceGroup->SetImageView(m_shaderInputLutImageIndex, m_displayMapperLut.m_lutImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_shaderResourceGroup->SetImageView(m_shaderInputLutImageIndex, m_displayMapperLut.m_lutImageView.get());
 
                 m_shaderResourceGroup->SetConstant(m_shaderInputShaperBiasIndex, m_shaperParams.m_bias);
                 m_shaderResourceGroup->SetConstant(m_shaderInputShaperScaleIndex, m_shaperParams.m_scale);

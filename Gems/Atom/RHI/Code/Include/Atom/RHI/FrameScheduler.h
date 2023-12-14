@@ -177,7 +177,7 @@ namespace AZ::RHI
         //! Returns the implicit root scope id.
         ScopeId GetRootScopeId() const;
 
-        //! Returns the descriptor which has information on the properties of a SingleDeviceTransientAttachmentPool.
+        //! Returns the descriptor which has information on the properties of a MultiDeviceTransientAttachmentPool.
         const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
 
         //! Adds a SingleDeviceRayTracingShaderTable to be built this frame

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/MultiDeviceShaderResourceGroup.h>
 #include <Atom/RHI/DrawListContext.h>
 
 #include <Atom/RPI.Public/Base.h>
@@ -69,7 +69,7 @@ namespace AZ
             //! Prints the draw list mask for this view. Useful for printf debugging.
             void PrintDrawListMask();
 
-            RHI::SingleDeviceShaderResourceGroup* GetRHIShaderResourceGroup() const;
+            RHI::MultiDeviceShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
             

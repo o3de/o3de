@@ -766,7 +766,7 @@ void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
 
     if (imageView)
     {
-        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get(), 0);
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
     }
 
     // Set projection matrix
@@ -827,7 +827,7 @@ void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynam
 
     if (imageView)
     {
-        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get(), 0);
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
     }
 
     // Set projection matrix
@@ -903,7 +903,7 @@ void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext
 
     if (imageView)
     {
-        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex).get(), 0);
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
     }
 
     // Set projection matrix

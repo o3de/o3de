@@ -34,7 +34,7 @@ namespace AZ
             AZ_Assert(anySrgInitParams, "Invalid SrgInitParams");
             auto srgInitParams = AZStd::any_cast<ShaderResourceGroup::SrgInitParams>(*anySrgInitParams);
 
-            Data::Instance<ShaderResourceGroupPool> srgPool = aznew ShaderResourceGroupPool();
+            Data::Instance<ShaderResourceGroupPool> srgPool = aznew ShaderResourceGroupPool;
             const RHI::ResultCode resultCode = srgPool->Init(shaderAsset, srgInitParams.m_supervariantIndex, srgInitParams.m_srgName);
             if (resultCode != RHI::ResultCode::Success)
             {
@@ -49,10 +49,10 @@ namespace AZ
         {
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
 
-            m_pool = RHI::Factory::Get().CreateShaderResourceGroupPool();
+            m_pool = aznew RHI::MultiDeviceShaderResourceGroupPool;
             if (!m_pool)
             {
-                AZ_Error("ShaderResourceGroupPool", false, "Failed to create RHI::SingleDeviceShaderResourceGroupPool");
+                AZ_Error("ShaderResourceGroupPool", false, "Failed to create RHI::MultiDeviceShaderResourceGroupPool");
                 return RHI::ResultCode::Fail;
             }
 
@@ -60,15 +60,15 @@ namespace AZ
             poolDescriptor.m_layout = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex).get();
 
             m_pool->SetName(AZ::Name(AZStd::string::format("%s_%s",shaderAsset.GetName().GetCStr(),srgName.GetCStr())));
- 
-            const RHI::ResultCode resultCode = m_pool->Init(*device, poolDescriptor);
+
+            const RHI::ResultCode resultCode = m_pool->Init(RHI::MultiDevice::AllDevices, poolDescriptor);
             return resultCode;
         }
 
-        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
+        RHI::Ptr<RHI::MultiDeviceShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
         {
-            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
-            AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::SingleDeviceShaderResourceGroup");
+            RHI::Ptr<RHI::MultiDeviceShaderResourceGroup> srg = aznew RHI::MultiDeviceShaderResourceGroup();
+            AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::MultiDeviceShaderResourceGroup");
 
             if (srg)
             {
@@ -76,19 +76,19 @@ namespace AZ
                 if (result != RHI::ResultCode::Success)
                 {
                     srg.reset();
-                    AZ_Error("ShaderResourceGroupPool", false, "Failed to initialize RHI::SingleDeviceShaderResourceGroup");
+                    AZ_Error("ShaderResourceGroupPool", false, "Failed to initialize RHI::MultiDeviceShaderResourceGroup");
                 }
             }
 
             return srg;
         }
 
-        RHI::SingleDeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool()
+        RHI::MultiDeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool()
         {
             return m_pool.get();
         }
 
-        const RHI::SingleDeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool() const
+        const RHI::MultiDeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool() const
         {
             return m_pool.get();
         }

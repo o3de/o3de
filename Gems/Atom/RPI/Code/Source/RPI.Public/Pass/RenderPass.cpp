@@ -284,7 +284,7 @@ namespace AZ
                     {
                         inputIndex = imageIndex;
                     }
-                    const RHI::SingleDeviceImageView* imageView =
+                    const RHI::MultiDeviceImageView* imageView =
                         context.GetImageView(attachment->GetAttachmentId(), binding.m_unifiedScopeDesc.GetImageViewDescriptor(), binding.m_scopeAttachmentUsage);
 
                     if (binding.m_shaderImageDimensionsNameIndex.HasName())
@@ -324,7 +324,7 @@ namespace AZ
                     {
                         inputIndex = bufferIndex;
                     }
-                    const RHI::SingleDeviceBufferView* bufferView = context.GetBufferView(attachment->GetAttachmentId(), binding.m_scopeAttachmentUsage);
+                    const RHI::MultiDeviceBufferView* bufferView = context.GetBufferView(attachment->GetAttachmentId(), binding.m_scopeAttachmentUsage);
                     m_shaderResourceGroup->SetBufferView(RHI::ShaderInputBufferIndex(inputIndex), bufferView, arrayIndex);
                     ++bufferIndex;
                 }
@@ -378,7 +378,7 @@ namespace AZ
         void RenderPass::CollectSrgs()
         {
             // Scene srg
-            const RHI::SingleDeviceShaderResourceGroup* sceneSrg = m_pipeline->GetScene()->GetRHIShaderResourceGroup();
+            const RHI::MultiDeviceShaderResourceGroup* sceneSrg = m_pipeline->GetScene()->GetRHIShaderResourceGroup();
             BindSrg(sceneSrg);
 
             // View srg
@@ -402,7 +402,7 @@ namespace AZ
             m_shaderResourceGroupsToBind.clear();
         }
 
-        void RenderPass::BindSrg(const RHI::SingleDeviceShaderResourceGroup* srg)
+        void RenderPass::BindSrg(const RHI::MultiDeviceShaderResourceGroup* srg)
         {
             if (srg)
             {
@@ -414,7 +414,7 @@ namespace AZ
         {
             for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDraw(*(itr.second));
+                commandList->SetShaderResourceGroupForDraw(*(itr.second->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex)));
             }
         }
 
@@ -422,7 +422,7 @@ namespace AZ
         {
             for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDispatch(*(itr.second));
+                commandList->SetShaderResourceGroupForDispatch(*(itr.second->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex)));
             }
         }
 

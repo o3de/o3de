@@ -199,9 +199,6 @@ namespace AZ::RHI
         //! Enable compilation for a resourceType specified by resourceTypeMask
         void EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask);
 
-        //! Returns the mask that is suppose to indicate which resource type was updated
-        uint32_t GetUpdateMask() const;
-
         //! Update the indirect buffer view with the indices of all the image views which reside in the global gpu heap.
         void SetBindlessViews(
             ShaderInputBufferIndex indirectResourceBufferIndex,
@@ -250,10 +247,6 @@ namespace AZ::RHI
 
         //! The backing data store of constants used only for the getters, actual storage happens in the single device SRGs.
         ConstantsData m_constantsData;
-
-        //! Mask used to check whether to compile a specific resource type. This mask is managed by RPI and copied over to the RHI every
-        //! frame.
-        uint32_t m_updateMask = 0;
 
         //! A map of all device-specific ShaderResourceGroupDatas, indexed by the device index
         AZStd::unordered_map<int, SingleDeviceShaderResourceGroupData> m_deviceShaderResourceGroupDatas;

@@ -263,8 +263,14 @@ namespace AZ
 
             drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
             drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex));
-            drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
-            drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
+            drawPacketBuilder.AddShaderResourceGroup(
+                m_objectSrg->GetRHIShaderResourceGroup()
+                    ? m_objectSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()
+                    : nullptr);
+            drawPacketBuilder.AddShaderResourceGroup(
+                m_material->GetRHIShaderResourceGroup()
+                    ? m_material->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()
+                    : nullptr);
 
             // We build the list of used shaders in a local list rather than m_activeShaders so that
             // if DoUpdate() fails it won't modify any member data.
@@ -458,7 +464,7 @@ namespace AZ
                 drawRequest.m_sortKey = m_sortKey;
                 if (drawSrg)
                 {
-                    drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                    drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
                     // Hold on to a reference to the drawSrg so the refcount doesn't drop to zero
                     m_perDrawSrgs.push_back(drawSrg);
                 }
@@ -509,7 +515,7 @@ namespace AZ
             if (m_drawPacket)
             {
                 m_activeShaders = shaderList;
-                m_materialSrg = m_material->GetRHIShaderResourceGroup();
+                m_materialSrg = m_material->GetRHIShaderResourceGroup() ? m_material->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex): nullptr;
                 return true;
             }
             else

@@ -524,8 +524,8 @@ namespace AZ::RHI
         AZ_Assert(transientBufferGraphAttachments.size() + transientImageGraphAttachments.size() < AZ_BIT(ATTACHMENT_BIT_COUNT),
             "Exceeded maximum number of allowed attachments");            
 
-        AZStd::vector<SingleDeviceBuffer*> transientBuffers(transientBufferGraphAttachments.size());
-        AZStd::vector<SingleDeviceImage*> transientImages(transientImageGraphAttachments.size());
+        AZStd::vector<MultiDeviceBuffer*> transientBuffers(transientBufferGraphAttachments.size());
+        AZStd::vector<MultiDeviceImage*> transientImages(transientImageGraphAttachments.size());
         AZStd::vector<Command> commands;
         commands.reserve((transientBufferGraphAttachments.size() + transientImageGraphAttachments.size()) * 2);
 
@@ -653,9 +653,8 @@ namespace AZ::RHI
                     auto buffer = transientAttachmentPool.ActivateBuffer(descriptor);
                     if (allocateResources && buffer)
                     {
-                        auto deviceBuffer = buffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
-                        bufferFrameAttachment->SetResource(deviceBuffer);
-                        transientBuffers[attachmentIndex] = deviceBuffer;
+                        bufferFrameAttachment->SetResource(buffer);
+                        transientBuffers[attachmentIndex] = buffer;
                     }
                     break;
                 }
@@ -682,9 +681,8 @@ namespace AZ::RHI
                     auto image = transientAttachmentPool.ActivateImage(descriptor);
                     if (allocateResources && image)
                     {
-                        auto deviceImage = image->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
-                        imageFrameAttachment->SetResource(deviceImage);
-                        transientImages[attachmentIndex] = deviceImage;
+                        imageFrameAttachment->SetResource(image);
+                        transientImages[attachmentIndex] = image;
                     }
                     break;
                 }
@@ -718,14 +716,14 @@ namespace AZ::RHI
         processCommands(poolCompileFlags, memoryUsage ? &memoryUsage.value() : nullptr);
     }
                     
-    SingleDeviceImageView* FrameGraphCompiler::GetImageViewFromLocalCache(SingleDeviceImage* image, const ImageViewDescriptor& imageViewDescriptor)
+    MultiDeviceImageView* FrameGraphCompiler::GetImageViewFromLocalCache(MultiDeviceImage* image, const ImageViewDescriptor& imageViewDescriptor)
     {
-        const size_t baseHash = AZStd::hash<SingleDeviceImage*>()(image);
+        const size_t baseHash = AZStd::hash<MultiDeviceImage*>()(image);
         // [GFX TODO][ATOM-6289] This should be looked into, combining cityhash with AZStd::hash
         const HashValue64 hash = imageViewDescriptor.GetHash(static_cast<HashValue64>(baseHash));
 
         // Attempt to find the image view in the cache.
-        SingleDeviceImageView* imageView = m_imageViewCache.Find(static_cast<uint64_t>(hash));
+        MultiDeviceImageView* imageView = m_imageViewCache.Find(static_cast<uint64_t>(hash));
 
         if (!imageView)
         {
@@ -734,32 +732,25 @@ namespace AZ::RHI
             const ImageResourceViewData imageResourceViewData = ImageResourceViewData {image->GetName(), imageViewDescriptor};
             RemoveFromCache(imageResourceViewData, m_imageReverseLookupHash, m_imageViewCache);
             // Create a new image view instance and insert it into the cache.
-            Ptr<SingleDeviceImageView> imageViewPtr = Factory::Get().CreateImageView();
-            if (imageViewPtr->Init(*image, imageViewDescriptor) == ResultCode::Success)
+            Ptr<MultiDeviceImageView> imageViewPtr = image->BuildImageView(imageViewDescriptor);
+            imageView = imageViewPtr.get();
+            m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
+            if (!image->GetName().IsEmpty())
             {
-                imageView = imageViewPtr.get();
-                m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
-                if (!image->GetName().IsEmpty())
-                {
-                    m_imageReverseLookupHash.emplace(imageResourceViewData, hash);
-                }
-            }
-            else
-            {
-                AZ_Error("FrameGraphCompiler", false, "Failed to acquire an image view");
+                m_imageReverseLookupHash.emplace(imageResourceViewData, hash);
             }
         }
         return imageView;
     }
-                    
-    SingleDeviceBufferView* FrameGraphCompiler::GetBufferViewFromLocalCache(SingleDeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor)
+
+    MultiDeviceBufferView* FrameGraphCompiler::GetBufferViewFromLocalCache(MultiDeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor)
     {
-        const size_t baseHash = AZStd::hash<SingleDeviceBuffer*>()(buffer);
+        const size_t baseHash = AZStd::hash<MultiDeviceBuffer*>()(buffer);
         // [GFX TODO][ATOM-6289] This should be looked into, combining cityhash with AZStd::hash
         const HashValue64 hash = bufferViewDescriptor.GetHash(static_cast<HashValue64>(baseHash));
 
         // Attempt to find the buffer view in the cache.
-        SingleDeviceBufferView* bufferView = m_bufferViewCache.Find(static_cast<uint64_t>(hash));
+        MultiDeviceBufferView* bufferView = m_bufferViewCache.Find(static_cast<uint64_t>(hash));
 
         if (!bufferView)
         {
@@ -769,19 +760,12 @@ namespace AZ::RHI
             RemoveFromCache(bufferResourceViewData, m_bufferReverseLookupHash, m_bufferViewCache);
                 
             // Create a new buffer view instance and insert it into the cache.
-            Ptr<SingleDeviceBufferView> bufferViewPtr = Factory::Get().CreateBufferView();
-            if (bufferViewPtr->Init(*buffer, bufferViewDescriptor) == ResultCode::Success)
+            Ptr<MultiDeviceBufferView> bufferViewPtr = buffer->BuildBufferView(bufferViewDescriptor);
+            bufferView = bufferViewPtr.get();
+            m_bufferViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferViewPtr));
+            if (!buffer->GetName().IsEmpty())
             {
-                bufferView = bufferViewPtr.get();
-                m_bufferViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferViewPtr));
-                if (!buffer->GetName().IsEmpty())
-                {
-                    m_bufferReverseLookupHash.emplace(bufferResourceViewData, hash);
-                }
-            }
-            else
-            {
-                AZ_Error("FrameGraphCompiler", false, "Failed to acquire an buffer view");
+                m_bufferReverseLookupHash.emplace(bufferResourceViewData, hash);
             }
         }
         return bufferView;
@@ -793,7 +777,7 @@ namespace AZ::RHI
 
         for (ImageFrameAttachment* imageAttachment : attachmentDatabase.GetImageAttachments())
         {
-            SingleDeviceImage* image = imageAttachment->GetImage();
+            MultiDeviceImage* image = imageAttachment->GetImage();
 
             if (!image)
             {
@@ -804,20 +788,9 @@ namespace AZ::RHI
             for (ImageScopeAttachment* node = imageAttachment->GetFirstScopeAttachment(); node != nullptr; node = node->GetNext())
             {
                 const ImageViewDescriptor& imageViewDescriptor = node->GetDescriptor().m_imageViewDescriptor;
-                    
-                SingleDeviceImageView* imageView = nullptr;
-                //Check image's cache first as that contains views provided by higher level code.
-                if(image->IsInResourceCache(imageViewDescriptor))
-                {
-                    imageView = image->GetImageView(imageViewDescriptor).get();
-                }
-                else
-                {
-                    //If the higher level code has not provided a view, check local frame graph compiler's local cache.
-                    //The local cache is special and was mainly added to handle transient resources. This cache adds a dependency to
-                    //the resourceview ensuring they do not get deleted at the end of the frame and recreated at the start of the next frame.
-                    imageView = GetImageViewFromLocalCache(image, imageViewDescriptor);
-                }
+
+                // Multi device image views don't have a global cache, so we always cache them
+                MultiDeviceImageView* imageView = GetImageViewFromLocalCache(image, imageViewDescriptor);
                      
                 node->SetImageView(imageView);
             }
@@ -825,7 +798,7 @@ namespace AZ::RHI
 
         for (BufferFrameAttachment* bufferAttachment : attachmentDatabase.GetBufferAttachments())
         {
-            SingleDeviceBuffer* buffer = bufferAttachment->GetBuffer();
+            MultiDeviceBuffer* buffer = bufferAttachment->GetBuffer();
 
             if (!buffer)
             {
@@ -837,20 +810,9 @@ namespace AZ::RHI
             for (BufferScopeAttachment* node = bufferAttachment->GetFirstScopeAttachment(); node != nullptr; node = node->GetNext())
             {
                 const BufferViewDescriptor& bufferViewDescriptor = node->GetDescriptor().m_bufferViewDescriptor;
-                    
-                SingleDeviceBufferView* bufferView = nullptr;
-                //Check buffer's cache first as that contains views provided by higher level code.
-                if(buffer->IsInResourceCache(bufferViewDescriptor))
-                {
-                    bufferView = buffer->GetBufferView(bufferViewDescriptor).get();
-                }
-                else
-                {
-                    //If the higher level code has not provided a view, check local frame graph compiler's local cache.
-                    //The local cache is special and was mainly added to handle transient resources. This cache adds a dependency to
-                    //the resourceview ensuring they do not get deleted at the end of the frame and recreated at the start of the next frame.
-                    bufferView = GetBufferViewFromLocalCache(buffer, bufferViewDescriptor);
-                }
+
+                // Multi device buffer views don't have a global cache, so we always cache them
+                MultiDeviceBufferView* bufferView = GetBufferViewFromLocalCache(buffer, bufferViewDescriptor);
 
                 node->SetBufferView(bufferView);
             }

@@ -1240,7 +1240,7 @@ namespace AZ
 
         void CommandList::ClearImage(const ResourceClearRequest& request)
         {
-            const ImageView& imageView = static_cast<const ImageView&>(*request.m_resourceView);
+            const ImageView& imageView = static_cast<const ImageView&>(*request.m_resourceView->GetDeviceResourceView(RHI::MultiDevice::DefaultDeviceIndex));
             const Image& image = static_cast<const Image&>(imageView.GetImage());
             const VkImageSubresourceRange& range = imageView.GetVkImageSubresourceRange();
 
@@ -1273,7 +1273,7 @@ namespace AZ
 
         void CommandList::ClearBuffer(const ResourceClearRequest& request)
         {
-            const BufferView& bufferView = static_cast<const BufferView&>(*request.m_resourceView);
+            const BufferView& bufferView = static_cast<const BufferView&>(*request.m_resourceView->GetDeviceResourceView(RHI::MultiDevice::DefaultDeviceIndex));
             const RHI::BufferViewDescriptor& bufferViewDesc = bufferView.GetDescriptor();
             const Buffer& buffer = static_cast<const Buffer&>(bufferView.GetBuffer());
             union

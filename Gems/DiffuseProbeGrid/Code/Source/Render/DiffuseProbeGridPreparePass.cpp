@@ -110,7 +110,7 @@ namespace AZ
             {
                 // grid data buffer
                 {
-                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(diffuseProbeGrid->GetGridDataBufferAttachmentId(), diffuseProbeGrid->GetGridDataBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(diffuseProbeGrid->GetGridDataBufferAttachmentId(), diffuseProbeGrid->GetGridDataBuffer());
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to import grid data buffer");
 
                     RHI::BufferScopeAttachmentDescriptor desc;
@@ -147,8 +147,8 @@ namespace AZ
             {
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
 
-                const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetPrepareSrg()->GetRHIShaderResourceGroup();
-                commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
+                const RHI::MultiDeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetPrepareSrg()->GetRHIShaderResourceGroup();
+                commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex));
 
                 RHI::SingleDeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;

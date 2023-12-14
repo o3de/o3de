@@ -48,6 +48,7 @@ set(FILES
     Include/Atom/RHI/DrawFilterTagRegistry.h
     Include/Atom/RHI/SingleDeviceDrawItem.h
     Include/Atom/RHI/MultiDeviceDrawItem.h
+    Source/RHI/MultiDeviceDrawItem.cpp
     Include/Atom/RHI/DrawList.h
     Include/Atom/RHI/DrawListTagRegistry.h
     Include/Atom/RHI/DrawListContext.h

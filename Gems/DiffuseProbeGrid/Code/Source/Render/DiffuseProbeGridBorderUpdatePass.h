@@ -49,7 +49,7 @@ namespace AZ
             // the data for submits in this pass are pre-built to properly handle submitting on multiple threads
             struct SubmitItem
             {
-                RHI::SingleDeviceShaderResourceGroup* m_shaderResourceGroup = nullptr;
+                RHI::MultiDeviceShaderResourceGroup* m_shaderResourceGroup = nullptr;
                 RHI::SingleDeviceDispatchItem m_dispatchItem;
             };
 

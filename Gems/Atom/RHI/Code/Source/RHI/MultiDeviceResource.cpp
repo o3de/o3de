@@ -90,6 +90,11 @@ namespace AZ::RHI
         }
 
         m_frameAttachment = frameAttachment;
+
+        IterateObjects<SingleDeviceResource>([frameAttachment]([[maybe_unused]] auto deviceIndex, auto deviceResource)
+        {
+            deviceResource->SetFrameAttachment(frameAttachment);
+        });
     }
 
     const FrameAttachment* MultiDeviceResource::GetFrameAttachment() const

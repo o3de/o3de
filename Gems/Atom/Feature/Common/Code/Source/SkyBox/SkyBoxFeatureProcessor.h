@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
-
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Reflect/Image/Image.h>

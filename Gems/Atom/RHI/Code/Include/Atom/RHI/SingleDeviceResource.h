@@ -30,7 +30,7 @@ namespace AZ::RHI
     class SingleDeviceResource
         : public DeviceObject
     {
-        friend class FrameAttachment;
+        friend class MultiDeviceResource;
         friend class SingleDeviceResourcePool;
     public:
         AZ_RTTI(SingleDeviceResource, "{9D02CDAC-80EB-4B77-8E62-849AC6E69206}", DeviceObject);

@@ -27,7 +27,7 @@ namespace AZ::RHI
         virtual ~ImageFrameAttachment() override = default;
 
         //! Initialization for imported images.
-        ImageFrameAttachment(const AttachmentId& attachmentId, Ptr<SingleDeviceImage> image);
+        ImageFrameAttachment(const AttachmentId& attachmentId, Ptr<MultiDeviceImage> image);
 
         //! Initialization for transient images.
         ImageFrameAttachment(const TransientImageDescriptor& descriptor);
@@ -42,8 +42,8 @@ namespace AZ::RHI
 
         //! Returns the image assigned to this attachment. This is not guaranteed to exist
         //! until after frame graph compilation.
-        const SingleDeviceImage* GetImage() const;
-        SingleDeviceImage* GetImage();
+        const MultiDeviceImage* GetImage() const;
+        MultiDeviceImage *GetImage();
 
         //! Returns the image descriptor for this attachment.
         const ImageDescriptor& GetImageDescriptor() const;

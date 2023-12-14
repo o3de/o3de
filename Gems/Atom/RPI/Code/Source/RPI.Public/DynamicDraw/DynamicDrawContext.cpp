@@ -130,7 +130,7 @@ namespace AZ
             {
                 m_srgPerContext = AZ::RPI::ShaderResourceGroup::Create(
                     m_shader->GetAsset(), m_shader->GetSupervariantIndex(), Name { PerContextSrgName });
-                m_srgGroups[0] = m_srgPerContext->GetRHIShaderResourceGroup();
+                m_srgGroups[0] = m_srgPerContext->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
             }
 
             // Save per draw srg asset which can be used to create draw srg later
@@ -528,7 +528,7 @@ namespace AZ
             // Setup per draw srg
             if (drawSrg)
             {
-                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
             }
 
             // Set scissor per draw if scissor is enabled.
@@ -617,7 +617,7 @@ namespace AZ
             // Setup per draw srg
             if (drawSrg)
             {
-                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
             }
 
             // Set scissor per draw if scissor is enabled.

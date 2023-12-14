@@ -43,7 +43,7 @@ namespace AZ
 
             m_shaderResourceGroup->SetConstant(m_autoFocusScreenPositionIndex, m_autoFocusScreenPosition);
             m_shaderResourceGroup->SetBufferView(
-                m_autoFocusDataBufferIndex, m_bufferRef->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                m_autoFocusDataBufferIndex, m_bufferRef->GetBufferView());
 
             BindPassSrg(context, m_shaderResourceGroup);
             m_shaderResourceGroup->Compile();
