@@ -21,8 +21,8 @@ REM Calculate the path to the expected python venv for the current engine locate
 REM The logic in LYPython will generate a unique ID based on the absolute path of the current engine
 REM so that the venv will not collide with any other versions of O3DE installed on the current machine
 
-REM Run the custom cmake command script to calculate the ID based on %CMD_DIR%\.. 
 
+REM Run the custom cmake command script to calculate the ID based on %CMD_DIR%\.. 
 SET CALC_PATH=%CMD_DIR%\..\cmake\CalculateEnginePathId.cmake
 FOR /F %%g IN ('cmake -P %CALC_PATH% %CMD_DIR%\..') DO SET ENGINE_ID=%%g
 IF NOT "%ENGINE_ID%" == "" GOTO ENGINE_ID_CALCULATED
@@ -50,7 +50,41 @@ ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
 exit /b 1
 
 
+
 :PYTHON_VENV_EXISTS
+
+REM If python venv exists, we still need to validate that it is the current version by getting the 
+REM package current package hash from 3rd Party
+cd %CMD_DIR%\..
+FOR /F %%g IN ('cmake -P python\get_python_package_hash.cmake Windows') DO SET CURRENT_PACKAGE_HASH=%%g
+cd %CMD_DIR%
+IF NOT "%CURRENT_PACKAGE_HASH%" == "" GOTO PACKAGE_HASH_READ
+echo
+echo Unable to get current python package hash
+exit /b 1
+
+
+:PACKAGE_HASH_READ
+
+REM Make sure there a .hash file that serves as the marker for the source python package the venv is from
+SET PYTHON_VENV_HASH=%PYTHON_VENV%\.hash
+
+IF EXIST %PYTHON_VENV_HASH% GOTO PYTHON_VENV_HASH_EXISTS
+ECHO Python has not been setup completely for O3DE. 
+ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
+exit /b 1
+
+:PYTHON_VENV_HASH_EXISTS
+
+REM Read in the .hash from the venv to see if we need to update the version of python
+FOR /F %%g IN ('type %PYTHON_VENV_HASH%') DO SET VENV_PACKAGE_HASH=%%g
+
+IF "%VENV_PACKAGE_HASH%" == "%CURRENT_PACKAGE_HASH%" GOTO PYTHON_VENV_MATCHES
+ECHO Python needs to be updated against the current version.
+ECHO Try running %CMD_DIR%\get_python.bat to update Python for O3DE.
+exit /b 1
+
+:PYTHON_VENV_MATCHES
 REM Execute the python call from the arguments within the python venv environment
 
 call %PYTHON_VENV_ACTIVATE%

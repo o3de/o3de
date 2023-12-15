@@ -8,10 +8,10 @@
 
 # Setup the Python global variables and download and associate python to the correct package
 
-ly_set(LY_PYTHON_VERSION 3.10.5)
+ly_set(LY_PYTHON_VERSION 3.10.13)
 ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
-ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev1-windows)
-ly_set(LY_PYTHON_PACKAGE_HASH c012e7c8fd20e632446d2cd689a9472e4e4495da7534d484d0f1c63840222cbb)
+ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.13-rev1-windows)
+ly_set(LY_PYTHON_PACKAGE_HASH 142fb15c5b1299e32bd66581320a1296356deb17b6f316285d77e6ee37644ed9)
 ly_set(LY_PYTHON_EXECUTABLE "python/python.exe")
 
 ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
