@@ -201,11 +201,16 @@ def get_default_asset_platform():
 
 def get_platform_installer_folder_name(selected_platform=None):
     if not selected_platform:
-        selected_platform = CURRENT_PLATFORM
+        selected_platform = get_default_asset_platform()
     host_platform_to_installer_name_map = {'pc': 'Windows',
                                            'linux': 'Linux',
                                            'mac': 'Mac'}
     return host_platform_to_installer_name_map.get(selected_platform, "")
+
+def has_monolithic_artifacts(context: O3DEScriptExportContext):
+    monolithic_artifacts = glob.glob(f'cmake/Platform/{get_platform_installer_folder_name()}/Monolithic/ConfigurationTypes_*.cmake',
+                                    root_dir=context.engine_path)
+    return len(monolithic_artifacts) > 0
 
 def process_command(args: list,
                     cwd: pathlib.Path = None,
@@ -941,12 +946,53 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
     
     with open(export_layout.output_path / 'project.json', 'w') as project_json_file:
         json.dump({"project_name": project_name}, project_json_file, ensure_ascii=True)
+    
+    if build_config == 'profile':
+        # This file is intended to be included in exported projects to prevent the asset processor from
+        # launching from the exported location. If you want to launch the asset processor anyways from an exported project,
+        # delete the copy of this file in the `Registry` subfolder found in the exported location.
+
+        setregpatch_file = pathlib.Path(__file__).parent.parent / 'ExportScripts/IgnoreAssetProcessor.profile.setregpatch'
+        (export_layout.output_path / 'Registry').mkdir(exist_ok=True) 
+        shutil.copy(setregpatch_file, export_layout.output_path / 'Registry')
+
 
     # Optionally compress the layout directory into an archive if the user requests
     if archive_output_format != "none":
         if logger:
             logger.info(f"Archiving output directory {export_layout.output_path} (this may take a while)...")
         shutil.make_archive(export_layout.output_path, archive_output_format, root_dir=export_layout.output_path)
+
+
+def preprocess_seed_path_list(project_path: pathlib.Path,
+                              paths: List[pathlib.Path]) -> List[pathlib.Path]:
+    """
+    For seed-related paths, do a preprocessing on the files to expand out any file wildcard patterns and expand them
+    out into the result list. Note that only the '*' wildcard is supported for this operation, and it will not
+    search for the patterns recursively
+
+    @param project_path:    The base project path to use as the base for non-absolute paths
+    :param paths:           The list of paths to preprocess any wildcard '*' patterns
+    :return:    The list of processed paths with any wildcard patterns evaluated
+    """
+    preprocessed_path_list = []
+    for input_path in paths:
+        if '*' in str(input_path):
+
+            # Determine if we need to add the project path base to a relative path or not
+            if input_path.is_absolute():
+                glob_results = glob.glob(str(input_path))
+            else:
+                absolute_input_path = project_path / input_path
+                glob_results = glob.glob(str(absolute_input_path))
+
+            for glob_result in glob_results:
+                glob_path_result = pathlib.Path(glob_result)
+                if glob_path_result not in preprocessed_path_list:
+                    preprocessed_path_list.append(glob_path_result)
+        else:
+            preprocessed_path_list.append(input_path)
+    return preprocessed_path_list
 
 
 def validate_project_artifact_paths(project_path: pathlib.Path,
@@ -962,7 +1008,11 @@ def validate_project_artifact_paths(project_path: pathlib.Path,
     @return: List of validate project artifact files, all absolute paths and verified to exist
     """
     validated_project_artifact_paths = []
-    for input_artifact_path in artifact_paths:
+
+    preprocessed_artifact_paths = preprocess_seed_path_list(project_path=project_path,
+                                                            paths=artifact_paths)
+
+    for input_artifact_path in preprocessed_artifact_paths:
         validated_artifact_path = None
         if input_artifact_path.is_file():
             validated_artifact_path = input_artifact_path
@@ -1071,14 +1121,6 @@ SETTINGS_OPTION_BUILD_TOOLS       = register_setting(key='option.build.tools',
                                                      is_boolean=True,
                                                      default='False')
 
-SETTINGS_DEFAULT_BUILD_TOOLS_PATH = register_setting(key='default.build.tools.path',
-                                                     description='Designates where the build files for the O3DE toolchain are generated.',
-                                                     default='build/tools')
-
-SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH = register_setting(key='default.launcher.build.path',
-                                                        description='Designates where the launcher build files (Game/Server/Unified) are generated.',
-                                                        default='build/launcher')
-
 SETTINGS_DEFAULT_ANDROID_BUILD_PATH = register_setting(key='default.android.build.path',
                                                        description='Designates where the android build files are generated.',
                                                        default='build/game_android')
@@ -1091,6 +1133,14 @@ SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES = register_setting(key='option.allow.re
                                                             description='When configuring cmake builds, this determines if the script allows for overriding registry settings from external sources.',
                                                             is_boolean=True,
                                                             default='False')
+
+SETTINGS_DEFAULT_BUILD_TOOLS_PATH = register_setting(key='default.build.tools.path',
+                                                     description='Designates where the build files for the O3DE toolchain are generated.',
+                                                     default='build/tools')
+
+SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH = register_setting(key='default.launcher.build.path',
+                                                        description='Designates where the launcher build files (Game/Server/Unified) are generated.',
+                                                        default='build/launcher')
 
 SETTINGS_DEFAULT_ASSET_BUNDLING_PATH = register_setting(key='asset.bundling.path',
                                                         description='Designates where the artifacts from the asset bundling process will be written to before creation of the package.',
@@ -1123,6 +1173,10 @@ SETTINGS_OPTION_ENGINE_CENTRIC = register_setting(key='option.engine.centric',
                                                   is_boolean=True,
                                                   default='False')
 
+SETTINGS_OPTION_BUILD_MONOLITHICALLY = register_setting(key='option.build.monolithic',
+                                                        description='The option to build the launchers monolithically vs non-monolithically.',
+                                                        is_boolean=True,
+                                                        default='True')
 
 def get_export_project_config(project_path: pathlib.Path or None) -> command_utils.O3DEConfig:
     """

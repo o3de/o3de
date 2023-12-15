@@ -33,6 +33,7 @@ namespace AtomToolsFramework
     PreviewRenderer::PreviewRenderer(const AZStd::string& sceneName, const AZStd::string& pipelineName)
     {
         PreviewerFeatureProcessorProviderBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
 
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
         m_entityContext->InitContext();
@@ -79,13 +80,6 @@ namespace AtomToolsFramework
         m_view->SetViewToClipMatrix(viewToClipMatrix);
         m_renderPipeline->SetDefaultView(m_view);
 
-        // Run the pipeline once for complete initialization, else capturing will fail
-        // Todo: Investigate why RemoveFromRenderTick doesn't work here and what initialization
-        // steps are missing in that case (could be the target image/texture doesn't get setup)
-        // Without this line, pipeline default to render every frame until a capture is triggered
-        // This resulted in a ~0.5ms performance hit every frame
-        m_renderPipeline->AddToRenderTickOnce();
-
         m_state.reset(new PreviewRendererIdleState(this));
 
         AZ::Interface<PreviewRendererInterface>::Register(this);
@@ -93,6 +87,7 @@ namespace AtomToolsFramework
 
     PreviewRenderer::~PreviewRenderer()
     {
+        AZ::SystemTickBus::Handler::BusDisconnect();
         PreviewerFeatureProcessorProviderBus::Handler::BusDisconnect();
 
         m_state.reset();
@@ -159,12 +154,14 @@ namespace AtomToolsFramework
         {
             m_currentCaptureRequest.m_captureFailedCallback();
         }
+        EndCapture();
         m_state.reset();
         m_state.reset(new PreviewRendererIdleState(this));
     }
 
     void PreviewRenderer::CompleteCaptureRequest()
     {
+        EndCapture();
         m_state.reset();
         m_state.reset(new PreviewRendererIdleState(this));
     }
@@ -255,6 +252,14 @@ namespace AtomToolsFramework
     {
         m_currentCaptureRequest = {};
         m_renderPipeline->RemoveFromRenderTick();
+    }
+
+    void PreviewRenderer::OnSystemTick()
+    {
+        if (m_state)
+        {
+            m_state->Update();
+        }
     }
 
     void PreviewRenderer::GetRequiredFeatureProcessors(AZStd::vector<AZStd::string>& featureProcessors) const

@@ -22,6 +22,7 @@ namespace AtomToolsFramework
         }
 
         virtual ~PreviewRendererState() = default;
+        virtual void Update() = 0;
 
     protected:
         PreviewRenderer* m_renderer = {};
