@@ -12,6 +12,8 @@
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <AzCore/Math/Random.h>
+#include <Atom/RHI/MultiDeviceBufferPool.h>
+#include <Atom/RHI/MultiDeviceImagePool.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
 
