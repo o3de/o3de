@@ -210,7 +210,7 @@ namespace AZ::RHI
 
     const HeapMemoryUsage& MultiDeviceStreamingImagePool::GetHeapMemoryUsage(HeapMemoryLevel heapMemoryLevel) const
     {
-        auto maxUsageIndex{-1};
+        auto maxUsageIndex{RHI::MultiDevice::DefaultDeviceIndex};
         auto maxBudget{0ull};
         IterateObjects<StreamingImagePool>([&maxUsageIndex, &maxBudget, heapMemoryLevel](auto deviceIndex, auto deviceStreamingImagePool)
         {

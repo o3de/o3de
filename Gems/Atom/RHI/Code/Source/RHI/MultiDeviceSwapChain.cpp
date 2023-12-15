@@ -56,9 +56,9 @@ namespace AZ::RHI
                     {
                         auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                        m_deviceSwapChains[deviceIndex] = Factory::Get().CreateSwapChain();
-                        result = m_deviceSwapChains[deviceIndex]->Init(*device, descriptor);
-                        nativeDimensions = m_deviceSwapChains[deviceIndex]->GetDescriptor().m_dimensions;
+                        m_deviceObjects[deviceIndex] = Factory::Get().CreateSwapChain();
+                        result = GetDeviceSwapChain(deviceIndex)->Init(*device, descriptor);
+                        nativeDimensions = GetDeviceSwapChain(deviceIndex)->GetDescriptor().m_dimensions;
 
                         return result == ResultCode::Success;
                     });
@@ -78,7 +78,7 @@ namespace AZ::RHI
         else
         {
             // Reset already initialized device-specific SwapChains and set deviceMask to 0
-            m_deviceSwapChains.clear();
+            m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
@@ -130,10 +130,10 @@ namespace AZ::RHI
                 {
                     ResultCode result = ResultCode::Success;
 
-                    for (auto& [deviceIndex, deviceSwapChain] : m_deviceSwapChains)
+                    IterateObjects<SwapChain>([this, imageIdx](auto deviceIndex, auto deviceSwapChain)
                     {
                         m_mdImages[imageIdx]->m_deviceObjects[deviceIndex] = deviceSwapChain->GetImage(imageIdx);
-                    }
+                    });
 
                     return result;
                 });
@@ -177,11 +177,10 @@ namespace AZ::RHI
 
     void MultiDeviceSwapChain::SetVerticalSyncInterval(uint32_t verticalSyncInterval)
     {
-        for (auto& [deviceIndex, deviceSwapChain] : m_deviceSwapChains)
+        IterateObjects<SwapChain>([verticalSyncInterval]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
         {
             deviceSwapChain->SetVerticalSyncInterval(verticalSyncInterval);
-        }
-
+        });
         m_descriptor.m_verticalSyncInterval = verticalSyncInterval;
     }
 
@@ -199,10 +198,10 @@ namespace AZ::RHI
     {
         auto result{ true };
 
-        for (auto& [_, deviceSwapChain] : m_deviceSwapChains)
+        IterateObjects<SwapChain>([&result]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
         {
             result &= deviceSwapChain->IsExclusiveFullScreenPreferred();
-        }
+        });
 
         return result;
     }
@@ -211,10 +210,10 @@ namespace AZ::RHI
     {
         auto result{ true };
 
-        for (auto& [_, deviceSwapChain] : m_deviceSwapChains)
+        IterateObjects<SwapChain>([&result]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
         {
             result &= deviceSwapChain->GetExclusiveFullScreenState();
-        }
+        });
 
         return result;
     }
@@ -223,20 +222,20 @@ namespace AZ::RHI
     {
         auto result{ true };
 
-        for (auto& [_, deviceSwapChain] : m_deviceSwapChains)
+        IterateObjects<SwapChain>([&result, fullScreenState]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
         {
             result &= deviceSwapChain->SetExclusiveFullScreenState(fullScreenState);
-        }
+        });
 
         return result;
     }
 
     void MultiDeviceSwapChain::ProcessRecreation()
     {
-        for (auto& [_, deviceSwapChain] : m_deviceSwapChains)
+        IterateObjects<SwapChain>([]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
         {
             deviceSwapChain->ProcessRecreation();
-        }
+        });
     }
 
     uint32_t MultiDeviceSwapChain::GetImageCount() const
@@ -250,9 +249,9 @@ namespace AZ::RHI
         {
             return m_mdImages[m_xrSystem->GetCurrentImageIndex(m_descriptor.m_xrSwapChainIndex)].get();
         }
-        AZ_Error("Swapchain", !m_deviceSwapChains.empty(), "No device swapchain image available.");
+        AZ_Error("Swapchain", !m_deviceObjects.empty(), "No device swapchain image available.");
         // Note: Taking the current swapchain image index from the first device swap chain if there are multiple
-        auto currentImageIndex{ m_deviceSwapChains.begin()->second->GetCurrentImageIndex() };
+        auto currentImageIndex{ AZStd::static_pointer_cast<SwapChain>(m_deviceObjects.begin()->second)->GetCurrentImageIndex() };
         return m_mdImages[currentImageIndex].get();
     }
 
@@ -263,10 +262,10 @@ namespace AZ::RHI
 
     void MultiDeviceSwapChain::Present()
     {
-        for (auto& [_, deviceSwapChain] : m_deviceSwapChains)
+        IterateObjects<SwapChain>([]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
         {
             deviceSwapChain->Present();
-        }
+        });
     }
 
     RHI::XRRenderingInterface* MultiDeviceSwapChain::GetXRSystem() const
@@ -276,10 +275,10 @@ namespace AZ::RHI
 
     void MultiDeviceSwapChain::Shutdown()
     {
-        for (auto [_, deviceSwapChain] : m_deviceSwapChains)
+        IterateObjects<SwapChain>([]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
         {
             deviceSwapChain->Shutdown();
-        }
+        });
         MultiDeviceResourcePool::Shutdown();
     }
 } // namespace AZ::RHI

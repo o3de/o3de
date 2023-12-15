@@ -194,7 +194,7 @@ namespace AZ::RHI
     {
         AZ_PROFILE_FUNCTION(RHI);
 
-        if (!ValidateIsInitialized() || !ValidateNotDeviceLevel())
+        if (!ValidateIsInitialized())
         {
             return ResultCode::InvalidOperation;
         }

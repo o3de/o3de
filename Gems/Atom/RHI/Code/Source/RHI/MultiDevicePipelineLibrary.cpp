@@ -120,4 +120,24 @@ namespace AZ::RHI
 
         return result;
     }
+
+    bool MultiDevicePipelineLibrary::SaveSerializedData(const AZStd::unordered_map<int, AZStd::string>& filePaths) const
+    {
+        if (!ValidateIsInitialized())
+        {
+            return false;
+        }
+
+        bool result = true;
+
+        IterateObjects<PipelineLibrary>(
+            [&result, &filePaths]([[maybe_unused]] auto deviceIndex, auto devicePipelineLibrary)
+            {
+                auto deviceResult{ devicePipelineLibrary->SaveSerializedData(filePaths.at(deviceIndex)) };
+                AZ_Error("MultiDevicePipelineLibrary", deviceResult, "SaveSerializedData failed for device %d", deviceIndex);
+                result &= deviceResult;
+            });
+
+        return result;
+    }
 } // namespace AZ::RHI

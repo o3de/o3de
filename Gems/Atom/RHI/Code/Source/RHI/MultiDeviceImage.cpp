@@ -100,9 +100,31 @@ namespace AZ::RHI
         });
     }
 
+    bool MultiDeviceImage::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
+    {
+        bool isInResourceCache{true};
+        IterateObjects<Image>([&isInResourceCache, &imageViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        {
+            isInResourceCache &= deviceImage->IsInResourceCache(imageViewDescriptor);
+        });
+        return isInResourceCache;
+    }
+
     //! Given a device index, return the corresponding BufferView for the selected device
     const RHI::Ptr<RHI::ImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
     {
-        return m_image->GetDeviceImage(deviceIndex)->GetImageView(m_descriptor);
+        auto iterator{ m_cache.find(deviceIndex) };
+        if (iterator == m_cache.end())
+        {
+            //! Image view is not yet in the cache
+            auto [new_iterator, inserted]{ m_cache.insert(
+                AZStd::make_pair(deviceIndex, m_image->GetDeviceImage(deviceIndex)->GetImageView(m_descriptor))) };
+            if (inserted)
+            {
+                return new_iterator->second;
+            }
+        }
+
+        return iterator->second;
     }
 } // namespace AZ::RHI

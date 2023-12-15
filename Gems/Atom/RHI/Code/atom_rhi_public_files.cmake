@@ -62,6 +62,7 @@ set(FILES
     Source/RHI/DrawListContext.cpp
     Source/RHI/DrawPacket.cpp
     Source/RHI/DrawPacketBuilder.cpp
+    Source/RHI/MultiDeviceDrawItem.cpp
     Include/Atom/RHI/Device.h
     Include/Atom/RHI/DeviceBusTraits.h
     Include/Atom/RHI/DeviceObject.h

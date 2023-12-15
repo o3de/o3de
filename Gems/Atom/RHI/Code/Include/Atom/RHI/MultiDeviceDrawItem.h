@@ -67,7 +67,7 @@ namespace AZ::RHI
             case DrawType::Linear:
                 return DrawArguments(m_linear);
             case DrawType::Indirect:
-                return DrawArguments(m_mdIndirect.GetDeviceIndirectArguments(deviceIndex));
+                return DrawArguments(DrawIndirect{m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_mdIndirect.m_countBufferByteOffset});
             default:
                 return DrawArguments();
             }
@@ -84,19 +84,7 @@ namespace AZ::RHI
     class MultiDeviceDrawItem
     {
     public:
-        MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask)
-            : m_deviceMask{ deviceMask }
-        {
-            auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
-
-            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
-                {
-                    m_deviceDrawItems.emplace(deviceIndex, DrawItem{});
-                }
-            }
-        }
+        MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask);
 
         //! Returns the device-specific DrawItem for the given index
         const DrawItem& GetDeviceDrawItem(int deviceIndex) const
@@ -110,11 +98,34 @@ namespace AZ::RHI
             return m_deviceDrawItems.at(deviceIndex);
         }
 
+        bool GetEnabled() const
+        {
+            return m_enabled;
+        }
+
+        void SetEnabled(bool enabled)
+        {
+            m_enabled = enabled;
+
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            {
+                drawItem.m_enabled = enabled;
+            }
+        }
+
         void SetArguments(const MultiDeviceDrawArguments& arguments)
         {
             for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
             {
                 drawItem.m_arguments = arguments.GetDeviceDrawArguments(deviceIndex);
+            }
+        }
+
+        void SetIndexedArgumentsInstanceCount(uint32_t instanceCount)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            {
+                drawItem.m_arguments.m_indexed.m_instanceCount = instanceCount;
             }
         }
 
@@ -233,6 +244,7 @@ namespace AZ::RHI
         }
 
     private:
+        bool m_enabled{ true };
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
         //! A map of all device-specific DrawItems, indexed by the device index
         AZStd::unordered_map<int, DrawItem> m_deviceDrawItems;
@@ -252,16 +264,6 @@ namespace AZ::RHI
 
     struct MultiDeviceDrawItemProperties
     {
-        MultiDeviceDrawItemProperties() = default;
-
-        MultiDeviceDrawItemProperties(
-            const MultiDeviceDrawItem* item, DrawItemSortKey sortKey = 0, DrawFilterMask filterMask = DrawFilterMaskDefaultValue)
-            : m_mdItem{ item }
-            , m_sortKey{ sortKey }
-            , m_drawFilterMask{ filterMask }
-        {
-        }
-
         bool operator==(const MultiDeviceDrawItemProperties& rhs) const
         {
             return m_mdItem == rhs.m_mdItem && m_sortKey == rhs.m_sortKey && m_depth == rhs.m_depth &&
@@ -283,7 +285,9 @@ namespace AZ::RHI
         {
             AZ_Assert(m_mdItem, "Not initialized with MultiDeviceDrawItem\n");
 
-            return { &m_mdItem->GetDeviceDrawItem(deviceIndex), m_sortKey, m_depth, m_drawFilterMask };
+            DrawItemProperties result{ &m_mdItem->GetDeviceDrawItem(deviceIndex), m_sortKey, m_drawFilterMask, m_depth };
+
+            return result;
         }
 
         //! A pointer to the draw item
@@ -291,11 +295,10 @@ namespace AZ::RHI
         //! A sorting key of this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         DrawItemSortKey m_sortKey = 0;
+        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
+        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
         //! A depth value this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         float m_depth = 0.0f;
-        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
-        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
     };
-
 } // namespace AZ::RHI
