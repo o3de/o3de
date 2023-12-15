@@ -34,6 +34,46 @@ namespace AZ::RHI
         //! this method when the object is initialized.
         MultiDevice::DeviceMask GetDeviceMask() const;
 
+        //! Initializes object with nullptrs (required for tests)
+        template<typename F>
+        AZ_FORCE_INLINE void TestInitialize(RHI::MultiDevice::DeviceMask deviceMask, F func)
+        {
+            m_deviceMask = deviceMask;
+
+            int deviceCount = GetDeviceCount();
+
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                if ((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1)
+                {
+                    m_deviceObjects[deviceIndex] = func();
+                }
+            }
+        }
+
+        //! Clear object with nullptrs (required for tests)
+        AZ_FORCE_INLINE void TestClear()
+        {
+            if (Validation::IsEnabled())
+            {
+                auto isNull{ true };
+                IterateDevices(
+                    [this, &isNull](int deviceIndex)
+                    {
+                        if (m_deviceObjects[deviceIndex].get() != nullptr)
+                        {
+                            isNull = false;
+                        }
+                        return isNull;
+                    });
+                if (!isNull)
+                {
+                    return;
+                }
+            }
+            m_deviceObjects.clear();
+        }
+
     protected:
         MultiDeviceObject() = default;
 

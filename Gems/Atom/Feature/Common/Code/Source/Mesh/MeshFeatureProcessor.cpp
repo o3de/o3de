@@ -726,8 +726,7 @@ namespace AZ
                 // Since there is only one task that will operate both on this view index and on the bucket with this instance group,
                 // there is no need to lock here.
                 RHI::DrawPacketBuilder drawPacketBuilder;
-                instanceGroup.m_perViewDrawPackets[viewIndex] =
-                    const_cast<RHI::DrawPacket*>(drawPacketBuilder.Clone(instanceGroup.m_drawPacket.GetRHIDrawPacket()));
+                instanceGroup.m_perViewDrawPackets[viewIndex] = drawPacketBuilder.Clone(instanceGroup.m_drawPacket.GetRHIDrawPacket());
             }
 
             // Now that we have a valid cloned draw packet, update it with the latest offset + count

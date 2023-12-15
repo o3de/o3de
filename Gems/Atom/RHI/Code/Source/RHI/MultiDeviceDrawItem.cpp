@@ -24,5 +24,17 @@ namespace AZ::RHI
                 m_deviceDrawItems.emplace(deviceIndex, DrawItem{});
             }
         }
+
+        for(auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+        {
+            m_deviceDrawItemPtrs.emplace(deviceIndex, &drawItem);
+        }
+    }
+
+    MultiDeviceDrawItem::MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask, AZStd::unordered_map<int, DrawItem*>&& deviceDrawItemPtrs)
+        : m_deviceMask{ deviceMask }
+        , m_deviceDrawItemPtrs{ deviceDrawItemPtrs }
+    {
+
     }
 } // namespace AZ::RHI

@@ -79,7 +79,7 @@ namespace AZ::RHI
         //! Note: the copy will reference the same DrawSrg as the original, so it is not possible to vary the DrawSrg values between the
         //! original draw packet and the cloned one. Only settings that can be modified via the DrawPacket interface can be changed
         //! after cloning, such as SetRootConstant and SetInstanceCount
-        const DrawPacket* Clone(const DrawPacket* original);
+        DrawPacket* Clone(const DrawPacket* original);
 
     private:
         void ClearData();
