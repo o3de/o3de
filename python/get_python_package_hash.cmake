@@ -16,6 +16,9 @@
 cmake_minimum_required(VERSION 3.22)
 
 if(${CMAKE_ARGC} LESS 4)
+    message(FATAL_ERROR "Missing required engine root argument.")
+endif()
+if(${CMAKE_ARGC} LESS 5)
     message(FATAL_ERROR "Missing required platform name argument.")
 endif()
 
@@ -35,16 +38,17 @@ macro("ly_associate_package")
 endmacro()
 
 # The first required argument is the platform name
-set(PAL_PLATFORM_NAME ${CMAKE_ARGV3})
+set(ENGINE_ROOT ${CMAKE_ARGV3})
+set(PAL_PLATFORM_NAME ${CMAKE_ARGV4})
 
 # The optional second argument is the architecture
-if(${CMAKE_ARGC} GREATER 4)
-    set(PLATFORM_ARCH "_${CMAKE_ARGV4}")
+if(${CMAKE_ARGC} GREATER 5)
+    set(PLATFORM_ARCH "_${CMAKE_ARGV5}")
 endif()
 
 string(TOLOWER ${PAL_PLATFORM_NAME} PAL_PLATFORM_NAME_LOWERCASE)
 
-include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Python_${PAL_PLATFORM_NAME_LOWERCASE}${PLATFORM_ARCH}.cmake)
+include(${ENGINE_ROOT}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Python_${PAL_PLATFORM_NAME_LOWERCASE}${PLATFORM_ARCH}.cmake)
 
 # Note: using 'message(STATUS ..' will print to STDOUT, but will always include a double hyphen '--'. Instead we will 
 # use the cmake echo command directly to do this

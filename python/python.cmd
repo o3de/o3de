@@ -49,15 +49,11 @@ ECHO Python has not been setup completely for O3DE.
 ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
 exit /b 1
 
-
-
 :PYTHON_VENV_EXISTS
 
 REM If python venv exists, we still need to validate that it is the current version by getting the 
 REM package current package hash from 3rd Party
-cd %CMD_DIR%\..
-FOR /F %%g IN ('cmake -P python\get_python_package_hash.cmake Windows') DO SET CURRENT_PACKAGE_HASH=%%g
-cd %CMD_DIR%
+FOR /F %%g IN ('cmake -P %CMD_DIR%\get_python_package_hash.cmake %CMD_DIR%\.. Windows') DO SET CURRENT_PACKAGE_HASH=%%g
 IF NOT "%CURRENT_PACKAGE_HASH%" == "" GOTO PACKAGE_HASH_READ
 echo
 echo Unable to get current python package hash
