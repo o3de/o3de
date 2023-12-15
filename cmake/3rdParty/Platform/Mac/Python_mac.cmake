@@ -8,10 +8,10 @@
 
 # Setup the Python global variables and download and associate python to the correct package
 
-ly_set(LY_PYTHON_VERSION 3.10.5)
+ly_set(LY_PYTHON_VERSION 3.10.13)
 ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
-ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev2-darwin)
-ly_set(LY_PYTHON_PACKAGE_HASH 46d7c74c64bf639279c53a68ff958d9955e01e08d293524958eb7ea7cac9c4c5)
-ly_set(LY_PYTHON_EXECUTABLE "python/python")
+ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.13-rev1-darwin)
+ly_set(LY_PYTHON_PACKAGE_HASH 1be309b9eeec47eb9aab240518a35851aca41912ed3825c20ae3366c4f64a457)
+ly_set(LY_PYTHON_EXECUTABLE "Python.framework/Versions/Current/bin/python3")
 
 ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
