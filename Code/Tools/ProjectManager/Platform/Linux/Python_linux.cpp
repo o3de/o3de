@@ -41,4 +41,13 @@ namespace Platform
         libPath = libPath.LexicallyNormal();
         return libPath.String();
     }
+
+    AZStd::string GetPythonExecutablePath(const char* engineRoot)
+    {
+        // append lib path to Python paths
+        AZ::IO::FixedMaxPath libPath = engineRoot;
+        libPath /= AZ::IO::FixedMaxPathString("python/python.sh");
+        libPath = libPath.LexicallyNormal();
+        return libPath.String();
+    }
 }

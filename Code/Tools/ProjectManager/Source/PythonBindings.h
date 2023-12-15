@@ -21,6 +21,8 @@
 
 namespace O3DE::ProjectManager
 {
+    QString GetPythonExecutablePath(const QString& enginePath);
+
     class PythonBindings
         : public PythonBindingsInterface::Registrar
     {
