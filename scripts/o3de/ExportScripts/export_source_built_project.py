@@ -392,7 +392,7 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
                                            enable_override_arg=['-headless', '--headless-server-launcher'],
                                            enable_override_desc="Enable the building and inclusion of the Headless Server Launcher.",
                                            disable_override_arg=['--noheadless', '--no-headless-server-launcher'],
-										   disable_override_desc="Disable the building and inclusion of the Headless Server Launcher if not needed.")
+                                           disable_override_desc="Disable the building and inclusion of the Headless Server Launcher if not needed.")
 
 
         export_config.add_boolean_argument(parser=parser,
