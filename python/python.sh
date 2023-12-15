@@ -21,10 +21,10 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 if [[ "$OSTYPE" = *"darwin"* ]];
 then
     PAL=Mac
-    CMAKE_FOLDER_RELATIVE_TO_ROOT=CMake.app/Contents/bin
+    ARCH=
 else
     PAL=Linux
-    CMAKE_FOLDER_RELATIVE_TO_ROOT=bin
+    ARCH=$( uname -m )
 fi
 
 if ! [ -x "$(command -v cmake)" ]; then
@@ -42,9 +42,15 @@ if ! [ -x "$(command -v cmake)" ]; then
     fi
 fi
 
+# Calculate the engine ID
 CALC_PATH=$DIR/../cmake/CalculateEnginePathId.cmake
 LY_ROOT_FOLDER=$DIR/..
 ENGINE_ID=$(cmake -P $CALC_PATH $LY_ROOT_FOLDER)
+if [ $? -ne 0 ]
+then
+    echo "Unable to calculate engine ID"
+    exit 1
+fi
 
 if [ "$LY_3RDPARTY_PATH" == "" ]
 then
@@ -60,8 +66,29 @@ if [ ! -f $PYTHON_VENV_PYTHON ]
 then
     echo "Python has not been downloaded/configured yet."    
     echo "Try running $DIR/get_python.sh first."
-    exit /b 1
+    exit 1
 fi
+
+# Determine the current package from where the current venv was initiated from
+PYTHON_VENV_HASH_FILE=$PYTHON_VENV/.hash
+if [ ! -f $PYTHON_VENV_HASH_FILE ]
+then
+    echo "Python has not been downloaded/configured yet."
+    echo "Try running $DIR/get_python.sh first."
+    exit 1
+fi
+PYTHON_VENV_HASH=$(cat $PYTHON_VENV_HASH_FILE)
+
+# Calculate the expected hash from the current python package
+CURRENT_PYTHON_PACKAGE_HASH=$(cmake -P $DIR/get_python_package_hash.cmake $DIR/.. $PAL $ARCH)
+
+if [ "$PYTHON_VENV_HASH" != "$CURRENT_PYTHON_PACKAGE_HASH" ]
+then
+    echo "Python has been updated since the last time the python command was invoked."
+    echo "Run $DIR/get_python.sh to update."
+    exit 1
+fi
+
 
 PYTHONPATH=""
 
