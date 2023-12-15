@@ -497,7 +497,7 @@ namespace AZ
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             MaskedOcclusionCulling* maskedOcclusionCulling = worklistData->m_view->GetMaskedOcclusionCulling();
-            if (!maskedOcclusionCulling || || !worklistData->m_view->GetMaskedOcclusionCullingDirty())
+            if (!maskedOcclusionCulling || !worklistData->m_view->GetMaskedOcclusionCullingDirty())
             {
                 return true;
             }
