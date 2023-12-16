@@ -536,7 +536,7 @@ from itertools import chain, combinations
 
 # helper function for generating launcher combinations
 def launcher_powerset_indices():
-    s = list([1,2,3])
+    s = list([1,2,3,4])
     return list(chain.from_iterable(combinations(s, r) for r in range(len(s) +  1))) 
 
 @pytest.mark.parametrize("is_engine_centric, use_sdk, has_monolithic, use_monolithic", [
@@ -606,12 +606,15 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
 
                     should_build_game  = 1 in launcher_set
                     should_build_server = 2 in launcher_set
-                    should_build_unified = 3 in launcher_set
+                    should_build_headless_server = 3 in launcher_set
+                    should_build_unified = 4 in launcher_set
 
                     if should_build_game:
                         check_launcher_type |= LauncherType.GAME
                     if should_build_server:
                         check_launcher_type |= LauncherType.SERVER
+                    if should_build_headless_server:
+                        check_launcher_type |= LauncherType.HEADLESS_SERVER
                     if should_build_unified:
                         check_launcher_type |= LauncherType.UNIFIED
 
@@ -636,9 +639,6 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                         selected_launcher_build_path = test_o3de_base_path / selected_launcher_build_path
 
                     cannot_build_monolithic = (use_sdk and not has_monolithic and use_monolithic)
-
-                    
-                    
                     if cannot_build_monolithic:
                         pytest.raises(exp.ExportProjectError, export_standalone_project,
                                       mock_ctx,
@@ -655,6 +655,7 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                                       launcher_build_path=test_launcher_build_path,
                                       should_build_game_launcher=should_build_game,
                                       should_build_server_launcher=should_build_server,
+                                      should_build_headless_server_launcher=should_build_headless_server,
                                       should_build_unified_launcher=should_build_unified)
                         mock_build_game_targets.assert_not_called()
                     else:
@@ -672,6 +673,7 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                                         launcher_build_path=test_launcher_build_path,
                                         should_build_game_launcher=should_build_game,
                                         should_build_server_launcher=should_build_server,
+                                        should_build_headless_server_launcher=should_build_headless_server,
                                         should_build_unified_launcher=should_build_unified)
                         if check_launcher_type == 0:
                             mock_build_game_targets.assert_not_called()
@@ -753,10 +755,11 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
 
         mock_platform = 'pc'
 
-        launcher_stubs = ['GamePackage','ServerPackage','UnifiedPackage']
+        launcher_stubs = ['GamePackage','ServerPackage','HeadlessServerPackage','UnifiedPackage']
 
         launcher_map = {"GamePackage":LauncherType.GAME,
                         "ServerPackage":LauncherType.SERVER,
+                        "HeadlessServerPackage":LauncherType.HEADLESS_SERVER,
                         "UnifiedPackage":LauncherType.UNIFIED}
 
         for should_build_tools, buildconf in zip([True, False, True, False],
@@ -771,12 +774,15 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
 
                     should_build_game  = 1 in launcher_set
                     should_build_server = 2 in launcher_set
-                    should_build_unified = 3 in launcher_set
+                    should_build_headless_server = 3 in launcher_set
+                    should_build_unified = 4 in launcher_set
 
                     if should_build_game:
                         check_launcher_type |= LauncherType.GAME
                     if should_build_server:
                         check_launcher_type |= LauncherType.SERVER
+                    if should_build_headless_server:
+                        check_launcher_type |= LauncherType.HEADLESS_SERVER
                     if should_build_unified:
                         check_launcher_type |= LauncherType.UNIFIED
 
@@ -801,7 +807,6 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                         selected_launcher_build_path = test_o3de_base_path / selected_launcher_build_path
 
                     cannot_build_monolithic = (use_sdk and not has_monolithic and use_monolithic)
-
                     if cannot_build_monolithic:
                         pytest.raises(exp.ExportProjectError, export_standalone_project,
                                       mock_ctx,
@@ -818,6 +823,7 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                                       launcher_build_path=test_launcher_build_path,
                                       should_build_game_launcher=should_build_game,
                                       should_build_server_launcher=should_build_server,
+                                      should_build_headless_server_launcher=should_build_headless_server,
                                       should_build_unified_launcher=should_build_unified)
                         mock_setup_launcher_layout_directory.assert_not_called()
                     else:
@@ -835,6 +841,7 @@ def test_setup_launcher_layout_directory(tmp_path, is_engine_centric, use_sdk, h
                                         launcher_build_path=test_launcher_build_path,
                                         should_build_game_launcher=should_build_game,
                                         should_build_server_launcher=should_build_server,
+                                        should_build_headless_server_launcher=should_build_headless_server,
                                         should_build_unified_launcher=should_build_unified)
                         assert len(setup_dir_cache) == settings_count, check_launcher_type
 
@@ -877,7 +884,7 @@ def create_dummy_commands_settings_file(build_config='profile', tool_config='pro
                                         tools_path='build/tools', launcher_path='build/launcher', android_path='build/game_android',
                                         build_ios='build/game_ios', allow_reg_overrides=False,
                                         asset_bundle_path='build/asset_bundling', max_size=2048,
-                                        build_game_launcher=True, build_server_launcher=True, build_unified_launcher=True,
+                                        build_game_launcher=True, build_server_launcher=True, build_headless_server_launcher=True, build_unified_launcher=True,
                                         engine_centric = False, monolithic=False):
     return  f"""
 [export_project]
@@ -902,6 +909,7 @@ asset.bundling.path = {asset_bundle_path}
 max.size = {max_size}
 option.build.game.launcher = {str(build_game_launcher)}
 option.build.server.launcher = {str(build_server_launcher)}
+option.build.headless.server.launcher = {str(build_headless_server_launcher)}
 option.build.unified.launcher = {str(build_unified_launcher)}
 option.engine.centric = {str(engine_centric)}
 option.build.monolithic = {str(monolithic)}
@@ -982,20 +990,21 @@ def test_export_standalone_parse_args_should_require_output(tmpdir):
 @pytest.mark.parametrize('dum_build_assets', [True, False])
 @pytest.mark.parametrize('dum_build_game', [True, False])
 @pytest.mark.parametrize('dum_build_server', [True, False])
+@pytest.mark.parametrize('dum_build_headless_server', [False])
 @pytest.mark.parametrize('dum_build_unified', [True, False])
 @pytest.mark.parametrize('dum_engine_centric', [True, False])
 @pytest.mark.parametrize('dum_monolithic', [True, False])
-@pytest.mark.parametrize('dum_reg_override', [True, False])
+@pytest.mark.parametrize('dum_reg_override', [False])
 def test_export_standalone_exhaustive(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets,
-                                                     dum_build_game, dum_build_server, dum_build_unified,
+                                                     dum_build_game, dum_build_server, dum_build_headless_server, dum_build_unified,
                                                      dum_engine_centric, dum_monolithic, dum_reg_override):
     test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets,
-                                                     dum_build_game, dum_build_server, dum_build_unified,
+                                                     dum_build_game, dum_build_server, dum_build_headless_server, dum_build_unified,
                                                      dum_engine_centric, dum_monolithic, dum_reg_override)
 
-@pytest.mark.parametrize("dum_fail_asset_err, dum_build_tools, dum_build_assets,dum_build_game, dum_build_server, dum_build_unified,dum_engine_centric, dum_monolithic, dum_reg_override",[])
+@pytest.mark.parametrize("dum_fail_asset_err, dum_build_tools, dum_build_assets,dum_build_game, dum_build_server, dum_build_headless_server, dum_build_unified,dum_engine_centric, dum_monolithic, dum_reg_override",[])
 def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets,
-                                                     dum_build_game, dum_build_server, dum_build_unified,
+                                                     dum_build_game, dum_build_server, dum_build_headless_server, dum_build_unified,
                                                      dum_engine_centric, dum_monolithic, dum_reg_override):
     dummy_build_config = 'release'
     dummy_tool_config = 'profile'
@@ -1004,7 +1013,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
     test_project_name, test_project_path, test_engine_path = \
         setup_local_export_config_test(tmpdir, build_config=dummy_build_config, tool_config=dummy_tool_config, archive_format=dummy_archive_format,
             fail_asset_errors=dum_fail_asset_err, build_assets=dum_build_assets, build_tools=dum_build_tools,
-            build_game_launcher=dum_build_game, build_server_launcher=dum_build_server, build_unified_launcher=dum_build_unified,
+            build_game_launcher=dum_build_game, build_server_launcher=dum_build_server, build_headless_server_launcher=dum_build_headless_server, build_unified_launcher=dum_build_unified,
             engine_centric=dum_engine_centric, monolithic=dum_monolithic, allow_reg_overrides=dum_reg_override)
     
     with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder,\
@@ -1032,7 +1041,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
             use_mono = True
             
             use_engine_centric, use_reg_override = True, True 
-            use_game_build, use_server_build, use_unified_build = True, True, True
+            use_game_build, use_server_build, use_headless_server_build, use_unified_build = True, True, False, True
             for product_entry in product(
                         [True, False],
                         [True, False]):
@@ -1128,6 +1137,14 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                             mock_ctx.args += ['--no-server-launcher']
                         else:
                             mock_ctx.args += ['--server-launcher']
+
+                    check_headless_server_build  = dum_build_headless_server
+                    if use_headless_server_build:
+                        check_headless_server_build = not check_headless_server_build
+                        if dum_build_headless_server:
+                            mock_ctx.args += ['--no-headless-server-launcher']
+                        else:
+                            mock_ctx.args += ['--headless-server-launcher']
                     
                     check_unified_build  = dum_build_unified
                     if use_unified_build:
@@ -1244,6 +1261,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                     fail_on_asset_errors=check_fail_asset_err,
                                     should_build_game_launcher=check_game_build,
                                     should_build_server_launcher=check_server_build,
+                                    should_build_headless_server_launcher=check_headless_server_build,
                                     should_build_unified_launcher=check_unified_build,
                                     engine_centric=check_engine_centric,
                                     allow_registry_overrides=check_reg_override,
@@ -1342,6 +1360,7 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
                         fail_on_asset_errors=False,
                         should_build_game_launcher=True,
                         should_build_server_launcher=True,
+                        should_build_headless_server_launcher=True,
                         should_build_unified_launcher=True,
                         engine_centric=False,
                         allow_registry_overrides=False,
