@@ -71,21 +71,23 @@ namespace UnitTest
             request.m_descriptor = RHI::BufferDescriptor{};
             m_bufferPool->InitBuffer(request);
             m_psoEmpty = aznew RHI::MultiDevicePipelineState;
-            m_psoEmpty->TestInitialize(
-                LocalDeviceMask,
-                []()
+            m_psoEmpty->m_deviceMask = LocalDeviceMask;
+            m_psoEmpty->IterateDevices(
+                [this](int deviceIndex)
                 {
-                    return RHI::Factory::Get().CreatePipelineState();
+                    this->m_psoEmpty->m_deviceObjects[deviceIndex] = RHI::Factory::Get().CreatePipelineState();
+                    return true;
                 });
 
             for (auto& srg : m_srgs)
             {
                 srg = aznew RHI::MultiDeviceShaderResourceGroup;
-                srg->TestInitialize(
-                    LocalDeviceMask,
-                    []()
+                srg->m_deviceMask = LocalDeviceMask;
+                srg->IterateDevices(
+                    [&srg](int deviceIndex)
                     {
-                        return RHI::Factory::Get().CreateShaderResourceGroup();
+                        srg->m_deviceObjects[deviceIndex] = RHI::Factory::Get().CreateShaderResourceGroup();
+                        return true;
                     });
             }
 
@@ -102,15 +104,6 @@ namespace UnitTest
 
             m_indexBufferView =
                 RHI::MultiDeviceIndexBufferView(*m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16);
-        }
-
-        ~MultiDeviceDrawPacketData()
-        {
-            m_psoEmpty->TestClear();
-            for (auto& srg : m_srgs)
-            {
-                srg->TestClear();
-            }
         }
 
         const auto Build(RHI::MultiDeviceDrawPacketBuilder& builder)

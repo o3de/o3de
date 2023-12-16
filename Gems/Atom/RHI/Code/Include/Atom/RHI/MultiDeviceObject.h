@@ -10,6 +10,12 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/DeviceObject.h>
 
+// Predefinition for unit test friend class
+namespace UnitTest
+{
+    struct MultiDeviceDrawPacketData;
+}
+
 #define AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(Type) AZ_FORCE_INLINE Ptr<Type> GetDevice##Type(int deviceIndex) const \
 { \
     return GetDeviceObject<Type>(deviceIndex); \
@@ -23,6 +29,8 @@ namespace AZ::RHI
     //! DeviceMask (1 bit per device).
     class MultiDeviceObject : public Object
     {
+        friend struct UnitTest::MultiDeviceDrawPacketData;
+
     public:
         AZ_RTTI(MultiDeviceObject, "{17D34F71-944C-4AF5-9823-627474C4C0A6}", Object);
         virtual ~MultiDeviceObject() = default;
@@ -33,46 +41,6 @@ namespace AZ::RHI
         //! Returns the device this object is associated with. It is only permitted to call
         //! this method when the object is initialized.
         MultiDevice::DeviceMask GetDeviceMask() const;
-
-        //! Initializes object with nullptrs (required for tests)
-        template<typename F>
-        AZ_FORCE_INLINE void TestInitialize(RHI::MultiDevice::DeviceMask deviceMask, F func)
-        {
-            m_deviceMask = deviceMask;
-
-            int deviceCount = GetDeviceCount();
-
-            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if ((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1)
-                {
-                    m_deviceObjects[deviceIndex] = func();
-                }
-            }
-        }
-
-        //! Clear object with nullptrs (required for tests)
-        AZ_FORCE_INLINE void TestClear()
-        {
-            if (Validation::IsEnabled())
-            {
-                auto isNull{ true };
-                IterateDevices(
-                    [this, &isNull](int deviceIndex)
-                    {
-                        if (m_deviceObjects[deviceIndex].get() != nullptr)
-                        {
-                            isNull = false;
-                        }
-                        return isNull;
-                    });
-                if (!isNull)
-                {
-                    return;
-                }
-            }
-            m_deviceObjects.clear();
-        }
 
     protected:
         MultiDeviceObject() = default;

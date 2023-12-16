@@ -78,49 +78,53 @@ namespace AZ::RHI
         // NOTE: This is configurable; just used to control the amount of memory held by the builder.
         static const size_t DrawItemCountMax = 16;
 
+        //! Passes the linear allocator to all single-device DrawPacketBuilders and
+        //! initializes the multi-device DrawPacket which will be returned after calling End()
         void Begin(IAllocator* allocator);
 
+        //! Passes the DrawArguments to all single-device DrawPacketBuilders
         void SetDrawArguments(const MultiDeviceDrawArguments& drawArguments);
 
+        //! Passes the IndexBufferViews to all single-device DrawPacketBuilders
         void SetIndexBufferView(const MultiDeviceIndexBufferView& indexBufferView);
 
+        //! Passes the RootConstants to all single-device DrawPacketBuilders
         void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
 
+        //! Passes the Scissors to all single-device DrawPacketBuilders
         void SetScissors(AZStd::span<const Scissor> scissors);
 
+        //! Passes a Scissor to all single-device DrawPacketBuilders
         void SetScissor(const Scissor& scissor);
 
+        //! Passes the Viewports to all single-device DrawPacketBuilders
         void SetViewports(AZStd::span<const Viewport> viewports);
 
+        //! Passes a Viewport to all singl-device DrawPacketBuilders
         void SetViewport(const Viewport& viewport);
 
+        //! Passes the ShaderResourceGroup to all single-device DrawPacketBuilders
         void AddShaderResourceGroup(const MultiDeviceShaderResourceGroup* shaderResourceGroup);
 
+        //! Passes the single-device DrawRequests to all single-device DrawPacketBuilders,
+        //! keeps the multi-device DrawRequest and sets the DrawListMask in the current
+        //! multi-device DrawPacket
         void AddDrawItem(MultiDeviceDrawRequest& request);
 
+        //! Builds all single-device DrawPackets linearly in memory using their allocator
+        //! and captures them in the multi-device DrawPacket, correctly linking the
+        //! single-device DrawItems with the corresponding multi-device DrawItem as well
         RHI::Ptr<MultiDeviceDrawPacket> End();
 
-        //! Make a copy of an existing DrawPacket.
-        //! Note: the copy will reference the same DrawSrg as the original, so it is not possible to vary the DrawSrg values between the
-        //! original draw packet and the cloned one. Only settings that can be modified via the DrawPacket interface can be changed
-        //! after cloning, such as SetRootConstant and SetInstanceCount
+        //! Clones all single-device DrawPackets and then sets all corresponding pointers
+        //! in the multi-device DrawPacket and DrawItem objects
         RHI::Ptr<MultiDeviceDrawPacket> Clone(const MultiDeviceDrawPacket* original);
 
     private:
-        void ClearData();
-
         RHI::MultiDevice::DeviceMask m_deviceMask{ 0u };
         AZStd::fixed_vector<MultiDeviceDrawRequest, DrawPacketBuilder::DrawItemCountMax> m_drawRequests;
 
         RHI::Ptr<MultiDeviceDrawPacket> m_drawPacketInFlight;
-        // MultiDeviceDrawArguments m_drawArguments;
-        // size_t m_streamBufferViewCount{};
-        // MultiDeviceIndexBufferView m_indexBufferView;
-        // AZStd::vector<MultiDeviceStreamBufferView> m_streamBufferViews;
-        // AZStd::fixed_vector<const MultiDeviceShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
-        // AZStd::span<const uint8_t> m_rootConstants;
-        // AZStd::fixed_vector<Scissor, Limits::Pipeline::AttachmentColorCountMax> m_scissors;
-        // AZStd::fixed_vector<Viewport, Limits::Pipeline::AttachmentColorCountMax> m_viewports;
 
         //! A map of single-device DrawPacketBuilder, indexed by the device index
         AZStd::unordered_map<int, DrawPacketBuilder> m_deviceDrawPacketBuilders;

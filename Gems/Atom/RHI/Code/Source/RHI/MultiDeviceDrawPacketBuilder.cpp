@@ -178,14 +178,9 @@ namespace AZ::RHI
             drawItem.SetEnabled(!drawListTagDisabled);
         }
 
-        ClearData();
+        m_drawRequests.clear();
 
         return AZStd::move(m_drawPacketInFlight);
-    }
-
-    void MultiDeviceDrawPacketBuilder::ClearData()
-    {
-        m_drawRequests.clear();
     }
 
     RHI::Ptr<MultiDeviceDrawPacket> MultiDeviceDrawPacketBuilder::Clone(const MultiDeviceDrawPacket* original)
