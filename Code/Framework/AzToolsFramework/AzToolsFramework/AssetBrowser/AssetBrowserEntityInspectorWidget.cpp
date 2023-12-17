@@ -92,10 +92,22 @@ namespace AzToolsFramework
 
             static void BrowseToAsset(const DependentAssetTreeWidgetItem& assetItem)
             {
+                // Product asset path is located in the cached folder not discoverable by asset browser
+                // so we resolve the source path instead
+                auto path = assetItem.m_assetBrowserEntry->GetFullPath();
+                if (assetItem.m_assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+                {
+                    const auto* productItem = static_cast<const ProductAssetBrowserEntry*>(assetItem.m_assetBrowserEntry);
+                    if (const SourceAssetBrowserEntry* source = SourceAssetBrowserEntry::GetSourceByUuid(productItem->GetAssetId().m_guid))
+                    {
+                        path = source->GetFullPath();
+                    }
+                }
+
                 AssetBrowserInteractionNotificationBus::Broadcast(
                         &AssetBrowserInteractionNotificationBus::Events::SelectAsset,
                         nullptr,
-                        assetItem.m_assetBrowserEntry->GetFullPath());
+                        path);
             }
         };
 
