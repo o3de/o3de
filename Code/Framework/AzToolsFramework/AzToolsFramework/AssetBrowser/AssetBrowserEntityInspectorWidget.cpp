@@ -7,14 +7,16 @@
  */
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <AzQtComponents/Components/Widgets/SegmentBar.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
-#include <AzQtComponents/Components/Widgets/CardHeader.h>
-#include <AzQtComponents/Components/Widgets/SegmentBar.h>
+#include <QAction>
 #include <QDesktopServices>
 #include <QDir>
+#include <QMenu>
 #include <QPushButton>
 #include <QSplitter>
 #include <QUrl>
@@ -25,6 +27,78 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        class DependentAssetTreeWidgetItem : public QTreeWidgetItem
+        {
+        public:
+            DependentAssetTreeWidgetItem(const AssetBrowserEntry* assetBrowserEntry, QTreeWidgetItem* parent)
+                : m_assetBrowserEntry(assetBrowserEntry)
+                , QTreeWidgetItem(parent)
+            {}
+
+            const AssetBrowserEntry* m_assetBrowserEntry;
+        };
+
+        class DependentAssetTreeWidget : public QTreeWidget
+        {
+        public:
+            explicit DependentAssetTreeWidget(QWidget* parent = nullptr)
+                : QTreeWidget(parent)
+            {
+                setContextMenuPolicy(Qt::CustomContextMenu);
+
+                connect(this, &QTreeWidget::customContextMenuRequested, this, &DependentAssetTreeWidget::OnContextMenu);
+            }
+
+            ~DependentAssetTreeWidget() override = default;
+
+        private:
+            void mouseDoubleClickEvent([[maybe_unused]] QMouseEvent* ev) override
+            {
+                if (const DependentAssetTreeWidgetItem* widgetItem = GetSelectedWidgetItem())
+                {
+                    BrowseToAsset(*widgetItem);
+                }
+            }
+
+            void OnContextMenu(const QPoint& point)
+            {
+                const DependentAssetTreeWidgetItem* widgetItem = GetSelectedWidgetItem();
+                if (!widgetItem)
+                {
+                    return;
+                }
+
+                QMenu menu(this);
+                menu.addAction(
+                    QObject::tr("Browse to asset"),
+                    [widgetItem]()
+                    {
+                        BrowseToAsset(*widgetItem);
+                    });
+                menu.exec(mapToGlobal(point));
+            }
+
+            const DependentAssetTreeWidgetItem* GetSelectedWidgetItem() const
+            {
+                const QModelIndexList selection = selectedIndexes();
+                if (selection.isEmpty())
+                {
+                    return nullptr;
+                }
+
+                const auto* item = static_cast<QTreeWidgetItem*>(selection.first().internalPointer());
+                return dynamic_cast<const DependentAssetTreeWidgetItem*>(item);
+            }
+
+            static void BrowseToAsset(const DependentAssetTreeWidgetItem& assetItem)
+            {
+                AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AssetBrowserInteractionNotificationBus::Events::SelectAsset,
+                        nullptr,
+                        assetItem.m_assetBrowserEntry->GetFullPath());
+            }
+        };
+
         AssetBrowserEntityInspectorWidget::AssetBrowserEntityInspectorWidget(QWidget* parent)
             : QWidget(parent)
             , m_databaseConnection(aznew AssetDatabase::AssetDatabaseConnection)
@@ -107,7 +181,7 @@ namespace AzToolsFramework
             cardLayout->addItem(bottomSpacer);
 
             // Create a tree view for the data inside the depends assets card
-            m_dependentProducts = new QTreeWidget(m_dependentAssetsCard);
+            m_dependentProducts = new DependentAssetTreeWidget(m_dependentAssetsCard);
             m_dependentProducts->setColumnCount(1);
             m_dependentProducts->setHeaderHidden(true);
             m_dependentProducts->setMinimumHeight(0);
@@ -589,7 +663,7 @@ namespace AzToolsFramework
         {
             if (entry)
             {
-                const auto item = new QTreeWidgetItem(headerItem);
+                const auto item = new DependentAssetTreeWidgetItem(entry, headerItem);
                 const auto entryName = QString::fromUtf8(entry->GetName().c_str(), static_cast<int>(entry->GetName().size()));
                 item->setText(0, entryName);
                 item->setToolTip(0, entryName);
