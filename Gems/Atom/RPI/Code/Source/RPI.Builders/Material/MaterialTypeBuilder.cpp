@@ -163,11 +163,10 @@ namespace AZ
             };
 
             // Add dependencies for the material type file
-            {
-                // Even though the materialAzsliFilePath will be #included into the generated .azsl file, which would normally be handled by the final stage builder, we still need
-                // a source dependency on this file because PipelineStage::ProcessJobHelper tries to resolve the path and fails if it can't be found.
-                addPossibleDependencies(materialTypeSourcePath, materialTypeSourceData.m_materialShaderCode);
-            }
+            // Even though the materialAzsliFilePath will be #included into the generated .azsl file, which would normally be handled by the
+            // final stage builder, we still need a source dependency on this file because PipelineStage::ProcessJobHelper tries to resolve
+            // the path and fails if it can't be found.
+            addPossibleDependencies(materialTypeSourcePath, materialTypeSourceData.m_materialShaderCode);
 
             // Note we report dependencies based on GetMaterialPipelinePaths() rather than LoadMaterialPipelines(), because dependencies are
             // needed even for pipelines that fail to load, so that the job will re-process when the broken pipeline gets fixed.
@@ -602,8 +601,32 @@ namespace AZ
                 pipelineData.m_pipelinePropertyLayout = materialPipeline.m_runtimeControls.m_materialTypeInternalProperties;
             }
 
+            // Convert all texture references to aliases in case there are any paths relative to the original, abstract material type. If
+            // these paths remain relative to the original material type then they cannot be resolved and will not load with the final
+            // material type. That will fail the build.
+            materialTypeSourceData.EnumerateProperties(
+                [&materialTypeSourcePath](const MaterialPropertySourceData* property, const MaterialNameContext&)
+                {
+                    if (property->m_dataType == MaterialPropertyDataType::Image &&
+                        MaterialUtils::LooksLikeImageFileReference(property->m_value))
+                    {
+                        if (auto fileIOBase = AZ::IO::FileIOBase::GetInstance())
+                        {
+                            const AZStd::string originalPath = property->m_value.GetValue<AZStd::string>();
+                            const AZStd::string absolutePath = RPI::AssetUtils::ResolvePathReference(materialTypeSourcePath, originalPath);
+                            if (const auto aliasedPathResult = fileIOBase->ConvertToAlias(AZ::IO::PathView{ absolutePath }))
+                            {
+                                // Using const_cast because EnumerateProperties is currently only implemented as const.
+                                const_cast<MaterialPropertySourceData*>(property)->m_value = aliasedPathResult->LexicallyNormal().String();
+                            }
+                        }
+                    }
+                    return true;
+                });
+
+            // The "_generated" postfix is necessary because AP does not allow intermediate file to have the same relative path as a source
+            // file.
             AZ::IO::Path outputMaterialTypeFilePath = request.m_tempDirPath;
-            // The "_generated" postfix is necessary because AP does not allow intermediate file to have the same relative path as a source file.
             outputMaterialTypeFilePath /= AZStd::string::format("%s_generated.materialtype", materialTypeName.c_str());
 
             AZ_Assert(materialTypeSourceData.GetFormat() != MaterialTypeSourceData::Format::Abstract,
@@ -706,7 +729,7 @@ namespace AZ
                     AssetBuilderSDK::JobProduct defaultMaterialFileProduct;
                     defaultMaterialFileProduct.m_dependenciesHandled = true; // This product is only for reference, not used at runtime
                     defaultMaterialFileProduct.m_productFileName = defaultMaterialFilePath;
-                    defaultMaterialFileProduct.m_productAssetType = AZ::Uuid::CreateString("{FE8E7122-9E96-44F0-A4E4-F134DD9804E2}"); // Need a unique acid type for this raw JSON file
+                    defaultMaterialFileProduct.m_productAssetType = AZ::Uuid::CreateString("{FE8E7122-9E96-44F0-A4E4-F134DD9804E2}"); // Need a unique asset type for this raw JSON file
                     defaultMaterialFileProduct.m_productSubID = (u32)MaterialTypeProductSubId::AllPropertiesMaterialSourceFile;
                     response.m_outputProducts.emplace_back(AZStd::move(defaultMaterialFileProduct));
                 }

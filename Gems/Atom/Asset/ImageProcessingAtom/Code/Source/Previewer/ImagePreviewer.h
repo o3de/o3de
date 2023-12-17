@@ -39,6 +39,11 @@ class QResizeEvent;
 
 namespace ImageProcessingAtom
 {
+    namespace Utils
+    {
+        class AsyncImageAssetLoader;
+    }
+
     class ImagePreviewer
         : public AzToolsFramework::AssetBrowser::Previewer
         , private AZ::SystemTickBus::Handler
@@ -87,5 +92,6 @@ namespace ImageProcessingAtom
         using CreateDisplayTextureResult = AZStd::pair<IImageObjectPtr, QString>;
 
         QFuture<CreateDisplayTextureResult> m_createDisplayTextureResult;
+        AZStd::shared_ptr<Utils::AsyncImageAssetLoader> m_imageAssetLoader;
     };
 }//namespace ImageProcessingAtom

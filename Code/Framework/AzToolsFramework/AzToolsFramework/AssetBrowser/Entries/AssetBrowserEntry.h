@@ -193,8 +193,8 @@ namespace AzToolsFramework
             virtual void UpdateChildPaths(AssetBrowserEntry* child) const;
             virtual void PathsUpdated();
 
-            protected Q_SLOTS:
-            virtual void ThumbnailUpdated();
+        protected:
+            virtual void SetThumbnailDirty();
 
         private:
             SharedThumbnailKey m_thumbnailKey;

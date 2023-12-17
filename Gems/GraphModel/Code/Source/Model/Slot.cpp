@@ -120,6 +120,11 @@ namespace GraphModel
         return result;
     }
 
+    AZStd::string SlotId::ToString() const
+    {
+        return AZStd::string::format("GraphModelSlotId(%s,%d)", m_name.c_str(), m_subId);
+    }
+
     /////////////////////////////////////////////////////////
     // SlotDefinition
 

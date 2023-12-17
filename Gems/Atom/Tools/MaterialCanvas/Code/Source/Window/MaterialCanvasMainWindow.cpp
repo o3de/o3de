@@ -225,8 +225,15 @@ namespace MaterialCanvas
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart",
                   "Create Untitled Graph Document On Start",
-                  "Create a default, untitled graph document when Material Canvas starts",
-                  true) });
+                  "Create a default, untitled graph document when Material Canvas starts.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/QueueGraphCompileIntervalMs",
+                  "Queue Graph Compile Interval Ms",
+                  "The delay (in milliseconds) before the graph is recompiled after changes.",
+                  aznumeric_cast<AZ::s64>(500),
+                  aznumeric_cast<AZ::s64>(0),
+                  aznumeric_cast<AZ::s64>(1000)) });
 
         inspector->AddGroup(
             m_materialCanvasCompileSettingsGroup->m_name,

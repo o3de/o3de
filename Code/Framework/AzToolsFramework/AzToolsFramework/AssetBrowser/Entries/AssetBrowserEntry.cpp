@@ -346,10 +346,10 @@ namespace AzToolsFramework
         {
             if (m_thumbnailKey)
             {
-                disconnect(m_thumbnailKey.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &AssetBrowserEntry::ThumbnailUpdated);
+                disconnect(m_thumbnailKey.data(), nullptr, this, nullptr);
             }
             m_thumbnailKey = thumbnailKey;
-            connect(m_thumbnailKey.data(), &ThumbnailKey::ThumbnailUpdatedSignal, this, &AssetBrowserEntry::ThumbnailUpdated);
+            connect(m_thumbnailKey.data(), &ThumbnailKey::ThumbnailUpdated, this, &AssetBrowserEntry::SetThumbnailDirty);
         }
 
         SharedThumbnailKey AssetBrowserEntry::GetThumbnailKey() const
@@ -369,7 +369,7 @@ namespace AzToolsFramework
             SetThumbnailKey(CreateThumbnailKey());
         }
 
-        void AssetBrowserEntry::ThumbnailUpdated()
+        void AssetBrowserEntry::SetThumbnailDirty()
         {
             if (EntryCache* cache = EntryCache::GetInstance())
             {
