@@ -102,6 +102,18 @@ namespace AzToolsFramework
                 [this]()
                 {
                     AZStd::vector<const AssetBrowserEntry*> entries = AZStd::move(GetSelectedAssets());
+                    if (entries.empty() && m_assetTreeView)
+                    {
+                        // Tree has the current open folder selected if context is valid (not searching, etc)
+                        const auto treeSelection = m_assetTreeView->selectionModel()->selectedIndexes();
+                        if (!treeSelection.empty())
+                        {
+                            m_thumbnailViewWidget->selectionModel()->select(
+                                treeSelection.first(), QItemSelectionModel::SelectionFlag::ClearAndSelect);
+                            entries = AZStd::move(GetSelectedAssets());
+                        }
+                    }
+
                     QMenu menu(this);
 
                     if (entries.size() == 1)
@@ -122,7 +134,7 @@ namespace AzToolsFramework
                             menu.addSeparator();
                         }
                     }
-                    
+
                     AssetBrowserInteractionNotificationBus::Broadcast(
                         &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
 
