@@ -53,7 +53,7 @@ namespace AzToolsFramework
             AssetBrowserEntryFilter() = default;
             ~AssetBrowserEntryFilter() override = default;
 
-            //! Cloning function that must be overridden for certain asset browser views that duplicate and modify incoming filters\
+            //! Cloning function that must be overridden for certain asset browser views that duplicate and modify incoming filters
             //! This should be implemented using a copy constructor, which is currently not possible because inheriting QObject prevents it.
             virtual AssetBrowserEntryFilter* Clone() const = 0;
 
