@@ -64,8 +64,12 @@ namespace AzToolsFramework
                 entry->VisitUp(
                     [&result, this](const auto& currentEntry)
                     {
-                        result = result || MatchInternal(currentEntry);
-                        return !result;
+                        if (MatchInternal(currentEntry))
+                        {
+                            result = true;
+                            return false;
+                        }
+                        return true;
                     });
 
                 if (result)
@@ -80,8 +84,12 @@ namespace AzToolsFramework
                 entry->VisitDown(
                     [&](const auto& currentEntry)
                     {
-                        result = result || MatchInternal(currentEntry);
-                        return !result;
+                        if (MatchInternal(currentEntry))
+                        {
+                            result = true;
+                            return false;
+                        }
+                        return true;
                     });
 
                 if (result)
