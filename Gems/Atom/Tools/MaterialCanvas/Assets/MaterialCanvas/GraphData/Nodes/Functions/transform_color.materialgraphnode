@@ -3,66 +3,27 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}",
-        "category": "Texturing",
-        "title": "Sample Texture 2d",
-        "titlePaletteName": "TexturingNodeTitlePalette",
-        "description": "Look up a value on a 2d texture",
+        "id": "{AFA4A2E7-C685-4F0F-BBD9-2EF7F74ED35E}",
+        "category": "Math Functions",
+        "title": "Transform Color Space",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Transform color or vector values from one color space to another",
+        "slotDataTypeGroups": [
+            "inColor|outColor"
+        ],
         "settings": {
             "includePaths": [
                 "Atom/Features/ColorManagement/TransformColor.azsli"
             ],
             "instructions": [
-                "SLOTTYPE(outColor) outColor = TransformColor4(MaterialSrg::inValue.Sample(MaterialSrg::inSampler, (float2)inUV), inColorSpaceFrom, inColorSpaceTo);"
+                "SLOTTYPE(outColor) outColor = TransformColor4((float4)inColor, inColorSpaceFrom, inColorSpaceTo);"
             ]
         },
         "propertySlots": [
             {
-                "name": "inGroup",
-                "displayName": "Group",
-                "description": "Material type group name that will contain the property corresponding to this input.",
-                "supportedDataTypeRegex": "string",
-                "defaultDataType": "string",
-                "visibleOnNode": false,
-                "editableOnNode": false
-            },
-            {
-                "name": "inName",
-                "displayName": "Name",
-                "description": "Property name that will be added to the material type for this input. The shader variable name and display name will be derived from this.",
-                "supportedDataTypeRegex": "string",
-                "defaultDataType": "string"
-            },
-            {
-                "name": "inDescription",
-                "displayName": "Description",
-                "description": "Description about what this material input does and how it should be used.",
-                "supportedDataTypeRegex": "string",
-                "defaultDataType": "string",
-                "visibleOnNode": false,
-                "editableOnNode": false
-            },
-            {
-                "name": "inValue",
-                "displayName": "Image",
-                "description": "Image",
-                "supportedDataTypeRegex": "image",
-                "defaultDataType": "image",
-                "visibleOnNode": false,
-                "editableOnNode": false,
-                "settings": {
-                    "materialPropertyConnectionType": [
-                        "ShaderInput"
-                    ],
-                    "materialPropertySrgMember": [
-                        "STANDARD_SRG_MEMBER"
-                    ]
-                }
-            },
-            {
                 "name": "inColorSpaceFrom",
                 "displayName": "Color Space From",
-                "description": "Indicates the source color space of the texture being sampled.",
+                "description": "Indicates the source color space.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "defaultValue": {
@@ -88,7 +49,7 @@
             {
                 "name": "inColorSpaceTo",
                 "displayName": "Color Space To",
-                "description": "Indicates the target color space of the color samples from the texture.",
+                "description": "Indicates the target color space.",
                 "supportedDataTypeRegex": "string",
                 "defaultDataType": "string",
                 "defaultValue": {
@@ -110,32 +71,15 @@
                         "const ColorSpaceId SLOTNAME = SLOTVALUE;"
                     ]
                 }
-            },
-            {
-                "name": "inSampler",
-                "displayName": "Sampler",
-                "description": "Sampler",
-                "supportedDataTypeRegex": "sampler",
-                "defaultDataType": "sampler",
-                "visibleOnNode": false,
-                "editableOnNode": false,
-                "settings": {
-                    "materialPropertyConnectionType": [
-                        "ShaderInput"
-                    ],
-                    "materialPropertySrgMember": [
-                        "STANDARD_SRG_MEMBER"
-                    ]
-                }
             }
         ],
         "inputSlots": [
             {
-                "name": "inUV",
-                "displayName": "UV",
-                "description": "UV",
+                "name": "inColor",
+                "displayName": "Color",
+                "description": "Color",
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
-                "defaultDataType": "float2",
+                "defaultDataType": "color",
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
