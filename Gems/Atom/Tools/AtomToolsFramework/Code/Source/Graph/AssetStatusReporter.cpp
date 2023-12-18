@@ -20,7 +20,7 @@ namespace AtomToolsFramework
     {
         if (GetCurrentState() == AssetStatusReporterState::Processing)
         {
-            const AZStd::string& sourcePath = m_sourcePaths[m_index];
+            const AZStd::string& sourcePath = GetCurrentPath();
 
             AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
             AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
@@ -79,6 +79,11 @@ namespace AtomToolsFramework
             return "Succeeded";
         }
         return "Invalid";
+    }
+
+    AZStd::string AssetStatusReporter::GetCurrentStatusMessage() const
+    {
+        return AZStd::string::format("%s (%s)", GetCurrentPath().c_str(), GetCurrentStateName().c_str());
     }
 
     AZStd::string AssetStatusReporter::GetCurrentPath() const

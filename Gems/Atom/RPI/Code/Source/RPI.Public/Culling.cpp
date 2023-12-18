@@ -427,7 +427,7 @@ namespace AZ
             const AZStd::shared_ptr<WorklistData>& worklistData,
             AzFramework::VisibilityEntry* visibleEntry)
         {
-            if (!worklistData->m_maskedOcclusionCulling)
+            if (!worklistData->m_maskedOcclusionCulling || !worklistData->m_view->GetMaskedOcclusionCullingDirty())
             {
                 return MaskedOcclusionCulling::CullingResult::VISIBLE;
             }
@@ -527,6 +527,7 @@ namespace AZ
                 // frustum cull occlusion planes
                 using VisibleOcclusionPlane = AZStd::pair<OcclusionPlane, float>;
                 AZStd::vector<VisibleOcclusionPlane> visibleOccluders;
+                visibleOccluders.reserve(m_occlusionPlanes.size());
                 for (const auto& occlusionPlane : m_occlusionPlanes)
                 {
                     if (ShapeIntersection::Overlaps(frustum, occlusionPlane.m_aabb))
@@ -535,7 +536,7 @@ namespace AZ
                         float depth = (view.GetWorldToViewMatrix() * occlusionPlane.m_aabb.GetMin()).GetZ();
                         depth = AZStd::min(depth, (view.GetWorldToViewMatrix() * occlusionPlane.m_aabb.GetMax()).GetZ());
 
-                        visibleOccluders.push_back(AZStd::make_pair(occlusionPlane, depth));
+                        visibleOccluders.emplace_back(occlusionPlane, depth);
                     }
                 }
 
@@ -545,13 +546,14 @@ namespace AZ
                     return LHS.second > RHS.second;
                 });
 
-                for (const VisibleOcclusionPlane& occlusionPlane: visibleOccluders)
+                bool anyVisible = false;
+                for (const VisibleOcclusionPlane& occlusionPlane : visibleOccluders)
                 {
                     // convert to clip-space
-                    Vector4 projectedBL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBL);
-                    Vector4 projectedTL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTL);
-                    Vector4 projectedTR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTR);
-                    Vector4 projectedBR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBR);
+                    const Vector4 projectedBL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBL);
+                    const Vector4 projectedTL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTL);
+                    const Vector4 projectedTR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTR);
+                    const Vector4 projectedBR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBR);
 
                     // store to float array
                     float verts[16];
@@ -560,10 +562,20 @@ namespace AZ
                     projectedTR.StoreToFloat4(&verts[8]);
                     projectedBR.StoreToFloat4(&verts[12]);
 
-                    static uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
+                    static constexpr const uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 
                     // render into the occlusion buffer, specifying BACKFACE_NONE so it functions as a double-sided occluder
-                    static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling)->RenderTriangles(verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE);
+                    if (static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling)
+                            ->RenderTriangles(verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE) ==
+                        MaskedOcclusionCulling::CullingResult::VISIBLE)
+                    {
+                        anyVisible = true;
+                    }
+                }
+
+                if (anyVisible)
+                {
+                    view.SetMaskedOcclusionCullingDirty(true);
                 }
             }
 #endif

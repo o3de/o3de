@@ -41,9 +41,7 @@ namespace AzToolsFramework
             Q_OBJECT
         public:
             ProductThumbnail(Thumbnailer::SharedThumbnailKey key);
-
-        protected:
-            void LoadThread() override;
+            void Load() override;
         };
 
         //! ProductAssetBrowserEntry thumbnails

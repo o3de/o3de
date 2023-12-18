@@ -64,103 +64,74 @@ namespace AZ
                 // Convert incoming paths containing aliases into absolute paths
                 AZ::IO::FixedMaxPath originatingPath;
                 AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
+                originatingPath = originatingPath.LexicallyNormal();
+
                 AZ::IO::FixedMaxPath referencedPath;
                 AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencedPath, AZ::IO::PathView{ referencedSourceFilePath });
+                referencedPath = referencedPath.LexicallyNormal();
 
                 // If the referenced path is empty or absolute then the path does not need to be resolved and can be returned immediately
                 if (referencedPath.empty() || referencedPath.IsAbsolute())
                 {
-                    return referencedPath.LexicallyNormal().String();
+                    return referencedPath.String();
                 }
 
                 // Compose a path from the originating source file folder to the referenced source file
                 AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
                 combinedPath /= referencedPath;
-
-                bool assetFound = false;
-                AZ::Data::AssetInfo sourceInfo;
-                AZStd::string watchFolder;
+                combinedPath = combinedPath.LexicallyNormal();
 
                 // Try to find the source file starting at the originatingSourceFilePath, and return the full path
+                bool pathFound = false;
+                AZ::Data::AssetInfo sourceInfo;
+                AZStd::string rootFolder;
                 AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                    assetFound,
+                    pathFound,
                     &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
                     combinedPath.c_str(),
                     sourceInfo,
-                    watchFolder);
-                if (assetFound)
+                    rootFolder);
+                if (pathFound)
                 {
-                    // Construct fails if either of the watchFolder (root) or the combinedPath is empty.
-                    // For some testing purposes, root can be empty.
+                    // Construct fails if either of the rootFolder or the referencedPath is empty. For some testing purposes, root can be
+                    // empty.
                     AZStd::string fullSourcePath;
-                    if (AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), combinedPath.c_str(), fullSourcePath, true))
+                    if (AzFramework::StringFunc::Path::ConstructFull(rootFolder.c_str(), combinedPath.c_str(), fullSourcePath, true))
                     {
                         return fullSourcePath;
                     }
-
-                    return combinedPath.LexicallyNormal().String();
+                    return combinedPath.String();
                 }
 
                 // Try to find the source file starting at the asset root, and return the full path
+                pathFound = false;
                 AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                    assetFound,
+                    pathFound,
                     &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
                     referencedPath.c_str(),
                     sourceInfo,
-                    watchFolder);
-                if (assetFound)
+                    rootFolder);
+                if (pathFound)
                 {
-                    // Construct fails if either of the watchFolder (root) or the referencedPath is empty.
-                    // For some testing purposes, root can be empty.
+                    // Construct fails if either of the rootFolder or the referencedPath is empty. For some testing purposes, root can be
+                    // empty.
                     AZStd::string fullSourcePath;
-                    if (AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), referencedPath.c_str(), fullSourcePath, true))
+                    if (AzFramework::StringFunc::Path::ConstructFull(rootFolder.c_str(), referencedPath.c_str(), fullSourcePath, true))
                     {
                         return fullSourcePath;
                     }
-
-                    return referencedPath.LexicallyNormal().String();
+                    return referencedPath.String();
                 }
 
                 // If no source file was found, return the original reference path. Something else will probably fail and report errors.
-                return referencedPath.LexicallyNormal().String();
-            }
-
-            AZStd::vector<AZStd::string> GetPossibleDependencyPaths(
-                const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
-            {
-                AZStd::vector<AZStd::string> results;
-
-                // Convert incoming paths containing aliases into absolute paths
-                AZ::IO::FixedMaxPath referencedPath;
-                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencedPath, AZ::IO::PathView{ referencedSourceFilePath });
-
-                if (referencedPath.IsRelative())
-                {
-                    // if the referencedPath exists under project path, then we can skip constructing a new path based on source file path
-                    AZ::IO::FixedMaxPath fullPath = AZ::Utils::GetProjectPath();
-                    fullPath /= referencedPath;
-                    if (!AZ::IO::SystemFile::Exists(fullPath.c_str()))
-                    {
-                        AZ::IO::FixedMaxPath originatingPath;
-                        AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
-                        // Use the referencedSourceFilePath as a relative path starting at originatingSourceFilePath
-                        AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
-                        combinedPath /= referencedPath;
-
-                        results.push_back(combinedPath.LexicallyNormal().String());
-                    }
-                }
-
-                // Use the referencedSourceFilePath as a standard asset path
-                results.push_back(referencedPath.LexicallyNormal().String());
-
-                return results;
+                return referencedPath.String();
             }
 
             Outcome<Data::AssetId> MakeAssetId(const AZStd::string& sourcePath, uint32_t productSubId, TraceLevel reporting)
             {
                 AZ::IO::FixedMaxPath sourcePathNoAlias;
                 AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(sourcePathNoAlias, AZ::IO::PathView{ sourcePath });
+                sourcePathNoAlias = sourcePathNoAlias.LexicallyNormal();
 
                 bool assetFound = false;
                 AZ::Data::AssetInfo sourceInfo;

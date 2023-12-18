@@ -79,7 +79,7 @@ namespace AZ::Dom
             const size_t afterSize = after.ArraySize();
 
             // If more than replaceThreshold values differ, do a replace operation instead
-            if (params.m_replaceThreshold != DeltaPatchGenerationParameters::NoReplace && (params.m_allowRootReplacement || !path.IsEmpty()))
+            if (params.m_replaceThreshold != DeltaPatchGenerationParameters::NoReplace && (!params.m_allowReplacement || params.m_allowReplacement(before, after)))
             {
                 size_t changedValueCount = 0;
                 const size_t entriesToEnumerate = AZStd::min(beforeSize, afterSize);

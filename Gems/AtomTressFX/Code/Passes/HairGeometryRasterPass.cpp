@@ -108,7 +108,7 @@ namespace AZ
                 Data::Asset<RPI::ShaderAsset> shaderAsset =
                     RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderAsset>(shaderFilePath, RPI::AssetUtils::TraceLevel::Error);
 
-                if (!shaderAsset.GetId().IsValid())
+                if (!shaderAsset.IsReady())
                 {
                     AZ_Error("Hair Gem", false, "Invalid shader asset for shader '%s'!", shaderFilePath);
                     return false;
@@ -117,7 +117,7 @@ namespace AZ
                 m_shader = RPI::Shader::FindOrCreate(shaderAsset);
                 if (m_shader == nullptr)
                 {
-                    AZ_Error("Hair Gem", false, "Pass failed to load shader '%s'!", shaderFilePath);
+                    AZ_Error("Hair Gem", false, "Pass failed to create shader instance from asset '%s'!", shaderFilePath);
                     return false;
                 }
 

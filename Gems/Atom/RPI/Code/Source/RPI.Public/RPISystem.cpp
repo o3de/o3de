@@ -297,7 +297,7 @@ namespace AZ
             }
 
             RHI::Ptr<RHI::XRDeviceDescriptor> xrDescriptor = m_rhiSystem.GetDevice()->BuildXRDescriptor();
-            auto result = xrRender->CreateDevice(xrDescriptor.get());
+            [[maybe_unused]] auto result = xrRender->CreateDevice(xrDescriptor.get());
             AZ_Error("RPISystem", result == RHI::ResultCode::Success, "Failed to initialize XR device");
             AZ::RHI::XRSessionDescriptor sessionDescriptor;
             result = xrRender->CreateSession(&sessionDescriptor);

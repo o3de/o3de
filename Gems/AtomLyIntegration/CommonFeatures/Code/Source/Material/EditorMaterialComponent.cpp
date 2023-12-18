@@ -12,9 +12,11 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Material/EditorMaterialComponent.h>
 #include <Material/EditorMaterialComponentExporter.h>
@@ -23,8 +25,10 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QAction>
+#include <QApplication>
 #include <QCursor>
 #include <QMenu>
+#include <QProgressDialog>
 AZ_POP_DISABLE_WARNING
 
 namespace AZ
@@ -401,42 +405,59 @@ namespace AZ
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Generating materials.");
 
+                // Create progress dialog to report the status of each material being generated.
+                EditorMaterialComponentExporter::ProgressDialog progressDialog("Generating materials", "Generating material...", static_cast<int>(exportItems.size())); // carbonated (carbonated/port/main23101)
+
                 for (const EditorMaterialComponentExporter::ExportItem& exportItem : exportItems)
                 {
+                    // Creating material source data from a product asset and resaving it as a new source material.
                     if (!EditorMaterialComponentExporter::ExportMaterialSourceData(exportItem))
                     {
+                        // This file was skipped because it was either marked to not be exported, not be overwritten, or another error occurred.
+                        progressDialog.CompleteItem();
                         continue;
                     }
 
-                    const auto& assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(exportItem.GetExportPath(), 0);
-                    if (assetIdOutcome)
-                    {
-                        for (const auto& materialPair : originalMaterials)
-                        {
-                            // We need to check whether replaced material corresponds to this slot's default material.
-                            const Data::AssetId originalAssetId = materialPair.second.m_materialAsset.GetId();
-                            if (originalAssetId == exportItem.GetOriginalAssetId())
-                            {
-                                if (m_materialSlotsByLodEnabled || !materialPair.first.IsLodAndSlotId())
-                                {
-                                    for (const AZ::EntityId& entityId : entityIdsToEdit)
-                                    {
-                                        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                                            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
+                    // After saving the source file, wait for it to be added to the catalog and processed by the AP so that a valid asset
+                    // can be assigned to the material component without spamming warning messages.
+                    const AZ::Data::AssetInfo assetInfo = progressDialog.ProcessItem(exportItem);
 
-                                        MaterialComponentRequestBus::Event(
-                                            entityId, &MaterialComponentRequestBus::Events::SetMaterialAssetId, materialPair.first,
-                                            assetIdOutcome.GetValue());
-                                    }
+                    if (!assetInfo.m_assetId.IsValid())
+                    {
+                        UpdateMaterialSlots();
+                        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+                    }
+
+                    // Valid asset info has been found for the file that was just saved so it can be assigned to the material component.
+                    for (const auto& materialPair : originalMaterials)
+                    {
+                        // We need to check if replaced material corresponds to this slot's default material.
+                        const Data::AssetId originalAssetId = materialPair.second.m_materialAsset.GetId();
+                        if (originalAssetId == exportItem.GetOriginalAssetId())
+                        {
+                            if (m_materialSlotsByLodEnabled || !materialPair.first.IsLodAndSlotId())
+                            {
+                                for (const AZ::EntityId& entityId : entityIdsToEdit)
+                                {
+                                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                                        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
+
+                                    MaterialComponentRequestBus::Event(
+                                        entityId,
+                                        &MaterialComponentRequestBus::Events::SetMaterialAssetId,
+                                        materialPair.first,
+                                        assetInfo.m_assetId);
                                 }
                             }
                         }
                     }
+
+                    // Increment and update the progress dialog
+                    progressDialog.CompleteItem();
                 }
             }
 
             UpdateMaterialSlots();
-
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }
 

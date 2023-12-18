@@ -52,7 +52,7 @@ namespace AZ
             Uuid functorTypeId;
             if (!inputValue.HasMember(TypeField))
             {
-                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Functor type name is not specified.");
+                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Missing, "Functor type name is not specified.");
             }
 
             // Load the name first and find the type.

@@ -35,11 +35,11 @@ namespace AZ
             RPI::PassSystemInterface* passSystem = RPI::PassSystemInterface::Get();
 
             // load shader
-            AZStd::string shaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceDownsampleDepthLinear.azshader";
+            constexpr const char* shaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceDownsampleDepthLinear.azshader";
             Data::Instance<AZ::RPI::Shader> shader = RPI::LoadCriticalShader(shaderFilePath);
             if (shader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceDownsampleDepthLinearPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), shaderFilePath.c_str());
+                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceDownsampleDepthLinearPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), shaderFilePath);
                 return;
             }
 

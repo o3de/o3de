@@ -2,7 +2,7 @@
 <!-- BEGIN_INCLUDE(manifest) -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="${ANDROID_PACKAGE}"
+    ${ANDROID_MANIFEST_PACKAGE_OPTION}
     android:versionCode="${ANDROID_VERSION_NUMBER}"
     android:versionName="${ANDROID_VERSION_NAME}">
 

@@ -88,23 +88,26 @@ namespace AZ
 
             AsyncAssetLoader::~AsyncAssetLoader()
             {
-                Data::AssetBus::MultiHandler::BusDisconnect();
+                Data::AssetBus::Handler::BusDisconnect();
             }
 
             void AsyncAssetLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
             {
-                HandleCallback(asset, true);
+                HandleCallback(asset);
             }
 
             void AsyncAssetLoader::OnAssetError(Data::Asset<Data::AssetData> asset)
             {
-                HandleCallback(asset, false);
+                HandleCallback(asset);
             }
 
-            void AsyncAssetLoader::HandleCallback(Data::Asset<Data::AssetData> asset, bool isSuccess)
+            void AsyncAssetLoader::HandleCallback(Data::Asset<Data::AssetData> asset)
             {
-                Data::AssetBus::MultiHandler::BusDisconnect();
-                m_callback(asset, isSuccess);
+                Data::AssetBus::Handler::BusDisconnect();
+                if (m_callback)
+                {
+                    m_callback(asset);
+                }
 
                 m_callback = {}; // Release the callback to avoid holding references to anything captured in the lambda.
                 m_asset = {}; // Release the asset in case this AsyncAssetLoader hangs around longer than the asset needs to.

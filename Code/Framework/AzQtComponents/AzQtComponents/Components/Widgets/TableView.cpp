@@ -24,8 +24,6 @@
 #include <QTableView>
 #include <QListView>
 
-#include <QtGui/private/qtextengine_p.h>
-
 namespace AzQtComponents
 {
     TableView::Config TableView::loadConfig(QSettings& settings)

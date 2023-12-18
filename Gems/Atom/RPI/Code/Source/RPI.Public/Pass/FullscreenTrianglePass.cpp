@@ -98,7 +98,7 @@ namespace AZ
                 shaderAsset = RPI::FindShaderAsset(shaderAssetId, passData->m_shaderAsset.m_filePath);
             }
 
-            if (!shaderAsset.GetId().IsValid())
+            if (!shaderAsset.IsReady())
             {
                 AZ_Error("PassSystem", false, "[FullscreenTrianglePass '%s']: Failed to load shader '%s'!",
                     GetPathName().GetCStr(),
@@ -109,7 +109,7 @@ namespace AZ
             m_shader = Shader::FindOrCreate(shaderAsset);
             if (m_shader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[FullscreenTrianglePass '%s']: Failed to load shader '%s'!",
+                AZ_Error("PassSystem", false, "[FullscreenTrianglePass '%s']: Failed to create shader instance from asset '%s'!",
                     GetPathName().GetCStr(),
                     passData->m_shaderAsset.m_filePath.data());
                 return;

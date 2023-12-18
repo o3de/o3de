@@ -26,8 +26,7 @@ namespace AZ
         Data::Instance<AttachmentImage> AttachmentImage::FindOrCreate(const Data::Asset<AttachmentImageAsset>& imageAsset)
         {
             return Data::InstanceDatabase<AttachmentImage>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(imageAsset.GetId()),
-                imageAsset);
+                Data::InstanceId::CreateFromAssetId(imageAsset.GetId()), imageAsset);
         }
 
         Data::Instance<AttachmentImage> AttachmentImage::Create(
@@ -51,11 +50,10 @@ namespace AZ
         {
             Data::Asset<AttachmentImageAsset> imageAsset;
 
-            AZ::Uuid uuid;
+            Data::InstanceId instanceId;
             if (createImageRequest.m_isUniqueName)
             {
-                uuid = Uuid::CreateName(createImageRequest.m_imageName.GetCStr());
-                Data::InstanceId instanceId = Data::InstanceId::CreateFromAssetId(uuid);
+                instanceId = Data::InstanceId::CreateName(createImageRequest.m_imageName.GetCStr());
                 if (Data::InstanceDatabase<AttachmentImage>::Instance().Find(instanceId))
                 {
                     AZ_Error("AttchmentImage", false, "AttachmentImage with an unique name '%s' was already created", createImageRequest.m_imageName.GetCStr());
@@ -64,11 +62,11 @@ namespace AZ
             }
             else
             {
-                uuid = Uuid::CreateRandom();
+                instanceId = Data::InstanceId::CreateRandom();
             }
 
             AttachmentImageAssetCreator imageAssetCreator;
-            imageAssetCreator.Begin(uuid);
+            imageAssetCreator.Begin(instanceId.GetGuid());
             imageAssetCreator.SetImageDescriptor(createImageRequest.m_imageDescriptor);
             imageAssetCreator.SetPoolAsset({createImageRequest.m_imagePool->GetAssetId(), azrtti_typeid<ResourcePoolAsset>()});
 
@@ -86,7 +84,7 @@ namespace AZ
 
             if (imageAssetCreator.End(imageAsset))
             {
-                return AttachmentImage::FindOrCreate(imageAsset);
+                return Data::InstanceDatabase<AttachmentImage>::Instance().FindOrCreate(instanceId, imageAsset);
             }
 
             return nullptr;
