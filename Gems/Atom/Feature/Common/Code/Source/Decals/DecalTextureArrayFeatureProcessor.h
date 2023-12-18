@@ -11,10 +11,12 @@
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <AtomCore/Instance/Instance.h>
 #include <Atom/Feature/Utils/IndexableList.h>
+#include <AzCore/Math/Sphere.h>
 #include <Decals/DecalTextureArray.h>
 #include <Decals/AsyncLoadTracker.h>
 
@@ -143,8 +145,10 @@ namespace AZ
             void CullDecals(const RPI::ViewPtr& view);
             // Get or create a buffer that will be used for visibility when doing CPU culling.
             GpuBufferHandler& GetOrCreateVisibleBuffer();
+            void UpdateBounds(const DecalHandle handle);
 
-            IndexedDataVector<DecalData> m_decalData;
+            MultiIndexedDataVector<DecalData, AZ::Aabb> m_decalData;
+            RHI::Handle<uint32_t> m_decalMeshFlag;
 
             // Texture arrays are organized one per texture size permutation.
             // e.g. There may be a situation where we have 3 texture arrays:
