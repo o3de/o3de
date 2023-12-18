@@ -375,17 +375,4 @@ namespace AZ::RHI
     {
         return GetImageSubresourceIndex(subresource.m_mipSlice, subresource.m_arraySlice, mipLevels);
     }
-
-    void MultiDeviceImageSubresourceLayout::Init(MultiDevice::DeviceMask deviceMask, const SingleDeviceImageSubresourceLayout &deviceLayout)
-    {
-        int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
-
-        for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
-        {
-            if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
-            {
-                m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
-            }
-        }
-    }
 }

@@ -120,7 +120,7 @@ namespace AZ
                     m_swapChainAttachment = scopeAttachment;
                 }
                 
-                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex));
+                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
                 id<MTLTexture> imageViewMtlTexture = imageView->GetMemoryView().GetGpuAddress<id<MTLTexture>>();
                 
