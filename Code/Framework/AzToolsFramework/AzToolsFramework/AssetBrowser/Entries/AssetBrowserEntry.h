@@ -141,7 +141,7 @@ namespace AzToolsFramework
             const QString& GetEntryTypeAsString() const;
             static const AZStd::string ExtensionToType(AZStd::string_view str);
 
-            //! Call the visitor function for the current entry and all of its parents.
+            //! Recursively call the visitor function for the current entry and all of its parents.
             //! Returning false from the visitor function stops recursion.
             void VisitUp(const AZStd::function<bool(const AssetBrowserEntry*)>& visitorFn) const;
 
