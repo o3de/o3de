@@ -22,9 +22,9 @@ namespace AZ
         {
             AZ_TYPE_INFO(LightingChannelConfiguration, "{7FFD6D01-BABE-FE35-612F-63A30925E5F7}");
 
-            AZStd::array<bool, LightingChannelsCount> m_lightingChannelFlags;
+            AZStd::array<bool, LightingChannelsCount> m_lightingChannelFlags {true, false, false, false, false};
 
-            LightingChannelConfiguration();
+            LightingChannelConfiguration() = default;
 
             static void Reflect(AZ::ReflectContext* context);
 

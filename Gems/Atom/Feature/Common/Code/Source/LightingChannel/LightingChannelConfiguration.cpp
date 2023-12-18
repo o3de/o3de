@@ -12,12 +12,6 @@ namespace AZ
 {
     namespace Render
     {
-        LightingChannelConfiguration::LightingChannelConfiguration()
-        {
-            m_lightingChannelFlags = {false};
-            m_lightingChannelFlags[0] = true;
-        }
-
         void LightingChannelConfiguration::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
