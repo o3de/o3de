@@ -18,7 +18,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 
-UISliceLibraryFilter::UISliceLibraryFilter(const AZ::Data::AssetType& assetType, const char* pathToSearch)
+UISliceLibraryFilter::UISliceLibraryFilter(const AZ::Data::AssetType& assetType, const AZStd::string& pathToSearch)
     : m_assetType(assetType)
     , m_pathToSearch(pathToSearch)
 {
@@ -134,21 +134,23 @@ AssetTreeEntry* AssetTreeEntry::BuildAssetTree(const AZ::Data::AssetType& assetT
     // UISliceLibraryFilter::Filter function returns all assets (recursively) that match the specified filter
     // in this case we are only looking for ui slices.
     AZStd::unordered_set<const AssetBrowserEntry*> entries;
-    UISliceLibraryFilter filter(assetType, pathToSearch.c_str());
+    UISliceLibraryFilter filter(assetType, pathToSearch);
     filter.Filter(entries, rootEntry.get());
 
     AssetTreeEntry* assetTree = new AssetTreeEntry;
     for (const auto& entry : entries)
     {
-        auto product = azrtti_cast<const ProductAssetBrowserEntry*>(entry);
-        AZStd::string name;
-        AZStd::string path;
-        // split the product relative path into name and path. Note that product's parent (source entry) is used because
-        // product name stored in db is in all lower case, but we want to preserve case here
-        AzFramework::StringFunc::Path::Split(product->GetParent()->GetRelativePath().c_str(), nullptr, &path, &name);
-        // find next character position after default slice path in order to generate hierarchical sub-menus matching the subfolders
-        const size_t pos = AzFramework::StringFunc::Find(path.c_str(), pathToSearch.c_str()) + pathToSearch.length();
-        assetTree->Insert(path.substr(pos), name, product->GetAssetId());
+        if (auto product = azrtti_cast<const ProductAssetBrowserEntry*>(entry); product)
+        {
+            AZStd::string name;
+            AZStd::string path;
+            // split the product relative path into name and path. Note that product's parent (source entry) is used because
+            // product name stored in db is in all lower case, but we want to preserve case here
+            AzFramework::StringFunc::Path::Split(product->GetParent()->GetRelativePath().c_str(), nullptr, &path, &name);
+            // find next character position after default slice path in order to generate hierarchical sub-menus matching the subfolders
+            const size_t pos = AzFramework::StringFunc::Find(path, pathToSearch) + pathToSearch.length();
+            assetTree->Insert(path.substr(pos), name, product->GetAssetId());
+        }
     }
     return assetTree;
 }
