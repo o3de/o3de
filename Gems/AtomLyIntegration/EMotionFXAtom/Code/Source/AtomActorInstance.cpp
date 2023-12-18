@@ -617,7 +617,6 @@ namespace AZ::Render
                     }
                 }
             }
-
             UpdateLightingChannelMask();
         }
     }

@@ -18,9 +18,8 @@ namespace AZ
     {
         const uint32_t LightingChannelsCount = 5;
 
-        class LightingChannelConfiguration
+        struct LightingChannelConfiguration
         {
-        public:
             AZ_TYPE_INFO(LightingChannelConfiguration, "{7FFD6D01-BABE-FE35-612F-63A30925E5F7}");
 
             AZStd::array<bool, LightingChannelsCount> m_lightingChannelFlags;
@@ -29,12 +28,8 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
-            uint32_t GetLightingChannelMask() const { return m_mask; }
-            void SetLightingChannelMask(const uint32_t mask) { m_mask = mask; }
-
-            void UpdateLightingChannelMask();
-        private:
-            uint32_t m_mask {0x01};
+            uint32_t GetLightingChannelMask() const;
+            void SetLightingChannelMask(const uint32_t mask);
         };
     }
 }

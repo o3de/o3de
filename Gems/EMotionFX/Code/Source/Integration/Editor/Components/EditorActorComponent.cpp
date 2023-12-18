@@ -514,7 +514,6 @@ namespace EMotionFX
 
         void EditorActorComponent::LightingChannelMaskChanged()
         {
-            m_lightingChannelConfig.UpdateLightingChannelMask();
             if (m_actorInstance)
             {
                 m_actorInstance->SetLightingChannelMask(m_lightingChannelConfig.GetLightingChannelMask());

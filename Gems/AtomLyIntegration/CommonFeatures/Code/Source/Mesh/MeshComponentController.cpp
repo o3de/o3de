@@ -343,7 +343,7 @@ namespace AZ
 
         void MeshComponentController::LightingChannelMaskChanged()
         {
-            m_configuration.m_lightingChannelConfig.UpdateLightingChannelMask();
+            m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
         }
 
         MaterialAssignmentLabelMap MeshComponentController::GetMaterialLabels() const

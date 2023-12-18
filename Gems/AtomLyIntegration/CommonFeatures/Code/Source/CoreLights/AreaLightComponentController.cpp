@@ -345,7 +345,6 @@ namespace AZ::Render
 
     void AreaLightComponentController::LightingChannelMaskChanged()
     {
-        m_configuration.m_lightingChannelConfig.UpdateLightingChannelMask();
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetLightingChannelMask(m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
@@ -668,7 +667,7 @@ namespace AZ::Render
         return m_configuration.m_lightingChannelConfig.GetLightingChannelMask();
     }
 
-    void AreaLightComponentController::SetLightingChannelMask(uint32_t lightingChannelMask)
+    void AreaLightComponentController::SetLightingChannelMask(const uint32_t lightingChannelMask)
     {
         m_configuration.m_lightingChannelConfig.SetLightingChannelMask(lightingChannelMask);
         if (m_lightShapeDelegate)

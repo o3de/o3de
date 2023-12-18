@@ -16,7 +16,6 @@ namespace AZ
         {
             m_lightingChannelFlags = {false};
             m_lightingChannelFlags[0] = true;
-            UpdateLightingChannelMask();
         }
 
         void LightingChannelConfiguration::Reflect(AZ::ReflectContext* context)
@@ -41,13 +40,22 @@ namespace AZ
             }
         }
 
-        void LightingChannelConfiguration::UpdateLightingChannelMask()
+        uint32_t LightingChannelConfiguration::GetLightingChannelMask() const
         {
-            AZ::u32 index = 0;
-            m_mask = 0;
-            AZStd::for_each(m_lightingChannelFlags.begin(), m_lightingChannelFlags.end(), [this, &index](const bool value){
-                this->m_mask |= (static_cast<AZ::u32>(value) << (index++));
-            });
+            uint32_t mask = 0;
+            for (uint32_t index = 0; index < m_lightingChannelFlags.size(); ++index)
+            {
+                mask |= (static_cast<uint32_t>(m_lightingChannelFlags[index]) << (index));
+            }
+            return mask;
+        }
+
+        void LightingChannelConfiguration::SetLightingChannelMask(const uint32_t mask)
+        {
+            for (uint32_t index = 0; index < m_lightingChannelFlags.size(); ++index)
+            {
+                m_lightingChannelFlags[index] = (static_cast<bool>(mask >> index) & 0x01);
+            }
         }
     }
 }

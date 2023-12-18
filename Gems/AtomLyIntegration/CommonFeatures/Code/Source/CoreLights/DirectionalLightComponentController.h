@@ -97,7 +97,7 @@ namespace AZ
             void SetAffectsGIFactor(float affectsGIFactor) override;
             void BindConfigurationChangedEventHandler(DirectionalLightConfigurationChangedEvent::Handler& configurationChangedHandler) override;
             uint32_t GetLightingChannelMask() const override;
-            void SetLightingChannelMask(uint32_t lightingChannelMask) override;
+            void SetLightingChannelMask(const uint32_t mask) override;
 
         private:
             friend class EditorDirectionalLightComponent;

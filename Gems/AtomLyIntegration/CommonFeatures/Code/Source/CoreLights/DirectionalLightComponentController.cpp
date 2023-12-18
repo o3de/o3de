@@ -728,7 +728,6 @@ namespace AZ
 		
         void DirectionalLightComponentController::LightingChannelMaskChanged()
         {
-            m_configuration.m_lightingChannelConfig.UpdateLightingChannelMask();
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetLightingChannelMask(m_lightHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
