@@ -112,7 +112,7 @@ namespace AzToolsFramework
 
             //! Actual name of the asset or folder
             const AZStd::string& GetName() const;
-            //! Group name provided by asset type info
+            //! Group name CRC provided by asset type info
             const AZ::u32 GetGroupNameCrc() const;
             //! Group name provided by asset type info
             const QString& GetGroupName() const;
