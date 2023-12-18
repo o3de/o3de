@@ -122,11 +122,7 @@ namespace AzToolsFramework
             else if (role == static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch))
             {
                 auto entry = static_cast<AssetBrowserEntry*>(mapToSource(index).internalPointer());
-                if (!m_filter)
-                {
-                    return true;
-                }
-                return m_filter->MatchWithoutPropagation(entry);
+                return m_filter && m_filter->MatchWithoutPropagation(entry);
             }
 
             return QSortFilterProxyModel::data(index, role);
@@ -145,10 +141,12 @@ namespace AzToolsFramework
             {
                 idx = static_cast<AssetBrowserTreeToTableProxyModel*>(sourceModel())->mapToSource(idx);
             }
+
             if (!idx.isValid())
             {
                 return false;
             }
+
             // no filter present, every entry is visible
             if (!m_filter)
             {
@@ -163,6 +161,7 @@ namespace AzToolsFramework
             {
                 return true;
             }
+
             return m_filter->MatchWithoutPropagation(entry);
         }
 
