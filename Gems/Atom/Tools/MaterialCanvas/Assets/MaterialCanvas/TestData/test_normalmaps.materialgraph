@@ -224,6 +224,28 @@
                     "m_propertySlots": [
                         {
                             "Key": {
+                                "m_name": "inColorSpaceFrom"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::LinearSRGB"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceTo"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::ACEScg"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
                                 "m_name": "inDescription"
                             },
                             "Value": {
@@ -277,7 +299,7 @@
                                             "guid": "{7B12D830-4138-51C2-8612-3ED5B4DFA23A}",
                                             "subId": 1000
                                         },
-                                        "assetHint": "Textures/UtilCharts/test_chart_norm.tif"
+                                        "assetHint": "textures/utilcharts/test_chart_norm.tif.streamingimage"
                                     }
                                 }
                             }

@@ -177,15 +177,6 @@ namespace AZ::RHI
 
     struct DrawItemProperties
     {
-        DrawItemProperties() = default;
-
-        DrawItemProperties(const DrawItem* item, DrawItemSortKey sortKey = 0, DrawFilterMask filterMask = DrawFilterMaskDefaultValue)
-            : m_item{item}
-            , m_sortKey{sortKey}
-            , m_drawFilterMask{filterMask}
-        {
-        }
-
         bool operator==(const DrawItemProperties& rhs) const
         {
             return m_item == rhs.m_item &&
@@ -208,12 +199,12 @@ namespace AZ::RHI
         //! A pointer to the draw item
         const DrawItem* m_item = nullptr;
         //! A sorting key of this draw item which is used for sorting draw items in DrawList
-        // Check RHI::SortDrawList() function for detail
+        //! Check RHI::SortDrawList() function for detail
         DrawItemSortKey m_sortKey = 0;
+        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
+        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
         //! A depth value this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         float m_depth = 0.0f;
-        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
-        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
     };
 }

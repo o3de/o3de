@@ -234,6 +234,28 @@
                     "m_propertySlots": [
                         {
                             "Key": {
+                                "m_name": "inColorSpaceFrom"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::LinearSRGB"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inColorSpaceTo"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": "ColorSpaceId::ACEScg"
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
                                 "m_name": "inDescription"
                             },
                             "Value": {

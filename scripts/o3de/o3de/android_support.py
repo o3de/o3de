@@ -45,14 +45,14 @@ elif platform.system() == 'Darwin':
     EXE_EXTENSION = ''
     O3DE_SCRIPT_EXTENSION = '.sh'
     SDKMANAGER_EXTENSION = ''
-    GRADLE_EXTENSION = '.sh'
+    GRADLE_EXTENSION = ''
     DEFAULT_ANDROID_SDK_PATH = f"{os.getenv('HOME')}/Library/Android/Sdk"
     PYTHON_SCRIPT = 'python.sh'
 elif platform.system() == 'Linux':
     EXE_EXTENSION = ''
     O3DE_SCRIPT_EXTENSION = '.sh'
     SDKMANAGER_EXTENSION = ''
-    GRADLE_EXTENSION = '.sh'
+    GRADLE_EXTENSION = ''
     DEFAULT_ANDROID_SDK_PATH = f"{os.getenv('HOME')}/Android/Sdk"
     PYTHON_SCRIPT = 'python.sh'
 else:
@@ -475,7 +475,7 @@ class AndroidSDKManager(object):
                                    f"Make sure that it is installed at {android_sdk_command_line_tools_root}.")
 
         # Retrieve the version if possible to validate it can be used
-        command_arg = [android_sdk_command_line_tool.name, '--version']
+        command_arg = [android_sdk_command_line_tool, '--version']
         logging.debug("Validating tool version exec: (%s)", subprocess.list2cmdline(command_arg))
         result = subprocess.run(command_arg,
                                 shell=(platform.system() == 'Windows'),
@@ -675,12 +675,12 @@ class AndroidSDKManager(object):
         that provides information on how to accept them.
         """
         logger.info("Checking Android SDK Package licenses state..")
-        result = subprocess.run(['echo' , 'Y' , '|', self._android_command_line_tools_sdkmanager_path, '--licenses'],
-                                shell=(platform.system() == 'Windows'),
+        result = subprocess.run(f"echo 'Y' | \"{self._android_command_line_tools_sdkmanager_path}\" --licenses",
+                                shell=True,
                                 capture_output=True,
                                 encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS,
-                                timeout=2)
+                                timeout=5)
         license_not_accepted_match = AndroidSDKManager.LICENSE_NOT_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_not_accepted_match:
             raise AndroidToolError(f"{license_not_accepted_match.group(1)}\n"
@@ -839,6 +839,7 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
         if env_home:
             tool_home_and_src_list.append( (env_home, f'environment variable {tool_environment_var}') )
     tool_home_and_src_list.append( (None, None) )
+    tool_located = False
 
     for tool_home, tool_home_src in tool_home_and_src_list:
         if tool_home is not None:
@@ -847,21 +848,25 @@ def validate_build_tool(tool_name: str, tool_command: str, tool_config_key: str 
             tool_test_command = tool_command
 
         # Run the command to get the tool version
-        result = subprocess.run([tool_test_command, tool_version_arg],
-                                shell=(platform.system() == 'Windows'),
-                                capture_output=True,
-                                encoding=DEFAULT_READ_ENCODING,
-                                errors=ENCODING_ERROR_HANDLINGS)
-        if result.returncode == 0:
-            if tool_home:
-                tool_full_path = Path(tool_home) / tool_config_sub_path / tool_command
+        try:
+            result = subprocess.run([tool_test_command, tool_version_arg],
+                                    shell=(platform.system() == 'Windows'),
+                                    capture_output=True,
+                                    encoding=DEFAULT_READ_ENCODING,
+                                    errors=ENCODING_ERROR_HANDLINGS)
+            if result.returncode == 0:
+                if tool_home:
+                    tool_full_path = Path(tool_home) / tool_config_sub_path / tool_command
+                else:
+                    tool_full_path = Path(shutil.which(tool_command))
+                tool_located = True
+                break
             else:
-                tool_full_path = Path(shutil.which(tool_command))
-            break
-        else:
+                logger.warning(f"Unable to resolve tool {tool_name} from {tool_home_src}")
+        except FileNotFoundError:
             logger.warning(f"Unable to resolve tool {tool_name} from {tool_home_src}")
 
-    if result.returncode != 0:
+    if not tool_located:
         error_msgs = [f"Unable to resolve {tool_name}. Make sure its installed and in the PATH environment"]
         if tool_config_key:
             error_msgs.append(f', or the {tool_config_key} settings')

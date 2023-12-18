@@ -14,6 +14,8 @@
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 
 namespace AzToolsFramework
 {
@@ -201,13 +203,31 @@ namespace AzToolsFramework
 
             if (entity.has_value())
             {
-                if (AZ::Component* component = entity->get().FindComponent(entityComponentIdPair.GetComponentId()))
+                // Make a copy of the component list from the entity, then add in any pending and disabled components as well.
+                AZ::Entity::ComponentArrayType entityComponents = entity->get().GetComponents();
+                AzToolsFramework::EditorPendingCompositionRequestBus::Event(
+                    entityId, &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, entityComponents);
+                AzToolsFramework::EditorDisabledCompositionRequestBus::Event(
+                    entityId, &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, entityComponents);
+
+                // Search through all the components (including pending and disabled) to find this component id.
+                AZ::Component* foundComponent = nullptr;
+                for (AZ::Component* component : entityComponents)
+                {
+                    if (component->GetId() == entityComponentIdPair.GetComponentId())
+                    {
+                        foundComponent = component;
+                        break;
+                    }
+                }
+
+                if (foundComponent)
                 {
                     pathAndLinkIdPair = GetEntityPathAndLinkIdFromFocusedPrefab(entityId);
                     if (!pathAndLinkIdPair.first.IsEmpty() && pathAndLinkIdPair.second != InvalidLinkId)
                     {
                         pathAndLinkIdPair.first /= PrefabDomUtils::ComponentsName;
-                        pathAndLinkIdPair.first /= component->GetSerializedIdentifier();
+                        pathAndLinkIdPair.first /= foundComponent->GetSerializedIdentifier();
                     }
                 }
                 else

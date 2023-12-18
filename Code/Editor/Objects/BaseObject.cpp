@@ -26,7 +26,6 @@
 #include "DisplaySettings.h"
 #include "Undo/Undo.h"
 #include "UsedResources.h"
-#include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 #include "ViewManager.h"
 #include "IEditorImpl.h"

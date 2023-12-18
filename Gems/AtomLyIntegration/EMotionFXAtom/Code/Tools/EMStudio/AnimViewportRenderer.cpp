@@ -85,6 +85,10 @@ namespace EMStudio
         AZStd::optional<AZ::RPI::RenderPipelineDescriptor> renderPipelineDesc =
             AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath.c_str(), AZStd::string::format("_%i", viewportContext->GetId()));
         AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath.c_str());
+
+        const AZ::RHI::MultisampleState multiSampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        renderPipelineDesc.value().m_renderSettings.m_multisampleState = multiSampleState;
+        AZ_Printf("AnimViewportRenderer", "Animation viewport renderer starting with multi sample %d", multiSampleState.m_samples);
         
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *m_windowContext.get());
         m_scene->AddRenderPipeline(m_renderPipeline);

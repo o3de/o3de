@@ -17,7 +17,6 @@
 // Editor
 #include "TrackView/TrackViewDialog.h"
 #include "ViewManager.h"
-#include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
 #include "Objects/EntityObject.h"
 
@@ -571,13 +570,6 @@ void CAnimationContext::Update()
                 m_currTime = m_timeMarker.end;
             }
         }
-    }
-
-    if (m_bAutoRecording)
-    {
-        // This is auto recording mode.
-        // Send sync with physics event to all selected entities.
-        GetIEditor()->GetSelection()->SendEvent(EVENT_PHYSICS_GETSTATE);
     }
 
     if (fabs(m_lastTimeChangedNotificationTime - m_currTime) > 0.001f)

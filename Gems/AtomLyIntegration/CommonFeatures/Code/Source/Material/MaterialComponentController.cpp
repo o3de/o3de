@@ -58,6 +58,7 @@ namespace AZ
                     ->Event("GetMaterialAssetId", &MaterialComponentRequestBus::Events::GetMaterialAssetId, "GetMaterialOverride")
                     ->Event("ClearMaterialAssetId", &MaterialComponentRequestBus::Events::ClearMaterialAssetId, "ClearMaterialOverride")
                     ->Event("IsMaterialAssetIdOverridden", &MaterialComponentRequestBus::Events::IsMaterialAssetIdOverridden)
+                    ->Event("HasPropertiesOverridden", &MaterialComponentRequestBus::Events::HasPropertiesOverridden)
                     ->Event("SetPropertyValue", &MaterialComponentRequestBus::Events::SetPropertyValue, "SetPropertyOverride")
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                     ->Event("SetPropertyValueBool", &MaterialComponentRequestBus::Events::SetPropertyValueT<bool>, "SetPropertyOverrideBool")
@@ -577,6 +578,12 @@ namespace AZ
         {
             const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
             return materialIt != m_configuration.m_materials.end() && materialIt->second.m_materialAsset.GetId().IsValid();
+        }
+
+        bool MaterialComponentController::HasPropertiesOverridden(const MaterialAssignmentId& materialAssignmentId) const
+        {
+            const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
+            return materialIt != m_configuration.m_materials.end() && !materialIt->second.m_propertyOverrides.empty();
         }
 
         void MaterialComponentController::SetPropertyValue(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value)

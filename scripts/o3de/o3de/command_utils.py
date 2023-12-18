@@ -6,6 +6,7 @@
 #
 #
 
+import argparse
 import configparser
 import logging
 import json
@@ -84,7 +85,7 @@ class SettingsDescription(object):
 
     def validate_value(self, input):
         if self._is_password:
-            raise O3DEConfigError(f"Input value for '{self._key}' must be set through the password setting argument.")
+            logger.debug(f"Input value for '{self._key}' is a password. If extra security is required, use the --set-password setting argument.")
         if self._is_boolean:
             evaluate_boolean_from_setting(input)
         if self._restricted_regex and not self._restricted_regex.match(input):
@@ -373,7 +374,7 @@ class O3DEConfig(object):
         result = self.get_value_and_source(key)[0]
         return result or default
 
-    def get_boolean_value(self, key: str, default: bool=False) -> bool:
+    def get_boolean_value(self, key: str, default: bool = False) -> bool:
 
         settings_description = self._settings_description_map.get(key, None)
         if not settings_description:
@@ -381,7 +382,7 @@ class O3DEConfig(object):
         if not settings_description.is_boolean:
             raise O3DEConfigError(f"Setting '{key}' is not a boolean value.")
 
-        str_value = self.get_value(key)
+        str_value = self.get_value(key, str(default))
         return evaluate_boolean_from_setting(str_value)
 
     def get_all_values(self) -> List[Tuple]:
@@ -437,3 +438,87 @@ class O3DEConfig(object):
 
         logger.info(f"Password set for {key}.")
 
+    def add_boolean_argument(self, parser: argparse.ArgumentParser, key: str, enable_override_arg: str or List, enable_override_desc: str, disable_override_arg: str or List, disable_override_desc: str) -> None:
+        """
+        Add a boolean argument to a parser to present options to negate the default value represented by a command settings key
+        :param parser:                  The arg parser to add the argument to
+        :param key:                     The command settings key to get the default boolean value from
+        :param enable_override_arg:     The argument parameter name(s) to set if the default value represented by the key defaults to false
+        :param enable_override_desc:    The help description to show for the enable arg
+        :param disable_override_arg:    The argument parameter name(s) to set if the default value represented by the key defaults to true
+        :param disable_override_desc:   The help description to show for the disable arg
+        """
+        default_option = self.get_boolean_value(key)
+        if default_option:
+            # The default is true, add the argument to enable the option to set to override to false
+            if isinstance(enable_override_arg, str):
+                parser.add_argument(disable_override_arg, action='store_true', help=disable_override_desc)
+            elif isinstance(enable_override_arg, List):
+                parser.add_argument(*disable_override_arg, action='store_true', help=disable_override_desc)
+            else:
+                raise O3DEConfigError("parameter 'disable_override_arg' must be either a string or list of string")
+        else:
+            # The default is false, add the argument to enable the option to set to override to true
+            if isinstance(enable_override_arg, str):
+                parser.add_argument(enable_override_arg, action='store_true', help=enable_override_desc)
+            elif isinstance(enable_override_arg, List):
+                parser.add_argument(*enable_override_arg, action='store_true', help=enable_override_desc)
+            else:
+                raise O3DEConfigError("parameter 'enable_override_arg' must be either a string or list of string")
+
+    def get_parsed_boolean_option(self, parsed_args, key: str, enable_attribute: str, disable_attribute: str) -> bool:
+        """
+        Get the boolean value from parsed args based on whether an argument override was enabled or not, otherwise
+        use the default value from the command settings key
+        :param parsed_args:         The parsed arguments to look for the overridden enable or disable attribute
+        :param key:                 The key to look up the default value
+        :param enable_attribute:    The enable attribute to search for to see if the override to enable was passed in
+        :param disable_attribute:   The disable attribute to search for to see if the override to enable was passed in
+        :return: The final boolean result
+        """
+        default_value = self.get_boolean_value(key)
+        if getattr(parsed_args, enable_attribute, False):
+            option = True
+        elif getattr(parsed_args, disable_attribute, False):
+            option = False
+        else:
+            option = default_value
+        return option
+
+    def add_multi_part_argument(self, parser: argparse.ArgumentParser, argument: str or List, key: str, dest: str, description: str, is_path_type: bool) -> None:
+        """
+        Add an argument that allows multi values and provide any defaults (separated by a semi-colon) as the default values if any
+
+        :param argument:        The argument name(s) for the argument
+        :param parser:          The parser to add the argument to
+        :param key:             The key to look up the default value
+        :param dest:            The destination attribute that this argument represents
+        :param description:     The argument help description
+        :param is_path_type:    Whether this is a list or paths or string
+        """
+        default_str = self.get_value(key, "")
+        if is_path_type:
+            default_values = [Path(default) for default in default_str.split(';') if default]
+            if isinstance(argument, str):
+                parser.add_argument(argument,
+                                    type=Path, dest=dest, action='append',
+                                    help=description, default=default_values)
+            elif isinstance(argument, List):
+                parser.add_argument(*argument,
+                                    type=Path, dest=dest, action='append',
+                                    help=description, default=default_values)
+            else:
+                raise O3DEConfigError("parameter 'argument' must be either a string or list of string")
+
+        else:
+            default_values = [default for default in default_str.split(';') if default]
+            if isinstance(argument, str):
+                parser.add_argument(argument,
+                                    type=str, dest=dest, action='append',
+                                    help=description, default=default_values)
+            elif isinstance(argument, List):
+                parser.add_argument(*argument,
+                                    type=str, dest=dest, action='append',
+                                    help=description, default=default_values)
+            else:
+                raise O3DEConfigError("parameter 'argument' must be either a string or list of string")

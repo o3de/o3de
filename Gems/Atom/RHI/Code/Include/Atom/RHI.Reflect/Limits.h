@@ -96,8 +96,8 @@ namespace AZ::RHI
         constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(AZStd::numeric_limits<uint32_t>::max()) };
         constexpr DeviceMask DefaultDevice{ 1u };
 
-        constexpr uint32_t DefaultDeviceIndex { 0 };
+        constexpr int DefaultDeviceIndex{ 0 };
     }
 
-    constexpr uint32_t InvalidIndex = AZStd::numeric_limits<uint32_t>::max();
+    constexpr int InvalidIndex = AZStd::numeric_limits<int>::max();
 }

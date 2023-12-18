@@ -193,40 +193,39 @@ namespace AZ
             //! multiple ebus functions to handle callbacks. It will invoke the provided callback function when the
             //! asset loads or errors. It will stop listening on destruction, so it should be held onto until the
             //! callback fires.
-            class AsyncAssetLoader
-                : private Data::AssetBus::MultiHandler
+            class AsyncAssetLoader : private Data::AssetBus::Handler
             {
             public:
-                using AssetCallback = AZStd::function<void(Data::Asset<Data::AssetData>, bool /*success*/)>;
+                AZ_RTTI(AZ::RPI::AssetUtils::AsyncAssetLoader, "{E0FB5B08-B97D-40DF-8478-226249C0B654}");
+
+                using AssetCallback = AZStd::function<void(Data::Asset<Data::AssetData>)>;
 
                 AsyncAssetLoader() = default;
                 ~AsyncAssetLoader();
 
-                template <typename AssetDataT>
-                static AsyncAssetLoader Create(const AZStd::string& path, uint32_t subId, AssetCallback callback);
+                template<typename AssetDataT>
+                static AZStd::shared_ptr<AsyncAssetLoader> Create(const AZStd::string& path, uint32_t subId, AssetCallback callback);
 
-                template <typename AssetDataT>
-                static AsyncAssetLoader Create(Data::AssetId assetId, AssetCallback callback);
+                template<typename AssetDataT>
+                static AZStd::shared_ptr<AsyncAssetLoader> Create(Data::AssetId assetId, AssetCallback callback);
 
             private:
-
                 explicit AsyncAssetLoader(AssetCallback callback);
 
-                template <typename AssetDataT>
+                template<typename AssetDataT>
                 void StartLoad(Data::AssetId& assetId);
 
-                // Data::AssetBus::MultiHandler overrides..
+                // Data::AssetBus::Handler overrides..
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
-                void HandleCallback(Data::Asset<Data::AssetData> asset, bool isError);
+                void HandleCallback(Data::Asset<Data::AssetData> asset);
 
                 AssetCallback m_callback;
                 Data::Asset<Data::AssetData> m_asset;
             };
-        }
-    }
-}
+        } // namespace AssetUtils
+    } // namespace RPI
+} // namespace AZ
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.inl>
-

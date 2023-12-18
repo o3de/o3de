@@ -44,7 +44,6 @@
 // Editor
 #include "Settings.h"
 #include "Util/fastlib.h"
-#include "Objects/SelectionGroup.h"
 #include "TVSequenceProps.h"
 #include "TrackViewFindDlg.h"
 #include "SequenceBatchRenderDialog.h"

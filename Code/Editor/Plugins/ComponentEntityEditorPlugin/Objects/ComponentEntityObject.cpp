@@ -11,7 +11,6 @@
 
 #include "Settings.h"
 #include "Include/IObjectManager.h"
-#include "Objects/SelectionGroup.h"
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -519,7 +518,10 @@ bool CComponentEntityObject::IsDescendantSelectedAtSameLocation() const
 {
     if (m_entityId.IsValid())
     {
-        if (GetObjectManager()->GetSelection() && GetObjectManager()->GetSelection()->GetCount() == 0)
+        AzToolsFramework::EntityIdList selectedEntityList;
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        if (selectedEntityList.empty())
         {
             return false;
         }
