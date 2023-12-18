@@ -27,6 +27,15 @@ UISliceLibraryFilter::UISliceLibraryFilter(const AZ::Data::AssetType& assetType,
     SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::Down);
 }
 
+AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter* UISliceLibraryFilter::Clone() const
+{
+    auto clone = new UISliceLibraryFilter(m_assetType, m_pathToSearch.c_str());
+    clone->m_name = m_name;
+    clone->m_tag = m_tag;
+    clone->m_direction = m_direction;
+    return clone;
+}
+
 QString UISliceLibraryFilter::GetNameInternal() const
 {
     return "UISliceLibraryFilter";
@@ -124,7 +133,7 @@ AssetTreeEntry* AssetTreeEntry::BuildAssetTree(const AZ::Data::AssetType& assetT
 
     // UISliceLibraryFilter::Filter function returns all assets (recursively) that match the specified filter
     // in this case we are only looking for ui slices.
-    AZStd::vector<const AssetBrowserEntry*> entries;
+    AZStd::unordered_set<const AssetBrowserEntry*> entries;
     UISliceLibraryFilter filter(assetType, pathToSearch.c_str());
     filter.Filter(entries, rootEntry.get());
 

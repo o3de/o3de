@@ -46,7 +46,7 @@ namespace AzToolsFramework
         private:
             QPersistentModelIndex m_rootIndex;
             bool m_searchResultsMode;
-            AZStd::string m_searchString;
+            QString m_searchString;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

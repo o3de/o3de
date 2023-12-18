@@ -39,6 +39,8 @@ namespace AzToolsFramework
             : QSortFilterProxyModel(parent)
             , m_isTableView(isTableView)
         {
+            setDynamicSortFilter(true);
+            setRecursiveFilteringEnabled(true);
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
             if (ed_useNewAssetBrowserListView)
             {
@@ -107,11 +109,11 @@ namespace AzToolsFramework
             {
                 if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
-                    QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
-
-                    if (!m_searchString.empty())
+                    const QString name = assetBrowserEntry->GetName().c_str();
+                    if (!m_searchString.isEmpty())
                     {
-                        name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
+                        // highlight characters in filter
+                        return AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString);
                     }
                     return name;
                 }
@@ -132,7 +134,7 @@ namespace AzToolsFramework
 
         void AssetBrowserFilterModel::SetSearchString(const QString& searchString)
         {
-            m_searchString = searchString.toUtf8().data();
+            m_searchString = searchString;
         }
 
         bool AssetBrowserFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
@@ -161,7 +163,7 @@ namespace AzToolsFramework
             {
                 return true;
             }
-            return m_filter->Match(entry);
+            return m_filter->MatchWithoutPropagation(entry);
         }
 
         bool AssetBrowserFilterModel::filterAcceptsColumn(int source_column, const QModelIndex&) const
@@ -194,18 +196,6 @@ namespace AzToolsFramework
             if (compFilter)
             {
                 const auto& subFilters = compFilter->GetSubFilters();
-                const auto& compFilterIter = AZStd::find_if(subFilters.cbegin(), subFilters.cend(),
-                    [](FilterConstType filter) -> bool
-                    {
-                        const auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(filter);
-                        return !assetTypeFilter.isNull();
-                    });
-
-                if (compFilterIter != subFilters.end())
-                {
-                    m_assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*compFilterIter);
-                }
-
                 const auto& compositeStringFilterIter = AZStd::find_if(subFilters.cbegin(), subFilters.cend(),
                     [](FilterConstType filter) -> bool
                     {
@@ -246,8 +236,8 @@ namespace AzToolsFramework
                     }
                 }
             }
+
             invalidateFilter();
-            
             Q_EMIT filterChanged();
         }
 

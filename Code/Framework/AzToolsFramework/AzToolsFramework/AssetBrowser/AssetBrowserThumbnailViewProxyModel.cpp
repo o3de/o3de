@@ -43,12 +43,11 @@ namespace AzToolsFramework
             {
             case Qt::DisplayRole:
                 {
-                    QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
-
-                    if (!m_searchString.empty())
+                    const QString name = assetBrowserEntry->GetName().c_str();
+                    if (!m_searchString.isEmpty())
                     {
                         // highlight characters in filter
-                        name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
+                        return AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString);
                     }
                     return name;
                 }
@@ -128,7 +127,7 @@ namespace AzToolsFramework
 
         void AssetBrowserThumbnailViewProxyModel::SetSearchString(const QString& searchString)
         {
-            m_searchString = searchString.toUtf8().data();
+            m_searchString = searchString;
         }
 
         Qt::DropActions AssetBrowserThumbnailViewProxyModel::supportedDropActions() const
