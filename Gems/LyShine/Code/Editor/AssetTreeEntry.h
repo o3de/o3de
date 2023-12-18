@@ -28,6 +28,7 @@ class UISliceLibraryFilter
 public:
     UISliceLibraryFilter(const AZ::Data::AssetType& assetType, const char* pathToSearch);
     ~UISliceLibraryFilter() override = default;
+    AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter* Clone() const override;
 
 protected:
     QString GetNameInternal() const override;

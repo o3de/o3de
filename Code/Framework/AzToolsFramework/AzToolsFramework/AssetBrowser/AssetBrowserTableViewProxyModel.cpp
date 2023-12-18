@@ -42,12 +42,11 @@ namespace AzToolsFramework
                     {
                     case Name:
                         {
-                            QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
-
-                            if (!m_searchString.empty())
+                            const QString name = assetBrowserEntry->GetName().c_str();
+                            if (!m_searchString.isEmpty())
                             {
                                 // highlight characters in filter
-                                name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
+                                return AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString);
                             }
                             return name;
                         }
@@ -183,7 +182,6 @@ namespace AzToolsFramework
             }
         }
         
-
         bool AssetBrowserTableViewProxyModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
         {
             if (action == Qt::IgnoreAction)
@@ -244,7 +242,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTableViewProxyModel::SetSearchString(const QString& searchString)
         {
-             m_searchString = searchString.toUtf8().data();
+            m_searchString = searchString;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

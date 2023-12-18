@@ -196,15 +196,12 @@ namespace AzToolsFramework
 
             if (!includeProducts)
             {
-                entries.erase(
-                    AZStd::remove_if(
-                        entries.begin(),
-                        entries.end(),
-                        [&](const AssetBrowserEntry* entry) -> bool
-                        {
-                            return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
-                        }),
-                    entries.end());
+                AZStd::erase_if(
+                    entries,
+                    [&](const AssetBrowserEntry* entry) -> bool
+                    {
+                        return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
+                    });
             }
 
             return entries;
@@ -222,8 +219,7 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::SelectFileAtPathAfterUpdate(const AZStd::string& assetPath)
         {
             m_fileToSelectAfterUpdate = assetPath;
-        }
-        
+        }        
 
         void AssetBrowserTreeView::SelectFileAtPath(const AZStd::string& assetPath)
         {
@@ -611,6 +607,8 @@ namespace AzToolsFramework
             AZ_Assert(m_assetBrowserSortFilterProxyModel, "Expecting AssetBrowserFilterModel");
             m_assetBrowserModel = qobject_cast<AssetBrowserModel*>(m_assetBrowserSortFilterProxyModel->sourceModel());
             QTreeViewWithStateSaving::setModel(model);
+
+            SetSortMode(AssetBrowserEntry::AssetEntrySortMode::Name);
         }
 
         void AssetBrowserTreeView::dragEnterEvent(QDragEnterEvent* event)
@@ -673,7 +671,7 @@ namespace AzToolsFramework
             using namespace AzQtComponents;
             DragAndDropContextBase context;
             DragAndDropEventsBus::Event(
-                DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DropAtLocation, event, context, QString(pathName.data()));
+                DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DropAtLocation, event, context, QString(pathName.c_str()));
         }
 
         void AssetBrowserTreeView::dragLeaveEvent(QDragLeaveEvent* event)
@@ -749,15 +747,13 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::DeleteEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot delete product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot delete product files.
             AssetBrowserViewUtils::DeleteEntries(entries, this);
         }
 
         void AssetBrowserTreeView::RenameEntry()
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot rename product files.
             if (AssetBrowserViewUtils::RenameEntry(entries, this))
             {
                 edit(currentIndex());
@@ -766,21 +762,19 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::AfterRename(QString newVal)
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot rename product files.
             AssetBrowserViewUtils::AfterRename(newVal, entries, this);
         }
 
         void AssetBrowserTreeView::DuplicateEntries()
         {
-            auto entries = GetSelectedAssets(false); // you may not duplicate product files.
+            const auto& entries = GetSelectedAssets(false); // you may not duplicate product files.
             AssetBrowserViewUtils::DuplicateEntries(entries);
         }
 
         void AssetBrowserTreeView::MoveEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot move product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot move product files.
             AssetBrowserViewUtils::MoveEntries(entries, this);
         }
 
@@ -825,8 +819,8 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode)
         {
             m_assetBrowserSortFilterProxyModel->SetSortMode(mode);
-
             m_assetBrowserSortFilterProxyModel->sort(0, Qt::DescendingOrder);
+            m_assetBrowserSortFilterProxyModel->setDynamicSortFilter(true);
         }
 
         AssetBrowserEntry::AssetEntrySortMode AssetBrowserTreeView::GetSortMode() const

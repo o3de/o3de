@@ -46,12 +46,9 @@ namespace AzToolsFramework
         {
             // Using our own instance of AssetBrowserFilterModel to be able to show also files when the main model
             // only lists directories, and at the same time get sort and filter entries features from AssetBrowserFilterModel.
-
-            // Turn off DynamicSort as sorting is now manual.
-            m_assetFilterModel->setDynamicSortFilter(false);
-            m_assetFilterModel->sort(0, Qt::DescendingOrder);
             m_thumbnailViewProxyModel->setSourceModel(m_assetFilterModel);
             m_thumbnailViewWidget->setModel(m_thumbnailViewProxyModel);
+            SetSortMode(AssetBrowserEntry::AssetEntrySortMode::Name);
 
             connect(
                 m_thumbnailViewWidget,
@@ -101,7 +98,7 @@ namespace AzToolsFramework
                 this,
                 [this]()
                 {
-                    AZStd::vector<const AssetBrowserEntry*> entries = AZStd::move(GetSelectedAssets());
+                    auto entries = AZStd::move(GetSelectedAssets());
                     if (entries.empty() && m_assetTreeView)
                     {
                         // Tree has the current open folder selected if context is valid (not searching, etc)
@@ -245,28 +242,25 @@ namespace AzToolsFramework
 
         void AssetBrowserThumbnailView::DeleteEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot delete product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot delete product files.
             AssetBrowserViewUtils::DeleteEntries(entries, this);
         }
 
         void AssetBrowserThumbnailView::MoveEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot move product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot move product files.
             AssetBrowserViewUtils::MoveEntries(entries, this);
         }
 
         void AssetBrowserThumbnailView::DuplicateEntries()
         {
-            auto entries = GetSelectedAssets(false); // you may not duplicate product files.
+            const auto& entries = GetSelectedAssets(false); // you may not duplicate product files.
             AssetBrowserViewUtils::DuplicateEntries(entries);
         }
 
         void AssetBrowserThumbnailView::RenameEntry()
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot rename product files.
             if (AssetBrowserViewUtils::RenameEntry(entries, this))
             {
                 QModelIndex selectedIndex = m_thumbnailViewWidget->selectionModel()->selectedIndexes()[0];
@@ -276,8 +270,7 @@ namespace AzToolsFramework
 
         void AssetBrowserThumbnailView::AfterRename(QString newVal)
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot rename product files.
             AssetBrowserViewUtils::AfterRename(newVal, entries, this);
         }
 
@@ -289,16 +282,12 @@ namespace AzToolsFramework
                 AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(m_thumbnailViewWidget->selectionModel()->selectedIndexes(), entries);
                 if (!includeProducts)
                 {
-                    entries.erase(
-                        AZStd::remove_if(
-                            entries.begin(),
-                            entries.end(),
-                            [&](const AssetBrowserEntry* entry) -> bool
-                            {
-                                return entry->GetEntryType() ==
-                                    AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
-                            }),
-                        entries.end());
+                    AZStd::erase_if(
+                        entries,
+                        [&](const AssetBrowserEntry* entry) -> bool
+                        {
+                            return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
+                        });
                 }
             }
             return entries;
@@ -321,12 +310,12 @@ namespace AzToolsFramework
             }
 
             m_assetTreeView = treeView;
-            m_assetTreeView->SetAttachedThumbnailView(this);
-
             if (!m_assetTreeView)
             {
                 return;
             }
+
+            m_assetTreeView->SetAttachedThumbnailView(this);
 
             auto treeViewFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_assetTreeView->model());
             if (!treeViewFilterModel)
@@ -441,6 +430,8 @@ namespace AzToolsFramework
             {
                 m_thumbnailViewWidget->setRootIndex({});
             }
+
+            m_assetFilterModel->sort(0, Qt::DescendingOrder);
         }
 
         void AssetBrowserThumbnailView::OpenItemForEditing(const QModelIndex& index)
@@ -477,32 +468,31 @@ namespace AzToolsFramework
                 return;
             }
 
+            bool hasString{ false };
+            const QString tagString("String");
+            const QString tagFolder("Folder");
             auto filterCopy = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             for (const auto& subFilter : filter->GetSubFilters())
             {
-                // Switch between "search mode" where all results in the asset folder tree are shown,
-                // and "normal mode", where only contents for a single folder are shown, depending on
-                // whether there is an active string search ongoing.
-                if (subFilter->GetTag() == "String")
+                if (subFilter->GetTag() == tagString)
                 {
                     auto stringCompFilter = qobject_cast<const CompositeFilter*>(subFilter.get());
-                    if (!stringCompFilter)
-                    {
-                        continue;
-                    }
-
-                    auto stringSubFilters = stringCompFilter->GetSubFilters();
-
-                    m_thumbnailViewProxyModel->SetShowSearchResultsMode(stringSubFilters.count() != 0);
-                    m_thumbnailViewWidget->SetShowSearchResultsMode(stringSubFilters.count() != 0);
+                    hasString |= stringCompFilter && !stringCompFilter->GetSubFilters().empty();
                 }
 
                 // Skip the folder filter on the thumbnail view so that we can see files
-                if (subFilter->GetTag() != "Folder")
+                if (subFilter->GetTag() != tagFolder)
                 {
-                    filterCopy->AddFilter(subFilter);
+                    filterCopy->AddFilter(FilterConstType(subFilter->Clone()));
                 }
             }
+
+            // Switch between "search mode" where all results in the asset folder tree are shown,
+            // and "normal mode", where only contents for a single folder are shown, depending on
+            // whether there is an active string search ongoing.
+            m_thumbnailViewProxyModel->SetShowSearchResultsMode(hasString);
+            m_thumbnailViewWidget->SetShowSearchResultsMode(hasString);
+
             filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
 
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
@@ -511,8 +501,8 @@ namespace AzToolsFramework
         void AssetBrowserThumbnailView::SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode)
         {
             m_assetFilterModel->SetSortMode(mode);
-
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
+            m_assetFilterModel->setDynamicSortFilter(true);
         }
 
        AssetBrowserEntry::AssetEntrySortMode AssetBrowserThumbnailView::GetSortMode() const
@@ -547,6 +537,5 @@ namespace AzToolsFramework
         {
             m_thumbnailViewProxyModel->SetSearchString(searchString);
         }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
