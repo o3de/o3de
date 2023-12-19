@@ -68,11 +68,12 @@ namespace ShaderManagementConsole
     AZ::u32 ShaderManagementConsoleDocument::AddOneVariantRow()
     {
         AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-        variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
+        AZ::u32 nextStableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
             ? 1  // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
-            : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
-        m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
-        return variantInfo.m_stableId;
+            : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;  // by invariant (no row shuffles), last stableId is highest in vector
+        variantInfo.m_stableId = nextStableId;
+        m_shaderVariantListSourceData.m_shaderVariants.emplace_back(AZStd::move(variantInfo));
+        return nextStableId;
     }
 
     // Utility used in sparse-variant-set functions
