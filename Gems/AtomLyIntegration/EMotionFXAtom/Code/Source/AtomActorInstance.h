@@ -204,7 +204,7 @@ namespace AZ
             void UpdateWrinkleMasks();
 
             void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
-			
+
             void UpdateLightingChannelMask();
 
             // Debug geometry rendering

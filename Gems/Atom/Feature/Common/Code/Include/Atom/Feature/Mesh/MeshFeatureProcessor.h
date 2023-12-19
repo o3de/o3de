@@ -47,7 +47,7 @@ namespace AZ
             const RPI::Cullable& GetCullable() { return m_cullable; }
 
             ObjectSrgCreatedEvent& GetObjectSrgCreatedEvent() { return m_objectSrgCreatedEvent; }
-			
+
             const uint32_t GetLightingChannelMask() { return m_lightingChannelMask; }
 
             using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;

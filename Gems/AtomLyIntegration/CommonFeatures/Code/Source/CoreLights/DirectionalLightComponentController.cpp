@@ -521,7 +521,7 @@ namespace AZ
         {
             configurationChangedHandler.Connect(m_configurationChangedEvent);
         }
-		
+
         uint32_t DirectionalLightComponentController::GetLightingChannelMask() const
         {
             return m_configuration.m_lightingChannelConfig.GetLightingChannelMask();
@@ -725,7 +725,7 @@ namespace AZ
             m_configuration.m_shadowEnabled = enable;
             m_featureProcessor->SetShadowEnabled(m_lightHandle, enable);
         }
-		
+
         void DirectionalLightComponentController::LightingChannelMaskChanged()
         {
             if (m_featureProcessor)

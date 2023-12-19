@@ -834,7 +834,7 @@ namespace AZ::Render
             m_meshFeatureProcessor->SetLightingChannelMask(*m_meshHandle, m_actorInstance->GetLightingChannelMask());
             m_meshFeatureProcessor->QueueObjectSrgForCompile(*m_meshHandle);
         }
-    }	
+    }
 
     const MeshFeatureProcessorInterface::MeshHandle* AtomActorInstance::GetMeshHandle() const
     {

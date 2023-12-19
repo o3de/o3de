@@ -661,7 +661,7 @@ namespace AZ::Render
             m_lightShapeDelegate->SetAffectsGIFactor(affectsGIFactor);
         }
     }
-	
+
     uint32_t AreaLightComponentController::GetLightingChannelMask() const
     {
         return m_configuration.m_lightingChannelConfig.GetLightingChannelMask();
