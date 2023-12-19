@@ -14,7 +14,7 @@ class SubprocessRunner:
     and capture the errorCode, stdout and stderr
     """
 
-    def __init__(self, argList: list[str], timeOutSeconds: int):
+    def __init__(self, argList: list[str], timeOutSeconds: int, cwd: str = ".") :
         self._name = self.__class__.__name__
         self._argList = argList
         self._arg_list_str = ""  # Becomes the command string when executed.
@@ -22,6 +22,7 @@ class SubprocessRunner:
         self._error_code = -1
         self._error_message = ""
         self._success_message = ""
+        self._cwd = cwd
 
 
     def run(self) -> bool:
@@ -32,7 +33,7 @@ class SubprocessRunner:
         self._arg_list_str = " ".join(self._argList)
         print(f"{self._name} will run command:\n{self._arg_list_str}\n")
         self._subprocess = subprocess.Popen(
-            self._argList, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            self._argList, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self._cwd
         )
         try:
             outs, errs = self._subprocess.communicate(timeout=self._timeOut)

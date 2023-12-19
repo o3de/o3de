@@ -95,7 +95,11 @@ class ProjectGenerator(ThreadedLambda):
             arg_list.extend(["--oculus-project"])
         self._generate_project_cmd = SubprocessRunner(
             arg_list,
-            timeOutSeconds=60
+            timeOutSeconds=60,
+            # The "android-generate" subcommand requires to be run from the project root directory,
+            # otherwise it won't find the settings we previously defined with the multiple calls
+            # to "android-configure" subcommand.
+            cwd=config.project_path
         )
 
 
