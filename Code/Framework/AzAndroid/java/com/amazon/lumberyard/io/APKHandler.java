@@ -10,12 +10,10 @@ package com.amazon.lumberyard.io;
 import android.content.res.AssetManager;
 import android.util.Log;
 import java.io.IOException;
-import android.app.Activity;
 import android.content.Context;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.FileOutputStream;
 import java.nio.file.*;
 
 ////////////////////////////////////////////////////////////////
@@ -36,8 +34,10 @@ public class APKHandler
     private static boolean isDir(String fileName)
     {
         Path path = new File(fileName).toPath();
-        if (path == null || !Files.exists(path)) 
+        if (!Files.exists(path))
+        {
             return false;
+        }
         return Files.isDirectory(path);
     }
 
@@ -53,7 +53,7 @@ public class APKHandler
     {
         try 
         {
-            String list[] = mgr.list(apkAssetsRelativePath);
+            String[] list = mgr.list(apkAssetsRelativePath);
             if (list == null)
             {
                 Log.i(s_tag, String.format("No asset files found in '%s'", apkAssetsRelativePath));
@@ -70,7 +70,7 @@ public class APKHandler
                     {
                         in = mgr.open(filename);
                         String outFileName = String.format("%s/%s", outputDir, filename);
-                        out = new FileOutputStream(outFileName);
+                        out = Files.newOutputStream(Paths.get(outFileName));
                         Log.i(s_tag, String.format("Copying asset %s to %s", filename, outFileName));
                         copyFile(in, out);
                     } catch(IOException e)
@@ -81,10 +81,8 @@ public class APKHandler
                         try
                         {
                             in.close();
-                            in = null;
                             out.flush();
                             out.close();
-                            out = null;
                         } catch(IOException e1)
                         {
                             Log.e(s_tag, "Failed to close: " + filename, e1);
