@@ -829,7 +829,6 @@ namespace AZ::Render
                 if (lightingChannelMaskIndex.IsValid())
                 {
                     objectSrg->SetConstant(lightingChannelMaskIndex, m_actorInstance->GetLightingChannelMask());
-                    m_meshFeatureProcessor->QueueObjectSrgForCompile(*m_meshHandle);
                 }
             }
             m_meshFeatureProcessor->SetLightingChannelMask(*m_meshHandle, m_actorInstance->GetLightingChannelMask());
