@@ -2475,9 +2475,11 @@ namespace AzToolsFramework
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                []()
                 {
-                    DeselectEntities();
+                    AzToolsFramework::EditorTransformComponentSelectionRequestBus::Event(
+                        AzToolsFramework::GetEntityContextId(),
+                        &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::DeselectEntities);
                 }
             );
 
