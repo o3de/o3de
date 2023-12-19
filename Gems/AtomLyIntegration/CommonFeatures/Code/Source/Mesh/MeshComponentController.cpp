@@ -159,7 +159,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentController>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("Configuration", &MeshComponentController::m_configuration);
             }
 
@@ -343,7 +343,10 @@ namespace AZ
 
         void MeshComponentController::LightingChannelMaskChanged()
         {
-            m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetLightingChannelMask(m_meshHandle, m_configuration.m_lightingChannelConfig.GetLightingChannelMask());
+            }
         }
 
         MaterialAssignmentLabelMap MeshComponentController::GetMaterialLabels() const
