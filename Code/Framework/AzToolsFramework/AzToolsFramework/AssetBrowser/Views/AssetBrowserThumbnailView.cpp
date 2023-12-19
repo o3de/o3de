@@ -419,10 +419,10 @@ namespace AzToolsFramework
                 return;
             }
 
-            auto selectedIndexes = selected.indexes();
-            if (selectedIndexes.count() > 0)
+            const auto& selectedIndexes = selected.indexes();
+            if (!selectedIndexes.empty())
             {
-                auto newRootIndex = m_thumbnailViewProxyModel->mapFromSource(
+                const auto newRootIndex = m_thumbnailViewProxyModel->mapFromSource(
                     m_assetFilterModel->mapFromSource(treeViewFilterModel->mapToSource(selectedIndexes[0])));
                 m_thumbnailViewWidget->setRootIndex(newRootIndex);
             }
@@ -432,6 +432,7 @@ namespace AzToolsFramework
             }
 
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
+            m_assetFilterModel->setDynamicSortFilter(true);
         }
 
         void AssetBrowserThumbnailView::OpenItemForEditing(const QModelIndex& index)

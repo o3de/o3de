@@ -122,7 +122,7 @@ namespace AzToolsFramework
             else if (role == static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch))
             {
                 auto entry = static_cast<AssetBrowserEntry*>(mapToSource(index).internalPointer());
-                return m_filter && m_filter->MatchWithoutPropagation(entry);
+                return !m_filter || m_filter->MatchWithoutPropagation(entry);
             }
 
             return QSortFilterProxyModel::data(index, role);
@@ -147,12 +147,6 @@ namespace AzToolsFramework
                 return false;
             }
 
-            // no filter present, every entry is visible
-            if (!m_filter)
-            {
-                return true;
-            }
-
             //the entry is the internal pointer of the index
             auto entry = static_cast<AssetBrowserEntry*>(idx.internalPointer());
 
@@ -162,7 +156,7 @@ namespace AzToolsFramework
                 return true;
             }
 
-            return m_filter->MatchWithoutPropagation(entry);
+            return !m_filter || m_filter->MatchWithoutPropagation(entry);
         }
 
         bool AssetBrowserFilterModel::filterAcceptsColumn(int source_column, const QModelIndex&) const
