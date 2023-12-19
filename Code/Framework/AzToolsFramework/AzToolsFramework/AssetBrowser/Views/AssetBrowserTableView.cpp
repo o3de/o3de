@@ -588,7 +588,7 @@ namespace AzToolsFramework
 
             if (hasString)
             {
-                for (const auto& subFilter : filter->GetSubFilters())
+                for (auto& subFilter : filterCopy->GetSubFilters())
                 {
                     auto anyCompFilter = qobject_cast<const CompositeFilter*>(subFilter.get());
                     if (anyCompFilter)
