@@ -1656,7 +1656,7 @@ namespace AZ
 
                 return BuildDrawPacket(
                     drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag,
-                    pipelineState->GetRHIPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get(), sortKey);
+                    pipelineState->GetRHIPipelineState(), sortKey);
             }
             return nullptr;
         }
@@ -1750,7 +1750,7 @@ namespace AZ
             auto& drawListTag = shaderData.m_drawListTag;
 
             return BuildDrawPacket(
-                drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag, pipelineState->GetRHIPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get(),
+                drawPacketBuilder, srg, indexCount, indexBufferView, streamBufferViews, drawListTag, pipelineState->GetRHIPipelineState(),
                 sortKey);
         }
 
@@ -1761,7 +1761,7 @@ namespace AZ
             const RHI::SingleDeviceIndexBufferView& indexBufferView,
             const StreamBufferViewsForAllStreams& streamBufferViews,
             RHI::DrawListTag drawListTag,
-            const RHI::SingleDevicePipelineState* pipelineState,
+            const RHI::MultiDevicePipelineState* pipelineState,
             RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawIndexed drawIndexed;
@@ -1776,7 +1776,7 @@ namespace AZ
 
             RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawListTag;
-            drawRequest.m_pipelineState = pipelineState;
+            drawRequest.m_pipelineState = pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
             drawRequest.m_streamBufferViews = streamBufferViews;
             drawRequest.m_sortKey = sortKey;
             drawPacketBuilder.AddDrawItem(drawRequest);

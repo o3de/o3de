@@ -290,8 +290,7 @@ namespace Terrain
 
     }
 
-    AZ::RHI::SingleDeviceStreamBufferView TerrainMeshManager::CreateStreamBufferView(
-        AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
+    AZ::RHI::SingleDeviceStreamBufferView TerrainMeshManager::CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
     {
         return
         {
@@ -320,7 +319,7 @@ namespace Terrain
 
             AZ::RHI::DrawPacketBuilder::DrawRequest drawRequest;
             drawRequest.m_listTag = drawData.m_drawListTag;
-            drawRequest.m_pipelineState = drawData.m_pipelineState;
+            drawRequest.m_pipelineState = drawData.m_pipelineState->GetDevicePipelineState(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
             drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
             drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
 
@@ -641,7 +640,7 @@ namespace Terrain
 
                 auto drawSrgLayout = shader->GetAsset()->GetDrawSrgLayout(shader->GetSupervariantIndex());
 
-                m_cachedDrawData.push_back({ shader, shaderOptions, pipelineState->GetDevicePipelineState(AZ::RHI::MultiDevice::DefaultDeviceIndex).get(), drawListTag, drawSrgLayout, variant, materialPipelineName });
+                m_cachedDrawData.push_back({ shader, shaderOptions, pipelineState, drawListTag, drawSrgLayout, variant, materialPipelineName });
                 return true;
             });
 

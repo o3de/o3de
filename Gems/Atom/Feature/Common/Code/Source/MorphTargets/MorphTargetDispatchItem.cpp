@@ -30,8 +30,7 @@ namespace AZ
             SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphInstanceMetaData,
             float morphDeltaIntegerEncoding)
-            : m_dispatchItem(RHI::MultiDevice::AllDevices)
-            , m_inputBuffers(inputBuffers)
+            : m_inputBuffers(inputBuffers)
             , m_morphTargetComputeMetaData(morphTargetComputeMetaData)
             , m_morphInstanceMetaData(morphInstanceMetaData)
             , m_accumulatedDeltaIntegerEncoding(morphDeltaIntegerEncoding)
@@ -77,21 +76,19 @@ namespace AZ
 
             InitRootConstants(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
 
-            m_dispatchItem.SetPipelineState(m_morphTargetShader->AcquirePipelineState(pipelineStateDescriptor));
+            m_dispatchItem.m_pipelineState = m_morphTargetShader->AcquirePipelineState(pipelineStateDescriptor)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
 
             // Get the threads-per-group values from the compute shader [numthreads(x,y,z)]
-            RHI::MultiDeviceDispatchArguments arguments;
-            const auto outcome = RPI::GetComputeShaderNumThreads(m_morphTargetShader->GetAsset(), arguments.m_direct);
+            auto& arguments = m_dispatchItem.m_arguments.m_direct;
+            const auto outcome = RPI::GetComputeShaderNumThreads(m_morphTargetShader->GetAsset(), arguments);
             if (!outcome.IsSuccess())
             {
                 AZ_Error("MorphTargetDispatchItem", false, outcome.GetError().c_str());
             }
 
-            arguments.m_direct.m_totalNumberOfThreadsX = m_morphTargetComputeMetaData.m_vertexCount;
-            arguments.m_direct.m_totalNumberOfThreadsY = 1;
-            arguments.m_direct.m_totalNumberOfThreadsZ = 1;
-
-            m_dispatchItem.SetArguments(arguments);
+            arguments.m_totalNumberOfThreadsX = m_morphTargetComputeMetaData.m_vertexCount;
+            arguments.m_totalNumberOfThreadsY = 1;
+            arguments.m_totalNumberOfThreadsZ = 1;
 
             return true;
         }
@@ -116,7 +113,7 @@ namespace AZ
 
             m_instanceSrg->Compile();
 
-            m_dispatchItem.SetUniqueShaderResourceGroup(m_instanceSrg->GetRHIShaderResourceGroup());
+            m_dispatchItem.m_uniqueShaderResourceGroup = m_instanceSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
             return true;
         }
 
@@ -154,14 +151,14 @@ namespace AZ
             m_rootConstantData.SetConstant(tangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedTangentDeltaOffsetInBytes / 4);
             m_rootConstantData.SetConstant(bitangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
 
-            m_dispatchItem.SetRootConstantSize(static_cast<uint8_t>(m_rootConstantData.GetConstantData().size()));
-            m_dispatchItem.SetRootConstants(m_rootConstantData.GetConstantData().data());
+            m_dispatchItem.m_rootConstantSize = static_cast<uint8_t>(m_rootConstantData.GetConstantData().size());
+            m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
         }
 
         void MorphTargetDispatchItem::SetWeight(float weight)
         {
             m_rootConstantData.SetConstant(m_weightIndex, weight);
-            m_dispatchItem.SetRootConstants(m_rootConstantData.GetConstantData().data());
+            m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
         }
 
         float MorphTargetDispatchItem::GetWeight() const
@@ -169,7 +166,7 @@ namespace AZ
             return m_rootConstantData.GetConstant<float>(m_weightIndex);
         }
 
-        const RHI::MultiDeviceDispatchItem& MorphTargetDispatchItem::GetRHIDispatchItem() const
+        const RHI::SingleDeviceDispatchItem& MorphTargetDispatchItem::GetRHIDispatchItem() const
         {
             return m_dispatchItem;
         }

@@ -173,8 +173,7 @@ namespace AZ
             void InitPipelineState(const PipelineStateOptions& options);
             RPI::Ptr<RPI::PipelineStateForDraw>& GetPipelineState(const PipelineStateOptions& pipelineStateOptions);
 
-            const RHI::SingleDeviceIndexBufferView& GetShapeIndexBufferView(
-                AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const;
+            const AZ::RHI::SingleDeviceIndexBufferView& GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const;
             const StreamBufferViewsForAllStreams& GetShapeStreamBufferViews(AuxGeomShapeType shapeType, LodIndex lodIndex, int drawStyle) const;
             uint32_t GetShapeIndexCount(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex);
 
@@ -188,7 +187,7 @@ namespace AZ
                 LodIndex lodIndex,
                 RHI::DrawItemSortKey sortKey = 0);
 
-            const RHI::SingleDeviceIndexBufferView& GetBoxIndexBufferView(int drawStyle) const;
+            const AZ::RHI::SingleDeviceIndexBufferView& GetBoxIndexBufferView(int drawStyle) const;
             const StreamBufferViewsForAllStreams& GetBoxStreamBufferViews(int drawStyle) const;
             uint32_t GetBoxIndexCount(int drawStyle);
 
@@ -209,7 +208,7 @@ namespace AZ
                 const RHI::SingleDeviceIndexBufferView& indexBufferView,
                 const StreamBufferViewsForAllStreams& streamBufferViews,
                 RHI::DrawListTag drawListTag,
-                const AZ::RHI::SingleDevicePipelineState* pipelineState,
+                const AZ::RHI::MultiDevicePipelineState* pipelineState,
                 RHI::DrawItemSortKey sortKey);
 
         private: // data
