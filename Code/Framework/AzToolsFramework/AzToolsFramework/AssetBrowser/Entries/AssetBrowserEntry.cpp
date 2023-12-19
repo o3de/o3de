@@ -170,6 +170,16 @@ namespace AzToolsFramework
             return m_name;
         }
 
+        const AZ::u32 AssetBrowserEntry::GetGroupNameCrc() const
+        {
+            return m_groupNameCrc;
+        }
+
+        const QString& AssetBrowserEntry::GetGroupName() const
+        {
+            return m_groupName;
+        }
+
         const QString& AssetBrowserEntry::GetDisplayName() const
         {
             return m_displayName;
@@ -311,6 +321,35 @@ namespace AzToolsFramework
                     str.remove_prefix(1);
                 }
                 return str;
+            }
+        }
+
+        void AssetBrowserEntry::VisitUp(const AZStd::function<bool(const AssetBrowserEntry*)>& visitorFn) const
+        {
+            if (!visitorFn)
+            {
+                return;
+            }
+
+            for (auto entry = this; entry && entry->GetEntryType() != AssetEntryType::Root; entry = entry->GetParent())
+            {
+                if (!visitorFn(entry))
+                {
+                    return;
+                }
+            }
+        }
+
+        void AssetBrowserEntry::VisitDown(const AZStd::function<bool(const AssetBrowserEntry*)>& visitorFn) const
+        {
+            if (!visitorFn || !visitorFn(this))
+            {
+                return;
+            }
+
+            for (auto child : m_children)
+            {
+                child->VisitDown(visitorFn);
             }
         }
 

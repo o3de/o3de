@@ -267,14 +267,18 @@ namespace AzToolsFramework
 
             m_selection.GetResults().clear();
 
+            AZStd::unordered_set<const AssetBrowserEntry*> entries;
             for (auto entry : selectedAssets)
             {
-                m_selection.GetSelectionFilter()->Filter(m_selection.GetResults(), entry);
-                if (m_selection.IsValid() && !m_selection.GetMultiselect())
+                m_selection.GetSelectionFilter()->Filter(entries, entry);
+
+                if (!entries.empty() && !m_selection.GetMultiselect())
                 {
                     break;
                 }
             }
+
+            m_selection.GetResults().assign(entries.begin(), entries.end());
             return m_selection.IsValid();
         }
 
