@@ -992,7 +992,7 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         tasks.findAll {{ task->task.name.contains('strip{config}DebugSymbols') }}
     }}
     
-    mergeProfileAssets.dependsOn syncLYLayoutMode{config}
+    merge{config}Assets.dependsOn syncLYLayoutMode{config}
 """
 
 DEFAULT_CONFIG_CHANGES = [
