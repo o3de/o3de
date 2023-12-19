@@ -467,7 +467,7 @@ namespace AZ
             AZStd::advance(it, startIndex);
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                const RHI::SingleDeviceDispatchItem* dispatchItem =*it;
+                const RHI::SingleDeviceDispatchItem* dispatchItem = *it;
                 commandList->Submit(*dispatchItem, index);
             }
         }
