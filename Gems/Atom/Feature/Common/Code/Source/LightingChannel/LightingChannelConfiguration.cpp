@@ -8,6 +8,9 @@
 
 #include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
+
 namespace AZ
 {
     namespace Render
