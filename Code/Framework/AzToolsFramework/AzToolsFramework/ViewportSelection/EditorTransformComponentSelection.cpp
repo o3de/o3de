@@ -1728,6 +1728,34 @@ namespace AzToolsFramework
         }
     }
 
+    void EditorTransformComponentSelection::DeselectEntities()
+    {
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (!UndoRedoOperationInProgress())
+        {
+            ScopedUndoBatch undoBatch(EntitiesDeselectUndoRedoDesc);
+
+            // restore manipulator overrides when undoing
+            if (m_entityIdManipulators.m_manipulators)
+            {
+                CreateEntityManipulatorDeselectCommand(undoBatch);
+            }
+
+            // select must happen after to ensure in the undo/redo step the selection command
+            // happens before the manipulator command
+            auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), EntitiesDeselectUndoRedoDesc);
+            selectionCommand->SetParent(undoBatch.GetUndoBatch());
+            selectionCommand.release();
+        }
+
+        m_selectedEntityIds.clear();
+        SetSelectedEntities(EntityIdList());
+
+        DestroyManipulators(m_entityIdManipulators);
+        m_pivotOverrideFrame.Reset();
+    }
+
     bool EditorTransformComponentSelection::SelectDeselect(const AZ::EntityId entityId)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -3336,34 +3364,6 @@ namespace AzToolsFramework
         AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
     {
         m_componentModeSwitcher = componentModeSwitcher;
-    }
-
-    void EditorTransformComponentSelection::DeselectEntities()
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        if (!UndoRedoOperationInProgress())
-        {
-            ScopedUndoBatch undoBatch(EntitiesDeselectUndoRedoDesc);
-
-            // restore manipulator overrides when undoing
-            if (m_entityIdManipulators.m_manipulators)
-            {
-                CreateEntityManipulatorDeselectCommand(undoBatch);
-            }
-
-            // select must happen after to ensure in the undo/redo step the selection command
-            // happens before the manipulator command
-            auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), EntitiesDeselectUndoRedoDesc);
-            selectionCommand->SetParent(undoBatch.GetUndoBatch());
-            selectionCommand.release();
-        }
-
-        m_selectedEntityIds.clear();
-        SetSelectedEntities(EntityIdList());
-
-        DestroyManipulators(m_entityIdManipulators);
-        m_pivotOverrideFrame.Reset();
     }
 
     void EditorTransformComponentSelection::SnapSelectedEntitiesToWorldGrid(const float gridSize)
