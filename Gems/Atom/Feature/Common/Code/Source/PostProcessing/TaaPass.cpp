@@ -160,50 +160,7 @@ namespace AZ::Render
     bool TaaPass::UpdateAttachmentImage(uint32_t attachmentIndex)
     {
         RPI::Ptr<RPI::PassAttachment>& attachment = m_accumulationAttachments[attachmentIndex];
-        if (!attachment)
-        {
-            return false;
-        }
-
-        // update the image attachment descriptor to sync up size and format
-        attachment->Update(true);
-        RHI::ImageDescriptor& imageDesc = attachment->m_descriptor.m_image;
-
-        // The Format Source had no valid attachment
-        if (imageDesc.m_format == RHI::Format::Unknown)
-        {
-            return false;
-        }
-
-        RPI::AttachmentImage* currentImage = azrtti_cast<RPI::AttachmentImage*>(attachment->m_importedResource.get());
-
-        if (attachment->m_importedResource && imageDesc.m_size == currentImage->GetDescriptor().m_size)
-        {
-            // If there's a resource already and the size didn't change, just keep using the old AttachmentImage.
-            return true;
-        }
-        
-        Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-
-        // set the bind flags
-        imageDesc.m_bindFlags |= RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
-        
-        // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
-        RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDesc.m_format, 0, 0);
-        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Color;
-
-        // The full path name is needed for the attachment image so it's not deduplicated from accumulation images in different pipelines.
-        AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);
-        auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDesc, Name(imageName), nullptr, &viewDesc);
-
-        if (attachmentImage)
-        {
-            attachment->m_path = attachmentImage->GetAttachmentId();
-            attachment->m_importedResource = attachmentImage;
-            m_attachmentImages[attachmentIndex] = attachmentImage;
-            return true;
-        }
-        return false;
+        return UpdateImportedAttachmentImage(attachment);
     }
 
     void TaaPass::SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length)
