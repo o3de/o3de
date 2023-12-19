@@ -63,12 +63,4 @@ namespace AZ::RHI
 
         MultiDeviceResource::Shutdown();
     }
-
-    void MultiDeviceShaderResourceGroup::InvalidateViews()
-    {
-        IterateObjects<ShaderResourceGroup>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroup)
-        {
-            deviceShaderResourceGroup->InvalidateViews();
-        });
-    }
 } // namespace AZ::RHI
