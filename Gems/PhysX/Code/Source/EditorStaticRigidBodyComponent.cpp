@@ -24,7 +24,7 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 constexpr const char* ToolTip = "The entity behaves as a non-movable rigid body in PhysX.";
-                constexpr const char* HelpPageURL = "https://o3de.org/docs/user-guide/components/reference/physx/static-rigid-body/";
+                constexpr const char* HelpPageURL = "https://www.o3de.org/docs/user-guide/components/reference/physx/static-rigid-body/";
 
                 editContext->Class<EditorStaticRigidBodyComponent>("PhysX Static Rigid Body", ToolTip)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")

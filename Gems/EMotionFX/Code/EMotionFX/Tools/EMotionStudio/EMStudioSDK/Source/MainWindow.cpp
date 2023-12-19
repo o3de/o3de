@@ -399,12 +399,12 @@ namespace EMStudio
 
         menu->addAction("Documentation", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/user-guide/visualization/animation/"));
+            QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/user-guide/visualization/animation/"));
         });
 
         menu->addAction("Forums", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/community/"));
+            QDesktopServices::openUrl(QUrl("https://www.o3de.org/community/"));
         });
 
         menu->addSeparator();

@@ -124,7 +124,7 @@ The synthetic environment looks like:
 
 ## Contribute
 
-For information about contributing to Open 3D Engine, visit [https://o3de.org/docs/contributing/](https://o3de.org/docs/contributing/).
+For information about contributing to Open 3D Engine, visit [https://www.o3de.org/docs/contributing/](https://www.o3de.org/docs/contributing/).
 
 ## License
 

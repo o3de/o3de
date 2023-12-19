@@ -15,7 +15,7 @@
         "Navigation"
     ],
     "icon_path": "preview.png",
-    "requirements": "This gem uses https://github.com/recastnavigation/recastnavigation which is acquired using FetchContent CMake feature.",
+    "requirements": "This gem uses https://www.github.com/recastnavigation/recastnavigation which is acquired using FetchContent CMake feature.",
     "documentation_url": "",
     "dependencies": [],
     "restricted": "RecastNavigation"
