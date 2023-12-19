@@ -1598,7 +1598,7 @@ class AndroidProjectGenerator(object):
                 cmake_argument_list.append('"-DLY_STRIP_DEBUG_SYMBOLS=ON"')
 
             if self._asset_mode == ASSET_MODE_PAK:
-                cmake_argument_list.append('"-DLY_ARCHIVE_FILE_SEARCH_MODE=2"')
+                cmake_argument_list.append('"-DLY_ARCHIVE_FILE_SEARCH_MODE=1"')
 
             cmake_argument_list.extend([
                 f'"-DANDROID_NATIVE_API_LEVEL={self._android_platform_sdk_api_level}"',
