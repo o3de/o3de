@@ -992,7 +992,7 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         tasks.findAll {{ task->task.name.contains('strip{config}DebugSymbols') }}
     }}
     
-    mergeProfileAssets.dependsOn syncLYLayoutMode{config}
+    merge{config}Assets.dependsOn syncLYLayoutMode{config}
 """
 
 DEFAULT_CONFIG_CHANGES = [
@@ -1596,6 +1596,9 @@ class AndroidProjectGenerator(object):
 
             if self._strip_debug_symbols:
                 cmake_argument_list.append('"-DLY_STRIP_DEBUG_SYMBOLS=ON"')
+
+            if self._asset_mode == ASSET_MODE_PAK:
+                cmake_argument_list.append('"-DLY_ARCHIVE_FILE_SEARCH_MODE=1"')
 
             cmake_argument_list.extend([
                 f'"-DANDROID_NATIVE_API_LEVEL={self._android_platform_sdk_api_level}"',
