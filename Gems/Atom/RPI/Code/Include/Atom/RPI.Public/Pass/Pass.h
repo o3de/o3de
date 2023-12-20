@@ -399,6 +399,11 @@ namespace AZ
             // Setup ImageAttachmentCopy
             void UpdateAttachmentCopy(FramePrepareParams params);
 
+            // Update Imported Attachment
+            bool UpdateImportedAttachmentImage(Ptr<PassAttachment>& attachment, 
+                RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite,
+                RHI::ImageAspectFlags aspectFlags = RHI::ImageAspectFlags::Color);
+
             // --- Protected Members ---
 
             const Name PassNameThis{"This"};
