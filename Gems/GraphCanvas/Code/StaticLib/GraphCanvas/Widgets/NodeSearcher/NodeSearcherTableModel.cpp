@@ -75,11 +75,6 @@ namespace GraphCanvas
         return true;
     }
 
-    QVariant NodeTableSourceModel::headerData([[maybe_unused]] int section, Qt::Orientation orientation, int role) const
-    {
-        return role == Qt::DisplayRole && orientation == Qt::Horizontal ? QString("NodeName") : QVariant();
-    }
-
     Qt::ItemFlags NodeTableSourceModel::flags(const QModelIndex& index) const
     {
         return index.isValid() ? (Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable) : Qt::ItemFlag();
@@ -102,11 +97,7 @@ namespace GraphCanvas
     {
         GraphCanvas::NodeTitleNotificationsBus::MultiHandler::BusDisconnect(nodeId);
         AZStd::lock_guard<AZStd::mutex> lock(m_nodexMtx);
-        auto nodeIter = AZStd::find<AZStd::vector<AZ::EntityId>::iterator, AZ::EntityId>(m_nodes.begin(), m_nodes.end(), nodeId);
-        if (nodeIter != m_nodes.end())
-        {
-            m_nodes.erase(nodeIter);
-        }
+        AZStd::erase_if(m_nodes, [nodeId](const AZ::EntityId& node){ return nodeId == node; });
         m_nodeNames.erase(nodeId);
         layoutChanged();
     }

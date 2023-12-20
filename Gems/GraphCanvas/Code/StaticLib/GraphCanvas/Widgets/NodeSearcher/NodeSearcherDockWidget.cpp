@@ -26,7 +26,8 @@ namespace GraphCanvas
         m_proxyModel = aznew NodeTableSortProxyModel(m_model);
 
         m_nodelistTable->setModel(m_proxyModel);
-         m_nodelistTable->horizontalHeader()->setSectionResizeMode(NodeTableSourceModel::CD_Name, QHeaderView::ResizeMode::Stretch);
+        m_nodelistTable->horizontalHeader()->setSectionResizeMode(NodeTableSourceModel::CD_Name, QHeaderView::ResizeMode::Stretch);
+        m_nodelistTable->horizontalHeader()->setVisible(false);
         m_nodelistTable->verticalHeader()->setVisible(false);
 
         m_filterTimer.setInterval(250);
@@ -44,6 +45,7 @@ namespace GraphCanvas
     NodeSearcherDockWidget::~NodeSearcherDockWidget()
     {
         AssetEditorNotificationBus::Handler::BusDisconnect(m_editorId);
+        SceneNotificationBus::Handler::BusDisconnect();
     }
 
     void NodeSearcherDockWidget::CreateUI()

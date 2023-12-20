@@ -456,24 +456,24 @@
    </property>
   </action>
 
-	 <action name="action_ViewNodeSearcher">
-		 <property name="checkable">
-			 <bool>true</bool>
-		 </property>
-		 <property name="checked">
-			 <bool>true</bool>
-		 </property>
-		 <property name="text">
-			 <string>NodeSearcher</string>
-		 </property>
-		 <property name="shortcut">
-			 <string>Ctrl+F</string>
-		 </property>
-		 <property name="autoRepeat">
-			 <bool>false</bool>
-		 </property>
-	 </action>
-	 
+   <action name="action_ViewNodeSearcher">
+     <property name="checkable">
+       <bool>true</bool>
+     </property>
+     <property name="checked">
+       <bool>true</bool>
+     </property>
+     <property name="text">
+       <string>NodeSearcher</string>
+     </property>
+     <property name="shortcut">
+       <string>Ctrl+F</string>
+     </property>
+     <property name="autoRepeat">
+       <bool>false</bool>
+     </property>
+   </action>
+
   <action name="action_ViewBookmarks">
    <property name="checkable">
     <bool>true</bool>
