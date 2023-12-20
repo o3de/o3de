@@ -15,6 +15,17 @@
 
 namespace ShaderManagementConsole
 {
+    struct DocumentVerificationResult
+    {
+        bool AllGood() const { return !m_hasRedundantVariants && !m_hasRootLike && !m_hasStableIdJump; }
+
+        bool m_hasRedundantVariants = false;
+        bool m_hasRootLike = false;
+        AZ::u32 m_rootLikeStableId{};
+        bool m_hasStableIdJump = false;
+        AZ::u32 faultyId{};
+    };
+
     class ShaderManagementConsoleDocumentRequests : public AZ::EBusTraits
     {
     public:
@@ -66,6 +77,9 @@ namespace ShaderManagementConsole
         //! Get the shader option descriptor from the shader asset.
         //! Note that the shader asset can contain more descriptors than are stored in the shader variant list source data.
         virtual const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const = 0;
+
+        //! Verify before save that some guarantees are respected (like contiguous stableids)
+        virtual DocumentVerificationResult Verify() const = 0;
     };
 
     using ShaderManagementConsoleDocumentRequestBus = AZ::EBus<ShaderManagementConsoleDocumentRequests>;
