@@ -605,6 +605,29 @@ namespace AZ
             }
         }
 
+
+        void MeshFeatureProcessor::SetLightingChannelMask(const MeshHandle& meshHandle, uint32_t lightingChannelMask)
+        {
+            if (meshHandle.IsValid())
+            {
+                meshHandle->SetLightingChannelMask(lightingChannelMask);
+            }
+        }
+
+        uint32_t MeshFeatureProcessor::GetLightingChannelMask(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->GetLightingChannelMask();
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return 1;
+            }
+        }        
+
+
         void MeshFeatureProcessor::AddVisibleObjectsToBuckets(
             TaskGraph& addVisibleObjectsToBucketsTG, size_t viewIndex, const RPI::ViewPtr& view)
         {
@@ -1252,6 +1275,11 @@ namespace AZ
                 AZ_Assert(false, "Invalid mesh handle");
                 return 0;
             }
+        }
+
+        void ModelDataInstance::SetLightingChannelMask(uint32_t lightingChannelMask)
+        {
+            m_lightingChannelMask = lightingChannelMask;
         }
 
         void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig)
@@ -2892,6 +2920,12 @@ namespace AZ
                     {
                         objectSrg->SetConstant(useReflectionProbeConstantIndex, false);
                     }
+                }
+
+                RHI::ShaderInputConstantIndex lightingChannelMaskIndex = objectSrg->FindShaderInputConstantIndex(AZ::Name("m_lightingChannelMask"));
+                if (lightingChannelMaskIndex.IsValid())
+                {
+                    objectSrg->SetConstant(lightingChannelMaskIndex, m_lightingChannelMask);
                 }
 
                 objectSrg->Compile();

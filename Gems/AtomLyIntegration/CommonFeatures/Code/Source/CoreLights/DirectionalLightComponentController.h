@@ -96,6 +96,8 @@ namespace AZ
             float GetAffectsGIFactor() const override;
             void SetAffectsGIFactor(float affectsGIFactor) override;
             void BindConfigurationChangedEventHandler(DirectionalLightConfigurationChangedEvent::Handler& configurationChangedHandler) override;
+            uint32_t GetLightingChannelMask() const override;
+            void SetLightingChannelMask(const uint32_t mask) override;
 
         private:
             friend class EditorDirectionalLightComponent;
@@ -125,6 +127,9 @@ namespace AZ
 
             //! Updates current directional light color and intensity.
             void ColorIntensityChanged();
+
+            //! Updates light channel mask.
+            void LightingChannelMaskChanged();
 
             DirectionalLightComponentConfig m_configuration;
             EntityId m_entityId{ EntityId::InvalidEntityId };

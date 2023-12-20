@@ -25,6 +25,8 @@ class LightingData_BasePBR
 {
     LightCullingTileIterator tileIterator;
     
+    uint lightingChannels;
+    
     // Lighting outputs
     real3 diffuseLighting;
     real3 specularLighting;
@@ -75,6 +77,8 @@ void LightingData_BasePBR::Init(float3 positionWS, real3 specularNormal, real ro
 #endif
     diffuseAmbientOcclusion = 1.0;
     specularOcclusion = 1.0;
+        
+    lightingChannels = 0xFFFFFFFF;
 
     dirToCamera = real3(normalize(viewPosition - positionWS));
 

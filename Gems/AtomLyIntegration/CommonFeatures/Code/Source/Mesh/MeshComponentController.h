@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
@@ -54,6 +55,8 @@ namespace AZ
             RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
             float m_minimumScreenCoverage = 1.0f / 1080.0f;
             float m_qualityDecayRate = 0.5f;
+
+            AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
         };
 
         class MeshComponentController final
@@ -178,6 +181,8 @@ namespace AZ
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
 
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
+
+            void LightingChannelMaskChanged();
 
             Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;

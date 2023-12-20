@@ -617,6 +617,7 @@ namespace AZ::Render
                     }
                 }
             }
+            UpdateLightingChannelMask();
         }
     }
 
@@ -813,6 +814,26 @@ namespace AZ::Render
     void AtomActorInstance::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
     {
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
+    }
+
+    void AtomActorInstance::UpdateLightingChannelMask()
+    {
+        if (m_meshHandle)
+        {
+            const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& objectSrgs =
+                m_meshFeatureProcessor->GetObjectSrgs(*m_meshHandle);
+            for (auto& objectSrg : objectSrgs)
+            {
+                RHI::ShaderInputConstantIndex lightingChannelMaskIndex =
+                    objectSrg->FindShaderInputConstantIndex(AZ::Name("m_lightingChannelMask"));
+                if (lightingChannelMaskIndex.IsValid())
+                {
+                    objectSrg->SetConstant(lightingChannelMaskIndex, m_actorInstance->GetLightingChannelMask());
+                }
+            }
+            m_meshFeatureProcessor->SetLightingChannelMask(*m_meshHandle, m_actorInstance->GetLightingChannelMask());
+            m_meshFeatureProcessor->QueueObjectSrgForCompile(*m_meshHandle);
+        }
     }
 
     const MeshFeatureProcessorInterface::MeshHandle* AtomActorInstance::GetMeshHandle() const

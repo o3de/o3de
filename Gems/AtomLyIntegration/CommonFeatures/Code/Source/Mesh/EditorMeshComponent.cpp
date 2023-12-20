@@ -107,6 +107,11 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                                 ->Attribute(AZ::Edit::Attributes::Max, 1.f)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::LodTypeIsScreenCoverage)
+                        ->ClassElement(Edit::ClassElements::Group, "Lighting Channels")
+                            ->DataElement(0, &MeshComponentConfig::m_lightingChannelConfig, "Lighting channel configuration", "")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                                ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
+                                ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ;
                 }
             }

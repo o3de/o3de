@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h>
 
 namespace AZ
@@ -141,6 +142,8 @@ namespace AZ
             bool m_affectsGI = true;
             float m_affectsGIFactor = 1.0f;
 
+            // Lighting channel
+            AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
             bool IsShadowDisabled() const;
