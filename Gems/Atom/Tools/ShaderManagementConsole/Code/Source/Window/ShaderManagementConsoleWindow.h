@@ -39,6 +39,8 @@ namespace ShaderManagementConsole
 
         void ShowContextMenu(const QPoint& pos);
 
+        void ErrorMessageBoxesForDocumentVerification(const DocumentVerificationResult& verification);
+
     private:
         void closeEvent(QCloseEvent* closeEvent) override;
 
