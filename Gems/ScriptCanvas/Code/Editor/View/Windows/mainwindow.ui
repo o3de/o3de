@@ -121,7 +121,7 @@
     <addaction name="action_ViewProperties"/>
     <addaction name="action_ViewDebugger"/>
     <addaction name="action_ViewCommandLine"/>
-	<addaction name="action_ViewNodeSearcher"/>
+	<addaction name="action_ViewGraphOutliner"/>
     <addaction name="action_ViewLog"/>
     <addaction name="action_ViewBookmarks"/>
     <addaction name="action_ViewMiniMap"/>
@@ -456,7 +456,7 @@
    </property>
   </action>
 
-   <action name="action_ViewNodeSearcher">
+   <action name="action_ViewGraphOutliner">
      <property name="checkable">
        <bool>true</bool>
      </property>
@@ -464,7 +464,7 @@
        <bool>true</bool>
      </property>
      <property name="text">
-       <string>NodeSearcher</string>
+       <string>GraphOutliner</string>
      </property>
      <property name="shortcut">
        <string>Ctrl+F</string>

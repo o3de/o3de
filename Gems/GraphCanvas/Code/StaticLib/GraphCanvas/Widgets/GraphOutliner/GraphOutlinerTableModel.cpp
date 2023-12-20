@@ -8,7 +8,7 @@
 
 #include <AzCore/std/sort.h>
 
-#include <GraphCanvas/Widgets/NodeSearcher/NodeSearcherTableModel.h>
+#include <GraphCanvas/Widgets/GraphOutliner/GraphOutlinerTableModel.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/VisualBus.h>
 

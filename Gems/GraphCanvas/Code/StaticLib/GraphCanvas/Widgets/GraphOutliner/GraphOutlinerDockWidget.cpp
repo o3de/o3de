@@ -6,17 +6,17 @@
  *
  */
 
-#include <GraphCanvas/Widgets/NodeSearcher/NodeSearcherDockWidget.h>
+#include <GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.h>
 #include <QHeaderView>
 #include <GraphCanvas/Components/VisualBus.h>
 
 namespace GraphCanvas
 {
     ///////////////////////////
-    // NodeSearcherDockWidget
+    // GraphOutlinerDockWidget
     ///////////////////////////
 
-    NodeSearcherDockWidget::NodeSearcherDockWidget(EditorId editorId, QWidget* parent)
+    GraphOutlinerDockWidget::GraphOutlinerDockWidget(EditorId editorId, QWidget* parent)
         : AzQtComponents::StyledDockWidget(parent)
         , m_editorId(editorId)
     {
@@ -34,21 +34,21 @@ namespace GraphCanvas
         m_filterTimer.setSingleShot(true);
         m_filterTimer.stop();
 
-        connect(&m_filterTimer, &QTimer::timeout, this, &NodeSearcherDockWidget::UpdateFilter);
-        connect(m_quickFilter, &QLineEdit::textChanged, this, &NodeSearcherDockWidget::OnQuickFilterChanged);
-        connect(m_nodelistTable->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NodeSearcherDockWidget::SelectionChanged);
-        connect(m_nodelistTable, &QTableView::doubleClicked, this, &NodeSearcherDockWidget::OnDoubleClicked);
+        connect(&m_filterTimer, &QTimer::timeout, this, &GraphOutlinerDockWidget::UpdateFilter);
+        connect(m_quickFilter, &QLineEdit::textChanged, this, &GraphOutlinerDockWidget::OnQuickFilterChanged);
+        connect(m_nodelistTable->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GraphOutlinerDockWidget::SelectionChanged);
+        connect(m_nodelistTable, &QTableView::doubleClicked, this, &GraphOutlinerDockWidget::OnDoubleClicked);
         AssetEditorNotificationBus::Handler::BusConnect(editorId);
 
         OnActiveGraphChanged(AZ::EntityId());
     }
-    NodeSearcherDockWidget::~NodeSearcherDockWidget()
+    GraphOutlinerDockWidget::~GraphOutlinerDockWidget()
     {
         AssetEditorNotificationBus::Handler::BusDisconnect(m_editorId);
         SceneNotificationBus::Handler::BusDisconnect();
     }
 
-    void NodeSearcherDockWidget::CreateUI()
+    void GraphOutlinerDockWidget::CreateUI()
     {
         QWidget* dockWidgetContents;
         QScrollArea* scrollArea;
@@ -90,17 +90,17 @@ namespace GraphCanvas
         verticalLayout->addWidget(m_quickFilter);
         verticalLayout->addWidget(m_nodelistTable);
 
-        this->setWindowTitle("Node Searcher");
+        this->setWindowTitle("Graph Outliner");
         this->setWidget(dockWidgetContents);
 
     }
 
-    void NodeSearcherDockWidget::OnDoubleClicked(const QModelIndex& index)
+    void GraphOutlinerDockWidget::OnDoubleClicked(const QModelIndex& index)
     {
         m_model->JumpToNodeArea(m_proxyModel->mapToSource(index));
     }
 
-    void NodeSearcherDockWidget::OnActiveGraphChanged([[maybe_unused]] const GraphId& graphId)
+    void GraphOutlinerDockWidget::OnActiveGraphChanged([[maybe_unused]] const GraphId& graphId)
     {
         SceneNotificationBus::Handler::BusDisconnect();
 
@@ -114,10 +114,10 @@ namespace GraphCanvas
         SceneNotificationBus::Handler::BusConnect(m_activeGraphCanvasGraphId);
     }
 
-    void NodeSearcherDockWidget::OnContextMenuRequested([[maybe_unused]] const QPoint& pos)
+    void GraphOutlinerDockWidget::OnContextMenuRequested([[maybe_unused]] const QPoint& pos)
     {
     }
-    void NodeSearcherDockWidget::SelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+    void GraphOutlinerDockWidget::SelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
     {
         if (selected.isEmpty())
         {
@@ -132,12 +132,12 @@ namespace GraphCanvas
         SceneNotificationBus::Handler::BusConnect(m_activeGraphCanvasGraphId);
     }
 
-    void NodeSearcherDockWidget::OnSelectionChanged()
+    void GraphOutlinerDockWidget::OnSelectionChanged()
     {
         m_nodelistTable->selectionModel()->clear();
     }
 
-    void NodeSearcherDockWidget::OnQuickFilterChanged([[maybe_unused]] const QString& text)
+    void GraphOutlinerDockWidget::OnQuickFilterChanged([[maybe_unused]] const QString& text)
     {
         if (text.isEmpty())
         {
@@ -149,12 +149,12 @@ namespace GraphCanvas
         m_filterTimer.start();
     }
 
-    void NodeSearcherDockWidget::UpdateFilter()
+    void GraphOutlinerDockWidget::UpdateFilter()
     {
         m_proxyModel->SetFilter(m_quickFilter->text());
     }
 
-    void NodeSearcherDockWidget::ClearFilter()
+    void GraphOutlinerDockWidget::ClearFilter()
     {
         {
             QSignalBlocker blocker(m_quickFilter);

@@ -582,7 +582,7 @@ namespace ScriptCanvasEditor
 
         m_bookmarkDockWidget = aznew GraphCanvas::BookmarkDockWidget(ScriptCanvasEditor::AssetEditorId, this);
 
-        m_nodeSearcherDockWidget = aznew GraphCanvas::NodeSearcherDockWidget(ScriptCanvasEditor::AssetEditorId, this);
+        m_graphOutlinerDockWidget = aznew GraphCanvas::GraphOutlinerDockWidget(ScriptCanvasEditor::AssetEditorId, this);
 
         QObject::connect(m_variableDockWidget, &VariableDockWidget::OnVariableSelectionChanged, this, &MainWindow::OnVariableSelectionChanged);
 
@@ -661,7 +661,7 @@ namespace ScriptCanvasEditor
         connect(m_minimap, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_propertyGrid, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_bookmarkDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
-        connect(m_nodeSearcherDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
+        connect(m_graphOutlinerDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_variableDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_loggingWindow, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_validationDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
@@ -775,7 +775,7 @@ namespace ScriptCanvasEditor
 
         // View menu
         connect(ui->action_ViewNodePalette, &QAction::triggered, this, &MainWindow::OnViewNodePalette);
-        connect(ui->action_ViewNodeSearcher, &QAction::triggered, this, &MainWindow::OnViewNodeSearcher);
+        connect(ui->action_ViewGraphOutliner, &QAction::triggered, this, &MainWindow::OnViewGraphOutliner);
         connect(ui->action_ViewMiniMap, &QAction::triggered, this, &MainWindow::OnViewMiniMap);
 
         connect(ui->action_ViewProperties, &QAction::triggered, this, &MainWindow::OnViewProperties);
@@ -2771,11 +2771,11 @@ namespace ScriptCanvasEditor
             m_nodePalette->show();
         }
 
-        if (m_nodeSearcherDockWidget)
+        if (m_graphOutlinerDockWidget)
         {
-            addDockWidget(Qt::LeftDockWidgetArea, m_nodeSearcherDockWidget);
-            m_nodeSearcherDockWidget->setFloating(false);
-            m_nodeSearcherDockWidget->show();
+            addDockWidget(Qt::LeftDockWidgetArea, m_graphOutlinerDockWidget);
+            m_graphOutlinerDockWidget->setFloating(false);
+            m_graphOutlinerDockWidget->show();
         }
 
         if (m_variableDockWidget)
@@ -2907,11 +2907,11 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void MainWindow::OnViewNodeSearcher()
+    void MainWindow::OnViewGraphOutliner()
     {
-        if (m_nodeSearcherDockWidget)
+        if (m_graphOutlinerDockWidget)
         {
-            m_nodeSearcherDockWidget->toggleViewAction()->trigger();
+            m_graphOutlinerDockWidget->toggleViewAction()->trigger();
         }
     }
 
@@ -3060,10 +3060,10 @@ namespace ScriptCanvasEditor
 
     void MainWindow::UpdateViewMenu()
     {
-        if (ui->action_ViewNodeSearcher->isChecked() != m_nodeSearcherDockWidget->isVisible())
+        if (ui->action_ViewGraphOutliner->isChecked() != m_graphOutlinerDockWidget->isVisible())
         {
-            QSignalBlocker signalBlocker(ui->action_ViewNodeSearcher);
-            ui->action_ViewNodeSearcher->setChecked(m_nodeSearcherDockWidget->isVisible());
+            QSignalBlocker signalBlocker(ui->action_ViewGraphOutliner);
+            ui->action_ViewGraphOutliner->setChecked(m_graphOutlinerDockWidget->isVisible());
         }
 
         if (ui->action_ViewBookmarks->isChecked() != m_bookmarkDockWidget->isVisible())
@@ -4479,7 +4479,7 @@ namespace ScriptCanvasEditor
         }
 
         m_tabBar->setEnabled(false);
-        m_nodeSearcherDockWidget->setEnabled(false);
+        m_graphOutlinerDockWidget->setEnabled(false);
         m_bookmarkDockWidget->setEnabled(false);
         m_variableDockWidget->setEnabled(false);
         m_propertyGrid->DisableGrid();
@@ -4505,7 +4505,7 @@ namespace ScriptCanvasEditor
         }
 
         m_tabBar->setEnabled(true);
-        m_nodeSearcherDockWidget->setEnabled(true);
+        m_graphOutlinerDockWidget->setEnabled(true);
         m_bookmarkDockWidget->setEnabled(true);
         m_variableDockWidget->setEnabled(true);
         m_propertyGrid->EnableGrid();

@@ -29,22 +29,22 @@
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Editor/AssetEditorBus.h>
-#include <GraphCanvas/Widgets/NodeSearcher/NodeSearcherTableModel.h>
+#include <GraphCanvas/Widgets/GraphOutliner/GraphOutlinerTableModel.h>
 #endif
 
 namespace GraphCanvas
 {
-    class NodeSearcherDockWidget
+    class GraphOutlinerDockWidget
         : public AzQtComponents::StyledDockWidget
         , public GraphCanvas::SceneNotificationBus::Handler
         , public AssetEditorNotificationBus::Handler
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(NodeSearcherDockWidget, AZ::SystemAllocator);
+        AZ_CLASS_ALLOCATOR(GraphOutlinerDockWidget, AZ::SystemAllocator);
 
-        NodeSearcherDockWidget(EditorId editorId, QWidget* parent = nullptr);
-        ~NodeSearcherDockWidget();
+        GraphOutlinerDockWidget(EditorId editorId, QWidget* parent = nullptr);
+        ~GraphOutlinerDockWidget();
 
         // AssetEditorNotificationBus
         void OnActiveGraphChanged(const GraphId& graphId) override;

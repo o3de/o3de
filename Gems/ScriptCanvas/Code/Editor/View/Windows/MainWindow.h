@@ -34,7 +34,7 @@
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
-#include <GraphCanvas/Widgets/NodeSearcher/NodeSearcherDockWidget.h>
+#include <GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.h>
 #include <GraphCanvas/Widgets/ConstructPresetDialog/ConstructPresetDialog.h>
 #include <GraphCanvas/Styling/StyleManager.h>
 
@@ -376,7 +376,7 @@ namespace ScriptCanvasEditor
 
         // Tools menu
         void OnViewNodePalette();
-        void OnViewNodeSearcher();
+        void OnViewGraphOutliner();
         void OnViewProperties();
         void OnViewDebugger();
         void OnViewCommandLine();
@@ -673,7 +673,7 @@ namespace ScriptCanvasEditor
         Widget::LogPanelWidget*             m_logPanel = nullptr;
         Widget::PropertyGrid*               m_propertyGrid = nullptr;
         Widget::CommandLine* m_commandLine = nullptr;
-        GraphCanvas::NodeSearcherDockWidget* m_nodeSearcherDockWidget = nullptr;
+        GraphCanvas::GraphOutlinerDockWidget* m_graphOutlinerDockWidget = nullptr;
         GraphCanvas::BookmarkDockWidget*    m_bookmarkDockWidget = nullptr;
         GraphCanvas::MiniMapDockWidget*     m_minimap = nullptr;
         LoggingWindow*                      m_loggingWindow = nullptr;
