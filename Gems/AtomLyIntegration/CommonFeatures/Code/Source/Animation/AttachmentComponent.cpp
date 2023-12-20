@@ -218,8 +218,8 @@ namespace AZ
 
         void BoneFollower::BindTargetBone()
         {
-            AZ::Entity* ownerEntity = nullptr;
 #if defined(CARBONATED)
+            AZ::Entity* ownerEntity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(ownerEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_ownerId);
             AZ_TracePrintf(
                 "BoneFollower",
