@@ -1019,6 +1019,7 @@ namespace AzToolsFramework
                         else
                         {
                             // handler is the same, set the existing handler with the new value
+                            RemoveCachedAttributes(childIndex);
                             SetPropertyEditorAttributes(childIndex, valueAtSubPath, childWidget);
                             handlerInfo.handlerInterface->SetValueFromDom(valueAtSubPath);
                         }
