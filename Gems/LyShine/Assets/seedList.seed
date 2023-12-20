@@ -22,7 +22,7 @@
             "assetId": {
                 "guid": "{C7BCB5E8-3E6B-5531-A3D9-CEE93E103F69}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "lyshine/shaders/lyshineui.azshader"
         },
         {
