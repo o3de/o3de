@@ -97,6 +97,7 @@ namespace AZ
 
             MultiIndexedDataVector<SimpleSpotLightData, MeshCommon::BoundsVariant> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
+            RHI::Handle<uint32_t> m_lightMeshFlag;
             RHI::Handle<uint32_t> m_shadowMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
 

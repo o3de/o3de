@@ -36,6 +36,15 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
     }
 }
 
+void ApplySimplePointLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
+{
+    if (o_enableSimplePointLights)
+    {
+        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[lightIndex];
+        ApplySimplePointLight(light, surface, lightingData);
+    }
+}
+
 void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
 {
 #if ENABLE_LIGHT_CULLING
@@ -45,14 +54,12 @@ void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
     
-        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
-        ApplySimplePointLight(light, surface, lightingData);
+        ApplySimplePointLightInternal(currLightIndex, surface, lightingData);
     }
 #else
     for(uint lightIndex = 0; lightIndex < ViewSrg::m_simplePointLightCount; lightIndex++)
     {
-        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[lightIndex];
-        ApplySimplePointLight(light, surface, lightingData);
+        ApplySimplePointLightInternal(lightIndex, surface, lightingData);
     }
 #endif
 }
