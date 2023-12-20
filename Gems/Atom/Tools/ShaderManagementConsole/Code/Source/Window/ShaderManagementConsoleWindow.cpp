@@ -120,6 +120,32 @@ namespace ShaderManagementConsole
         return result.Native();
     }
 
+    void ShaderManagementConsoleWindow::ErrorMessageBoxesForDocumentVerification(const DocumentVerificationResult& verification)
+    {
+        if (verification.m_hasRedundantVariants)
+        {
+            QMessageBox::critical(
+                this, tr("QC fail"), tr("Some variants are redundant. Use the recompaction feature before saving."), QMessageBox::Ok);
+        }
+        if (verification.m_hasRootLike)
+        {
+            QMessageBox::critical(
+                this,
+                tr("QC fail"),
+                tr("Variant with id %1 is root-like (all options dynamic). Remove it or use recompaction feature before saving.")
+                    .arg(verification.m_rootLikeStableId),
+                QMessageBox::Ok);
+        }
+        if (verification.m_hasStableIdJump)
+        {
+            QMessageBox::critical(
+                this,
+                tr("QC fail"),
+                tr("Stable id %1 isn't compact. Use the recompaction feature before saving.").arg(verification.faultyId),
+                QMessageBox::Ok);
+        }
+    }
+
     void ShaderManagementConsoleWindow::CreateMenus(QMenuBar* menuBar)
     {
         Base::CreateMenus(menuBar);
@@ -129,24 +155,7 @@ namespace ShaderManagementConsole
             DocumentVerificationResult verification;
             ShaderManagementConsoleDocumentRequestBus::EventResult(
                 verification, GetCurrentDocumentId(), &ShaderManagementConsoleDocumentRequestBus::Events::Verify);
-            if (verification.m_hasRedundantVariants)
-            {
-                QMessageBox::critical(
-                    this, tr("QC fail"), tr("Some variants are redundant. Use the recompaction feature before saving."), QMessageBox::Ok);
-            }
-            if (verification.m_hasRootLike)
-            {
-                QMessageBox::critical(
-                    this,
-                    tr("QC fail"),
-                    tr("Variant with id %1 is root-like (all options dynamic). Remove it or use recompaction feature before saving.").arg(verification.m_rootLikeStableId),
-                    QMessageBox::Ok);
-            }
-            if (verification.m_hasStableIdJump)
-            {
-                QMessageBox::critical(
-                    this, tr("QC fail"), tr("Stable id %1 isn't compact. Use the recompaction feature before saving.").arg(verification.faultyId), QMessageBox::Ok);
-            }
+            ErrorMessageBoxesForDocumentVerification(verification);
             if (verification.AllGood())
             {
                 QMessageBox::information(

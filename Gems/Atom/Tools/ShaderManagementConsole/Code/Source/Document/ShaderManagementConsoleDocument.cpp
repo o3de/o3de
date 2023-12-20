@@ -581,6 +581,17 @@ namespace ShaderManagementConsole
 
     bool ShaderManagementConsoleDocument::SaveSourceData()
     {
+        auto verification = Verify();
+        //ErrorMessageBoxesForDocumentVerification(verification); // can't display message boxes from the document
+        if (!verification.AllGood())
+        {
+            AZ_TracePrintf("ShaderManagementConsoleDocument", "Verification reported: redundant variants: %s | stable id jumps: %s | root-like found: %s",
+                           verification.m_hasRedundantVariants ? "yes" : "no",
+                           verification.m_hasStableIdJump ? "yes" : "no",
+                           verification.m_hasRootLike ? "yes" : "no");
+            return SaveFailed();
+        }
+
         if (!AZ::RPI::JsonUtils::SaveObjectToFile(m_savePathNormalized, m_shaderVariantListSourceData))
         {
             AZ_Error("ShaderManagementConsoleDocument", false, "Document could not be saved: '%s'.", m_savePathNormalized.c_str());
