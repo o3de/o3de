@@ -7,7 +7,7 @@
             "assetId": {
                 "guid": "{400C0F36-1069-5F0E-8E55-87123BA075CD}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "shaders/simpletextured.azshader"
         }
     ]
