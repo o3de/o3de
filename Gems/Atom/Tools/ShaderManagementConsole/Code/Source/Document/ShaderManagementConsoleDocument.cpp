@@ -255,7 +255,10 @@ namespace ShaderManagementConsole
         newSourceData.m_shaderVariants.reserve(compactVariants.size());
         for (VariantCompacterKey<MutableInfo>& compactedKey : compactVariants)
         {
-            newSourceData.m_shaderVariants.emplace_back(std::move(*compactedKey.m_info));
+            if (!compactedKey.m_info->m_options.empty()) // don't preserve root-like variants
+            {
+                newSourceData.m_shaderVariants.emplace_back(std::move(*compactedKey.m_info));
+            }
         }
         // sort by old stable id
         AZStd::sort(newSourceData.m_shaderVariants.begin(),
@@ -591,13 +594,13 @@ namespace ShaderManagementConsole
     bool ShaderManagementConsoleDocument::SaveSourceData()
     {
         auto verification = Verify();
-        //ErrorMessageBoxesForDocumentVerification(verification); // can't display message boxes from the document
         if (!verification.AllGood())
         {
-            AZ_TracePrintf("ShaderManagementConsoleDocument", "Verification reported: redundant variants: %s | stable id jumps: %s | root-like found: %s",
-                           verification.m_hasRedundantVariants ? "yes" : "no",
-                           verification.m_hasStableIdJump ? "yes" : "no",
-                           verification.m_hasRootLike ? "yes" : "no");
+            // can't display message boxes from the document, use a trace:
+            AZ_TracePrintf("ShaderManagementConsoleDocument", "Verification reported: %s%s%s",
+                           verification.m_hasRedundantVariants ? "Redundant variants. " : "",
+                           verification.m_hasRootLike ? "Root-like found. " : "",
+                           verification.m_hasStableIdJump ? "Stable id jumps." : "");
             return SaveFailed();
         }
 

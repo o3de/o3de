@@ -164,6 +164,13 @@ namespace ShaderManagementConsole
             });
         m_menuFile->insertAction(m_menuFile->actions().back(), verifyAction);
 
+        QAction* compactAction = new QAction(tr("Run compaction (undoable)"), m_menuFile);
+        QObject::connect(verifyAction, &QAction::triggered, this, [this](){
+            ShaderManagementConsoleDocumentRequestBus::Event(
+                GetCurrentDocumentId(), &ShaderManagementConsoleDocumentRequestBus::Events::DefragmentVariantList);
+        });
+        m_menuFile->insertAction(m_menuFile->actions().back(), compactAction);
+
         // Add statistics button
         QAction* action = new QAction(tr("Generate Shader Variant Statistics..."), m_menuFile);
         QObject::connect(action, &QAction::triggered, this, &ShaderManagementConsoleWindow::GenerateStatisticView);
