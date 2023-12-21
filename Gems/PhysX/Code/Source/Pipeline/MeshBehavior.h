@@ -50,6 +50,8 @@ namespace PhysX
         private:
             AZ::SceneAPI::Events::ProcessingResult BuildDefault(AZ::SceneAPI::Containers::Scene& scene) const;
             AZ::SceneAPI::Events::ProcessingResult UpdatePhysXMeshGroups(AZ::SceneAPI::Containers::Scene& scene) const;
+
+            static constexpr int s_meshBehaviorPreferredTabOrder{ 5 };
         };
     } // Pipeline
 } // PhysX

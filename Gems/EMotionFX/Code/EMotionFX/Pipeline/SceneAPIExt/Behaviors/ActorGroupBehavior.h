@@ -58,7 +58,7 @@ namespace EMotionFX
 
                 bool SceneHasActorGroup(const AZ::SceneAPI::Containers::Scene& scene) const;
 
-                static const int s_animationsPreferredTabOrder;
+                static constexpr int s_actorsPreferredTabOrder{ 3 };
             };
         } // Behavior
     } // Pipeline

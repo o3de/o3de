@@ -59,6 +59,8 @@ namespace AZ::SceneAPI::Behaviors
 
         struct ExportEventHandler;
         AZStd::shared_ptr<ExportEventHandler> m_exportEventHandler;
+
+        static constexpr int s_prefabGroupPreferredTabOrder{ 6 };
     };
 }
 
