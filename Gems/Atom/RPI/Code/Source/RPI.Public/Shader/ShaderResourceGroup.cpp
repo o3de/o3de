@@ -636,7 +636,19 @@ namespace AZ
         {
             return m_data.GetConstantRaw(inputIndex);
         }
-    
+
+        void ShaderResourceGroup::SetBindlessViews(
+            RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
+            const RHI::MultiDeviceBufferView* indirectResourceBuffer,
+            AZStd::span<const RHI::MultiDeviceImageView* const> imageViews,
+            uint32_t* outIndices,
+            AZStd::span<bool> isViewReadOnly,
+            uint32_t arrayIndex)
+        {
+            m_data.SetBindlessViews(
+                indirectResourceBufferIndex, indirectResourceBuffer, imageViews, outIndices, isViewReadOnly, arrayIndex);
+        }
+
         void ShaderResourceGroup::SetBindlessViews(
             RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
             const RHI::MultiDeviceBufferView* indirectResourceBuffer,

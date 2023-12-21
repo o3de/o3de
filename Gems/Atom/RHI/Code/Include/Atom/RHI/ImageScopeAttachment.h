@@ -8,13 +8,12 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
+#include <Atom/RHI/MultiDeviceImage.h>
 #include <Atom/RHI/ScopeAttachment.h>
-#include <Atom/RHI/SingleDeviceImage.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ::RHI
 {
-    class MultiDeviceImageView;
     class ImageFrameAttachment;
 
     //! A specialization of a scope attachment for images. Provides
