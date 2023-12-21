@@ -8,7 +8,6 @@
 
 #include <AzTest/AzTest.h>
 #include <MCore/Source/OBB.h>
-#include <MCore/Source/AABB.h>
 #include <AzCore/Math/Transform.h>
 #include <Tests/SystemComponentFixture.h>
 
