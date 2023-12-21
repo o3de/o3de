@@ -11,7 +11,6 @@
 #include "NodeConnection.h"
 #include "NodeGraph.h"
 #include <MCore/Source/LogManager.h>
-#include <MCore/Source/Color.h>
 
 
 namespace EMStudio

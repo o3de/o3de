@@ -14,7 +14,6 @@
 #include "EMotionFXConfig.h"
 #include <MCore/Source/Stream.h>
 #include <MCore/Source/CommandLine.h>
-#include <MCore/Source/Color.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Attribute.h>
 #include <MCore/Source/AttributeFloat.h>

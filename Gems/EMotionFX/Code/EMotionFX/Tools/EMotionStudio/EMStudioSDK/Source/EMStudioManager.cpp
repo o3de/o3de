@@ -263,17 +263,6 @@ namespace EMStudio
     }
 
 
-    const char* EMStudioManager::ConstructHTMLLink(const char* text, const MCore::RGBAColor& color)
-    {
-        int32 r = aznumeric_cast<int32>(color.m_r * 256);
-        int32 g = aznumeric_cast<int32>(color.m_g * 256);
-        int32 b = aznumeric_cast<int32>(color.m_b * 256);
-
-        m_htmlLinkString = AZStd::string::format("<qt><style>a { color: rgb(%i, %i, %i); } a:hover { color: rgb(40, 40, 40); }</style><a href='%s'>%s</a></qt>", r, g, b, text, text);
-        return m_htmlLinkString.c_str();
-    }
-
-
     void EMStudioManager::MakeTransparentButton(QToolButton* button, const char* iconFileName, const char* toolTipText, uint32 width, uint32 height)
     {
         button->setObjectName("TransparentButton");
