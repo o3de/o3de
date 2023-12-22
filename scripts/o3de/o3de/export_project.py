@@ -586,6 +586,7 @@ def build_assets(ctx: O3DEScriptExportContext,
                  fail_on_ap_errors: bool,
                  using_installer_sdk: bool = False,
                  tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
+                 selected_platform:str|None = None,
                  logger: logging.Logger = None) -> int:
     """
     Build the assets for the project
@@ -608,6 +609,8 @@ def build_assets(ctx: O3DEScriptExportContext,
         logger.info(f"Processing assets for {ctx.project_name}")
 
     cmake_build_assets_command = [asset_processor_batch_path, "--project-path", ctx.project_path]
+    if selected_platform:
+        cmake_build_assets_command.extend([f'--platforms={selected_platform}'])
     ret = process_command(cmake_build_assets_command,
                           cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
