@@ -43,11 +43,12 @@ namespace AzToolsFramework
                 until first parent matches the filter, then the original entry would match
                 if PropagateDirection = None, only entry itself is considered by the filter
             */
-            enum PropagateDirection : int
+            enum class PropagateDirection : uint32_t
             {
-                None    = 0x00,
-                Up      = 0x01,
-                Down    = 0x02
+                None,
+                Up,
+                Down,
+                Both
             };
 
             AssetBrowserEntryFilter() = default;
@@ -75,7 +76,7 @@ namespace AzToolsFramework
             const QString& GetTag() const;
             void SetTag(const QString& tag);
 
-            void SetFilterPropagation(int direction);
+            void SetFilterPropagation(PropagateDirection direction);
 
         Q_SIGNALS:
             //! Emitted every time a filter is updated, in case of composite filter, the signal is propagated to the top level filter so
@@ -87,12 +88,15 @@ namespace AzToolsFramework
             virtual QString GetNameInternal() const = 0;
 
             //! Internal matching logic overrided by every filter type
-            virtual bool MatchInternal(const AssetBrowserEntry* entry) const = 0;
+            virtual bool MatchInternal(const AssetBrowserEntry* entry) const;
+
+            //! Internal filtering logic overrided by every filter type
+            virtual void FilterInternal(AZStd::unordered_set<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const;
 
         protected:
             QString m_name;
             QString m_tag;
-            int m_direction{ None };
+            PropagateDirection m_direction{ PropagateDirection::None };
         };
 
         //////////////////////////////////////////////////////////////////////////
@@ -105,7 +109,6 @@ namespace AzToolsFramework
         public:
             StringFilter() = default;
             ~StringFilter() override = default;
-
             AssetBrowserEntryFilter* Clone() const override;
 
             void SetFilterString(const QString& filterString);
@@ -129,7 +132,6 @@ namespace AzToolsFramework
         public:
             CustomFilter(const AZStd::function<bool(const AssetBrowserEntry*)>& filterFn);
             ~CustomFilter() override = default;
-
             AssetBrowserEntryFilter* Clone() const override;
 
         protected:
@@ -150,7 +152,6 @@ namespace AzToolsFramework
         public:
             RegExpFilter() = default;
             ~RegExpFilter() override = default;
-
             AssetBrowserEntryFilter* Clone() const override;
 
             void SetFilterPattern(const QRegExp& filterPattern);
@@ -173,7 +174,6 @@ namespace AzToolsFramework
         public:
             AssetTypeFilter() = default;
             ~AssetTypeFilter() override = default;
-
             AssetBrowserEntryFilter* Clone() const override;
 
             void SetAssetType(AZ::Data::AssetType assetType);
@@ -198,7 +198,6 @@ namespace AzToolsFramework
         public:
             AssetGroupFilter() = default;
             ~AssetGroupFilter() override = default;
-
             AssetBrowserEntryFilter* Clone() const override;
 
             void SetAssetGroup(const QString& group);
@@ -224,7 +223,6 @@ namespace AzToolsFramework
         public:
             EntryTypeFilter();
             ~EntryTypeFilter() override = default;
-
             AssetBrowserEntryFilter* Clone() const override;
 
             void SetEntryType(AssetBrowserEntry::AssetEntryType entryType);
@@ -250,16 +248,15 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            enum class LogicOperatorType
+            enum class LogicOperatorType : uint32_t
             {
                 OR,
                 AND
             };
 
-            CompositeFilter() = default;
             explicit CompositeFilter(LogicOperatorType logicOperator);
+            CompositeFilter() = default;
             ~CompositeFilter() override = default;
-
             AssetBrowserEntryFilter* Clone() const override;
 
             void AddFilter(FilterConstType filter);

@@ -377,16 +377,15 @@ namespace AzToolsFramework
             // If we're filtering for a valid entry, select the first valid entry
             if (hasFilter && selectFirstValidEntry)
             {
-                QModelIndex curIndex = m_assetBrowserSortFilterProxyModel->index(0, 0);
-                while (curIndex.isValid())
+                bool selected = false;
+                const QModelIndex firstIndex = m_assetBrowserSortFilterProxyModel->index(0, 0);
+                for (QModelIndex curIndex = firstIndex; curIndex.isValid() && !selected; curIndex = indexBelow(curIndex))
                 {
                     if (GetEntryFromIndex<SourceAssetBrowserEntry>(curIndex))
                     {
                         setCurrentIndex(curIndex);
-                        break;
+                        selected = true;
                     }
-
-                    curIndex = indexBelow(curIndex);
                 }
             }
 
