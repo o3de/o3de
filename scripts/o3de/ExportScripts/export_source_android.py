@@ -11,7 +11,7 @@ import o3de.export_project as exp
 import o3de.manifest as manifest
 
 from o3de import android, android_support
-from o3de.export_project import process_command
+
 
 import argparse
 import logging
@@ -59,7 +59,7 @@ def deloy_to_android_device(target_android_project_path: pathlib.Path,
     is_pc = exp.get_default_asset_platform() == 'pc'
 
     adb_exec_path = android_sdk_home / ('platform-tools/adb' + ('.exe' if is_pc else ''))
-    process_command([adb_exec_path, 'install', '-t', '-r', target_android_project_path / f'app/build/outputs/apk/{build_config}/app-{build_config}.apk'])
+    exp.process_command([adb_exec_path, 'install', '-t', '-r', target_android_project_path / f'app/build/outputs/apk/{build_config}/app-{build_config}.apk'])
 
     time.sleep(1)
 
@@ -69,7 +69,7 @@ def deloy_to_android_device(target_android_project_path: pathlib.Path,
     if not org_name:
         org_name = f'org.o3de.{project_name}'
 
-    process_command([adb_exec_path, 'shell', 'am', 'start', '-a', 'android.intent.action.MAIN','-n', f'{org_name}/.{activity_name}'])
+    exp.process_command([adb_exec_path, 'shell', 'am', 'start', '-a', 'android.intent.action.MAIN','-n', f'{org_name}/.{activity_name}'])
 
 
 def export_source_android_project(ctx: exp.O3DEScriptExportContext,
@@ -108,7 +108,7 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
 
     o3de_cli_script_path = engine_path / ('scripts/o3de' + ('.bat' if is_pc else '.sh'))
 
-    assert process_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=project_path) == 0, "Android config validation went wrong!"
+    assert exp.process_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=project_path) == 0, "Android config validation went wrong!"
 
     # Calculate the tools and game build paths
     default_base_path = engine_path if engine_centric else project_path
@@ -182,10 +182,10 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
         logger.error("ANDROID_SDK_HOME is not properly configured! Please ensure SDK_ROOT is properly configured in o3de android-configure")
         raise exp.ExportProjectError("Invalid ANDROID_SDK_HOME.")
 
-    process_command([o3de_cli_script_path, 'android-generate', '-p', project_name, '-B', target_android_project_path, "--asset-mode", asset_pack_mode], 
+    exp.process_command([o3de_cli_script_path, 'android-generate', '-p', project_name, '-B', target_android_project_path, "--asset-mode", asset_pack_mode], 
                 cwd=default_base_path)
 
-    process_command([target_android_project_path / ('gradlew'+ (".bat" if is_pc else "")), f'assemble{build_config.title()}'], cwd=target_android_project_path)
+    exp.process_command([target_android_project_path / ('gradlew'+ (".bat" if is_pc else "")), f'assemble{build_config.title()}'], cwd=target_android_project_path)
 
     if deploy_to_device:
         deloy_to_android_device(target_android_project_path,
