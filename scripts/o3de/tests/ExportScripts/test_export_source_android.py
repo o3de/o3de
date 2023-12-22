@@ -386,7 +386,7 @@ def test_should_fail_immediately_for_installer_mono_build_with_no_artifacts(tmp_
 @pytest.mark.parametrize("use_sdk", [True,False])
 @pytest.mark.parametrize("should_build_tools_flag", [True,False])
 @pytest.mark.parametrize("has_monolithic", [True,False])
-def test_build_tools_combinations(tmp_path, use_sdk, should_build_tools_flag, has_monolithic):
+def test_asset_bundler_combinations(tmp_path, use_sdk, should_build_tools_flag, has_monolithic):
     test_project_name = "TestProject"
     test_project_path = tmp_path / "project"
     test_engine_path = tmp_path / "engine"
@@ -430,7 +430,6 @@ def test_build_tools_combinations(tmp_path, use_sdk, should_build_tools_flag, ha
         mock_ctx.project_path = test_project_path
         mock_ctx.engine_path = test_engine_path
         mock_ctx.project_name = test_project_name
-        print("PARAM SET (use_sdk, should build tools, has mono)", use_sdk, should_build_tools_flag, has_monolithic)
         for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
 
             if base_path:
@@ -500,3 +499,129 @@ def test_build_tools_combinations(tmp_path, use_sdk, should_build_tools_flag, ha
                     
             
             mock_build_export_toolchain.reset_mock()
+
+
+
+@pytest.mark.parametrize("use_sdk", [True,False])
+@pytest.mark.parametrize("should_build_tools_flag", [True,False])
+@pytest.mark.parametrize("has_monolithic", [True,False])
+def test_build_tools_combinations(tmp_path, use_sdk, should_build_tools_flag, has_monolithic):
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+
+    is_engine_centric=False
+
+    test_o3de_base_path = test_project_path if not is_engine_centric else test_engine_path
+    test_relative_base_path = pathlib.PurePath('this/is/relative')
+    test_absolute_base_path  = tmp_path / "other"
+
+    assert test_absolute_base_path.is_absolute()
+
+    mock_logger = create_autospec(logging.Logger)
+    test_output_path = tmp_path / "output"
+
+    mock_config = create_autospec(O3DEConfig)
+    mock_config.set_config_value(key=android_support.SETTINGS_SDK_ROOT.key, value=str(tmp_path/'android-sdk').replace('\\', '/'), validate_value=False)
+
+    expect_toolchain_build_called = ((not use_sdk) and should_build_tools_flag)
+
+    
+
+    with patch('o3de.manifest.is_sdk_engine', return_value=use_sdk) as mock_is_sdk_engine,\
+         patch('o3de.export_project.has_monolithic_artifacts', return_value=has_monolithic) as mock_has_mono_artifacts,\
+         patch('o3de.export_project.get_platform_installer_folder_name', return_value="Windows") as mock_platform_folder_name,\
+         patch('o3de.export_project.validate_project_artifact_paths', return_value=[]) as mock_validate_project_artifacts,\
+         patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
+         patch('o3de.export_project.build_export_toolchain') as mock_build_export_toolchain,\
+         patch('o3de.export_project.build_game_targets') as mock_build_game_targets,\
+         patch('o3de.export_project.get_asset_processor_batch_path') as mock_get_asset_processor_path,\
+         patch('o3de.export_project.build_assets') as mock_build_assets,\
+         patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
+         patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
+         patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+         patch('o3de.android_support.get_android_config', return_value=mock_config),\
+         patch('pathlib.Path.is_dir', return_value=True),\
+         patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
+        
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+        print("PARAM SET (use_sdk, should build tools, has mono)", use_sdk, should_build_tools_flag, has_monolithic)
+        for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
+
+            test_tools_build_path = None if not base_path else (base_path / "build" / "tools") 
+
+            test_tools_sdk_path = (test_engine_path / 'bin/Windows/profile/Default')
+            
+
+            if test_tools_build_path and test_tools_build_path.is_absolute():
+                test_tools_build_path.mkdir(exist_ok=True, parents=True)
+
+            cannot_build_monolithic = (use_sdk and not has_monolithic)
+            buildconf = 'release'
+            if not expect_toolchain_build_called and cannot_build_monolithic:
+                pytest.raises(exp.ExportProjectError, expa.export_source_android_project, 
+                              mock_ctx,
+                              test_output_path,
+                              [],
+                              [],
+                              [],
+                              asset_pack_mode = 'PAK',
+                              engine_centric = is_engine_centric,
+                              should_build_tools = should_build_tools_flag,
+                              should_build_all_assets = True,
+                              build_config = buildconf,
+                              tool_config = 'profile',
+                              tools_build_path = test_tools_build_path,
+                              max_bundle_size = 2048,
+                              fail_on_asset_errors = False,
+                              deploy_to_device = False,
+                              org_name = None,
+                              activity_name = None,
+                              logger=mock_logger)
+            else:
+                expa.export_source_android_project(mock_ctx,
+                              test_output_path,
+                              [],
+                              [],
+                              [],
+                              asset_pack_mode = 'PAK',
+                              engine_centric = is_engine_centric,
+                              should_build_tools = should_build_tools_flag,
+                              should_build_all_assets = True,
+                              build_config = buildconf,
+                              tool_config = 'profile',
+                              tools_build_path = test_tools_build_path,
+                              max_bundle_size = 2048,
+                              fail_on_asset_errors = False,
+                              deploy_to_device = False,
+                              org_name = None,
+                              activity_name = None,
+                              logger=mock_logger)
+                    
+                selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
+
+                if not selected_tools_build_path:
+                    selected_tools_build_path = test_o3de_base_path / 'build/tools'
+                
+                if not selected_tools_build_path.is_absolute():
+                    selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
+                
+                mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
+                                                        selected_platform='android',
+                                                        seedlist_paths=[],
+                                                        seedfile_paths=[],
+                                                        tools_build_path=selected_tools_build_path,
+                                                        engine_centric=is_engine_centric,
+                                                        asset_bundling_path=test_project_path/'AssetBundling',
+                                                        using_installer_sdk=use_sdk,
+                                                        tool_config='profile',
+                                                        max_bundle_size=2048)
+                    
+            mock_get_asset_bundler_path.reset_mock()
+            mock_bundle_assets.reset_mock()
+            mock_build_export_toolchain.reset_mock()
+
