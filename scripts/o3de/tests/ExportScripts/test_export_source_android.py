@@ -625,3 +625,73 @@ def test_build_tools_combinations(tmp_path, use_sdk, should_build_tools_flag, ha
             mock_bundle_assets.reset_mock()
             mock_build_export_toolchain.reset_mock()
 
+@pytest.mark.parametrize("test_seedlists, test_seedfiles, test_levelnames",[
+    pytest.param([],[],[]),
+    pytest.param([pathlib.PurePath("C:\\test\\test.seedlist")],[pathlib.PurePath("C:\\test1\\test.seed")],[]),
+    pytest.param([pathlib.PurePath("C:\\test\\test.seedlist")],[pathlib.PurePath("C:\\test1\\test.seed")],["main"]),
+    pytest.param([pathlib.PurePath("C:\\test\\test.seedlist")],[],["main"]),
+    pytest.param([pathlib.PurePath("C:\\test\\test.seedlist")],[],["MAIN"]),
+    pytest.param([pathlib.PurePath("C:\\test\\test.seedlist")],[],["main",'second']),
+
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[pathlib.PurePath("/test1/test.seed")],[]),
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[pathlib.PurePath("/test1/test.seed")],["main"]),
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[],["main"]),
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[],["MAIN"]),
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[],["main",'second'])
+])
+def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfiles, test_levelnames):
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+
+    test_o3de_base_path = test_project_path
+    test_relative_base_path = pathlib.PurePath('this/is/relative')
+    test_absolute_base_path  = tmp_path / "other"
+
+    assert test_absolute_base_path.is_absolute()
+
+    test_output_path = tmp_path / "output"
+    test_tools_sdk_path = (test_engine_path / 'bin/Windows/profile/Default')
+    
+    mock_logger = create_autospec(logging.Logger)
+
+    with patch('o3de.manifest.is_sdk_engine', return_value=True) as mock_is_sdk_engine,\
+         patch('o3de.export_project.has_monolithic_artifacts', return_value=True) as mock_has_mono_artifacts,\
+         patch('o3de.export_project.get_platform_installer_folder_name', return_value="Windows") as mock_platform_folder_name,\
+         patch('o3de.export_project.validate_project_artifact_paths', return_value=test_seedlists) as mock_validate_project_artifacts,\
+         patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
+         patch('o3de.export_project.build_export_toolchain') as mock_build_export_toolchain,\
+         patch('o3de.export_project.build_game_targets') as mock_build_game_targets,\
+         patch('o3de.export_project.get_asset_processor_batch_path') as mock_get_asset_processor_path,\
+         patch('o3de.export_project.build_assets') as mock_build_assets,\
+         patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
+         patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+         patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
+        
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+
+        expa.export_source_android_project(mock_ctx,
+                                test_output_path,
+                                test_seedlists,
+                                test_seedfiles,
+                                test_levelnames,
+                                logger=mock_logger)
+        
+        combined_seedfiles = test_seedfiles 
+        for ln in test_levelnames:
+            combined_seedfiles.append(test_project_path / f'Cache/android/levels' / ln.lower() / (ln.lower() + ".spawnable"))
+        
+        mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
+                                              selected_platform='android',
+                                              seedlist_paths=test_seedlists,
+                                              seedfile_paths=combined_seedfiles,
+                                              tools_build_path=test_tools_sdk_path,
+                                              engine_centric=False,
+                                              asset_bundling_path=test_project_path / 'AssetBundling',
+                                              using_installer_sdk=True,
+                                              tool_config='profile',
+                                              max_bundle_size=2048)
