@@ -214,22 +214,10 @@ namespace AzToolsFramework
 
             if (index.isValid())
             {
-                // We can only drop items onto folders so set flags accordingly
-                const AssetBrowserEntry* item =
-                    mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                if (item)
-                {
-                    if (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product ||
-                        item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-                    {
-                        return Qt::ItemIsDragEnabled | defaultFlags;
-                    }
-                    if (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
-                    {
-                        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
-                    }
-                }
+                return AssetBrowserViewUtils::GetAssetBrowserEntryCommonItemFlags(
+                    mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>(), defaultFlags);
             }
+
             return defaultFlags;
         }
 

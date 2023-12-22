@@ -186,6 +186,7 @@ namespace AzToolsFramework
         {
             const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
             QModelIndexList sourceIndexes;
+            sourceIndexes.reserve(selectedIndexes.size());
             for (const auto& index : selectedIndexes)
             {
                 sourceIndexes.push_back(m_assetBrowserSortFilterProxyModel->mapToSource(index));
@@ -398,8 +399,9 @@ namespace AzToolsFramework
             if (!m_fileToSelectAfterUpdate.empty())
             {
                 SelectFileAtPath(m_fileToSelectAfterUpdate);
-                m_fileToSelectAfterUpdate = "";
+                m_fileToSelectAfterUpdate.clear();
             }
+
             m_applySnapshot = true;
         }
 
@@ -435,13 +437,7 @@ namespace AzToolsFramework
 
         bool AssetBrowserTreeView::IsIndexExpandedByDefault(const QModelIndex& index) const
         {
-            if (!m_expandToEntriesByDefault)
-            {
-                return false;
-            }
-
-            // Expand until we get to source entries, we don't want to go beyond that
-            return GetEntryFromIndex<SourceAssetBrowserEntry>(index) == nullptr;
+            return m_expandToEntriesByDefault && (GetEntryFromIndex<SourceAssetBrowserEntry>(index) == nullptr);
         }
 
         void AssetBrowserTreeView::OpenItemForEditing(const QModelIndex& index)
@@ -484,7 +480,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::SelectFolderFromBreadcrumbsPath(AZStd::string_view folderPath)
         {
-            if (folderPath.size() == 0)
+            if (folderPath.empty())
             {
                 return;
             }
@@ -498,7 +494,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::SelectFolder(AZStd::string_view folderPath)
         {
-            if (folderPath.size() == 0)
+            if (folderPath.empty())
             {
                 return;
             }
