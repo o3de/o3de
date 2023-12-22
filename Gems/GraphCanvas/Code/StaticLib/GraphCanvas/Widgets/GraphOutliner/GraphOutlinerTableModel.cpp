@@ -30,11 +30,12 @@ namespace GraphCanvas
 
     void NodeTableSourceModel::SetActiveScene(const AZ::EntityId& graphId)
     {
+        m_activeGraph = graphId;
         GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
         GraphCanvas::NodeTitleNotificationsBus::MultiHandler::BusDisconnect();
-        m_activeGraph = graphId;
         GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_activeGraph);
         
+        layoutAboutToBeChanged();
 
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_nodexMtx);
@@ -77,13 +78,19 @@ namespace GraphCanvas
 
     Qt::ItemFlags NodeTableSourceModel::flags(const QModelIndex& index) const
     {
-        return index.isValid() ? (Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable) : Qt::ItemFlag();
+        Qt::ItemFlags flags = QAbstractTableModel::flags(index);
+        flags |= Qt::ItemFlag::ItemIsEnabled;
+        flags |= Qt::ItemFlag::ItemIsSelectable;
+        flags &= ~Qt::ItemFlag::ItemIsEditable;
+        return index.isValid() ? flags : Qt::ItemFlag();
     }
     
     void NodeTableSourceModel::OnNodeAdded(const AZ::EntityId& nodeId,[[maybe_unused]] bool isPaste)
     {
         GraphCanvas::NodeTitleNotificationsBus::MultiHandler::BusConnect(nodeId);
         AZStd::lock_guard<AZStd::mutex> lock(m_nodexMtx);
+
+        layoutAboutToBeChanged();
         m_nodes.emplace_back(nodeId);
 
         AZStd::string nodeName;
@@ -97,14 +104,21 @@ namespace GraphCanvas
     {
         GraphCanvas::NodeTitleNotificationsBus::MultiHandler::BusDisconnect(nodeId);
         AZStd::lock_guard<AZStd::mutex> lock(m_nodexMtx);
-        AZStd::erase_if(m_nodes, [nodeId](const AZ::EntityId& node){ return nodeId == node; });
-        m_nodeNames.erase(nodeId);
-        layoutChanged();
+        auto nodeIter = AZStd::find<AZStd::vector<AZ::EntityId>::iterator, AZ::EntityId>(m_nodes.begin(), m_nodes.end(), nodeId);
+        if (nodeIter != m_nodes.end())
+        {
+            int row = nodeIter - m_nodes.begin();
+            beginRemoveRows(QModelIndex(), row, row);
+            m_nodes.erase(nodeIter);
+            m_nodeNames.erase(nodeId);
+            endRemoveRows();
+        }
     }
 
     void NodeTableSourceModel::OnTitleChanged()
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_nodexMtx);
+        layoutAboutToBeChanged();
         for (auto nodeId : m_nodes)
         {
             AZStd::string nodeName;
