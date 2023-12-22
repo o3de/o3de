@@ -102,11 +102,8 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsAttenuationRadiusModeAutomatic)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
                         
-                        ->ClassElement(Edit::ClassElements::Group, "Lighting Channels")
-                        ->DataElement(0, &AreaLightComponentConfig::m_lightingChannelConfig, "Lighting channel configuration", "")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                            ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &AreaLightComponentConfig::m_lightingChannelConfig, "Lighting Channels", "")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                         ->ClassElement(Edit::ClassElements::Group, "Shutters")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
