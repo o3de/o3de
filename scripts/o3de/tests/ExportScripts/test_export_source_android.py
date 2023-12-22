@@ -11,9 +11,12 @@ import pytest
 import pathlib
 from unittest.mock import patch, create_autospec, MagicMock, Mock, PropertyMock
 from o3de.export_project import O3DEScriptExportContext
+from o3de.command_utils import O3DEConfig
 
 # Because the export scripts are standalone, we have to manually import them to test
 import o3de.utils as utils
+from o3de import android_support
+import platform
 utils.prepend_to_system_path(pathlib.Path(__file__).parent.parent.parent / 'ExportScripts')
 import export_source_android as expa
 
@@ -351,3 +354,149 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                   org_name=args.org_name,
                                   logger=mock_logger)
                 mock_export_func.reset_mock()
+
+def test_should_fail_immediately_for_installer_mono_build_with_no_artifacts(tmp_path):
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+    test_tools_build_path = (test_project_path / "build" / "test") 
+    test_tools_build_path.mkdir(parents=True)
+
+    test_output_path = tmp_path / "output"
+
+    with patch('o3de.manifest.is_sdk_engine', return_value=True) as mock_is_sdk_engine,\
+        patch('o3de.export_project.has_monolithic_artifacts', return_value=False) as mock_has_mono_artifacts,\
+        patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+        patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
+        pytest.raises(exp.ExportProjectError):
+        
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+
+        expa.export_source_android_project(mock_ctx,
+                                  test_output_path,
+                                  [],[],[])
+        
+        mock_is_sdk_engine.assert_called_once_with(engine_path=mock_ctx.engine_path)
+        mock_has_mono_artifacts.assert_called_once_with(mock_ctx)
+        mock_kill_processes.assert_not_called()
+
+@pytest.mark.parametrize("use_sdk", [True,False])
+@pytest.mark.parametrize("should_build_tools_flag", [True,False])
+@pytest.mark.parametrize("has_monolithic", [True,False])
+def test_build_tools_combinations(tmp_path, use_sdk, should_build_tools_flag, has_monolithic):
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+
+    is_engine_centric=False
+
+    test_o3de_base_path = test_project_path if not is_engine_centric else test_engine_path
+    test_relative_base_path = pathlib.PurePath('this/is/relative')
+    test_absolute_base_path  = tmp_path / "other"
+
+    assert test_absolute_base_path.is_absolute()
+
+    mock_logger = create_autospec(logging.Logger)
+    test_output_path = tmp_path / "output"
+
+    mock_config = create_autospec(O3DEConfig)
+    mock_config.set_config_value(key=android_support.SETTINGS_SDK_ROOT.key, value=str(tmp_path/'android-sdk').replace('\\', '/'), validate_value=False)
+
+    expect_toolchain_build_called = ((not use_sdk) and should_build_tools_flag)
+
+    
+
+    with patch('o3de.manifest.is_sdk_engine', return_value=use_sdk) as mock_is_sdk_engine,\
+         patch('o3de.export_project.has_monolithic_artifacts', return_value=has_monolithic) as mock_has_mono_artifacts,\
+         patch('o3de.export_project.get_platform_installer_folder_name', return_value="Windows") as mock_platform_folder_name,\
+         patch('o3de.export_project.validate_project_artifact_paths', return_value=[]) as mock_validate_project_artifacts,\
+         patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
+         patch('o3de.export_project.build_export_toolchain') as mock_build_export_toolchain,\
+         patch('o3de.export_project.build_game_targets') as mock_build_game_targets,\
+         patch('o3de.export_project.get_asset_processor_batch_path') as mock_get_asset_processor_path,\
+         patch('o3de.export_project.build_assets') as mock_build_assets,\
+         patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
+         patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
+         patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+         patch('o3de.android_support.get_android_config', return_value=mock_config),\
+         patch('pathlib.Path.is_dir', return_value=True),\
+         patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
+        
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+        print("PARAM SET (use_sdk, should build tools, has mono)", use_sdk, should_build_tools_flag, has_monolithic)
+        for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
+
+            if base_path:
+                test_tools_build_path = (base_path / "build" / 'tools') 
+
+                if test_tools_build_path.is_absolute():
+                    test_tools_build_path.mkdir(parents=True)
+                    
+            else:
+                test_tools_build_path = None
+
+            cannot_build_monolithic = (use_sdk and not has_monolithic)
+            buildconf = 'release'
+            if not expect_toolchain_build_called and cannot_build_monolithic:
+                pytest.raises(exp.ExportProjectError, expa.export_source_android_project, 
+                              mock_ctx,
+                              test_output_path,
+                              [],
+                              [],
+                              [],
+                              asset_pack_mode = 'PAK',
+                              engine_centric = is_engine_centric,
+                              should_build_tools = should_build_tools_flag,
+                              should_build_all_assets = True,
+                              build_config = buildconf,
+                              tool_config = 'profile',
+                              tools_build_path = test_tools_build_path,
+                              max_bundle_size = 2048,
+                              fail_on_asset_errors = False,
+                              deploy_to_device = False,
+                              org_name = None,
+                              activity_name = None,
+                              logger=mock_logger)
+            else:
+                expa.export_source_android_project(mock_ctx,
+                              test_output_path,
+                              [],
+                              [],
+                              [],
+                              asset_pack_mode = 'PAK',
+                              engine_centric = is_engine_centric,
+                              should_build_tools = should_build_tools_flag,
+                              should_build_all_assets = True,
+                              build_config = buildconf,
+                              tool_config = 'profile',
+                              tools_build_path = test_tools_build_path,
+                              max_bundle_size = 2048,
+                              fail_on_asset_errors = False,
+                              deploy_to_device = False,
+                              org_name = None,
+                              activity_name = None,
+                              logger=mock_logger)
+                    
+                if expect_toolchain_build_called:
+                    if not test_tools_build_path:
+                        test_tools_build_path = test_o3de_base_path / 'build/tools'
+                    elif not test_tools_build_path.is_absolute():
+                        test_tools_build_path  = test_o3de_base_path / test_tools_build_path
+
+                    mock_build_export_toolchain.assert_called_once_with(ctx=mock_ctx,
+                                                                        tools_build_path=test_tools_build_path,
+                                                                        engine_centric=is_engine_centric,
+                                                                        tool_config="profile",
+                                                                        logger=mock_logger)
+                else:
+                    mock_build_export_toolchain.assert_not_called()
+                    
+            
+            mock_build_export_toolchain.reset_mock()

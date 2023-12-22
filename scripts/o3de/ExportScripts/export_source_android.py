@@ -100,8 +100,6 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
 
-    # Android validation will raise necessary exceptions. This export function does not handle configuration. That must be done elsewhere
-
     is_installer_sdk = manifest.is_sdk_engine(engine_path=engine_path)
 
     is_pc = exp.get_default_asset_platform() == 'pc'
@@ -133,7 +131,7 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
         tools_build_path = engine_path / 'bin' / exp.get_platform_installer_folder_name() / tool_config / 'Default'
     
     if not tools_build_path:
-        tools_build_path = default_base_path / f'build/{platform.system().lower()}'
+        tools_build_path = default_base_path / 'build/tools'
     elif not tools_build_path.is_absolute():
         tools_build_path = default_base_path / tools_build_path
     
@@ -172,7 +170,7 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
                       tool_config=tool_config,
                       max_bundle_size=max_bundle_size)
 
-    android_project_config= android_support.get_android_config(project_path=project_path)
+    android_project_config= android_support.get_android_config(project_path=None)
 
     android_project_config.set_config_value(key=android_support.SETTINGS_ASSET_BUNDLE_SUBPATH.key, value=str(asset_bundles_path).replace('\\', '/'), validate_value=False)
     
