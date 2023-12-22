@@ -40,7 +40,6 @@ namespace AzToolsFramework
             , m_isTableView(isTableView)
         {
             setDynamicSortFilter(true);
-            setRecursiveFilteringEnabled(true);
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
             if (ed_useNewAssetBrowserListView)
             {
@@ -156,7 +155,7 @@ namespace AzToolsFramework
                 return true;
             }
 
-            return !m_filter || m_filter->MatchWithoutPropagation(entry);
+            return !m_filter || m_filter->Match(entry);
         }
 
         bool AssetBrowserFilterModel::filterAcceptsColumn(int source_column, const QModelIndex&) const
