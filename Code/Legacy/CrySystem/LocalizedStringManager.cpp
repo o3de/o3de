@@ -269,7 +269,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
     , m_cvarLocalizationEncode(1)
 // Gruber patch begin
     , m_cvarLocalizationTest(0)
-    , m_cvarLocalizationFormat(1)		 
+    , m_cvarLocalizationFormat(1)
 // Gruber patch end
     , m_availableLocalizations(0)
 {

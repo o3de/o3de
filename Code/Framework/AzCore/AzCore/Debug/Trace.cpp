@@ -406,7 +406,7 @@ namespace AZ::Debug
 #if defined(CARBONATED)
                 && bg_assertDialogReady != 0
 #endif
-				)
+                )
             {
                 AZ::NativeUI::AssertAction buttonResult;
                 AZ::NativeUI::NativeUIRequestBus::BroadcastResult(
