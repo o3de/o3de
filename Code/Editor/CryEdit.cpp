@@ -3804,6 +3804,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyQtApplicationAvailable, app);
 
         int exitCode = 0;
+        gSettings.InitRenderingSettingsRegistryFile();
 
         bool didCryEditStart = CCryEditApp::instance()->InitInstance();
         AZ_Error("Editor", didCryEditStart, "O3DE Editor did not initialize correctly, and will close."

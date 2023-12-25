@@ -28,6 +28,9 @@ namespace AZ::SettingsRegistryMergeUtils
     inline constexpr const char* FilePathKey_BinaryFolder = "/O3DE/Runtime/FilePaths/BinaryFolder";
     inline constexpr const char* FilePathKey_EngineRootFolder = "/O3DE/Runtime/FilePaths/EngineRootFolder";
     inline constexpr const char* FilePathKey_InstalledBinaryFolder = "/O3DE/Runtime/FilePaths/InstalledBinariesFolder";
+    
+    inline constexpr const char* Rendering_AAMethod = "/O3DE/Rendering/AAMethod";
+    inline constexpr const char* Rendering_MultiSample = "/O3DE/Rendering/MultiSample";
 
     //! Stores path to the O3DE Manifest root directory
     //! Defaults to ~/.o3de, where ~ represents the user's home directory

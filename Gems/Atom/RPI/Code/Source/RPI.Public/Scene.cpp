@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -108,6 +109,8 @@ namespace AZ
             m_id = AZ::Uuid::CreateRandom();
             m_cullingScene = aznew CullingScene();
             SceneRequestBus::Handler::BusConnect(m_id);
+            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+
             m_drawFilterTagRegistry = RHI::DrawFilterTagRegistry::Create();
         }
 
@@ -122,6 +125,7 @@ namespace AZ
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
             SceneRequestBus::Handler::BusDisconnect();
+            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
 
             // Remove all the render pipelines.
             for (auto it = m_pipelines.begin(); it != m_pipelines.end(); ++it)
@@ -1153,6 +1157,39 @@ namespace AZ
                 }
             }
             return nullptr;
+        }
+
+        void Scene::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
+        {
+            AZStd::string assetPath;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
+
+            AZStd::to_lower(assetPath.begin(), assetPath.end());
+            if (assetPath.ends_with("pipeline.azasset"))
+            {
+                Data::Asset<RPI::AnyAsset> pipelineAsset =
+                    RPI::AssetUtils::LoadAssetById<RPI::AnyAsset>(assetId, RPI::AssetUtils::TraceLevel::None);
+                if (pipelineAsset)
+                {
+                    RPI::RenderPipelineDescriptor renderPipelineDescriptor =
+                            *RPI::GetDataFromAnyAsset<RPI::RenderPipelineDescriptor>(pipelineAsset); // Copy descriptor from asset
+                    pipelineAsset.Release();
+                    bool matchActivePipeline = false;
+                    for (auto& pipeline : m_pipelines)
+                    {
+                        if (pipeline->GetDescriptor().m_name.contains(renderPipelineDescriptor.m_name))
+                        {
+                            matchActivePipeline = true;
+                            pipeline->SetActiveAAMethod(renderPipelineDescriptor.m_defaultAAMethod);
+                        }
+                    }
+                    const RHI::MultisampleState& multiSampleSetting = renderPipelineDescriptor.m_renderSettings.m_multisampleState;
+                    if(matchActivePipeline && multiSampleSetting != AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState())
+                    {
+                        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multiSampleSetting);
+                    }
+                }
+            }
         }
     }
 }

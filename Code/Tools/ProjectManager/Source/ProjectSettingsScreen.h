@@ -19,6 +19,8 @@ QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
 namespace O3DE::ProjectManager
 {
+    const char* const REGISTRY_FILENAME = "\\Registry\\renderpipeline.setreg";
+
     QT_FORWARD_DECLARE_CLASS(FormLineEditWidget)
     QT_FORWARD_DECLARE_CLASS(FormBrowseEditWidget)
 

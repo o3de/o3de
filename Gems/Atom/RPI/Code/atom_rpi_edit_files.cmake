@@ -37,6 +37,9 @@ set(FILES
     Include/Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantAssetCreator.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantTreeAssetCreator.h
+    Include/Atom/RPI.Edit/Rendering/RenderingSettingData.h
+    Include/Atom/RPI.Edit/Rendering/RenderingSettingDataSerializer.h
+    Include/Atom/RPI.Edit/Rendering/RenderingSettingUtil.h
     Source/RPI.Edit/Material/LuaMaterialFunctorSourceData.cpp
     Source/RPI.Edit/Material/MaterialTypeSourceData.cpp
     Source/RPI.Edit/Material/MaterialPropertyId.cpp
@@ -64,4 +67,6 @@ set(FILES
     Source/RPI.Edit/Common/ConvertibleSource.cpp
     Source/RPI.Edit/Common/JsonReportingHelper.cpp
     Source/RPI.Edit/Common/JsonUtils.cpp
+    Source/RPI.Edit/Rendering/RenderingSettingData.cpp
+    Source/RPI.Edit/Rendering/RenderingSettingDataSerializer.cpp
 )

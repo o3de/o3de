@@ -1,0 +1,10 @@
+{
+    "O3DE": {
+        "Rendering": {
+            "AAMethod": "MSAA",
+            "MultiSample": "2"
+        }
+    }
+}
+
+

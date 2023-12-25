@@ -12,6 +12,7 @@
 #include <FormImageBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
 #include <FormComboBoxWidget.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <QVBoxLayout>
 #include <QLineEdit>
@@ -20,6 +21,13 @@
 #include <QFileInfo>
 #include <QPushButton>
 #include <QComboBox>
+
+#include <QJsonDocument>
+#include <QJsonObject>
+
+// Atom_RPI.Edit
+#include <Atom/RPI.Edit/Rendering/RenderingSettingData.h>
+#include <Atom/RPI.Edit/Rendering/RenderingSettingUtil.h>
 
 namespace O3DE::ProjectManager
 {
@@ -98,9 +106,30 @@ namespace O3DE::ProjectManager
             m_projectId = new FormLineEditWidget(tr("Project ID"), "", this);
             connect(m_projectId->lineEdit(), &QLineEdit::textChanged, this, &UpdateProjectSettingsScreen::OnProjectIdUpdated);
             advancedSettingsLayout->addWidget(m_projectId);
+
+            // AA Settings
+            m_aaModeComboBox = new FormComboBoxWidget(tr("Anti-Aliasing Method"), {}, this);
+            advancedSettingsLayout->addWidget(m_aaModeComboBox);
+
+            m_multiSampleComboBox = new FormComboBoxWidget(tr("Multi-Sample"), {}, this);
+            advancedSettingsLayout->addWidget(m_multiSampleComboBox);
         }
 
         UpdateAdvancedSettingsCollapseState();
+        // Reflect
+        AZ::SerializeContext* serializeContext = nullptr;
+        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ_Assert(serializeContext, "Serialization context not available");
+        if (serializeContext)
+        {
+            EditorRenderingSettingData::Reflect(serializeContext);
+        }
+    }
+
+
+    UpdateProjectSettingsScreen::~UpdateProjectSettingsScreen()
+    {
+        EditorRenderingSettingData::UnReflect();
     }
 
     ProjectManagerScreen UpdateProjectSettingsScreen::GetScreenEnum()
@@ -108,6 +137,40 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::UpdateProjectSettings;
     }
 
+    bool UpdateProjectSettingsScreen::ReadFileToSetComboBox()
+    {
+        QByteArray jsonArray;
+        QString projecPath = m_projectInfo.m_path;
+        if (projecPath.isEmpty())
+        {
+            return false;
+        }
+        QString filePath = projecPath + REGISTRY_FILENAME;
+        QFile file(QDir::toNativeSeparators(filePath));
+        if (!file.exists())
+        {
+            return false;
+        }
+        file.open(QIODevice::ReadWrite | QIODevice::Text);
+        jsonArray = file.readAll();
+        file.close();
+
+        QJsonParseError jsonParseError;
+        QJsonDocument jsonDocument = QJsonDocument::fromJson(jsonArray, &jsonParseError);
+        if (jsonDocument.isNull() || jsonParseError.error != QJsonParseError::NoError || !jsonDocument.isObject())
+        {
+            return false;
+        }
+
+        QJsonObject jsonObject = jsonDocument.object();
+        QJsonValue engineValue = jsonObject.value("O3DE");
+        QJsonValue renderingValue = engineValue.toObject().value("Rendering");
+        QJsonObject renderingObject = renderingValue.toObject();
+        m_aaModeComboBox->comboBox()->setCurrentText(renderingObject.value("AAMethod").toString());
+        m_multiSampleComboBox->comboBox()->setCurrentText(renderingObject.value("MultiSample").toString());
+
+        return true;
+    }
     ProjectInfo UpdateProjectSettingsScreen::GetProjectInfo()
     {
         m_projectInfo.m_displayName = m_projectName->lineEdit()->text();
@@ -164,6 +227,7 @@ namespace O3DE::ProjectManager
             index++;
         }
 
+    
         if (auto result = PythonBindingsInterface::Get()->GetAllEngineInfos(); result)
         {
             for (auto engineInfo : result.GetValue<QVector<EngineInfo>>())
@@ -194,6 +258,18 @@ namespace O3DE::ProjectManager
         }
 
         combobox->setVisible(combobox->count() > 0);
+
+         // Anti-Aliasing
+        combobox = m_aaModeComboBox->comboBox();
+        combobox->clear();
+        combobox->addItems(QStringList{ tr("MSAA"), tr("SMAA"), tr("TAA")});
+        combobox->setCurrentIndex(0);
+
+        combobox = m_multiSampleComboBox->comboBox();
+        combobox->clear();
+        combobox->addItems(QStringList{ tr("1"), tr("2"), tr("4")});
+        combobox->setCurrentIndex(0);
+        ReadFileToSetComboBox();
     }
 
     void UpdateProjectSettingsScreen::UpdateProjectPreviewPath()
@@ -325,4 +401,73 @@ namespace O3DE::ProjectManager
         }
     }
 
+    int UpdateProjectSettingsScreen::GetAAMethodIndex()
+    {
+        return m_aaModeComboBox->comboBox()->currentIndex();
+    }
+
+    int UpdateProjectSettingsScreen::GetMultiSampleNum()
+    {
+        int multiNum = m_multiSampleComboBox->comboBox()->currentIndex() + 1;
+        multiNum = multiNum <= 2 ? multiNum : 4;
+
+        return multiNum;
+    }
+
+    int UpdateProjectSettingsScreen::GetMultiSampleIndex()
+    {
+        return m_multiSampleComboBox->comboBox()->currentIndex();
+    }
+
+    void UpdateProjectSettingsScreen::SaveJsonToFile()
+    {
+        QJsonObject engineObject;
+        QJsonObject renderingObject;
+        QJsonObject renderingMemberObject;
+
+        renderingMemberObject.insert("AAMethod", m_aaModeComboBox->comboBox()->currentText());
+        renderingMemberObject.insert("MultiSample", m_multiSampleComboBox->comboBox()->currentText());
+        renderingObject.insert("Rendering", renderingMemberObject);
+        engineObject.insert("O3DE", renderingObject);
+
+        QJsonDocument jsonDocument(engineObject);
+        QByteArray jsonArray = jsonDocument.toJson(QJsonDocument::Indented);
+        QString projecPath = m_projectPath->lineEdit()->text();
+        QString filePath = projecPath + REGISTRY_FILENAME;
+        QFile file(QDir::toNativeSeparators(filePath));
+        if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
+        {
+            return;
+        }
+        file.write(jsonArray);
+        file.close();
+        {
+            ProjectInfo projectInfo;
+            AZ::IO::FixedMaxPath fixedProjectPath = m_projectPath->lineEdit()->text().toStdString().c_str();
+            auto projectResult = PythonBindingsInterface::Get()->GetProject(fixedProjectPath.c_str());
+            if (projectResult.IsSuccess())
+            {
+                projectInfo = projectResult.GetValue();
+            }
+
+            EngineInfo assignedEngine;
+            if (auto result = PythonBindingsInterface::Get()->GetProjectEngine(projectInfo.m_path); result)
+            {
+                assignedEngine = result.TakeValue();
+            }
+            
+            AZStd::string rootPath;
+            AZ::StringFunc::Path::ConstructFull(
+                assignedEngine.m_path.toStdString().c_str(), "Gems/Atom/Feature/Common/Assets/Passes/MainRenderPipeline.azasset", rootPath);
+
+            EditorRenderingSettingData renderingSettingData;
+            RenderingSetting::LoadFromFile(rootPath, renderingSettingData);
+
+            AZStd::string renderingAAMethod = m_aaModeComboBox->comboBox()->currentText().toStdString().c_str();
+            int multiSampleNum = GetMultiSampleNum();
+            renderingSettingData.m_renderPipelineDescriptor.m_defaultAAMethod = (renderingAAMethod == "MSAA" ? "MSAA" : renderingAAMethod);
+            renderingSettingData.m_renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_samples = static_cast<uint16_t>(multiSampleNum);
+            RenderingSetting::SaveToFile(rootPath, renderingSettingData);
+        }
+    }
 } // namespace O3DE::ProjectManager

@@ -35,6 +35,7 @@
 
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 
 namespace AzFramework
 {
@@ -56,6 +57,8 @@ namespace AZ
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;
 
         class Scene final : public SceneRequestBus::Handler
+            , public AzFramework::AssetCatalogEventBus::Handler
+
         {
             friend class FeatureProcessorFactory;
             friend class RPISystem;
@@ -221,6 +224,9 @@ namespace AZ
 
             // Helper function for wait and clean up a completion job
             void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
+
+            // AzFramework::AssetCatalogEventBus
+            void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
 
             // Add a created feature processor to this scene
             void AddFeatureProcessor(FeatureProcessorPtr fp);

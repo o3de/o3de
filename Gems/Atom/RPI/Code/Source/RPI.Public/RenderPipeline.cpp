@@ -172,10 +172,12 @@ namespace AZ
             pipeline->m_nameId = desc.m_name.data();
             pipeline->m_materialPipelineTagName = Name{desc.m_materialPipelineTag};
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
+            pipeline->m_activeAAMethod = GetAAMethodByName(desc.m_defaultAAMethod);
             pipeline->m_passTree.m_rootPass->SetRenderPipeline(pipeline);
             pipeline->m_passTree.m_rootPass->m_flags.m_isPipelineRoot = true;
             pipeline->m_passTree.m_rootPass->ManualPipelineBuildAndInitialize();
-
+            
+            pipeline->SetActiveAAMethod(desc.m_defaultAAMethod);
             pipeline->UpdateViewportScissor();
         }
 
@@ -624,6 +626,8 @@ namespace AZ
                     newRoot->DebugPrint();
 #endif
                 }
+                
+                SetAAMethod(this, m_activeAAMethod);
             }
 
             // Build and initialize any queued passes
@@ -651,9 +655,7 @@ namespace AZ
                         SceneRequestBus::Event(m_scene->GetId(), &SceneRequest::PipelineStateLookupNeedsRebuild);
                     }
                 }
-                                
                 UpdateViewportScissor();
-
                 // Reset change flags
                 m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
 
@@ -947,6 +949,97 @@ namespace AZ
         ViewType RenderPipeline::GetViewType() const
         {
             return m_viewType;
+        }
+
+        // ---------------------------- Anti-aliasing
+
+        bool RenderPipeline::SetActiveAAMethod(AZStd::string aaMethodName)
+        {
+            AAMethod aaMethod = GetAAMethodByName(aaMethodName);
+            if (aaMethod == AAMethod::Default)
+            {
+                return false;
+            }
+            m_activeAAMethod = aaMethod;
+            return SetAAMethod(this, m_activeAAMethod);
+        }
+
+        AAMethod RenderPipeline::GetActiveAAMethod()
+        {
+            return m_activeAAMethod;
+        }
+
+        AAMethod RenderPipeline::GetAAMethodByName(AZStd::string aaMethodName)
+        {
+            static AZStd::unordered_map<AZStd::string, AAMethod> AAMethodsLookup = {
+                {"MSAA", AAMethod::MSAA}, {"SMAA", AAMethod::SMAA}, 
+                {"TAA", AAMethod::TAA}
+            };
+ 
+            auto findIt = AAMethodsLookup.find(aaMethodName);
+            if (findIt != AAMethodsLookup.end())
+            {
+                return findIt->second;
+            }
+            return AAMethod::Default;
+        }        
+
+        AZStd::string RenderPipeline::GetAAMethodNameByIndex(AAMethod aaMethodIndex)
+        {
+            static AZStd::unordered_map<AAMethod, AZStd::string> AAMethodNameLookup = {
+                {AAMethod::MSAA, "MSAA"}, {AAMethod::SMAA, "SMAA"}, 
+                {AAMethod::TAA, "TAA"}
+            };
+ 
+            auto findIt = AAMethodNameLookup.find(aaMethodIndex);
+            if (findIt != AAMethodNameLookup.end())
+            {
+                return findIt->second;
+            }
+            return "MSAA";
+        }
+ 
+
+
+        bool RenderPipeline::EnablePass(RenderPipeline* pipeline, Name& passName, bool enable)
+        {
+            PassFilter passFilter = PassFilter::CreateWithPassName(passName, pipeline);
+            Ptr<Pass> aaPass = PassSystemInterface::Get()->FindFirstPass(passFilter);
+            if (!aaPass)
+            {
+                return false;
+            }
+            if (aaPass->IsEnabled() != enable)
+            {
+                aaPass->SetEnabled(enable);
+            }
+            return true;
+        }
+
+
+        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AZStd::string aaMethodName)
+        {
+            AAMethod aaMethod = GetAAMethodByName(aaMethodName);
+            return SetAAMethod(pipeline, aaMethod);
+        }
+
+        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AAMethod aaMethod)
+        {
+            if (aaMethod == AAMethod::Default)
+            {
+                return false;
+            }
+
+            static AZStd::unordered_map<AAMethod, Name> AAPassNamesLookup = {
+                {AAMethod::SMAA, Name("SMAA1xApplyLinearHDRColorPass")}, 
+                {AAMethod::TAA, Name("TaaPass")}
+            };
+
+            for (auto& aaPassMap : AAPassNamesLookup)
+            {
+                EnablePass(pipeline, aaPassMap.second, aaPassMap.first == aaMethod);
+            }
+            return true;
         }
     }
 }

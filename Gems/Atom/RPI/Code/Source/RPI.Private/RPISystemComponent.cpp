@@ -28,6 +28,8 @@
 
 #ifdef RPI_EDITOR
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
+// Rendering Settings
+#include <Atom/RPI.Edit/Rendering/RenderingSettingData.h>
 #endif
 
 namespace AZ
@@ -53,6 +55,9 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemComponent::m_rpiDescriptor, "RPI System Settings", "Settings for create RPI system")
                         ;
                 }
+            #ifdef RPI_EDITOR
+                EditorRenderingSettingData::Reflect(serializeContext);
+            #endif
             }
 
             RPISystem::Reflect(context);
