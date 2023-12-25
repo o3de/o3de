@@ -32,10 +32,6 @@
 // AzToolsFramework
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
-// Atom/RPI.Edit
-#include <Atom/RPI.Edit/Rendering/RenderingSettingData.h>
-#include <Atom/RPI.Edit/Rendering/RenderingSettingUtil.h>
-
 // Editor
 #include "CryEdit.h"
 #include "MainWindow.h"
@@ -1008,67 +1004,6 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Set
     Load();
 
     return { value };
-}
-
-void SEditorSettings::InitRenderingSettingsRegistryFile()
-{
-    if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
-    {
-        AZ::SettingsRegistryInterface::FixedValueString renderingMultiSample;
-        AZ::SettingsRegistryInterface::FixedValueString renderingAAMethod;
-        if (!(registry->Get(renderingMultiSample, AZ::SettingsRegistryMergeUtils::Rendering_MultiSample) &&
-              registry->Get(renderingAAMethod, AZ::SettingsRegistryMergeUtils::Rendering_AAMethod)))
-        {
-            registry->Set(AZ::SettingsRegistryMergeUtils::Rendering_MultiSample, Default_Rendering_MultiSample);
-            registry->Set(AZ::SettingsRegistryMergeUtils::Rendering_AAMethod, Default_Rendering_AAMethod);
-
-            AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
-            dumperSettings.m_prettifyOutput = true;
-            dumperSettings.m_jsonPointerPrefix = RenderingPrefix;
-
-            AZStd::string stringBuffer;
-            AZ::IO::ByteContainerStream stringStream(&stringBuffer);
-            if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, RenderingPrefix, stringStream, dumperSettings))
-            {
-                AZ_Warning("Rendering", false, "Could not save rendering settings to stream");
-                return;
-            }
-
-            AZ::IO::FixedMaxPath renderingFilePath = AZ::Utils::GetProjectPath();
-            renderingFilePath /= AZ::SettingsRegistryInterface::RegistryFolder;
-            renderingFilePath /= Rendering_Setting_File;
-
-            bool saved = false;
-            constexpr auto configurationMode =
-                AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
-
-            AZ::IO::SystemFile outputFile;
-            if (outputFile.Open(renderingFilePath.c_str(), configurationMode))
-            {
-                saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
-            }
-
-            AZ_Warning("Rendering", saved, "Unable to save rendering registry file to path: %s", renderingFilePath.c_str());
-
-            registry->Get(renderingMultiSample, AZ::SettingsRegistryMergeUtils::Rendering_MultiSample);
-            registry->Get(renderingAAMethod, AZ::SettingsRegistryMergeUtils::Rendering_AAMethod);
-        }
-
-        // wthen the project start, notify EditorRenderingSetting to update the atom asset
-        AZStd::string aaMethod = renderingAAMethod.c_str();
-        uint16_t multiSampleNum = static_cast<uint16_t>(atoi(renderingMultiSample.c_str()));
-
-         AZStd::string rootPath = AZ::Utils::GetEnginePath().c_str();
-        AZ::StringFunc::Path::ConstructFull(rootPath.c_str(), "Gems/Atom/Feature/Common/Assets/Passes/MainRenderPipeline.azasset", rootPath);
-
-        EditorRenderingSettingData renderingSettingData;
-        if(RenderingSetting::LoadFromFile(rootPath, renderingSettingData))
-        {
-            renderingSettingData.m_renderPipelineDescriptor.m_defaultAAMethod = (aaMethod == "MSAA" ? "MSAA" : aaMethod);
-            renderingSettingData.m_renderPipelineDescriptor.m_renderSettings.m_multisampleState.m_samples = multiSampleNum;
-            RenderingSetting::SaveToFile(rootPath, renderingSettingData);
-        }
-    }
 }
 
 void SEditorSettings::SaveSettingsRegistryFile()

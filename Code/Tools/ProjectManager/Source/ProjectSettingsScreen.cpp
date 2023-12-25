@@ -31,16 +31,19 @@ namespace O3DE::ProjectManager
 
         // if we don't provide a parent for this box layout the stylesheet doesn't take
         // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
+        QFrame* projectSettingsFrame = new QFrame(this);
+        projectSettingsFrame->setObjectName("projectSettings");
 
         QScrollArea* scrollArea = new QScrollArea(this);
-        scrollArea->setObjectName("projectSettings");
         scrollArea->setWidgetResizable(true);
 
         QWidget* scrollWidget = new QWidget(this);
+        scrollArea->setWidget(scrollWidget);
 
         m_verticalLayout = new QVBoxLayout();
         m_verticalLayout->setMargin(0);
         m_verticalLayout->setAlignment(Qt::AlignTop);
+        scrollWidget->setLayout(m_verticalLayout);
 
         m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
         connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectNameUpdated);
@@ -53,9 +56,9 @@ namespace O3DE::ProjectManager
         connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectPathUpdated);
         m_verticalLayout->addWidget(m_projectPath);
 
-        scrollWidget->setLayout(m_verticalLayout);
-        scrollArea->setWidget(scrollWidget);
-        m_horizontalLayout->addWidget(scrollArea);
+        projectSettingsFrame->setLayout(m_verticalLayout);
+
+        m_horizontalLayout->addWidget(projectSettingsFrame);
 
         setLayout(m_horizontalLayout);
     }

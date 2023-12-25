@@ -23,18 +23,11 @@ namespace O3DE::ProjectManager
     {
     public:
         explicit UpdateProjectSettingsScreen(QWidget* parent = nullptr);
-        ~UpdateProjectSettingsScreen();
+        ~UpdateProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
         ProjectInfo GetProjectInfo() override;
         void SetProjectInfo(const ProjectInfo& projectInfo);
-
-        bool ReadFileToSetComboBox();
-        int GetAAMethodIndex();
-        int GetMultiSampleIndex();
-        int GetMultiSampleNum();
-
-        void SaveJsonToFile();
 
         AZ::Outcome<void, QString> Validate() const override;
 
@@ -63,10 +56,6 @@ namespace O3DE::ProjectManager
 
         ProjectInfo m_projectInfo;
         bool m_userChangedPreview; //! Did the user change the project preview path
-
-        FormComboBoxWidget* m_aaModeComboBox = nullptr;
-        FormComboBoxWidget* m_multiSampleComboBox = nullptr;
-
 
     protected slots:
         void UpdateAdvancedSettingsCollapseState();

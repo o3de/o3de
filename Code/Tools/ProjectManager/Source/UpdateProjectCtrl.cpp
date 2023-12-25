@@ -115,14 +115,6 @@ namespace O3DE::ProjectManager
     {
         m_stack->setCurrentIndex(ScreenOrder::Settings);
         Update();
-        ProjectManagerScreen curScreen = GetScreenEnum();
-        bool needToGetIndex = false;
-        if (curScreen == ProjectManagerScreen::UpdateProject)
-        {
-            needToGetIndex = m_updateSettingsScreen->ReadFileToSetComboBox();
-        }
-        m_AAMethodIndex = needToGetIndex ? m_updateSettingsScreen->GetAAMethodIndex() : -1;
-        m_multiSampleIndex = needToGetIndex ? m_updateSettingsScreen->GetMultiSampleIndex() : -1;
     }
 
     void UpdateProjectCtrl::OnChangeScreenRequest(ProjectManagerScreen screen)
@@ -271,11 +263,8 @@ namespace O3DE::ProjectManager
         AZ_Assert(m_updateSettingsScreen, "Update settings screen is nullptr.")
 
         ProjectInfo newProjectSettings = m_updateSettingsScreen->GetProjectInfo();
-        int currentMultiSampleIndex = m_updateSettingsScreen->GetMultiSampleIndex();
-        int currentAAMethodIndex = m_updateSettingsScreen->GetAAMethodIndex();
-        bool currentIndexChanged = m_multiSampleIndex != currentMultiSampleIndex || m_AAMethodIndex != currentAAMethodIndex;
 
-        if (m_projectInfo != newProjectSettings || currentIndexChanged)
+        if (m_projectInfo != newProjectSettings)
         {
             if (shouldConfirm)
             {
@@ -386,15 +375,8 @@ namespace O3DE::ProjectManager
             }
 
             m_projectInfo = newProjectSettings;
-            if (currentIndexChanged)
-            {
-                m_updateSettingsScreen->SaveJsonToFile();
-                m_multiSampleIndex = currentMultiSampleIndex;
-                m_AAMethodIndex = currentAAMethodIndex;
-            }
         }
 
-       
         return true;
     }
 

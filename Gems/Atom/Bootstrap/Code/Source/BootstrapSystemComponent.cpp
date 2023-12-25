@@ -74,6 +74,28 @@ void cvar_r_renderPipelinePath_Changed(const AZ::CVarFixedString& newPipelinePat
     }
 }
 
+void cvar_r_antiAliasing_Changed(const AZ::CVarFixedString& newAtiAliasing)
+{
+    auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    if (!viewportContextManager)
+    {
+        return;
+    }
+    auto viewportContext = viewportContextManager->GetDefaultViewportContext();
+    if (!viewportContext)
+    {
+        return;
+    }
+
+    AZ::Render::Bootstrap::RequestBus::Broadcast(&AZ::Render::Bootstrap::RequestBus::Events::SwitchAntiAliasing, newAtiAliasing.c_str(), viewportContext);
+}
+
+void cvar_r_multiSample_Changed([[maybe_unused]]const int& newSampleCount)
+{
+
+}
+
+
 AZ_CVAR(AZ::CVarFixedString, r_renderPipelinePath, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, cvar_r_renderPipelinePath_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The asset (.azasset) path for default render pipeline");
 AZ_CVAR(AZ::CVarFixedString, r_default_openxr_pipeline_name, "passes/MultiViewRenderPipeline.azasset", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default openXr render pipeline name");
 AZ_CVAR(AZ::CVarFixedString, r_default_openxr_left_pipeline_name, "passes/XRLeftRenderPipeline.azasset", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default openXr Left eye render pipeline name");
@@ -83,6 +105,8 @@ AZ_CVAR(uint32_t, r_height, 1080, nullptr, AZ::ConsoleFunctorFlags::DontReplicat
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
 AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
 AZ_CVAR(float, r_renderScale, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scale to apply to the window resolution.");
+AZ_CVAR(AZ::CVarFixedString, r_antiAliasing, "", cvar_r_antiAliasing_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The anti-aliasing to be used for the current render pipeline. Available options: MSAA, TAA, SMAA");
+AZ_CVAR(int, r_multiSample, -1, cvar_r_multiSample_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The multi-sample count to be used for the current render pipeline."); // -1 stands for unchanged, load the default setting from the pipelien itself
 
 namespace AZ
 {
@@ -239,6 +263,24 @@ namespace AZ
                             if (renderScale > 0)
                             {
                                 r_renderScale = renderScale;
+                            }
+                        }
+                    }
+                }
+
+                const AZStd::string multiSampleCvarName("r_multiSample");
+                if (pCmdLine->HasSwitch(multiSampleCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(multiSampleCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(multiSampleCvarName);
+                        if (AZ::StringFunc::LooksLikeInt(valueStr.c_str()))
+                        {
+                            auto multiSample = AZ::StringFunc::ToInt(valueStr.c_str());
+                            if (multiSample > 0)
+                            {
+                                r_multiSample = multiSample;
                             }
                         }
                     }
@@ -507,10 +549,15 @@ namespace AZ
                         }
                     }
 
-                    if (!LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, multisampleState))
+                    RPI::RenderPipelinePtr renderPipeline = LoadPipeline(scene, viewportContext, pipelineName, AZ::RPI::ViewType::Default, multisampleState);
+                    if (!renderPipeline)
                     {
                         return false;
                     }
+
+                    AZ::CVarFixedString antiAliasing = static_cast<AZ::CVarFixedString>(r_antiAliasing);
+                    if (antiAliasing != "")
+                        renderPipeline->SetActiveAAMethod(antiAliasing.c_str());
 
                     // As part of our initialization we need to create the BRDF texture generation pipeline
                     AZ::RPI::RenderPipelineDescriptor pipelineDesc;
@@ -564,6 +611,9 @@ namespace AZ
                 // been created so the same values are applied to all.
                 // As it cannot be applied MSAA values per pipeline,
                 // it's setting the MSAA state from the last pipeline loaded.
+                const auto cvarMultiSample = static_cast<int>(r_multiSample);
+                if (cvarMultiSample >= 0)
+                    multisampleState.m_samples = static_cast<uint16_t>(cvarMultiSample);
                 AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multisampleState);
 
                 // Send notification when the scene and its pipeline are ready.
@@ -610,6 +660,12 @@ namespace AZ
                 newRenderPipeline->SetDefaultView(oldRenderPipeline->GetDefaultView());
 
                 AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(newRenderPipeline->GetRenderSettings().m_multisampleState);
+            }
+
+            void BootstrapSystemComponent::SwitchAntiAliasing(const AZStd::string& newAntiAliasing, AZ::RPI::ViewportContextPtr viewportContext)
+            {
+                auto defaultRenderPipeline = viewportContext->GetRenderScene()->GetDefaultRenderPipeline();
+                defaultRenderPipeline->SetActiveAAMethod(newAntiAliasing);
             }
 
             RPI::RenderPipelinePtr BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,

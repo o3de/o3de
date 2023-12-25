@@ -69,9 +69,6 @@ namespace O3DE::ProjectManager
         QPushButton* m_nextButton = nullptr;
         QVector<ProjectManagerScreen> m_screensOrder;
 
-        int m_AAMethodIndex = 0;
-        int m_multiSampleIndex = 0;
-
         ProjectInfo m_projectInfo;
     };
 

@@ -24,11 +24,6 @@
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
-
-static constexpr AZStd::string_view Default_Rendering_MultiSample = "2";
-static constexpr AZStd::string_view Default_Rendering_AAMethod = "SMAA";
-static constexpr AZStd::string_view Rendering_Setting_File = "renderpipeline.setreg";
-static constexpr char RenderingPrefix[] = "/O3DE/Rendering";
 //////////////////////////////////////////////////////////////////////////
 // Settings for snapping in the viewports.
 //////////////////////////////////////////////////////////////////////////
@@ -283,8 +278,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     void LoadEnableSourceControlFlag();
 
     void PostInitApply();
-    
-    void InitRenderingSettingsRegistryFile();
 
     //////////////////////////////////////////////////////////////////////////
     // Variables.
