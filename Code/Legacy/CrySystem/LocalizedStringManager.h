@@ -278,9 +278,9 @@ private:
     // CVARs
     int m_cvarLocalizationDebug;
     int m_cvarLocalizationEncode; //Encode/Compress translated text to save memory
-// Gruber patch begin	
+// Gruber patch begin
     int m_cvarLocalizationFormat;
-    int m_cvarLocalizationTest;		   
+    int m_cvarLocalizationTest;  
 // Gruber patch end
 
     //The localizations that are available for this SKU. Used for determining what to show on a language select screen or whether to show one at all
