@@ -229,6 +229,33 @@ namespace LegacyLevelSystem
                 {
                     validLevelName = possibleLevelAssetPath;
                 }
+#ifdef CARBONATED
+// TODO : fix the level path on the backend
+                else
+                {
+                    AZStd::string levelNameStr = levelName;
+                    AZStd::string assetPath;
+                    if (levelNameStr.starts_with("/dlc/"))
+                    {
+                        assetPath = AZStd::string::format("Levels%s/%s.spawnable", levelName, strrchr(levelName, '/') + 1);
+                    }
+                    else if (levelNameStr.starts_with("dlc/"))
+                    {
+                        assetPath = AZStd::string::format("Levels/%s/%s.spawnable", levelName, strrchr(levelName, '/') + 1);
+                    }
+
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        rootSpawnableAssetId,
+                        &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                        assetPath.c_str(),
+                        AZ::Data::AssetType{},
+                        false);
+                    if (rootSpawnableAssetId.IsValid())
+                    {
+                        validLevelName = assetPath;
+                    }
+                }
+#endif // #ifdef CARBONATED
             }
         }
 

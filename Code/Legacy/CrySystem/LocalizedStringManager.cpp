@@ -269,7 +269,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
     , m_cvarLocalizationEncode(1)
 // Gruber patch begin
     , m_cvarLocalizationTest(0)
-    , m_cvarLocalizationFormat(1)		 
+    , m_cvarLocalizationFormat(1)
 // Gruber patch end
     , m_availableLocalizations(0)
 {
@@ -317,7 +317,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
         "Usage: sys_localization_format [0..1]\n"
         "    0: Crytek Legacy Localization (Excel 2003)\n"
         "    1: AGS XML\n"
-        "Default is 1 (AGS Xml)");																							
+        "Default is 1 (AGS Xml)");
     //Check that someone hasn't added a language ID without a language name
     assert(PLATFORM_INDEPENDENT_LANGUAGE_NAMES[ ILocalizationManager::ePILID_MAX_OR_INVALID - 1 ] != 0);
 
@@ -556,7 +556,7 @@ void CLocalizedStringsManager::AddSupportedLanguage(const AZStd::string& langNam
 //////////////////////////////////////////////////////////////////////////
 int CLocalizedStringsManager::GetLocalizationFormat() const
 {
-/* Gruber patch begin	
+/* Gruber patch begin
     int32_t localizationFormat{};
     if (auto console = AZ::Interface<AZ::IConsole>::Get();
         console !=nullptr)
@@ -851,7 +851,7 @@ bool CLocalizedStringsManager::LoadLocalizationDataByTag(
     for (TStringVec::iterator it2 = vEntries.begin(); it2 != vEntries.end(); ++it2)
     {
         //Only load files of the correct type for the configured format
-		// Gruber patch
+        // Gruber patch
         //if ((localizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (localizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
         if ((m_cvarLocalizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (m_cvarLocalizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
         {
@@ -1850,7 +1850,7 @@ CLocalizedStringsManager::LoadFunc CLocalizedStringsManager::GetLoadFunction() c
     CRY_ASSERT_MESSAGE(gEnv && gEnv->pConsole, "System environment or console missing!");
     if (gEnv && gEnv->pConsole)
     {
-/* Gruber patch begin		
+/* Gruber patch begin
         int32_t localizationFormat{};
         if (auto console = AZ::Interface<AZ::IConsole>::Get();
             console !=nullptr)
@@ -1858,7 +1858,7 @@ CLocalizedStringsManager::LoadFunc CLocalizedStringsManager::GetLoadFunction() c
             console->GetCvarValue(c_sys_localization_format, localizationFormat);
         }
         if(localizationFormat == 1)*/
-        if(m_cvarLocalizationFormat == 1)			
+        if(m_cvarLocalizationFormat == 1)
 // Gruber patch end
         {
             return &CLocalizedStringsManager::DoLoadAGSXmlDocument;
@@ -2247,7 +2247,7 @@ bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, AZStd::string& 
 
             if (entry != NULL)
             {
-// Gruber patch begin				
+// Gruber patch begin
                 switch (m_cvarLocalizationTest)
                 {
                 case 0:  // Ignore the cvar, continue localization as expected
