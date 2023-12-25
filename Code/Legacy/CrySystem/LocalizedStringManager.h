@@ -277,7 +277,7 @@ private:
 
     // CVARs
     int m_cvarLocalizationDebug;
-    int m_cvarLocalizationEncode;   //Encode/Compress translated text to save memory
+    int m_cvarLocalizationEncode; //Encode/Compress translated text to save memory
 // Gruber patch begin	
     int m_cvarLocalizationFormat;
     int m_cvarLocalizationTest;		   
