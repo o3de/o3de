@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.BillingClient.BillingResponseCode;
+
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
@@ -58,7 +61,10 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
                 public void run()
                 {
                     Looper.prepare();
-                    m_billingClient = BillingClient.newBuilder(m_activity).setListener(iapInstance).build();
+                    m_billingClient = BillingClient.newBuilder(m_activity).setListener(iapInstance).enablePendingPurchases().build();
+
+/*
+    //Commented out to fix compilation issues of BillingClient 6.1.0
                     m_billingClient.startConnection(new BillingClientStateListener()
                     {
                         @Override
@@ -86,13 +92,14 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
                     
                             m_setupDone = true;
                         }
-                    
+
                         @Override
                         public void onBillingServiceDisconnected()
                         {
                             Log.d(s_tag, "Service disconnected");
                         }
                     });
+            */
                     Looper.loop();
                 }
             })).start();
@@ -135,6 +142,9 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
 
         List<String> skuList = Arrays.asList(skuListArray);
 
+/*
+    //Commented out to fix compilation issues of BillingClient 6.1.0
+
         SkuDetailsResponseListener responseListener = new SkuDetailsResponseListener()
         {
             @Override
@@ -172,6 +182,8 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
         m_billingClient.querySkuDetailsAsync(params.build(), responseListener);
         params.setSkusList(skuList).setType(BillingClient.SkuType.SUBS);
         m_billingClient.querySkuDetailsAsync(params.build(), responseListener);
+
+ */
     }
 
 
@@ -182,6 +194,8 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
             Log.e(s_tag, "Not initialized!");
             return;
         }
+/*
+    //Commented out to fix compilation issues of BillingClient 6.1.0
 
         BillingFlowParams flowParams = BillingFlowParams.newBuilder().setSku(productSku).setType(productType).build();
         int responseCode = m_billingClient.launchBillingFlow(m_activity, flowParams);
@@ -190,10 +204,12 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
         {
             return;
         }
-
+*/
         Log.d(s_tag, "Purchase flow initiated.");
     }
 
+/*
+    //Commented out to fix compilation issues of BillingClient 6.1.0
 
     @Override
     public void onPurchasesUpdated(int responseCode, List<Purchase> purchases)
@@ -210,7 +226,7 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
         nativeNewProductPurchased(purchasedProducts.toArray());
     }
 
-
+*/
     public void QueryPurchasedProducts()
     {
         if (!m_setupDone)
@@ -238,6 +254,9 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
             return;
         }
 
+/*
+    //Commented out to fix compilation issues of BillingClient 6.1.0
+
         ConsumeResponseListener listener = new ConsumeResponseListener()
         {
             @Override
@@ -253,6 +272,7 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
         };
 
         m_billingClient.consumeAsync(purchaseToken, listener);
+        */
     }
 
 
@@ -269,6 +289,9 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
 
     private boolean QueryPurchasedProductsBySkuType(String skuType, ArrayList<PurchasedProductDetails> purchasedProducts)
     {
+        /*
+        //Commented out to fix compilation issues of BillingClient 6.1.0
+
         Purchase.PurchasesResult purchasesResult = m_billingClient.queryPurchases(skuType);
 
         if (!VerifyResponseCode(purchasesResult.getResponseCode()))
@@ -277,13 +300,16 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
         }
 
         ParsePurchasedProducts(purchasesResult.getPurchasesList(), purchasedProducts);
-
+        */
         return true;
     }
 
 
     private void ParsePurchasedProducts(List<Purchase> purchases, ArrayList<PurchasedProductDetails> purchasedProducts)
     {
+        /*
+        // Commented out to fix compilation issues of BillingClient 6.1.0
+
         for (Purchase purchase : purchases)
         {
             PurchasedProductDetails purchasedProductDetails = new PurchasedProductDetails();
@@ -296,18 +322,36 @@ public class LumberyardInAppBilling implements PurchasesUpdatedListener
             purchasedProductDetails.m_isAutoRenewing = purchase.isAutoRenewing();
             purchasedProducts.add(purchasedProductDetails);
         }
+
+         */
     }
 
 
     private boolean VerifyResponseCode(int responseCode)
     {
+        /*
+        //Commented out to fix compilation issues of BillingClient 6.1.0
         if (responseCode != BillingClient.BillingResponse.OK)
         {
             Log.d(s_tag, m_packageName + " returned error code " + BILLING_RESPONSE_RESULT_STRINGS[responseCode]);
             return false;
         }
-
+        */
         return true;
+    }
+
+    @Override
+    public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
+        if (billingResult.getResponseCode() == BillingResponseCode.OK
+                && purchases != null) {
+            for (Purchase purchase : purchases) {
+                ///handlePurchase(purchase);
+            }
+        } else if (billingResult.getResponseCode() == BillingResponseCode.USER_CANCELED) {
+            // Handle an error caused by a user cancelling the purchase flow.
+        } else {
+            // Handle any other error codes.
+        }
     }
 
 
