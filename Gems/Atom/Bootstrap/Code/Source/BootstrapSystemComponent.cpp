@@ -90,9 +90,26 @@ void cvar_r_antiAliasing_Changed(const AZ::CVarFixedString& newAtiAliasing)
     AZ::Render::Bootstrap::RequestBus::Broadcast(&AZ::Render::Bootstrap::RequestBus::Events::SwitchAntiAliasing, newAtiAliasing.c_str(), viewportContext);
 }
 
-void cvar_r_multiSample_Changed([[maybe_unused]]const int& newSampleCount)
+void cvar_r_multiSample_Changed(const uint16_t& newSampleCount)
 {
-
+    auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    if (!viewportContextManager)
+    {
+        return;
+    }
+    auto viewportContext = viewportContextManager->GetDefaultViewportContext();
+    if (!viewportContext)
+    {
+        return;
+    }
+    if (newSampleCount > 0 && ((newSampleCount & (newSampleCount - 1))) == 0)
+    {
+        AZ::Render::Bootstrap::RequestBus::Broadcast(&AZ::Render::Bootstrap::RequestBus::Events::SwitchMultiSample, newSampleCount, viewportContext);
+    }
+    else
+    {
+        AZ_Warning("SetMultiSampleCount", false, "Failed to set multi sample count %d: invalid multi-sample count", newSampleCount);
+    }
 }
 
 
@@ -106,7 +123,7 @@ AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontRep
 AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
 AZ_CVAR(float, r_renderScale, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scale to apply to the window resolution.");
 AZ_CVAR(AZ::CVarFixedString, r_antiAliasing, "", cvar_r_antiAliasing_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The anti-aliasing to be used for the current render pipeline. Available options: MSAA, TAA, SMAA");
-AZ_CVAR(int, r_multiSample, -1, cvar_r_multiSample_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The multi-sample count to be used for the current render pipeline."); // -1 stands for unchanged, load the default setting from the pipelien itself
+AZ_CVAR(uint16_t, r_multiSample, 0, cvar_r_multiSample_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The multi-sample count to be used for the current render pipeline."); // 0 stands for unchanged, load the default setting from the pipelien itself
 
 namespace AZ
 {
@@ -280,7 +297,7 @@ namespace AZ
                             auto multiSample = AZ::StringFunc::ToInt(valueStr.c_str());
                             if (multiSample > 0)
                             {
-                                r_multiSample = multiSample;
+                                r_multiSample = static_cast<uint16_t>(multiSample);
                             }
                         }
                     }
@@ -611,8 +628,8 @@ namespace AZ
                 // been created so the same values are applied to all.
                 // As it cannot be applied MSAA values per pipeline,
                 // it's setting the MSAA state from the last pipeline loaded.
-                const auto cvarMultiSample = static_cast<int>(r_multiSample);
-                if (cvarMultiSample >= 0)
+                const auto cvarMultiSample = static_cast<uint16_t>(r_multiSample);
+                if (cvarMultiSample > 0 && ((cvarMultiSample & (cvarMultiSample - 1))) == 0)
                     multisampleState.m_samples = static_cast<uint16_t>(cvarMultiSample);
                 AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multisampleState);
 
@@ -666,6 +683,13 @@ namespace AZ
             {
                 auto defaultRenderPipeline = viewportContext->GetRenderScene()->GetDefaultRenderPipeline();
                 defaultRenderPipeline->SetActiveAAMethod(newAntiAliasing);
+            }
+
+            void BootstrapSystemComponent::SwitchMultiSample(const uint16_t& newSampleCount, AZ::RPI::ViewportContextPtr viewportContext)
+            {
+                auto multiSampleStete = viewportContext->GetRenderScene()->GetDefaultRenderPipeline()->GetRenderSettings().m_multisampleState;
+                multiSampleStete.m_samples = newSampleCount;
+                AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multiSampleStete);
             }
 
             RPI::RenderPipelinePtr BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,
