@@ -946,6 +946,7 @@ PROJECT_DEPENDENCIES_VALUE_FORMAT = """
 dependencies {{
 {dependencies}
     api 'androidx.core:core:1.1.0'
+    implementation 'com.android.billingclient:billing:6.1.0'
 }}
 """
 
