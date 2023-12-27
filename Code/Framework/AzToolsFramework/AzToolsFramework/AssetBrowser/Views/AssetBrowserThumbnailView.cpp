@@ -472,7 +472,7 @@ namespace AzToolsFramework
             bool hasString{ false };
             const QString tagString("String");
             const QString tagFolder("Folder");
-            auto filterCopy = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
+            auto clonedFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
             for (const auto& subFilter : filter->GetSubFilters())
             {
                 if (subFilter->GetTag() == tagString)
@@ -484,7 +484,7 @@ namespace AzToolsFramework
                 // Skip the folder filter on the thumbnail view so that we can see files
                 if (subFilter->GetTag() != tagFolder)
                 {
-                    filterCopy->AddFilter(FilterConstType(subFilter->Clone()));
+                    clonedFilter->AddFilter(FilterConstType(subFilter->Clone()));
                 }
             }
 
@@ -494,9 +494,35 @@ namespace AzToolsFramework
             m_thumbnailViewProxyModel->SetShowSearchResultsMode(hasString);
             m_thumbnailViewWidget->SetShowSearchResultsMode(hasString);
 
-            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
+            if (hasString)
+            {
+                // With string searches enabled we disable filter propagation to only show exact mattress.
+                for (auto subFilter : clonedFilter->GetSubFilters())
+                {
+                    if (auto clonedCompositeFilter = qobject_cast<const CompositeFilter*>(subFilter.get()); clonedCompositeFilter)
+                    {
+                        auto modifiedCompositeFilter = const_cast<CompositeFilter*>(clonedCompositeFilter);
+                        modifiedCompositeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::None);
+                    }
+                }
 
-            m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
+                // With string searches enabled we only want to show sources and products in this view.
+                auto customTypeFilter = new CustomFilter(
+                    [](const AssetBrowserEntry* entry)
+                    {
+                        switch (entry->GetEntryType())
+                        {
+                        case AssetBrowserEntry::AssetEntryType::Product:
+                        case AssetBrowserEntry::AssetEntryType::Source:
+                            return true;
+                        }
+                        return false;
+                    });
+                clonedFilter->AddFilter(FilterConstType(customTypeFilter));
+            }
+
+            clonedFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+            m_assetFilterModel->SetFilter(FilterConstType(clonedFilter));
         }
 
         void AssetBrowserThumbnailView::SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode)
