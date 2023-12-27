@@ -510,7 +510,11 @@ namespace AzFramework
         // Load the script, find the base table...
         if (LoadInContext())
         {
+#if defined(_RELEASE)
             bool isHotReloadEnabled = false;
+#else
+            bool isHotReloadEnabled = true;
+#endif
 
             // Retrieve new action manager setting
             if (auto* registry = AZ::SettingsRegistry::Get())
