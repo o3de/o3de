@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptProperty.h>
@@ -576,12 +577,18 @@ namespace AzFramework
     {
         DestroyEntityTable();
 
-        m_script = asset;
+        // Assign the updated asset on the next tick so we are not holding
+        // on to the old script
+        AZ::TickBus::QueueFunction(
+            [this, asset]()
+            {
+                m_script = asset;
 
-        if (LoadInContext())
-        {
-            CreateEntityTable();
-        }
+                if (LoadInContext())
+                {
+                    CreateEntityTable();
+                }
+            });
     }
 
     bool ScriptComponent::LoadInContext()
