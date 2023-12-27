@@ -202,7 +202,7 @@ namespace AZ
             // but the function pointers do not load. Disable the extension if that's the case.
             if (device != VK_NULL_HANDLE &&
                 m_context.EXT_debug_utils &&
-                m_context.CmdBeginDebugUtilsLabelEXT)
+                !m_context.CmdBeginDebugUtilsLabelEXT)
             {
                 m_context.EXT_debug_utils = 0;
             }
