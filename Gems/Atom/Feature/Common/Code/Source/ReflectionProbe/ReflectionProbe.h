@@ -65,7 +65,7 @@ namespace AZ
 
         // ReflectionProbe manages all aspects of a single probe, including rendering, visualization, and cubemap generation
         class ReflectionProbe final
-            : public AZ::Data::AssetBus::MultiHandler
+            : public AZ::Data::AssetBus::Handler
             , private CubeMapRenderer
         {
         public:
