@@ -58,7 +58,7 @@ namespace AZ
 
                 bool SceneHasSkinGroup(const Containers::Scene& scene) const;
 
-                static const int s_rigsPreferredTabOrder;
+                static constexpr int s_rigsPreferredTabOrder{ 1 };
             };
         } // namespace Behaviors
     } // namespace SceneAPI

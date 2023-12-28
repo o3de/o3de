@@ -59,7 +59,7 @@ namespace PhysX
         {
             if (AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IMeshData>(scene, false))
             {
-                categories.emplace_back("PhysX", MeshGroup::TYPEINFO_Uuid());
+                categories.emplace_back("PhysX", MeshGroup::TYPEINFO_Uuid(), s_meshBehaviorPreferredTabOrder);
             }
         }
 
