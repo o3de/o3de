@@ -45,7 +45,7 @@ namespace AzToolsFramework
             QStringList mimeTypes() const override;
         private:
             QPersistentModelIndex m_rootIndex;
-            bool m_searchResultsMode;
+            bool m_searchResultsMode{ false };
             QString m_searchString;
         };
     } // namespace AssetBrowser
