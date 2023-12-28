@@ -29,8 +29,8 @@ namespace AZ::RHI
         {
             MultiDeviceDrawRequest() = default;
 
-            //! Returns the device-specific RayTracingTlasDescriptor for the given index
-            DrawPacketBuilder::DrawRequest GetDeviceDrawRequest(int deviceIndex);
+            //! Returns the device-specific DrawRequest for the given index
+            DrawPacketBuilder::DrawRequest BuildDeviceDrawRequest(int deviceIndex);
 
             //! The filter tag used to direct the draw item.
             DrawListTag m_listTag;
@@ -68,7 +68,7 @@ namespace AZ::RHI
 
             for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
-                if ((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1)
+                if (RHI::CheckBit(AZStd::to_underlying(m_deviceMask), deviceIndex))
                 {
                     m_deviceDrawPacketBuilders.emplace(deviceIndex, DrawPacketBuilder());
                 }

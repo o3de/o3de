@@ -21,6 +21,11 @@ namespace UnitTest
 
 namespace AZ::RHI
 {
+    //! MultiDeviceDrawPacket is a multi-device class that holds a map of device-specific DrawPackets as well as
+    //! a vector of MultiDeviceDrawItems, corresponding SortKeys, DrawListTags and DrawListMasks.
+    //! A MultiDeviceDrawPacket is only intened to be contructed via the MultiDeviceDrawPacketBuilder.
+    //! Individual device-specific DrawPackets are allocated as packed data structures, referenced via RHI::Ptrs
+    //! in a map, indexed by the device-index.
     class MultiDeviceDrawPacket final : public AZStd::intrusive_base
     {
         friend class MultiDeviceDrawPacketBuilder;
@@ -76,22 +81,22 @@ namespace AZ::RHI
         }
 
     private:
-        /// Use DrawPacketBuilder to construct an instance.
+        //! Use DrawPacketBuilder to construct an instance.
         MultiDeviceDrawPacket() = default;
 
-        // The bit-mask of all active filter tags.
+        //! The bit-mask of all active filter tags.
         DrawListMask m_drawListMask{};
 
-        // List of draw items.
+        //! List of draw items.
         AZStd::vector<MultiDeviceDrawItem> m_drawItems;
 
-        // List of draw item sort keys associated with the draw item index.
+        //! List of draw item sort keys associated with the draw item index.
         AZStd::vector<DrawItemSortKey> m_drawItemSortKeys;
 
-        // List of draw list tags associated with the draw item index.
+        //! List of draw list tags associated with the draw item index.
         AZStd::vector<DrawListTag> m_drawListTags;
 
-        // List of draw filter masks associated with the draw item index.
+        //! List of draw filter masks associated with the draw item index.
         AZStd::vector<DrawFilterMask> m_drawFilterMasks;
 
         //! A map of single-device DrawPackets, index by the device index

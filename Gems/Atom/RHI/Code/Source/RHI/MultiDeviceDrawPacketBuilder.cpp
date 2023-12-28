@@ -16,7 +16,7 @@
 
 namespace AZ::RHI
 {
-    DrawPacketBuilder::DrawRequest MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::GetDeviceDrawRequest(int deviceIndex)
+    DrawPacketBuilder::DrawRequest MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::BuildDeviceDrawRequest(int deviceIndex)
     {
         if (!m_deviceStreamBufferViews.contains(deviceIndex))
         {
@@ -122,7 +122,7 @@ namespace AZ::RHI
             m_drawPacketInFlight->m_drawListMask.set(request.m_listTag.GetIndex());
             for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
             {
-                deviceDrawPacketBuilder.AddDrawItem(request.GetDeviceDrawRequest(deviceIndex));
+                deviceDrawPacketBuilder.AddDrawItem(request.BuildDeviceDrawRequest(deviceIndex));
             }
         }
         else
