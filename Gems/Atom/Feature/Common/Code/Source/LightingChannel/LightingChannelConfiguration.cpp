@@ -26,14 +26,27 @@ namespace AZ
                 
                 if (auto* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<AZ::Render::LightingChannelConfiguration>("Lighting Channels Config", "")
+                    editContext->Class<AZ::Render::LightingChannelConfiguration>("Lighting Channel Config", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &AZ::Render::LightingChannelConfiguration::m_lightingChannelFlags,
-                                        "Lighting Channels", "Lights can only shine the objects in the same lighting channel with the light.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ;
+                            "Lighting Channels", "Lights can only shine the objects in the same lighting channel with the light.")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                            ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                            ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                            ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &LightingChannelConfiguration::GetLabelForIndex)
+                     ;
                 }
+            }
+        }
+
+        void LightingChannelConfiguration::SetLightingChannelMask(const uint32_t mask)
+        {
+            for (uint32_t index = 0; index < m_lightingChannelFlags.size(); ++index)
+            {
+                m_lightingChannelFlags[index] = (static_cast<bool>(mask >> index) & 0x01);
             }
         }
 
@@ -47,12 +60,9 @@ namespace AZ
             return mask;
         }
 
-        void LightingChannelConfiguration::SetLightingChannelMask(const uint32_t mask)
+        AZStd::string LightingChannelConfiguration::GetLabelForIndex(int index) const
         {
-            for (uint32_t index = 0; index < m_lightingChannelFlags.size(); ++index)
-            {
-                m_lightingChannelFlags[index] = (static_cast<bool>(mask >> index) & 0x01);
-            }
+            return AZStd::string::format("Lighting Channel %d", index);
         }
-    }
-}
+    } // namespace Render
+} // namespace AZ

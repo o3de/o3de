@@ -22,14 +22,18 @@ namespace AZ
         {
             AZ_TYPE_INFO(LightingChannelConfiguration, "{7FFD6D01-BABE-FE35-612F-63A30925E5F7}");
 
-            AZStd::array<bool, LightingChannelsCount> m_lightingChannelFlags {true, false, false, false, false};
+            static void Reflect(AZ::ReflectContext* context);
 
             LightingChannelConfiguration() = default;
 
-            static void Reflect(AZ::ReflectContext* context);
+            void SetLightingChannelMask(const uint32_t mask);
 
             uint32_t GetLightingChannelMask() const;
-            void SetLightingChannelMask(const uint32_t mask);
+
+            AZStd::array<bool, LightingChannelsCount> m_lightingChannelFlags{ true, false, false, false, false };
+
+        private:
+            AZStd::string GetLabelForIndex(int index) const;
         };
     }
 }

@@ -89,6 +89,8 @@ namespace AZ
                                 ->EnumAttribute(RPI::Cullable::LodType::ScreenCoverage, "Screen Coverage")
                                 ->EnumAttribute(RPI::Cullable::LodType::SpecificLod, "Specific LOD")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::EntireTree)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &MeshComponentConfig::m_lightingChannelConfig, "Lighting Channels", "")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Lod Configuration")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "LOD Configuration")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
@@ -107,11 +109,6 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                                 ->Attribute(AZ::Edit::Attributes::Max, 1.f)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::LodTypeIsScreenCoverage)
-                        ->ClassElement(Edit::ClassElements::Group, "Lighting Channels")
-                            ->DataElement(0, &MeshComponentConfig::m_lightingChannelConfig, "Lighting channel configuration", "")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                                ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
-                                ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ;
                 }
             }
