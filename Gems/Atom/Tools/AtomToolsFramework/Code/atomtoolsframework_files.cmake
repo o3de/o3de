@@ -20,6 +20,8 @@ set(FILES
     Source/AssetBrowser/AtomToolsAssetBrowser.ui
     Source/AssetBrowser/AtomToolsAssetBrowserInteractions.cpp
 
+    Include/AtomToolsFramework/AtomToolsFrameworkSystemRequestBus.h
+
     Include/AtomToolsFramework/AssetSelection/AssetSelectionComboBox.h
     Include/AtomToolsFramework/AssetSelection/AssetSelectionGrid.h
     Source/AssetSelection/AssetSelectionComboBox.cpp
