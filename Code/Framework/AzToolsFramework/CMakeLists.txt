@@ -32,6 +32,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PRIVATE
             $<$<CONFIG:debug>:ENABLE_UNDOCACHE_CONSISTENCY_CHECKS>
+            LY_3RDPARTY_PATH="${LY_3RDPARTY_PATH}"
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::SQLite

@@ -26,7 +26,7 @@ endif()
 
 # Calculate the path id based on the first 9 characters of the SHA1 hash of the normalized path
 string(SHA1 ENGINE_SOURCE_PATH_HASH "${PATH_TO_HASH}")
-string(SUBSTRING ${ENGINE_SOURCE_PATH_HASH} 0 9 ENGINE_SOURCE_PATH_ID)
+string(SUBSTRING ${ENGINE_SOURCE_PATH_HASH} 0 8 ENGINE_SOURCE_PATH_ID)
 # Note: using 'message(STATUS ..' will print to STDOUT, but will always include a double hyphen '--'. Instead we will 
 # use the cmake echo command directly to do this
 execute_process(COMMAND ${CMAKE_COMMAND} -E echo ${ENGINE_SOURCE_PATH_ID})

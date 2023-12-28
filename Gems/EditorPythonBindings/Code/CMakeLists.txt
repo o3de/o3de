@@ -15,7 +15,6 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         editorpythonbindings_common_files.cmake
-        Source/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         Source/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/editorpythonbindings_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake

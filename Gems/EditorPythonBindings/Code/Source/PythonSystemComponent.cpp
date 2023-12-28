@@ -18,17 +18,13 @@
 
 
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/IO/GenericStreams.h>
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/Math/Sha1.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Settings/ConfigParser.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/tokenize.h>
@@ -44,56 +40,7 @@
 
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
-
-namespace Platform
-{
-    // Implemented in each different platform's implementation files, as it differs per platform.
-    bool InsertPythonBinaryLibraryPaths(AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot);
-
-    AZStd::string GetPythonVenvPath(const char* engineRoot)
-    {
-        AZStd::string enginePath = AZ::IO::FixedMaxPath(engineRoot).StringAsPosix();
-        enginePath += '/';
-        AZ::Sha1 hasher;
-        AZ::u32 digest[5];
-        hasher.ProcessBytes(reinterpret_cast<const AZStd::byte*>(enginePath.c_str()), enginePath.length());
-        hasher.GetDigest(digest);
-        AZ::IO::FixedMaxPath libPath = LY_3RDPARTY_PATH;
-        libPath /= AZ::IO::FixedMaxPathString::format("venv/%x", digest[0]);
-        libPath = libPath.LexicallyNormal();
-        return libPath.String();
-    }
-
-
-    AZStd::string GetPythonHomePath(const char* engineRoot)
-    {
-        AZStd::string pythonVenvPath = GetPythonVenvPath(engineRoot);
-        AZ::IO::FixedMaxPath pythonVenvConfig = pythonVenvPath.c_str();
-        pythonVenvConfig /= "pyvenv.cfg";
-        AZ::IO::FileIOStream fileIoStream;
-        AZ::IO::SystemFileStream systemFileStream;
-        if (!systemFileStream.Open(pythonVenvConfig.c_str(), AZ::IO::OpenMode::ModeRead))
-        {
-            AZ_Error("python", false, "Missing python venv file at %s. Make sure to run python/get_python.");
-            return "";
-        }
-
-        AZ::Settings::ConfigParserSettings parserSettings;
-        AZStd::string pythonHome;
-        parserSettings.m_parseConfigEntryFunc = [&pythonHome](const AZ::Settings::ConfigParserSettings::ConfigEntry& configEntry)
-        {
-            if (configEntry.m_keyValuePair.m_key.compare("home") == 0)
-            {
-                pythonHome = configEntry.m_keyValuePair.m_value;
-                
-            }
-            return true;
-        };
-        const auto parseOutcome = AZ::Settings::ParseConfigFile(systemFileStream, parserSettings);
-        AZ_Error("python", parseOutcome, "Python venv file at %s missing home key. Make sure to run python/get_python.");
-        return pythonHome;
-    }
-}
+#include <AzToolsFramework/Python/PythonEnv.h>
 
 // this is called the first time a Python script contains "import azlmbr"
 PYBIND11_EMBEDDED_MODULE(azlmbr, m)
@@ -550,36 +497,7 @@ namespace EditorPythonBindings
         //   5 - user(dev)
 
         // 1 - The python venv site-packages
-        AZ::IO::FixedMaxPath pythonVenvSitePackages =
-            AZ::IO::FixedMaxPath(Platform::GetPythonVenvPath(AZ::Utils::GetEnginePath().c_str())) / "Lib" / "site-packages";
-        pythonPathStack.emplace_back(pythonVenvSitePackages.LexicallyNormal().Native());
-
-        // pybind11 does not appear to resolve any .egg-link files, so any packages that there pip-installed into the venv as egg-links
-        // are not getting resolved. We will do this manually by opening the egg-links in the venv site-packages path and injecting
-        // the non local paths as well
-        AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(
-            pythonVenvSitePackages.c_str(),
-            "*.egg-link",
-            [&pythonPathStack](const char* filePath) -> bool
-            {
-                auto readFileResult = AZ::Utils::ReadFile(filePath);
-                if (readFileResult)
-                {
-                    auto eggLinkContent = readFileResult.GetValue();
-
-                    AZStd::vector<AZStd::string> eggLinkLines;
-                    AZStd::string delim = "\r\n";
-                    AZStd::tokenize(eggLinkContent, delim, eggLinkLines);
-                    for (auto eggLinkLine : eggLinkLines)
-                    {
-                        if (eggLinkLine.compare(".") != 0)
-                        {
-                            pythonPathStack.emplace_back(eggLinkLine);
-                        }
-                    }
-                }
-                return true;
-            });
+        AzToolsFramework::Python::ReadPythonEggLinkPaths(AZ::Utils::GetEnginePath().c_str(), pythonPathStack);
 
         // 2 - engine
         AZ::IO::FixedMaxPath engineRoot;
@@ -588,10 +506,7 @@ namespace EditorPythonBindings
             resolveScriptPath((engineRoot / "Assets").Native());
         }
 
-            
-
-
-        // 2 - gems
+        // 3 - gems
         AZStd::vector<AZ::IO::Path> gemSourcePaths;
         auto AppendGemPaths = [&gemSourcePaths](AZStd::string_view, AZStd::string_view gemPath)
         {
@@ -604,10 +519,10 @@ namespace EditorPythonBindings
             resolveScriptPath(gemSourcePath.Native());
         }
 
-        // 3 - project
+        // 4 - project
         resolveScriptPath(AZStd::string_view{ projectPath });
 
-        // 4 - user
+        // 5 - user
         AZStd::string assetsType;
         AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetsType,
             AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::Assets);
@@ -644,7 +559,7 @@ namespace EditorPythonBindings
         AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
         // set PYTHON_HOME
-        AZStd::string pyBasePath = Platform::GetPythonHomePath(engineRoot.c_str());
+        AZStd::string pyBasePath = AzToolsFramework::Python::GetPythonHomePath(engineRoot.c_str());
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
             AZ_Warning("python", false, "Python home path must exist! path:%s", pyBasePath.c_str());
