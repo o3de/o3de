@@ -72,6 +72,17 @@ public: // member functions
     virtual AZStd::string GetText() = 0;
     virtual void SetText(const AZStd::string& text) = 0;
 
+#if defined(CARBONATED)
+    //! Returns the altered (localized) contents of the string contained within the text component.
+    //! \return Altered (localized) string contents of this text component
+    virtual AZStd::string GetLocText() = 0;
+
+    // Set the text string and localize it. Unlike SetText, this method localizes the text.
+    virtual void SetTextLocalized(const AZStd::string& text) = 0;
+
+    // Return the number of the text lines.
+    virtual int GetTextLinesCount() = 0;
+#endif
     virtual AZStd::string GetTextWithFlags(GetTextFlags flags = GetAsIs) = 0;
     virtual void SetTextWithFlags(const AZStd::string& text, SetTextFlags flags = SetAsIs) = 0;
 

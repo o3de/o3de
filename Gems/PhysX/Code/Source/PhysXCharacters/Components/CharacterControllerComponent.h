@@ -127,6 +127,7 @@ namespace PhysX
 
         // carbonated begin enable_carbonated_1: Methods called from o3de-gruber
 #if defined(CARBONATED)
+        void SetCharacterCollisions(const AZStd::string& layer, const AZStd::string& group) override;
         void SetMaterialByName(uint32_t index, const AZStd::string& name) override;
         void SetTag(const AZ::Crc32& tag) override;
 #endif

@@ -23,6 +23,14 @@ inline uint32 cry_random_uint32()
     return CryRandom_Internal::g_random_generator.GenerateUint32();
 }
 
+// Gruber patch begin : CryGUID simplified here
+// Seed the global random number generator.
+inline void cry_random_seed(const uint32 nSeed)
+{
+    CryRandom_Internal::g_random_generator.Seed(nSeed);
+}
+// Gruber patch end
+// 
 // Ranged function returns random value within the *inclusive* range
 // between minValue and maxValue.
 // Any orderings work correctly: minValue <= maxValue and

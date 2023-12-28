@@ -791,6 +791,34 @@ namespace EMotionFX
         }
     }
 
+#if 0 // Gbuber patch begin : EmotionFX has different version
+#if defined(CARBONATED)
+    // aefimov invalidate data for specific instance only, the original version above invalidates the data for all the instaces attached to the node
+    void AnimGraphMotionNode::ReloadAndInvalidateUniqueData(AnimGraphInstance* animGraphInstanceToReload)
+    {
+        if (!mAnimGraph)
+        {
+            return;
+        }
+
+        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        for (size_t i = 0; i < numAnimGraphInstances; ++i)
+        {
+            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            if (animGraphInstanceToReload == animGraphInstance)  // this is the only change from the original version, do invalidate the data for this instance only
+            {
+                UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(mObjectIndex));
+                if (uniqueData)
+                {
+                    uniqueData->mReload = true;
+                    uniqueData->Invalidate();
+                }
+            }
+        }
+    }
+#endif
+#endif // Gbuber patch end
+
     void AnimGraphMotionNode::OnActorMotionExtractionNodeChanged()
     {
         ReloadAndInvalidateUniqueDatas();
@@ -799,12 +827,7 @@ namespace EMotionFX
     void AnimGraphMotionNode::RecursiveOnChangeMotionSet(AnimGraphInstance* animGraphInstance, MotionSet* newMotionSet)
     {
         AnimGraphNode::RecursiveOnChangeMotionSet(animGraphInstance, newMotionSet);
-        UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(m_objectIndex));
-        if (uniqueData)
-        {
-            uniqueData->m_reload = true;
-            uniqueData->Invalidate();
-        }
+        ReloadAndInvalidateUniqueDatas();// Gruber patch begin : EmotionFX version in o3de is not compatible
     }
 
     void AnimGraphMotionNode::OnMotionIdsChanged()

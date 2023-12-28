@@ -101,6 +101,14 @@ namespace EMotionFX
         virtual void SetMotions(const AZStd::vector<BlendSpaceMotion>& motions) = 0;
         virtual const AZStd::vector<BlendSpaceMotion>& GetMotions() const = 0;
 
+#if defined(CARBONATED)
+        // aefimov support motion set change
+        void RecursiveOnChangeMotionSet(AnimGraphInstance* animGraphInstance, MotionSet* newMotionSet) override
+        {
+            AnimGraphNode::RecursiveOnChangeMotionSet(animGraphInstance, newMotionSet);
+        }
+#endif
+
         //! The node is in interactive mode when the user is interactively changing the current point.
         void SetInteractiveMode(bool enable) { m_interactiveMode = enable; }
         bool IsInInteractiveMode() const { return m_interactiveMode; }

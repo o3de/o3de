@@ -1642,6 +1642,12 @@ UiTextComponent::UiTextComponent()
     , m_clipOffset(0.0f)
     , m_clipOffsetMultiplier(1.0f)
     , m_isMarkupEnabled(false)
+#if defined(CARBONATED)
+    , m_isLocalizationEnabled(true)
+    , m_isFontMappingEnabled(true)
+    , m_mappedFontSize(m_fontSize)
+    , m_mappedFontScale(1.0f)
+#endif
 {
     static const AZStd::string DefaultUi("default-ui");
     m_fontFilename.SetAssetPath(DefaultUi.c_str());
@@ -1931,6 +1937,20 @@ void UiTextComponent::SetText(const AZStd::string& text)
     }
 }
 
+#if defined(CARBONATED)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZStd::string UiTextComponent::GetLocText()
+{
+    return GetTextWithFlags(UiTextInterface::GetLocalized);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiTextComponent::SetTextLocalized(const AZStd::string& text)
+{
+    SetTextWithFlags(text, UiTextInterface::SetLocalized);
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZStd::string UiTextComponent::GetTextWithFlags(GetTextFlags flags)
 {
@@ -2105,12 +2125,40 @@ void UiTextComponent::SetFontSize(float fontSize)
     if (m_fontSize != fontSize)
     {
         m_fontSize = fontSize;
+#if defined(CARBONATED)
+        ChangeFont(m_fontFilename.GetAssetPath());
+        m_isRequestFontSizeDirty = true;
+        m_currFontSize = m_mappedFontSize;
+#else
         m_isRequestFontSizeDirty = true;
         m_currFontSize = m_fontSize;
+#endif
 
         MarkDrawBatchLinesDirty(true);
     }
 }
+
+#if defined(CARBONATED)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZStd::string UiTextComponent::MapLocalizedFontName(const AZStd::string& fontName, float& outMappedFontSize, float& outMappedFontScale) const
+{
+    if (m_isFontMappingEnabled)
+    {
+        LocalizedFont locFont;
+        LocalizationManagerRequestBus::BroadcastResult(locFont, &LocalizationManagerRequestBus::Events::GetLocalizedFont, fontName.c_str(), m_fontSize);
+        if (locFont.font != fontName || locFont.size != m_fontSize)
+        {
+            outMappedFontSize = locFont.size;
+            outMappedFontScale = outMappedFontSize / m_fontSize;
+            return locFont.font;
+        }
+    }
+
+    outMappedFontScale = 1.0f;
+    outMappedFontSize = m_fontSize;
+    return fontName;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiTextComponent::GetTextAlignment(IDraw2d::HAlign& horizontalAlignment,
@@ -2243,7 +2291,11 @@ int UiTextComponent::GetCharIndexFromCanvasSpacePoint(AZ::Vector2 point, bool mu
 
     int indexIter = 0;
     float lastSubstrX = 0;
+#if defined(CARBONATED)
+    float accumulatedHeight = m_mappedFontSize;
+#else
     float accumulatedHeight = m_fontSize;
+#endif
     const bool multiLineText = drawBatchLines.batchLines.size() > 1;
     uint32_t lineCounter = 0;
 
@@ -2261,7 +2313,11 @@ int UiTextComponent::GetCharIndexFromCanvasSpacePoint(AZ::Vector2 point, bool mu
                 indexIter += LyShine::GetUtf8StringLength(drawBatch.text);
             }
 
+#if defined(CARBONATED)
+            accumulatedHeight += m_mappedFontSize;
+#else
             accumulatedHeight += m_fontSize;
+#endif
             continue;
         }
 
@@ -2487,7 +2543,11 @@ void UiTextComponent::GetTextBoundingBoxPrivate(const DrawBatchLines& drawBatchL
         // of text.
         rect.TopLeft().SetY(rect.TopLeft().GetY() + leftOffset.GetY());
         rect.TopRight().SetY(rect.TopRight().GetY() + leftOffset.GetY());
+#if defined(CARBONATED)
+        rightOffset.SetY(rightOffset.GetY() > 0.0f ? rightOffset.GetY() : m_mappedFontSize);
+#else
         rightOffset.SetY(rightOffset.GetY() > 0.0f ? rightOffset.GetY() : m_fontSize);
+#endif
         rect.BottomLeft().SetY(rect.TopLeft().GetY() + rightOffset.GetY());
         rect.BottomRight().SetY(rect.TopRight().GetY() + rightOffset.GetY());
 
@@ -2550,7 +2610,11 @@ void UiTextComponent::GetTextBoundingBoxPrivate(const DrawBatchLines& drawBatchL
             // quad and it would look better. A cursor would also look smoother when rotated than a one pixel line.
             // NOTE: The positions of text characters themselves will always be rounded DOWN to a pixel in the
             // font rendering
+#if defined(CARBONATED)
+            IDraw2d::Rounding round = (m_mappedFontSize < 32) ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::Down;
+#else
             IDraw2d::Rounding round = (m_fontSize < 32) ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::Down;
+#endif
             rect.TopLeft() = Draw2dHelper::RoundXY(rect.TopLeft(), round);
             rect.BottomLeft() = Draw2dHelper::RoundXY(rect.BottomLeft(), round);
 
@@ -2780,6 +2844,17 @@ void UiTextComponent::PropertyValuesChanged()
     }
 
     // If any of the properties that affect line width changed
+#if defined(CARBONATED)
+    // We assume the FontSize property changes relative to the original font size, but not relative to the mapped font size.
+    m_mappedFontSize = m_fontSize * m_mappedFontScale;
+    if (m_currFontSize != m_mappedFontSize || m_currCharSpacing != m_charSpacing)
+    {
+        OnTextWidthPropertyChanged();
+
+        m_currFontSize = m_mappedFontSize;
+        m_currCharSpacing = m_charSpacing;
+    }
+#else
     if (m_currFontSize != m_fontSize || m_currCharSpacing != m_charSpacing)
     {
         OnTextWidthPropertyChanged();
@@ -2787,6 +2862,7 @@ void UiTextComponent::PropertyValuesChanged()
         m_currFontSize = m_fontSize;
         m_currCharSpacing = m_charSpacing;
     }
+#endif
 
     MarkRenderCacheDirty();
 }
@@ -2991,6 +3067,9 @@ void UiTextComponent::OnFontsReloaded()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiTextComponent::LanguageChanged()
 {
+#if defined(CARBONATED)
+    ChangeFont(m_fontFilename.GetAssetPath());
+#endif
     OnTextChange();
 }
 
@@ -3065,9 +3144,17 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiTextComponent, AZ::Component>()
+#if defined(CARBONATED)
+            ->Version(10, &VersionConverter)
+#else
             ->Version(9, &VersionConverter)
+#endif
             ->Field("Text", &UiTextComponent::m_text)
             ->Field("MarkupEnabled", &UiTextComponent::m_isMarkupEnabled)
+#if defined(CARBONATED)
+            ->Field("LocalizationEnabled", &UiTextComponent::m_isLocalizationEnabled)
+            ->Field("FontMappingEnabled", &UiTextComponent::m_isFontMappingEnabled)
+#endif
             ->Field("Color", &UiTextComponent::m_color)
             ->Field("Alpha", &UiTextComponent::m_alpha)
             ->Field("FontFileName", &UiTextComponent::m_fontFilename)
@@ -3099,6 +3186,12 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::CheckLayoutFitterAndRefreshEditorTransformProperties);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextComponent::m_isMarkupEnabled, "Enable markup", "Enable to support XML markup in the text string")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnMarkupEnabledChange);
+#if defined(CARBONATED)
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextComponent::m_isLocalizationEnabled, "Enable localization", "Enable to localize the text string")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnLocalizationEnabledChange);
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextComponent::m_isFontMappingEnabled, "Enable font mapping", "Enable to map the font on non-default locale")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnFontMappingEnabledChange);
+#endif
             editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiTextComponent::m_color, "Color", "The color to draw the text string")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextComponent::OnColorChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiTextComponent::m_alpha, "Alpha", "The transparency of the text string")
@@ -3163,6 +3256,11 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
         behaviorContext->EBus<UiTextBus>("UiTextBus")
             ->Event("GetText", &UiTextBus::Events::GetText)
             ->Event("SetText", &UiTextBus::Events::SetText)
+#if defined(CARBONATED)
+            ->Event("GetLocText", &UiTextBus::Events::GetLocText)
+            ->Event("SetTextLocalized", &UiTextBus::Events::SetTextLocalized)
+            ->Event("GetTextLinesCount", &UiTextBus::Events::GetTextLinesCount)
+#endif
             ->Event("GetColor", &UiTextBus::Events::GetColor)
             ->Event("SetColor", &UiTextBus::Events::SetColor)
             ->Event("GetFont", &UiTextBus::Events::GetFont)
@@ -3249,6 +3347,16 @@ void UiTextComponent::Init()
         ChangeFont(m_fontFilename.GetAssetPath());
     }
 
+#if defined(CARBONATED)
+    float mappedFontSize;
+    AZStd::string mappedFontName = MapLocalizedFontName(m_fontFilename.GetAssetPath(), mappedFontSize, m_mappedFontScale);
+    if (mappedFontName != m_fontFilename.GetAssetPath())
+    {
+        ChangeFont(m_fontFilename.GetAssetPath());
+    }
+
+    m_requestFontSize = static_cast<int>(m_mappedFontSize);
+#endif
     // all saved UiTextComponents are assumed to want to try localization of the text string
     m_locText = GetLocalizedText(m_text);
 
@@ -3314,6 +3422,10 @@ void UiTextComponent::ChangeFont(const AZStd::string& fontFileName)
         fileName = "default-ui";
     }
 
+#if defined(CARBONATED)
+    AZStd::string originalFileName = fileName;
+    fileName = MapLocalizedFontName(fileName, m_mappedFontSize, m_mappedFontScale);
+#endif
     FontFamilyPtr fontFamily = gEnv->pCryFont->GetFontFamily(fileName.c_str());
     if (!fontFamily)
     {
@@ -3326,7 +3438,11 @@ void UiTextComponent::ChangeFont(const AZStd::string& fontFileName)
         m_font = m_fontFamily->normal;
 
         // we know that the input path is a root relative and normalized pathname
+#if defined(CARBONATED)
+        m_fontFilename.SetAssetPath(originalFileName.c_str());
+#else
         m_fontFilename.SetAssetPath(fileName.c_str());
+#endif
 
         // the font has changed so check that the font effect is valid
         unsigned int numEffects = m_font->GetNumEffects();
@@ -3351,6 +3467,10 @@ void UiTextComponent::ChangeFont(const AZStd::string& fontFileName)
     }
     else
     {
+#if defined(CARBONATED)
+        m_mappedFontSize = m_fontSize;
+        m_mappedFontScale = 1.0f;
+#endif
         AZ_Warning("UiTextComponent", false, "Failed to find font family referenced in markup (ChangeFont): %s", fileName.c_str());
     }
 
@@ -3545,6 +3665,20 @@ void UiTextComponent::OnMarkupEnabledChange()
         m_textNeedsXmlValidation = true;
     }
 }
+
+#if defined(CARBONATED)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiTextComponent::OnLocalizationEnabledChange()
+{
+    SetTextLocalized(GetText());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiTextComponent::OnFontMappingEnabledChange()
+{
+    ChangeFont(m_fontFilename.GetAssetPath());
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiTextComponent::FontEffectComboBoxVec UiTextComponent::PopulateFontEffectList()
@@ -3849,7 +3983,11 @@ void UiTextComponent::CalculateDrawBatchLines(
 
         float fontAscent = m_font->GetAscender(fontContext);
 
+#if defined(CARBONATED)
+        BuildDrawBatchesAndAssignClickableIds(drawBatches, drawBatchLinesOut.fontFamilyRefs, drawBatchLinesOut.inlineImages, m_mappedFontSize, fontAscent, batchStack, fontFamilyStack, &markupRoot);
+#else
         BuildDrawBatchesAndAssignClickableIds(drawBatches, drawBatchLinesOut.fontFamilyRefs, drawBatchLinesOut.inlineImages, m_fontSize, fontAscent, batchStack, fontFamilyStack, &markupRoot);
+#endif
 
         // go over the generated batches to scale empty space and look for font effects with transparency
         IFFont* prevFont = nullptr;
@@ -4275,7 +4413,11 @@ STextDrawContext UiTextComponent::GetTextDrawContextPrototype(int requestFontSiz
     // shrink-to-fit - a scale transformation is applied for these characters instead. For
     // higher quality font scaling with shrink-to-fit, consider taking m_fontSizeScale into
     // account.
+#if defined(CARBONATED)
+    ctx.SetSize(Vec2(m_mappedFontSize * fontSizeScale.GetX(), m_mappedFontSize * fontSizeScale.GetY()));
+#else
     ctx.SetSize(Vec2(m_fontSize * fontSizeScale.GetX(), m_fontSize * fontSizeScale.GetY()));
+#endif
     ctx.m_requestSize = Vec2i(requestFontSize, requestFontSize);
     ctx.m_processSpecialChars = false;
     ctx.m_tracking = (m_charSpacing * ctx.m_size.x) / 1000.0f; // m_charSpacing units are 1/1000th of ems, 1 em is equal to font size.
@@ -4641,7 +4783,13 @@ void UiTextComponent::HandleEllipsis(UiTextComponent::DrawBatchLines& drawBatchL
     }
 
     const bool textOverflowsElementBounds = GetTextOverflowsBounds(textSize, currentElementSize);
+#if defined(CARBONATED)
+    // Scaled-to-fit text can still be slightly larger than the element due to float error, so we only use ellipsis if X overflow is significant.
+    const float MIN_TEXT_X_OVERFLOW = 0.5f;
+    const bool textOverflowsElementBoundsX = textSize.GetX() - currentElementSize.GetX() > MIN_TEXT_X_OVERFLOW;
+#else
     const bool textOverflowsElementBoundsX = textSize.GetX() > currentElementSize.GetX();
+#endif
     const bool onlyOneLine = drawBatchLinesOut.batchLines.size() == 1;
     const bool noEllipsisNeeded = !textOverflowsElementBoundsX && onlyOneLine;
 
@@ -4971,9 +5119,24 @@ AZ::Vector2 UiTextComponent::GetTextSizeFromDrawBatchLines(const UiTextComponent
     return size;
 }
 
+#if defined(CARBONATED)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+int UiTextComponent::GetTextLinesCount()
+{
+    const UiTextComponent::DrawBatchLines& drawBatchLines = GetDrawBatchLines();
+    return static_cast<int>(drawBatchLines.batchLines.size());
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZStd::string UiTextComponent::GetLocalizedText([[maybe_unused]] const AZStd::string& text)
 {
+#if defined(CARBONATED)
+    if (!m_isLocalizationEnabled)
+    {
+        return text;
+    }
+#endif
     AZStd::string locText;
     LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::LocalizeString_ch, m_text.c_str(), locText, false);
     return locText.c_str();
@@ -5135,7 +5298,11 @@ void UiTextComponent::GetOffsetsFromSelectionInternal(LineOffsets& top, LineOffs
     UiTextComponentOffsetsSelector offsetsSelector(
         drawBatchLines,
         fontContext,
+#if defined(CARBONATED)
+        m_mappedFontSize,
+#else
         m_fontSize,
+#endif
         AZStd::GetMin<int>(selectionStart, selectionEnd),
         localLastIndex,
         GetLineNumberFromCharIndex(drawBatchLines, localLastIndex),
@@ -5260,7 +5427,11 @@ int UiTextComponent::GetRequestFontSize()
 {
     if (m_isRequestFontSizeDirty)
     {
+#if defined(CARBONATED)
+        m_requestFontSize = CalcRequestFontSize(m_mappedFontSize, GetEntityId());
+#else
         m_requestFontSize = CalcRequestFontSize(m_fontSize, GetEntityId());
+#endif
         m_isRequestFontSizeDirty = false;
     }
 

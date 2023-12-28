@@ -53,6 +53,20 @@ struct LocalizationHelpers
     static inline bool IsKeyInList(const AZStd::vector<AZStd::string>& keys, const AZStd::string& target, int& index);
 };
 
+#if defined(CARBONATED)
+struct LocalizedFont
+{
+    AZStd::string font;
+    float size;
+
+    LocalizedFont() = default;
+    LocalizedFont(const char* fontName, float fonsSize)
+        : font(fontName)
+        , size(fonsSize)
+    {}
+};
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 // Localization manager bus interface.
 //////////////////////////////////////////////////////////////////////////
@@ -88,6 +102,9 @@ public:
     virtual bool LoadExcelXmlSpreadsheet(const char* sFileName, bool bReload = false) = 0;
     virtual void ReloadData() = 0;
 
+#if defined(CARBONATED)
+    virtual LocalizedFont GetLocalizedFont(const char* fontAssetPath, float fontSize) = 0;
+#endif
     // Summary:
     //   Translate a string into the currently selected language.
     // Description:

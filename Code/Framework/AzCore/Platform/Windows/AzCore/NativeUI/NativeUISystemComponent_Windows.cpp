@@ -248,13 +248,16 @@ namespace AZ
 {
     namespace NativeUI
     {
+#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+        static volatile unsigned int blockingDialogCounter = 0;
+        bool NativeUISystem::IsDisplayingBlockingDialog() const
+        {
+            return blockingDialogCounter > 0;
+        }
+#endif
+
         AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
-            if (m_mode == NativeUI::Mode::DISABLED)
-            {
-                return {};
-            }
-
             if (options.size() >= MAX_ITEMS)
             {
                 AZ_Assert(false, "Cannot create dialog box with more than %d buttons", (MAX_ITEMS - 1));
@@ -357,7 +360,14 @@ namespace AZ
             info.m_options = options;
             info.m_buttonChosen = -1;
 
+#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+            InterlockedIncrement(&blockingDialogCounter);  // use Windows call directly without Cry wrapper to avoid include path mess
+#endif
             LRESULT ret = DialogBoxIndirectParam(GetModuleHandle(NULL), (DLGTEMPLATE*)&dlgTemplate, GetDesktopWindow(), DlgProc, (LPARAM)&info);
+#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+            InterlockedDecrement(&blockingDialogCounter);  // use Windows call directly without Cry wrapper to avoid include path mess
+#endif
+
             AZ_UNUSED(ret);
             AZ_Assert(ret != -1, "Error displaying native UI dialog.");
 

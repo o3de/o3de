@@ -84,12 +84,35 @@ class ILyShine;
 enum EValidatorModule : int;
 enum EValidatorSeverity : int;
 
+// Gruber patch begin. // LVB
+
 enum ESystemUpdateFlags
 {
+    ESYSUPDATE_IGNORE_AI = 0x0001,
+    ESYSUPDATE_IGNORE_PHYSICS = 0x0002,
     // Summary:
     //   Special update mode for editor.
-    ESYSUPDATE_EDITOR = 0x0004
+    ESYSUPDATE_EDITOR = 0x0004,
+    ESYSUPDATE_MULTIPLAYER = 0x0008,
+    ESYSUPDATE_EDITOR_AI_PHYSICS = 0x0010,
+    ESYSUPDATE_EDITOR_ONLY = 0x0020,
+    ESYSUPDATE_UPDATE_VIEW_ONLY = 0x0040
 };
+
+// Description:
+//   Configuration specification, depends on user selected machine specification.
+enum ESystemConfigSpec
+{
+    CONFIG_AUTO_SPEC = 0,
+    CONFIG_LOW_SPEC = 1,
+    CONFIG_MEDIUM_SPEC = 2,
+    CONFIG_HIGH_SPEC = 3,
+    CONFIG_VERYHIGH_SPEC = 4,
+
+    END_CONFIG_SPEC_ENUM, // MUST BE LAST VALUE. USED FOR ERROR CHECKING.
+};
+
+// Gruber patch end. // LVB
 
 // Description:
 //   Configuration platform. Autodetected at start, can be modified through the editor.
