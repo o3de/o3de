@@ -4,6 +4,12 @@
     "lightingModel": "Base",
     "materialShaderCode": "MaterialGraphName_Common.azsli",
     "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/BasePBR/HandleDoubleSided.lua"
+            }
+        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",

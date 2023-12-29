@@ -7,6 +7,12 @@
         {
             "type": "Lua",
             "args": {
+                "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleDoubleSided.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
                 "file": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/Nodes/MaterialOutputs/StandardPBR/HandleOpacityMode.lua"
             }
         }
