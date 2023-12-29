@@ -43,7 +43,7 @@ namespace MaterialEditor
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
-        AZStd::string GetHelpDialogText() const override;
+        AZStd::string GetHelpUrl() const override;
 
         AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
