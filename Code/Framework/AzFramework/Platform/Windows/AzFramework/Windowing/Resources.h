@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzFramework/Windowing/Resources.h>
+#pragma once
 
-IDI_ICON1 ICON DISCARDABLE "@ICON_FILE@"
-IDB_SPLASH1 BITMAP DISCARDABLE "@SPLASH_FILE@"
+#define IDB_SPLASH1 101
