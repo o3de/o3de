@@ -155,6 +155,9 @@ namespace AZ
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
             ///////////////////////////////////////////////////////////////////
 
+            //! Helper function to reinitialize the material while preserving property values.
+            void ReInitKeepPropertyValues();
+
             //! Helper function for setting the value of a shader constant input, allowing for specialized handling of specific types,
             //! converting to the native type before passing to the ShaderResourceGroup.
             bool SetShaderConstant(RHI::ShaderInputConstantIndex shaderInputIndex, const MaterialPropertyValue& value);
