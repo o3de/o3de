@@ -52,7 +52,7 @@ namespace PassCanvas
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         void PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const override;
         void OnSettingsDialogClosed() override;
-        AZStd::string GetHelpDialogText() const override;
+        AZStd::string GetHelpUrl() const override;
 
     private:
         AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};

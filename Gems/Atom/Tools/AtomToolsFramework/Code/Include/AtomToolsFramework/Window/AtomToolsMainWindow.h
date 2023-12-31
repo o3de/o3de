@@ -56,8 +56,8 @@ namespace AtomToolsFramework
         virtual void OpenSettingsDialog();
         virtual void OnSettingsDialogClosed();
 
-        virtual AZStd::string GetHelpDialogText() const;
-        virtual void OpenHelpDialog();
+        virtual AZStd::string GetHelpUrl() const;
+        virtual void OpenHelpUrl();
 
         virtual void OpenAboutDialog();
 
