@@ -4,6 +4,8 @@ This is an integration of https://miniaud.io/ into Open 3D Engine as a Gem. It h
 # Supported Sound Formats
 - .wav 
 - .ogg 
+- .mp3
+- .flac
 
 MiniAudio supports more formats, but not all are supported in this Gem yet.
 
