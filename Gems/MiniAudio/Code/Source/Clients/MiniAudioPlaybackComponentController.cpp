@@ -169,20 +169,6 @@ namespace MiniAudio
 
     void MiniAudioPlaybackComponentController::OnConfigurationUpdated()
     {
-        if (m_config.m_autoFollowEntity)
-        {
-            m_entityMovedHandler.Disconnect();
-            AZ::TransformBus::Event(m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::BindTransformChangedEventHandler, m_entityMovedHandler);
-
-            AZ::Transform worldTm = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-            OnWorldTransformChanged(worldTm);
-        }
-        else
-        {
-            m_entityMovedHandler.Disconnect();
-        }
-
         if (m_config.m_sound.IsReady() == false)
         {
             AZ::Data::AssetBus::MultiHandler::BusConnect(m_config.m_sound.GetId());
@@ -242,6 +228,20 @@ namespace MiniAudio
                     ma_sound_set_min_distance(m_sound.get(), m_config.m_minimumDistance);
                     ma_sound_set_max_distance(m_sound.get(), m_config.m_maximumDistance);
                     ma_sound_set_attenuation_model(m_sound.get(), static_cast<ma_attenuation_model>(m_config.m_attenuationModel));
+                }
+
+                if (m_config.m_autoFollowEntity)
+                {
+                    m_entityMovedHandler.Disconnect();
+                    AZ::TransformBus::Event(m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::BindTransformChangedEventHandler, m_entityMovedHandler);
+
+                    AZ::Transform worldTm = AZ::Transform::CreateIdentity();
+                    AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+                    OnWorldTransformChanged(worldTm);
+                }
+                else
+                {
+                    m_entityMovedHandler.Disconnect();
                 }
             }
         }
