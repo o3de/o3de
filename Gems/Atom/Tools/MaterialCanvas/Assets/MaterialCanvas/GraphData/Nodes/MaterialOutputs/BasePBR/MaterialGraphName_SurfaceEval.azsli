@@ -55,6 +55,7 @@ Surface EvaluateSurface_MaterialGraphName(
     surface.position = positionWS;
     surface.vertexNormal = normalWS;
     surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((real2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
+    surface.normal *= real(mad(isFrontFace, 2.0, -1.0));
 
     surface.roughnessLinear = inRoughness;
     surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
