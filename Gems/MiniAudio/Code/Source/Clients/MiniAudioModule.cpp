@@ -20,4 +20,9 @@ namespace MiniAudio
     };
 }// namespace MiniAudio
 
+
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), MiniAudio::MiniAudioModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_MiniAudio, MiniAudio::MiniAudioModule)
+#endif
