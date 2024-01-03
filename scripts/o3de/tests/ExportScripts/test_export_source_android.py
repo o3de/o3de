@@ -19,6 +19,7 @@ from o3de import android_support
 import platform
 utils.prepend_to_system_path(pathlib.Path(__file__).parent.parent.parent / 'ExportScripts')
 import export_source_android as expa
+import export_utility as eutil
 
 
 

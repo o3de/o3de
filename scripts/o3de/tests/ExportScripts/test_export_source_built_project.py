@@ -18,6 +18,7 @@ import o3de.utils as utils
 from o3de import command_utils
 utils.prepend_to_system_path(pathlib.Path(__file__).parent.parent.parent / 'ExportScripts')
 from export_source_built_project import export_standalone_project, export_standalone_parse_args, export_standalone_run_command
+import export_utility as eutil
 
 def test_should_fail_immediately_for_installer_mono_build_with_no_artifacts(tmp_path):
     test_project_name = "TestProject"
@@ -291,10 +292,7 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                     if not selected_asset_bundling_path.is_absolute():
                         selected_asset_bundling_path = test_o3de_base_path / selected_asset_bundling_path
 
-                    mock_get_asset_bundler_path.assert_called_once_with(tools_build_path=selected_tools_build_path,
-                                                                    using_installer_sdk=use_sdk,
-                                                                    tool_config='profile',
-                                                                    required=True)
+                    mock_get_asset_bundler_path.assert_not_called()
                     
                     mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
                                                             selected_platform=mock_platform,
@@ -493,6 +491,7 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                                             fail_on_ap_errors=False,
                                                             using_installer_sdk=use_sdk,
                                                             tool_config='profile',
+                                                            selected_platform=None,
                                                             logger=mock_logger)
 
                 mock_get_asset_processor_path.reset_mock()

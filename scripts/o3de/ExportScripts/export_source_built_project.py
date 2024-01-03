@@ -80,7 +80,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param engine_centric:                          Option to use an engine-centric workflow or not
     :param logger:                                  Optional logger to use to log the process and errors
     """
-
+    
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
 
     # If the output path is a relative path, convert it to an absolute path using the project path as the base
@@ -100,21 +100,8 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
         if monolithic_build and not exp.has_monolithic_artifacts(ctx):
             logger.error("Trying to create monolithic build, but no monolithic artifacts are detected in the engine installation! Please re-run the script with '--non-monolithic' and '-config profile'.")
             raise exp.ExportProjectError("Trying to build monolithic without libraries.")
-        tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / tool_config / 'Default'
     
-    # Note, when resolving the relative paths used for the export process, there is a debate about 
-    # whether to use the current working directory, or to forcefully set the base path to an O3DE directory.
-    # In practice, there was noticeable surprise whenever the relative folder wasn't found in an O3DE directory,
-    # and sometimes commands are carelessly run from sensitive directories (such as C:\\Windows\\System32)
     
-    # For this reason, all deliberately external paths must be specified using absolute paths
-    if not tools_build_path:
-        tools_build_path = default_base_path / 'build/tools'
-    elif not tools_build_path.is_absolute():
-        tools_build_path = default_base_path / tools_build_path
-    
-    logger.info(f"Tools build path set to {tools_build_path}")
-
     if not launcher_build_path:
         launcher_build_path = default_base_path / 'build/launcher'
     elif not launcher_build_path.is_absolute():
@@ -138,20 +125,12 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                                                 paths=seedfile_paths)
     
     # Convert level names into seed files that the asset bundler can utilize for packaging
-    for level in level_names:
-        preprocessed_seedfile_paths.append(ctx.project_path / f'Cache/{selected_platform}/levels' / level.lower() / (level.lower() + ".spawnable"))
+    eutil.process_level_names(ctx, preprocessed_seedfile_paths, level_names, selected_platform)
 
     # Make sure there are no running processes for the current project before continuing
     exp.kill_existing_processes(ctx.project_name)
 
-    # Optionally build the toolchain needed to bundle the assets
-    # Do not run this logic if we're using an installer SDK engine. Tool binaries should already exist
-    if should_build_tools and not is_installer_sdk:
-        exp.build_export_toolchain(ctx=ctx,
-                                   tools_build_path=tools_build_path,
-                                   engine_centric=engine_centric,
-                                   tool_config=tool_config,
-                                   logger=logger)
+    tools_build_path = eutil.handle_tools(ctx, should_build_tools, is_installer_sdk, tool_config, selected_platform, tools_build_path, default_base_path, engine_centric, logger)
 
     # Build the requested game launcher types (if any)
     launcher_type = 0
@@ -175,37 +154,11 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                monolithic_build=monolithic_build,
                                logger=logger)
 
-    # Optionally build the assets
-    if should_build_all_assets:
-        asset_processor_path = exp.get_asset_processor_batch_path(tools_build_path=tools_build_path,
-                                                                  using_installer_sdk=is_installer_sdk,
-                                                                  tool_config=tool_config,
-                                                                  required=True)
-        logger.info(f"Using '{asset_processor_path}' to process the assets.")
-        exp.build_assets(ctx=ctx,
-                         tools_build_path=tools_build_path,
-                         engine_centric=engine_centric,
-                         fail_on_ap_errors=fail_on_asset_errors,
-                         using_installer_sdk=is_installer_sdk,
-                         tool_config=tool_config,
-                         logger=logger)
-
     # Generate the bundle
-    asset_bundler_path = exp.get_asset_bundler_batch_path(tools_build_path=tools_build_path,
-                                                          using_installer_sdk=is_installer_sdk,
-                                                          tool_config=tool_config,
-                                                          required=True)
-    logger.info(f"Using '{asset_bundler_path}' to bundle the assets.")
-    expected_bundles_path = exp.bundle_assets(ctx=ctx,
-                                              selected_platform=selected_platform,
-                                              seedlist_paths=validated_seedslist_paths,
-                                              seedfile_paths=preprocessed_seedfile_paths,
-                                              tools_build_path=tools_build_path,
-                                              engine_centric=engine_centric,
-                                              asset_bundling_path=asset_bundling_path,
-                                              using_installer_sdk=is_installer_sdk,
-                                              tool_config=tool_config,
-                                              max_bundle_size=max_bundle_size)
+    expected_bundles_path = eutil.handle_assets(ctx, should_build_all_assets, tools_build_path, is_installer_sdk, tool_config, 
+                                                engine_centric, fail_on_asset_errors, None, selected_platform, validated_seedslist_paths, 
+                                                preprocessed_seedfile_paths, asset_bundling_path, max_bundle_size,
+                                                logger)
 
     # Prepare the different layouts based on the desired launcher types
     export_layouts = []

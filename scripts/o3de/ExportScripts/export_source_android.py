@@ -44,19 +44,20 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
     engine_path = ctx.engine_path
     project_name = ctx.project_name
 
+    o3de_cli_script_path = engine_path / ('scripts/o3de' + android_support.O3DE_SCRIPT_EXTENSION)
+
     if not logger:
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=engine_path)
 
-    o3de_cli_script_path = engine_path / ('scripts/o3de' + android_support.O3DE_SCRIPT_EXTENSION)
-
-    has_errors = exp.process_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=project_path)
-
-    if has_errors:
-        logger.error("Encountered invalid Android configuration! Please correct all errors shown previously.")
-        raise exp.ExportProjectError("Invalid Android Configuration")
+    def run_android_command(args, cwd, error_msg):
+        has_errors = exp.process_command(args, cwd=cwd)
+        if has_errors:
+            raise exp.ExportProjectError(error_msg)
+    
+    run_android_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=project_path, error_msg="Invalid Android Configuration")
 
     # Calculate the tools and game build paths
     default_base_path = engine_path if engine_centric else project_path
@@ -69,70 +70,28 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
     preprocessed_seedfile_paths = exp.preprocess_seed_path_list(project_path=ctx.project_path,
                                                                 paths=seedfile_paths)
     
-    # Convert level names into seed files that the asset bundler can utilize for packaging
-    for level in level_names:
-        preprocessed_seedfile_paths.append(ctx.project_path / f'Cache/{ASSET_PLATFORM}/levels' / level.lower() / (level.lower() + ".spawnable"))
-    
-    if is_installer_sdk:
-        tools_build_path = engine_path / 'bin' / exp.get_platform_installer_folder_name() / tool_config / 'Default'
-    
-    if not tools_build_path:
-        tools_build_path = default_base_path / 'build/tools'
-    elif not tools_build_path.is_absolute():
-        tools_build_path = default_base_path / tools_build_path
-    
-    logger.debug(f"Tools build path set to {tools_build_path}")
-    
-    if should_build_tools and not is_installer_sdk:
-        exp.build_export_toolchain(ctx=ctx,
-                                   tools_build_path=tools_build_path,
-                                   engine_centric=engine_centric,
-                                   tool_config=tool_config,
-                                   logger=logger)
+    eutil.process_level_names(ctx, preprocessed_seedfile_paths, level_names, ASSET_PLATFORM)
 
-    if should_build_all_assets:
-        asset_processor_path = exp.get_asset_processor_batch_path(tools_build_path=tools_build_path,
-                                                                  using_installer_sdk=is_installer_sdk,
-                                                                  tool_config=tool_config,
-                                                                  required=True)
-        logger.info(f"Using '{asset_processor_path}' to process the assets.")
-        exp.build_assets(ctx=ctx,
-                         tools_build_path=tools_build_path,
-                         engine_centric=engine_centric,
-                         fail_on_ap_errors=fail_on_asset_errors,
-                         using_installer_sdk=is_installer_sdk,
-                         tool_config=tool_config,
-                         selected_platform=ASSET_PLATFORM,
-                         logger=logger)
+    tools_build_path = eutil.handle_tools(ctx, should_build_tools, is_installer_sdk, tool_config, '', tools_build_path, default_base_path, engine_centric, logger)
 
-    asset_bundles_path = exp.bundle_assets(ctx=ctx,
-                      selected_platform=ASSET_PLATFORM,
-                      seedlist_paths=validated_seedslist_paths,
-                      seedfile_paths=preprocessed_seedfile_paths,
-                      tools_build_path=tools_build_path,
-                      engine_centric=engine_centric,
-                      asset_bundling_path=project_path/'AssetBundling',
-                      using_installer_sdk=is_installer_sdk,
-                      tool_config=tool_config,
-                      max_bundle_size=max_bundle_size)
+    eutil.handle_assets(ctx, should_build_all_assets, tools_build_path, is_installer_sdk, 
+                        tool_config, engine_centric, fail_on_asset_errors,
+                        ASSET_PLATFORM, ASSET_PLATFORM, validated_seedslist_paths, preprocessed_seedfile_paths, 
+                        project_path/'AssetBundling', max_bundle_size,
+                        logger)
 
     android_project_config= android_support.get_android_config(project_path=None)
 
     android_sdk_home = pathlib.Path(android_project_config.get_value(key=android_support.SETTINGS_SDK_ROOT.key))
 
-    has_errors = exp.process_command([o3de_cli_script_path, 'android-generate', '-p', project_name, '-B', target_android_project_path, "--asset-mode", asset_pack_mode], 
-                cwd=default_base_path)
+    run_android_command([o3de_cli_script_path, 'android-generate', '-p', project_name, '-B', target_android_project_path, "--asset-mode", asset_pack_mode],
+                        cwd=default_base_path,
+                        error_msg="Android Project Generation Failure.")
 
-    if has_errors:
-        logger.error("Android Project generation failed!")
-        raise exp.ExportProjectError("Android Project Generation Failure.")
+    run_android_command([target_android_project_path / ('gradlew'+ android_support.GRADLE_EXTENSION), f'assemble{build_config.title()}'],
+                        cwd=target_android_project_path,
+                        error_msg="Gradle Build Failure.")
     
-    has_errors = exp.process_command([target_android_project_path / ('gradlew'+ android_support.GRADLE_EXTENSION), f'assemble{build_config.title()}'], cwd=target_android_project_path)
-
-    if has_errors:
-        logger.error("Gradle build encountered failures")
-        raise exp.ExportProjectError("Gradle Build Failure.")
-
     if deploy_to_device:
         if not activity_name:
             activity_name = f'{project_name}Activity'

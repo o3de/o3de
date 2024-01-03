@@ -21,6 +21,76 @@ import sys
 
 from typing import List
 
+def process_level_names(ctx, seedfile_paths, level_names, platform):
+    for level in level_names:
+        seedfile_paths.append(ctx.project_path / f'Cache/{platform}/levels' / level.lower() / (level.lower() + ".spawnable"))
+    
+def compute_tools_build_path(ctx, is_installer_sdk, selected_platform, tool_config, tools_build_path, default_base_path, logger=None):
+     # Note, when resolving the relative paths used for the export process, there is a debate about 
+    # whether to use the current working directory, or to forcefully set the base path to an O3DE directory.
+    # In practice, there was noticeable surprise whenever the relative folder wasn't found in an O3DE directory,
+    # and sometimes commands are carelessly run from sensitive directories (such as C:\\Windows\\System32)
+    
+    # For this reason, all deliberately external paths must be specified using absolute paths
+    if is_installer_sdk:    
+        tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / tool_config / 'Default'
+    
+    if not tools_build_path:
+        tools_build_path = default_base_path / 'build/tools'
+    elif not tools_build_path.is_absolute():
+        tools_build_path = default_base_path / tools_build_path
+    
+    if logger:
+        logger.info(f"Tools build path set to {tools_build_path}")
+    
+    return tools_build_path
+
+def handle_tools(ctx, should_build_tools, is_installer_sdk, tool_config, selected_platform, tools_build_path, default_base_path, engine_centric,logger ):
+    tools_build_path = compute_tools_build_path(ctx, is_installer_sdk, selected_platform, tool_config, tools_build_path, default_base_path)
+
+    if should_build_tools and not is_installer_sdk:
+        exp.build_export_toolchain(ctx=ctx,
+                                   tools_build_path=tools_build_path,
+                                   engine_centric=engine_centric,
+                                   tool_config=tool_config,
+                                   logger=logger)
+    
+    return tools_build_path
+
+def handle_assets(ctx, should_build_all_assets, tools_build_path, is_installer_sdk, tool_config, engine_centric, fail_on_asset_errors,
+                  ap_selected_platform, ab_selected_platform, seedlist_paths, seedfile_paths, asset_bundling_path, max_bundle_size,
+                  logger=None):
+    # Optionally build the assets
+    if should_build_all_assets:
+        asset_processor_path = exp.get_asset_processor_batch_path(tools_build_path=tools_build_path,
+                                                                  using_installer_sdk=is_installer_sdk,
+                                                                  tool_config=tool_config,
+                                                                  required=True)
+        if logger:
+            logger.info(f"Using '{asset_processor_path}' to process the assets.")
+        exp.build_assets(ctx=ctx,
+                         tools_build_path=tools_build_path,
+                         engine_centric=engine_centric,
+                         fail_on_ap_errors=fail_on_asset_errors,
+                         using_installer_sdk=is_installer_sdk,
+                         tool_config=tool_config,
+                         selected_platform=ap_selected_platform,
+                         logger=logger)
+    
+    expected_bundles_path = exp.bundle_assets(ctx=ctx,
+                      selected_platform=ab_selected_platform,
+                      seedlist_paths=seedlist_paths,
+                      seedfile_paths=seedfile_paths,
+                      tools_build_path=tools_build_path,
+                      engine_centric=engine_centric,
+                      asset_bundling_path=asset_bundling_path,
+                      using_installer_sdk=is_installer_sdk,
+                      tool_config=tool_config,
+                      max_bundle_size=max_bundle_size)
+
+    return expected_bundles_path
+
+
 def create_common_export_params_and_config(parser, export_config):
     parser.add_argument(exp.CUSTOM_SCRIPT_HELP_ARGUMENT,default=False,action='store_true',help='Show this help message and exit.')
     
