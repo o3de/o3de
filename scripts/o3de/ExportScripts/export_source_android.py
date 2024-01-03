@@ -40,27 +40,23 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
                            org_name: str|None,
                            activity_name:str|None,
                            logger: logging.Logger|None) -> None:
-    project_path = ctx.project_path
-    engine_path = ctx.engine_path
-    project_name = ctx.project_name
-
-    o3de_cli_script_path = engine_path / ('scripts/o3de' + android_support.O3DE_SCRIPT_EXTENSION)
+    o3de_cli_script_path = ctx.engine_path / ('scripts/o3de' + android_support.O3DE_SCRIPT_EXTENSION)
 
     if not logger:
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
 
-    is_installer_sdk = manifest.is_sdk_engine(engine_path=engine_path)
+    is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
 
     def run_android_command(args, cwd, error_msg):
         has_errors = exp.process_command(args, cwd=cwd)
         if has_errors:
             raise exp.ExportProjectError(error_msg)
     
-    run_android_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=project_path, error_msg="Invalid Android Configuration")
+    run_android_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=ctx.project_path, error_msg="Invalid Android Configuration")
 
     # Calculate the tools and game build paths
-    default_base_path = engine_path if engine_centric else project_path
+    default_base_path = ctx.engine_path if engine_centric else ctx.project_path
 
     # Resolve (if possible) and validate any provided seedlist files
     validated_seedslist_paths = exp.validate_project_artifact_paths(project_path=ctx.project_path,
@@ -77,14 +73,14 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
     eutil.handle_assets(ctx, should_build_all_assets, tools_build_path, is_installer_sdk, 
                         tool_config, engine_centric, fail_on_asset_errors,
                         ASSET_PLATFORM, ASSET_PLATFORM, validated_seedslist_paths, preprocessed_seedfile_paths, 
-                        project_path/'AssetBundling', max_bundle_size,
+                        ctx.project_path/'AssetBundling', max_bundle_size,
                         logger)
 
     android_project_config= android_support.get_android_config(project_path=None)
 
     android_sdk_home = pathlib.Path(android_project_config.get_value(key=android_support.SETTINGS_SDK_ROOT.key))
 
-    run_android_command([o3de_cli_script_path, 'android-generate', '-p', project_name, '-B', target_android_project_path, "--asset-mode", asset_pack_mode],
+    run_android_command([o3de_cli_script_path, 'android-generate', '-p', ctx.project_name, '-B', target_android_project_path, "--asset-mode", asset_pack_mode],
                         cwd=default_base_path,
                         error_msg="Android Project Generation Failure.")
 
@@ -94,10 +90,10 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
     
     if deploy_to_device:
         if not activity_name:
-            activity_name = f'{project_name}Activity'
+            activity_name = f'{ctx.project_name}Activity'
 
         if not org_name:
-            org_name = f'org.o3de.{project_name}'
+            org_name = f'org.o3de.{ctx.project_name}'
         android_support.deloy_to_android_device(target_android_project_path,
                                 build_config,
                                 android_sdk_home,

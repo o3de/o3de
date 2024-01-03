@@ -132,6 +132,12 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
 
     tools_build_path = eutil.handle_tools(ctx, should_build_tools, is_installer_sdk, tool_config, selected_platform, tools_build_path, default_base_path, engine_centric, logger)
 
+    # Generate the bundle
+    expected_bundles_path = eutil.handle_assets(ctx, should_build_all_assets, tools_build_path, is_installer_sdk, tool_config, 
+                                                engine_centric, fail_on_asset_errors, None, selected_platform, validated_seedslist_paths, 
+                                                preprocessed_seedfile_paths, asset_bundling_path, max_bundle_size,
+                                                logger)
+
     # Build the requested game launcher types (if any)
     launcher_type = 0
     if should_build_game_launcher:
@@ -153,12 +159,6 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                tool_config=tool_config,
                                monolithic_build=monolithic_build,
                                logger=logger)
-
-    # Generate the bundle
-    expected_bundles_path = eutil.handle_assets(ctx, should_build_all_assets, tools_build_path, is_installer_sdk, tool_config, 
-                                                engine_centric, fail_on_asset_errors, None, selected_platform, validated_seedslist_paths, 
-                                                preprocessed_seedfile_paths, asset_bundling_path, max_bundle_size,
-                                                logger)
 
     # Prepare the different layouts based on the desired launcher types
     export_layouts = []
