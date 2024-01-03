@@ -16,82 +16,29 @@ from o3de import android, android_support
 import argparse
 import logging
 import pathlib
-import platform
 import sys
-import time
 
 from typing import List
 
-def supply_android_default_global_configuration(api:int = 31,
-                                        ndk_version:str = '25*',
-                                        gradle_min_version:str = '8.1.0',
-                                        auto_store_pwd:str|None = None,
-                                        auto_key_pwd:str|None = None):
-    is_pc = exp.get_default_asset_platform() == 'pc'
-    android_sdk_home_env_var = '%ANDROID_SDK_HOME%' if is_pc else '$ANDROID_SDK_HOME'
-    android_signing_config_keystore_file_env_var = '%ANDROID_SIGNING_CONFIG_KEYSTORE_FILE%' if is_pc else '$ANDROID_SIGNING_CONFIG_KEYSTORE_FILE' 
-    android_signing_config_key_alias_env_var = '%ANDROID_SIGNING_CONFIG_KEY_ALIAS%' if is_pc else '$ANDROID_SIGNING_CONFIG_KEY_ALIAS'
-
-    android_global_config, _ = android.get_android_config(is_global=True)
-    android_global_config.set_config_value(key=android_support.SETTINGS_SDK_ROOT.key, value=android_sdk_home_env_var, validate_value=False)
-    android_global_config.set_config_value(key=android_support.SETTINGS_PLATFORM_SDK_API.key, value=api, validate_value=False)
-    android_global_config.set_config_value(key=android_support.SETTINGS_NDK_VERSION.key, value=ndk_version, validate_value=False)
-    android_global_config.set_config_value(key=android_support.SETTINGS_GRADLE_PLUGIN_VERSION.key, value=gradle_min_version, validate_value=False)
-    android_global_config.set_config_value(key=android_support.SETTINGS_SIGNING_STORE_FILE.key, value=android_signing_config_keystore_file_env_var, validate_value=False)
-    android_global_config.set_config_value(key=android_support.SETTINGS_SIGNING_KEY_ALIAS.key, value=android_signing_config_key_alias_env_var, validate_value=False)
-
-    if not auto_store_pwd:
-        android_global_config.set_password(android_support.SETTINGS_SIGNING_STORE_PASSWORD.key)
-    else:
-        android_global_config.set_config_value(key=android_support.SETTINGS_SIGNING_STORE_PASSWORD.key, value=auto_store_pwd, validate_value=False)
-    
-    if not auto_key_pwd:
-        android_global_config.set_password(android_support.SETTINGS_SIGNING_KEY_PASSWORD.key)
-    else:
-        android_global_config.set_config_value(key=android_support.SETTINGS_SIGNING_KEY_PASSWORD.key, value=auto_key_pwd, validate_value=False)
-
-def deloy_to_android_device(target_android_project_path: pathlib.Path,
-                            build_config:str,
-                            project_name:str,
-                            android_sdk_home:pathlib.Path,
-                            org_name:str|None = None,
-                            activity_name:str|None = None):
-    is_pc = exp.get_default_asset_platform() == 'pc'
-
-    adb_exec_path = android_sdk_home / ('platform-tools/adb' + ('.exe' if is_pc else ''))
-    exp.process_command([adb_exec_path, 'install', '-t', '-r', target_android_project_path / f'app/build/outputs/apk/{build_config}/app-{build_config}.apk'])
-
-    time.sleep(1)
-
-    if not activity_name:
-        activity_name = f'{project_name}Activity'
-    
-    if not org_name:
-        org_name = f'org.o3de.{project_name}'
-
-    exp.process_command([adb_exec_path, 'shell', 'am', 'start', '-a', 'android.intent.action.MAIN','-n', f'{org_name}/.{activity_name}'])
-
-
+ASSET_PLATFORM = 'android'
 def export_source_android_project(ctx: exp.O3DEScriptExportContext,
                            target_android_project_path: pathlib.Path,
                            seedlist_paths: List[pathlib.Path],
                            seedfile_paths: List[pathlib.Path],
                            level_names: List[str],
-                           asset_pack_mode: str = 'PAK',
-                           engine_centric: bool = False,
-                           should_build_tools: bool = True,
-                           should_build_all_assets: bool = True,
-                           build_config: str = 'profile',
-                           tool_config: str = 'profile',
-                           tools_build_path: pathlib.Path | None =None,
-                           max_bundle_size: int = 2048,
-                           fail_on_asset_errors: bool = False,
-                           deploy_to_device: bool = False,
-                           org_name: str|None = None,
-                           activity_name:str|None = None,
-                           logger: logging.Logger|None = None) -> None:
-    
-    expected_platform = 'android'
+                           asset_pack_mode: str,
+                           engine_centric: bool,
+                           should_build_tools: bool,
+                           should_build_all_assets: bool,
+                           build_config: str,
+                           tool_config: str,
+                           tools_build_path: pathlib.Path | None,
+                           max_bundle_size: int,
+                           fail_on_asset_errors: bool,
+                           deploy_to_device: bool,
+                           org_name: str|None,
+                           activity_name:str|None,
+                           logger: logging.Logger|None) -> None:
     project_path = ctx.project_path
     engine_path = ctx.engine_path
     project_name = ctx.project_name
@@ -102,11 +49,13 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=engine_path)
 
-    is_pc = exp.get_default_asset_platform() == 'pc'
+    o3de_cli_script_path = engine_path / ('scripts/o3de' + android_support.O3DE_SCRIPT_EXTENSION)
 
-    o3de_cli_script_path = engine_path / ('scripts/o3de' + ('.bat' if is_pc else '.sh'))
+    has_errors = exp.process_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=project_path)
 
-    assert exp.process_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=project_path) == 0, "Android config validation went wrong!"
+    if has_errors:
+        logger.error("Encountered invalid Android configuration! Please correct all errors shown previously.")
+        raise exp.ExportProjectError("Invalid Android Configuration")
 
     # Calculate the tools and game build paths
     default_base_path = engine_path if engine_centric else project_path
@@ -121,13 +70,9 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
     
     # Convert level names into seed files that the asset bundler can utilize for packaging
     for level in level_names:
-        preprocessed_seedfile_paths.append(ctx.project_path / f'Cache/{expected_platform}/levels' / level.lower() / (level.lower() + ".spawnable"))
+        preprocessed_seedfile_paths.append(ctx.project_path / f'Cache/{ASSET_PLATFORM}/levels' / level.lower() / (level.lower() + ".spawnable"))
     
     if is_installer_sdk:
-        # Check if we have any monolithic entries if building monolithic
-        if not exp.has_monolithic_artifacts(ctx):
-            logger.error("Trying to create monolithic build, but no monolithic artifacts are detected in the engine installation!.")
-            raise exp.ExportProjectError("Trying to build monolithic without libraries.")
         tools_build_path = engine_path / 'bin' / exp.get_platform_installer_folder_name() / tool_config / 'Default'
     
     if not tools_build_path:
@@ -135,7 +80,7 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
     elif not tools_build_path.is_absolute():
         tools_build_path = default_base_path / tools_build_path
     
-    logger.info(f"Tools build path set to {tools_build_path}")
+    logger.debug(f"Tools build path set to {tools_build_path}")
     
     if should_build_tools and not is_installer_sdk:
         exp.build_export_toolchain(ctx=ctx,
@@ -156,11 +101,11 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
                          fail_on_ap_errors=fail_on_asset_errors,
                          using_installer_sdk=is_installer_sdk,
                          tool_config=tool_config,
-                         selected_platform=expected_platform,
+                         selected_platform=ASSET_PLATFORM,
                          logger=logger)
 
     asset_bundles_path = exp.bundle_assets(ctx=ctx,
-                      selected_platform=expected_platform,
+                      selected_platform=ASSET_PLATFORM,
                       seedlist_paths=validated_seedslist_paths,
                       seedfile_paths=preprocessed_seedfile_paths,
                       tools_build_path=tools_build_path,
@@ -172,23 +117,24 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
 
     android_project_config= android_support.get_android_config(project_path=None)
 
-    android_project_config.set_config_value(key=android_support.SETTINGS_ASSET_BUNDLE_SUBPATH.key, value=str(asset_bundles_path).replace('\\', '/'), validate_value=False)
-    
     android_sdk_home = pathlib.Path(android_project_config.get_value(key=android_support.SETTINGS_SDK_ROOT.key))
-    
-    if not android_sdk_home.is_dir():
-        logger.error("ANDROID_SDK_HOME is not properly configured! Please ensure SDK_ROOT is properly configured in o3de android-configure")
-        raise exp.ExportProjectError("Invalid ANDROID_SDK_HOME.")
 
-    exp.process_command([o3de_cli_script_path, 'android-generate', '-p', project_name, '-B', target_android_project_path, "--asset-mode", asset_pack_mode], 
+    has_errors = exp.process_command([o3de_cli_script_path, 'android-generate', '-p', project_name, '-B', target_android_project_path, "--asset-mode", asset_pack_mode], 
                 cwd=default_base_path)
 
-    exp.process_command([target_android_project_path / ('gradlew'+ (".bat" if is_pc else "")), f'assemble{build_config.title()}'], cwd=target_android_project_path)
+    if has_errors:
+        logger.error("Android Project generation failed!")
+        raise exp.ExportProjectError("Android Project Generation Failure.")
+    
+    has_errors = exp.process_command([target_android_project_path / ('gradlew'+ android_support.GRADLE_EXTENSION), f'assemble{build_config.title()}'], cwd=target_android_project_path)
+
+    if has_errors:
+        logger.error("Gradle build encountered failures")
+        raise exp.ExportProjectError("Gradle Build Failure.")
 
     if deploy_to_device:
-        deloy_to_android_device(target_android_project_path,
-                                build_config, 
-                                project_name, 
+        android_support.deloy_to_android_device(target_android_project_path,
+                                build_config,
                                 android_sdk_home,
                                 org_name,
                                 activity_name)
@@ -206,22 +152,24 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext, 
     
     parser.add_argument('-deploy', '--deploy-to-android',default=False,action='store_true',help='At completion of build, deploy to android device.')
 
-    parser.add_argument('-actname', '--activity_name', type=str, default='',
+    parser.add_argument('-actname', '--activity-name', type=str, default=f'{o3de_context.project_name}Activity',
                         help='The name of the activity to invoke when deploying and running the APK.')
     
-    parser.add_argument('-orgname', '--org_name', type=str, default='',
-                        help='The name of the organization identifier (i.e. org.o3de.PROJECT) to use when deploying and running the APK.')
+    parser.add_argument('-orgname', '--org-name', type=str, default=f'org.o3de.{o3de_context.project_name}',
+                        help='The name of the organization identifier (i.e. org.o3de) used to construct the full activity name.')
 
-    parser.add_argument('-defaults', '--provide-default-android-config',default=False,action='store_true',help='Sets up a new android configuration if requested.')
-    
-    parser.add_argument('-out', '--android-output-path', type=pathlib.Path, required=True, help='Path that describes the final resulting Android Project and APK location.')
+    # parser.add_argument('-out', '--android-output-path', type=pathlib.Path, required=True, help='Path that describes the final resulting Android Project and APK location.')
+
+    parser.add_argument('-B', '--build-dir', type=str, 
+                                          help=f"The location to write the android project scripts to. Default: '{android.DEFAULT_ANDROID_BUILD_FOLDER}'", 
+                                          default=android.DEFAULT_ANDROID_BUILD_FOLDER) 
 
     default_project_build_config = export_config.get_value(key=exp.SETTINGS_PROJECT_BUILD_CONFIG.key,
                                                             default=exp.SETTINGS_PROJECT_BUILD_CONFIG.default)
-    parser.add_argument('-cfg', '--config', type=str, default=default_project_build_config, choices=[exp.BUILD_CONFIG_RELEASE, exp.BUILD_CONFIG_PROFILE],
+    parser.add_argument('-cfg', '--config', type=str, default=default_project_build_config, choices=[exp.BUILD_CONFIG_RELEASE, exp.BUILD_CONFIG_PROFILE, exp.BUILD_CONFIG_DEBUG],
                         help='The CMake build configuration to use when building project binaries.')
     
-    parser.add_argument('-apkm', '--asset_pack_mode', type=str, default='PAK', choices=['PAK', 'LOOSE'],
+    parser.add_argument('-apkm', '--asset_mode', type=str, default='PAK', choices=['PAK', 'LOOSE'],
                         help='Choose how O3DE will package project assets into the final APK file.')
     
     
@@ -334,15 +282,13 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
     
 
     try:
-        if args.provide_default_android_config:
-            supply_android_default_global_configuration()
-
         export_source_android_project(ctx=o3de_context,
-                                  target_android_project_path=args.android_output_path,
+                                #   target_android_project_path=args.android_output_path,
+                                  target_android_project_path=pathlib.Path(args.build_dir),
                                   seedlist_paths=args.seedlist_paths,
                                   seedfile_paths=args.seedfile_paths,
                                   level_names=args.level_names,
-                                  asset_pack_mode=args.asset_pack_mode,
+                                  asset_pack_mode=args.asset_mode,
                                   engine_centric=option_build_engine_centric,
                                   should_build_all_assets=option_build_assets,
                                   should_build_tools=option_build_tools,
@@ -379,5 +325,5 @@ if "o3de_context" in globals():
     args = export_source_android_parse_args(o3de_context, export_config)
 
     export_source_android_run_command(o3de_context, args, export_config, o3de_logger)
-    o3de_logger.info(f"Finished exporting android project to {args.android_output_path}")
+    o3de_logger.info(f"Finished exporting android project to {args.build_dir}")
     sys.exit(0)
