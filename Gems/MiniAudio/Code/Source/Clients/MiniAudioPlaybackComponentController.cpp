@@ -55,11 +55,6 @@ namespace MiniAudio
 
         MiniAudioPlaybackRequestBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
         OnConfigurationUpdated();
-
-        if (m_config.m_autoplayOnActivate)
-        {
-            Play();
-        }
     }
 
     void MiniAudioPlaybackComponentController::SetConfiguration(const MiniAudioPlaybackComponentConfig& config)
@@ -156,6 +151,15 @@ namespace MiniAudio
     void MiniAudioPlaybackComponentController::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+
+        // Re-assign the sound before attempting to load it if it was
+        // released and the asset is now ready.
+        // This can happen in the Editor when returning from game mode
+        if (!m_config.m_sound.IsReady())
+        {
+            m_config.m_sound = asset;
+        }
+
         LoadSound();
     }
 
@@ -242,6 +246,13 @@ namespace MiniAudio
                 else
                 {
                     m_entityMovedHandler.Disconnect();
+                }
+
+                // Automatically play after the sound loads if requested
+                // This will play automatically in Editor and Game
+                if (m_config.m_autoplayOnActivate)
+                {
+                    Play();
                 }
             }
         }

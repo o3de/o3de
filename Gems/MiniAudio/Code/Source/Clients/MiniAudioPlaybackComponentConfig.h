@@ -34,6 +34,8 @@ namespace MiniAudio
 
         AZ::Data::Asset<SoundAsset> m_sound;
 
+        //! If true, automatically play when the entity activates, useful for
+        //! environment audio.
         bool m_autoplayOnActivate = false;
 
         float m_volume = 1.f;
