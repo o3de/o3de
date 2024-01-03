@@ -493,6 +493,10 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
     
     mock_logger = create_autospec(logging.Logger)
 
+    mock_config = create_autospec(O3DEConfig)
+    mock_config.set_config_value(key=android_support.SETTINGS_SDK_ROOT.key, value=str(tmp_path/'android-sdk').replace('\\', '/'), validate_value=False)
+
+
     with patch('o3de.manifest.is_sdk_engine', return_value=True) as mock_is_sdk_engine,\
          patch('o3de.export_project.has_monolithic_artifacts', return_value=True) as mock_has_mono_artifacts,\
          patch('o3de.export_project.get_platform_installer_folder_name', return_value="Windows") as mock_platform_folder_name,\
@@ -505,6 +509,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
          patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+         patch('o3de.android_support.get_android_config', return_value=mock_config),\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
