@@ -190,7 +190,7 @@ def deloy_to_android_device(target_android_project_path: pathlib.Path,
                             android_sdk_home:pathlib.Path,
                             org_name,
                             activity_name):
-    adb_exec_path = android_sdk_home / ('platform-tools/adb' + EXE_EXTENSION)
+    adb_exec_path = android_sdk_home / (f'platform-tools/adb{EXE_EXTENSION}')
     apk_file = target_android_project_path / f'app/build/outputs/apk/{build_config}/app-{build_config}.apk'
     
     has_error = exp.process_command([adb_exec_path, 'install', '-t', '-r', apk_file])

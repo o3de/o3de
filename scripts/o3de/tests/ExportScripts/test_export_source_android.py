@@ -386,11 +386,7 @@ def test_asset_bundler_combinations(tmp_path, use_sdk, should_build_tools_flag, 
     test_output_path = tmp_path / "output"
 
     mock_config = create_autospec(O3DEConfig)
-    mock_config.set_config_value(key=android_support.SETTINGS_SDK_ROOT.key, value=str(tmp_path/'android-sdk').replace('\\', '/'), validate_value=False)
-
-    expect_toolchain_build_called = ((not use_sdk) and should_build_tools_flag)
-
-    
+    mock_config.set_config_value(key=android_support.SETTINGS_SDK_ROOT.key, value=str(tmp_path/'android-sdk').replace('\\', '/'), validate_value=False)   
 
     with patch('o3de.manifest.is_sdk_engine', return_value=use_sdk) as mock_is_sdk_engine,\
          patch('o3de.export_project.has_monolithic_artifacts', return_value=has_monolithic) as mock_has_mono_artifacts,\
@@ -413,7 +409,6 @@ def test_asset_bundler_combinations(tmp_path, use_sdk, should_build_tools_flag, 
         mock_ctx.project_path = test_project_path
         mock_ctx.engine_path = test_engine_path
         mock_ctx.project_name = test_project_name
-        print("PARAM SET (use_sdk, should build tools, has mono)", use_sdk, should_build_tools_flag, has_monolithic)
         for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
 
             test_tools_build_path = None if not base_path else (base_path / "build" / "tools") 
@@ -596,7 +591,6 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
         mock_ctx.project_path = test_project_path
         mock_ctx.engine_path = test_engine_path
         mock_ctx.project_name = test_project_name
-        print("PARAM SET (use_sdk, should build tools, has mono)", use_sdk, should_build_tools_flag, has_monolithic)
         for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
 
             test_tools_build_path = None if not base_path else (base_path / "build" / "tools") 
