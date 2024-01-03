@@ -10,7 +10,7 @@
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 
 namespace AZ
 {

@@ -8,10 +8,10 @@
 #pragma once
 
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/PoolAllocator.h>
@@ -60,8 +60,8 @@ namespace AZ
 
             void CommitUpdates();
 
-            void UpdateBufferViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufViews);
-            void UpdateImageViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType);
+            void UpdateBufferViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>>& bufViews);
+            void UpdateImageViews(uint32_t index, const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>>& imageViews, RHI::ShaderInputImageType imageType);
             void UpdateSamplers(uint32_t index, const AZStd::span<const RHI::SamplerState>& samplers);
             void UpdateConstantData(AZStd::span<const uint8_t> data);
 

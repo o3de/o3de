@@ -242,7 +242,7 @@ namespace AZ::Render
 
             parentScene.ConfigurePipelineState(m_drawListTag, pipelineStateDescriptor);
 
-            const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+            const RHI::SingleDevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
             if (!pipelineState)
             {
                 AZ_Error("EditorStateMeshDrawPacket", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());

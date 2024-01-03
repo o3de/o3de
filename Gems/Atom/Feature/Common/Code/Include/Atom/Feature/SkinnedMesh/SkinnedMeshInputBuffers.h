@@ -43,7 +43,7 @@ namespace AZ
             struct SrgNameViewPair
             {
                 Name m_srgName;
-                RHI::Ptr<RHI::BufferView> m_bufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_bufferView;
             };
 
             //! Inputs to the skinning compute shader and their corresponding srg names
@@ -107,7 +107,7 @@ namespace AZ
 
         private:
             RHI::BufferViewDescriptor CreateInputViewDescriptor(
-                SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::StreamBufferView& streamBufferView);
+                SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::SingleDeviceStreamBufferView& streamBufferView);
             
             using HasInputStreamArray = AZStd::array<bool, static_cast<uint8_t>(SkinnedMeshInputVertexStreams::NumVertexStreams)>;
             HasInputStreamArray CreateInputBufferViews(

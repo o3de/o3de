@@ -89,7 +89,7 @@ namespace AZ
             void InitInternal() override;
             void DeactivateInternal() override;
             void CompileInternal(RHI::Device& device) override;
-            void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
+            void AddQueryPoolUse(RHI::Ptr<RHI::SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
             
             //! Cache the multisample state and at the same time hook up the custom sample msaa positions for the render pass.

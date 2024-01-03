@@ -14,10 +14,10 @@
 namespace AZ::RHI
 {
     class FrameGraphAttachmentDatabase;
-    class Buffer;
-    class BufferView;
-    class Image;
-    class ImageView;
+    class SingleDeviceBuffer;
+    class SingleDeviceBufferView;
+    class SingleDeviceImage;
+    class SingleDeviceImageView;
     class ScopeAttachment;
     struct BufferDescriptor;
     struct ImageDescriptor;
@@ -46,31 +46,31 @@ namespace AZ::RHI
         const size_t GetScopeAttachmentCount(const AttachmentId& attachmentId) const;
 
         //! Returns the buffer view associated with the scope attachment.
-        const BufferView* GetBufferView(const ScopeAttachment* scopeAttachment) const;
+        const SingleDeviceBufferView* GetBufferView(const ScopeAttachment* scopeAttachment) const;
 
         //! Returns the buffer view associated with the attachmentId.
-        const BufferView* GetBufferView(const AttachmentId& attachmentId) const;
+        const SingleDeviceBufferView* GetBufferView(const AttachmentId& attachmentId) const;
 
         //! Returns the buffer view associated with attachmentId and the attachmentUsage on the current scope.
-        const BufferView* GetBufferView(const AttachmentId& attachmentId, RHI::ScopeAttachmentUsage attachmentUsage) const;
+        const SingleDeviceBufferView* GetBufferView(const AttachmentId& attachmentId, RHI::ScopeAttachmentUsage attachmentUsage) const;
 
         //! Returns the buffer associated with attachmentId.
-        const Buffer* GetBuffer(const AttachmentId& attachmentId) const;
+        const SingleDeviceBuffer* GetBuffer(const AttachmentId& attachmentId) const;
 
         //! Returns the image view associated with the scope attachment
-        const ImageView* GetImageView(const ScopeAttachment* scopeAttacment) const;
+        const SingleDeviceImageView* GetImageView(const ScopeAttachment* scopeAttacment) const;
 
         //! Returns the image view associated with attachmentId, attachmentUsage and imageViewDescriptor on the current scope.
-        const ImageView* GetImageView(
+        const SingleDeviceImageView* GetImageView(
             const AttachmentId& attachmentId,
             const ImageViewDescriptor& imageViewDescriptor,
             const RHI::ScopeAttachmentUsage attachmentUsage) const;
 
         //! Returns the image view associated with the attachmentId.
-        const ImageView* GetImageView(const AttachmentId& attachmentId) const;
+        const SingleDeviceImageView* GetImageView(const AttachmentId& attachmentId) const;
 
         //! Returns the image associated with the attachmentId.
-        const Image* GetImage(const AttachmentId& attachmentId) const;
+        const SingleDeviceImage* GetImage(const AttachmentId& attachmentId) const;
 
         //! Returns the buffer descriptor for the given attachment id.
         BufferDescriptor GetBufferDescriptor(const AttachmentId& attachmentId) const;

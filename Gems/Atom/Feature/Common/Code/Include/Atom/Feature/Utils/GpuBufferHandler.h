@@ -9,8 +9,8 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 

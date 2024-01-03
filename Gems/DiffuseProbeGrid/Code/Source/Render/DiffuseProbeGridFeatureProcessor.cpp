@@ -20,7 +20,7 @@
 #include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
 // This component invokes shaders based on Nvidia's RTX-GI SDK.
@@ -119,7 +119,7 @@ namespace AZ
             if (device->GetFeatures().m_rayTracing)
             {
                 // initialize the buffer pools for the DiffuseProbeGrid visualization
-                m_visualizationBufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
+                m_visualizationBufferPools = RHI::SingleDeviceRayTracingBufferPools::CreateRHIRayTracingBufferPools();
                 m_visualizationBufferPools->Init(device);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
@@ -736,7 +736,7 @@ namespace AZ
             m_boxStreamLayout = layoutBuilder.End();
 
             // create index buffer
-            AZ::RHI::BufferInitRequest request;
+            AZ::RHI::SingleDeviceBufferInitRequest request;
             m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
@@ -745,7 +745,7 @@ namespace AZ
             AZ_Error("DiffuseProbeGridFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create index buffer view
-            AZ::RHI::IndexBufferView indexBufferView =
+            AZ::RHI::SingleDeviceIndexBufferView indexBufferView =
             {
                 *m_boxIndexBuffer,
                 0,
@@ -764,7 +764,7 @@ namespace AZ
             AZ_Error("DiffuseProbeGridFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create position buffer view
-            RHI::StreamBufferView positionBufferView =
+            RHI::SingleDeviceStreamBufferView positionBufferView =
             {
                 *m_boxPositionBuffer,
                 0,
@@ -961,7 +961,7 @@ namespace AZ
             m_visualizationIB = mesh.m_indexBufferView;
 
             // create the BLAS object
-            RHI::RayTracingBlasDescriptor blasDescriptor;
+            RHI::SingleDeviceRayTracingBlasDescriptor blasDescriptor;
             blasDescriptor.Build()
                 ->Geometry()
                 ->VertexFormat(PositionStreamFormat)
@@ -970,7 +970,7 @@ namespace AZ
             ;
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_visualizationBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+            m_visualizationBlas = AZ::RHI::SingleDeviceRayTracingBlas::CreateRHIRayTracingBlas();
             if (device->GetFeatures().m_rayTracing)
             {
                 m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);

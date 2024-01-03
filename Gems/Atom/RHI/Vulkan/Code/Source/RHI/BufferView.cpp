@@ -35,7 +35,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode BufferView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
+        RHI::ResultCode BufferView::InitInternal(RHI::Device& deviceBase, const RHI::SingleDeviceResource& resourceBase)
         {
             auto& device = static_cast<Device&>(deviceBase);
             const Buffer& buffer = static_cast<const Buffer&>(resourceBase);

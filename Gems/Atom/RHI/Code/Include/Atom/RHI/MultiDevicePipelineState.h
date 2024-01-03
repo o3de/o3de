@@ -8,20 +8,20 @@
 #pragma once
 
 #include <Atom/RHI/MultiDeviceObject.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 
 namespace AZ::RHI
 {
     class MultiDevicePipelineLibrary;
 
-    //! MultiDevicePipelineState is a multi-device class (representing a PipelineState on multiple devices).
-    //! It holds a map of device-specific PipelineState objects, which can be addressed with a device index.
-    //! The class is initialized with a device mask (1 bit per device), which initializes one PipelineState
+    //! MultiDevicePipelineState is a multi-device class (representing a SingleDevicePipelineState on multiple devices).
+    //! It holds a map of device-specific SingleDevicePipelineState objects, which can be addressed with a device index.
+    //! The class is initialized with a device mask (1 bit per device), which initializes one SingleDevicePipelineState
     //! for each bit set and stores them in a map.
-    //! The API then forwards all calls to the all device-specific PipelineState objects by iterating over them
+    //! The API then forwards all calls to the all device-specific SingleDevicePipelineState objects by iterating over them
     //! and forwarding the call.
-    //! A device-specific PipelineState can be accessed by calling GetDevicePipelineState
+    //! A device-specific SingleDevicePipelineState can be accessed by calling GetDevicePipelineState
     //! with the corresponding device index
     class MultiDevicePipelineState : public MultiDeviceObject
     {

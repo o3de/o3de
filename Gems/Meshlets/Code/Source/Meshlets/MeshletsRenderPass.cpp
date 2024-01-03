@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/RPIUtils.h>

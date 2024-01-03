@@ -47,10 +47,10 @@ namespace AZ::RHI
         //! Returns the index associated with the given DrawListTag
         s32 GetDrawListIndex(DrawListTag drawListTag) const;
 
-        //! Returns the DrawItem at the given index
+        //! Returns the SingleDeviceDrawItem at the given index
         MultiDeviceDrawItem* GetDrawItem(size_t index);
 
-        //! Returns the DrawItem associated with the given DrawListTag
+        //! Returns the SingleDeviceDrawItem associated with the given DrawListTag
         MultiDeviceDrawItem* GetDrawItem(DrawListTag drawListTag);
 
         //! Returns the draw item and its properties associated with the provided index.

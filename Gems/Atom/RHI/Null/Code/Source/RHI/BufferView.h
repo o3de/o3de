@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/Buffer.h>
 
@@ -16,9 +16,9 @@ namespace AZ
     namespace Null
     {
         class BufferView final
-            : public RHI::BufferView
+            : public RHI::SingleDeviceBufferView
         {
-            using Base = RHI::BufferView;
+            using Base = RHI::SingleDeviceBufferView;
         public:
             AZ_CLASS_ALLOCATOR(BufferView, AZ::ThreadPoolAllocator);
             AZ_RTTI(BufferView, "{FE5E5E22-FC6C-4BDF-BD9B-427072C3C43F}", Base);
@@ -29,8 +29,8 @@ namespace AZ
             BufferView() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::BufferView
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::Resource& resourceBase) override { return RHI::ResultCode::Success;}
+            // RHI::SingleDeviceBufferView
+            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::SingleDeviceResource& resourceBase) override { return RHI::ResultCode::Success;}
             RHI::ResultCode InvalidateInternal() override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override{};
             //////////////////////////////////////////////////////////////////////////

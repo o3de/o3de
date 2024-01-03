@@ -12,7 +12,7 @@
 #include "DescriptorSetLayout.h"
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 #include <Atom/RHI/FreeListAllocator.h>
-#include <Atom/RHI/ShaderResourceGroupData.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupData.h>
 
 namespace AZ::Vulkan
 {

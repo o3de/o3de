@@ -98,7 +98,7 @@ namespace AZ
             m_passesByDrawList = nullptr;
         }
 
-        RHI::ShaderResourceGroup* View::GetRHIShaderResourceGroup() const
+        RHI::SingleDeviceShaderResourceGroup* View::GetRHIShaderResourceGroup() const
         {
             return m_shaderResourceGroup->GetRHIShaderResourceGroup();
         }
@@ -134,7 +134,7 @@ namespace AZ
             AddVisibleObject(userData, depth);
         }
 
-        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
+        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::SingleDeviceDrawItemProperties& drawItemProperties)
         {
             m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
         }

@@ -110,7 +110,7 @@ namespace Platform
         AZ_UNUSED(mtlTexture);
     }
 
-    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::BufferMapRequest& request, AZ::RHI::BufferMapResponse& response)
+    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::SingleDeviceBufferMapRequest& request, AZ::RHI::SingleDeviceBufferMapResponse& response)
     {
         //No need to do anything here as ios does not support MTLStorageModeManaged
         AZ_UNUSED(request);
@@ -118,7 +118,7 @@ namespace Platform
         return AZ::RHI::ResultCode::Success;
     }
     
-    void UnMapBufferInternal(AZ::RHI::Buffer& bufferBase)
+    void UnMapBufferInternal(AZ::RHI::SingleDeviceBuffer& bufferBase)
     {
         //No need to do anything here as ios does not support MTLStorageModeManaged
         AZ_UNUSED(bufferBase);
