@@ -80,7 +80,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     :param engine_centric:                          Option to use an engine-centric workflow or not
     :param logger:                                  Optional logger to use to log the process and errors
     """
-    
+
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
 
     # If the output path is a relative path, convert it to an absolute path using the project path as the base

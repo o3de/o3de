@@ -128,7 +128,7 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext, 
 
     
     
-    parser.add_argument('-apkm', '--asset_mode', type=str, default='PAK', choices=['PAK', 'LOOSE'],
+    parser.add_argument('-apkm', '--asset-mode', type=str, default='PAK', choices=['PAK', 'LOOSE'],
                         help='Choose how O3DE will package project assets into the final APK file.')
 
     
