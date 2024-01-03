@@ -13,6 +13,7 @@ import os
 import sys
 
 import o3de.export_project as exp
+import export_utility as eutil
 import o3de.manifest as manifest
 import o3de.command_utils as command_utils
 import pathlib
@@ -259,19 +260,9 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
                     formatter_class=argparse.RawTextHelpFormatter,
                     add_help=False
         )
-        parser.add_argument(exp.CUSTOM_SCRIPT_HELP_ARGUMENT,default=False,action='store_true',help='Show this help message and exit.')
+        eutil.create_common_export_params_and_config(parser, export_config)
+        
         parser.add_argument('-out', '--output-path', type=pathlib.Path, required=True, help='Path that describes the final resulting Release Directory path location.')
-
-        default_project_build_config = export_config.get_value(key=exp.SETTINGS_PROJECT_BUILD_CONFIG.key,
-                                                               default=exp.SETTINGS_PROJECT_BUILD_CONFIG.default)
-        parser.add_argument('-cfg', '--config', type=str, default=default_project_build_config, choices=[exp.BUILD_CONFIG_RELEASE, exp.BUILD_CONFIG_PROFILE],
-                            help='The CMake build configuration to use when building project binaries.')
-
-        # tool.build.config / SETTINGS_TOOL_BUILD_CONFIG
-        default_tool_build_config = export_config.get_value(key=exp.SETTINGS_TOOL_BUILD_CONFIG.key,
-                                                            default=exp.SETTINGS_TOOL_BUILD_CONFIG.default)
-        parser.add_argument('-tcfg', '--tool-config', type=str, default=default_tool_build_config, choices=[exp.BUILD_CONFIG_RELEASE, exp.BUILD_CONFIG_PROFILE, exp.BUILD_CONFIG_DEBUG],
-                            help='The CMake build configuration to use when building tool binaries.')
 
         # archive.output.format / SETTINGS_ARCHIVE_OUTPUT_FORMAT
         default_archive_output_format = export_config.get_value(key=exp.SETTINGS_ARCHIVE_OUTPUT_FORMAT.key,
@@ -282,42 +273,6 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
                             choices=[exp.ARCHIVE_FORMAT_NONE, exp.ARCHIVE_FORMAT_ZIP, exp.ARCHIVE_FORMAT_GZIP, exp.ARCHIVE_FORMAT_BZ2, exp.ARCHIVE_FORMAT_XZ],
                             default=default_archive_output_format)
 
-        # option.build.assets / SETTINGS_OPTION_BUILD_ASSETS
-        export_config.add_boolean_argument(parser=parser,
-                                           key=exp.SETTINGS_OPTION_BUILD_ASSETS.key,
-                                           enable_override_arg=['-assets', '--build-assets'],
-                                           enable_override_desc='Build and update all assets before bundling.',
-                                           disable_override_arg=['-noassets', '--skip-build-assets'],
-                                           disable_override_desc='Skip building of assets and use assets that were already built.')
-
-        # option.fail.on.asset.errors / SETTINGS_OPTION_FAIL_ON_ASSET_ERR
-        export_config.add_boolean_argument(parser=parser,
-                                           key=exp.SETTINGS_OPTION_FAIL_ON_ASSET_ERR.key,
-                                           enable_override_arg=['-foa', '--fail-on-asset-errors'],
-                                           enable_override_desc='Fail the export if there are errors during the building of assets. (Only relevant if assets are set to be built).',
-                                           disable_override_arg=['-coa', '--continue-on-asset-errors'],
-                                           disable_override_desc='Continue export even if there are errors during the building of assets. (Only relevant if assets are set to be built).')
-
-        export_config.add_multi_part_argument(argument=['-sl', '--seedlist'],
-                                              parser=parser,
-                                              key=exp.SETTINGS_SEED_LIST_PATHS.key,
-                                              dest='seedlist_paths',
-                                              description='Path to a seed list file for asset bundling. Specify multiple times for each seed list. You can also specify wildcard patterns.',
-                                              is_path_type=True)
-
-        export_config.add_multi_part_argument(argument=['-sf', '--seedfile'],
-                                              parser=parser,
-                                              key=exp.SETTINGS_SEED_FILE_PATHS.key,
-                                              dest='seedfile_paths',
-                                              description='Path to a seed file for asset bundling. Example seed files are levels or prefabs. You can also specify wildcard patterns.',
-                                              is_path_type=True)
-
-        export_config.add_multi_part_argument(argument=['-lvl', '--level-name'],
-                                              parser=parser,
-                                              key=exp.SETTINGS_DEFAULT_LEVEL_NAMES.key,
-                                              dest='level_names',
-                                              description='The name of the level you want to export. This will look in <o3de_project_path>/Levels to fetch the right level prefab.',
-                                              is_path_type=False)
 
         export_config.add_multi_part_argument(argument=['-gpfp', '--game-project-file-pattern-to-copy'],
                                               parser=parser,
@@ -340,20 +295,7 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
                                               description='Any additional file patterns located in the project directory. File patterns will be relative to the project path.',
                                               is_path_type=False)
 
-        export_config.add_boolean_argument(parser=parser,
-                                           key=exp.SETTINGS_OPTION_BUILD_TOOLS.key,
-                                           enable_override_arg=['-bt', '--build-tools'],
-                                           enable_override_desc="Enable the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
-                                                                "The tools will be built into the location specified by the '--tools-build-path' argument",
-                                           disable_override_arg=['-sbt', '--skip-build-tools'],
-                                           disable_override_desc="Skip the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
-                                                                 "The tools must be already available at the location specified by the '--tools-build-path' argument.")
-
         
-        default_tools_build_path = export_config.get_value(exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.default)
-        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=pathlib.Path(default_tools_build_path),
-                            help=f"Designates where the build files for the O3DE toolchain are generated. If not specified, default is '{default_tools_build_path}'.")
-
         default_launcher_build_path = export_config.get_value(exp.SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH.default)
         parser.add_argument('-lbp', '--launcher-build-path', type=pathlib.Path, default=pathlib.Path(default_launcher_build_path),
                             help=f"Designates where the launcher build files (Game/Server/Unified) are generated. If not specified, default is '{default_launcher_build_path}'.")
@@ -368,10 +310,6 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
         default_asset_bundling_path = export_config.get_value(exp.SETTINGS_DEFAULT_ASSET_BUNDLING_PATH.key, exp.SETTINGS_DEFAULT_ASSET_BUNDLING_PATH.default)
         parser.add_argument('-abp', '--asset-bundling-path', type=pathlib.Path, default=pathlib.Path(default_asset_bundling_path),
                             help=f"Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, default is '{default_asset_bundling_path}'.")
-
-        default_max_size = export_config.get_value(exp.SETTINGS_MAX_BUNDLE_SIZE.key, exp.SETTINGS_MAX_BUNDLE_SIZE.default)
-        parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=int(default_max_size),
-                            help=f"Specify the maximum size of a given asset bundle.. If not specified, default is {default_max_size}.")
 
         export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_BUILD_GAME_LAUNCHER.key,
@@ -403,13 +341,6 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
                                            disable_override_desc="Disable the building and inclusion of the Unified Launcher if not needed.")
 
         export_config.add_boolean_argument(parser=parser,
-                                           key=exp.SETTINGS_OPTION_ENGINE_CENTRIC.key,
-                                           enable_override_arg=['-ec', '--engine-centric'],
-                                           enable_override_desc="Enable the engine-centric work flow to export the project.",
-                                           disable_override_arg=['-pc', '--project-centric'],
-                                           disable_override_desc="Enable the project-centric work flow to export the project.")
-
-        export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_BUILD_MONOLITHICALLY.key,
                                            enable_override_arg=['-mono', '--monolithic'],
                                            enable_override_desc="Build the launchers monolithically into a launcher executable.",
@@ -419,7 +350,6 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
 
         parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
 
-        parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
         if o3de_context is None:
             parser.print_help()
             exit(0)

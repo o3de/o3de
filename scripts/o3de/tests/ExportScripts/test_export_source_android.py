@@ -26,25 +26,9 @@ from export_test_utility import setup_local_export_config_test
 import o3de.export_project as exp
 from itertools import product
 
-def test_export_android_parse_args_should_require_output(tmpdir):
+def test_export_android_parse_args_should_run_with_output(tmpdir):
     
     test_project_name, test_project_path, test_engine_path = setup_local_export_config_test(tmpdir)
-    with pytest.raises(SystemExit):
-        with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder,\
-             patch('o3de.export_project.get_default_asset_platform', return_value='pc') as mock_get_asset_platform:
-
-            mock_get_o3de_folder.return_value = pathlib.Path(tmpdir.join('.o3de').realpath())
-
-            mock_ctx = create_autospec(O3DEScriptExportContext)
-            mock_ctx.project_path = test_project_path
-            mock_ctx.engine_path = test_engine_path
-            mock_ctx.project_name = test_project_name
-
-            test_export_config = exp.get_export_project_config(project_path=None)
-
-            # Since we are not specifying arguments, output path is missing. This should cause an error
-            expa.export_source_android_parse_args(mock_ctx, test_export_config)
-    
     #this should run fine however
     with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder,\
          patch('o3de.export_project.get_default_asset_platform', return_value='pc') as mock_get_asset_platform:
@@ -55,7 +39,7 @@ def test_export_android_parse_args_should_require_output(tmpdir):
         mock_ctx.project_path = test_project_path
         mock_ctx.engine_path = test_engine_path
         mock_ctx.project_name = test_project_name
-        mock_ctx.args = ['--android-output-path', str(tmpdir/'output')]
+        mock_ctx.args = ['--build-dir', str(tmpdir/'output')]
 
         test_export_config = exp.get_export_project_config(project_path=None)
 
@@ -86,7 +70,7 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
 
         mock_bundle_size = 777
 
-        mock_ctx.args = ['--android-output-path', str(tmpdir / 'output'), "--max-bundle-size", str(mock_bundle_size),
+        mock_ctx.args = ['--build-dir', str(tmpdir / 'output'), "--max-bundle-size", str(mock_bundle_size),
                          '-tbp', str(tmpdir / 'tool_builds'),]
         
         for ln in levelnames:
@@ -112,7 +96,7 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
         expa.export_source_android_run_command(mock_ctx, args, test_export_config, mock_logger)
 
         mock_export_func.assert_called_once_with(ctx=mock_ctx,
-                                  target_android_project_path=args.android_output_path,
+                                  target_android_project_path=pathlib.Path(args.build_dir),
                                   seedlist_paths=verify_seedlists,
                                   seedfile_paths=verify_seedfiles,
                                   level_names=levelnames,
@@ -177,7 +161,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                 
                 tool_config = 'profile'
 
-                mock_ctx.args = ['--android-output-path', str(tmpdir/'output')]
+                mock_ctx.args = ['--build-dir', str(tmpdir/'output')]
 
                 #add all necessary arguments
 
@@ -232,7 +216,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
 
                 args = expa.export_source_android_parse_args(mock_ctx, test_export_config)
 
-                assert getattr(args, 'android_output_path') == tmpdir/'output'
+                assert getattr(args, 'build_dir') == tmpdir/'output'
                 assert getattr(args, 'config') == check_build_config
                 assert getattr(args, 'tool_config') == check_tool_config
 
@@ -282,34 +266,6 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                   org_name=args.org_name,
                                   logger=mock_logger)
                 mock_export_func.reset_mock()
-
-def test_should_fail_immediately_for_installer_mono_build_with_no_artifacts(tmp_path):
-    test_project_name = "TestProject"
-    test_project_path = tmp_path / "project"
-    test_engine_path = tmp_path / "engine"
-    test_tools_build_path = (test_project_path / "build" / "test") 
-    test_tools_build_path.mkdir(parents=True)
-
-    test_output_path = tmp_path / "output"
-
-    with patch('o3de.manifest.is_sdk_engine', return_value=True) as mock_is_sdk_engine,\
-        patch('o3de.export_project.has_monolithic_artifacts', return_value=False) as mock_has_mono_artifacts,\
-        patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
-        patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
-        pytest.raises(exp.ExportProjectError):
-        
-        mock_ctx = create_autospec(O3DEScriptExportContext)
-        mock_ctx.project_path = test_project_path
-        mock_ctx.engine_path = test_engine_path
-        mock_ctx.project_name = test_project_name
-
-        expa.export_source_android_project(mock_ctx,
-                                  test_output_path,
-                                  [],[],[])
-        
-        mock_is_sdk_engine.assert_called_once_with(engine_path=mock_ctx.engine_path)
-        mock_has_mono_artifacts.assert_called_once_with(mock_ctx)
-        mock_kill_processes.assert_not_called()
 
 @pytest.mark.parametrize("use_sdk", [True,False])
 @pytest.mark.parametrize("should_build_tools_flag", [True,False])
@@ -369,62 +325,41 @@ def test_build_tool_combinations(tmp_path, use_sdk, should_build_tools_flag, has
             else:
                 test_tools_build_path = None
 
-            cannot_build_monolithic = (use_sdk and not has_monolithic)
             buildconf = 'release'
-            if not expect_toolchain_build_called and cannot_build_monolithic:
-                pytest.raises(exp.ExportProjectError, expa.export_source_android_project, 
-                              mock_ctx,
-                              test_output_path,
-                              [],
-                              [],
-                              [],
-                              asset_pack_mode = 'PAK',
-                              engine_centric = is_engine_centric,
-                              should_build_tools = should_build_tools_flag,
-                              should_build_all_assets = True,
-                              build_config = buildconf,
-                              tool_config = 'profile',
-                              tools_build_path = test_tools_build_path,
-                              max_bundle_size = 2048,
-                              fail_on_asset_errors = False,
-                              deploy_to_device = False,
-                              org_name = None,
-                              activity_name = None,
-                              logger=mock_logger)
-            else:
-                expa.export_source_android_project(mock_ctx,
-                              test_output_path,
-                              [],
-                              [],
-                              [],
-                              asset_pack_mode = 'PAK',
-                              engine_centric = is_engine_centric,
-                              should_build_tools = should_build_tools_flag,
-                              should_build_all_assets = True,
-                              build_config = buildconf,
-                              tool_config = 'profile',
-                              tools_build_path = test_tools_build_path,
-                              max_bundle_size = 2048,
-                              fail_on_asset_errors = False,
-                              deploy_to_device = False,
-                              org_name = None,
-                              activity_name = None,
-                              logger=mock_logger)
-                    
-                if expect_toolchain_build_called:
-                    if not test_tools_build_path:
-                        test_tools_build_path = test_o3de_base_path / 'build/tools'
-                    elif not test_tools_build_path.is_absolute():
-                        test_tools_build_path  = test_o3de_base_path / test_tools_build_path
+        
+            expa.export_source_android_project(mock_ctx,
+                            test_output_path,
+                            [],
+                            [],
+                            [],
+                            asset_pack_mode = 'PAK',
+                            engine_centric = is_engine_centric,
+                            should_build_tools = should_build_tools_flag,
+                            should_build_all_assets = True,
+                            build_config = buildconf,
+                            tool_config = 'profile',
+                            tools_build_path = test_tools_build_path,
+                            max_bundle_size = 2048,
+                            fail_on_asset_errors = False,
+                            deploy_to_device = False,
+                            org_name = None,
+                            activity_name = None,
+                            logger=mock_logger)
+                
+            if expect_toolchain_build_called:
+                if not test_tools_build_path:
+                    test_tools_build_path = test_o3de_base_path / 'build/tools'
+                elif not test_tools_build_path.is_absolute():
+                    test_tools_build_path  = test_o3de_base_path / test_tools_build_path
 
-                    mock_build_export_toolchain.assert_called_once_with(ctx=mock_ctx,
-                                                                        tools_build_path=test_tools_build_path,
-                                                                        engine_centric=is_engine_centric,
-                                                                        tool_config="profile",
-                                                                        logger=mock_logger)
-                else:
-                    mock_build_export_toolchain.assert_not_called()
-                    
+                mock_build_export_toolchain.assert_called_once_with(ctx=mock_ctx,
+                                                                    tools_build_path=test_tools_build_path,
+                                                                    engine_centric=is_engine_centric,
+                                                                    tool_config="profile",
+                                                                    logger=mock_logger)
+            else:
+                mock_build_export_toolchain.assert_not_called()
+                
             
             mock_build_export_toolchain.reset_mock()
 
@@ -488,66 +423,45 @@ def test_asset_bundler_combinations(tmp_path, use_sdk, should_build_tools_flag, 
             if test_tools_build_path and test_tools_build_path.is_absolute():
                 test_tools_build_path.mkdir(exist_ok=True, parents=True)
 
-            cannot_build_monolithic = (use_sdk and not has_monolithic)
             buildconf = 'release'
-            if not expect_toolchain_build_called and cannot_build_monolithic:
-                pytest.raises(exp.ExportProjectError, expa.export_source_android_project, 
-                              mock_ctx,
-                              test_output_path,
-                              [],
-                              [],
-                              [],
-                              asset_pack_mode = 'PAK',
-                              engine_centric = is_engine_centric,
-                              should_build_tools = should_build_tools_flag,
-                              should_build_all_assets = True,
-                              build_config = buildconf,
-                              tool_config = 'profile',
-                              tools_build_path = test_tools_build_path,
-                              max_bundle_size = 2048,
-                              fail_on_asset_errors = False,
-                              deploy_to_device = False,
-                              org_name = None,
-                              activity_name = None,
-                              logger=mock_logger)
-            else:
-                expa.export_source_android_project(mock_ctx,
-                              test_output_path,
-                              [],
-                              [],
-                              [],
-                              asset_pack_mode = 'PAK',
-                              engine_centric = is_engine_centric,
-                              should_build_tools = should_build_tools_flag,
-                              should_build_all_assets = True,
-                              build_config = buildconf,
-                              tool_config = 'profile',
-                              tools_build_path = test_tools_build_path,
-                              max_bundle_size = 2048,
-                              fail_on_asset_errors = False,
-                              deploy_to_device = False,
-                              org_name = None,
-                              activity_name = None,
-                              logger=mock_logger)
-                    
-                selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
+        
+            expa.export_source_android_project(mock_ctx,
+                            test_output_path,
+                            [],
+                            [],
+                            [],
+                            asset_pack_mode = 'PAK',
+                            engine_centric = is_engine_centric,
+                            should_build_tools = should_build_tools_flag,
+                            should_build_all_assets = True,
+                            build_config = buildconf,
+                            tool_config = 'profile',
+                            tools_build_path = test_tools_build_path,
+                            max_bundle_size = 2048,
+                            fail_on_asset_errors = False,
+                            deploy_to_device = False,
+                            org_name = None,
+                            activity_name = None,
+                            logger=mock_logger)
+                
+            selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
 
-                if not selected_tools_build_path:
-                    selected_tools_build_path = test_o3de_base_path / 'build/tools'
-                
-                if not selected_tools_build_path.is_absolute():
-                    selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
-                
-                mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
-                                                        selected_platform='android',
-                                                        seedlist_paths=[],
-                                                        seedfile_paths=[],
-                                                        tools_build_path=selected_tools_build_path,
-                                                        engine_centric=is_engine_centric,
-                                                        asset_bundling_path=test_project_path/'AssetBundling',
-                                                        using_installer_sdk=use_sdk,
-                                                        tool_config='profile',
-                                                        max_bundle_size=2048)
+            if not selected_tools_build_path:
+                selected_tools_build_path = test_o3de_base_path / 'build/tools'
+            
+            if not selected_tools_build_path.is_absolute():
+                selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
+            
+            mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
+                                                    selected_platform='android',
+                                                    seedlist_paths=[],
+                                                    seedfile_paths=[],
+                                                    tools_build_path=selected_tools_build_path,
+                                                    engine_centric=is_engine_centric,
+                                                    asset_bundling_path=test_project_path/'AssetBundling',
+                                                    using_installer_sdk=use_sdk,
+                                                    tool_config='profile',
+                                                    max_bundle_size=2048)
                     
             mock_get_asset_bundler_path.reset_mock()
             mock_bundle_assets.reset_mock()
@@ -607,6 +521,18 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
                                 test_seedlists,
                                 test_seedfiles,
                                 test_levelnames,
+                                'PAK',
+                                False,
+                                True,
+                                True,
+                                'profile',
+                                'profile',
+                                None,
+                                2048,
+                                False,
+                                False,
+                                None,
+                                None,
                                 logger=mock_logger)
         
         combined_seedfiles = test_seedfiles 
@@ -679,129 +605,84 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
             if test_tools_build_path and test_tools_build_path.is_absolute():
                 test_tools_build_path.mkdir(exist_ok=True, parents=True)
 
-            cannot_build_monolithic = (use_sdk and not has_monolithic)
             buildconf = 'release'
 
-            if cannot_build_monolithic:
-                pytest.raises(exp.ExportProjectError, expa.export_source_android_project, 
-                              mock_ctx,
-                              test_output_path,
-                              [],
-                              [],
-                              [],
-                              asset_pack_mode = 'PAK',
-                              engine_centric = is_engine_centric,
-                              should_build_tools = should_build_tools_flag,
-                              should_build_all_assets = True,
-                              build_config = buildconf,
-                              tool_config = 'profile',
-                              tools_build_path = test_tools_build_path,
-                              max_bundle_size = 2048,
-                              fail_on_asset_errors = False,
-                              deploy_to_device = False,
-                              org_name = None,
-                              activity_name = None,
-                              logger=mock_logger)
-                mock_get_asset_processor_path.assert_not_called()
-                mock_build_assets.assert_not_called()
-            else:
-                expa.export_source_android_project(mock_ctx,
-                              test_output_path,
-                              [],
-                              [],
-                              [],
-                              asset_pack_mode = 'PAK',
-                              engine_centric = is_engine_centric,
-                              should_build_tools = should_build_tools_flag,
-                              should_build_all_assets = True,
-                              build_config = buildconf,
-                              tool_config = 'profile',
-                              tools_build_path = test_tools_build_path,
-                              max_bundle_size = 2048,
-                              fail_on_asset_errors = False,
-                              deploy_to_device = False,
-                              org_name = None,
-                              activity_name = None,
-                              logger=mock_logger)
-                    
-                selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
+            
+            expa.export_source_android_project(mock_ctx,
+                            test_output_path,
+                            [],
+                            [],
+                            [],
+                            asset_pack_mode = 'PAK',
+                            engine_centric = is_engine_centric,
+                            should_build_tools = should_build_tools_flag,
+                            should_build_all_assets = True,
+                            build_config = buildconf,
+                            tool_config = 'profile',
+                            tools_build_path = test_tools_build_path,
+                            max_bundle_size = 2048,
+                            fail_on_asset_errors = False,
+                            deploy_to_device = False,
+                            org_name = None,
+                            activity_name = None,
+                            logger=mock_logger)
+                
+            selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
 
-                if not selected_tools_build_path:
-                    selected_tools_build_path = test_o3de_base_path / 'build/tools'
+            if not selected_tools_build_path:
+                selected_tools_build_path = test_o3de_base_path / 'build/tools'
+            
+            if not selected_tools_build_path.is_absolute():
+                selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
+            
+            mock_get_asset_processor_path.assert_called_once_with(tools_build_path=selected_tools_build_path,
+                                                                    using_installer_sdk=use_sdk,
+                                                                    tool_config='profile',
+                                                                    required=True)
                 
-                if not selected_tools_build_path.is_absolute():
-                    selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
-                
-                mock_get_asset_processor_path.assert_called_once_with(tools_build_path=selected_tools_build_path,
-                                                                        using_installer_sdk=use_sdk,
-                                                                        tool_config='profile',
-                                                                        required=True)
-                    
-                mock_build_assets.assert_called_once_with(ctx=mock_ctx,
-                                                        tools_build_path=selected_tools_build_path,
-                                                        engine_centric=is_engine_centric,
-                                                        fail_on_ap_errors=False,
-                                                        using_installer_sdk=use_sdk,
-                                                        tool_config='profile',
-                                                        selected_platform='android',
-                                                        logger=mock_logger)
+            mock_build_assets.assert_called_once_with(ctx=mock_ctx,
+                                                    tools_build_path=selected_tools_build_path,
+                                                    engine_centric=is_engine_centric,
+                                                    fail_on_ap_errors=False,
+                                                    using_installer_sdk=use_sdk,
+                                                    tool_config='profile',
+                                                    selected_platform='android',
+                                                    logger=mock_logger)
                     
             mock_get_asset_processor_path.reset_mock()
             mock_build_assets.reset_mock()
 
             # now test when we skip asset building
-            if cannot_build_monolithic:
-                pytest.raises(exp.ExportProjectError, expa.export_source_android_project, 
-                              mock_ctx,
-                              test_output_path,
-                              [],
-                              [],
-                              [],
-                              asset_pack_mode = 'PAK',
-                              engine_centric = is_engine_centric,
-                              should_build_tools = should_build_tools_flag,
-                              should_build_all_assets = False,
-                              build_config = buildconf,
-                              tool_config = 'profile',
-                              tools_build_path = test_tools_build_path,
-                              max_bundle_size = 2048,
-                              fail_on_asset_errors = False,
-                              deploy_to_device = False,
-                              org_name = None,
-                              activity_name = None,
-                              logger=mock_logger)
-                mock_get_asset_processor_path.assert_not_called()
-                mock_build_assets.assert_not_called()
-            else:
-                expa.export_source_android_project(mock_ctx,
-                              test_output_path,
-                              [],
-                              [],
-                              [],
-                              asset_pack_mode = 'PAK',
-                              engine_centric = is_engine_centric,
-                              should_build_tools = should_build_tools_flag,
-                              should_build_all_assets = False,
-                              build_config = buildconf,
-                              tool_config = 'profile',
-                              tools_build_path = test_tools_build_path,
-                              max_bundle_size = 2048,
-                              fail_on_asset_errors = False,
-                              deploy_to_device = False,
-                              org_name = None,
-                              activity_name = None,
-                              logger=mock_logger)
-                    
-                selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
+            
+            expa.export_source_android_project(mock_ctx,
+                            test_output_path,
+                            [],
+                            [],
+                            [],
+                            asset_pack_mode = 'PAK',
+                            engine_centric = is_engine_centric,
+                            should_build_tools = should_build_tools_flag,
+                            should_build_all_assets = False,
+                            build_config = buildconf,
+                            tool_config = 'profile',
+                            tools_build_path = test_tools_build_path,
+                            max_bundle_size = 2048,
+                            fail_on_asset_errors = False,
+                            deploy_to_device = False,
+                            org_name = None,
+                            activity_name = None,
+                            logger=mock_logger)
+                
+            selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
 
-                if not selected_tools_build_path:
-                    selected_tools_build_path = test_o3de_base_path / 'build/tools'
-                
-                if not selected_tools_build_path.is_absolute():
-                    selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
-                
-                mock_get_asset_processor_path.assert_not_called()
-                mock_build_assets.assert_not_called()
+            if not selected_tools_build_path:
+                selected_tools_build_path = test_o3de_base_path / 'build/tools'
+            
+            if not selected_tools_build_path.is_absolute():
+                selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
+            
+            mock_get_asset_processor_path.assert_not_called()
+            mock_build_assets.assert_not_called()
                     
             mock_get_asset_processor_path.reset_mock()
             mock_build_assets.reset_mock()
