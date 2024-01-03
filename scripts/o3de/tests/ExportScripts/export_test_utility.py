@@ -1,3 +1,11 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
 #helper to generate settings file
 def create_dummy_commands_settings_file(build_config='profile', tool_config='profile', archive_format='none',
                                         build_assets=False, fail_asset_errors=False, build_tools=False,
