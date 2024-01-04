@@ -68,6 +68,7 @@ namespace AZ::RHI
 
             for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
+                // cast to u8 to prevent warning
                 if (RHI::CheckBit(AZStd::to_underlying(m_deviceMask), static_cast<AZ::u8>(deviceIndex)))
                 {
                     m_deviceDrawPacketBuilders.emplace(deviceIndex, DrawPacketBuilder());
