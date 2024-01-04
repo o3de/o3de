@@ -455,7 +455,7 @@ namespace UnitTest
             RHI::MultiDeviceDrawPacketBuilder builder2(LocalDeviceMask);
             auto drawPacketClone = builder2.Clone(drawPacket.get());
 
-            uint8_t drawItemCount = drawPacketClone->GetDrawItemCount();
+            uint8_t drawItemCount = static_cast<uint8_t>(drawPacketClone->GetDrawItemCount());
 
             // Test default value
             for (uint8_t i = 0; i < drawItemCount; ++i)
