@@ -17,6 +17,7 @@
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
+#include <QMap>
 #include <QPair>
 #include <QString>
 #include <QVector>
@@ -128,7 +129,7 @@ private:
     void AddLogTableEntry(AzQtComponents::StyledDetailsTableModel::TableEntry& entry);
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    QVector<QVector<QPair<QString, QString>>> m_additionalLogDetails;
+    QMap<int, QVector<QPair<QString, QString>>> m_additionalLogDetails;
     
     AzToolsFramework::Debug::TraceContextMultiStackHandler m_traceStackHandler;
     AZ::Uuid m_traceTag;
