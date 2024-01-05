@@ -124,12 +124,10 @@ namespace EMotionFX
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Render options")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                        ->DataElement(0, &EditorActorComponent::m_lightingChannelConfig,
-                                      "Lighting channel configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorActorComponent::m_lightingChannelConfig,
+                                      "Lighting Channels", "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::LightingChannelMaskChanged)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                        ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                         ->DataElement(0, &EditorActorComponent::m_renderCharacter,
                             "Draw character", "Toggles rendering of character mesh.")
@@ -596,7 +594,7 @@ namespace EMotionFX
 
                 if (dependencyAsset && dependencyAsset.GetType() == azrtti_typeid<AZ::RPI::ModelAsset>())
                 {
-                    m_modelReloadedEventHandler = AZ::Render::ModelReloadedEvent::Handler(
+                     m_modelReloadedEventHandler = AZ::Render::ModelReloadedEvent::Handler(
                         [this](AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset)
                         {
                             m_actorAsset.QueueLoad();

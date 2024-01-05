@@ -24,7 +24,7 @@ UISliceLibraryFilter::UISliceLibraryFilter(const AZ::Data::AssetType& assetType,
 {
     // propagation = Down means the filter will examine all children recursively until it satisfies or no more children are left
     // in our case we start from root entry and examine everything underneath it
-    SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::Down);
+    SetFilterPropagation(AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter::PropagateDirection::Down);
 }
 
 AzToolsFramework::AssetBrowser::AssetBrowserEntryFilter* UISliceLibraryFilter::Clone() const

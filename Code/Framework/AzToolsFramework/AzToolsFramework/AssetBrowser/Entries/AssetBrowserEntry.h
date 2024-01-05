@@ -128,7 +128,7 @@ namespace AzToolsFramework
             const AZStd::string& GetVisiblePath() const;
             //! Return absolute path to this file. Note that this decodes it to native slashes and resolves
             //! any aliases.
-            const AZStd::string GetFullPath() const;
+            const AZStd::string& GetFullPath() const;
             //! Return the size on disk of the asset
             const size_t GetDiskSize() const;
             //! Return the time the file was last modified.

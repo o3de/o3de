@@ -301,7 +301,7 @@ namespace AZ::RHI
         m_viewports.clear();
     }
 
-    const DrawPacket* DrawPacketBuilder::Clone(const DrawPacket* original)
+    DrawPacket* DrawPacketBuilder::Clone(const DrawPacket* original)
     {
         Begin(original->m_allocator);
         SetDrawArguments(original->GetDrawItemProperties(0).m_item->m_arguments);

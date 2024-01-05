@@ -172,7 +172,7 @@ namespace AZ
             //! equal to the model asset that the model is linked to.
             static bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset);
 
-            void HandleModelChange(Data::Instance<RPI::Model> model);
+            void HandleModelChange(const Data::Instance<RPI::Model>& model);
             void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
             void RegisterModel();
             void UnregisterModel();
@@ -194,12 +194,12 @@ namespace AZ
             //! Cached bus to use to notify RenderGeometry::Intersector the entity/component has changed.
             AzFramework::RenderGeometry::IntersectionNotificationBus::BusPtr m_intersectionNotificationBus;
 
-            MeshFeatureProcessorInterface::ModelChangedEvent::Handler m_changeEventHandler
+            MeshHandleDescriptor::ModelChangedEvent::Handler m_modelChangedEventHandler
             {
-                [&](Data::Instance<RPI::Model> model) { HandleModelChange(model); }
+                [&](const Data::Instance<RPI::Model>& model) { HandleModelChange(model); }
             };
             
-            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
+            MeshHandleDescriptor::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
             {
                 [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }
             };

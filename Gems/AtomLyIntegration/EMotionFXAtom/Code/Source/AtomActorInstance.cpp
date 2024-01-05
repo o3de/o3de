@@ -674,15 +674,13 @@ namespace AZ::Render
         {
             MeshHandleDescriptor meshDescriptor;
             meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
-
+            meshDescriptor.m_customMaterials = ConvertToCustomMaterialMap(materials);
             meshDescriptor.m_isRayTracingEnabled = m_rayTracingEnabled;
             meshDescriptor.m_isAlwaysDynamic = true;
             meshDescriptor.m_excludeFromReflectionCubeMaps = true;
             meshDescriptor.m_isSkinnedMesh = true;
-
-            m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials)));
-            m_meshFeatureProcessor->ConnectObjectSrgCreatedEventHandler(*m_meshHandle, m_objectSrgCreatedHandler);
+            meshDescriptor.m_objectSrgCreatedHandler = m_objectSrgCreatedHandler;
+            m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(m_meshFeatureProcessor->AcquireMesh(meshDescriptor));
         }
 
         // If render proxies already exist, they will be auto-freed

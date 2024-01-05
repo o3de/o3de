@@ -85,9 +85,10 @@ namespace AZ::RHI
         /// Updates a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of RayTracingGeometry entries
         virtual void UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) = 0;
 
-            /// Builds a Top Level Acceleration Structure (TLAS) for ray tracing operations, which is made up of RayTracingInstance entries that refer to a BLAS entry
-            virtual void BuildTopLevelAccelerationStructure(
-                const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList) = 0;
+        /// Builds a Top Level Acceleration Structure (TLAS) for ray tracing operations, which is made up of RayTracingInstance entries that
+        /// refer to a BLAS entry
+        virtual void BuildTopLevelAccelerationStructure(
+            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList) = 0;
 
         /// Defines the submit range for a CommandList
         /// Note: the default is 0 items, which disables validation for items submitted outside of the framegraph

@@ -9,22 +9,21 @@
 
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
-
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/Widgets/MessageBox.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
-#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerFactory.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
+#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerFactory.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
-#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-
-#include <AzQtComponents/Components/Widgets/MessageBox.h>
 
 #include <QDir>
 #include <QPushButton>
@@ -545,7 +544,6 @@ namespace AzToolsFramework
             {
                 QFile::copy(oldPath.c_str(), newPath.c_str());
             }
-
         }
 
         QVariant AssetBrowserViewUtils::GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon, bool isFavorite)
@@ -668,6 +666,44 @@ namespace AzToolsFramework
                 iconPathToUse = (engineRoot / DefaultFileIconPath).c_str();
             }
             return iconPathToUse;
+        }
+
+        Qt::ItemFlags AssetBrowserViewUtils::GetAssetBrowserEntryCommonItemFlags(const AssetBrowserEntry* entry, Qt::ItemFlags defaultFlags)
+        {
+            if (entry)
+            {
+                switch (entry->GetEntryType())
+                {
+                case AssetBrowserEntry::AssetEntryType::Product:
+                case AssetBrowserEntry::AssetEntryType::Source:
+                    {
+                        return defaultFlags | Qt::ItemIsDragEnabled;
+                    }
+                case AssetBrowserEntry::AssetEntryType::Folder:
+                    {
+                        return defaultFlags | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+                    }
+                }
+            }
+
+            return defaultFlags;
+        }
+
+        QString AssetBrowserViewUtils::GetAssetBrowserEntryNameWithHighlighting(
+            const AssetBrowserEntry* entry, const QString& highlightedText)
+        {
+            if (entry)
+            {
+                const QString name = entry->GetName().c_str();
+                if (!highlightedText.isEmpty())
+                {
+                    // highlight characters in filter
+                    return AzToolsFramework::RichTextHighlighter::HighlightText(name, highlightedText);
+                }
+                return name;
+            }
+
+            return {};
         }
 
         Qt::DropAction AssetBrowserViewUtils::SelectDropActionForEntries(const AZStd::vector<const AssetBrowserEntry*>& entries)

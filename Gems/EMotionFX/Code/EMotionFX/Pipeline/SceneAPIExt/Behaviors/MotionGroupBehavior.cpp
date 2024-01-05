@@ -32,8 +32,6 @@ namespace EMotionFX
     {
         namespace Behavior
         {
-            const int MotionGroupBehavior::s_preferredTabOrder = 2;
-
             void MotionGroupBehavior::Reflect(AZ::ReflectContext* context)
             {
                 Group::MotionGroup::Reflect(context);
@@ -67,7 +65,7 @@ namespace EMotionFX
             {
                 if (SceneHasMotionGroup(scene) || AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IAnimationData>(scene, false))
                 {
-                    categories.emplace_back("Motions", Group::MotionGroup::TYPEINFO_Uuid(), s_preferredTabOrder);
+                    categories.emplace_back("Motions", Group::MotionGroup::TYPEINFO_Uuid(), s_motionGroupPreferredTabOrder);
                 }
             }
 
