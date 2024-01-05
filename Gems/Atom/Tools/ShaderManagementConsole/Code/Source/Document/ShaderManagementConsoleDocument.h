@@ -60,6 +60,7 @@ namespace ShaderManagementConsole
         const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const override;
         size_t GetShaderOptionDescriptorCount() const override;
         const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const override;
+        DocumentVerificationResult Verify() const override;
 
     private:
         // AtomToolsFramework::AtomToolsDocument overrides...
