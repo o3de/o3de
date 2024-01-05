@@ -355,7 +355,6 @@ namespace AzToolsFramework
     {
         if (DestroyEntityById(entityId))
         {
-            EditorRequests::Bus::Broadcast(&EditorRequests::DestroyEditorRepresentation, entityId, false);
             return true;
         }
 
@@ -684,8 +683,6 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::OnContextEntityRemoved(const AZ::EntityId& entityId)
     {
-        EditorRequests::Bus::Broadcast(&EditorRequests::DestroyEditorRepresentation, entityId, false);
-
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEditorEntityDeleted, entityId);
     }
 
@@ -729,10 +726,11 @@ namespace AzToolsFramework
         }
 
         {
-            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:CreateEditorRepresentations");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:AddRequiredComponents");
             for (AZ::Entity* entity : entities)
             {
-                EditorRequests::Bus::Broadcast(&EditorRequests::CreateEditorRepresentation, entity);
+                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                    &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
             }
         }
 

@@ -9,7 +9,6 @@
 #include <EditorDefs.h>
 #include "CryEdit.h"
 #include "AssetCatalogModel.h"
-#include "Objects/ComponentEntityObject.h"
 
 #include <ISourceControl.h>
 #include <IEditor.h>

@@ -134,7 +134,6 @@ namespace UnitTest
         /*
         * EditorRequestBus
         */
-        void CreateEditorRepresentation(AZ::Entity* entity) override;
         void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override { AZ_UNUSED(selection); }
 
         /*

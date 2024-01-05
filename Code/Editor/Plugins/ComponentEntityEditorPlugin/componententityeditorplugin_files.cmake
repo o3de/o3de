@@ -39,6 +39,4 @@ set(FILES
     UI/Outliner/OutlinerWidget.ui
     UI/Outliner/resources.qrc
     UI/Outliner/EntityOutliner.qss
-    Objects/ComponentEntityObject.h
-    Objects/ComponentEntityObject.cpp
 )

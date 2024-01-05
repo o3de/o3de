@@ -497,21 +497,6 @@ namespace UnitTest
     }
 
     /*
-    * EditorRequestBus
-    */
-    void SliceStabilityTest::CreateEditorRepresentation(AZ::Entity* entity)
-    {
-        if (!entity)
-        {
-            EXPECT_TRUE(entity);
-            return;
-        }
-
-        // CreateEditorEntity triggers this event so we add required components here
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
-    }
-
-    /*
     * AssetSystemRequestBus
     */
     bool SliceStabilityTest::GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder)

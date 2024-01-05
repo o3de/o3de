@@ -149,11 +149,6 @@ namespace UnitTest
         //! @param entity The entity that components will be added to.
         void AddRequiredEditorComponents(const AzToolsFramework::EntityIdList& entityIds);
 
-        //! EditorRequestBus.
-        //! CreateEditorRepresentation is implemented in this test fixture. Then the required editor components
-        //! will be added during entity and prefab creation, eg transform component, child entity sort component.
-        //! @{
-        void CreateEditorRepresentation(AZ::Entity* entity) override;
         void BrowseForAssets([[maybe_unused]] AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override
         {
         }

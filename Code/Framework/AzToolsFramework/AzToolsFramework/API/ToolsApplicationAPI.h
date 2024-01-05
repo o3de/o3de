@@ -778,12 +778,6 @@ namespace AzToolsFramework
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
-        /// Creates editor-side representation of an underlying entity.
-        virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) { }
-
-        /// Destroys editor-side representation of a given entity.
-        virtual bool DestroyEditorRepresentation(AZ::EntityId /*entityId*/, bool /*deleteAZEntity*/) { return false; }
-
         /// Clone selected entities/slices.
         virtual void CloneSelection(bool& /*handled*/) {}
 
