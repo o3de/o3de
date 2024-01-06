@@ -25,6 +25,7 @@ class TestAutomation(EditorTestSuite):
     class test_AltitudeFilter_Component(EditorBatchedTest):
         from .EditorScripts import AltitudeFilter_ComponentAndOverrides_InstancesPlantAtSpecifiedAltitude as test_module
     
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/17337")
     class test_AltitudeFilter_Toggle(EditorBatchedTest):
         from .EditorScripts import AltitudeFilter_FilterStageToggle as test_module
 
@@ -64,6 +65,7 @@ class TestAutomation(EditorTestSuite):
     class test_LayerBlocker(EditorBatchedTest):
         from .EditorScripts import LayerBlocker_InstancesBlockedInConfiguredArea as test_module
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/17337")
     class test_LayerSpawner_Toggle(EditorBatchedTest):
         from .EditorScripts import LayerSpawner_FilterStageToggle as test_module
 
@@ -92,6 +94,7 @@ class TestAutomation(EditorTestSuite):
     class test_SurfaceTagEmitter(EditorBatchedTest):
         from .EditorScripts import PhysXColliderSurfaceTagEmitter_E2E_Editor as test_module
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/17337")
     class test_PositionModifier_Snap(EditorBatchedTest):
         from .EditorScripts import PositionModifier_AutoSnapToSurfaceWorks as test_module
 
@@ -143,6 +146,7 @@ class TestAutomation(EditorTestSuite):
     class test_SlopeAlignmentModifierOverrides(EditorBatchedTest):
         from .EditorScripts import SlopeAlignmentModifierOverrides_InstanceSurfaceAlignment as test_module
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/17337")
     class test_SlopeFilter_Plant(EditorBatchedTest):
         from .EditorScripts import SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlope as test_module
 
