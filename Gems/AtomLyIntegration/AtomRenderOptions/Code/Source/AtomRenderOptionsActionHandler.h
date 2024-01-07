@@ -8,22 +8,21 @@
 
 #pragma once
 
-#include <AzCore/std/optional.h>
-
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+
+#include <AzCore/Name/Name.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
     class MenuManagerInterface;
-    class ToolBarManagerInterface;
 } // namespace AzToolsFramework
 
 namespace AZ::Render
 {
     //! Handle menu and action registration for render options
-    //! @note Should follow the lifetime of the editor as action callbacks are capturing this and are not unregistered
     class AtomRenderOptionsActionHandler
         : private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
         , private AzToolsFramework::EditorEventsBus::Handler
@@ -37,15 +36,13 @@ namespace AZ::Render
         void OnMenuRegistrationHook() override;
         void OnActionRegistrationHook() override;
         void OnMenuBindingHook() override;
-        void OnToolBarBindingHook() override;
 
         // EditorEventsBus overrides...
         void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
 
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
         AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
-        AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 
-        AZStd::optional<bool> m_taaEnabled;
+        AZStd::vector<AZ::Name> m_exposedPassNames;
     };
 } // namespace AZ::Render

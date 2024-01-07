@@ -10,27 +10,28 @@
 
 #include "AtomRenderOptions.h"
 
+#include <Atom/RPI.Public/Base.h>
+
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/Name/Name.h>
+#include <AzCore/std/string/string_view.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
-#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
-#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 
 namespace AZ::Render
 {
-    constexpr AZStd::string_view ViewportRenderOptionsMenuIdentifier = "o3de.menu.editor.viewport.renderoptions";
+    constexpr AZStd::string_view RenderOptionsMenuIdentifier = "o3de.menu.editor.viewport.renderOptions";
+    constexpr const char* RenderOptionsActionBaseFmtString = "o3de.action.viewport.renderOptions.%s";
 
     void AtomRenderOptionsActionHandler::Activate()
     {
         m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
 
-        if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface)
+        if (m_actionManagerInterface && m_menuManagerInterface)
         {
             AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
         }
@@ -48,75 +49,59 @@ namespace AZ::Render
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "Render Options";
-        m_menuManagerInterface->RegisterMenu(ViewportRenderOptionsMenuIdentifier, menuProperties);
+        m_menuManagerInterface->RegisterMenu(RenderOptionsMenuIdentifier, menuProperties);
     }
 
     void AtomRenderOptionsActionHandler::OnActionRegistrationHook()
     {
-        // Render Options menu icon
+        for (const AZ::Name& passName : m_exposedPassNames)
         {
-            constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.renderoptions";
+            const auto actionIdentifier = AZStd::string::format(RenderOptionsActionBaseFmtString, passName.GetCStr());
             AzToolsFramework::ActionProperties actionProperties;
-            actionProperties.m_name = "Render Options";
-            actionProperties.m_iconPath = ":/Icons/Material_80.svg";
-
-            m_actionManagerInterface->RegisterAction(
-                EditorIdentifiers::MainWindowActionContextIdentifier,
-                actionIdentifier,
-                actionProperties,
-                []
-                {
-                });
-        }
-
-        // Temporal anti aliasing
-        {
-            constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.renderoptions.taa";
-            AzToolsFramework::ActionProperties actionProperties;
-            actionProperties.m_name = "Anti-aliasing (TAA)";
-            actionProperties.m_description = "Use temporal anti-aliasing";
+            actionProperties.m_name = passName.GetCStr();
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]
+                [passName]
                 {
-                    if (m_taaEnabled.has_value())
+                    const auto pipeline = GetDefaultViewportPipelinePtr();
+                    if (pipeline)
                     {
-                        m_taaEnabled = !(m_taaEnabled.value());
-                        EnableTAA(m_taaEnabled.value());
+                        EnablePass(*pipeline, passName, !IsPassEnabled(*pipeline, passName));
                     }
                 },
-                [this]() -> bool
+                [passName]() -> bool
                 {
-                    // If TaaPass not found, fallback on UI always disabled
-                    return m_taaEnabled.has_value() ? m_taaEnabled.value() : false;
+                    const auto pipeline = GetDefaultViewportPipelinePtr();
+                    return pipeline ? IsPassEnabled(*pipeline, passName) : false;
                 });
         }
     }
 
     void AtomRenderOptionsActionHandler::OnMenuBindingHook()
     {
-        m_menuManagerInterface->AddActionToMenu(ViewportRenderOptionsMenuIdentifier, "o3de.action.viewport.renderoptions.taa", 100);
-    }
+        int i = 0;
+        for (const AZ::Name& passName : m_exposedPassNames)
+        {
+            const auto actionIdentifier = AZStd::string::format(RenderOptionsActionBaseFmtString, passName.GetCStr());
+            m_menuManagerInterface->AddActionToMenu(RenderOptionsMenuIdentifier, actionIdentifier, 100 + i++);
+        }
 
-    void AtomRenderOptionsActionHandler::OnToolBarBindingHook()
-    {
-        m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
-            EditorIdentifiers::ViewportTopToolBarIdentifier,
-            "o3de.action.viewport.renderoptions",
-            ViewportRenderOptionsMenuIdentifier,
-            601);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 801);
+        m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, RenderOptionsMenuIdentifier, 802);
     }
 
     void AtomRenderOptionsActionHandler::NotifyMainWindowInitialized([[maybe_unused]] QMainWindow* mainWindow)
     {
-        m_taaEnabled = IsPassEnabled(AZ::Name("TaaPass"));
-        if (!m_taaEnabled.has_value())
+        const auto pipeline = GetDefaultViewportPipelinePtr();
+        if (!pipeline)
         {
-            AZ_Warning("AtomRenderOptions", false, "Failed to find TaaPass");
+            AZ_Warning("AtomRenderOptions", false, "Failed to find default viewport pipeline. No render options will be visible");
         }
+
+        GetToolExposedPasses(*pipeline.get(), m_exposedPassNames);
     }
 
 } // namespace AZ::Render

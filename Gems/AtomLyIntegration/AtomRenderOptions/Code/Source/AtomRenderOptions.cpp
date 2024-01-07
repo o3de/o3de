@@ -8,11 +8,15 @@
 
 #include "AtomRenderOptions.h"
 
-#include <AzCore/Name/Name.h>
+#include <AzCore/std/containers/queue.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/span.h>
 
-#include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
@@ -35,33 +39,16 @@ namespace AZ::Render
         return rpiSystem->GetRenderPipelineForWindow(windowHandle);
     }
 
-    AZStd::optional<bool> IsPassEnabled(const Name& name)
+    bool IsPassEnabled(const RPI::RenderPipeline& pipeline, const Name& name)
     {
-        RPI::RenderPipelinePtr pipeline = GetDefaultViewportPipelinePtr();
-        if (!pipeline)
-        {
-            return AZStd::nullopt;
-        }
-
-        RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(RPI::PassFilter::CreateWithPassName(name, pipeline.get()));
-        if (!pass)
-        {
-            return AZStd::nullopt;
-        }
-
-        return pass->IsEnabled();
+        const RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(RPI::PassFilter::CreateWithPassName(name, &pipeline));
+        return pass ? pass->IsEnabled() : false;
     }
 
-    bool EnableTAA(bool enable)
+    bool EnablePass(const RPI::RenderPipeline& pipeline, const Name& passName, bool enable)
     {
-        RPI::RenderPipelinePtr pipeline = GetDefaultViewportPipelinePtr();
-        if (!pipeline)
-        {
-            return false;
-        }
-
         bool found = false;
-        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(Name("TaaPass"), pipeline.get());
+        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(passName, &pipeline);
         RPI::PassSystemInterface::Get()->ForEachPass(
             passFilter,
             [enable, &found](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
@@ -72,5 +59,50 @@ namespace AZ::Render
             });
 
         return found;
+    }
+
+    static bool IsToolExposedPass(const Name& passName)
+    {
+        // Temporary solution, need to introduce this concept in RPI::Pass class as a bool getter
+        static AZStd::set<Name::Hash> toolExposedPasses{ Name("Shadows").GetHash(),
+                                                         Name("TaaPass").GetHash(),
+                                                         Name("ReflectionsPass").GetHash(),
+                                                         Name("Ssao").GetHash(),
+                                                         Name("TransparentPass").GetHash() };
+        return toolExposedPasses.contains(passName.GetHash());
+    }
+
+    void GetToolExposedPasses(const RPI::RenderPipeline& pipeline, AZStd::vector<AZ::Name>& passNamesOut)
+    {
+        const auto& rootPass = pipeline.GetRootPass();
+        if (!rootPass)
+        {
+            return;
+        }
+
+        AZStd::queue<const RPI::Pass*> passes;
+        passes.push(rootPass.get());
+
+        while (!passes.empty())
+        {
+            const auto* pass = passes.front();
+            passes.pop();
+
+            if (IsToolExposedPass(pass->GetName()))
+            {
+                passNamesOut.push_back(pass->GetName());
+            }
+
+            const auto* asParent = pass->AsParent();
+            if (!asParent)
+            {
+                continue;
+            }
+
+            for (const auto& child : asParent->GetChildren())
+            {
+                passes.push(child.get());
+            }
+        }
     }
 } // namespace AZ::Render
