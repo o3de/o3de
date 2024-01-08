@@ -955,8 +955,8 @@ namespace AZ
 
         bool RenderPipeline::SetActiveAAMethod(AZStd::string aaMethodName)
         {
-            AAMethod aaMethod = GetAAMethodByName(aaMethodName);
-            if (aaMethod == AAMethod::Default)
+            AntiAliasingMode aaMethod = GetAAMethodByName(aaMethodName);
+            if (aaMethod == AntiAliasingMode::Default)
             {
                 return false;
             }
@@ -964,16 +964,16 @@ namespace AZ
             return SetAAMethod(this, m_activeAAMethod);
         }
 
-        AAMethod RenderPipeline::GetActiveAAMethod()
+        AntiAliasingMode RenderPipeline::GetActiveAAMethod()
         {
             return m_activeAAMethod;
         }
 
-        AAMethod RenderPipeline::GetAAMethodByName(AZStd::string aaMethodName)
+        AntiAliasingMode RenderPipeline::GetAAMethodByName(AZStd::string aaMethodName)
         {
-            static AZStd::unordered_map<AZStd::string, AAMethod> AAMethodsLookup = {
-                {"MSAA", AAMethod::MSAA}, {"SMAA", AAMethod::SMAA}, 
-                {"TAA", AAMethod::TAA}
+            static AZStd::unordered_map<AZStd::string, AntiAliasingMode> AAMethodsLookup = {
+                {"MSAA", AntiAliasingMode::MSAA}, {"SMAA", AntiAliasingMode::SMAA}, 
+                {"TAA", AntiAliasingMode::TAA}
             };
  
             auto findIt = AAMethodsLookup.find(aaMethodName);
@@ -981,14 +981,14 @@ namespace AZ
             {
                 return findIt->second;
             }
-            return AAMethod::Default;
+            return AntiAliasingMode::Default;
         }        
 
-        AZStd::string RenderPipeline::GetAAMethodNameByIndex(AAMethod aaMethodIndex)
+        AZStd::string RenderPipeline::GetAAMethodNameByIndex(AntiAliasingMode aaMethodIndex)
         {
-            static AZStd::unordered_map<AAMethod, AZStd::string> AAMethodNameLookup = {
-                {AAMethod::MSAA, "MSAA"}, {AAMethod::SMAA, "SMAA"}, 
-                {AAMethod::TAA, "TAA"}
+            static AZStd::unordered_map<AntiAliasingMode, AZStd::string> AAMethodNameLookup = {
+                {AntiAliasingMode::MSAA, "MSAA"}, {AntiAliasingMode::SMAA, "SMAA"}, 
+                {AntiAliasingMode::TAA, "TAA"}
             };
  
             auto findIt = AAMethodNameLookup.find(aaMethodIndex);
@@ -998,8 +998,6 @@ namespace AZ
             }
             return "MSAA";
         }
- 
-
 
         bool RenderPipeline::EnablePass(RenderPipeline* pipeline, Name& passName, bool enable)
         {
@@ -1016,23 +1014,22 @@ namespace AZ
             return true;
         }
 
-
         bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AZStd::string aaMethodName)
         {
-            AAMethod aaMethod = GetAAMethodByName(aaMethodName);
+            AntiAliasingMode aaMethod = GetAAMethodByName(aaMethodName);
             return SetAAMethod(pipeline, aaMethod);
         }
 
-        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AAMethod aaMethod)
+        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AntiAliasingMode aaMethod)
         {
-            if (aaMethod == AAMethod::Default)
+            if (aaMethod == AntiAliasingMode::Default)
             {
                 return false;
             }
 
-            static AZStd::unordered_map<AAMethod, Name> AAPassNamesLookup = {
-                {AAMethod::SMAA, Name("SMAA1xApplyLinearHDRColorPass")}, 
-                {AAMethod::TAA, Name("TaaPass")}
+            static AZStd::unordered_map<AntiAliasingMode, Name> AAPassNamesLookup = {
+                {AntiAliasingMode::SMAA, Name("SMAA1xApplyLinearHDRColorPass")}, 
+                {AntiAliasingMode::TAA, Name("TaaPass")}
             };
 
             for (auto& aaPassMap : AAPassNamesLookup)

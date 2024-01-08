@@ -222,9 +222,9 @@ namespace AZ::Render
         {
             AZ::RPI::RenderPipelinePtr pPipeline = pScene->GetDefaultRenderPipeline();
  
-            AZ::RPI::AAMethod defaultAAMethod = pPipeline->GetActiveAAMethod();
+            AZ::RPI::AntiAliasingMode defaultAAMethod = pPipeline->GetActiveAAMethod();
             defaultAA = AZ::RPI::RenderPipeline::GetAAMethodNameByIndex(defaultAAMethod);
-            hasAAMethod = (defaultAAMethod != AZ::RPI::AAMethod::MSAA && defaultAAMethod != AZ::RPI::AAMethod::Default);
+            hasAAMethod = (defaultAAMethod != AZ::RPI::AntiAliasingMode::MSAA && defaultAAMethod != AZ::RPI::AntiAliasingMode::Default);
         }
         const char* resolutionStr =
             AZStd::string::format(

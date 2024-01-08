@@ -19,7 +19,7 @@ namespace AZ
     namespace RPI
     {
          // Rendering Settings
-        enum class AAMethod
+        enum class AntiAliasingMode
         {
             MSAA,
             SMAA,

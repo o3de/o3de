@@ -100,9 +100,9 @@ namespace AZ
 
             // Anti-aliasing
             bool SetActiveAAMethod(AZStd::string aaMethodName);
-            static AAMethod GetAAMethodByName(AZStd::string aaMethodName);
-            static AZStd::string GetAAMethodNameByIndex(AAMethod aaMethodIndex);            
-            AAMethod GetActiveAAMethod();
+            static AntiAliasingMode GetAAMethodByName(AZStd::string aaMethodName);
+            static AZStd::string GetAAMethodNameByIndex(AntiAliasingMode aaMethodIndex);            
+            AntiAliasingMode GetActiveAAMethod();
 
             //! Create a render pipeline which renders to the specified attachment image
             //! The render pipeline's root pass is created from the pass template specified from RenderPipelineDescriptor::m_rootPassTemplate
@@ -309,7 +309,7 @@ namespace AZ
 
             // AA method
             static bool SetAAMethod(RenderPipeline* pipeline, AZStd::string aaMethodName);
-            static bool SetAAMethod(RenderPipeline* pipeline, AAMethod aaMethod);
+            static bool SetAAMethod(RenderPipeline* pipeline, AntiAliasingMode aaMethod);
             static bool EnablePass(RenderPipeline* pipeline, Name& passName, bool enable);
 
             // End of functions accessed by Scene class
@@ -366,7 +366,7 @@ namespace AZ
             // The descriptor used to created this render pipeline
             RenderPipelineDescriptor m_descriptor;
 
-            AAMethod m_activeAAMethod = AAMethod::MSAA;
+            AntiAliasingMode m_activeAAMethod = AntiAliasingMode::MSAA;
 
             // View type associated with the Render Pipeline.
             ViewType m_viewType = ViewType::Default;

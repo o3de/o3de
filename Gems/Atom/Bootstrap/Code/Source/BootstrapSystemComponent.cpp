@@ -74,7 +74,7 @@ void cvar_r_renderPipelinePath_Changed(const AZ::CVarFixedString& newPipelinePat
     }
 }
 
-void cvar_r_antiAliasing_Changed(const AZ::CVarFixedString& newAtiAliasing)
+void cvar_r_antiAliasing_Changed(const AZ::CVarFixedString& newAntiAliasing)
 {
     auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
     if (!viewportContextManager)
@@ -87,7 +87,7 @@ void cvar_r_antiAliasing_Changed(const AZ::CVarFixedString& newAtiAliasing)
         return;
     }
 
-    AZ::Render::Bootstrap::RequestBus::Broadcast(&AZ::Render::Bootstrap::RequestBus::Events::SwitchAntiAliasing, newAtiAliasing.c_str(), viewportContext);
+    AZ::Render::Bootstrap::RequestBus::Broadcast(&AZ::Render::Bootstrap::RequestBus::Events::SwitchAntiAliasing, newAntiAliasing.c_str(), viewportContext);
 }
 
 void cvar_r_multiSample_Changed(const uint16_t& newSampleCount)
@@ -104,11 +104,11 @@ void cvar_r_multiSample_Changed(const uint16_t& newSampleCount)
     }
     if (newSampleCount > 0 && ((newSampleCount & (newSampleCount - 1))) == 0)
     {
-        AZ::Render::Bootstrap::RequestBus::Broadcast(&AZ::Render::Bootstrap::RequestBus::Events::SwitchMultiSample, newSampleCount, viewportContext);
+        AZ::Render::Bootstrap::RequestBus::Broadcast(&AZ::Render::Bootstrap::RequestBus::Events::SwitchMultiSample, AZStd::clamp(newSampleCount, uint16_t(1), uint16_t(8)), viewportContext);
     }
     else
     {
-        AZ_Warning("SetMultiSampleCount", false, "Failed to set multi sample count %d: invalid multi-sample count", newSampleCount);
+        AZ_Warning("SetMultiSampleCount", false, "Failed to set multi-sample count %d: invalid multi-sample count", newSampleCount);
     }
 }
 
@@ -123,7 +123,7 @@ AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontRep
 AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
 AZ_CVAR(float, r_renderScale, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Scale to apply to the window resolution.");
 AZ_CVAR(AZ::CVarFixedString, r_antiAliasing, "", cvar_r_antiAliasing_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The anti-aliasing to be used for the current render pipeline. Available options: MSAA, TAA, SMAA");
-AZ_CVAR(uint16_t, r_multiSample, 0, cvar_r_multiSample_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The multi-sample count to be used for the current render pipeline."); // 0 stands for unchanged, load the default setting from the pipelien itself
+AZ_CVAR(uint16_t, r_multiSampleCount, 0, cvar_r_multiSample_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The multi-sample count to be used for the current render pipeline."); // 0 stands for unchanged, load the default setting from the pipeline itself
 
 namespace AZ
 {
@@ -285,7 +285,7 @@ namespace AZ
                     }
                 }
 
-                const AZStd::string multiSampleCvarName("r_multiSample");
+                const AZStd::string multiSampleCvarName("r_multiSampleCount");
                 if (pCmdLine->HasSwitch(multiSampleCvarName))
                 {
                     auto numValues = pCmdLine->GetNumSwitchValues(multiSampleCvarName);
@@ -297,7 +297,7 @@ namespace AZ
                             auto multiSample = AZ::StringFunc::ToInt(valueStr.c_str());
                             if (multiSample > 0)
                             {
-                                r_multiSample = static_cast<uint16_t>(multiSample);
+                                r_multiSampleCount = static_cast<uint16_t>(multiSample);
                             }
                         }
                     }
@@ -574,7 +574,9 @@ namespace AZ
 
                     AZ::CVarFixedString antiAliasing = static_cast<AZ::CVarFixedString>(r_antiAliasing);
                     if (antiAliasing != "")
+                    {
                         renderPipeline->SetActiveAAMethod(antiAliasing.c_str());
+                    }
 
                     // As part of our initialization we need to create the BRDF texture generation pipeline
                     AZ::RPI::RenderPipelineDescriptor pipelineDesc;
@@ -628,9 +630,11 @@ namespace AZ
                 // been created so the same values are applied to all.
                 // As it cannot be applied MSAA values per pipeline,
                 // it's setting the MSAA state from the last pipeline loaded.
-                const auto cvarMultiSample = static_cast<uint16_t>(r_multiSample);
+                const auto cvarMultiSample = static_cast<uint16_t>(r_multiSampleCount);
                 if (cvarMultiSample > 0 && ((cvarMultiSample & (cvarMultiSample - 1))) == 0)
+                {
                     multisampleState.m_samples = static_cast<uint16_t>(cvarMultiSample);
+                }
                 AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(multisampleState);
 
                 // Send notification when the scene and its pipeline are ready.
@@ -685,7 +689,7 @@ namespace AZ
                 defaultRenderPipeline->SetActiveAAMethod(newAntiAliasing);
             }
 
-            void BootstrapSystemComponent::SwitchMultiSample(const uint16_t& newSampleCount, AZ::RPI::ViewportContextPtr viewportContext)
+            void BootstrapSystemComponent::SwitchMultiSample(const uint16_t newSampleCount, AZ::RPI::ViewportContextPtr viewportContext)
             {
                 auto multiSampleStete = viewportContext->GetRenderScene()->GetDefaultRenderPipeline()->GetRenderSettings().m_multisampleState;
                 multiSampleStete.m_samples = newSampleCount;
