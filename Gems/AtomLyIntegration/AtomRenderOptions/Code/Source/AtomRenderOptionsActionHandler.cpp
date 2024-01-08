@@ -14,6 +14,7 @@
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string_view.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
@@ -24,7 +25,6 @@
 namespace AZ::Render
 {
     constexpr AZStd::string_view RenderOptionsMenuIdentifier = "o3de.menu.editor.viewport.renderOptions";
-    constexpr const char* RenderOptionsActionBaseFmtString = "o3de.action.viewport.renderOptions.%s";
 
     void AtomRenderOptionsActionHandler::Activate()
     {
@@ -54,15 +54,14 @@ namespace AZ::Render
 
     void AtomRenderOptionsActionHandler::OnActionRegistrationHook()
     {
-        for (const AZ::Name& passName : m_exposedPassNames)
+        for (const auto& [passName, actionName] : m_passToActionNames)
         {
-            const auto actionIdentifier = AZStd::string::format(RenderOptionsActionBaseFmtString, passName.GetCStr());
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = passName.GetCStr();
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorIdentifiers::MainWindowActionContextIdentifier,
-                actionIdentifier,
+                actionName,
                 actionProperties,
                 [passName]
                 {
@@ -83,10 +82,9 @@ namespace AZ::Render
     void AtomRenderOptionsActionHandler::OnMenuBindingHook()
     {
         int i = 0;
-        for (const AZ::Name& passName : m_exposedPassNames)
+        for (const auto& [passName, actionName] : m_passToActionNames)
         {
-            const auto actionIdentifier = AZStd::string::format(RenderOptionsActionBaseFmtString, passName.GetCStr());
-            m_menuManagerInterface->AddActionToMenu(RenderOptionsMenuIdentifier, actionIdentifier, 100 + i++);
+            m_menuManagerInterface->AddActionToMenu(RenderOptionsMenuIdentifier, actionName, 100 + i++);
         }
 
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, 801);
@@ -101,7 +99,12 @@ namespace AZ::Render
             AZ_Warning("AtomRenderOptions", false, "Failed to find default viewport pipeline. No render options will be visible");
         }
 
-        GetToolExposedPasses(*pipeline.get(), m_exposedPassNames);
+        AZStd::vector<AZ::Name> passNames;
+        GetToolExposedPasses(*pipeline.get(), passNames);
+        for (const AZ::Name& name : passNames)
+        {
+            m_passToActionNames[name] = AZStd::string::format("o3de.action.viewport.renderOptions.%s", name.GetCStr());
+        }
     }
 
 } // namespace AZ::Render

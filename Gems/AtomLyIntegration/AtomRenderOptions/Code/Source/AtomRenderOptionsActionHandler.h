@@ -12,7 +12,8 @@
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 
 #include <AzCore/Name/Name.h>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/string/string.h>
 
 namespace AzToolsFramework
 {
@@ -43,6 +44,6 @@ namespace AZ::Render
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
         AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
 
-        AZStd::vector<AZ::Name> m_exposedPassNames;
+        AZStd::unordered_map<AZ::Name, AZStd::string> m_passToActionNames;
     };
 } // namespace AZ::Render
