@@ -58,7 +58,7 @@ namespace UnitTest
 
     struct MultiDeviceDrawPacketData
     {
-        const size_t DrawItemCountMax = 8;
+        static constexpr const size_t DrawItemCountMax = 8;
 
         MultiDeviceDrawPacketData(SimpleLcgRandom& random)
         {
@@ -327,7 +327,8 @@ namespace UnitTest
                 EXPECT_EQ(deviceDrawPacket->m_viewportsCount, deviceDrawPacketClone->m_viewportsCount);
             }
 
-            auto drawItemCount = drawPacket->GetDrawItemCount();
+            const uint8_t drawItemCount =
+                static_cast<uint8_t>(AZStd::min<size_t>(drawPacket->GetDrawItemCount(), MultiDeviceDrawPacketData::DrawItemCountMax));
 
             for (uint8_t i = 0; i < drawItemCount; ++i)
             {
@@ -455,7 +456,8 @@ namespace UnitTest
             RHI::MultiDeviceDrawPacketBuilder builder2(LocalDeviceMask);
             auto drawPacketClone = builder2.Clone(drawPacket.get());
 
-            uint8_t drawItemCount = drawPacketClone->GetDrawItemCount();
+            const uint8_t drawItemCount =
+                static_cast<uint8_t>(AZStd::min<size_t>(drawPacket->GetDrawItemCount(), MultiDeviceDrawPacketData::DrawItemCountMax));
 
             // Test default value
             for (uint8_t i = 0; i < drawItemCount; ++i)
