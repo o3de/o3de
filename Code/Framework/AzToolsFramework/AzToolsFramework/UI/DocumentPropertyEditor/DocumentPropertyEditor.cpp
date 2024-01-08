@@ -525,9 +525,12 @@ namespace AzToolsFramework
         ClearCachedAttributes();
         m_domOrderedChildren.clear();
         m_columnLayout->Clear();
+        m_childIndexToCachedAttributeInfo.clear();
 
         m_parentRow = nullptr;
         m_depth = -1;
+        m_enforceMinWidth = true;
+        m_expandingProgrammatically = false;
         m_forceAutoExpand.reset();
         m_expandByDefault.reset();
     }
@@ -1811,7 +1814,6 @@ namespace AzToolsFramework
                 AZStd::function<void(PropertyHandlerWidgetInterface&)> resetHandler = [](PropertyHandlerWidgetInterface& handler)
                 {
                     DetachAndHide(handler.GetWidget());
-                    handler.PrepareWidgetForReuse();
                 };
 
                 AZStd::function<PropertyHandlerWidgetInterface*()> createHandler = [handlerId]()
@@ -1841,12 +1843,21 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::ReleaseHandler(HandlerInfo& handler)
     {
-        // GHI-16135: Revisit recycling handler instances once we have a mechanism to reset the handlers/widgets for re-use
-        // and have implemented
+        if (handler.handlerInterface->ResetToDefaults())
         {
-            // if there is no handler pool, then delete the handler immediately; parent widgets won't delete it twice
-            delete handler.handlerInterface;
-            handler.handlerInterface = nullptr;
+            auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
+            auto handlerName = GetNameForHandlerId(handler.handlerId);
+            auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
+
+            if (handlerPool)
+            {
+                handlerPool->RecycleInstance(handler.handlerInterface);
+                return;
+            }
         }
+
+        // if the handler was not successfully recycled, then delete the handler immediately; parent widgets won't delete it twice
+        delete handler.handlerInterface;
+        handler.handlerInterface = nullptr;
     }
 } // namespace AzToolsFramework
