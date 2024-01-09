@@ -133,7 +133,7 @@ namespace AZ::RHI
         //! Return the contained multi-device image
         const RHI::MultiDeviceImage* GetImage() const
         {
-            return m_image;
+            return m_image.get();
         }
 
         //! Return the contained ImageViewDescriptor
@@ -144,7 +144,7 @@ namespace AZ::RHI
 
         const MultiDeviceResource* GetResource() const override
         {
-            return m_image;
+            return m_image.get();
         }
 
         const SingleDeviceResourceView* GetDeviceResourceView(int deviceIndex) const override
@@ -154,7 +154,7 @@ namespace AZ::RHI
 
     private:
         //! A raw pointer to a multi-device image
-        const RHI::MultiDeviceImage* m_image;
+        ConstPtr<RHI::MultiDeviceImage> m_image;
         //! The corresponding ImageViewDescriptor for this view.
         ImageViewDescriptor m_descriptor;
         //! SingleDeviceImageView cache
