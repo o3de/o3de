@@ -36,8 +36,8 @@ namespace AZ
         //! @return boolean true on success, false if failed to get the pass
         bool EnablePass(const RPI::RenderPipeline& pipeline, const Name& passName, bool enable);
 
-        //! Get all of the render passes for the given pipeline that are supposed to be shown and editable in the editor UI
-        void GetToolExposedPasses(const RPI::RenderPipeline& pipeline, AZStd::vector<AZ::Name>& passNamesOut);
+        //! Get all of the render passes for the given pipeline that can be toggled on and off in the viewport option menu
+        void GetViewportOptionsPasses(const RPI::RenderPipeline& pipeline, AZStd::vector<AZ::Name>& passNamesOut);
 
     } // namespace Render
 } // namespace AZ

@@ -100,7 +100,7 @@ namespace AZ::Render
         }
 
         AZStd::vector<AZ::Name> passNames;
-        GetToolExposedPasses(*pipeline.get(), passNames);
+        GetViewportOptionsPasses(*pipeline.get(), passNames);
         for (const AZ::Name& name : passNames)
         {
             m_passToActionNames[name] = AZStd::string::format("o3de.action.viewport.renderOptions.%s", name.GetCStr());

@@ -8,8 +8,10 @@
 
 #include "AtomRenderOptions.h"
 
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/queue.h>
-#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/span.h>
 
 #include <Atom/RPI.Public/Pass/ParentPass.h>
@@ -61,24 +63,25 @@ namespace AZ::Render
         return found;
     }
 
-    static bool IsToolExposedPass(const Name& passName)
+    static void GetAllowedPassNamesInViewportOptionsMenu(AZStd::unordered_set<Name>& passNamesOut)
     {
-        // Temporary solution, need to introduce this concept in RPI::Pass class as a bool getter
-        static AZStd::set<Name::Hash> toolExposedPasses{ Name("Shadows").GetHash(),
-                                                         Name("TaaPass").GetHash(),
-                                                         Name("ReflectionsPass").GetHash(),
-                                                         Name("Ssao").GetHash(),
-                                                         Name("TransparentPass").GetHash() };
-        return toolExposedPasses.contains(passName.GetHash());
+        if (const auto* settingsRegistry = SettingsRegistry::Get(); settingsRegistry)
+        {
+            const bool found = settingsRegistry->GetObject(passNamesOut, "/O3DE/AtomRenderOptions/PassNamesInViewportOptionsMenu");
+            AZ_Warning("AtomRenderOptions", found, "No AtomRenderOptions settings found from the settings registry");
+        }
     }
 
-    void GetToolExposedPasses(const RPI::RenderPipeline& pipeline, AZStd::vector<AZ::Name>& passNamesOut)
+    void GetViewportOptionsPasses(const RPI::RenderPipeline& pipeline, AZStd::vector<AZ::Name>& passNamesOut)
     {
         const auto& rootPass = pipeline.GetRootPass();
         if (!rootPass)
         {
             return;
         }
+
+        AZStd::unordered_set<Name> allowedPassNames;
+        GetAllowedPassNamesInViewportOptionsMenu(allowedPassNames);
 
         AZStd::queue<const RPI::Pass*> passes;
         passes.push(rootPass.get());
@@ -88,7 +91,7 @@ namespace AZ::Render
             const auto* pass = passes.front();
             passes.pop();
 
-            if (IsToolExposedPass(pass->GetName()))
+            if (allowedPassNames.contains(pass->GetName()))
             {
                 passNamesOut.push_back(pass->GetName());
             }
