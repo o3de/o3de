@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{93C1E8BA-2255-4ADA-A37F-079EF59C6F1E}",
+        "category": "View",
+        "title": "View World Position",
+        "titlePaletteName": "ViewNodeTitlePalette",
+        "description": "The view world position",
+        "slotDataTypeGroups": [
+            "outPosition",
+            "outX|outY|outZ"
+        ],
+        "outputSlots": [
+            {
+                "name": "outPosition",
+                "displayName": "Position",
+                "description": "Position",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = ViewSrg::m_worldPosition;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = ViewSrg::m_worldPosition.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = ViewSrg::m_worldPosition.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = ViewSrg::m_worldPosition.z;"
+                    ]
+                }
+            }
+        ]
+    }
+}
