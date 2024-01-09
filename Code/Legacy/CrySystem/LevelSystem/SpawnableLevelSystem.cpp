@@ -229,8 +229,8 @@ namespace LegacyLevelSystem
                 {
                     validLevelName = possibleLevelAssetPath;
                 }
-#ifdef CARBONATED
-// TODO : fix the level path on the backend
+#if defined(CARBONATED)
+                // TODO : fix the level path on the backend
                 else
                 {
                     AZStd::string levelNameStr = levelName;
@@ -255,7 +255,7 @@ namespace LegacyLevelSystem
                         validLevelName = assetPath;
                     }
                 }
-#endif // #ifdef CARBONATED
+#endif // #if defined(CARBONATED)
             }
         }
 

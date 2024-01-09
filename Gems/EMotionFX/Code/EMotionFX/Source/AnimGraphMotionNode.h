@@ -166,11 +166,11 @@ namespace EMotionFX
         bool                                                m_inPlace;
 
         void ReloadAndInvalidateUniqueDatas();
-#if 0 // Gbuber patch begin : EmotionFX has different version
 #if defined(CARBONATED)
+#if 0 // Gruber patch begin : EmotionFX has different version
         void ReloadAndInvalidateUniqueData(AnimGraphInstance* animGraphInstanceToReload);  // aefimov invalidate data for the specified instance only
 #endif
-#endif // Gbuber patch end
+#endif // Gruber patch end
 
         MotionInstance* CreateMotionInstance(ActorInstance* actorInstance, UniqueData* uniqueData);
         void TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;

@@ -84,6 +84,7 @@ class ILyShine;
 enum EValidatorModule : int;
 enum EValidatorSeverity : int;
 
+#if defined(CARBONATED)
 // Gruber patch begin. // LVB
 
 enum ESystemUpdateFlags
@@ -113,6 +114,13 @@ enum ESystemConfigSpec
 };
 
 // Gruber patch end. // LVB
+
+#else
+enum ESystemUpdateFlags
+{
+    ESYSUPDATE_EDITOR = 0x0004
+}
+#endif
 
 // Description:
 //   Configuration platform. Autodetected at start, can be modified through the editor.

@@ -99,9 +99,11 @@ public:
     void GetLoadedTags(TLocalizationTagVec& tagVec);
     void FreeLocalizationData();
 
+#if defined(CARBONATED)
 #if !defined(_RELEASE)
     static void LocalizationDumpLoadedInfo(IConsoleCmdArgs* pArgs);
 #endif //#if !defined(_RELEASE)
+#endif
 
 private:
     void SetAvailableLocalizationsBitfield(const ILocalizationManager::TLocalizationBitfield availableLocalizations);
@@ -277,11 +279,13 @@ private:
 
     // CVARs
     int m_cvarLocalizationDebug;
-    int m_cvarLocalizationEncode; //Encode/Compress translated text to save memory
-// Gruber patch begin
+    int m_cvarLocalizationEncode;  //Encode/Compress translated text to save memory
+#if defined(CARBONATED)
+    // Gruber patch begin
     int m_cvarLocalizationFormat;
     int m_cvarLocalizationTest;  
-// Gruber patch end
+    // Gruber patch end
+#endif
 
     //The localizations that are available for this SKU. Used for determining what to show on a language select screen or whether to show one at all
     TLocalizationBitfield m_availableLocalizations;
