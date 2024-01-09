@@ -63,18 +63,18 @@ namespace AZ::Render
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionName,
                 actionProperties,
-                [passName]
+                [passNameCpy = passName]
                 {
                     const auto pipeline = GetDefaultViewportPipelinePtr();
                     if (pipeline)
                     {
-                        EnablePass(*pipeline, passName, !IsPassEnabled(*pipeline, passName));
+                        EnablePass(*pipeline, passNameCpy, !IsPassEnabled(*pipeline, passNameCpy));
                     }
                 },
-                [passName]() -> bool
+                [passNameCpy = passName]() -> bool
                 {
                     const auto pipeline = GetDefaultViewportPipelinePtr();
-                    return pipeline ? IsPassEnabled(*pipeline, passName) : false;
+                    return pipeline ? IsPassEnabled(*pipeline, passNameCpy) : false;
                 });
         }
     }
