@@ -234,22 +234,19 @@ namespace AZ::RHI
         const MultiDeviceRayTracingBufferPools& rayTracingBufferPools)
     {
         m_mdDescriptor = *descriptor;
-        ResultCode resultCode{ ResultCode::Success };
 
         MultiDeviceObject::Init(deviceMask);
 
-        IterateObjects<SingleDeviceRayTracingTlas>(
-            [this, &resultCode, &descriptor, &rayTracingBufferPools](int deviceIndex, auto deviceRayTracingTlas)
+        ResultCode resultCode = IterateObjects<SingleDeviceRayTracingTlas>(
+            [this, &descriptor, &rayTracingBufferPools](int deviceIndex, auto deviceRayTracingTlas)
             {
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingTlas();
 
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingTlasDescriptor(deviceIndex) };
 
-                resultCode = deviceRayTracingTlas->CreateBuffers(
+                return deviceRayTracingTlas->CreateBuffers(
                     *device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
-
-                return resultCode == ResultCode::Success;
             });
 
         if (resultCode != ResultCode::Success)
