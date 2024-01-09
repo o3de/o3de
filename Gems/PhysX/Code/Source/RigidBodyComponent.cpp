@@ -24,6 +24,27 @@
 
 namespace PhysX
 {
+    class BehaviorRigidBodyNotificationBusHandler final
+        : public Physics::RigidBodyNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(BehaviorRigidBodyNotificationBusHandler, "{7F3BD6F6-4F84-49BB-8DEC-471272965A5F}", AZ::SystemAllocator,
+            OnPhysicsEnabled,
+            OnPhysicsDisabled
+        );
+
+        void OnPhysicsEnabled(const AZ::EntityId& entityId) override
+        {
+            Call(FN_OnPhysicsEnabled, entityId);
+        }
+
+        void OnPhysicsDisabled(const AZ::EntityId& entityId) override
+        {
+            Call(FN_OnPhysicsDisabled, entityId);
+        }
+    };
+
     void RigidBodyComponent::Reflect(AZ::ReflectContext* context)
     {
         RigidBodyConfiguration::Reflect(context);
@@ -88,6 +109,12 @@ namespace PhysX
             ;
 
             behaviorContext->Class<RigidBodyComponent>()->RequestBus("RigidBodyRequestBus");
+
+            behaviorContext->EBus<Physics::RigidBodyNotificationBus>("RigidBodyNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Handler<BehaviorRigidBodyNotificationBusHandler>()
+                ;
         }
     }
 
