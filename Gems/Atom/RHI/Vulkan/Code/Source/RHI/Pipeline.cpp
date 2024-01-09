@@ -109,19 +109,6 @@ namespace AZ
             case RHI::ShaderStage::Geometry:
                 stageBits = VK_SHADER_STAGE_GEOMETRY_BIT;
                 break;
-            case RHI::ShaderStage::Tessellation:
-                switch (subStageIndex)
-                {
-                case ShaderSubStage::TesselationControl:
-                    stageBits = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-                    break;
-                case ShaderSubStage::TesselationEvaluattion:
-                    stageBits = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-                    break;
-                default:
-                    AZ_Assert(false, "Shader Sub Stage is wrong.");
-                }
-                break;
             case RHI::ShaderStage::Fragment:
                 stageBits = VK_SHADER_STAGE_FRAGMENT_BIT;
                 break;

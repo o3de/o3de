@@ -559,7 +559,7 @@ namespace AZ
             return flags;
         }
 
-        VkShaderStageFlagBits ConvertShaderStage(RHI::ShaderStage stage, uint32_t subStageIndex /* = 0 */)
+        VkShaderStageFlagBits ConvertShaderStage(RHI::ShaderStage stage, [[maybe_unused]] uint32_t subStageIndex /* = 0 */)
         {
             switch (stage)
             {
@@ -571,8 +571,6 @@ namespace AZ
                 return VK_SHADER_STAGE_COMPUTE_BIT;
             case RHI::ShaderStage::Geometry:
                 return VK_SHADER_STAGE_GEOMETRY_BIT;
-            case RHI::ShaderStage::Tessellation:
-                return subStageIndex == 0 ? VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT : VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
             default:
                 AZ_Assert(false, "Invalid shader stage %d", stage);
                 return VkShaderStageFlagBits(0);

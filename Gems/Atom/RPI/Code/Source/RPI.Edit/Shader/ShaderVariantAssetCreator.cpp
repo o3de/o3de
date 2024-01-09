@@ -45,7 +45,6 @@ namespace AZ
 
             if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex) ||
                 m_asset->GetShaderStageFunction(RHI::ShaderStage::Geometry) ||
-                m_asset->GetShaderStageFunction(RHI::ShaderStage::Tessellation) ||
                 m_asset->GetShaderStageFunction(RHI::ShaderStage::Fragment))
             {
                 foundDrawFunctions = true;
@@ -67,13 +66,6 @@ namespace AZ
                 !m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex))
             {
                 ReportError("Shader Variant with StableId '%u' has a fragment function but no vertex function.", m_asset->m_stableId);
-                return false;
-            }
-
-            if (m_asset->GetShaderStageFunction(RHI::ShaderStage::Tessellation) &&
-                !m_asset->GetShaderStageFunction(RHI::ShaderStage::Vertex))
-            {
-                ReportError("Shader Variant with StableId '%u' has a tessellation function but no vertex function.", m_asset->m_stableId);
                 return false;
             }
 

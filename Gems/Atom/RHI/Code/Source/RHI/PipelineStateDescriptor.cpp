@@ -64,10 +64,6 @@ namespace AZ::RHI
         {
             seed = TypeHash64(m_geometryFunction->GetHash(), seed);
         }
-        if (m_tessellationFunction)
-        {
-            seed = TypeHash64(m_tessellationFunction->GetHash(), seed);
-        }
         if (m_fragmentFunction)
         {
             seed = TypeHash64(m_fragmentFunction->GetHash(), seed);
@@ -96,8 +92,8 @@ namespace AZ::RHI
     {
         return m_fragmentFunction == rhs.m_fragmentFunction && m_pipelineLayoutDescriptor == rhs.m_pipelineLayoutDescriptor &&
             m_renderStates == rhs.m_renderStates && m_vertexFunction == rhs.m_vertexFunction &&
-            m_geometryFunction == rhs.m_geometryFunction && m_tessellationFunction == rhs.m_tessellationFunction &&
-            m_inputStreamLayout == rhs.m_inputStreamLayout && m_renderAttachmentConfiguration == rhs.m_renderAttachmentConfiguration;
+            m_geometryFunction == rhs.m_geometryFunction && m_inputStreamLayout == rhs.m_inputStreamLayout && 
+            m_renderAttachmentConfiguration == rhs.m_renderAttachmentConfiguration;
     }
 
     bool PipelineStateDescriptorForDispatch::operator == (const PipelineStateDescriptorForDispatch& rhs) const

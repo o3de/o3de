@@ -33,13 +33,8 @@ namespace AZ::RHI
         Vertex = 0,
 
         //! This virtual stage contains shader stages that expand an input assembly stream and manipulate
-        //! a vertex.
+        //! a vertex Note: Not supported on metal.
         Geometry,
-
-        //! This virtual stage contains platform-specific stages for hardware tessellation. The specifics
-        //! of how tessellation is achieved varies per platform. PC platforms have dedicated stages to handle this,
-        //! while others utilize compute.
-        Tessellation,
 
         //! This virtual stage contains the platform-specific stages necessary to process screen space fragments.
         //! Currently, on all supported platforms, this maps 1-to-1 with a hardware shader stage.
@@ -71,11 +66,10 @@ namespace AZ::RHI
         None = 0,
         Vertex = AZ_BIT(static_cast<uint32_t>(ShaderStage::Vertex)),
         Geometry = AZ_BIT(static_cast<uint32_t>(ShaderStage::Geometry)),
-        Tessellation = AZ_BIT(static_cast<uint32_t>(ShaderStage::Tessellation)),
         Fragment = AZ_BIT(static_cast<uint32_t>(ShaderStage::Fragment)),
         Compute = AZ_BIT(static_cast<uint32_t>(ShaderStage::Compute)),
         RayTracing = AZ_BIT(static_cast<uint32_t>(ShaderStage::RayTracing)),
-        All = Vertex | Tessellation | Fragment | Compute | RayTracing | Geometry
+        All = Vertex | Geometry | Fragment | Compute | RayTracing
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ShaderStageMask)

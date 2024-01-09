@@ -47,7 +47,7 @@ namespace AZ
             RHI::Ptr<ShaderStageFunction> newShaderStageFunction =  ShaderStageFunction::Create(RHI::ToRHIShaderStage(stageDescriptor.m_stageType));
 
             const DX12::ShaderByteCode& byteCode = stageDescriptor.m_byteCode;
-            const int byteCodeIndex = (stageDescriptor.m_stageType == RHI::ShaderHardwareStage::TessellationEvaluation) ? 1 : 0;
+            const int byteCodeIndex = 0;
             newShaderStageFunction->SetByteCode(byteCodeIndex, byteCode);
 
             newShaderStageFunction->Finalize();
@@ -62,8 +62,6 @@ namespace AZ
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Vertex;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Fragment;
             hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::Geometry;
-            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::TessellationControl;
-            hasRasterProgram |= shaderStageType == RHI::ShaderHardwareStage::TessellationEvaluation;
 
             return hasRasterProgram;
         }
@@ -230,8 +228,6 @@ namespace AZ
                 {RHI::ShaderHardwareStage::Fragment,               "ps_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Compute,                "cs_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::Geometry,               "gs_" + shaderModelVersion},
-                {RHI::ShaderHardwareStage::TessellationControl,    "hs_" + shaderModelVersion},
-                {RHI::ShaderHardwareStage::TessellationEvaluation, "ds_" + shaderModelVersion},
                 {RHI::ShaderHardwareStage::RayTracing,             "lib_6_3"}
             };
             auto profileIt = stageToProfileName.find(shaderStageType);

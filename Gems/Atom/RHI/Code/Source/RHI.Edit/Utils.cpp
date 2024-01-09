@@ -414,9 +414,6 @@ namespace AZ::RHI
             return RHI::ShaderStage::Fragment;
         case ShaderHardwareStage::Geometry:
             return RHI::ShaderStage::Geometry;
-        case ShaderHardwareStage::TessellationControl:
-        case ShaderHardwareStage::TessellationEvaluation:
-            return RHI::ShaderStage::Tessellation;
         case ShaderHardwareStage::Vertex:
             return RHI::ShaderStage::Vertex;
         case ShaderHardwareStage::RayTracing:
