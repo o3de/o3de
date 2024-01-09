@@ -14,11 +14,10 @@ namespace AZ
         {
             // AsyncAssetLoader //
 
-            template <typename AssetDataT>
-            AsyncAssetLoader AsyncAssetLoader::Create(const AZStd::string& path, [[maybe_unused]] uint32_t subId, AssetCallback callback)
+            template<typename AssetDataT>
+            AZStd::shared_ptr<AsyncAssetLoader> AsyncAssetLoader::Create(
+                const AZStd::string& path, [[maybe_unused]] uint32_t subId, AssetCallback callback)
             {
-                AsyncAssetLoader loader(callback);
-
                 // Try to get an asset id for the requested path. Don't print an error yet if it isn't found though.
                 Data::AssetId assetId = GetAssetIdForProductPath(path.c_str(), TraceLevel::None, azrtti_typeid<AssetDataT>());
 
@@ -36,30 +35,31 @@ namespace AZ
 
                 // We'll start the load whether or not the asset id is valid. It will immediately call the callback with failure if
                 // the asset id is invalid.
-                loader.StartLoad<AssetDataT>(assetId);
-                return loader;
+                return Create<AssetDataT>(assetId, callback);
             }
 
-            template <typename AssetDataT>
-            AsyncAssetLoader AsyncAssetLoader::Create(Data::AssetId assetId, AssetCallback callback)
+            template<typename AssetDataT>
+            AZStd::shared_ptr<AsyncAssetLoader> AsyncAssetLoader::Create(Data::AssetId assetId, AssetCallback callback)
             {
-                AsyncAssetLoader loader(callback);
-                loader.StartLoad<AssetDataT>(assetId);
+                AZStd::shared_ptr<AsyncAssetLoader> loader(aznew AsyncAssetLoader(callback));
+                loader->StartLoad<AssetDataT>(assetId);
                 return loader;
             }
 
-            template <typename AssetDataT>
+            template<typename AssetDataT>
             void AsyncAssetLoader::StartLoad(Data::AssetId& assetId)
             {
                 if (!assetId.IsValid())
                 {
                     // Immediately call callback with empty asset and false for success.
-                    m_callback(Data::Asset<AssetDataT>(), false);
+                    HandleCallback(Data::Asset<AssetDataT>());
+                    return;
                 }
+
                 m_asset = AZ::Data::AssetManager::Instance().GetAsset<AssetDataT>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
                 m_asset.QueueLoad();
-                Data::AssetBus::MultiHandler::BusConnect(assetId);
+                Data::AssetBus::Handler::BusConnect(assetId);
             }
-        }
-    }
-}
+        } // namespace AssetUtils
+    } // namespace RPI
+} // namespace AZ

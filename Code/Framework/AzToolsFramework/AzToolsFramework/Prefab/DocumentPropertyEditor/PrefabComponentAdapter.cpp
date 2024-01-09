@@ -70,6 +70,8 @@ namespace AzToolsFramework::Prefab
     {
         using PrefabPropertyEditorNodes::PrefabOverrideLabel;
 
+        AZ_Assert(adapterBuilder != nullptr, "PrefabComponentAdapter: CreateLabel called with null adapterBuilder!");
+
         adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
         adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
 

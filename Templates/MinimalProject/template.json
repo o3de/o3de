@@ -23,6 +23,10 @@
             "isTemplated": false
         },
         {
+            "file": ".command_settings",
+            "isTemplated": false
+        },
+        {
             "file": "CMakeLists.txt",
             "isTemplated": true
         },
@@ -139,6 +143,10 @@
             "isTemplated": true
         },
         {
+            "file": "Levels/DefaultLevel/DefaultLevel.prefab",
+            "isTemplated": false
+        },
+        {
             "file": "Platform/Android/android_project.cmake",
             "isTemplated": true
         },
@@ -184,6 +192,10 @@
         },
         {
             "file": "Resources/LegacyLogoLauncher.bmp",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/load_level.setreg",
             "isTemplated": false
         },
         {
@@ -351,6 +363,19 @@
             "isTemplated": false
         },
         {
+            "file": "export.bat",
+            "isTemplated": true
+        },
+        {
+            "file": "export.sh",
+            "isTemplated": true,
+            "isExecutable": true
+        },
+        {
+            "file": "AssetBundling/SeedLists/DefaultLevel.seed",
+            "isTemplated": false
+        },
+        {
             "file": "game.cfg",
             "isTemplated": false
         },
@@ -364,6 +389,12 @@
         }
     ],
     "createDirectories": [
+        {
+            "dir": "AssetBundling"
+        },
+        {
+            "dir": "AssetBundling/SeedLists"
+        },
         {
             "dir": "Assets"
         },
@@ -407,7 +438,10 @@
             "dir": "Gem/Source"
         },
         {
-            "dir": "Config"
+            "dir": "Levels"
+        },
+        {
+            "dir": "Levels/Default"
         },
         {
             "dir": "Platform"

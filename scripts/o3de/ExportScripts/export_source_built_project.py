@@ -81,42 +81,63 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
 
+    # If the output path is a relative path, convert it to an absolute path using the project path as the base
+    if not output_path.is_absolute():
+        output_path = ctx.project_path / str(output_path)
+
     # Use a provided logger or get the current system one
     if not logger:
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
 
     # Calculate the tools and game build paths
-    default_base_build_path = ctx.engine_path / 'build' if engine_centric else ctx.project_path / 'build'
+    default_base_path = ctx.engine_path if engine_centric else ctx.project_path
     
     if is_installer_sdk:
-            # Check if we have any monolithic entries if building monolithic
-            monolithic_artifacts = glob.glob(f'cmake/Platform/{exp.get_platform_installer_folder_name()}/Monolithic/ConfigurationTypes_*.cmake',
-                      root_dir=ctx.engine_path)
-            has_monolithic_artifacts = len(monolithic_artifacts) > 0
-
-            if monolithic_build and not has_monolithic_artifacts:
-                logger.error("Trying to create monolithic build, but no monolithic artifacts are detected in the engine installation! Please re-run the script with '-nomonolithic' and '-config profile'.")
-                return 1
-            tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / tool_config / 'Default'
+        # Check if we have any monolithic entries if building monolithic
+        if monolithic_build and not exp.has_monolithic_artifacts(ctx):
+            logger.error("Trying to create monolithic build, but no monolithic artifacts are detected in the engine installation! Please re-run the script with '--non-monolithic' and '-config profile'.")
+            raise exp.ExportProjectError("Trying to build monolithic without libraries.")
+        tools_build_path = ctx.engine_path / 'bin' / exp.get_platform_installer_folder_name(selected_platform) / tool_config / 'Default'
     
+    # Note, when resolving the relative paths used for the export process, there is a debate about 
+    # whether to use the current working directory, or to forcefully set the base path to an O3DE directory.
+    # In practice, there was noticeable surprise whenever the relative folder wasn't found in an O3DE directory,
+    # and sometimes commands are carelessly run from sensitive directories (such as C:\\Windows\\System32)
+    
+    # For this reason, all deliberately external paths must be specified using absolute paths
     if not tools_build_path:
-        tools_build_path = default_base_build_path / 'tools'
-    if not launcher_build_path or not launcher_build_path.is_absolute() or \
-        not (launcher_build_path.is_relative() and pathlib.Path.cwd() in [ctx.engine_path, ctx.project_path]):
-        launcher_build_path = default_base_build_path / 'launcher'
+        tools_build_path = default_base_path / 'build/tools'
+    elif not tools_build_path.is_absolute():
+        tools_build_path = default_base_path / tools_build_path
     
-    if not asset_bundling_path or not asset_bundling_path.is_absolute() or \
-        not (asset_bundling_path.is_relative() and pathlib.Path.cwd() in [ctx.engine_path, ctx.project_path]):
-        asset_bundling_path = default_base_build_path / 'asset_bundling'
+    logger.info(f"Tools build path set to {tools_build_path}")
+
+    if not launcher_build_path:
+        launcher_build_path = default_base_path / 'build/launcher'
+    elif not launcher_build_path.is_absolute():
+        launcher_build_path = default_base_path / launcher_build_path
+    
+    logger.info(f"Launcher build path set to {launcher_build_path}")
+    
+    if not asset_bundling_path:
+        asset_bundling_path = default_base_path / 'build/asset_bundling'
+    elif not asset_bundling_path.is_absolute():
+        asset_bundling_path = default_base_path / asset_bundling_path
+    
+    logger.info(f"Asset bundling path set to {asset_bundling_path}")
 
     # Resolve (if possible) and validate any provided seedlist files
     validated_seedslist_paths = exp.validate_project_artifact_paths(project_path=ctx.project_path,
                                                                     artifact_paths=seedlist_paths)
+
+    # Preprocess the seed file paths in case there are any wildcard patterns to use
+    preprocessed_seedfile_paths = exp.preprocess_seed_path_list(project_path=ctx.project_path,
+                                                                paths=seedfile_paths)
     
     # Convert level names into seed files that the asset bundler can utilize for packaging
     for level in level_names:
-        seedfile_paths.append(ctx.project_path / f'Cache/{selected_platform}/levels' / level.lower() / (level.lower() + ".spawnable"))
+        preprocessed_seedfile_paths.append(ctx.project_path / f'Cache/{selected_platform}/levels' / level.lower() / (level.lower() + ".spawnable"))
 
     # Make sure there are no running processes for the current project before continuing
     exp.kill_existing_processes(ctx.project_name)
@@ -174,7 +195,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     expected_bundles_path = exp.bundle_assets(ctx=ctx,
                                               selected_platform=selected_platform,
                                               seedlist_paths=validated_seedslist_paths,
-                                              seedfile_paths=seedfile_paths,
+                                              seedfile_paths=preprocessed_seedfile_paths,
                                               tools_build_path=tools_build_path,
                                               engine_centric=engine_centric,
                                               asset_bundling_path=asset_bundling_path,
@@ -212,25 +233,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                             archive_output_format=archive_output_format,
                                             logger=logger)
 
-# This code is only run by the 'export-project' O3DE CLI command
-if "o3de_context" in globals():
-
-    global o3de_context
-    global o3de_logger
-
-    # Resolve the export config
-    try:
-        if o3de_context is None:
-            project_name, project_path = command_utils.resolve_project_name_and_path()
-            export_config = exp.get_export_project_config(project_path=project_name)
-        else:
-            export_config = exp.get_export_project_config(project_path=o3de_context.project_path)
-    except command_utils.O3DEConfigError:
-        o3de_logger.debug(f"No project detected at {os.getcwd()}, getting default settings from global config instead.")
-        project_name = None
-        export_config = exp.get_export_project_config(project_path=None)
-
-    def parse_args(o3de_context: exp.O3DEScriptExportContext):
+def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
 
         parser = argparse.ArgumentParser(
                     prog=f'o3de.py export-project -es {__file__}',
@@ -266,7 +269,7 @@ if "o3de_context" in globals():
         # option.build.assets / SETTINGS_OPTION_BUILD_ASSETS
         export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_BUILD_ASSETS.key,
-                                           enable_override_arg=['-assets', '--should-build-assets'],
+                                           enable_override_arg=['-assets', '--build-assets'],
                                            enable_override_desc='Build and update all assets before bundling.',
                                            disable_override_arg=['-noassets', '--skip-build-assets'],
                                            disable_override_desc='Skip building of assets and use assets that were already built.')
@@ -276,21 +279,21 @@ if "o3de_context" in globals():
                                            key=exp.SETTINGS_OPTION_FAIL_ON_ASSET_ERR.key,
                                            enable_override_arg=['-foa', '--fail-on-asset-errors'],
                                            enable_override_desc='Fail the export if there are errors during the building of assets. (Only relevant if assets are set to be built).',
-                                           disable_override_arg=['-coa', '--continue-on-assets-errors'],
+                                           disable_override_arg=['-coa', '--continue-on-asset-errors'],
                                            disable_override_desc='Continue export even if there are errors during the building of assets. (Only relevant if assets are set to be built).')
 
         export_config.add_multi_part_argument(argument=['-sl', '--seedlist'],
                                               parser=parser,
                                               key=exp.SETTINGS_SEED_LIST_PATHS.key,
                                               dest='seedlist_paths',
-                                              description='Path to a seed list file for asset bundling. Specify multiple times for each seed list.',
+                                              description='Path to a seed list file for asset bundling. Specify multiple times for each seed list. You can also specify wildcard patterns.',
                                               is_path_type=True)
 
         export_config.add_multi_part_argument(argument=['-sf', '--seedfile'],
                                               parser=parser,
                                               key=exp.SETTINGS_SEED_FILE_PATHS.key,
                                               dest='seedfile_paths',
-                                              description='Path to a seed file for asset bundling. Example seed files are levels or prefabs.',
+                                              description='Path to a seed file for asset bundling. Example seed files are levels or prefabs. You can also specify wildcard patterns.',
                                               is_path_type=True)
 
         export_config.add_multi_part_argument(argument=['-lvl', '--level-name'],
@@ -330,13 +333,14 @@ if "o3de_context" in globals():
                                            disable_override_desc="Skip the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
                                                                  "The tools must be already available at the location specified by the '--tools-build-path' argument.")
 
-        default_build_tools_path = export_config.get_value(exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.default)
-        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=pathlib.Path(default_build_tools_path),
-                            help=f'Designates where the build files for the O3DE toolchain are generated. If not specified, default is {default_build_tools_path}')
+        
+        default_tools_build_path = export_config.get_value(exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.default)
+        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=pathlib.Path(default_tools_build_path),
+                            help=f"Designates where the build files for the O3DE toolchain are generated. If not specified, default is '{default_tools_build_path}'.")
 
         default_launcher_build_path = export_config.get_value(exp.SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH.default)
         parser.add_argument('-lbp', '--launcher-build-path', type=pathlib.Path, default=pathlib.Path(default_launcher_build_path),
-                            help=f"Designates where the launcher build files (Game/Server/Unified) are generated. If not specified, default is {default_launcher_build_path}.")
+                            help=f"Designates where the launcher build files (Game/Server/Unified) are generated. If not specified, default is '{default_launcher_build_path}'.")
 
         export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES.key,
@@ -347,7 +351,7 @@ if "o3de_context" in globals():
 
         default_asset_bundling_path = export_config.get_value(exp.SETTINGS_DEFAULT_ASSET_BUNDLING_PATH.key, exp.SETTINGS_DEFAULT_ASSET_BUNDLING_PATH.default)
         parser.add_argument('-abp', '--asset-bundling-path', type=pathlib.Path, default=pathlib.Path(default_asset_bundling_path),
-                            help=f"Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, default is {default_asset_bundling_path}.")
+                            help=f"Designates where the artifacts from the asset bundling process will be written to before creation of the package. If not specified, default is '{default_asset_bundling_path}'.")
 
         default_max_size = export_config.get_value(exp.SETTINGS_MAX_BUNDLE_SIZE.key, exp.SETTINGS_MAX_BUNDLE_SIZE.default)
         parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=int(default_max_size),
@@ -357,14 +361,14 @@ if "o3de_context" in globals():
                                            key=exp.SETTINGS_OPTION_BUILD_GAME_LAUNCHER.key,
                                            enable_override_arg=['-game', '--game-launcher'],
                                            enable_override_desc="Enable the building and inclusion of the Game Launcher.",
-                                           disable_override_arg=['--nogame', '--no-game-launcher'],
+                                           disable_override_arg=['-nogame', '--no-game-launcher'],
                                            disable_override_desc="Disable the building and inclusion of the Game Launcher if not needed.")
 
         export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_BUILD_SERVER_LAUNCHER.key,
                                            enable_override_arg=['-server', '--server-launcher'],
                                            enable_override_desc="Enable the building and inclusion of the Server Launcher.",
-                                           disable_override_arg=['--noserver', '--no-server-launcher'],
+                                           disable_override_arg=['-noserver', '--no-server-launcher'],
                                            disable_override_desc="Disable the building and inclusion of the Server Launcher if not needed.")
 
 
@@ -372,7 +376,7 @@ if "o3de_context" in globals():
                                            key=exp.SETTINGS_OPTION_BUILD_UNIFIED_SERVER_LAUNCHER.key,
                                            enable_override_arg=['-unified', '--unified-launcher'],
                                            enable_override_desc="Enable the building and inclusion of the Unified Launcher.",
-                                           disable_override_arg=['--nounified', '--no-unified-launcher'],
+                                           disable_override_arg=['-nounified', '--no-unified-launcher'],
                                            disable_override_desc="Disable the building and inclusion of the Unified Launcher if not needed.")
 
         export_config.add_boolean_argument(parser=parser,
@@ -382,7 +386,14 @@ if "o3de_context" in globals():
                                            disable_override_arg=['-pc', '--project-centric'],
                                            disable_override_desc="Enable the project-centric work flow to export the project.")
 
-        parser.add_argument('-nomonolithic', '--no-monolithic-build', action='store_true', help='Build the project binaries as shared libraries (as opposed to default monolithic build).')
+        export_config.add_boolean_argument(parser=parser,
+                                           key=exp.SETTINGS_OPTION_BUILD_MONOLITHICALLY.key,
+                                           enable_override_arg=['-mono', '--monolithic'],
+                                           enable_override_desc="Build the launchers monolithically into a launcher executable.",
+                                           disable_override_arg=['-nomono', '--non-monolithic'],
+                                           disable_override_desc="Build the launchers non-monolithically, i.e. a launcher executable alongside individual modules per Gem.")
+
+
         parser.add_argument('-pl', '--platform', type=str, default=exp.get_default_asset_platform(), choices=['pc', 'linux', 'mac'])
 
         parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
@@ -396,23 +407,22 @@ if "o3de_context" in globals():
             exit(0)
 
         return parsed_args
-    
-    args = parse_args(o3de_context)
 
-    option_build_tools = export_config.get_parsed_boolean_option(parsed_args=args,
-                                                                 key=exp.SETTINGS_OPTION_BUILD_TOOLS.key,
-                                                                 enable_attribute='build_tools',
-                                                                 disable_attribute='skip_build_tools')
-
+def export_standalone_run_command(o3de_context, args, export_config: command_utils.O3DEConfig, o3de_logger):
     option_build_assets = export_config.get_parsed_boolean_option(parsed_args=args,
                                                                   key=exp.SETTINGS_OPTION_BUILD_ASSETS.key,
                                                                   enable_attribute='build_assets',
                                                                   disable_attribute='skip_build_assets')
 
+    option_build_tools = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                 key=exp.SETTINGS_OPTION_BUILD_TOOLS.key,
+                                                                 enable_attribute='build_tools',
+                                                                 disable_attribute='skip_build_tools')    
+
     fail_on_asset_errors = export_config.get_parsed_boolean_option(parsed_args=args,
                                                                    key=exp.SETTINGS_OPTION_FAIL_ON_ASSET_ERR.key,
-                                                                   enable_attribute='stop_on_asset_errors',
-                                                                   disable_attribute='continue_on_assets_errors')
+                                                                   enable_attribute='fail_on_asset_errors',
+                                                                   disable_attribute='continue_on_asset_errors')
 
     option_build_game_launcher = export_config.get_parsed_boolean_option(parsed_args=args,
                                                                          key=exp.SETTINGS_OPTION_BUILD_GAME_LAUNCHER.key,
@@ -439,6 +449,11 @@ if "o3de_context" in globals():
                                                                                key=exp.SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES.key,
                                                                                enable_attribute='allow_registry_overrides',
                                                                                disable_attribute='disallow_registry_overrides')
+
+    option_build_monolithically = export_config.get_parsed_boolean_option(parsed_args=args,
+                                                                          key=exp.SETTINGS_OPTION_BUILD_MONOLITHICALLY.key,
+                                                                          enable_attribute='monolithic',
+                                                                          disable_attribute='non_monolithic')
 
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
@@ -470,8 +485,32 @@ if "o3de_context" in globals():
                                   tools_build_path=args.tools_build_path,
                                   launcher_build_path=args.launcher_build_path,
                                   archive_output_format=args.archive_output,
-                                  monolithic_build=not args.no_monolithic_build,
+                                  monolithic_build=option_build_monolithically,
                                   logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
         sys.exit(1)
+
+# This code is only run by the 'export-project' O3DE CLI command
+
+if "o3de_context" in globals():
+    global o3de_context
+    global o3de_logger
+
+    # Resolve the export config
+    try:
+        if o3de_context is None:
+            project_name, project_path = command_utils.resolve_project_name_and_path()
+            export_config = exp.get_export_project_config(project_path=project_path)
+        else:
+            export_config = exp.get_export_project_config(project_path=o3de_context.project_path)
+    except command_utils.O3DEConfigError:
+        o3de_logger.debug(f"No project detected at {os.getcwd()}, getting default settings from global config instead.")
+        project_name = None
+        export_config = exp.get_export_project_config(project_path=None)
+
+    args = export_standalone_parse_args(o3de_context, export_config)
+
+    export_standalone_run_command(o3de_context, args, export_config, o3de_logger)
+    o3de_logger.info(f"Finished exporting project to {args.output_path}")
+    sys.exit(0)

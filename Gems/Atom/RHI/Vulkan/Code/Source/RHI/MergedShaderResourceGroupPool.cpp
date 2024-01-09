@@ -25,30 +25,24 @@ namespace AZ
                 key[srg->GetBindingSlot()] = srg;
             }
 
-            MergedShaderResourceGroup* mergedSRG;
             {
-                AZStd::shared_lock<AZStd::shared_mutex> lock(m_databaseMutex);
-                mergedSRG = m_cacheDatabase.Find(key);
-            }
+                AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
+                MergedShaderResourceGroup* mergedSRG = m_cacheDatabase.Find(key);
 
-            if (!mergedSRG)
-            {
-                mergedSRG = aznew MergedShaderResourceGroup();
-                auto result = InitGroup(*mergedSRG);
-                if (result != RHI::ResultCode::Success)
+                if (!mergedSRG)
                 {
-                    AZ_Assert(false, "Failed to initialize Merged Shader Resource Group");
-                    return nullptr;
-                }
-                mergedSRG->m_mergedShaderResourceGroupList = key;
-
-                {
-                    AZStd::unique_lock<AZStd::shared_mutex> lock(m_databaseMutex);
+                    mergedSRG = aznew MergedShaderResourceGroup();
+                    auto result = InitGroup(*mergedSRG);
+                    if (result != RHI::ResultCode::Success)
+                    {
+                        AZ_Assert(false, "Failed to initialize Merged Shader Resource Group");
+                        return nullptr;
+                    }
+                    mergedSRG->m_mergedShaderResourceGroupList = key;
                     m_cacheDatabase.Insert(key, mergedSRG);
                 }
+                return mergedSRG;
             }
-
-            return mergedSRG;
         }
 
         RHI::ResultCode MergedShaderResourceGroupPool::InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor)
@@ -60,7 +54,7 @@ namespace AZ
         void MergedShaderResourceGroupPool::ShutdownInternal()
         {
             {
-                AZStd::unique_lock<AZStd::shared_mutex> lock(m_databaseMutex);
+                AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
                 m_cacheDatabase.Clear();
             }
             Base::ShutdownInternal();

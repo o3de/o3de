@@ -26,17 +26,13 @@ namespace AzToolsFramework
         ThumbnailerComponent::ThumbnailerComponent()
             : m_missingThumbnail(new MissingThumbnail())
             , m_loadingThumbnail(new LoadingThumbnail())
-            , m_maxThumbnailJobs(4)
+            , m_placeholderObject(new QObject())
         {
         }
 
         ThumbnailerComponent::~ThumbnailerComponent()
         {
-            ThumbnailerRequestBus::Handler::BusDisconnect();
-            m_providers.clear();
-            m_missingThumbnail.reset();
-            m_loadingThumbnail.reset();
-            m_thumbnailsBeingLoaded.clear();
+            Cleanup();
         }
 
         void ThumbnailerComponent::Activate()
@@ -46,10 +42,7 @@ namespace AzToolsFramework
 
         void ThumbnailerComponent::Deactivate()
         {
-            ThumbnailerRequestBus::Handler::BusDisconnect();
-            m_providers.clear();
-            m_missingThumbnail.reset();
-            m_loadingThumbnail.reset();
+            Cleanup();
         }
 
         void ThumbnailerComponent::Reflect(AZ::ReflectContext* context)
@@ -112,15 +105,13 @@ namespace AzToolsFramework
                         return thumbnail;
                     }
 
-                    if (thumbnail->GetState() == Thumbnail::State::Failed)
+                    if (thumbnail->GetState() == Thumbnail::State::Failed && !thumbnail->CanAttemptReload())
                     {
                         return m_missingThumbnail;
                     }
 
                     // If a thumbnail is loading or the max number of jobs has been reached then return the loading image.
-                    if (thumbnail->GetState() == Thumbnail::State::Loading ||
-                        m_thumbnailsBeingLoaded.contains(thumbnail) ||
-                        m_thumbnailsBeingLoaded.size() >= m_maxThumbnailJobs)
+                    if (thumbnail->GetState() == Thumbnail::State::Loading || m_thumbnailsBeingLoaded.contains(thumbnail))
                     {
                         return m_loadingThumbnail;
                     }
@@ -132,31 +123,30 @@ namespace AzToolsFramework
                         // Connect thumbnailer component to the busy label repaint signal to notify the asset browser as it changes. 
                         AzQtComponents::StyledBusyLabel* busyLabel = {};
                         AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
-                        connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, this, &ThumbnailerComponent::RepaintThumbnail);
-
-                        // As the loading thumbnail animates it needs to notify anything using this thumbnail to update. 
-                        connect(m_loadingThumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
+                        QObject::connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, m_placeholderObject.get(), [](){
+                            AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
+                        });
 
                         // The ThumbnailUpdated signal should be sent whenever the thumbnail has loaded or failed. In both cases,
                         // disconnect from all of the signals.
-                        connect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, this, [this, key, thumbnail, busyLabel]()
+                        QObject::connect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, m_placeholderObject.get(), [this, key, thumbnail, busyLabel]()
                             {
-                                disconnect(m_loadingThumbnail.data(), nullptr, key.data(), nullptr);
-                                disconnect(busyLabel, nullptr, this, nullptr);
-                                disconnect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
+                                QObject::disconnect(busyLabel, nullptr, m_placeholderObject.get(), nullptr);
+                                QObject::disconnect(thumbnail.data(), nullptr, key.data(), nullptr);
 
-                                connect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
-                                connect(key.data(), &ThumbnailKey::ThumbnailUpdateRequested, thumbnail.data(), &Thumbnail::Update);
+                                QObject::connect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
+                                QObject::connect(key.data(), &ThumbnailKey::ThumbnailUpdateRequested, thumbnail.data(), &Thumbnail::Update);
+
                                 key->SetReady(true);
                                 m_thumbnailsBeingLoaded.erase(thumbnail);
+                                AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
                             });
 
                         // Add the thumbnail to the set of thumbnails in progress then queue the job to load it. The job will send the
                         // ThumbnailUpdated signal from the main thread when complete.
                         m_thumbnailsBeingLoaded.insert(thumbnail);
-                        auto job = AZ::CreateJobFunction([thumbnail]() { thumbnail->Load(); }, true);
+                        auto job = AZ::CreateJobFunction([thumbnail](){ thumbnail->Load(); }, true);
                         job->Start();
-                        
                     }
 
                     return m_loadingThumbnail;
@@ -179,9 +169,15 @@ namespace AzToolsFramework
             return false;
         }
 
-        void ThumbnailerComponent::RepaintThumbnail()
+        void ThumbnailerComponent::Cleanup()
         {
-            AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
+            ThumbnailerRequestBus::Handler::BusDisconnect();
+
+            m_providers.clear();
+            m_missingThumbnail.reset();
+            m_loadingThumbnail.reset();
+            m_placeholderObject.reset();
+            m_thumbnailsBeingLoaded.clear();
         }
     } // namespace Thumbnailer
 } // namespace AzToolsFramework

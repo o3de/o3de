@@ -83,7 +83,7 @@ namespace AZStd
         {
             // An empty name cannot match a non-empty filter non '*' character
             // Check if an ordinary character matches
-            if (findCharPos.empty() || findFilterPos.front() != '?' && !binaryOp(findCharPos.front(), findFilterPos.front()))
+            if (findCharPos.empty() || (findFilterPos.front() != '?' && !binaryOp(findCharPos.front(), findFilterPos.front())))
             {
                 return false;
             }

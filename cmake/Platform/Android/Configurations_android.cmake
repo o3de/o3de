@@ -8,6 +8,15 @@
 
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    # With Android Studio, the CMAKE_RUNTIME_OUTPUT_DIRECTORY, CMAKE_LIBRARY_OUTPUT_DIRECTORY and CMAKE_RUNTIME_OUTPUT_DIRECTORY are
+    # already different per configuration. There's no need to do "CMAKE_RUNTIME_OUTPUT_DIRECTORY\Debug" as the output folder.
+    # Having this extra configuration folder creates issues when copying the "runtime dependencies" files into the APK.
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER ${conf} UCONF)
+        unset(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${UCONF} CACHE)    # Just use the CMAKE_ARCHIVE_OUTPUT_DIRECTORY for all configurations
+        unset(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${UCONF} CACHE)    # Just use the CMAKE_LIBRARY_OUTPUT_DIRECTORY for all configurations
+        unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${UCONF} CACHE)    # Just use the CMAKE_ARCHIVE_OUTPUT_DIRECTORY for all configurations
+    endforeach()
 
     include(cmake/Platform/Common/Configurations_common.cmake)
     include(cmake/Platform/Common/Clang/Configurations_clang.cmake)

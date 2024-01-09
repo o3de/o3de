@@ -12,6 +12,7 @@ import logging
 import os
 import pathlib
 import shutil
+import stat
 import sys
 import json
 import uuid
@@ -283,6 +284,9 @@ def _execute_template_json(json_data: dict,
             _transform_copy(in_file, out_file, replacements, keep_license_text)
         else:
             shutil.copy(in_file, out_file)
+        # If the copied file is an executable, make sure the executable flag is enabled
+        if copy_file.get('isExecutable', False):
+            os.chmod(out_file, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR | stat.S_IWGRP | stat.S_IXOTH | stat.S_IXGRP | stat.S_IXUSR)
 
 
 def _execute_restricted_template_json(template_json_data: dict,
@@ -1760,6 +1764,8 @@ def create_project(project_path: pathlib.Path,
     replacements.append(("${NameLower}", project_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
     replacements.append(("${Version}", version if version else "1.0.0"))
+    replacements.append(("${ProjectPath}", project_path.as_posix()))
+    replacements.append(("${EnginePath}", manifest.get_this_engine_path().as_posix()))
 
     # was a project id specified
     if project_id:

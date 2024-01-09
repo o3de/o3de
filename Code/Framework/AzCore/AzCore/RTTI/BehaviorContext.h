@@ -600,7 +600,7 @@ namespace AZ::Internal
 #endif
 
         bool Call(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result) const override;
-        ResultOutcome IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result = nullptr) const;
+        ResultOutcome IsCallable(AZStd::span<BehaviorArgument> arguments, BehaviorArgument* result = nullptr) const override;
         bool HasResult() const override;
         bool IsMember() const override;
         bool HasBusId() const override;

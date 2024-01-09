@@ -78,6 +78,15 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
     }
 }
 
+void ApplySimpleSpotLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
+{
+    if (o_enableSimpleSpotLights)
+    {
+        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[lightIndex];
+        ApplySimpleSpotLight(light, surface, lightingData);
+    }
+}
+
 void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
 {
 #if ENABLE_LIGHT_CULLING
@@ -88,14 +97,12 @@ void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
     
-        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[currLightIndex];
-        ApplySimpleSpotLight(light, surface, lightingData);
+        ApplySimpleSpotLightInternal(currLightIndex, surface, lightingData);
     }
 #else
     for(uint lightIndex = 0; lightIndex < ViewSrg::m_simpleSpotLightCount; lightIndex++)
     {
-        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[lightIndex];
-        ApplySimpleSpotLight(light, surface, lightingData);
+        ApplySimpleSpotLightInternal(lightIndex, surface, lightingData);
     }
 #endif
 }

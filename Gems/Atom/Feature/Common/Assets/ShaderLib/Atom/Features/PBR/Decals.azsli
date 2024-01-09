@@ -28,6 +28,15 @@
 void ApplyDecal(uint currDecalIndex, inout Surface surface);
 
 #if ENABLE_DECALS
+
+void ApplyDecalInternal(uint currDecalIndex, inout Surface surface)
+{
+    if (o_enableDecals)
+    {
+        ApplyDecal(currDecalIndex, surface);
+    }
+}
+
 void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
 #if ENABLE_LIGHT_CULLING
@@ -38,14 +47,14 @@ void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surf
         uint currDecalIndex = tileIterator.GetValue();
         tileIterator.LoadAdvance();
         
-        ApplyDecal(currDecalIndex, surface);
+        ApplyDecalInternal(currDecalIndex, surface);
     }
 #else
     // Since there's no GPU culling for decals, we rely on culling done by CPU
     // Only apply visible decals
     for(uint decalIndex = 0; (decalIndex < ENABLE_DECALS_CAP && decalIndex < ViewSrg::m_visibleDecalCount); decalIndex++)
     {
-        ApplyDecal(ViewSrg::m_visibleDecalIndices[decalIndex], surface);
+        ApplyDecalInternal(ViewSrg::m_visibleDecalIndices[decalIndex], surface);
     }
 #endif
 }
