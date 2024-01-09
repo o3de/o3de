@@ -43,7 +43,7 @@ namespace UnitTest
 
             AZ::Dom::Value labelPropertyEditor = translateRow[0];
             EXPECT_EQ(labelPropertyEditor[PropertyEditor::Type.GetName()].GetString(), PrefabOverrideLabel::Name);
-            EXPECT_EQ(labelPropertyEditor[PrefabOverrideLabel::Text.GetName()].GetString(), "Translate");
+            EXPECT_EQ(labelPropertyEditor[PrefabOverrideLabel::Value.GetName()].GetString(), "Translate");
             EXPECT_FALSE(labelPropertyEditor[PrefabOverrideLabel::RelativePath.GetName()].GetString().empty());
             EXPECT_FALSE(labelPropertyEditor[PrefabOverrideLabel::RevertOverride.GetName()].IsNull());
 
@@ -81,7 +81,7 @@ namespace UnitTest
 
             AZ::Dom::Value labelPropertyEditor = translateRow[0];
             EXPECT_EQ(labelPropertyEditor[PropertyEditor::Type.GetName()].GetString(), PrefabOverrideLabel::Name);
-            EXPECT_EQ(labelPropertyEditor[PrefabOverrideLabel::Text.GetName()].GetString(), "Translate");
+            EXPECT_EQ(labelPropertyEditor[PrefabOverrideLabel::Value.GetName()].GetString(), "Translate");
             EXPECT_FALSE(labelPropertyEditor[PrefabOverrideLabel::RelativePath.GetName()].GetString().empty());
             EXPECT_FALSE(labelPropertyEditor[PrefabOverrideLabel::RevertOverride.GetName()].IsNull());
 
