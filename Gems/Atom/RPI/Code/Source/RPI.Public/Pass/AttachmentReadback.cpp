@@ -412,10 +412,11 @@ namespace AZ
                         range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
                     }
 
-                    AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts(1);
+                    AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
                     imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
                     size_t totalSizeInBytes = 0;
-                    image->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), nullptr);
+                    image->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)
+                        ->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
                     AZ::u64 byteCount = totalSizeInBytes;
 
                     RPI::CommonBufferDescriptor desc;
