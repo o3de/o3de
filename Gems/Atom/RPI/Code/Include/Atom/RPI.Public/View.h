@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/DrawListContext.h>
 
 #include <Atom/RPI.Public/Base.h>
@@ -66,7 +66,7 @@ namespace AZ
             RHI::DrawListMask GetDrawListMask() const { return m_drawListMask; }
             void Reset();
 
-            RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
+            RHI::SingleDeviceShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
             

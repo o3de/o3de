@@ -57,7 +57,7 @@ namespace AZ::RHI
         SetViewports(AZStd::span<const Viewport>(&viewport, 1));
     }
 
-    void DrawPacketBuilder::AddShaderResourceGroup(const ShaderResourceGroup* shaderResourceGroup)
+    void DrawPacketBuilder::AddShaderResourceGroup(const SingleDeviceShaderResourceGroup* shaderResourceGroup)
     {
         if (Validation::IsEnabled())
         {
@@ -65,7 +65,7 @@ namespace AZ::RHI
             {
                 if (m_shaderResourceGroups[i] == shaderResourceGroup)
                 {
-                    AZ_Warning("DrawPacketCompiler", false, "Duplicate ShaderResourceGroup added to draw packet.");
+                    AZ_Warning("DrawPacketCompiler", false, "Duplicate SingleDeviceShaderResourceGroup added to draw packet.");
                     return;
                 }
             }
@@ -134,12 +134,12 @@ namespace AZ::RHI
             AZStd::alignment_of<DrawFilterMask>::value);
 
         const VirtualAddress shaderResourceGroupsOffset = linearAllocator.Allocate(
-            sizeof(const ShaderResourceGroup*) * m_shaderResourceGroups.size(),
-            AZStd::alignment_of<const ShaderResourceGroup*>::value);
+            sizeof(const SingleDeviceShaderResourceGroup*) * m_shaderResourceGroups.size(),
+            AZStd::alignment_of<const SingleDeviceShaderResourceGroup*>::value);
 
         const VirtualAddress uniqueShaderResourceGroupsOffset = linearAllocator.Allocate(
-            sizeof(const ShaderResourceGroup*) * m_drawRequests.size(),
-            AZStd::alignment_of<const ShaderResourceGroup*>::value);
+            sizeof(const SingleDeviceShaderResourceGroup*) * m_drawRequests.size(),
+            AZStd::alignment_of<const SingleDeviceShaderResourceGroup*>::value);
 
         const VirtualAddress rootConstantsOffset = linearAllocator.Allocate(
             sizeof(uint8_t) * m_rootConstants.size(),
@@ -167,7 +167,7 @@ namespace AZ::RHI
 
         if (shaderResourceGroupsOffset.IsValid())
         {
-            auto shaderResourceGroups = reinterpret_cast<const ShaderResourceGroup**>(allocationData + shaderResourceGroupsOffset.m_ptr);
+            auto shaderResourceGroups = reinterpret_cast<const SingleDeviceShaderResourceGroup**>(allocationData + shaderResourceGroupsOffset.m_ptr);
             for (size_t i = 0; i < m_shaderResourceGroups.size(); ++i)
             {
                 shaderResourceGroups[i] = m_shaderResourceGroups[i];
@@ -179,7 +179,7 @@ namespace AZ::RHI
 
         if (uniqueShaderResourceGroupsOffset.IsValid())
         {
-            auto shaderResourceGroups = reinterpret_cast<const ShaderResourceGroup**>(allocationData + uniqueShaderResourceGroupsOffset.m_ptr);
+            auto shaderResourceGroups = reinterpret_cast<const SingleDeviceShaderResourceGroup**>(allocationData + uniqueShaderResourceGroupsOffset.m_ptr);
             for (size_t i = 0; i < m_drawRequests.size(); ++i)
             {
                 shaderResourceGroups[i] = m_drawRequests[i].m_uniqueShaderResourceGroup;
@@ -311,7 +311,7 @@ namespace AZ::RHI
         SetViewports(AZStd::span<const Viewport>(original->m_viewports, original->m_viewportsCount));
         for (uint8_t i = 0; i < original->m_shaderResourceGroupCount; ++i)
         {
-            const ShaderResourceGroup* const* srg = original->m_shaderResourceGroups + i;
+            const SingleDeviceShaderResourceGroup* const* srg = original->m_shaderResourceGroups + i;
             AddShaderResourceGroup(*srg);
         }
         for (uint8_t i = 0; i < original->m_drawItemCount; ++i)

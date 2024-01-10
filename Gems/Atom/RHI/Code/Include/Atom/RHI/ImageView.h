@@ -12,7 +12,7 @@
 
 namespace AZ::RHI
 {
-    class Image;
+    class SingleDeviceImage;
 
     //! ImageView contains a platform-specific descriptor mapping to a sub-region of an image resource.
     //! It associates 1-to-1 with a ImageViewDescriptor. Image views map to a subset of image sub-resources
@@ -27,13 +27,13 @@ namespace AZ::RHI
         static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
 
         //! Initializes the image view.
-        ResultCode Init(const Image& image, const ImageViewDescriptor& viewDescriptor);
+        ResultCode Init(const SingleDeviceImage& image, const ImageViewDescriptor& viewDescriptor);
 
         //! Returns the view descriptor used at initialization time.
         const ImageViewDescriptor& GetDescriptor() const;
 
         //! Returns the image associated with this view.
-        const Image& GetImage() const;
+        const SingleDeviceImage& GetImage() const;
 
         //! Returns whether the view covers the entire image (i.e. isn't just a subset).
         bool IsFullView() const override final;
@@ -55,7 +55,7 @@ namespace AZ::RHI
         HashValue64 m_hash = HashValue64{ 0 };
 
     private:
-        bool ValidateForInit(const Image& image, const ImageViewDescriptor& viewDescriptor) const;
+        bool ValidateForInit(const SingleDeviceImage& image, const ImageViewDescriptor& viewDescriptor) const;
 
         // The RHI descriptor for this view.
         ImageViewDescriptor m_descriptor;

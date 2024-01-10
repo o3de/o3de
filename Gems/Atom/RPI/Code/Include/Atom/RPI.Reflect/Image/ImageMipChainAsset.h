@@ -12,7 +12,7 @@
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
 
 #include <AzCore/std/containers/span.h>
 

@@ -6,15 +6,15 @@
  *
  */
 
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/IndirectBufferWriter.h>
-#include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 
 namespace AZ::RHI
 {
-    ResultCode IndirectBufferWriter::Init(Buffer& buffer, size_t byteOffset, uint32_t byteStride, uint32_t maxCommandSequences, const IndirectBufferSignature& signature)
+    ResultCode IndirectBufferWriter::Init(SingleDeviceBuffer& buffer, size_t byteOffset, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature)
     {
         if (!ValidateInitializedState(ValidateInitializedStateExpect::NotInitialized))
         {
@@ -30,7 +30,7 @@ namespace AZ::RHI
         {
             if ((byteOffset + maxCommandSequences * byteStride) > buffer.GetDescriptor().m_byteCount)
             {
-                AZ_Assert(false, "Buffer is too small to contain the required commands");
+                AZ_Assert(false, "SingleDeviceBuffer is too small to contain the required commands");
                 return ResultCode::InvalidArgument;
             }
         }
@@ -46,7 +46,7 @@ namespace AZ::RHI
         return result;
     }
 
-    ResultCode IndirectBufferWriter::Init(void* memoryPtr, uint32_t byteStride, uint32_t maxCommandSequences, const IndirectBufferSignature& signature)
+    ResultCode IndirectBufferWriter::Init(void* memoryPtr, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature)
     {
         if (!ValidateInitializedState(ValidateInitializedStateExpect::NotInitialized))
         {
@@ -97,7 +97,7 @@ namespace AZ::RHI
         m_currentSequenceIndex = static_cast<uint32_t>(-1);
     }
 
-    bool IndirectBufferWriter::ValidateArguments(uint32_t byteStride, uint32_t maxCommandSequences, const IndirectBufferSignature& signature) const
+    bool IndirectBufferWriter::ValidateArguments(uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature) const
     {
         if (Validation::IsEnabled())
         {
@@ -184,7 +184,7 @@ namespace AZ::RHI
         }
 
         // Map the buffer so the implementations can write to it.
-        BufferPool* pool = static_cast<BufferPool*>(m_buffer->GetPool());
+        SingleDeviceBufferPool* pool = static_cast<SingleDeviceBufferPool*>(m_buffer->GetPool());
         BufferMapRequest request = {};
         BufferMapResponse response = {};
         request.m_buffer = m_buffer;
@@ -213,7 +213,7 @@ namespace AZ::RHI
             }
         }
 
-        static_cast<BufferPool*>(m_buffer->GetPool())->UnmapBuffer(*m_buffer);
+        static_cast<SingleDeviceBufferPool*>(m_buffer->GetPool())->UnmapBuffer(*m_buffer);
         m_targetMemory = nullptr;
     }
 

@@ -14,7 +14,7 @@
 namespace AZ::RHI
 {
     class Scope;
-    class ShaderResourceGroup;
+    class SingleDeviceShaderResourceGroup;
     struct ShaderResourceGroupBindingInfo;
     class Resource;
     class ResourceView;
@@ -35,7 +35,7 @@ namespace AZ::RHI
 
         //! Validates that the shader resource group is usable on the current scope. Emits a warning
         //! otherwise and returns false.
-        bool ValidateShaderResourceGroup(const ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const;
+        bool ValidateShaderResourceGroup(const SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const;
 
         //! Ends validation for the current scope.
         void EndScope();

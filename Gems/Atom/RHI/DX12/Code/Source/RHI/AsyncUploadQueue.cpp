@@ -119,7 +119,7 @@ namespace AZ
             // of the upload operation.
 
             Buffer& buffer = static_cast<Buffer&>(*uploadRequest.m_buffer);
-            RHI::BufferPool& bufferPool = static_cast<RHI::BufferPool&>(*buffer.GetPool());
+            RHI::SingleDeviceBufferPool& bufferPool = static_cast<RHI::SingleDeviceBufferPool&>(*buffer.GetPool());
             if (bufferPool.GetDescriptor().m_heapMemoryLevel == RHI::HeapMemoryLevel::Host)
             {
                 // No need to use staging buffers since it's host memory.

@@ -17,7 +17,7 @@ namespace AZ::RHI
     class ResourcePoolResolver;
     class BufferPoolBase;
     class ImagePoolBase;
-    class ShaderResourceGroupPool;
+    class SingleDeviceShaderResourceGroupPool;
 
     //! This class is a simple database of active resource pools. Resource pools
     //! are attached and detached from the database when they initialize and shutdown,
@@ -54,12 +54,12 @@ namespace AZ::RHI
         void ForEachImagePool(Predicate predicate);
 
         //! Provides a read-locked loop over the set of shader resource group pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(const ShaderResourceGroupPool*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(const SingleDeviceShaderResourceGroupPool*).
         template <typename Predicate>
         void ForEachShaderResourceGroupPool(Predicate predicate) const;
 
         //! Provides a read-locked loop over the set of shader resource group pools.
-        //! @param predicate The predicate to call for each instance. Expected signature: void(ShaderResourceGroupPool*).
+        //! @param predicate The predicate to call for each instance. Expected signature: void(SingleDeviceShaderResourceGroupPool*).
         template <typename Predicate>
         void ForEachShaderResourceGroupPool(Predicate predicate);
 
@@ -92,7 +92,7 @@ namespace AZ::RHI
         AZStd::vector<ResourcePool*> m_pools;
         AZStd::vector<BufferPoolBase*> m_bufferPools;
         AZStd::vector<ImagePoolBase*> m_imagePools;
-        AZStd::vector<ShaderResourceGroupPool*> m_shaderResourceGroupPools;
+        AZStd::vector<SingleDeviceShaderResourceGroupPool*> m_shaderResourceGroupPools;
         AZStd::vector<ResourcePoolResolver*> m_poolResolvers;
     };
 

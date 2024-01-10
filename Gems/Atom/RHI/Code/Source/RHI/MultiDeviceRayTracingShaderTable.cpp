@@ -132,7 +132,7 @@ namespace AZ::RHI
 
     void MultiDeviceRayTracingShaderTable::Build(const AZStd::shared_ptr<MultiDeviceRayTracingShaderTableDescriptor> descriptor)
     {
-        IterateObjects<RayTracingShaderTable>(
+        IterateObjects<SingleDeviceRayTracingShaderTable>(
             [&descriptor](auto deviceIndex, auto deviceRayTracingShaderTable)
             {
                 deviceRayTracingShaderTable->Build(descriptor->GetDeviceRayTracingShaderTableDescriptor(deviceIndex));

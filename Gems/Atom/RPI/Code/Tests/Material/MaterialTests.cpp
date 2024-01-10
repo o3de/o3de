@@ -151,7 +151,7 @@ namespace UnitTest
 
             // Dig in to the SRG to make sure the values were applied there as well...
 
-            const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+            const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
             const RHI::ShaderResourceGroupData& srgData = srg->GetData();
 
             EXPECT_EQ(srgData.GetConstant<bool>(srgData.FindShaderInputConstantIndex(Name{ "m_bool" })), false);
@@ -189,7 +189,7 @@ namespace UnitTest
 
             // Dig in to the SRG to make sure the values were applied there as well...
 
-            const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+            const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
             const RHI::ShaderResourceGroupData& srgData = srg->GetData();
 
             EXPECT_EQ(srgData.GetConstant<bool>(srgData.FindShaderInputConstantIndex(Name{ "m_bool" })), true);
@@ -361,7 +361,7 @@ namespace UnitTest
 
         // Dig in to the SRG to make sure the values were applied there as well...
 
-        const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+        const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
         const RHI::ShaderResourceGroupData& srgData = srg->GetData();
 
         EXPECT_EQ(srgData.GetConstant<bool>(srgData.FindShaderInputConstantIndex(Name{ "m_bool" })), false);
@@ -411,7 +411,7 @@ namespace UnitTest
 
         // Dig in to the SRG to make sure the values were applied to both shader constants...
 
-        const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+        const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
         const RHI::ShaderResourceGroupData& srgData = srg->GetData();
 
         EXPECT_EQ(srgData.GetConstant<int32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_int" })), 42);
@@ -428,7 +428,7 @@ namespace UnitTest
         EXPECT_TRUE(material->Compile());
 
         // Taint the SRG so we can check whether it was set by the SetPropertyValue() calls below.
-        const RHI::ShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
+        const RHI::SingleDeviceShaderResourceGroup* srg = material->GetRHIShaderResourceGroup();
         const RHI::ShaderResourceGroupData& srgData = srg->GetData();
         const_cast<RHI::ShaderResourceGroupData*>(&srgData)->SetConstant(m_testMaterialSrgLayout->FindShaderInputConstantIndex(Name{"m_float"}), 0.0f);
 

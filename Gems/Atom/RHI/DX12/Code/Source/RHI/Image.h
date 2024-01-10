@@ -9,7 +9,7 @@
 
 #include <RHI/TileAllocator.h>
 #include <RHI/MemoryView.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/Allocator.h>
 #include <Atom/RHI/ImageProperty.h>
 #include <Atom/RHI.Reflect/Handle.h>
@@ -60,9 +60,9 @@ namespace AZ
         };
 
         class Image final
-            : public RHI::Image
+            : public RHI::SingleDeviceImage
         {
-            using Base = RHI::Image;
+            using Base = RHI::SingleDeviceImage;
         public:
             AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
             AZ_RTTI(Image, "{D2B32EE2-2ED5-477A-8346-95AF0D11DAC8}", Base);
@@ -133,7 +133,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Image
+            // RHI::SingleDeviceImage
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
                 RHI::ImageSubresourceLayout* subresourceLayouts,

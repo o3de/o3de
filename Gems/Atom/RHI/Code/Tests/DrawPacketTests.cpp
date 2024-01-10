@@ -12,7 +12,7 @@
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/DrawListContext.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/std/sort.h>
@@ -25,7 +25,7 @@ namespace UnitTest
 
     struct DrawItemData
     {
-        DrawItemData(SimpleLcgRandom& random, const RHI::Buffer* bufferEmpty, const RHI::PipelineState* psoEmpty)
+        DrawItemData(SimpleLcgRandom& random, const RHI::SingleDeviceBuffer* bufferEmpty, const RHI::SingleDevicePipelineState* psoEmpty)
         {
             m_pipelineState = psoEmpty;
 
@@ -42,7 +42,7 @@ namespace UnitTest
 
         AZStd::array<RHI::StreamBufferView, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferViews;
 
-        const RHI::PipelineState* m_pipelineState;
+        const RHI::SingleDevicePipelineState* m_pipelineState;
         RHI::DrawListTag m_tag;
         RHI::DrawItemSortKey m_sortKey;
         uint8_t m_stencilRef;
@@ -147,10 +147,10 @@ namespace UnitTest
             return drawPacket;
         }
 
-        RHI::Ptr<RHI::Buffer> m_bufferEmpty;
-        RHI::ConstPtr<RHI::PipelineState> m_psoEmpty;
+        RHI::Ptr<RHI::SingleDeviceBuffer> m_bufferEmpty;
+        RHI::ConstPtr<RHI::SingleDevicePipelineState> m_psoEmpty;
 
-        AZStd::array<RHI::Ptr<RHI::ShaderResourceGroup>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgs;
+        AZStd::array<RHI::Ptr<RHI::SingleDeviceShaderResourceGroup>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgs;
         AZStd::array<uint8_t, sizeof(unsigned int) * 4> m_rootConstants;
         RHI::IndexBufferView m_indexBufferView;
 

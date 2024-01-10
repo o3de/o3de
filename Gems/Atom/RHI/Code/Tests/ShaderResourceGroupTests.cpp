@@ -154,10 +154,10 @@ namespace UnitTest
             RHI::ConstPtr<RHI::ShaderResourceGroupLayout> srgLayout = CreateLayout();
 
             {
-                RHI::Ptr<RHI::ShaderResourceGroup> srgA = RHI::Factory::Get().CreateShaderResourceGroup();
+                RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srgA = RHI::Factory::Get().CreateShaderResourceGroup();
 
                 {
-                    RHI::Ptr<RHI::ShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
+                    RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
 
                     RHI::ShaderResourceGroupPoolDescriptor descriptor;
                     descriptor.m_budgetInBytes = 16;
@@ -174,7 +174,7 @@ namespace UnitTest
 
                     ASSERT_TRUE(srgLayout->use_count() == 3);
 
-                    RHI::Ptr<RHI::ShaderResourceGroup> srgB = RHI::Factory::Get().CreateShaderResourceGroup();
+                    RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srgB = RHI::Factory::Get().CreateShaderResourceGroup();
                     ASSERT_TRUE(srgA->GetPool() == nullptr);
 
                     srgPool->InitGroup(*srgA);
@@ -200,13 +200,13 @@ namespace UnitTest
                     {
                         uint32_t srgIndex = 0;
 
-                        const RHI::ShaderResourceGroup* srgs[] =
+                        const RHI::SingleDeviceShaderResourceGroup* srgs[] =
                         {
                             srgA.get(),
                             srgB.get()
                         };
 
-                        srgPool->ForEach<RHI::ShaderResourceGroup>([&srgIndex, &srgs](const RHI::ShaderResourceGroup& srg)
+                        srgPool->ForEach<RHI::SingleDeviceShaderResourceGroup>([&srgIndex, &srgs](const RHI::SingleDeviceShaderResourceGroup& srg)
                         {
                             ASSERT_TRUE(srgs[srgIndex] == &srg);
                             srgIndex++;
@@ -219,7 +219,7 @@ namespace UnitTest
             }
 
             ASSERT_TRUE(srgLayout->use_count() == 1);
-            RHI::Ptr<RHI::ShaderResourceGroup> noopShaderResourceGroup = RHI::Factory::Get().CreateShaderResourceGroup();
+            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> noopShaderResourceGroup = RHI::Factory::Get().CreateShaderResourceGroup();
         }
 
         void TestShaderResourceGroupReflection(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
@@ -270,14 +270,14 @@ namespace UnitTest
 
             RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-            RHI::Ptr<RHI::ShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
+            RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
 
             RHI::ShaderResourceGroupPoolDescriptor descriptor;
             descriptor.m_budgetInBytes = 16;
             descriptor.m_layout = srgLayout.get();
             srgPool->Init(*device, descriptor);
 
-            RHI::Ptr<RHI::ShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
+            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
             srgPool->InitGroup(*srg);
 
             RHI::ShaderResourceGroupData srgData(*srg);
@@ -450,13 +450,13 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::ShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
+        RHI::Ptr<RHI::SingleDeviceShaderResourceGroupPool> srgPool = RHI::Factory::Get().CreateShaderResourceGroupPool();
 
         RHI::ShaderResourceGroupPoolDescriptor descriptor;
         descriptor.m_layout = srgLayout.get();
         srgPool->Init(*device, descriptor);
 
-        RHI::Ptr<RHI::ShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
+        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
         srgPool->InitGroup(*srg);
 
         RHI::ShaderResourceGroupData srgData(*srg);

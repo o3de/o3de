@@ -24,7 +24,7 @@ namespace AZ::RHI
     struct BufferViewDescriptor;
     
         
-    //! ResourceBase is a base class for pooled RHI resources (Image / Buffer / ShaderResourceGroup, etc). It provides
+    //! SingleDeviceResource is a base class for pooled RHI resources (SingleDeviceImage / SingleDeviceBuffer / SingleDeviceShaderResourceGroup, etc). It provides
     //! some common lifecycle management semantics. Resource creation is separate from initialization. Resources are
     //! created separate from any pool, but its backing platform data is associated at initialization time on a specific pool.
     class Resource

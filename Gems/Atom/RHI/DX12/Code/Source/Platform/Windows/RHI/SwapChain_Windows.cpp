@@ -24,7 +24,7 @@ namespace AZ
 
         Device& SwapChain::GetDevice() const
         {
-            return static_cast<Device&>(RHI::SwapChain::GetDevice());
+            return static_cast<Device&>(RHI::SingleDeviceSwapChain::GetDevice());
         }
 
         RHI::ResultCode SwapChain::InitInternal(RHI::Device& deviceBase, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)

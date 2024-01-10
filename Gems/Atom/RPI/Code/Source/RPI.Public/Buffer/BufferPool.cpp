@@ -11,7 +11,7 @@
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 
 #include <Atom/RHI.Reflect/BufferPoolDescriptor.h>
 
@@ -42,10 +42,10 @@ namespace AZ
 
         RHI::ResultCode BufferPool::Init(RHI::Device& device, ResourcePoolAsset& poolAsset)
         {
-            RHI::Ptr<RHI::BufferPool> bufferPool = RHI::Factory::Get().CreateBufferPool();
+            RHI::Ptr<RHI::SingleDeviceBufferPool> bufferPool = RHI::Factory::Get().CreateBufferPool();
             if (!bufferPool)
             {
-                AZ_Error("RPI::BufferPool", false, "Failed to create RHI::BufferPool");
+                AZ_Error("RPI::BufferPool", false, "Failed to create RHI::SingleDeviceBufferPool");
                 return RHI::ResultCode::Fail;
             }
 
@@ -66,12 +66,12 @@ namespace AZ
             return resultCode;
         }
 
-        const RHI::BufferPool* BufferPool::GetRHIPool() const
+        const RHI::SingleDeviceBufferPool* BufferPool::GetRHIPool() const
         {
             return m_pool.get();
         }
 
-        RHI::BufferPool* BufferPool::GetRHIPool()
+        RHI::SingleDeviceBufferPool* BufferPool::GetRHIPool()
         {
             return m_pool.get();
         }

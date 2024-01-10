@@ -26,7 +26,7 @@ namespace AZ::RHI
     }
 
     IndexBufferView::IndexBufferView(
-        const Buffer& buffer,
+        const SingleDeviceBuffer& buffer,
         uint32_t byteOffset,
         uint32_t byteCount,
         IndexFormat format)
@@ -43,7 +43,7 @@ namespace AZ::RHI
         return m_hash;
     }
 
-    const Buffer* IndexBufferView::GetBuffer() const
+    const SingleDeviceBuffer* IndexBufferView::GetBuffer() const
     {
         return m_buffer;
     }

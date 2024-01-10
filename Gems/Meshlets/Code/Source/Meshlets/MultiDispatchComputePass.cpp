@@ -11,7 +11,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
@@ -80,7 +80,7 @@ namespace AZ
             {
                 if (dispatchItem)
                 {
-                    for (RHI::ShaderResourceGroup* srgInDispatch : dispatchItem->m_shaderResourceGroups)
+                    for (RHI::SingleDeviceShaderResourceGroup* srgInDispatch : dispatchItem->m_shaderResourceGroups)
                     {
                         srgInDispatch->Compile()
                     }
@@ -122,7 +122,7 @@ namespace AZ
                 // In a similar way, add the dispatch high frequencies srgs.
                 for (uint32_t srg = 0; srg < dispatchItem->m_shaderResourceGroupCount; ++srg)
                 {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = dispatchItem->m_shaderResourceGroups[srg];
+                    const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup = dispatchItem->m_shaderResourceGroups[srg];
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
                 }
 

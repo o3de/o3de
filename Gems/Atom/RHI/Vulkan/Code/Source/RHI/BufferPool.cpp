@@ -48,7 +48,7 @@ namespace AZ
         {
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::Buffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(RHI::SingleDeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
         {
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
@@ -104,7 +104,7 @@ namespace AZ
             buffer.Invalidate();
         }
 
-        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::Buffer& bufferBase) 
+        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::SingleDeviceBuffer& bufferBase) 
         {
             auto& buffer = static_cast<Buffer&>(bufferBase);
             auto& device = static_cast<Device&>(GetDevice());
@@ -168,7 +168,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void BufferPool::UnmapBufferInternal(RHI::Buffer& bufferBase) 
+        void BufferPool::UnmapBufferInternal(RHI::SingleDeviceBuffer& bufferBase) 
         {
             const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
             auto& buffer = static_cast<Buffer&>(bufferBase);

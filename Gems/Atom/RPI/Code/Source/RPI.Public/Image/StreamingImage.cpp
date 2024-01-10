@@ -125,7 +125,7 @@ namespace AZ
             }
 
             // Cache off the RHI streaming image pool instance.
-            RHI::StreamingImagePool* rhiPool = pool->GetRHIPool();
+            RHI::SingleDeviceStreamingImagePool* rhiPool = pool->GetRHIPool();
 
             /**
              * NOTE: The tail mip-chain is required to exist as a dependency of this asset. This allows
@@ -201,7 +201,7 @@ namespace AZ
                 return RHI::ResultCode::Success;
             }
 
-            AZ_Warning("StreamingImagePool", false, "Failed to initialize RHI::Image on RHI::StreamingImagePool.");
+            AZ_Warning("StreamingImagePool", false, "Failed to initialize RHI::SingleDeviceImage on RHI::SingleDeviceStreamingImagePool.");
             return resultCode;
         }
 

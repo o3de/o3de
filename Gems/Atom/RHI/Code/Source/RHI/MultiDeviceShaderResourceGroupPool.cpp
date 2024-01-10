@@ -66,7 +66,7 @@ namespace AZ::RHI
             &group,
             [this, &group]()
             {
-                return IterateObjects<ShaderResourceGroupPool>([this, &group](auto deviceIndex, [[maybe_unused]] auto deviceShaderResourceGroupPool)
+                return IterateObjects<SingleDeviceShaderResourceGroupPool>([this, &group](auto deviceIndex, [[maybe_unused]] auto deviceShaderResourceGroupPool)
                 {
                     group.m_deviceObjects[deviceIndex] = Factory::Get().CreateShaderResourceGroup();
                     return GetDeviceShaderResourceGroupPool(deviceIndex)->InitGroup(*group.GetDeviceShaderResourceGroup(deviceIndex));
@@ -95,7 +95,7 @@ namespace AZ::RHI
 
     void MultiDeviceShaderResourceGroupPool::CompileGroupsBegin()
     {
-        IterateObjects<ShaderResourceGroupPool>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
+        IterateObjects<SingleDeviceShaderResourceGroupPool>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
         {
             deviceShaderResourceGroupPool->CompileGroupsBegin();
         });
@@ -103,7 +103,7 @@ namespace AZ::RHI
 
     void MultiDeviceShaderResourceGroupPool::CompileGroupsEnd()
     {
-        IterateObjects<ShaderResourceGroupPool>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
+        IterateObjects<SingleDeviceShaderResourceGroupPool>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
         {
             deviceShaderResourceGroupPool->CompileGroupsEnd();
         });
@@ -112,7 +112,7 @@ namespace AZ::RHI
     uint32_t MultiDeviceShaderResourceGroupPool::GetGroupsToCompileCount() const
     {
         auto groupCount{ 0u };
-        IterateObjects<ShaderResourceGroupPool>([&groupCount]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
+        IterateObjects<SingleDeviceShaderResourceGroupPool>([&groupCount]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
         {
             groupCount += deviceShaderResourceGroupPool->GetGroupsToCompileCount();
         });
@@ -123,7 +123,7 @@ namespace AZ::RHI
     ResultCode MultiDeviceShaderResourceGroupPool::CompileGroup(
         MultiDeviceShaderResourceGroup& shaderResourceGroup, const MultiDeviceShaderResourceGroupData& shaderResourceGroupData)
     {
-        return shaderResourceGroup.IterateObjects<ShaderResourceGroup>([this, &shaderResourceGroupData](auto deviceIndex, auto deviceShaderResourceGroup)
+        return shaderResourceGroup.IterateObjects<SingleDeviceShaderResourceGroup>([this, &shaderResourceGroupData](auto deviceIndex, auto deviceShaderResourceGroup)
         {
             return GetDeviceShaderResourceGroupPool(deviceIndex)->CompileGroup(
                 *deviceShaderResourceGroup, shaderResourceGroupData.GetDeviceShaderResourceGroupData(deviceIndex));
@@ -138,7 +138,7 @@ namespace AZ::RHI
         };
 
         auto currentStart{ 0u };
-        IterateObjects<ShaderResourceGroupPool>([&doOverlap, &interval, &currentStart]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
+        IterateObjects<SingleDeviceShaderResourceGroupPool>([&doOverlap, &interval, &currentStart]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
         {
             auto groupsToCompile{ static_cast<int>(deviceShaderResourceGroupPool->GetGroupsToCompileCount()) };
 
@@ -187,7 +187,7 @@ namespace AZ::RHI
 
     void MultiDeviceShaderResourceGroupPool::Shutdown()
     {
-        IterateObjects<ShaderResourceGroupPool>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
+        IterateObjects<SingleDeviceShaderResourceGroupPool>([]([[maybe_unused]] auto deviceIndex, auto deviceShaderResourceGroupPool)
         {
             deviceShaderResourceGroupPool->Shutdown();
         });

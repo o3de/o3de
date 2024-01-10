@@ -605,7 +605,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel)
+        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::SingleDeviceImage& image, uint32_t targetMipLevel)
         {
             Image& imageImpl = static_cast<Image&>(image);
 

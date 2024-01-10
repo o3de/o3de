@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/Factory.h>
 
 namespace AZ::RHI
@@ -107,14 +107,14 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Blas(const RHI::Ptr<RHI::RayTracingBlas>& blas)
+    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Blas(const RHI::Ptr<RHI::SingleDeviceRayTracingBlas>& blas)
     {
         AZ_Assert(m_buildContext, "Blas property can only be added to an Instance entry");
         m_buildContext->m_blas = blas;
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstancesBuffer(const RHI::Ptr<RHI::Buffer>& instancesBuffer)
+    RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstancesBuffer(const RHI::Ptr<RHI::SingleDeviceBuffer>& instancesBuffer)
     {
         AZ_Assert(!m_buildContext, "InstancesBuffer property can only be added to the top level");
         AZ_Assert(m_instances.size() == 0, "InstancesBuffer cannot exist with instance entries");
@@ -129,14 +129,14 @@ namespace AZ::RHI
         return this;
     }
 
-    RHI::Ptr<RHI::RayTracingBlas> RayTracingBlas::CreateRHIRayTracingBlas()
+    RHI::Ptr<RHI::SingleDeviceRayTracingBlas> SingleDeviceRayTracingBlas::CreateRHIRayTracingBlas()
     {
-        RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = RHI::Factory::Get().CreateRayTracingBlas();
-        AZ_Error("RayTracingBlas", rayTracingBlas.get(), "Failed to create RHI::RayTracingBlas");
+        RHI::Ptr<RHI::SingleDeviceRayTracingBlas> rayTracingBlas = RHI::Factory::Get().CreateRayTracingBlas();
+        AZ_Error("SingleDeviceRayTracingBlas", rayTracingBlas.get(), "Failed to create RHI::SingleDeviceRayTracingBlas");
         return rayTracingBlas;
     }
 
-    ResultCode RayTracingBlas::CreateBuffers(Device& device, const RayTracingBlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools)
+    ResultCode SingleDeviceRayTracingBlas::CreateBuffers(Device& device, const RayTracingBlasDescriptor* descriptor, const SingleDeviceRayTracingBufferPools& rayTracingBufferPools)
     {
         ResultCode resultCode = CreateBuffersInternal(device, descriptor, rayTracingBufferPools);
         if (resultCode == ResultCode::Success)
@@ -147,14 +147,14 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    RHI::Ptr<RHI::RayTracingTlas> RayTracingTlas::CreateRHIRayTracingTlas()
+    RHI::Ptr<RHI::SingleDeviceRayTracingTlas> SingleDeviceRayTracingTlas::CreateRHIRayTracingTlas()
     {
-        RHI::Ptr<RHI::RayTracingTlas> rayTracingTlas = RHI::Factory::Get().CreateRayTracingTlas();
-        AZ_Error("RayTracingTlas", rayTracingTlas.get(), "Failed to create RHI::RayTracingTlas");
+        RHI::Ptr<RHI::SingleDeviceRayTracingTlas> rayTracingTlas = RHI::Factory::Get().CreateRayTracingTlas();
+        AZ_Error("SingleDeviceRayTracingTlas", rayTracingTlas.get(), "Failed to create RHI::SingleDeviceRayTracingTlas");
         return rayTracingTlas;
     }
 
-    ResultCode RayTracingTlas::CreateBuffers(Device& device, const RayTracingTlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools)
+    ResultCode SingleDeviceRayTracingTlas::CreateBuffers(Device& device, const RayTracingTlasDescriptor* descriptor, const SingleDeviceRayTracingBufferPools& rayTracingBufferPools)
     {
         ResultCode resultCode = CreateBuffersInternal(device, descriptor, rayTracingBufferPools);
         if (resultCode == ResultCode::Success)

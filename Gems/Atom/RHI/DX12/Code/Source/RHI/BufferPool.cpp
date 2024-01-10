@@ -249,7 +249,7 @@ namespace AZ
             Base::OnFrameEnd();
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::Buffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(RHI::SingleDeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -290,7 +290,7 @@ namespace AZ
             buffer.m_pendingResolves = 0;
         }
 
-        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::Buffer& bufferBase)
+        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::SingleDeviceBuffer& bufferBase)
         {
             Buffer& buffer = static_cast<Buffer&>(bufferBase);
 
@@ -345,7 +345,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void BufferPool::UnmapBufferInternal(RHI::Buffer& bufferBase)
+        void BufferPool::UnmapBufferInternal(RHI::SingleDeviceBuffer& bufferBase)
         {
             const RHI::BufferPoolDescriptor& poolDescriptor = GetDescriptor();
             Buffer& buffer = static_cast<Buffer&>(bufferBase);

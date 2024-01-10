@@ -8,9 +8,9 @@
 #pragma once
 
 #include <Atom/RHI/AsyncWorkQueue.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
 #include <AzCore/std/containers/span.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Buffer.h>
@@ -62,7 +62,7 @@ namespace AZ
 
         private:
             struct FramePacket;
-            RHI::AsyncWorkHandle CreateAsyncWork(Fence& fence, RHI::Fence::SignalCallback callback = nullptr);
+            RHI::AsyncWorkHandle CreateAsyncWork(Fence& fence, RHI::SingleDeviceFence::SignalCallback callback = nullptr);
             void ProcessCallback(const RHI::AsyncWorkHandle& handle);
             void CopyBufferToImage(FramePacket* framePacket,
                                    Image* destImage,

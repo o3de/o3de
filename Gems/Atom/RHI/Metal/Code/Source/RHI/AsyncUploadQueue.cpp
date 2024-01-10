@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/CommandQueue.h>
 #include <AzCore/Component/TickBus.h>
 #include <RHI/AsyncUploadQueue.h>
@@ -83,7 +83,7 @@ namespace AZ
             Buffer& destBuffer = static_cast<Buffer&>(*uploadRequest.m_buffer);
             const MemoryView& destMemoryView = destBuffer.GetMemoryView();
             MTLStorageMode mtlStorageMode = destBuffer.GetMemoryView().GetStorageMode();
-            RHI::BufferPool& bufferPool = static_cast<RHI::BufferPool&>(*destBuffer.GetPool());
+            RHI::SingleDeviceBufferPool& bufferPool = static_cast<RHI::SingleDeviceBufferPool&>(*destBuffer.GetPool());
             
             // No need to use staging buffers since it's host memory.
             // We just map, copy and then unmap.
@@ -421,7 +421,7 @@ namespace AZ
             ProcessCallback(workHandle);
         }
     
-        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(Fence& fence, RHI::Fence::SignalCallback callback )
+        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(Fence& fence, RHI::SingleDeviceFence::SignalCallback callback )
         {
             return m_asyncWaitQueue.CreateAsyncWork([fence, callback]()
             {

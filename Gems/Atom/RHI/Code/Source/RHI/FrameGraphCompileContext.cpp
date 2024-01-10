@@ -7,10 +7,10 @@
  */
 #include <Atom/RHI/FrameGraphCompileContext.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 
@@ -60,7 +60,7 @@ namespace AZ::RHI
         return GetBufferView(scopeAttacment);
     }
 
-    const Buffer* FrameGraphCompileContext::GetBuffer(const AttachmentId& attachmentId) const
+    const SingleDeviceBuffer* FrameGraphCompileContext::GetBuffer(const AttachmentId& attachmentId) const
     {
         const BufferView* bufferView = GetBufferView(attachmentId);
         if (bufferView)
@@ -92,7 +92,7 @@ namespace AZ::RHI
         return GetImageView(scopeAttacment);
     }
 
-    const Image* FrameGraphCompileContext::GetImage(const AttachmentId& attachmentId) const
+    const SingleDeviceImage* FrameGraphCompileContext::GetImage(const AttachmentId& attachmentId) const
     {
         const ImageView* imageView = GetImageView(attachmentId);
         if (imageView)

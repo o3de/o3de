@@ -8,7 +8,7 @@
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/BufferPoolBase.h>
 #include <Atom/RHI/ImagePoolBase.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
 
 #include <AzCore/std/algorithm.h>
 
@@ -37,7 +37,7 @@ namespace AZ::RHI
         {
             m_imagePools.emplace_back(imagePool);
         }
-        else if (ShaderResourceGroupPool* srgPool = azrtti_cast<ShaderResourceGroupPool*>(resourcePool))
+        else if (SingleDeviceShaderResourceGroupPool* srgPool = azrtti_cast<SingleDeviceShaderResourceGroupPool*>(resourcePool))
         {
             m_shaderResourceGroupPools.emplace_back(srgPool);
         }
@@ -69,7 +69,7 @@ namespace AZ::RHI
             AZ_Assert(it != m_imagePools.end(), "Image pool does not exist in database.");
             m_imagePools.erase(it);
         }
-        else if (ShaderResourceGroupPool* srgPool = azrtti_cast<ShaderResourceGroupPool*>(resourcePool))
+        else if (SingleDeviceShaderResourceGroupPool* srgPool = azrtti_cast<SingleDeviceShaderResourceGroupPool*>(resourcePool))
         {
             auto it = AZStd::find(m_shaderResourceGroupPools.begin(), m_shaderResourceGroupPools.end(), srgPool);
             AZ_Assert(it != m_shaderResourceGroupPools.end(), "ShaderResourceGroup pool does not exist in database.");

@@ -10,13 +10,13 @@
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
 #include <Atom/RHI/AliasingBarrierTracker.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/FreeListAllocator.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <Atom/RHI/ResourcePool.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -24,8 +24,8 @@ namespace AZ::RHI
 {
     class Resource;
     class Scope;
-    class Buffer;
-    class Image;
+    class SingleDeviceBuffer;
+    class SingleDeviceImage;
 
     struct AliasedHeapDescriptor
         : public ResourcePoolDescriptor
@@ -65,7 +65,7 @@ namespace AZ::RHI
         ResultCode ActivateBuffer(
             const TransientBufferDescriptor& descriptor,
             Scope& scope,
-            Buffer** activatedBuffer);
+            SingleDeviceBuffer** activatedBuffer);
 
         //! Ends the use of a previously activated buffer.
         void DeactivateBuffer(
@@ -76,7 +76,7 @@ namespace AZ::RHI
         ResultCode ActivateImage(
             const TransientImageDescriptor& descriptor,
             Scope& scope,
-            Image** activatedImage);
+            SingleDeviceImage** activatedImage);
 
         //! Ends the use of a previously activated image.
         void DeactivateImage(

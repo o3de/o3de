@@ -9,7 +9,7 @@
 
 namespace AZ::RHI
 {
-    ResultCode ImagePoolBase::InitImage(Image* image, const ImageDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
+    ResultCode ImagePoolBase::InitImage(SingleDeviceImage* image, const ImageDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
     {
             
         // The descriptor is assigned regardless of whether initialization succeeds. Descriptors are considered

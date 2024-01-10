@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/vector.h>
@@ -27,9 +27,9 @@ namespace AZ
         class CommandQueue;
 
         class SwapChain final
-            : public RHI::SwapChain
+            : public RHI::SingleDeviceSwapChain
         {
-            using Base = RHI::SwapChain;
+            using Base = RHI::SingleDeviceSwapChain;
 
         public:
             AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
@@ -61,10 +61,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////
-            // RHI::SwapChain
+            // RHI::SingleDeviceSwapChain
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions) override;
             void ShutdownInternal() override;
-            RHI::ResultCode InitImageInternal(const RHI::SwapChain::InitImageRequest& request) override;
+            RHI::ResultCode InitImageInternal(const RHI::SingleDeviceSwapChain::InitImageRequest& request) override;
             RHI::ResultCode ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions) override;
             uint32_t PresentInternal() override;
             void SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval) override;

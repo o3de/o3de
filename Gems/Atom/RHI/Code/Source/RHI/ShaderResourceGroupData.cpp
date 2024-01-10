@@ -6,9 +6,9 @@
  *
  */
 #include <Atom/RHI/ShaderResourceGroupData.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
 #include <Atom/RHI.Reflect/Bits.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 
 namespace AZ::RHI
 {
@@ -19,11 +19,11 @@ namespace AZ::RHI
     ShaderResourceGroupData::ShaderResourceGroupData() = default;
     ShaderResourceGroupData::~ShaderResourceGroupData() = default;
 
-    ShaderResourceGroupData::ShaderResourceGroupData(const ShaderResourceGroup& shaderResourceGroup)
+    ShaderResourceGroupData::ShaderResourceGroupData(const SingleDeviceShaderResourceGroup& shaderResourceGroup)
         : ShaderResourceGroupData(*shaderResourceGroup.GetPool())
     {}
 
-    ShaderResourceGroupData::ShaderResourceGroupData(const ShaderResourceGroupPool& shaderResourceGroupPool)
+    ShaderResourceGroupData::ShaderResourceGroupData(const SingleDeviceShaderResourceGroupPool& shaderResourceGroupPool)
         : ShaderResourceGroupData(shaderResourceGroupPool.GetLayout())
     {}
 
@@ -400,7 +400,7 @@ namespace AZ::RHI
         AZStd::span<bool> isViewReadOnly,
         uint32_t arrayIndex)
     {
-        BufferPoolDescriptor desc = static_cast<const BufferPool*>(indirectResourceBuffer->GetBuffer().GetPool())->GetDescriptor();
+        BufferPoolDescriptor desc = static_cast<const SingleDeviceBufferPool*>(indirectResourceBuffer->GetBuffer().GetPool())->GetDescriptor();
         AZ_Assert(desc.m_heapMemoryLevel == HeapMemoryLevel::Device, "Indirect buffer that contains indices to the bindless resource views should be device as that is protected against triple buffering.");
             
         auto key = AZStd::make_pair(indirectResourceBufferIndex, arrayIndex);
@@ -446,7 +446,7 @@ namespace AZ::RHI
         AZStd::span<bool> isViewReadOnly,
         uint32_t arrayIndex)
     {
-        BufferPoolDescriptor desc = static_cast<const BufferPool*>(indirectResourceBuffer->GetBuffer().GetPool())->GetDescriptor();
+        BufferPoolDescriptor desc = static_cast<const SingleDeviceBufferPool*>(indirectResourceBuffer->GetBuffer().GetPool())->GetDescriptor();
         AZ_Assert(desc.m_heapMemoryLevel == HeapMemoryLevel::Device, "Indirect buffer that contains indices to the bindless resource views should be device as that is protected against triple buffering.");
             
         auto key = AZStd::make_pair(indirectResourceBufferIndex, arrayIndex);

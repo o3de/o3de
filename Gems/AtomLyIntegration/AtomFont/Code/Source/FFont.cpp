@@ -44,7 +44,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DrawPacket.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 

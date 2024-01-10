@@ -51,7 +51,7 @@ namespace UnitTest
 
     void BufferPool::ShutdownInternal() {}
 
-    RHI::ResultCode BufferPool::InitBufferInternal(RHI::Buffer& bufferBase, const RHI::BufferDescriptor& descriptor)
+    RHI::ResultCode BufferPool::InitBufferInternal(RHI::SingleDeviceBuffer& bufferBase, const RHI::BufferDescriptor& descriptor)
     {
         AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
 
@@ -75,13 +75,13 @@ namespace UnitTest
         return RHI::ResultCode::Success;
     }
 
-    void BufferPool::UnmapBufferInternal(RHI::Buffer& bufferBase)
+    void BufferPool::UnmapBufferInternal(RHI::SingleDeviceBuffer& bufferBase)
     {
         Buffer& buffer = static_cast<Buffer&>(bufferBase);
         buffer.Unmap();
     }
 
-    RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::Buffer&)
+    RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::SingleDeviceBuffer&)
     {
         return RHI::ResultCode::Success;
     }

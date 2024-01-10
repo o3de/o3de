@@ -15,7 +15,7 @@
 
 namespace AZ::RHI
 {
-    class Image;
+    class SingleDeviceImage;
     //! Key for the desired foveated rendering level
     inline constexpr const char* XRFoveatedLevelKey = "/O3DE/Atom/OpenXR/FoveatedLevel";
 
@@ -108,7 +108,7 @@ namespace AZ::RHI
         //! Rendering api to create a XR Session
         virtual AZ::RHI::ResultCode CreateSession(AZ::RHI::XRSessionDescriptor* sessionDescriptor) = 0;
 
-        //! Rendering api to create a XR SwapChain which should internally create a xr swapchain per view as 
+        //! Rendering api to create a XR SingleDeviceSwapChain which should internally create a xr swapchain per view as 
         //! well as multiple swapchain images per xr swapchain
         virtual AZ::RHI::ResultCode CreateSwapChain() = 0;
 
@@ -139,6 +139,6 @@ namespace AZ::RHI
         //! Fills the contents of an image that will be use as a variable shading rate attachment depending
         //! on the requested level of foveted rendering. The image must have the proper format and size for using
         //! as a shading rate attachment.
-        virtual AZ::RHI::ResultCode InitVariableRateShadingImageContent(AZ::RHI::Image* image, XRFoveatedLevel level) const = 0;
+        virtual AZ::RHI::ResultCode InitVariableRateShadingImageContent(AZ::RHI::SingleDeviceImage* image, XRFoveatedLevel level) const = 0;
     };
 }

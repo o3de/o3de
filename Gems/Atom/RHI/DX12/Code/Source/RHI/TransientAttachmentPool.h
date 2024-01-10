@@ -9,7 +9,7 @@
 
 #include <RHI/AliasedHeap.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <Atom/RHI/AliasedAttachmentAllocator.h>
 #include <Atom/RHI/Scope.h>
 
@@ -22,9 +22,9 @@ namespace AZ
         using AliasedAttachmentAllocator = RHI::AliasedAttachmentAllocator<AliasedHeap>;
 
         class TransientAttachmentPool
-            : public RHI::TransientAttachmentPool
+            : public RHI::SingleDeviceTransientAttachmentPool
         {
-            using Base = RHI::TransientAttachmentPool;
+            using Base = RHI::SingleDeviceTransientAttachmentPool;
         public:
             AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
             AZ_RTTI(TransientAttachmentPool, "{2E513E84-0161-4A0C-8148-3364BFFFC5E4}", Base);
@@ -35,12 +35,12 @@ namespace AZ
             TransientAttachmentPool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::TransientAttachmentPool
+            // RHI::SingleDeviceTransientAttachmentPool
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::TransientAttachmentPoolDescriptor& descriptor) override;
             void BeginInternal(RHI::TransientAttachmentPoolCompileFlags flags, const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
             void EndInternal() override;
-            RHI::Image* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
-            RHI::Buffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
+            RHI::SingleDeviceImage* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
+            RHI::SingleDeviceBuffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
             void DeactivateBuffer(const RHI::AttachmentId& attachmentId) override;
             void DeactivateImage(const RHI::AttachmentId& attachmentId) override;
             void ShutdownInternal() override;

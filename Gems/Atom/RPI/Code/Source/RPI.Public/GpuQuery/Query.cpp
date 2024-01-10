@@ -223,7 +223,7 @@ namespace AZ
             // Calculate the amount of RHI Queries used for this RPI Query.
             const uint32_t queryIndicesCount = rhiQueryIndices.m_max - rhiQueryIndices.m_min + 1u;
             AZ_Assert((queryIndicesCount % m_queryPool->GetQueriesPerResult()) == 0u,
-                "The amount of RHI::Query indices used for the RPI::Query is not a multiple of the number of RHI::Queries required to calculate a single result.");
+                "The amount of RHI::SingleDeviceQuery indices used for the RPI::Query is not a multiple of the number of RHI::Queries required to calculate a single result.");
 
             // Calculate the number of query groups.
             const uint32_t subQueryIndexCount = queryIndicesCount / m_queryPool->GetQueriesPerResult();

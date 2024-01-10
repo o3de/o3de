@@ -25,7 +25,7 @@ namespace AZ::RHI
     //! an operation on this queue. The queue is then flushed by the FrameScheduler.
     //!
     //! Downstream systems that need to rebuild platform-specific view information
-    //! (e.g. ShaderResourceGroupPool) listen on this bus and perform those updates
+    //! (e.g. SingleDeviceShaderResourceGroupPool) listen on this bus and perform those updates
     //! when the queue is flushed.
     //!
     //! This bus is for INTERNAL use only.

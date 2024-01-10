@@ -6,9 +6,9 @@
  *
  */
 #include <Atom/RHI/Resource.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResourcePool.h>
@@ -115,7 +115,7 @@ namespace AZ::RHI
         if (m_pool)
         {
             AZ_Error(
-                "ResourceBase",
+                "SingleDeviceResource",
                 m_frameAttachment == nullptr,
                 "The resource is currently attached on a frame graph. It is not valid "
                 "to shutdown a resource while it is being used as an Attachment. The "
@@ -220,7 +220,7 @@ namespace AZ::RHI
     Ptr<ImageView> Resource::InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const
     {
         Ptr<ImageView> imageViewPtr = RHI::Factory::Get().CreateImageView();
-        RHI::ResultCode resultCode = imageViewPtr->Init(static_cast<const Image&>(*this), imageViewDescriptor);
+        RHI::ResultCode resultCode = imageViewPtr->Init(static_cast<const SingleDeviceImage&>(*this), imageViewDescriptor);
         if (resultCode == RHI::ResultCode::Success)
         {
             m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(imageViewPtr.get());
@@ -235,7 +235,7 @@ namespace AZ::RHI
     Ptr<BufferView> Resource::InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const
     {
         Ptr<BufferView> bufferViewPtr = RHI::Factory::Get().CreateBufferView();
-        RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const Buffer&>(*this), bufferViewDescriptor);
+        RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const SingleDeviceBuffer&>(*this), bufferViewDescriptor);
         if (resultCode == RHI::ResultCode::Success)
         {
             m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(bufferViewPtr.get());

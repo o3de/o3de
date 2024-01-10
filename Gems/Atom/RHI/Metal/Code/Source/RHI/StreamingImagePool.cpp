@@ -110,7 +110,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
         
-        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::Image& imageBase, uint32_t targetMipLevel)
+        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::SingleDeviceImage& imageBase, uint32_t targetMipLevel)
         {
             auto& image = static_cast<Image&>(imageBase);
             auto& device = static_cast<Device&>(GetDevice());

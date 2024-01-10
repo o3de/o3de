@@ -15,11 +15,11 @@
 
 namespace AZ::RHI
 {
-    class Buffer;
+    class SingleDeviceBuffer;
     struct IndirectBufferLayout;
     class IndexBufferView;
     class StreamBufferView;
-    class IndirectBufferSignature;
+    class SingleDeviceIndirectBufferSignature;
 
     //! IndirectBufferWriter is a helper class to write indirect commands
     //! to a buffer or a memory location in a platform independent way. Different APIs may
@@ -45,7 +45,7 @@ namespace AZ::RHI
         //! @param signature Signature of the indirect buffer.
         //! @return A result code denoting the status of the call. If successful, the IndirectBufferWriter is considered
         //!      initialized and is able to service write requests. If failure, the IndirectBufferWriter remains uninitialized.
-        ResultCode Init(Buffer& buffer, size_t byteOffset, uint32_t byteStride, uint32_t maxCommandSequences, const IndirectBufferSignature& signature);
+        ResultCode Init(SingleDeviceBuffer& buffer, size_t byteOffset, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature);
 
         //! Initialize the IndirectBufferWriter to write commands into a memory location.
         //! @param memoryPtr The memory location where the commands will be written. Must not be null.
@@ -54,7 +54,7 @@ namespace AZ::RHI
         //! @param signature Signature of the indirect buffer.
         //! @return A result code denoting the status of the call. If successful, the IndirectBufferWriter is considered
         //!      initialized and is able to service write requests. If failure, the IndirectBufferWriter remains uninitialized.
-        ResultCode Init(void* memoryPtr, uint32_t byteStride, uint32_t maxCommandSequences, const IndirectBufferSignature& signature);
+        ResultCode Init(void* memoryPtr, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature);
 
         //! Writes a vertex buffer view command into the current sequence.
         //! @param slot The stream buffer slot that the view will set.
@@ -108,7 +108,7 @@ namespace AZ::RHI
         void Shutdown() override;
 
     private:
-        bool ValidateArguments(uint32_t byteStride, uint32_t maxCommandSequences, const IndirectBufferSignature& signature) const;
+        bool ValidateArguments(uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature) const;
         bool ValidateRootConstantsCommand(IndirectCommandIndex index, uint32_t byteSize) const;
         bool PrepareWriting(IndirectCommandIndex commandIndex);
 
@@ -147,8 +147,8 @@ namespace AZ::RHI
 
         uint8_t* GetTargetMemory() const;
 
-        Buffer* m_buffer = 0;
-        const IndirectBufferSignature* m_signature = nullptr;
+        SingleDeviceBuffer* m_buffer = 0;
+        const SingleDeviceIndirectBufferSignature* m_signature = nullptr;
         uint32_t m_maxSequences = 0;
         uint32_t m_sequenceStride = 0;
         size_t m_bufferOffset = 0;

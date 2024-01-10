@@ -34,7 +34,7 @@ namespace AZ::RHI
             uint32_t maxSequenceCount,
             const IndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
-            const Buffer* countBuffer,
+            const SingleDeviceBuffer* countBuffer,
             uint64_t countBufferByteOffset)
             : m_maxSequenceCount(maxSequenceCount)
             , m_indirectBufferView(&indirectBuffer)
@@ -62,5 +62,5 @@ namespace AZ::RHI
         const BufferClass* m_countBuffer = nullptr;
     };
 
-    using IndirectArguments = IndirectArgumentsTemplate<Buffer, IndirectBufferView>;
+    using IndirectArguments = IndirectArgumentsTemplate<SingleDeviceBuffer, IndirectBufferView>;
 }

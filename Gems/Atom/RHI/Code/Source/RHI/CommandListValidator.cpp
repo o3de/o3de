@@ -7,8 +7,8 @@
  */
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/Scope.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
 #include <Atom/RHI/ResourcePool.h>
 #include <Atom/RHI/BufferPoolBase.h>
 #include <Atom/RHI/ImagePoolBase.h>
@@ -49,7 +49,7 @@ namespace AZ::RHI
         m_attachments.clear();
     }
 
-    bool CommandListValidator::ValidateShaderResourceGroup(const ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const
+    bool CommandListValidator::ValidateShaderResourceGroup(const SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const
     {
         if (!Validation::IsEnabled())
         {

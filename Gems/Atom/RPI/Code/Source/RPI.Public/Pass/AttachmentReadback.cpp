@@ -17,7 +17,7 @@
 
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/SingleDeviceFence.h>
 #include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -367,7 +367,7 @@ namespace AZ
         {
             if (m_attachmentType == RHI::AttachmentType::Buffer)
             {
-                const AZ::RHI::Buffer* buffer = context.GetBuffer(m_copyAttachmentId);
+                const AZ::RHI::SingleDeviceBuffer* buffer = context.GetBuffer(m_copyAttachmentId);
 
                 RPI::CommonBufferDescriptor desc;
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
@@ -387,7 +387,7 @@ namespace AZ
             else if (m_attachmentType == RHI::AttachmentType::Image)
             {
                 // copy image to a read back buffer since only a buffer can be accessed by the host.
-                const AZ::RHI::Image* image = context.GetImage(m_copyAttachmentId);
+                const AZ::RHI::SingleDeviceImage* image = context.GetImage(m_copyAttachmentId);
                 if (!image)
                 {
                     AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());

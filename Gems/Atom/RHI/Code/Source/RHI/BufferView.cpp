@@ -7,11 +7,11 @@
  */
 
 #include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 
 namespace AZ::RHI
 {
-    ResultCode BufferView::Init(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor)
+    ResultCode BufferView::Init(const SingleDeviceBuffer& buffer, const BufferViewDescriptor& viewDescriptor)
     {
         if (!ValidateForInit(buffer, viewDescriptor))
         {
@@ -33,7 +33,7 @@ namespace AZ::RHI
         return ResourceView::Init(buffer);
     }
 
-    bool BufferView::ValidateForInit(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor) const
+    bool BufferView::ValidateForInit(const SingleDeviceBuffer& buffer, const BufferViewDescriptor& viewDescriptor) const
     {
         if (Validation::IsEnabled())
         {
@@ -65,9 +65,9 @@ namespace AZ::RHI
         return m_descriptor;
     }
 
-    const Buffer& BufferView::GetBuffer() const
+    const SingleDeviceBuffer& BufferView::GetBuffer() const
     {
-        return static_cast<const Buffer&>(GetResource());
+        return static_cast<const SingleDeviceBuffer&>(GetResource());
     }
 
     bool BufferView::IsFullView() const

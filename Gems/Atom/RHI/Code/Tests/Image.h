@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI/ImageView.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -26,7 +26,7 @@ namespace UnitTest
     };
 
     class Image
-        : public AZ::RHI::Image
+        : public AZ::RHI::SingleDeviceImage
     {
     public:
         AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
@@ -36,7 +36,7 @@ namespace UnitTest
     };
 
     class ImagePool
-        : public AZ::RHI::ImagePool
+        : public AZ::RHI::SingleDeviceImagePool
     {
     public:
         AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);

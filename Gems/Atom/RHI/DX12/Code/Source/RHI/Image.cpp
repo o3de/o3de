@@ -135,7 +135,7 @@ namespace AZ
         
         void Image::SetDescriptor(const RHI::ImageDescriptor& descriptor)
         {
-            RHI::Image::SetDescriptor(descriptor);
+            RHI::SingleDeviceImage::SetDescriptor(descriptor);
 
             m_initialResourceState = D3D12_RESOURCE_STATE_COMMON;
 

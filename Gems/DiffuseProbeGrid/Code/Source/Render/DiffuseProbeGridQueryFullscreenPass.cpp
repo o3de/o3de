@@ -10,7 +10,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/FrameGraphInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -218,7 +218,7 @@ namespace AZ
 
                 // submit DispatchItem
                 const uint8_t srgCount = 3;
-                AZStd::array<const RHI::ShaderResourceGroup*, 8> shaderResourceGroups =
+                AZStd::array<const RHI::SingleDeviceShaderResourceGroup*, 8> shaderResourceGroups =
                 {
                     diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup(),
                     m_shaderResourceGroup->GetRHIShaderResourceGroup(),

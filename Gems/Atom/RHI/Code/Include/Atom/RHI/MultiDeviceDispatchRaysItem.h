@@ -91,7 +91,7 @@ namespace AZ::RHI
                 dispatchRaysItem.m_shaderResourceGroupCount = shaderResourceGroupCount;
 
                 auto [it, insertOK]{ m_deviceShaderResourceGroups.emplace(
-                    deviceIndex, AZStd::vector<ShaderResourceGroup*>(shaderResourceGroupCount)) };
+                    deviceIndex, AZStd::vector<SingleDeviceShaderResourceGroup*>(shaderResourceGroupCount)) };
 
                 auto& [index, deviceShaderResourceGroup]{ *it };
 
@@ -119,6 +119,6 @@ namespace AZ::RHI
         //! A map of all device-specific DispatchRaysItem, indexed by the device index
         AZStd::unordered_map<int, DispatchRaysItem> m_deviceDispatchRaysItems;
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
-        AZStd::unordered_map<int, AZStd::vector<ShaderResourceGroup*>> m_deviceShaderResourceGroups;
+        AZStd::unordered_map<int, AZStd::vector<SingleDeviceShaderResourceGroup*>> m_deviceShaderResourceGroups;
     };
 } // namespace AZ::RHI

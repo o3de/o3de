@@ -13,10 +13,10 @@
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/FrameGraph.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/ScopeProducerEmpty.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
@@ -27,7 +27,7 @@ namespace AZ
 
 namespace AZ::RHI
 {
-    class ShaderResourceGroupPool;
+    class SingleDeviceShaderResourceGroupPool;
     class FrameGraphExecuteGroup;
 
     //! @brief Fill this descriptor when initializing a FrameScheduler instance.
@@ -177,11 +177,11 @@ namespace AZ::RHI
         //! Returns the implicit root scope id.
         ScopeId GetRootScopeId() const;
 
-        //! Returns the descriptor which has information on the properties of a TransientAttachmentPool.
+        //! Returns the descriptor which has information on the properties of a SingleDeviceTransientAttachmentPool.
         const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
 
-        //! Adds a RayTracingShaderTable to be built this frame
-        void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable);
+        //! Adds a SingleDeviceRayTracingShaderTable to be built this frame
+        void QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable);
 
         //! Returns PhysicalDeviceDescriptor which can be used to extract vendor/driver information
         const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
@@ -218,7 +218,7 @@ namespace AZ::RHI
         Ptr<FrameGraphCompiler> m_frameGraphCompiler;
         Ptr<FrameGraphExecuter> m_frameGraphExecuter;
 
-        Ptr<TransientAttachmentPool> m_transientAttachmentPool;
+        Ptr<SingleDeviceTransientAttachmentPool> m_transientAttachmentPool;
 
         AZStd::sys_time_t m_lastFrameEndTime{};
         MemoryStatistics m_memoryStatistics;
@@ -231,7 +231,7 @@ namespace AZ::RHI
         AZStd::unordered_map<ScopeId, ScopeProducer*> m_scopeProducerLookup;
 
         // list of RayTracingShaderTables that should be built this frame
-        AZStd::vector<RHI::Ptr<RayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
+        AZStd::vector<RHI::Ptr<SingleDeviceRayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
 
         AZ::TaskGraphActiveInterface* m_taskGraphActive = nullptr;
     };
