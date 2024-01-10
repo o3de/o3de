@@ -96,24 +96,24 @@ namespace AZ::RHI
         }
     }
 
-    void SingleDeviceImageSubresourceLayout::Reflect(AZ::ReflectContext* context)
+    void ImageSubresourceLayout::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<SingleDeviceImageSubresourceLayout>()
+            serializeContext->Class<ImageSubresourceLayout>()
                 ->Version(2)
-                ->Field("m_size", &SingleDeviceImageSubresourceLayout::m_size)
-                ->Field("m_rowCount", &SingleDeviceImageSubresourceLayout::m_rowCount)
-                ->Field("m_bytesPerRow", &SingleDeviceImageSubresourceLayout::m_bytesPerRow)
-                ->Field("m_bytesPerImage", &SingleDeviceImageSubresourceLayout::m_bytesPerImage)
-                ->Field("m_blockElementWidth", &SingleDeviceImageSubresourceLayout::m_blockElementWidth)
-                ->Field("m_blockElementHeight", &SingleDeviceImageSubresourceLayout::m_blockElementHeight)
-                ->Field("m_offset", &SingleDeviceImageSubresourceLayout::m_offset)
+                ->Field("m_size", &ImageSubresourceLayout::m_size)
+                ->Field("m_rowCount", &ImageSubresourceLayout::m_rowCount)
+                ->Field("m_bytesPerRow", &ImageSubresourceLayout::m_bytesPerRow)
+                ->Field("m_bytesPerImage", &ImageSubresourceLayout::m_bytesPerImage)
+                ->Field("m_blockElementWidth", &ImageSubresourceLayout::m_blockElementWidth)
+                ->Field("m_blockElementHeight", &ImageSubresourceLayout::m_blockElementHeight)
+                ->Field("m_offset", &ImageSubresourceLayout::m_offset)
                 ;
         }
     }
 
-    SingleDeviceImageSubresourceLayout::SingleDeviceImageSubresourceLayout(
+    ImageSubresourceLayout::ImageSubresourceLayout(
         Size size, 
         uint32_t rowCount,
         uint32_t bytesPerRow,
@@ -130,9 +130,9 @@ namespace AZ::RHI
         , m_offset{offset}
     {}
 
-    SingleDeviceImageSubresourceLayout GetImageSubresourceLayout(Size imageSize, Format imageFormat)
+    ImageSubresourceLayout GetImageSubresourceLayout(Size imageSize, Format imageFormat)
     {
-        SingleDeviceImageSubresourceLayout subresourceLayout;
+        ImageSubresourceLayout subresourceLayout;
         bool isBlockCompressed = false;
         bool isPacked = false;
         bool isPlanar = false;
@@ -360,7 +360,7 @@ namespace AZ::RHI
         return subresourceLayout;
     }
 
-    SingleDeviceImageSubresourceLayout GetImageSubresourceLayout(const ImageDescriptor& imageDescriptor, const ImageSubresource& subresource)
+    ImageSubresourceLayout GetImageSubresourceLayout(const ImageDescriptor& imageDescriptor, const ImageSubresource& subresource)
     {
         return GetImageSubresourceLayout(imageDescriptor.m_size.GetReducedMip(subresource.m_mipSlice), imageDescriptor.m_format);
     }

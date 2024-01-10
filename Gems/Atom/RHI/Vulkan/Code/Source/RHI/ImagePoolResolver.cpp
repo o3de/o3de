@@ -134,7 +134,7 @@ namespace AZ
             auto& device = static_cast<Device&>(commandList.GetDevice());
             for (const auto& packet : m_uploadPackets)
             {
-                const RHI::SingleDeviceImageSubresourceLayout& subresourceLayout = packet.m_subresourceLayout;
+                const RHI::ImageSubresourceLayout& subresourceLayout = packet.m_subresourceLayout;
                 const uint32_t stagingRowPitch = subresourceLayout.m_bytesPerRow;
                 const uint32_t stagingSlicePitch = subresourceLayout.m_rowCount * stagingRowPitch;
 
@@ -164,7 +164,7 @@ namespace AZ
             m_epiloqueBarriers.clear();
         }
 
-        void ImagePoolResolver::OnResourceShutdown(const RHI::SingleDeviceResource& resource)
+        void ImagePoolResolver::OnResourceShutdown(const RHI::Resource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
             const Image* image = static_cast<const Image*>(&resource);

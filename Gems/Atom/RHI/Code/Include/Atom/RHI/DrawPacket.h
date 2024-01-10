@@ -99,7 +99,7 @@ namespace AZ::RHI
         DrawListMask m_drawListMask = 0;
 
         // The index buffer view used when the draw call is indexed.
-        SingleDeviceIndexBufferView m_indexBufferView;
+        IndexBufferView m_indexBufferView;
 
         uint8_t m_drawItemCount = 0;
         uint8_t m_streamBufferViewCount = 0;
@@ -122,16 +122,16 @@ namespace AZ::RHI
         const DrawFilterMask* m_drawFilterMasks = nullptr;
 
         // List of shader resource groups shared by all draw items.
-        const SingleDeviceShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
+        const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
 
         // List of shader resource groups that aren't shared, but unique for each draw item.
-        const SingleDeviceShaderResourceGroup* const* m_uniqueShaderResourceGroups = nullptr;
+        const ShaderResourceGroup* const* m_uniqueShaderResourceGroups = nullptr;
 
         // List of inline constants shared by all draw items.
         const uint8_t* m_rootConstants = nullptr;
 
         // The list of stream buffer views. Each draw item has a view into the array.
-        const SingleDeviceStreamBufferView* m_streamBufferViews = nullptr;
+        const StreamBufferView* m_streamBufferViews = nullptr;
 
         // Optional list of scissors to be used by all draw items.
         const Scissor* m_scissors = nullptr;

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/BufferPool.h>
 #include <RHI/Device.h>
 
 #ifdef USE_AMD_D3D12MA
@@ -22,9 +22,9 @@ namespace AZ
         class BufferPoolResolver;
 
         class BufferPool final
-            : public RHI::SingleDeviceBufferPool
+            : public RHI::BufferPool
         {
-            using Base = RHI::SingleDeviceBufferPool;
+            using Base = RHI::BufferPool;
         public:
             AZ_RTTI(BufferPool, "{BC251841-AADD-4A4A-A4FF-4F94897541D5}", Base);
             AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
@@ -43,14 +43,14 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceBufferPool
+            // RHI::BufferPool
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::BufferPoolDescriptor& descriptor) override;
             void ShutdownInternal() override;
-            RHI::ResultCode InitBufferInternal(RHI::SingleDeviceBuffer& buffer, const RHI::BufferDescriptor& rhiDescriptor) override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resource) override;
-            RHI::ResultCode OrphanBufferInternal(RHI::SingleDeviceBuffer& buffer) override;
+            RHI::ResultCode InitBufferInternal(RHI::Buffer& buffer, const RHI::BufferDescriptor& rhiDescriptor) override;
+            void ShutdownResourceInternal(RHI::Resource& resource) override;
+            RHI::ResultCode OrphanBufferInternal(RHI::Buffer& buffer) override;
             RHI::ResultCode MapBufferInternal(const RHI::BufferMapRequest& mapRequest, RHI::BufferMapResponse& response) override;
-            void UnmapBufferInternal(RHI::SingleDeviceBuffer& buffer) override;
+            void UnmapBufferInternal(RHI::Buffer& buffer) override;
             RHI::ResultCode StreamBufferInternal(const RHI::BufferStreamRequest& request) override;
             void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////

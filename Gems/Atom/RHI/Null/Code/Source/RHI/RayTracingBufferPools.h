@@ -8,14 +8,14 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
 
 namespace AZ
 {
     namespace Null
     {
         class RayTracingBufferPools final
-            : public RHI::SingleDeviceRayTracingBufferPools
+            : public RHI::RayTracingBufferPools
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingBufferPools, AZ::SystemAllocator);

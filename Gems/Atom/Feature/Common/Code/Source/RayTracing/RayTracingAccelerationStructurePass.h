@@ -11,7 +11,7 @@
 #include <Atom/RPI.Public/GpuQuery/Query.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
 
 namespace AZ
 {

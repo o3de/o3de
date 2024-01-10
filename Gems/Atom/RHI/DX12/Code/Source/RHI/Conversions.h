@@ -22,7 +22,7 @@
 #include <Atom/RHI.Reflect/VariableRateShadingEnums.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/SingleDeviceQuery.h>
+#include <Atom/RHI/Query.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/DX12.h>
 

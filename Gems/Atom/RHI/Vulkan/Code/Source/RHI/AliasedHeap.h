@@ -52,9 +52,9 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceResourcePool
+            // RHI::ResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resource) override;
+            void ShutdownResourceInternal(RHI::Resource& resource) override;
             //////////////////////////////////////////////////////////////////////////
 
             Device& GetVulkanRHIDevice() const;

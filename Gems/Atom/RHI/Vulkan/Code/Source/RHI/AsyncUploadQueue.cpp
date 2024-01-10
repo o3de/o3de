@@ -7,8 +7,8 @@
  */
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/StreamingImagePool.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/containers/vector.h>
@@ -64,7 +64,7 @@ namespace AZ
             const uint8_t* sourceData = reinterpret_cast<const uint8_t*>(request.m_sourceData);
             const size_t byteCount = request.m_byteCount;
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
-            RHI::SingleDeviceBufferPool* bufferPool = static_cast<RHI::SingleDeviceBufferPool*>(buffer->GetPool());
+            RHI::BufferPool* bufferPool = static_cast<RHI::BufferPool*>(buffer->GetPool());
 
             if (byteCount == 0)
             {
@@ -203,7 +203,7 @@ namespace AZ
                 for (uint16_t curMip = endMip; curMip <= startMip; ++curMip)
                 {
                     const size_t sliceIndex = curMip - endMip;
-                    const RHI::SingleDeviceImageSubresourceLayout& subresourceLayout = request.m_mipSlices[sliceIndex].m_subresourceLayout;
+                    const RHI::ImageSubresourceLayout& subresourceLayout = request.m_mipSlices[sliceIndex].m_subresourceLayout;
                     uint32_t arraySlice = 0;
                     const uint32_t subresourceSlicePitch = subresourceLayout.m_bytesPerImage;
 
@@ -653,7 +653,7 @@ namespace AZ
                 &barrier);
         }
 
-        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::SingleDeviceFence::SignalCallback callback /* = nullptr */)
+        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::Fence::SignalCallback callback /* = nullptr */)
         {
             return m_asyncWaitQueue.CreateAsyncWork([fence, callback]()
             {

@@ -51,7 +51,7 @@ namespace AZ
             imageDescriptor.m_size = imageSize;
             imageDescriptor.m_format = imageFormat;
 
-            const RHI::SingleDeviceImageSubresourceLayout imageSubresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, RHI::ImageSubresource{});
+            const RHI::ImageSubresourceLayout imageSubresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, RHI::ImageSubresource{});
 
             const size_t expectedImageDataSize = imageSubresourceLayout.m_bytesPerImage * imageDescriptor.m_size.m_depth;
             if (expectedImageDataSize != imageDataSize)
@@ -125,7 +125,7 @@ namespace AZ
             }
 
             // Cache off the RHI streaming image pool instance.
-            RHI::SingleDeviceStreamingImagePool* rhiPool = pool->GetRHIPool();
+            RHI::StreamingImagePool* rhiPool = pool->GetRHIPool();
 
             /**
              * NOTE: The tail mip-chain is required to exist as a dependency of this asset. This allows
@@ -201,7 +201,7 @@ namespace AZ
                 return RHI::ResultCode::Success;
             }
 
-            AZ_Warning("StreamingImagePool", false, "Failed to initialize RHI::SingleDeviceImage on RHI::SingleDeviceStreamingImagePool.");
+            AZ_Warning("StreamingImagePool", false, "Failed to initialize RHI::Image on RHI::StreamingImagePool.");
             return resultCode;
         }
 

@@ -161,7 +161,7 @@ namespace UnitTest
             return writer;
         }
 
-        void ValidateSignature(const RHI::SingleDeviceIndirectBufferSignature& signature)
+        void ValidateSignature(const RHI::IndirectBufferSignature& signature)
         {
             ValidateLayout(signature.GetLayout());
             EXPECT_TRUE(signature.IsInitialized());
@@ -483,7 +483,7 @@ namespace UnitTest
                 {
                     auto index = m_signatureDescriptor.m_layout.FindCommandIndex(RHI::IndirectBufferViewArguments{ s_vertexSlotIndex });
                     EXPECT_FALSE(index.IsNull());
-                    AZ::RHI::SingleDeviceStreamBufferView bufferView(*m_buffer, 0, 12, 10);
+                    AZ::RHI::StreamBufferView bufferView(*m_buffer, 0, 12, 10);
                     EXPECT_CALL(*writer, SetVertexViewInternal(index, testing::_)).Times(1);
                     writer->SetVertexView(s_vertexSlotIndex, bufferView);
                     break;
@@ -492,7 +492,7 @@ namespace UnitTest
                 {
                     auto index = m_signatureDescriptor.m_layout.FindCommandIndex(command.m_type);
                     EXPECT_FALSE(index.IsNull());
-                    AZ::RHI::SingleDeviceIndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
+                    AZ::RHI::IndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
                     EXPECT_CALL(*writer, SetIndexViewInternal(index, testing::_)).Times(1);
                     writer->SetIndexView(indexView);
                     break;
@@ -553,7 +553,7 @@ namespace UnitTest
             auto writer = CreateInitializedWriter();
             writer->Flush();
             EXPECT_FALSE(m_buffer->IsMapped());
-            AZ::RHI::SingleDeviceIndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
+            AZ::RHI::IndexBufferView indexView(*m_buffer, 0, 12, RHI::IndexFormat::Uint16);
             EXPECT_CALL(*writer, SetIndexViewInternal(testing::_, testing::_)).Times(1);
             writer->SetIndexView(indexView);
             EXPECT_TRUE(m_buffer->IsMapped());

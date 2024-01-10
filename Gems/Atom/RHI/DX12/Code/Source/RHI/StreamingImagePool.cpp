@@ -102,7 +102,7 @@ namespace AZ
                 }
             }
 
-            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override
+            void OnResourceShutdown(const RHI::Resource& resource) override
             {
                 const Image& image = static_cast<const Image&>(resource);
                 if (!image.m_pendingResolves)
@@ -536,7 +536,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void StreamingImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
+        void StreamingImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             Image& image = static_cast<Image&>(resourceBase);
 
@@ -605,7 +605,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::SingleDeviceImage& image, uint32_t targetMipLevel)
+        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel)
         {
             Image& imageImpl = static_cast<Image&>(image);
 

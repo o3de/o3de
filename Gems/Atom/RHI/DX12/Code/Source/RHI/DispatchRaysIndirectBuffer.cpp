@@ -12,9 +12,9 @@
 #include <RHI/Device.h>
 #include <RHI/RayTracingShaderTable.h>
 
-#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
 
 namespace AZ
 {
@@ -25,7 +25,7 @@ namespace AZ
             return aznew DispatchRaysIndirectBuffer;
         }
 
-        void DispatchRaysIndirectBuffer::Init(RHI::SingleDeviceBufferPool* bufferPool)
+        void DispatchRaysIndirectBuffer::Init(RHI::BufferPool* bufferPool)
         {
             m_buffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor bufferDescriptor;
@@ -39,7 +39,7 @@ namespace AZ
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create DispatchRaysIndirectBuffer buffer");
         }
 
-        void DispatchRaysIndirectBuffer::Build(RHI::SingleDeviceRayTracingShaderTable* shaderTable)
+        void DispatchRaysIndirectBuffer::Build(RHI::RayTracingShaderTable* shaderTable)
         {
             const RayTracingShaderTable* dxShaderTable = static_cast<const RayTracingShaderTable*>(shaderTable);
             const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = dxShaderTable->GetBuffers();

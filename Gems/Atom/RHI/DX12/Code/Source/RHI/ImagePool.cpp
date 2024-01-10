@@ -61,7 +61,7 @@ namespace AZ
 
                 // Build a subresource packet which contains the staging data and target image location to copy into.
                 const RHI::ImageDescriptor& imageDescriptor = image->GetDescriptor();
-                const RHI::SingleDeviceImageSubresourceLayout& sourceSubresourceLayout = request.m_sourceSubresourceLayout;
+                const RHI::ImageSubresourceLayout& sourceSubresourceLayout = request.m_sourceSubresourceLayout;
                 const uint32_t stagingRowPitch = RHI::AlignUp(sourceSubresourceLayout.m_bytesPerRow, DX12_TEXTURE_DATA_PITCH_ALIGNMENT);
                 const uint32_t stagingSlicePitch = stagingRowPitch * sourceSubresourceLayout.m_rowCount;
 
@@ -195,7 +195,7 @@ namespace AZ
                 list.erase(AZStd::remove_if(list.begin(), list.end(), predicate), list.end());
             }
 
-            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override
+            void OnResourceShutdown(const RHI::Resource& resource) override
             {
                 const Image& image = static_cast<const Image&>(resource);
                 if (!image.m_pendingResolves)
@@ -323,7 +323,7 @@ namespace AZ
             return resultCode;
         }
 
-        void ImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
+        void ImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             if (auto* resolver = GetResolver())
             {

@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
+#include <Atom/RHI/StreamingImagePool.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <RHI/Image.h>
 
@@ -20,9 +20,9 @@ namespace AZ
         class StreamingImagePoolResolver;
         
         class StreamingImagePool final
-            : public RHI::SingleDeviceStreamingImagePool
+            : public RHI::StreamingImagePool
         {
-            using Base = RHI::SingleDeviceStreamingImagePool;
+            using Base = RHI::StreamingImagePool;
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePool, "{B5AA610C-0EA9-4077-9537-3E5D31646BC4}", Base);
@@ -34,17 +34,17 @@ namespace AZ
             StreamingImagePool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceStreamingImagePool
+            // RHI::StreamingImagePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
             RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
             RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
-            RHI::ResultCode TrimImageInternal(RHI::SingleDeviceImage& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceResourcePool
+            // RHI::ResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
         };

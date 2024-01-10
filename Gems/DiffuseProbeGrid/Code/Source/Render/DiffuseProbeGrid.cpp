@@ -51,7 +51,7 @@ namespace AZ
             m_cullable.SetDebugName(AZ::Name("DiffuseProbeGrid Volume"));
 
             // create the visualization TLAS
-            m_visualizationTlas = AZ::RHI::SingleDeviceRayTracingTlas::CreateRHIRayTracingTlas();
+            m_visualizationTlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
 
             // create the grid data buffer
             m_gridDataBuffer = RHI::Factory::Get().CreateBuffer();

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/BufferPool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -37,9 +37,9 @@ namespace AZ
 
             ~BufferPool() = default;
 
-            RHI::SingleDeviceBufferPool* GetRHIPool();
+            RHI::BufferPool* GetRHIPool();
 
-            const RHI::SingleDeviceBufferPool* GetRHIPool() const;
+            const RHI::BufferPool* GetRHIPool() const;
 
         private:
             BufferPool() = default;
@@ -48,7 +48,7 @@ namespace AZ
             static Data::Instance<BufferPool> CreateInternal(RHI::Device& device, ResourcePoolAsset& poolAsset);
             RHI::ResultCode Init(RHI::Device& device, ResourcePoolAsset& poolAsset);
 
-            RHI::Ptr<RHI::SingleDeviceBufferPool> m_pool;
+            RHI::Ptr<RHI::BufferPool> m_pool;
         };
     }
 }

@@ -119,7 +119,7 @@ namespace AZ
             // of the upload operation.
 
             Buffer& buffer = static_cast<Buffer&>(*uploadRequest.m_buffer);
-            RHI::SingleDeviceBufferPool& bufferPool = static_cast<RHI::SingleDeviceBufferPool&>(*buffer.GetPool());
+            RHI::BufferPool& bufferPool = static_cast<RHI::BufferPool&>(*buffer.GetPool());
             if (bufferPool.GetDescriptor().m_heapMemoryLevel == RHI::HeapMemoryLevel::Host)
             {
                 // No need to use staging buffers since it's host memory.
@@ -274,7 +274,7 @@ namespace AZ
                     for (uint32_t curMip = endMip; curMip <= startMip; curMip++)
                     {
                         size_t sliceIndex = curMip - endMip;
-                        const RHI::SingleDeviceImageSubresourceLayout& subresourceLayout = cachedRequest.m_mipSlices[sliceIndex].m_subresourceLayout;
+                        const RHI::ImageSubresourceLayout& subresourceLayout = cachedRequest.m_mipSlices[sliceIndex].m_subresourceLayout;
                         uint32_t arraySlice = 0;
                         const uint32_t subresourceSlicePitch = subresourceLayout.m_bytesPerImage;
 

@@ -9,7 +9,7 @@
 
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <Atom/RHI/SingleDeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 
 namespace AZ
 {
@@ -19,12 +19,12 @@ namespace AZ
         class ImagePoolResolver;
 
         class ImagePool final
-            : public RHI::SingleDeviceImagePool
+            : public RHI::ImagePool
         {
-            using Base = RHI::SingleDeviceImagePool;
+            using Base = RHI::ImagePool;
         public:
             AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
-            AZ_RTTI(ImagePool, "{084A02C0-DBCB-4285-B79E-842B49292B5E}", RHI::SingleDeviceImagePool);
+            AZ_RTTI(ImagePool, "{084A02C0-DBCB-4285-B79E-842B49292B5E}", RHI::ImagePool);
 
             static RHI::Ptr<ImagePool> Create();
 
@@ -39,11 +39,11 @@ namespace AZ
             void SubtractMemoryUsage(size_t bytesToSubtract);
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceImagePool
+            // RHI::ImagePool
             RHI::ResultCode InitInternal(RHI::Device&, const RHI::ImagePoolDescriptor&) override;
             RHI::ResultCode InitImageInternal(const RHI::ImageInitRequest& request) override;
             RHI::ResultCode UpdateImageContentsInternal(const RHI::ImageUpdateRequest& request) override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
         };
     }

@@ -8,16 +8,16 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/SingleDeviceStreamBufferView.h>
-#include <Atom/RHI/SingleDeviceIndexBufferView.h>
-#include <Atom/RHI/SingleDeviceIndirectBufferView.h>
+#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/IndirectBufferView.h>
 #include <Atom/RHI/IndirectArguments.h>
 #include <AzCore/std/containers/array.h>
 
 namespace AZ::RHI
 {
-    class SingleDevicePipelineState;
-    class SingleDeviceShaderResourceGroup;
+    class PipelineState;
+    class ShaderResourceGroup;
     struct Scissor;
     struct Viewport;
     struct DefaultNamespaceType;
@@ -70,7 +70,7 @@ namespace AZ::RHI
         uint32_t m_indexOffset = 0;
     };
 
-    using SingleDeviceDrawIndirect = IndirectArguments;
+    using DrawIndirect = IndirectArguments;
 
     enum class DrawType : uint8_t
     {
@@ -96,7 +96,7 @@ namespace AZ::RHI
         {}
 
 
-        DrawArguments(const SingleDeviceDrawIndirect& indirect)
+        DrawArguments(const DrawIndirect& indirect)
             : m_type{ DrawType::Indirect }
             , m_indirect{ indirect }
         {}
@@ -106,7 +106,7 @@ namespace AZ::RHI
         {
             DrawIndexed m_indexed;
             DrawLinear m_linear;
-            SingleDeviceDrawIndirect m_indirect;
+            DrawIndirect m_indirect;
         };
     };
 
@@ -141,19 +141,19 @@ namespace AZ::RHI
             uint8_t m_allFlags = 1;     //< Update default value if you add flags. Also update in DrawPacketBuilder::End()
         };
 
-        const SingleDevicePipelineState* m_pipelineState = nullptr;
+        const PipelineState* m_pipelineState = nullptr;
 
         /// The index buffer used when drawing with an indexed draw call.
-        const SingleDeviceIndexBufferView* m_indexBufferView = nullptr;
+        const IndexBufferView* m_indexBufferView = nullptr;
 
         /// Array of stream buffers to bind (count must match m_streamBufferViewCount).
-        const SingleDeviceStreamBufferView* m_streamBufferViews = nullptr;
+        const StreamBufferView* m_streamBufferViews = nullptr;
 
         /// Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
-        const SingleDeviceShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
+        const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
 
         /// Unique SRG, not shared within the draw packet. This is usually a per-draw SRG, populated with the shader variant fallback key
-        const SingleDeviceShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
+        const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
 
         /// Array of root constants to bind (count must match m_rootConstantSize).
         const uint8_t* m_rootConstants = nullptr;

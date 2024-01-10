@@ -43,7 +43,7 @@ namespace AZ
             void Compile(const RHI::HardwareQueueClass hardwareClass) override;
             void Resolve(CommandList& commandList) override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override;
+            void OnResourceShutdown(const RHI::Resource& resource) override;
             void QueuePrologueTransitionBarriers(CommandList& commandList) override;
             void QueueEpilogueTransitionBarriers(CommandList& commandList) override;
             //////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ namespace AZ
             {
                 Image* m_destinationImage = nullptr;
                 RHI::Ptr<Buffer> m_stagingBuffer;
-                RHI::SingleDeviceImageSubresourceLayout m_subresourceLayout;
+                RHI::ImageSubresourceLayout m_subresourceLayout;
                 RHI::ImageSubresource m_subresource;
                 RHI::Origin m_offset;
             };

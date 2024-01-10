@@ -63,7 +63,7 @@ namespace AZ
             return resultCode;
         }
         
-        void ImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
+        void ImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             if (auto* resolver = GetResolver())
             {

@@ -24,7 +24,7 @@ namespace AZ::RHI
             }
         }
 
-        if (!SingleDeviceTransientAttachmentPool::ValidateInitParameters(descriptor))
+        if (!TransientAttachmentPool::ValidateInitParameters(descriptor))
         {
             return ResultCode::InvalidArgument;
         }
@@ -67,7 +67,7 @@ namespace AZ::RHI
     {
         if (IsInitialized())
         {
-            IterateObjects<SingleDeviceTransientAttachmentPool>(
+            IterateObjects<TransientAttachmentPool>(
                 [](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
                 {
                     deviceTransientAttachmentPool->Shutdown();
@@ -84,7 +84,7 @@ namespace AZ::RHI
     {
         m_compileFlags = compileFlags;
 
-        IterateObjects<SingleDeviceTransientAttachmentPool>(
+        IterateObjects<TransientAttachmentPool>(
             [&compileFlags, &memoryHint](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->Begin(compileFlags, memoryHint);
@@ -94,7 +94,7 @@ namespace AZ::RHI
     void MultiDeviceTransientAttachmentPool::BeginScope(Scope& scopeBase)
     {
         // TODO: Only call for the correct device as given by the scopeBase
-        IterateObjects<SingleDeviceTransientAttachmentPool>(
+        IterateObjects<TransientAttachmentPool>(
             [&scopeBase](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->BeginScope(scopeBase);
@@ -104,7 +104,7 @@ namespace AZ::RHI
     void MultiDeviceTransientAttachmentPool::EndScope()
     {
         // TODO: Only call for the correct device as given by the scopeBase
-        IterateObjects<SingleDeviceTransientAttachmentPool>(
+        IterateObjects<TransientAttachmentPool>(
             [](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->EndScope();
@@ -113,7 +113,7 @@ namespace AZ::RHI
 
     void MultiDeviceTransientAttachmentPool::End()
     {
-        IterateObjects<SingleDeviceTransientAttachmentPool>(
+        IterateObjects<TransientAttachmentPool>(
             [](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->End();
@@ -151,7 +151,7 @@ namespace AZ::RHI
             }
         }
 
-        IterateObjects<SingleDeviceTransientAttachmentPool>(
+        IterateObjects<TransientAttachmentPool>(
             [&image, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
             {
                 auto deviceImage{ deviceTransientAttachmentPool->ActivateImage(descriptor) };
@@ -203,7 +203,7 @@ namespace AZ::RHI
             }
         }
 
-        IterateObjects<SingleDeviceTransientAttachmentPool>(
+        IterateObjects<TransientAttachmentPool>(
             [&buffer, &descriptor](auto deviceIndex, auto deviceTransientAttachmentPool)
             {
                 auto deviceBuffer{ deviceTransientAttachmentPool->ActivateBuffer(descriptor) };
@@ -226,7 +226,7 @@ namespace AZ::RHI
 
     void MultiDeviceTransientAttachmentPool::DeactivateBuffer(const AttachmentId& attachmentId)
     {
-        IterateObjects<SingleDeviceTransientAttachmentPool>(
+        IterateObjects<TransientAttachmentPool>(
             [&attachmentId](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->DeactivateBuffer(attachmentId);
@@ -235,7 +235,7 @@ namespace AZ::RHI
 
     void MultiDeviceTransientAttachmentPool::DeactivateImage(const AttachmentId& attachmentId)
     {
-        IterateObjects<SingleDeviceTransientAttachmentPool>(
+        IterateObjects<TransientAttachmentPool>(
             [&attachmentId](auto /*deviceIndex*/, auto deviceTransientAttachmentPool)
             {
                 deviceTransientAttachmentPool->DeactivateImage(attachmentId);
@@ -245,7 +245,7 @@ namespace AZ::RHI
     AZStd::unordered_map<int, TransientAttachmentStatistics> MultiDeviceTransientAttachmentPool::GetStatistics() const
     {
         AZStd::unordered_map<int, TransientAttachmentStatistics> statistics;
-        IterateObjects<SingleDeviceTransientAttachmentPool>(
+        IterateObjects<TransientAttachmentPool>(
             [&statistics](auto deviceIndex, auto deviceTransientAttachmentPool)
             {
                 statistics.insert({ deviceIndex, deviceTransientAttachmentPool->GetStatistics() });

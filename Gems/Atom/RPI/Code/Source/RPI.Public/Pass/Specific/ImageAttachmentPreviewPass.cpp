@@ -105,7 +105,7 @@ namespace AZ
         {
             // copy descriptor for copying image
             RHI::CopyImageDescriptor copyImage;
-            const AZ::RHI::SingleDeviceImage* image = context.GetImage(m_srcAttachmentId);
+            const AZ::RHI::Image* image = context.GetImage(m_srcAttachmentId);
             copyImage.m_sourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;
             copyImage.m_sourceSubresource.m_arraySlice = m_sourceArraySlice;

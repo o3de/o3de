@@ -44,7 +44,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DrawPacket.h>
-#include <Atom/RHI/SingleDeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
@@ -1477,7 +1477,7 @@ bool AZ::FFont::UpdateTexture()
     range.m_mipSliceMax = 0;
     range.m_arraySliceMin = 0;
     range.m_arraySliceMax = 0;
-    RHI::SingleDeviceImageSubresourceLayout layout;
+    RHI::ImageSubresourceLayout layout;
     m_fontImage->GetSubresourceLayouts(range, &layout, nullptr);
 
     RHI::ImageUpdateRequest imageUpdateReq;

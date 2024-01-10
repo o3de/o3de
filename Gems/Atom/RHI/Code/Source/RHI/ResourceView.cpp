@@ -7,10 +7,10 @@
  */
 
 #include <Atom/RHI/ResourceView.h>
-#include <Atom/RHI/SingleDeviceResource.h>
+#include <Atom/RHI/Resource.h>
 namespace AZ::RHI
 {
-    ResultCode ResourceView::Init(const SingleDeviceResource& resource)
+    ResultCode ResourceView::Init(const Resource& resource)
     {
         RHI::Device& device = resource.GetDevice();
 
@@ -41,7 +41,7 @@ namespace AZ::RHI
         }
     }
 
-    const SingleDeviceResource& ResourceView::GetResource() const
+    const Resource& ResourceView::GetResource() const
     {
         return *m_resource;
     }

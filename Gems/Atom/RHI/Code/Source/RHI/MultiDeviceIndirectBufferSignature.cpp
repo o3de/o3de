@@ -84,7 +84,7 @@ namespace AZ::RHI
 
         auto offset{ UNINITIALIZED_VALUE };
 
-        IterateObjects<SingleDeviceIndirectBufferSignature>([&offset, &index]([[maybe_unused]] auto deviceIndex, auto deviceSignature)
+        IterateObjects<IndirectBufferSignature>([&offset, &index]([[maybe_unused]] auto deviceIndex, auto deviceSignature)
         {
             auto deviceOffset{ deviceSignature->GetOffset(index) };
 

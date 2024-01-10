@@ -110,7 +110,7 @@ namespace AZ
 
                 m_readBuffersViews.resize(2);
            
-                RHI::SingleDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (uint8_t index = 0; index < 2 ; ++index)
                 {
                     // Buffer view creation from the shared buffer
@@ -234,7 +234,7 @@ namespace AZ
                 m_dynamicBuffersViews.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
                 m_dynamicViewAllocators.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
 
-                RHI::SingleDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (int stream=0; stream< uint8_t(HairDynamicBuffersSemantics::NumBufferStreams) ; ++stream)
                 {
                     SrgBufferDescriptor& streamDesc = m_dynamicBuffersDescriptors[stream];
@@ -586,7 +586,7 @@ namespace AZ
                 };
                 request.m_initialData = (void*)asset.m_triangleIndices.data();
                 
-                RHI::Ptr<RHI::SingleDeviceBufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
+                RHI::Ptr<RHI::BufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
                 if (!bufferPool)
                 {
                     AZ_Error("Hair Gem", false, "Common buffer pool for index buffer could not be created");
@@ -597,7 +597,7 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::SingleDeviceIndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
+                m_indexBufferView = RHI::IndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
  
                 return true;
             }

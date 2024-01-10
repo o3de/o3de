@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/DescriptorSetAllocator.h>
@@ -19,9 +19,9 @@ namespace AZ
     namespace Vulkan
     {
         class ShaderResourceGroupPool
-            : public RHI::SingleDeviceShaderResourceGroupPool
+            : public RHI::ShaderResourceGroupPool
         {
-            using Base = RHI::SingleDeviceShaderResourceGroupPool;
+            using Base = RHI::ShaderResourceGroupPool;
             friend class ShaderResourceGroup;
 
         public:
@@ -34,10 +34,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // Platform API
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
-            RHI::ResultCode InitGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase) override;
+            RHI::ResultCode InitGroupInternal(RHI::ShaderResourceGroup& groupBase) override;
             void ShutdownInternal() override;
-            RHI::ResultCode CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::SingleDeviceShaderResourceGroupData& groupData) override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            RHI::ResultCode CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData) override;
+            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

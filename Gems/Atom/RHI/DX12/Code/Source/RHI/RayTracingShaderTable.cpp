@@ -12,8 +12,8 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
 #include <RHI/ShaderResourceGroup.h>
 
 namespace AZ
@@ -48,7 +48,7 @@ namespace AZ
         }
 
         RHI::Ptr<Buffer> RayTracingShaderTable::BuildTable([[maybe_unused]] RHI::Device& deviceBase,
-                                                           const RHI::SingleDeviceRayTracingBufferPools& bufferPools,
+                                                           const RHI::RayTracingBufferPools& bufferPools,
                                                            const RHI::RayTracingShaderTableRecordList& recordList,
                                                            uint32_t shaderRecordSize,
                                                            AZStd::wstring shaderTableName,
@@ -63,7 +63,7 @@ namespace AZ
             }
 
             // create shader table buffer
-            RHI::Ptr<RHI::SingleDeviceBuffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
+            RHI::Ptr<RHI::Buffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor shaderTableBufferDescriptor;
             shaderTableBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingShaderTable;
             shaderTableBufferDescriptor.m_byteCount = shaderTableSize;

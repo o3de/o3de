@@ -32,7 +32,7 @@ namespace UnitTest
         void ValidateBinding(
             const RHI::Scope* scope,
             const RHI::BufferScopeAttachment* scopeAttachment,
-            const RHI::SingleDeviceBuffer* buffer)
+            const RHI::Buffer* buffer)
         {
             ASSERT_TRUE(scopeAttachment->GetPrevious() == nullptr);
             ASSERT_TRUE(scopeAttachment->GetNext() == nullptr);
@@ -53,7 +53,7 @@ namespace UnitTest
         void ValidateBinding(
             const RHI::Scope* scope,
             const RHI::ImageScopeAttachment* scopeAttachment,
-            const RHI::SingleDeviceImage* image)
+            const RHI::Image* image)
         {
             ASSERT_TRUE(scopeAttachment->GetPrevious() == nullptr);
             ASSERT_TRUE(scopeAttachment->GetNext() == nullptr);
@@ -91,7 +91,7 @@ namespace UnitTest
 
             for (uint32_t i = 0; i < BufferCount; ++i)
             {
-                RHI::Ptr<RHI::SingleDeviceBuffer> buffer;
+                RHI::Ptr<RHI::Buffer> buffer;
                 buffer = RHI::Factory::Get().CreateBuffer();
 
                 RHI::BufferDescriptor desc;
@@ -118,7 +118,7 @@ namespace UnitTest
 
             for (uint32_t i = 0; i < ImageCount; ++i)
             {
-                RHI::Ptr<RHI::SingleDeviceImage> image;
+                RHI::Ptr<RHI::Image> image;
                 image = RHI::Factory::Get().CreateImage();
 
                 RHI::ImageDescriptor desc = RHI::ImageDescriptor::Create2D(
@@ -449,20 +449,20 @@ namespace UnitTest
 
         struct ImageAttachment
         {
-            RHI::Ptr<RHI::SingleDeviceImage> m_image;
+            RHI::Ptr<RHI::Image> m_image;
             RHI::AttachmentId m_id;
         };
 
         struct BufferAttachment
         {
-            RHI::Ptr<RHI::SingleDeviceBuffer> m_buffer;
+            RHI::Ptr<RHI::Buffer> m_buffer;
             RHI::AttachmentId m_id;
         };
 
         struct State
         {
-            RHI::Ptr<RHI::SingleDeviceBufferPool> m_bufferPool;
-            RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;
+            RHI::Ptr<RHI::BufferPool> m_bufferPool;
+            RHI::Ptr<RHI::ImagePool> m_imagePool;
             RHI::Ptr<RHI::FrameGraphCompiler> m_frameGraphCompiler;
 
             ImageAttachment m_imageAttachments[ImageCount];

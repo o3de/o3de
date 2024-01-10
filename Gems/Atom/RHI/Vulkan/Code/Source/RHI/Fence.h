@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/Fence.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/SignalEvent.h>
 
@@ -18,9 +18,9 @@ namespace AZ
         class Device;
 
         class Fence final
-            : public RHI::SingleDeviceFence
+            : public RHI::Fence
         {
-            using Base = RHI::SingleDeviceFence;
+            using Base = RHI::Fence;
 
         public:
             AZ_CLASS_ALLOCATOR(Fence, AZ::ThreadPoolAllocator);
@@ -44,7 +44,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceFence
+            // RHI::Fence
             RHI::ResultCode InitInternal(RHI::Device& device, RHI::FenceState initialState) override;
             void ShutdownInternal() override;
             void SignalOnCpuInternal() override;

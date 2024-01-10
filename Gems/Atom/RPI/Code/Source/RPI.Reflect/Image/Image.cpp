@@ -39,12 +39,12 @@ namespace AZ
             return m_image->IsInitialized();
         }
 
-        RHI::SingleDeviceImage* Image::GetRHIImage()
+        RHI::Image* Image::GetRHIImage()
         {
             return m_image.get();
         }
 
-        const RHI::SingleDeviceImage* Image::GetRHIImage() const
+        const RHI::Image* Image::GetRHIImage() const
         {
             return m_image.get();
         }
@@ -66,7 +66,7 @@ namespace AZ
 
         RHI::ResultCode Image::UpdateImageContents(const RHI::ImageUpdateRequest& request)
         {
-            RHI::SingleDeviceImagePool* imagePool = azrtti_cast<RHI::SingleDeviceImagePool*> (m_image->GetPool());
+            RHI::ImagePool* imagePool = azrtti_cast<RHI::ImagePool*> (m_image->GetPool());
             return imagePool->UpdateImageContents(request);
         }     
     }

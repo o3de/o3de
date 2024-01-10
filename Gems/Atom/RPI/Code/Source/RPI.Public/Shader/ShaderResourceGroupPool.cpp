@@ -52,7 +52,7 @@ namespace AZ
             m_pool = RHI::Factory::Get().CreateShaderResourceGroupPool();
             if (!m_pool)
             {
-                AZ_Error("ShaderResourceGroupPool", false, "Failed to create RHI::SingleDeviceShaderResourceGroupPool");
+                AZ_Error("ShaderResourceGroupPool", false, "Failed to create RHI::ShaderResourceGroupPool");
                 return RHI::ResultCode::Fail;
             }
 
@@ -65,10 +65,10 @@ namespace AZ
             return resultCode;
         }
 
-        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
+        RHI::Ptr<RHI::ShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
         {
-            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
-            AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::SingleDeviceShaderResourceGroup");
+            RHI::Ptr<RHI::ShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
+            AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::ShaderResourceGroup");
 
             if (srg)
             {
@@ -76,19 +76,19 @@ namespace AZ
                 if (result != RHI::ResultCode::Success)
                 {
                     srg.reset();
-                    AZ_Error("ShaderResourceGroupPool", false, "Failed to initialize RHI::SingleDeviceShaderResourceGroup");
+                    AZ_Error("ShaderResourceGroupPool", false, "Failed to initialize RHI::ShaderResourceGroup");
                 }
             }
 
             return srg;
         }
 
-        RHI::SingleDeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool()
+        RHI::ShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool()
         {
             return m_pool.get();
         }
 
-        const RHI::SingleDeviceShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool() const
+        const RHI::ShaderResourceGroupPool* ShaderResourceGroupPool::GetRHIPool() const
         {
             return m_pool.get();
         }

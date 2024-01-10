@@ -32,7 +32,7 @@ namespace AZ::RHI
         subresourceRange.m_arraySliceMax = 0;
         subresourceRange.m_aspectFlags = aspectFlags;
 
-        IterateObjects<SingleDeviceImage>([&subresourceRange, &subresourceLayout](auto deviceIndex, auto deviceImage)
+        IterateObjects<Image>([&subresourceRange, &subresourceLayout](auto deviceIndex, auto deviceImage)
         {
             deviceImage->GetSubresourceLayouts(subresourceRange, &subresourceLayout.GetDeviceImageSubresource(deviceIndex), nullptr);
         });
@@ -51,7 +51,7 @@ namespace AZ::RHI
     uint32_t MultiDeviceImage::GetResidentMipLevel() const
     {
         auto minLevel{AZStd::numeric_limits<uint32_t>::max()};
-        IterateObjects<SingleDeviceImage>([&minLevel]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        IterateObjects<Image>([&minLevel]([[maybe_unused]] auto deviceIndex, auto deviceImage)
         {
             minLevel = AZStd::min(minLevel, deviceImage->GetResidentMipLevel());
         });
@@ -61,7 +61,7 @@ namespace AZ::RHI
     bool MultiDeviceImage::IsStreamable() const
     {
         bool isStreamable{true};
-        IterateObjects<SingleDeviceImage>([&isStreamable]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        IterateObjects<Image>([&isStreamable]([[maybe_unused]] auto deviceIndex, auto deviceImage)
         {
             isStreamable &= deviceImage->IsStreamable();
         });
@@ -84,7 +84,7 @@ namespace AZ::RHI
 
     void MultiDeviceImage::Shutdown()
     {
-        IterateObjects<SingleDeviceImage>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        IterateObjects<Image>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
         {
             deviceImage->Shutdown();
         });
@@ -94,7 +94,7 @@ namespace AZ::RHI
 
     void MultiDeviceImage::InvalidateViews()
     {
-        IterateObjects<SingleDeviceImage>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        IterateObjects<Image>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
         {
             deviceImage->InvalidateViews();
         });
@@ -103,7 +103,7 @@ namespace AZ::RHI
     bool MultiDeviceImage::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
     {
         bool isInResourceCache{true};
-        IterateObjects<SingleDeviceImage>([&isInResourceCache, &imageViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceImage)
+        IterateObjects<Image>([&isInResourceCache, &imageViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceImage)
         {
             isInResourceCache &= deviceImage->IsInResourceCache(imageViewDescriptor);
         });

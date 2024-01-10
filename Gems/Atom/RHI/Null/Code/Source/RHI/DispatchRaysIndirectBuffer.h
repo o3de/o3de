@@ -29,10 +29,10 @@ namespace AZ
                 return aznew DispatchRaysIndirectBuffer;
             }
 
-            void Init(RHI::SingleDeviceBufferPool*) override
+            void Init(RHI::BufferPool*) override
             {
             }
-            void Build(RHI::SingleDeviceRayTracingShaderTable*) override
+            void Build(RHI::RayTracingShaderTable*) override
             {
             }
         };

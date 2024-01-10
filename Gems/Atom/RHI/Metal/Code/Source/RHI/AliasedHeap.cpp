@@ -52,7 +52,7 @@ namespace AZ
             m_heap = nil;
         }
 
-        void AliasedHeap::ShutdownResourceInternal(RHI::SingleDeviceResource& resource)
+        void AliasedHeap::ShutdownResourceInternal(RHI::Resource& resource)
         {
             Device& device = GetMetalRHIDevice();
             if (Buffer* buffer = azrtti_cast<Buffer*>(&resource))

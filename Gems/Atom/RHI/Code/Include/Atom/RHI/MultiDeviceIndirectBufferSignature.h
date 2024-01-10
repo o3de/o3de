@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
+#include <Atom/RHI/IndirectBufferSignature.h>
 
 #include <Atom/RHI/MultiDeviceObject.h>
 
@@ -48,7 +48,7 @@ namespace AZ::RHI
         MultiDeviceIndirectBufferSignature() = default;
         virtual ~MultiDeviceIndirectBufferSignature() = default;
 
-        //! Initialize an SingleDeviceIndirectBufferSignature object.
+        //! Initialize an IndirectBufferSignature object.
         //! @param deviceMask The deviceMask denoting all devices that will contain the signature.
         //! @param descriptor Descriptor with the necessary information for initializing the signature.
         //! @return A result code denoting the status of the call. If successful, the MultiDeviceIndirectBufferSignature is considered

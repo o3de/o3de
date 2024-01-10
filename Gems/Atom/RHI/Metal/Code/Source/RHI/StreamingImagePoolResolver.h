@@ -7,7 +7,7 @@
  */
 #pragma once
 #include <RHI/ResourcePoolResolver.h>
-#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
+#include <Atom/RHI/StreamingImagePool.h>
 
 namespace AZ
 {

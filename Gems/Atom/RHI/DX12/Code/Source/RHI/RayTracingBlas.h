@@ -20,7 +20,7 @@ namespace AZ
 
         //! This class builds and contains the DX12 RayTracing BLAS buffers.
         class RayTracingBlas final
-            : public RHI::SingleDeviceRayTracingBlas
+            : public RHI::RayTracingBlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator);
@@ -29,8 +29,8 @@ namespace AZ
 
             struct BlasBuffers
             {
-                RHI::Ptr<RHI::SingleDeviceBuffer> m_blasBuffer;
-                RHI::Ptr<RHI::SingleDeviceBuffer> m_scratchBuffer;
+                RHI::Ptr<RHI::Buffer> m_blasBuffer;
+                RHI::Ptr<RHI::Buffer> m_scratchBuffer;
             };
 
 #ifdef AZ_DX12_DXR_SUPPORT
@@ -38,14 +38,14 @@ namespace AZ
 #endif
             const BlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
 
-            // RHI::SingleDeviceRayTracingBlas overrides...
+            // RHI::RayTracingBlas overrides...
             virtual bool IsValid() const override { return m_buffers[m_currentBufferIndex].m_blasBuffer != nullptr; }
 
         private:
             RayTracingBlas() = default;
 
-            // RHI::SingleDeviceRayTracingBlas overrides...
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::SingleDeviceRayTracingBlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override;
+            // RHI::RayTracingBlas overrides...
+            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RHI::RayTracingBufferPools& rayTracingBufferPools) override;
 
 #ifdef AZ_DX12_DXR_SUPPORT
             AZStd::vector<D3D12_RAYTRACING_GEOMETRY_DESC> m_geometryDescs;

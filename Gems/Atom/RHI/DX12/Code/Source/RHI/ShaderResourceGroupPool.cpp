@@ -110,7 +110,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase)
+        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup& groupBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
 
@@ -155,7 +155,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
 
@@ -196,10 +196,10 @@ namespace AZ
         }
 
         RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(
-            RHI::SingleDeviceShaderResourceGroup& groupBase,
-            const RHI::SingleDeviceShaderResourceGroupData& groupData)
+            RHI::ShaderResourceGroup& groupBase,
+            const RHI::ShaderResourceGroupData& groupData)
         {
-            typedef AZ::RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask ResourceMask;
+            typedef AZ::RHI::ShaderResourceGroupData::ResourceTypeMask ResourceMask;
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
 
             group.m_compiledDataIndex = (group.m_compiledDataIndex + 1) % RHI::Limits::Device::FrameCountMax;
@@ -266,11 +266,11 @@ namespace AZ
         }
 
         void ShaderResourceGroupPool::UpdateViewsDescriptorTable(DescriptorTable descriptorTable,
-                                                                 RHI::SingleDeviceShaderResourceGroup& group,
-                                                                 const RHI::SingleDeviceShaderResourceGroupData& groupData,
+                                                                 RHI::ShaderResourceGroup& group,
+                                                                 const RHI::ShaderResourceGroupData& groupData,
                                                                  bool forceUpdateViews /*= false*/ )
         {
-            typedef AZ::RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask ResourceMask;
+            typedef AZ::RHI::ShaderResourceGroupData::ResourceTypeMask ResourceMask;
             const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
             uint32_t shaderInputIndex = 0;
             
@@ -348,10 +348,10 @@ namespace AZ
 
         void ShaderResourceGroupPool::UpdateSamplersDescriptorTable(
             DescriptorTable descriptorTable,
-            RHI::SingleDeviceShaderResourceGroup& group,
-            const RHI::SingleDeviceShaderResourceGroupData& groupData)
+            RHI::ShaderResourceGroup& group,
+            const RHI::ShaderResourceGroupData& groupData)
         {
-            if(group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
+            if(group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::SamplerMask)))
             {
                 const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
                 const size_t shaderInputSize = groupLayout.GetShaderInputListForSamplers().size();
@@ -365,13 +365,13 @@ namespace AZ
             }
         }
 
-        void ShaderResourceGroupPool::UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::SingleDeviceShaderResourceGroupData& groupData)
+        void ShaderResourceGroupPool::UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData)
         {
             const RHI::ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
             uint32_t shaderInputIndex = 0;
 
             bool updateBuffers = group.IsResourceTypeEnabledForCompilation(
-                static_cast<uint32_t>(RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask));
+                static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::BufferViewUnboundedArrayMask));
 
             if (updateBuffers)
             {
@@ -421,7 +421,7 @@ namespace AZ
             }
 
             bool updateImages = group.IsResourceTypeEnabledForCompilation(
-                static_cast<uint32_t>(RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask));
+                static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::ImageViewUnboundedArrayMask));
 
             if (updateImages)
             {
@@ -473,7 +473,7 @@ namespace AZ
 
         void ShaderResourceGroupPool::UpdateUnboundedBuffersDescTable(
             DescriptorTable descriptorTable,
-            const RHI::SingleDeviceShaderResourceGroupData& groupData,
+            const RHI::ShaderResourceGroupData& groupData,
             uint32_t shaderInputIndex,
             RHI::ShaderInputBufferAccess bufferAccess)
         {
@@ -513,7 +513,7 @@ namespace AZ
 
         void ShaderResourceGroupPool::UpdateUnboundedImagesDescTable(
             DescriptorTable descriptorTable,
-            const RHI::SingleDeviceShaderResourceGroupData& groupData,
+            const RHI::ShaderResourceGroupData& groupData,
             uint32_t shaderInputIndex,
             RHI::ShaderInputImageAccess imageAccess,
             RHI::ShaderInputImageType imageType)

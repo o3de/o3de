@@ -22,11 +22,11 @@ namespace AZ::RHI
         m_hash = TypeHash64(*this);
     }
 
-    SingleDeviceIndexBufferView MultiDeviceIndexBufferView::GetDeviceIndexBufferView(int deviceIndex) const
+    IndexBufferView MultiDeviceIndexBufferView::GetDeviceIndexBufferView(int deviceIndex) const
     {
         AZ_Assert(m_mdBuffer, "No MultiDeviceBuffer available\n");
 
-        return SingleDeviceIndexBufferView(*m_mdBuffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_format);
+        return IndexBufferView(*m_mdBuffer->GetDeviceBuffer(deviceIndex), m_byteOffset, m_byteCount, m_format);
     }
 
     AZ::HashValue64 MultiDeviceIndexBufferView::GetHash() const

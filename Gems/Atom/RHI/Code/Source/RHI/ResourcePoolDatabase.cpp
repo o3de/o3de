@@ -6,9 +6,9 @@
  *
  */
 #include <Atom/RHI/ResourcePoolDatabase.h>
-#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
-#include <Atom/RHI/SingleDeviceImagePoolBase.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/ShaderResourceGroupPool.h>
 
 #include <AzCore/std/algorithm.h>
 
@@ -23,21 +23,21 @@ namespace AZ::RHI
         AZ_Assert(m_shaderResourceGroupPools.empty(), "ShaderResourceGroup pool container is not empty!");
     }
 
-    void ResourcePoolDatabase::AttachPool(SingleDeviceResourcePool* resourcePool)
+    void ResourcePoolDatabase::AttachPool(ResourcePool* resourcePool)
     {
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
         // Search for the set of core pools. Those get stored in their own set separate from the union set.
 
-        if (SingleDeviceBufferPoolBase* bufferPool = azrtti_cast<SingleDeviceBufferPoolBase*>(resourcePool))
+        if (BufferPoolBase* bufferPool = azrtti_cast<BufferPoolBase*>(resourcePool))
         {
             m_bufferPools.emplace_back(bufferPool);
         }
-        else if (SingleDeviceImagePoolBase* imagePool = azrtti_cast<SingleDeviceImagePoolBase*>(resourcePool))
+        else if (ImagePoolBase* imagePool = azrtti_cast<ImagePoolBase*>(resourcePool))
         {
             m_imagePools.emplace_back(imagePool);
         }
-        else if (SingleDeviceShaderResourceGroupPool* srgPool = azrtti_cast<SingleDeviceShaderResourceGroupPool*>(resourcePool))
+        else if (ShaderResourceGroupPool* srgPool = azrtti_cast<ShaderResourceGroupPool*>(resourcePool))
         {
             m_shaderResourceGroupPools.emplace_back(srgPool);
         }
@@ -52,24 +52,24 @@ namespace AZ::RHI
         }
     }
 
-    void ResourcePoolDatabase::DetachPool(SingleDeviceResourcePool* resourcePool)
+    void ResourcePoolDatabase::DetachPool(ResourcePool* resourcePool)
     {
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
         // Search for the set of core pools. Those get stored in their own set separate from the union set.
-        if (SingleDeviceBufferPoolBase* bufferPool = azrtti_cast<SingleDeviceBufferPoolBase*>(resourcePool))
+        if (BufferPoolBase* bufferPool = azrtti_cast<BufferPoolBase*>(resourcePool))
         {
             auto it = AZStd::find(m_bufferPools.begin(), m_bufferPools.end(), bufferPool);
             AZ_Assert(it != m_bufferPools.end(), "Buffer pool does not exist in database.");
             m_bufferPools.erase(it);
         }
-        else if (SingleDeviceImagePoolBase* imagePool = azrtti_cast<SingleDeviceImagePoolBase*>(resourcePool))
+        else if (ImagePoolBase* imagePool = azrtti_cast<ImagePoolBase*>(resourcePool))
         {
             auto it = AZStd::find(m_imagePools.begin(), m_imagePools.end(), imagePool);
             AZ_Assert(it != m_imagePools.end(), "Image pool does not exist in database.");
             m_imagePools.erase(it);
         }
-        else if (SingleDeviceShaderResourceGroupPool* srgPool = azrtti_cast<SingleDeviceShaderResourceGroupPool*>(resourcePool))
+        else if (ShaderResourceGroupPool* srgPool = azrtti_cast<ShaderResourceGroupPool*>(resourcePool))
         {
             auto it = AZStd::find(m_shaderResourceGroupPools.begin(), m_shaderResourceGroupPools.end(), srgPool);
             AZ_Assert(it != m_shaderResourceGroupPools.end(), "ShaderResourceGroup pool does not exist in database.");

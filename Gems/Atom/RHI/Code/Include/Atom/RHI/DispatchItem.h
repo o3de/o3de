@@ -14,8 +14,8 @@
 
 namespace AZ::RHI
 {
-    class SingleDevicePipelineState;
-    class SingleDeviceShaderResourceGroup;
+    class PipelineState;
+    class ShaderResourceGroup;
 
     //! Arguments used when submitting a (direct) dispatch call into a CommandList.
     struct DispatchDirect
@@ -65,7 +65,7 @@ namespace AZ::RHI
 
     //! Arguments used when submitting an indirect dispatch call into a CommandList.
     //! The indirect dispatch arguments are the same ones as the indirect draw ones.
-    using SingleDeviceDispatchIndirect = IndirectArguments;
+    using DispatchIndirect = IndirectArguments;
 
     enum class DispatchType : uint8_t
     {
@@ -86,7 +86,7 @@ namespace AZ::RHI
             , m_direct{ direct }
         {}
 
-        DispatchArguments(const SingleDeviceDispatchIndirect& indirect)
+        DispatchArguments(const DispatchIndirect& indirect)
             : m_type{ DispatchType::Indirect }
             , m_indirect{ indirect }
         {}
@@ -97,7 +97,7 @@ namespace AZ::RHI
             /// Arguments for a direct dispatch.
             DispatchDirect m_direct;
             /// Arguments for an indirect dispatch.
-            SingleDeviceDispatchIndirect m_indirect;
+            DispatchIndirect m_indirect;
         };
     };
 
@@ -116,13 +116,13 @@ namespace AZ::RHI
         uint8_t m_rootConstantSize = 0;
 
         /// The pipeline state to bind.
-        const SingleDevicePipelineState* m_pipelineState = nullptr;
+        const PipelineState* m_pipelineState = nullptr;
 
         /// Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
-        AZStd::array<const SingleDeviceShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups = {};
+        AZStd::array<const ShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups = {};
 
         /// Unique SRG, not shared within the draw packet. This is usually a per-draw SRG, populated with the shader variant fallback key
-        const SingleDeviceShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
+        const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
 
         /// Inline constants data.
         const uint8_t* m_rootConstants = nullptr;

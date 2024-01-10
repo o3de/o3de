@@ -931,7 +931,7 @@ namespace AZ
             }
         }
 
-        const RHI::SingleDeviceShaderResourceGroup* Scene::GetRHIShaderResourceGroup() const
+        const RHI::ShaderResourceGroup* Scene::GetRHIShaderResourceGroup() const
         {
             if (m_srg.get())
             {

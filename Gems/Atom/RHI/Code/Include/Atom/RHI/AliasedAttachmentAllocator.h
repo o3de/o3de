@@ -18,10 +18,10 @@
 
 namespace AZ::RHI
 {
-    class SingleDeviceResource;
+    class Resource;
     class Scope;
-    class SingleDeviceBuffer;
-    class SingleDeviceImage;
+    class Buffer;
+    class Image;
 
     namespace Internal
     {
@@ -101,7 +101,7 @@ namespace AZ::RHI
         //! Called when a buffer is being activated for the first time. This will acquire
         //! a buffer from a heap, configured for the provided descriptor. This may trigger a new
         //! heap to be allocated.
-        SingleDeviceBuffer* ActivateBuffer(
+        Buffer* ActivateBuffer(
             const TransientBufferDescriptor& descriptor,
             Scope& scope);
 
@@ -114,7 +114,7 @@ namespace AZ::RHI
         //! Called when an image is being activated for the first time. This will acquire
         //! an image from a heap, configured for the provided descriptor. This may trigger a new
         //! heap to be allocated.
-        SingleDeviceImage* ActivateImage(
+        Image* ActivateImage(
             const TransientImageDescriptor& descriptor,
             Scope& scope);
 
@@ -308,9 +308,9 @@ namespace AZ::RHI
     }
 
     template<class Heap>
-    SingleDeviceBuffer* AliasedAttachmentAllocator<Heap>::ActivateBuffer(const TransientBufferDescriptor& descriptor, Scope& scope)
+    Buffer* AliasedAttachmentAllocator<Heap>::ActivateBuffer(const TransientBufferDescriptor& descriptor, Scope& scope)
     {
-        SingleDeviceBuffer* buffer = nullptr;
+        Buffer* buffer = nullptr;
         AliasedHeap* heap = nullptr;
         ResultCode result = ResultCode::Fail;
         // We first try to allocate from the current heap pages.
@@ -374,9 +374,9 @@ namespace AZ::RHI
     }
 
     template<class Heap>
-    SingleDeviceImage* AliasedAttachmentAllocator<Heap>::ActivateImage(const TransientImageDescriptor& descriptor, Scope& scope)
+    Image* AliasedAttachmentAllocator<Heap>::ActivateImage(const TransientImageDescriptor& descriptor, Scope& scope)
     {
-        SingleDeviceImage* image = nullptr;
+        Image* image = nullptr;
         AliasedHeap* heap = nullptr;
         ResultCode result = ResultCode::Fail;
         // We first try to allocate from the current heap pages.

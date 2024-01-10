@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceImagePool.h>
+#include <Atom/RHI/ImagePool.h>
 
 namespace AZ
 {
@@ -16,9 +16,9 @@ namespace AZ
         class Device;
 
         class ImagePool final
-            : public RHI::SingleDeviceImagePool
+            : public RHI::ImagePool
         {
-            using Base = RHI::SingleDeviceImagePool;
+            using Base = RHI::ImagePool;
         public:
             AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
             AZ_RTTI(ImagePool, "35351DF3-823C-4042-A8BA-D6FE10FF6A8D", Base);
@@ -29,12 +29,12 @@ namespace AZ
             ImagePool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDeviceImagePool
+            // RHI::ImagePool
             RHI::ResultCode InitInternal(RHI::Device&, const RHI::ImagePoolDescriptor&) override;
             RHI::ResultCode InitImageInternal(const RHI::ImageInitRequest& request) override;
             RHI::ResultCode UpdateImageContentsInternal(const RHI::ImageUpdateRequest& request) override;
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
         };
     }
