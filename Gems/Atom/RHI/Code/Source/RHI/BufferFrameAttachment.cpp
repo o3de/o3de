@@ -15,7 +15,7 @@ namespace AZ::RHI
 {
     BufferFrameAttachment::BufferFrameAttachment(
         const AttachmentId& attachmentId,
-        Ptr<SingleDeviceBuffer> buffer)
+        Ptr<Buffer> buffer)
         : FrameAttachment(
             attachmentId,
             HardwareQueueClassMask::All,
@@ -58,13 +58,13 @@ namespace AZ::RHI
         return m_bufferDescriptor;
     }
 
-    const SingleDeviceBuffer* BufferFrameAttachment::GetBuffer() const
+    const Buffer* BufferFrameAttachment::GetBuffer() const
     {
-        return static_cast<const SingleDeviceBuffer*>(GetResource());
+        return static_cast<const Buffer*>(GetResource());
     }
 
-    SingleDeviceBuffer* BufferFrameAttachment::GetBuffer()
+    Buffer* BufferFrameAttachment::GetBuffer()
     {
-        return static_cast<SingleDeviceBuffer*>(GetResource());
+        return static_cast<Buffer*>(GetResource());
     }
 }

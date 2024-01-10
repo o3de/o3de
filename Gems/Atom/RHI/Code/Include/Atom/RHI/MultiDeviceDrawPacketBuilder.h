@@ -103,7 +103,7 @@ namespace AZ::RHI
         //! Passes a Viewport to all singl-device DrawPacketBuilders
         void SetViewport(const Viewport& viewport);
 
-        //! Passes the SingleDeviceShaderResourceGroup to all single-device DrawPacketBuilders
+        //! Passes the ShaderResourceGroup to all single-device DrawPacketBuilders
         void AddShaderResourceGroup(const MultiDeviceShaderResourceGroup* shaderResourceGroup);
 
         //! Passes the single-device DrawRequests to all single-device DrawPacketBuilders,

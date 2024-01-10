@@ -52,11 +52,11 @@ namespace AZ::RHI
         uint32_t GetCurrentImageIndex() const;
 
         //! Returns the current image of the swap chain.
-        SingleDeviceImage* GetCurrentImage() const;
+        Image* GetCurrentImage() const;
 
         //! Returns the image associated with the provided index, where the total number of images
         //! is given by GetImageCount().
-        SingleDeviceImage* GetImage(uint32_t index) const;
+        Image* GetImage(uint32_t index) const;
 
         //! Returns the ID used for the SwapChain's attachment
         const AttachmentId& GetAttachmentId() const;
@@ -82,7 +82,7 @@ namespace AZ::RHI
         struct InitImageRequest
         {
             //! Pointer to the image to initialize.
-            SingleDeviceImage* m_image = nullptr;
+            Image* m_image = nullptr;
 
             //! Index of the image in the swap chain.
             uint32_t m_imageIndex = 0;
@@ -140,7 +140,7 @@ namespace AZ::RHI
         SwapChainDescriptor m_descriptor;
 
         //! Images corresponding to each image in the swap chain.
-        AZStd::vector<Ptr<SingleDeviceImage>> m_images;
+        AZStd::vector<Ptr<Image>> m_images;
 
         //! The current image index.
         uint32_t m_currentImageIndex = 0;

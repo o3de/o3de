@@ -39,10 +39,10 @@ namespace AZ::RHI
         MemoryStatistics::Pool* BeginPool();
 
         //! Adds a new buffer info to the current pool. This must be called within a BeginPool() / EndPool() scope.
-        MemoryStatistics::SingleDeviceBuffer* AddBuffer();
+        MemoryStatistics::Buffer* AddBuffer();
 
         //! Adds a new image info to the current pool. This must be called within a BeginPool() / EndPool() scope.
-        MemoryStatistics::SingleDeviceImage* AddImage();
+        MemoryStatistics::Image* AddImage();
 
         void EndPool();
 

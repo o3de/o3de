@@ -12,8 +12,8 @@
 
 namespace AZ::RHI
 {
-    class SingleDeviceBuffer;
-    class SingleDeviceIndirectBufferSignature;
+    class Buffer;
+    class IndirectBufferSignature;
 
     //! Provides a view into a buffer, to be used as an indirect buffer. The content of the view is a contiguous
     //! list of commands sequences. It is provided to the RHI back-end at draw time.
@@ -23,8 +23,8 @@ namespace AZ::RHI
         IndirectBufferView() = default;
 
         IndirectBufferView(
-            const SingleDeviceBuffer& buffer,
-            const SingleDeviceIndirectBufferSignature& signature,
+            const Buffer& buffer,
+            const IndirectBufferSignature& signature,
             uint32_t byteOffset,
             uint32_t byteCount,
             uint32_t byteStride);
@@ -33,7 +33,7 @@ namespace AZ::RHI
         HashValue64 GetHash() const;
 
         //! Returns the buffer associated with the view.
-        const SingleDeviceBuffer* GetBuffer() const;
+        const Buffer* GetBuffer() const;
 
         //! Returns the byte offset into the buffer.
         uint32_t GetByteOffset() const;
@@ -46,12 +46,12 @@ namespace AZ::RHI
         uint32_t GetByteStride() const;
 
         //! Returns the signature of the indirect buffer that is associated with the view.
-        const SingleDeviceIndirectBufferSignature* GetSignature() const;
+        const IndirectBufferSignature* GetSignature() const;
 
     private:
         HashValue64 m_hash = HashValue64{ 0 };
-        const SingleDeviceIndirectBufferSignature* m_signature = nullptr;
-        const SingleDeviceBuffer* m_buffer = nullptr;
+        const IndirectBufferSignature* m_signature = nullptr;
+        const Buffer* m_buffer = nullptr;
         uint32_t m_byteOffset = 0;
         uint32_t m_byteCount = 0;
         uint32_t m_byteStride = 0;

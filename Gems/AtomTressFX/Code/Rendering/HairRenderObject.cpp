@@ -110,7 +110,7 @@ namespace AZ
 
                 m_readBuffersViews.resize(2);
            
-                RHI::SingleDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (uint8_t index = 0; index < 2 ; ++index)
                 {
                     // Buffer view creation from the shared buffer
@@ -234,7 +234,7 @@ namespace AZ
                 m_dynamicBuffersViews.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
                 m_dynamicViewAllocators.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
 
-                RHI::SingleDeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (int stream=0; stream< uint8_t(HairDynamicBuffersSemantics::NumBufferStreams) ; ++stream)
                 {
                     SrgBufferDescriptor& streamDesc = m_dynamicBuffersDescriptors[stream];

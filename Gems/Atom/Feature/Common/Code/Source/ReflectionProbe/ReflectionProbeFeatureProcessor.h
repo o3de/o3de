@@ -135,8 +135,8 @@ namespace AZ
             // note that the position and index views are stored in ReflectionRenderData
             AZStd::vector<Position> m_boxPositions;
             AZStd::vector<uint16_t> m_boxIndices;
-            RHI::Ptr<RHI::SingleDeviceBuffer> m_boxPositionBuffer;
-            RHI::Ptr<RHI::SingleDeviceBuffer> m_boxIndexBuffer;
+            RHI::Ptr<RHI::Buffer> m_boxPositionBuffer;
+            RHI::Ptr<RHI::Buffer> m_boxIndexBuffer;
             RHI::InputStreamLayout m_boxStreamLayout;
 
             // contains the rendering data needed by reflection probes

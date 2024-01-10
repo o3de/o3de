@@ -12,7 +12,7 @@
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI/ResourcePool.h>
 #include <Atom/RHI/QueryPool.h>
-#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/Fence.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
 
@@ -115,7 +115,7 @@ namespace AZ::RHI
         const AZStd::vector<SwapChain*>& GetSwapChainsToPresent() const;
 
         //! Returns a list of fences to signal on completion of the scope.
-        const AZStd::vector<Ptr<SingleDeviceFence>>& GetFencesToSignal() const;
+        const AZStd::vector<Ptr<Fence>>& GetFencesToSignal() const;
 
         //! Initializes the scope.
         void Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
@@ -150,7 +150,7 @@ namespace AZ::RHI
         static void LinkProducerConsumerByQueues(Scope* producer, Scope* consumer);
 
         //! Adds a fence that will be signaled at the end of the scope.
-        void AddFenceToSignal(Ptr<SingleDeviceFence> fence);
+        void AddFenceToSignal(Ptr<Fence> fence);
 
     protected:
         //! Called when the scope will use a query pool during it's execution. Some platforms need this information.
@@ -238,7 +238,7 @@ namespace AZ::RHI
         AZStd::vector<SwapChain*>                m_swapChainsToPresent;
 
         /// The set of fences to signal on scope completion.
-        AZStd::vector<Ptr<SingleDeviceFence>>                m_fencesToSignal;
+        AZStd::vector<Ptr<Fence>>                m_fencesToSignal;
 
         /// The set query pools.
         AZStd::vector<Ptr<QueryPool>>                m_queryPools;

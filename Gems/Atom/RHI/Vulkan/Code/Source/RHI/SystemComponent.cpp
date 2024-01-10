@@ -48,8 +48,8 @@
 #include <RHI/RayTracingShaderTable.h>
 #include <Atom/RHI.Reflect/Vulkan/Base.h>
 #include <Atom/RHI/FactoryManagerBus.h>
-#include <Atom/RHI/SingleDeviceRayTracingPipelineState.h>
-#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
@@ -137,7 +137,7 @@ namespace AZ
             return Instance::GetInstance().GetSupportedDevices();
         }
 
-        RHI::Ptr<RHI::SingleDeviceBuffer> SystemComponent::CreateBuffer()
+        RHI::Ptr<RHI::Buffer> SystemComponent::CreateBuffer()
         {
             return Buffer::Create();
         }
@@ -157,7 +157,7 @@ namespace AZ
             return Device::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceFence> SystemComponent::CreateFence()
+        RHI::Ptr<RHI::Fence> SystemComponent::CreateFence()
         {
             return Fence::Create();
         }
@@ -172,7 +172,7 @@ namespace AZ
             return FrameGraphExecuter::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceImage> SystemComponent::CreateImage()
+        RHI::Ptr<RHI::Image> SystemComponent::CreateImage()
         {
             return Image::Create();
         }
@@ -192,12 +192,12 @@ namespace AZ
             return StreamingImagePool::Create();
         }
 
-        RHI::Ptr<RHI::SingleDevicePipelineLibrary> SystemComponent::CreatePipelineLibrary()
+        RHI::Ptr<RHI::PipelineLibrary> SystemComponent::CreatePipelineLibrary()
         {
             return PipelineLibrary::Create();
         }
 
-        RHI::Ptr<RHI::SingleDevicePipelineState> SystemComponent::CreatePipelineState()
+        RHI::Ptr<RHI::PipelineState> SystemComponent::CreatePipelineState()
         {
             return PipelineState::Create();
         }
@@ -207,7 +207,7 @@ namespace AZ
             return Scope::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> SystemComponent::CreateShaderResourceGroup()
+        RHI::Ptr<RHI::ShaderResourceGroup> SystemComponent::CreateShaderResourceGroup()
         {
             return ShaderResourceGroup::Create();
         }
@@ -232,12 +232,12 @@ namespace AZ
             return QueryPool::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceQuery> SystemComponent::CreateQuery()
+        RHI::Ptr<RHI::Query> SystemComponent::CreateQuery()
         {
             return Query::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceIndirectBufferSignature> SystemComponent::CreateIndirectBufferSignature()
+        RHI::Ptr<RHI::IndirectBufferSignature> SystemComponent::CreateIndirectBufferSignature()
         {
             return IndirectBufferSignature::Create();
         }
@@ -247,27 +247,27 @@ namespace AZ
             return IndirectBufferWriter::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
+        RHI::Ptr<RHI::RayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
         {
             return RayTracingBufferPools::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingBlas> SystemComponent::CreateRayTracingBlas()
+        RHI::Ptr<RHI::RayTracingBlas> SystemComponent::CreateRayTracingBlas()
         {
             return RayTracingBlas::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingTlas> SystemComponent::CreateRayTracingTlas()
+        RHI::Ptr<RHI::RayTracingTlas> SystemComponent::CreateRayTracingTlas()
         {
             return RayTracingTlas::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> SystemComponent::CreateRayTracingPipelineState()
+        RHI::Ptr<RHI::RayTracingPipelineState> SystemComponent::CreateRayTracingPipelineState()
         {
             return RayTracingPipelineState::Create();
         }
 
-        RHI::Ptr<RHI::SingleDeviceRayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
+        RHI::Ptr<RHI::RayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
         {
             return RayTracingShaderTable::Create();
         }

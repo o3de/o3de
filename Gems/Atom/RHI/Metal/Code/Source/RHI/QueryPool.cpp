@@ -119,7 +119,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode QueryPool::InitQueryInternal(RHI::SingleDeviceQuery& query)
+        RHI::ResultCode QueryPool::InitQueryInternal(RHI::Query& query)
         {
             // Nothing to do
             return RHI::ResultCode::Success;

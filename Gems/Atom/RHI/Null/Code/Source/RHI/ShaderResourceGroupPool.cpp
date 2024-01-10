@@ -26,7 +26,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             Base::ShutdownResourceInternal(resourceBase);
         }

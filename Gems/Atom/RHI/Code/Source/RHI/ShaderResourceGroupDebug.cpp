@@ -7,12 +7,12 @@
 
 #include <Atom/RHI/ConstantsData.h>
 #include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
 #include <Atom/RHI/ShaderResourceGroupDebug.h>
 
 namespace AZ::RHI
 {
-    void PrintConstantDataDiff(const SingleDeviceShaderResourceGroup& shaderResourceGroup, ConstantsData& referenceData, bool updateReferenceData)
+    void PrintConstantDataDiff(const ShaderResourceGroup& shaderResourceGroup, ConstantsData& referenceData, bool updateReferenceData)
     {
         const RHI::ConstantsData& currentData = shaderResourceGroup.GetData().GetConstantsData();
 
@@ -47,7 +47,7 @@ namespace AZ::RHI
 
         if (srgIndex != -1)
         {
-            const SingleDeviceShaderResourceGroup& srg = *drawItem.m_shaderResourceGroups[srgIndex];
+            const ShaderResourceGroup& srg = *drawItem.m_shaderResourceGroups[srgIndex];
             PrintConstantDataDiff(srg, referenceData, updateReferenceData);
         }
     }

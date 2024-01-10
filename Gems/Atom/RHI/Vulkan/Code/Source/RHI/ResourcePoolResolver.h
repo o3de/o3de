@@ -42,7 +42,7 @@ namespace AZ
             virtual void Deactivate() {}
 
             /// Called when a resource from the pool is being Shutdown
-            virtual void OnResourceShutdown([[maybe_unused]] const RHI::SingleDeviceResource& resource) {}
+            virtual void OnResourceShutdown([[maybe_unused]] const RHI::Resource& resource) {}
 
             Device& GetDevice() const { return m_device; }
 

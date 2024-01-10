@@ -34,7 +34,7 @@ namespace AZ
             RHI::ResultCode InitImageInternal(const RHI::ImageInitRequest& request) override;
             RHI::ResultCode UpdateImageContentsInternal(const RHI::ImageUpdateRequest& request) override;
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
         };
     }

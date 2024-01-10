@@ -135,7 +135,7 @@ namespace AZ
                 m_nonAttachmentBufferUnion.clear();
             }
 
-            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override
+            void OnResourceShutdown(const RHI::Resource& resource) override
             {
                 const Buffer& buffer = static_cast<const Buffer&>(resource);
                 if (!buffer.m_pendingResolves)
@@ -249,7 +249,7 @@ namespace AZ
             Base::OnFrameEnd();
         }
 
-        RHI::ResultCode BufferPool::InitBufferInternal(RHI::SingleDeviceBuffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
+        RHI::ResultCode BufferPool::InitBufferInternal(RHI::Buffer& bufferBase, const RHI::BufferDescriptor& bufferDescriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -276,7 +276,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
+        void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             if (auto* resolver = GetResolver())
             {
@@ -290,7 +290,7 @@ namespace AZ
             buffer.m_pendingResolves = 0;
         }
 
-        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::SingleDeviceBuffer& bufferBase)
+        RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::Buffer& bufferBase)
         {
             Buffer& buffer = static_cast<Buffer&>(bufferBase);
 
@@ -345,7 +345,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void BufferPool::UnmapBufferInternal(RHI::SingleDeviceBuffer& bufferBase)
+        void BufferPool::UnmapBufferInternal(RHI::Buffer& bufferBase)
         {
             const RHI::BufferPoolDescriptor& poolDescriptor = GetDescriptor();
             Buffer& buffer = static_cast<Buffer&>(bufferBase);

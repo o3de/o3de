@@ -125,11 +125,11 @@ namespace AZ::RHI
             {
                 m_statistics.m_reservedMemory.m_rendertargetMemoryInBytes += heapStat.m_heapSize;
             }
-            else if (CheckBitsAny(typeMask, RHI::AliasedResourceTypeFlags::SingleDeviceBuffer))
+            else if (CheckBitsAny(typeMask, RHI::AliasedResourceTypeFlags::Buffer))
             {
                 m_statistics.m_reservedMemory.m_bufferMemoryInBytes += heapStat.m_heapSize;
             }
-            else if (CheckBitsAny(typeMask, RHI::AliasedResourceTypeFlags::SingleDeviceImage))
+            else if (CheckBitsAny(typeMask, RHI::AliasedResourceTypeFlags::Image))
             {
                 m_statistics.m_reservedMemory.m_imageMemoryInBytes += heapStat.m_heapSize;
             }

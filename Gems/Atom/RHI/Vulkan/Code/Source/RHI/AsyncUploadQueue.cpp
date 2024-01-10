@@ -653,7 +653,7 @@ namespace AZ
                 &barrier);
         }
 
-        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::SingleDeviceFence::SignalCallback callback /* = nullptr */)
+        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::Fence::SignalCallback callback /* = nullptr */)
         {
             return m_asyncWaitQueue.CreateAsyncWork([fence, callback]()
             {

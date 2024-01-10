@@ -30,7 +30,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::QueryPool
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::QueryPoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitQueryInternal([[maybe_unused]] RHI::SingleDeviceQuery& query) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitQueryInternal([[maybe_unused]] RHI::Query& query) override { return RHI::ResultCode::Success;}
             RHI::ResultCode GetResultsInternal([[maybe_unused]] uint32_t startIndex, [[maybe_unused]] uint32_t queryCount, [[maybe_unused]] uint64_t* results, [[maybe_unused]] uint32_t resultsCount, [[maybe_unused]] RHI::QueryResultFlagBits flags) override { return RHI::ResultCode::Success;}
             //////////////////////////////////////////////////////////////////////////
 

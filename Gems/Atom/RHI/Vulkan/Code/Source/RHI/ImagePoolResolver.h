@@ -43,7 +43,7 @@ namespace AZ
             void Compile(const RHI::HardwareQueueClass hardwareClass) override;
             void Resolve(CommandList& commandList) override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override;
+            void OnResourceShutdown(const RHI::Resource& resource) override;
             void QueuePrologueTransitionBarriers(CommandList& commandList) override;
             void QueueEpilogueTransitionBarriers(CommandList& commandList) override;
             //////////////////////////////////////////////////////////////////////

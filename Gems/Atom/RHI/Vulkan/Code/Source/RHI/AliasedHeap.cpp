@@ -63,7 +63,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        void AliasedHeap::ShutdownResourceInternal(RHI::SingleDeviceResource& resource)
+        void AliasedHeap::ShutdownResourceInternal(RHI::Resource& resource)
         {
             if (Buffer* buffer = azrtti_cast<Buffer*>(&resource))
             {

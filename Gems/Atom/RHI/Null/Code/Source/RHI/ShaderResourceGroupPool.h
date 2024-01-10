@@ -28,10 +28,10 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // Platform API
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitGroupInternal([[maybe_unused]] RHI::SingleDeviceShaderResourceGroup& groupBase) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitGroupInternal([[maybe_unused]] RHI::ShaderResourceGroup& groupBase) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override;
-            RHI::ResultCode CompileGroupInternal([[maybe_unused]] RHI::SingleDeviceShaderResourceGroup& groupBase, [[maybe_unused]] const RHI::ShaderResourceGroupData& groupData) override { return RHI::ResultCode::Success;}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::SingleDeviceResource& resourceBase) override;
+            RHI::ResultCode CompileGroupInternal([[maybe_unused]] RHI::ShaderResourceGroup& groupBase, [[maybe_unused]] const RHI::ShaderResourceGroupData& groupData) override { return RHI::ResultCode::Success;}
+            void ShutdownResourceInternal([[maybe_unused]] RHI::Resource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

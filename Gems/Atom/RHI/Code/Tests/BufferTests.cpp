@@ -43,7 +43,7 @@ namespace UnitTest
 
     TEST_F(BufferTests, TestNoop)
     {
-        RHI::Ptr<RHI::SingleDeviceBuffer> noopBuffer;
+        RHI::Ptr<RHI::Buffer> noopBuffer;
         noopBuffer = RHI::Factory::Get().CreateBuffer();
     }
 
@@ -51,7 +51,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::SingleDeviceBuffer> bufferA;
+        RHI::Ptr<RHI::Buffer> bufferA;
         bufferA = RHI::Factory::Get().CreateBuffer();
 
         bufferA->SetName(Name("BufferA"));
@@ -64,7 +64,7 @@ namespace UnitTest
 
             AZ_TEST_ASSERT(bufferPool->use_count() == 1);
 
-            RHI::Ptr<RHI::SingleDeviceBuffer> bufferB;
+            RHI::Ptr<RHI::Buffer> bufferB;
             bufferB = RHI::Factory::Get().CreateBuffer();
             AZ_TEST_ASSERT(bufferB->use_count() == 1);
 
@@ -115,13 +115,13 @@ namespace UnitTest
             {
                 uint32_t bufferIndex = 0;
 
-                const RHI::SingleDeviceBuffer* buffers[] =
+                const RHI::Buffer* buffers[] =
                 {
                     bufferA.get(),
                     bufferB.get()
                 };
 
-                bufferPool->ForEach<RHI::SingleDeviceBuffer>([&bufferIndex, &buffers]([[maybe_unused]] RHI::SingleDeviceBuffer& buffer)
+                bufferPool->ForEach<RHI::Buffer>([&bufferIndex, &buffers]([[maybe_unused]] RHI::Buffer& buffer)
                 {
                     AZ_UNUSED(buffers); // Prevent unused warning in release builds
                     AZ_Assert(buffers[bufferIndex] == &buffer, "buffers don't match");
@@ -168,7 +168,7 @@ namespace UnitTest
             bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::Constant;
             bufferPool->Init(*device, bufferPoolDesc);
 
-            RHI::Ptr<RHI::SingleDeviceBuffer> buffer;
+            RHI::Ptr<RHI::Buffer> buffer;
             buffer = RHI::Factory::Get().CreateBuffer();
 
             RHI::BufferInitRequest initRequest;
@@ -244,7 +244,7 @@ namespace UnitTest
 
         RHI::Ptr<RHI::Device> m_device; 
         RHI::Ptr<RHI::BufferPool> m_bufferPool;
-        RHI::Ptr<RHI::SingleDeviceBuffer> m_buffer;
+        RHI::Ptr<RHI::Buffer> m_buffer;
         RHI::Ptr<RHI::BufferView> m_bufferView;
     };
 
@@ -472,7 +472,7 @@ namespace UnitTest
         bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::Constant;
         bufferPool->Init(*device, bufferPoolDesc);
 
-        RHI::Ptr<RHI::SingleDeviceBuffer> buffer;
+        RHI::Ptr<RHI::Buffer> buffer;
         buffer = RHI::Factory::Get().CreateBuffer();
 
         RHI::BufferInitRequest initRequest;

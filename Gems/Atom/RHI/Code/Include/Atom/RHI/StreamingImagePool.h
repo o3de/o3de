@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/StreamingImagePoolDescriptor.h>
-#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImagePoolBase.h>
 
 #include <AzCore/std/containers/span.h>
@@ -84,8 +84,8 @@ namespace AZ::RHI
         CompleteCallback m_completeCallback;
     };
 
-    using StreamingImageInitRequest = StreamingImageInitRequestTemplate<SingleDeviceImage>;
-    using StreamingImageExpandRequest = StreamingImageExpandRequestTemplate<SingleDeviceImage>;
+    using StreamingImageInitRequest = StreamingImageInitRequestTemplate<Image>;
+    using StreamingImageExpandRequest = StreamingImageExpandRequestTemplate<Image>;
 
     class StreamingImagePool
         : public ImagePoolBase
@@ -111,7 +111,7 @@ namespace AZ::RHI
         //! Trims a streaming image down to (and including) the target mip level. This occurs
         //! immediately. The newly evicted mip levels are no longer accessible by image views
         //! and the contents are considered undefined.
-        ResultCode TrimImage(SingleDeviceImage& image, uint32_t targetMipLevel);
+        ResultCode TrimImage(Image& image, uint32_t targetMipLevel);
 
         const StreamingImagePoolDescriptor& GetDescriptor() const override final;
 
@@ -154,7 +154,7 @@ namespace AZ::RHI
         virtual ResultCode ExpandImageInternal(const StreamingImageExpandRequest& request);
 
         // Called when an image mips are being trimmed.
-        virtual ResultCode TrimImageInternal(SingleDeviceImage& image, uint32_t targetMipLevel);
+        virtual ResultCode TrimImageInternal(Image& image, uint32_t targetMipLevel);
             
         // Called when set a new memory budget.
         virtual ResultCode SetMemoryBudgetInternal(size_t newBudget);

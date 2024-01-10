@@ -61,7 +61,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::SingleDevicePipelineLibrary * const> libraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary * const> libraries)
         {
             auto& device = static_cast<Device&>(GetDevice());
             if (libraries.empty())
@@ -71,7 +71,7 @@ namespace AZ
 
             AZStd::vector<VkPipelineCache> pipelineCaches;
             pipelineCaches.reserve(libraries.size());
-            for (const RHI::SingleDevicePipelineLibrary* libraryBase : libraries)
+            for (const RHI::PipelineLibrary* libraryBase : libraries)
             {
                 const auto* library = static_cast<const PipelineLibrary*>(libraryBase);
                 pipelineCaches.emplace_back(library->GetNativePipelineCache());

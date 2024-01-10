@@ -192,7 +192,7 @@ namespace AZ::RHI
                 drawItem->m_shaderResourceGroupCount = static_cast<uint8_t>(shaderResourceGroupCount);
 
                 auto [it, insertOK]{ m_deviceShaderResourceGroups.emplace(
-                    deviceIndex, AZStd::vector<SingleDeviceShaderResourceGroup*>(shaderResourceGroupCount)) };
+                    deviceIndex, AZStd::vector<ShaderResourceGroup*>(shaderResourceGroupCount)) };
 
                 auto& [index, deviceShaderResourceGroup]{ *it };
 
@@ -265,9 +265,9 @@ namespace AZ::RHI
         //! and the device-specific DrawItem holds a pointer to it.
         AZStd::unordered_map<int, AZStd::vector<StreamBufferView>> m_deviceStreamBufferViews;
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
-        //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a SingleDeviceShaderResourceGroup**,
+        //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a ShaderResourceGroup**,
         //! which are then locally cached in a vector (per device) and the device-specific DrawItem holds a pointer to this vector's data.
-        AZStd::unordered_map<int, AZStd::vector<SingleDeviceShaderResourceGroup*>> m_deviceShaderResourceGroups;
+        AZStd::unordered_map<int, AZStd::vector<ShaderResourceGroup*>> m_deviceShaderResourceGroups;
     };
 
     struct MultiDeviceDrawItemProperties

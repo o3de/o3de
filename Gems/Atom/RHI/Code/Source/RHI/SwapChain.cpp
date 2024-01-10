@@ -176,7 +176,7 @@ namespace AZ::RHI
         return m_currentImageIndex;
     }
 
-    SingleDeviceImage* SwapChain::GetCurrentImage() const
+    Image* SwapChain::GetCurrentImage() const
     {
         if (m_descriptor.m_isXrSwapChain)
         {
@@ -185,7 +185,7 @@ namespace AZ::RHI
         return m_images[m_currentImageIndex].get();
     }
 
-    SingleDeviceImage* SwapChain::GetImage(uint32_t index) const
+    Image* SwapChain::GetImage(uint32_t index) const
     {
         return m_images[index].get();
     }

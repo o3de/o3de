@@ -77,18 +77,18 @@ namespace AZ
             // RHI::CommandList
             void SetViewports(const RHI::Viewport* rhiViewports, uint32_t count) override;
             void SetScissors(const RHI::Scissor* rhiScissors, uint32_t count) override;
-            void SetShaderResourceGroupForDraw(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
-            void SetShaderResourceGroupForDispatch(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
+            void SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
+            void SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup) override;
             void Submit(const RHI::CopyItem& copyItems, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DrawItem& itemList, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DispatchItem& dispatchItems, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
-            void BeginPredication(const RHI::SingleDeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
+            void BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation) override;
             void EndPredication() override;
-            void BuildBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) override;
-            void UpdateBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) override;
+            void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
+            void UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(
-                const RHI::SingleDeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::SingleDeviceRayTracingBlas*>& changedBlasList) override;
+                const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList) override;
             void SetFragmentShadingRate(
                 RHI::ShadingRate rate,
                 const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override;
@@ -161,7 +161,7 @@ namespace AZ
 
             RHI::ResultCode BuildNativeCommandBuffer();
 
-            void SetShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
+            void SetShaderResourceGroup(const RHI::ShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
             void SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count);
             void SetIndexBuffer(const RHI::IndexBufferView& indexBufferView);
             void SetStencilRef(uint8_t stencilRef);

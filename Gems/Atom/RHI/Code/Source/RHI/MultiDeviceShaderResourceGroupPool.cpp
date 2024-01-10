@@ -123,7 +123,7 @@ namespace AZ::RHI
     ResultCode MultiDeviceShaderResourceGroupPool::CompileGroup(
         MultiDeviceShaderResourceGroup& shaderResourceGroup, const MultiDeviceShaderResourceGroupData& shaderResourceGroupData)
     {
-        return shaderResourceGroup.IterateObjects<SingleDeviceShaderResourceGroup>([this, &shaderResourceGroupData](auto deviceIndex, auto deviceShaderResourceGroup)
+        return shaderResourceGroup.IterateObjects<ShaderResourceGroup>([this, &shaderResourceGroupData](auto deviceIndex, auto deviceShaderResourceGroup)
         {
             return GetDeviceShaderResourceGroupPool(deviceIndex)->CompileGroup(
                 *deviceShaderResourceGroup, shaderResourceGroupData.GetDeviceShaderResourceGroupData(deviceIndex));

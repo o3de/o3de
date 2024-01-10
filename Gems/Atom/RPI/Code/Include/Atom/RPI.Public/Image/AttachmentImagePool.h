@@ -17,7 +17,7 @@ namespace AZ
     namespace RHI
     {
         class Device;
-        class SingleDeviceImagePool;
+        class ImagePool;
     }
 
     namespace RPI

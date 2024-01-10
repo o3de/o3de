@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
@@ -14,18 +14,18 @@
 
 namespace AZ::RHI
 {
-    void SingleDeviceImage::SetDescriptor(const ImageDescriptor& descriptor)
+    void Image::SetDescriptor(const ImageDescriptor& descriptor)
     {
         m_descriptor = descriptor;
         m_aspectFlags = GetImageAspectFlags(descriptor.m_format);
     }
 
-    const ImageDescriptor& SingleDeviceImage::GetDescriptor() const
+    const ImageDescriptor& Image::GetDescriptor() const
     {
         return m_descriptor;
     }
     
-    void SingleDeviceImage::GetSubresourceLayouts(
+    void Image::GetSubresourceLayouts(
         const ImageSubresourceRange& subresourceRange,
         ImageSubresourceLayout* subresourceLayouts,
         size_t* totalSizeInBytes) const
@@ -40,21 +40,21 @@ namespace AZ::RHI
         GetSubresourceLayoutsInternal(subresourceRangeClamped, subresourceLayouts, totalSizeInBytes);
     }
 
-    uint32_t SingleDeviceImage::GetResidentMipLevel() const
+    uint32_t Image::GetResidentMipLevel() const
     {
         return m_residentMipLevel;
     }
 
-    const ImageFrameAttachment* SingleDeviceImage::GetFrameAttachment() const
+    const ImageFrameAttachment* Image::GetFrameAttachment() const
     {
-        return static_cast<const ImageFrameAttachment*>(SingleDeviceResource::GetFrameAttachment());
+        return static_cast<const ImageFrameAttachment*>(Resource::GetFrameAttachment());
     }
 
-    void SingleDeviceImage::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
+    void Image::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
     {
         const ImageDescriptor& descriptor = GetDescriptor();
 
-        MemoryStatistics::SingleDeviceImage* imageStats = builder.AddImage();
+        MemoryStatistics::Image* imageStats = builder.AddImage();
         imageStats->m_name = GetName();
         imageStats->m_bindFlags = descriptor.m_bindFlags;
 
@@ -64,17 +64,17 @@ namespace AZ::RHI
         imageStats->m_minimumSizeInBytes = imageStats->m_minimumSizeInBytes;
     }
     
-    Ptr<ImageView> SingleDeviceImage::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
+    Ptr<ImageView> Image::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
     {
         return Base::GetResourceView(imageViewDescriptor);
     }
 
-    ImageAspectFlags SingleDeviceImage::GetAspectFlags() const
+    ImageAspectFlags Image::GetAspectFlags() const
     {
         return m_aspectFlags;
     }
 
-    const HashValue64 SingleDeviceImage::GetHash() const
+    const HashValue64 Image::GetHash() const
     {
         HashValue64 hash = HashValue64{ 0 };
         hash = m_descriptor.GetHash();
@@ -84,7 +84,7 @@ namespace AZ::RHI
         return hash;
     }
 
-    bool SingleDeviceImage::IsStreamable() const
+    bool Image::IsStreamable() const
     {
         return IsStreamableInternal();
     }

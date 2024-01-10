@@ -30,8 +30,8 @@ namespace AZ
         {
             enum class BufferBindFlags : uint32_t;
         }
-        class SingleDeviceBufferView;
-        class SingleDeviceImageView;
+        class BufferView;
+        class ImageView;
         struct BufferSubresourceRange;
     }
 

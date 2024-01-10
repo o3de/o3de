@@ -20,7 +20,7 @@ namespace AZ
 
         //! This class builds and contains the Vulkan RayTracing TLAS buffers.
         class RayTracingTlas final
-            : public RHI::SingleDeviceRayTracingTlas
+            : public RHI::RayTracingTlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingTlas, AZ::SystemAllocator);
@@ -29,9 +29,9 @@ namespace AZ
 
             struct TlasBuffers
             {
-                RHI::Ptr<RHI::SingleDeviceBuffer> m_tlasBuffer;
-                RHI::Ptr<RHI::SingleDeviceBuffer> m_scratchBuffer;
-                RHI::Ptr<RHI::SingleDeviceBuffer> m_tlasInstancesBuffer;
+                RHI::Ptr<RHI::Buffer> m_tlasBuffer;
+                RHI::Ptr<RHI::Buffer> m_scratchBuffer;
+                RHI::Ptr<RHI::Buffer> m_tlasInstancesBuffer;
                 VkAccelerationStructureKHR m_accelerationStructure = VK_NULL_HANDLE;
 
                 VkAccelerationStructureGeometryKHR m_geometry = {};
@@ -42,15 +42,15 @@ namespace AZ
 
             const TlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
 
-            // RHI::SingleDeviceRayTracingTlas overrides...
-            const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasBuffer; }
-            const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasInstancesBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasInstancesBuffer; }
+            // RHI::RayTracingTlas overrides...
+            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasBuffer; }
+            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return m_buffers[m_currentBufferIndex].m_tlasInstancesBuffer; }
 
         private:
             RayTracingTlas() = default;
 
-            // RHI::SingleDeviceRayTracingTlas overrides
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingTlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override;
+            // RHI::RayTracingTlas overrides
+            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingTlasDescriptor* descriptor, const RHI::RayTracingBufferPools& rayTracingBufferPools) override;
 
             // buffer list to keep buffers alive for several frames
             static const uint32_t BufferCount = 3;

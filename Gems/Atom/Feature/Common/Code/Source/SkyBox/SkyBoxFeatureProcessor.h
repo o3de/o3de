@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>

@@ -130,7 +130,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    ResultCode StreamingImagePool::TrimImage(SingleDeviceImage& image, uint32_t targetMipLevel)
+    ResultCode StreamingImagePool::TrimImage(Image& image, uint32_t targetMipLevel)
     {
         if (!ValidateIsInitialized())
         {
@@ -198,7 +198,7 @@ namespace AZ::RHI
         return ResultCode::Unimplemented;
     }
 
-    ResultCode StreamingImagePool::TrimImageInternal(SingleDeviceImage&, uint32_t)
+    ResultCode StreamingImagePool::TrimImageInternal(Image&, uint32_t)
     {
         return ResultCode::Unimplemented;
     }

@@ -14,9 +14,9 @@
 namespace AZ::RHI
 {
     class FrameGraphAttachmentDatabase;
-    class SingleDeviceBuffer;
+    class Buffer;
     class BufferView;
-    class SingleDeviceImage;
+    class Image;
     class ImageView;
     class ScopeAttachment;
     struct BufferDescriptor;
@@ -55,7 +55,7 @@ namespace AZ::RHI
         const BufferView* GetBufferView(const AttachmentId& attachmentId, RHI::ScopeAttachmentUsage attachmentUsage) const;
 
         //! Returns the buffer associated with attachmentId.
-        const SingleDeviceBuffer* GetBuffer(const AttachmentId& attachmentId) const;
+        const Buffer* GetBuffer(const AttachmentId& attachmentId) const;
 
         //! Returns the image view associated with the scope attachment
         const ImageView* GetImageView(const ScopeAttachment* scopeAttacment) const;
@@ -70,7 +70,7 @@ namespace AZ::RHI
         const ImageView* GetImageView(const AttachmentId& attachmentId) const;
 
         //! Returns the image associated with the attachmentId.
-        const SingleDeviceImage* GetImage(const AttachmentId& attachmentId) const;
+        const Image* GetImage(const AttachmentId& attachmentId) const;
 
         //! Returns the buffer descriptor for the given attachment id.
         BufferDescriptor GetBufferDescriptor(const AttachmentId& attachmentId) const;

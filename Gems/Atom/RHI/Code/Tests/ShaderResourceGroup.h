@@ -8,13 +8,13 @@
 #pragma once
 
 #include <Atom/RHI/ShaderResourceGroupPool.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace UnitTest
 {
     class ShaderResourceGroup
-        : public AZ::RHI::SingleDeviceShaderResourceGroup
+        : public AZ::RHI::ShaderResourceGroup
     {
     public:
         AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
@@ -31,12 +31,12 @@ namespace UnitTest
 
         void ShutdownInternal() override;
 
-        AZ::RHI::ResultCode InitGroupInternal(AZ::RHI::SingleDeviceShaderResourceGroup& shaderResourceGroupBase) override;
+        AZ::RHI::ResultCode InitGroupInternal(AZ::RHI::ShaderResourceGroup& shaderResourceGroupBase) override;
 
         AZ::RHI::ResultCode CompileGroupInternal(
-            AZ::RHI::SingleDeviceShaderResourceGroup& groupBase,
+            AZ::RHI::ShaderResourceGroup& groupBase,
             const AZ::RHI::ShaderResourceGroupData& groupData) override;
 
-        void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource& resourceBase) override;
+        void ShutdownResourceInternal(AZ::RHI::Resource& resourceBase) override;
     };
 }

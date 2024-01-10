@@ -9,7 +9,7 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <Atom/RHI/SingleDevicePipelineState.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/DeviceObject.h>
 
@@ -81,7 +81,7 @@ namespace AZ::RHI
         const RayTracingConfiguration& GetConfiguration() const { return m_configuration; }
         RayTracingConfiguration& GetConfiguration() { return m_configuration; }
 
-        const RHI::SingleDevicePipelineState* GetPipelineState() const { return m_pipelineState; }
+        const RHI::PipelineState* GetPipelineState() const { return m_pipelineState; }
 
         const RayTracingShaderLibraryVector& GetShaderLibraries() const { return m_shaderLibraries; }
         RayTracingShaderLibraryVector& GetShaderLibraries() { return m_shaderLibraries; }
@@ -94,7 +94,7 @@ namespace AZ::RHI
         RayTracingPipelineStateDescriptor* MaxPayloadSize(uint32_t maxPayloadSize);
         RayTracingPipelineStateDescriptor* MaxAttributeSize(uint32_t maxAttributeSize);
         RayTracingPipelineStateDescriptor* MaxRecursionDepth(uint32_t maxRecursionDepth);
-        RayTracingPipelineStateDescriptor* PipelineState(const RHI::SingleDevicePipelineState* pipelineState);
+        RayTracingPipelineStateDescriptor* PipelineState(const RHI::PipelineState* pipelineState);
         RayTracingPipelineStateDescriptor* ShaderLibrary(RHI::PipelineStateDescriptorForRayTracing& descriptor);
 
         RayTracingPipelineStateDescriptor* RayGenerationShaderName(const AZ::Name& name);
@@ -117,20 +117,20 @@ namespace AZ::RHI
 
         // pipeline state elements
         RayTracingConfiguration m_configuration;
-        const RHI::SingleDevicePipelineState* m_pipelineState = nullptr;
+        const RHI::PipelineState* m_pipelineState = nullptr;
         RayTracingShaderLibraryVector m_shaderLibraries;
         RayTracingHitGroupVector m_hitGroups;
     };
 
     //! Defines the shaders, hit groups, and other parameters required for ray tracing operations.
-    class SingleDeviceRayTracingPipelineState
+    class RayTracingPipelineState
         : public DeviceObject
     {
     public:
-        SingleDeviceRayTracingPipelineState() = default;
-        virtual ~SingleDeviceRayTracingPipelineState() = default;
+        RayTracingPipelineState() = default;
+        virtual ~RayTracingPipelineState() = default;
 
-        static RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> CreateRHIRayTracingPipelineState();
+        static RHI::Ptr<RHI::RayTracingPipelineState> CreateRHIRayTracingPipelineState();
 
         const RayTracingPipelineStateDescriptor& GetDescriptor() const { return m_descriptor; }
         ResultCode Init(Device& device, const RayTracingPipelineStateDescriptor* descriptor);

@@ -78,7 +78,7 @@ namespace AZ
             CreateCylinderBuffersAndViews(AuxGeomShapeType::ShapeType_CylinderNoEnds);
             CreateBoxBuffersAndViews();
 
-            // cache scene pointer for RHI::SingleDevicePipelineState creation.
+            // cache scene pointer for RHI::PipelineState creation.
             m_scene = scene;
 
             LoadShaders();
@@ -1761,7 +1761,7 @@ namespace AZ
             const RHI::IndexBufferView& indexBufferView,
             const StreamBufferViewsForAllStreams& streamBufferViews,
             RHI::DrawListTag drawListTag,
-            const AZ::RHI::SingleDevicePipelineState* pipelineState,
+            const AZ::RHI::PipelineState* pipelineState,
             RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawIndexed drawIndexed;

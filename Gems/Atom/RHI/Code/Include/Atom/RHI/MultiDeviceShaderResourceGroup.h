@@ -9,7 +9,7 @@
 
 #include <Atom/RHI/MultiDeviceResource.h>
 #include <Atom/RHI/MultiDeviceShaderResourceGroupData.h>
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
 
 namespace AZ::RHI
 {
@@ -26,7 +26,7 @@ namespace AZ::RHI
         MultiDeviceShaderResourceGroup() = default;
         virtual ~MultiDeviceShaderResourceGroup() override = default;
 
-        using CompileMode = SingleDeviceShaderResourceGroup::CompileMode;
+        using CompileMode = ShaderResourceGroup::CompileMode;
 
         //! Compiles the SRG with the provided data.
         //! When using Async compile mode, it queues a request that the parent pool compile this group (compilation is deferred).

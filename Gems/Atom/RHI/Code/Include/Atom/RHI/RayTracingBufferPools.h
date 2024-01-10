@@ -15,18 +15,18 @@ namespace AZ::RHI
     class BufferPool;        
     class Device;
 
-    //! SingleDeviceRayTracingBufferPools
+    //! RayTracingBufferPools
     //!
     //! This class encapsulates all of the BufferPools needed for ray tracing, freeing the application
     //! from setting up and managing the buffers pools individually.
     //!
-    class SingleDeviceRayTracingBufferPools
+    class RayTracingBufferPools
         : public DeviceObject
     {
     public:
-        virtual ~SingleDeviceRayTracingBufferPools() = default;
+        virtual ~RayTracingBufferPools() = default;
 
-        static RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> CreateRHIRayTracingBufferPools();
+        static RHI::Ptr<RHI::RayTracingBufferPools> CreateRHIRayTracingBufferPools();
 
         // accessors
         const RHI::Ptr<RHI::BufferPool>& GetShaderTableBufferPool() const;
@@ -39,7 +39,7 @@ namespace AZ::RHI
         void Init(RHI::Ptr<RHI::Device>& device);
 
     protected:
-        SingleDeviceRayTracingBufferPools() = default;
+        RayTracingBufferPools() = default;
 
         virtual RHI::BufferBindFlags GetShaderTableBufferBindFlags() const { return RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::RayTracingShaderTable; }
         virtual RHI::BufferBindFlags GetScratchBufferBindFlags() const { return RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer; }

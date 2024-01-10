@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/MultiDeviceBufferPool.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
 
 namespace AZ::RHI
 {
@@ -36,7 +36,7 @@ namespace AZ::RHI
         const RHI::Ptr<RHI::MultiDeviceBufferPool>& GetTlasInstancesBufferPool() const;
         const RHI::Ptr<RHI::MultiDeviceBufferPool>& GetTlasBufferPool() const;
 
-        //! Initializes the multi-device BufferPools as well as all device-specific SingleDeviceRayTracingBufferPools
+        //! Initializes the multi-device BufferPools as well as all device-specific RayTracingBufferPools
         void Init(MultiDevice::DeviceMask deviceMask);
 
     private:

@@ -12,7 +12,7 @@
 
 namespace AZ::RHI
 {
-    class SingleDeviceFence;
+    class Fence;
 
     //! A structure used as an argument to BufferPool::InitBuffer.
     template <typename BufferClass>
@@ -89,9 +89,9 @@ namespace AZ::RHI
         const void* m_sourceData = nullptr;
     };
 
-    using BufferInitRequest = BufferInitRequestTemplate<SingleDeviceBuffer>;
-    using BufferMapRequest = BufferMapRequestTemplate<SingleDeviceBuffer>;
-    using BufferStreamRequest = BufferStreamRequestTemplate<SingleDeviceBuffer, SingleDeviceFence>;
+    using BufferInitRequest = BufferInitRequestTemplate<Buffer>;
+    using BufferMapRequest = BufferMapRequestTemplate<Buffer>;
+    using BufferStreamRequest = BufferStreamRequestTemplate<Buffer, Fence>;
 
     //! Buffer pool provides backing storage and context for buffer instances. The BufferPoolDescriptor
     //! contains properties defining memory characteristics of buffer pools. All buffers created on a pool
@@ -144,7 +144,7 @@ namespace AZ::RHI
         //!      initialized with this pool.
         //!  @return On success, the buffer is considered to have a new backing allocation. On failure, the existing
         //!      buffer allocation remains intact.
-        ResultCode OrphanBuffer(SingleDeviceBuffer& buffer);
+        ResultCode OrphanBuffer(Buffer& buffer);
 
         //! Maps a buffer region for CPU access. The type of access (read or write) is dictated by the type of
         //! buffer pool. Host pools with host read access may read from the buffer--the contents of which
@@ -162,7 +162,7 @@ namespace AZ::RHI
 
         //! Unmaps a buffer for CPU access. The mapped data pointer is considered invalid after this call and
         //! should not be accessed. This call unmaps the data region and unblocks the GPU for access.
-        void UnmapBuffer(SingleDeviceBuffer& buffer);
+        void UnmapBuffer(Buffer& buffer);
 
         //! Asynchronously streams buffer data up to the GPU. The operation is decoupled from the frame scheduler.
         //! It is not valid to use the buffer while the upload is running. The provided fence is signaled when the
@@ -199,16 +199,16 @@ namespace AZ::RHI
         virtual ResultCode InitInternal(Device& device, const RHI::BufferPoolDescriptor& descriptor) = 0;
 
         /// Called when a buffer is being initialized onto the pool.
-        virtual ResultCode InitBufferInternal(SingleDeviceBuffer& buffer, const BufferDescriptor& descriptor) = 0;
+        virtual ResultCode InitBufferInternal(Buffer& buffer, const BufferDescriptor& descriptor) = 0;
 
         /// Called when the buffer is being orphaned.
-        virtual ResultCode OrphanBufferInternal(SingleDeviceBuffer& buffer) = 0;
+        virtual ResultCode OrphanBufferInternal(Buffer& buffer) = 0;
 
         /// Called when a buffer is being mapped.
         virtual ResultCode MapBufferInternal(const BufferMapRequest& request, BufferMapResponse& response) = 0;
 
         /// Called when a buffer is being unmapped.
-        virtual void UnmapBufferInternal(SingleDeviceBuffer& buffer) = 0;
+        virtual void UnmapBufferInternal(Buffer& buffer) = 0;
 
         /// Called when a buffer is being streamed asynchronously.
         virtual ResultCode StreamBufferInternal(const BufferStreamRequest& request);

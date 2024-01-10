@@ -218,7 +218,7 @@ namespace AZ::RHI
         return m_swapChainsToPresent;
     }
 
-    const AZStd::vector<Ptr<SingleDeviceFence>>& Scope::GetFencesToSignal() const
+    const AZStd::vector<Ptr<Fence>>& Scope::GetFencesToSignal() const
     {
         return m_fencesToSignal;
     }
@@ -252,7 +252,7 @@ namespace AZ::RHI
         consumer->m_producersByQueue[static_cast<uint32_t>(producer->GetHardwareQueueClass())] = producer;
     }
 
-    void Scope::AddFenceToSignal(Ptr<SingleDeviceFence> fence)
+    void Scope::AddFenceToSignal(Ptr<Fence> fence)
     {
         m_fencesToSignal.push_back(fence);
     }

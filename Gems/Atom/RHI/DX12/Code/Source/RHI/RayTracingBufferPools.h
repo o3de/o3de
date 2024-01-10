@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
+#include <Atom/RHI/RayTracingBufferPools.h>
 
 namespace AZ
 {
@@ -16,7 +16,7 @@ namespace AZ
     {
         //! This is the DX12-specific RayTracingBufferPools class.
         class RayTracingBufferPools final
-            : public RHI::SingleDeviceRayTracingBufferPools
+            : public RHI::RayTracingBufferPools
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingBufferPools, AZ::SystemAllocator);

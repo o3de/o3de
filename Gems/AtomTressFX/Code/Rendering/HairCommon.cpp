@@ -142,9 +142,9 @@ namespace AZ
                 return imagePool;
             }
 
-            Data::Instance<RHI::SingleDeviceImage> UtilityClass::CreateImage2D(RHI::ImagePool* imagePool, RHI::ImageDescriptor& imageDesc)
+            Data::Instance<RHI::Image> UtilityClass::CreateImage2D(RHI::ImagePool* imagePool, RHI::ImageDescriptor& imageDesc)
             {
-                Data::Instance<RHI::SingleDeviceImage> rhiImage = RHI::Factory::Get().CreateImage();
+                Data::Instance<RHI::Image> rhiImage = RHI::Factory::Get().CreateImage();
                 RHI::ImageInitRequest request;
                 request.m_image = rhiImage.get();
                 request.m_descriptor = imageDesc;

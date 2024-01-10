@@ -36,10 +36,10 @@ namespace AZ::RHI
             AZStd::span<const StreamBufferView> m_streamBufferViews;
 
             //! Shader resource group unique for this draw request
-            const SingleDeviceShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
+            const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
 
             //! The pipeline state assigned to this draw item.
-            const SingleDevicePipelineState* m_pipelineState = nullptr;
+            const PipelineState* m_pipelineState = nullptr;
 
             //! The sort key assigned to this draw item.
             DrawItemSortKey m_sortKey = 0;
@@ -69,7 +69,7 @@ namespace AZ::RHI
 
         void SetViewport(const Viewport& viewport);
 
-        void AddShaderResourceGroup(const SingleDeviceShaderResourceGroup* shaderResourceGroup);
+        void AddShaderResourceGroup(const ShaderResourceGroup* shaderResourceGroup);
 
         void AddDrawItem(const DrawRequest& request);
 
@@ -90,7 +90,7 @@ namespace AZ::RHI
         size_t m_streamBufferViewCount = 0;
         IndexBufferView m_indexBufferView;
         AZStd::fixed_vector<DrawRequest, DrawItemCountMax> m_drawRequests;
-        AZStd::fixed_vector<const SingleDeviceShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
+        AZStd::fixed_vector<const ShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
         AZStd::span<const uint8_t> m_rootConstants;
         AZStd::fixed_vector<Scissor, Limits::Pipeline::AttachmentColorCountMax> m_scissors;
         AZStd::fixed_vector<Viewport, Limits::Pipeline::AttachmentColorCountMax> m_viewports;

@@ -31,8 +31,8 @@ namespace AZ
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::TransientAttachmentPoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
             void BeginInternal([[maybe_unused]] const RHI::TransientAttachmentPoolCompileFlags flags, [[maybe_unused]] const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override {}
             void EndInternal() override {}
-            RHI::SingleDeviceImage* ActivateImage([[maybe_unused]] const RHI::TransientImageDescriptor& descriptor) override { return nullptr;}
-            RHI::SingleDeviceBuffer* ActivateBuffer([[maybe_unused]] const RHI::TransientBufferDescriptor& descriptor) override { return nullptr;}
+            RHI::Image* ActivateImage([[maybe_unused]] const RHI::TransientImageDescriptor& descriptor) override { return nullptr;}
+            RHI::Buffer* ActivateBuffer([[maybe_unused]] const RHI::TransientBufferDescriptor& descriptor) override { return nullptr;}
             void DeactivateBuffer([[maybe_unused]] const RHI::AttachmentId& attachmentId) override {}
             void DeactivateImage([[maybe_unused]] const RHI::AttachmentId& attachmentId) override {}
             void ShutdownInternal() override {}

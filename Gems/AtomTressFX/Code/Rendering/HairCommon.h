@@ -80,7 +80,7 @@ namespace AZ
                 static Data::Instance<RHI::ImagePool> CreateImagePool(
                     RHI::ImagePoolDescriptor& imagePoolDesc);
 
-                static Data::Instance<RHI::SingleDeviceImage> CreateImage2D(
+                static Data::Instance<RHI::Image> CreateImage2D(
                     RHI::ImagePool* imagePool, RHI::ImageDescriptor& imageDesc);
             };
 

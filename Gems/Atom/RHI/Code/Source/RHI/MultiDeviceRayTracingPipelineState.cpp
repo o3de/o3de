@@ -120,7 +120,7 @@ namespace AZ::RHI
 
         if (resultCode != ResultCode::Success)
         {
-            // Reset already initialized device-specific SingleDeviceRayTracingPipelineState and set deviceMask to 0
+            // Reset already initialized device-specific RayTracingPipelineState and set deviceMask to 0
             m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }

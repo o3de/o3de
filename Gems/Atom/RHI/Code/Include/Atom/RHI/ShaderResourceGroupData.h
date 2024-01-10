@@ -8,15 +8,15 @@
 #pragma once
 
 #include <Atom/RHI/ConstantsData.h>
-#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferView.h>
 #include <AzCore/Preprocessor/Enum.h>
 
 namespace AZ::RHI
 {
-    class SingleDeviceShaderResourceGroup;
+    class ShaderResourceGroup;
     class ShaderResourceGroupPool;
 
     AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(
@@ -58,7 +58,7 @@ namespace AZ::RHI
         explicit ShaderResourceGroupData(const ShaderResourceGroupPool& shaderResourceGroupPool);
 
         //! Creates shader resource group data from an SRG instance (usable on any SRG with the same layout).
-        explicit ShaderResourceGroupData(const SingleDeviceShaderResourceGroup& shaderResourceGroup);
+        explicit ShaderResourceGroupData(const ShaderResourceGroup& shaderResourceGroup);
 
         AZ_DEFAULT_COPY_MOVE(ShaderResourceGroupData);
 
@@ -362,7 +362,7 @@ namespace AZ::RHI
         }
 
         const ImageViewDescriptor& imageViewDescriptor = imageView->GetDescriptor();
-        const SingleDeviceImage& image = imageView->GetImage();
+        const Image& image = imageView->GetImage();
         const ImageDescriptor& imageDescriptor = image.GetDescriptor();
         const ImageFrameAttachment* frameAttachment = image.GetFrameAttachment();
 
@@ -385,7 +385,7 @@ namespace AZ::RHI
             if (!frameAttachment)
             {
                 AZ_Error("ShaderResourceGroupData", false,
-                    "Image Input '%s[%d]': SingleDeviceImage is bound to a ReadWrite shader input, "
+                    "Image Input '%s[%d]': Image is bound to a ReadWrite shader input, "
                     "but it is not an attachment on the frame scheduler. All GPU-writable resources "
                     "must be declared as attachments in order to provide hazard tracking.",
                     shaderInputImage.m_name.GetCStr(), arrayIndex, GetShaderInputAccessName(shaderInputImage.m_access));
@@ -510,7 +510,7 @@ namespace AZ::RHI
 
         const TShaderInputDescriptor& shaderInputBuffer = GetLayout()->GetShaderInput(inputIndex);
         const BufferViewDescriptor& bufferViewDescriptor = bufferView->GetDescriptor();
-        const SingleDeviceBuffer& buffer = bufferView->GetBuffer();
+        const Buffer& buffer = bufferView->GetBuffer();
         const BufferDescriptor& bufferDescriptor = buffer.GetDescriptor();
         const BufferFrameAttachment* frameAttachment = buffer.GetFrameAttachment();
 
@@ -534,7 +534,7 @@ namespace AZ::RHI
             if (!frameAttachment)
             {
                 AZ_Error("ShaderResourceGroupData", false,
-                    "Buffer Input '%s[%d]': SingleDeviceBuffer is bound to a ReadWrite shader input, "
+                    "Buffer Input '%s[%d]': Buffer is bound to a ReadWrite shader input, "
                     "but it is not an attachment on the frame scheduler. All GPU-writable resources "
                     "must be declared as attachments in order to provide hazard tracking.",
                     shaderInputBuffer.m_name.GetCStr(), arrayIndex, GetShaderInputAccessName(shaderInputBuffer.m_access));

@@ -173,7 +173,7 @@ namespace AZ
 
             ReadbackState m_state = ReadbackState::Uninitialized;
 
-            Ptr<RHI::SingleDeviceFence> m_fence;
+            Ptr<RHI::Fence> m_fence;
 
             // Callback function when read back finished
             CallbackFunction m_callback = nullptr;

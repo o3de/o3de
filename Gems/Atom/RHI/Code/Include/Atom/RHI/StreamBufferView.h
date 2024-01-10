@@ -13,7 +13,7 @@
 
 namespace AZ::RHI
 {
-    class SingleDeviceBuffer;
+    class Buffer;
     class InputStreamLayout;
 
     //! Provides a view into a buffer, to be used as vertex stream. The content of the view is a contiguous
@@ -31,7 +31,7 @@ namespace AZ::RHI
         StreamBufferView() = default;
 
         StreamBufferView(
-            const SingleDeviceBuffer& buffer,
+            const Buffer& buffer,
             uint32_t byteOffset,
             uint32_t byteCount,
             uint32_t byteStride);
@@ -40,7 +40,7 @@ namespace AZ::RHI
         HashValue64 GetHash() const;
 
         //! Returns the buffer associated with the view.
-        const SingleDeviceBuffer* GetBuffer() const;
+        const Buffer* GetBuffer() const;
 
         //! Returns the byte offset into the buffer.
         uint32_t GetByteOffset() const;
@@ -54,7 +54,7 @@ namespace AZ::RHI
 
     private:
         HashValue64 m_hash = HashValue64{ 0 };
-        const SingleDeviceBuffer* m_buffer = nullptr;
+        const Buffer* m_buffer = nullptr;
         uint32_t m_byteOffset = 0;
         uint32_t m_byteCount = 0;
         uint32_t m_byteStride = 0;

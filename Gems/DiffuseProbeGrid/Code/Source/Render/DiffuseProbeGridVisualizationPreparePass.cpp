@@ -134,7 +134,7 @@ namespace AZ
                 }
 
                 // create the TLAS buffers from on the descriptor
-                RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
+                RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
                 visualizationTlas->CreateBuffers(*device, &tlasDescriptor, diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools());                    
             }
 
@@ -158,9 +158,9 @@ namespace AZ
                 }
 
                 // import and attach the visualization TLAS and probe data
-                RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
-                const RHI::Ptr<RHI::SingleDeviceBuffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
-                const RHI::Ptr<RHI::SingleDeviceBuffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
+                RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
+                const RHI::Ptr<RHI::Buffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
+                const RHI::Ptr<RHI::Buffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
                 if (tlasBuffer && tlasInstancesBuffer)
                 {
                     // TLAS buffer
@@ -268,7 +268,7 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()->GetRHIShaderResourceGroup();
+                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                 RHI::DispatchItem dispatchItem;

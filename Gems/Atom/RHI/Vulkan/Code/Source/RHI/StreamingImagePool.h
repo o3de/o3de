@@ -48,7 +48,7 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
             RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
             RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
-            RHI::ResultCode TrimImageInternal(RHI::SingleDeviceImage& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
             RHI::ResultCode SetMemoryBudgetInternal(size_t newBudget) override;
             bool SupportTiledImageInternal() const override;
             //////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::ResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
             /// As streaming image tiles are allocated from a pool allocator, fragmentation will remain 0 for
             /// the streaming image pool
             void ComputeFragmentation() const override;

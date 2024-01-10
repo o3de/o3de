@@ -176,7 +176,7 @@ namespace Platform
         return AZ::RHI::ResultCode::Success;
     }
 
-    void UnMapBufferInternal(AZ::RHI::SingleDeviceBuffer& bufferBase)
+    void UnMapBufferInternal(AZ::RHI::Buffer& bufferBase)
     {
         AZ::Metal::Buffer& buffer = static_cast<AZ::Metal::Buffer&>(bufferBase);
         //Ony need to handle MTLStorageModeManaged memory.

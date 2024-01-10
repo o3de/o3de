@@ -195,7 +195,7 @@ namespace AZ
                 list.erase(AZStd::remove_if(list.begin(), list.end(), predicate), list.end());
             }
 
-            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override
+            void OnResourceShutdown(const RHI::Resource& resource) override
             {
                 const Image& image = static_cast<const Image&>(resource);
                 if (!image.m_pendingResolves)
@@ -323,7 +323,7 @@ namespace AZ
             return resultCode;
         }
 
-        void ImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
+        void ImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             if (auto* resolver = GetResolver())
             {

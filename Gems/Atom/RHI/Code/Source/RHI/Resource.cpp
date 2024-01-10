@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/SingleDeviceResource.h>
-#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResourcePool.h>
@@ -22,20 +22,20 @@
 
 namespace AZ::RHI
 {
-    SingleDeviceResource::~SingleDeviceResource()
+    Resource::~Resource()
     {
         AZ_Assert(
             GetPool() == nullptr,
-            "SingleDeviceResource '%s' is still registered on pool. %s",
+            "Resource '%s' is still registered on pool. %s",
             GetName().GetCStr(), GetPool()->GetName().GetCStr());
     }
 
-    bool SingleDeviceResource::IsAttachment() const
+    bool Resource::IsAttachment() const
     {
         return m_frameAttachment != nullptr;
     }
 
-    void SingleDeviceResource::InvalidateViews()
+    void Resource::InvalidateViews()
     {
         if (!m_isInvalidationQueued)
         {
@@ -53,17 +53,17 @@ namespace AZ::RHI
         }
     }
 
-    uint32_t SingleDeviceResource::GetVersion() const
+    uint32_t Resource::GetVersion() const
     {
         return m_version;
     }
 
-    bool SingleDeviceResource::IsFirstVersion() const
+    bool Resource::IsFirstVersion() const
     {
         return m_version == 0;
     }
 
-    void SingleDeviceResource::SetPool(ResourcePool* bufferPool)
+    void Resource::SetPool(ResourcePool* bufferPool)
     {
         m_pool = bufferPool;
 
@@ -81,17 +81,17 @@ namespace AZ::RHI
         ++m_version;
     }
 
-    const ResourcePool* SingleDeviceResource::GetPool() const
+    const ResourcePool* Resource::GetPool() const
     {
         return m_pool;
     }
 
-    ResourcePool* SingleDeviceResource::GetPool()
+    ResourcePool* Resource::GetPool()
     {
         return m_pool;
     }
 
-    void SingleDeviceResource::SetFrameAttachment(FrameAttachment* frameAttachment)
+    void Resource::SetFrameAttachment(FrameAttachment* frameAttachment)
     {
         if (Validation::IsEnabled())
         {
@@ -104,18 +104,18 @@ namespace AZ::RHI
         m_frameAttachment = frameAttachment;
     }
 
-    const FrameAttachment* SingleDeviceResource::GetFrameAttachment() const
+    const FrameAttachment* Resource::GetFrameAttachment() const
     {
         return m_frameAttachment;
     }
         
-    void SingleDeviceResource::Shutdown()
+    void Resource::Shutdown()
     {
         // Shutdown is delegated to the parent pool if this resource is registered on one.
         if (m_pool)
         {
             AZ_Error(
-                "SingleDeviceResource",
+                "ResourceBase",
                 m_frameAttachment == nullptr,
                 "The resource is currently attached on a frame graph. It is not valid "
                 "to shutdown a resource while it is being used as an Attachment. The "
@@ -126,7 +126,7 @@ namespace AZ::RHI
         DeviceObject::Shutdown();
     }
     
-    Ptr<ImageView> SingleDeviceResource::GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const
+    Ptr<ImageView> Resource::GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const
     {
         const HashValue64 hash = imageViewDescriptor.GetHash();
         AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
@@ -172,7 +172,7 @@ namespace AZ::RHI
         }       
     }
 
-    Ptr<BufferView> SingleDeviceResource::GetResourceView(const BufferViewDescriptor& bufferViewDescriptor) const
+    Ptr<BufferView> Resource::GetResourceView(const BufferViewDescriptor& bufferViewDescriptor) const
     {
         const HashValue64 hash = bufferViewDescriptor.GetHash();
         AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
@@ -217,10 +217,10 @@ namespace AZ::RHI
         }
     }
 
-    Ptr<ImageView> SingleDeviceResource::InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const
+    Ptr<ImageView> Resource::InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const
     {
         Ptr<ImageView> imageViewPtr = RHI::Factory::Get().CreateImageView();
-        RHI::ResultCode resultCode = imageViewPtr->Init(static_cast<const SingleDeviceImage&>(*this), imageViewDescriptor);
+        RHI::ResultCode resultCode = imageViewPtr->Init(static_cast<const Image&>(*this), imageViewDescriptor);
         if (resultCode == RHI::ResultCode::Success)
         {
             m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(imageViewPtr.get());
@@ -232,10 +232,10 @@ namespace AZ::RHI
         }
     }
 
-    Ptr<BufferView> SingleDeviceResource::InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const
+    Ptr<BufferView> Resource::InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const
     {
         Ptr<BufferView> bufferViewPtr = RHI::Factory::Get().CreateBufferView();
-        RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const SingleDeviceBuffer&>(*this), bufferViewDescriptor);
+        RHI::ResultCode resultCode = bufferViewPtr->Init(static_cast<const Buffer&>(*this), bufferViewDescriptor);
         if (resultCode == RHI::ResultCode::Success)
         {
             m_resourceViewCache[static_cast<uint64_t>(hash)] = static_cast<ResourceView*>(bufferViewPtr.get());
@@ -247,7 +247,7 @@ namespace AZ::RHI
         }
     }
 
-    void SingleDeviceResource::EraseResourceView(ResourceView* resourceView) const
+    void Resource::EraseResourceView(ResourceView* resourceView) const
     {
         AZStd::lock_guard<AZStd::mutex> registryLock(m_cacheMutex);
         auto itr = m_resourceViewCache.begin();
@@ -262,14 +262,14 @@ namespace AZ::RHI
         }
     }
     
-    bool SingleDeviceResource::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
+    bool Resource::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
     {
         const HashValue64 hash = imageViewDescriptor.GetHash();
         auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));
         return it != m_resourceViewCache.end();
     }
     
-    bool SingleDeviceResource::IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor)
+    bool Resource::IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor)
     {
         const HashValue64 hash = bufferViewDescriptor.GetHash();
         auto it = m_resourceViewCache.find(static_cast<uint64_t>(hash));

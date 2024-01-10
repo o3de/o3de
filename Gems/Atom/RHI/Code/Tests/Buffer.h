@@ -21,7 +21,7 @@ namespace UnitTest
         AZ_CLASS_ALLOCATOR(BufferView, AZ::SystemAllocator);
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::SingleDeviceResource&) override;
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::Resource&) override;
         AZ::RHI::ResultCode InvalidateInternal() override;
         void ShutdownInternal() override;
     };
@@ -29,7 +29,7 @@ namespace UnitTest
     class BufferPool;
 
     class Buffer
-        : public AZ::RHI::SingleDeviceBuffer
+        : public AZ::RHI::Buffer
     {
         friend class BufferPool;
     public:
@@ -59,15 +59,15 @@ namespace UnitTest
 
         void ShutdownInternal() override;
 
-        AZ::RHI::ResultCode InitBufferInternal(AZ::RHI::SingleDeviceBuffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor) override;
+        AZ::RHI::ResultCode InitBufferInternal(AZ::RHI::Buffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor) override;
 
-        void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource&) override;
+        void ShutdownResourceInternal(AZ::RHI::Resource&) override;
 
-        AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::SingleDeviceBuffer& buffer) override;
+        AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::Buffer& buffer) override;
 
         AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::BufferMapRequest& request, AZ::RHI::BufferMapResponse& response) override;
 
-        void UnmapBufferInternal(AZ::RHI::SingleDeviceBuffer& bufferBase) override;
+        void UnmapBufferInternal(AZ::RHI::Buffer& bufferBase) override;
 
         AZ::RHI::ResultCode StreamBufferInternal(const AZ::RHI::BufferStreamRequest& request) override;
 

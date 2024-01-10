@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceResource.h>
+#include <Atom/RHI/Resource.h>
 #include <AzCore/EBus/EBus.h>
 
 namespace AZ::RHI
@@ -21,7 +21,7 @@ namespace AZ::RHI
 
     //! This bus is used as a queue for controlling ResourceView invalidations during
     //! the compilation phase of FrameScheduler. Essentially, when a resource
-    //! invalidates (via a call to SingleDeviceResource::InvalidateViews), the resource queues
+    //! invalidates (via a call to Resource::InvalidateViews), the resource queues
     //! an operation on this queue. The queue is then flushed by the FrameScheduler.
     //!
     //! Downstream systems that need to rebuild platform-specific view information
@@ -39,7 +39,7 @@ namespace AZ::RHI
         static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::MultipleAndOrdered;
         static const EBusAddressPolicy AddressPolicy = EBusAddressPolicy::ById;
         using MutexType = AZStd::mutex;
-        using BusIdType = const SingleDeviceResource*;
+        using BusIdType = const Resource*;
         static const bool LocklessDispatch = true;
         static const bool EnableEventQueue = true;
 

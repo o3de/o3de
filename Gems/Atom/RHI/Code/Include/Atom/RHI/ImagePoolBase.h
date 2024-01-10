@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/ResourcePool.h>
-#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/Image.h>
 
 namespace AZ::RHI
 {
@@ -26,7 +26,7 @@ namespace AZ::RHI
         ImagePoolBase() = default;
 
         ResultCode InitImage(
-            SingleDeviceImage* image,
+            Image* image,
             const ImageDescriptor& descriptor,
             PlatformMethod platformInitResourceMethod);
 

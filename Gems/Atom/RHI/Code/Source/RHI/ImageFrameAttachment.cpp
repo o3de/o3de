@@ -13,7 +13,7 @@ namespace AZ::RHI
 {
     ImageFrameAttachment::ImageFrameAttachment(
         const AttachmentId& attachmentId,
-        Ptr<SingleDeviceImage> image)
+        Ptr<Image> image)
         : FrameAttachment(
             attachmentId,
             HardwareQueueClassMask::All,
@@ -62,14 +62,14 @@ namespace AZ::RHI
         return m_imageDescriptor;
     }
 
-    const SingleDeviceImage* ImageFrameAttachment::GetImage() const
+    const Image* ImageFrameAttachment::GetImage() const
     {
-        return static_cast<const SingleDeviceImage*>(GetResource());
+        return static_cast<const Image*>(GetResource());
     }
 
-    SingleDeviceImage* ImageFrameAttachment::GetImage()
+    Image* ImageFrameAttachment::GetImage()
     {
-        return static_cast<SingleDeviceImage*>(GetResource());
+        return static_cast<Image*>(GetResource());
     }
 
     ClearValue ImageFrameAttachment::GetOptimizedClearValue() const

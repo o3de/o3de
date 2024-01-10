@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI/IndirectBufferView.h>
-#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/MultiDeviceIndirectBufferSignature.h>
 #include <AzCore/Utils/TypeHash.h>
 

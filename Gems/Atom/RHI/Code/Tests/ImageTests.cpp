@@ -40,7 +40,7 @@ namespace UnitTest
 
     TEST_F(ImageTests, TestNoop)
     {
-        RHI::Ptr<RHI::SingleDeviceImage> noopImage;
+        RHI::Ptr<RHI::Image> noopImage;
         noopImage = RHI::Factory::Get().CreateImage();
     }
 
@@ -48,7 +48,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::SingleDeviceImage> imageA;
+        RHI::Ptr<RHI::Image> imageA;
         imageA = RHI::Factory::Get().CreateImage();
         imageA->SetName(Name("ImageA"));
 
@@ -56,7 +56,7 @@ namespace UnitTest
         ASSERT_TRUE(imageA->use_count() == 1);
 
         {
-            RHI::Ptr<RHI::SingleDeviceImage> imageB;
+            RHI::Ptr<RHI::Image> imageB;
             imageB = RHI::Factory::Get().CreateImage();
 
             ASSERT_TRUE(imageB->use_count() == 1);
@@ -100,13 +100,13 @@ namespace UnitTest
             {
                 uint32_t imageIndex = 0;
 
-                const RHI::SingleDeviceImage* images[] =
+                const RHI::Image* images[] =
                 {
                     imageA.get(),
                     imageB.get()
                 };
 
-                imagePool->ForEach<RHI::SingleDeviceImage>([&imageIndex, &images]([[maybe_unused]] const RHI::SingleDeviceImage& image)
+                imagePool->ForEach<RHI::Image>([&imageIndex, &images]([[maybe_unused]] const RHI::Image& image)
                 {
                     AZ_UNUSED(images); // Prevent unused warning in release builds
                     AZ_Assert(images[imageIndex] == &image, "images don't match");
@@ -152,7 +152,7 @@ namespace UnitTest
             imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::Color;
             imagePool->Init(*device, imagePoolDesc);
 
-            RHI::Ptr<RHI::SingleDeviceImage> image;
+            RHI::Ptr<RHI::Image> image;
             image = RHI::Factory::Get().CreateImage();
 
             RHI::ImageInitRequest initRequest;
@@ -245,7 +245,7 @@ namespace UnitTest
 
         RHI::Ptr<RHI::Device> m_device;
         RHI::Ptr<RHI::ImagePool> m_imagePool;
-        RHI::Ptr<RHI::SingleDeviceImage> m_image;
+        RHI::Ptr<RHI::Image> m_image;
         RHI::Ptr<RHI::ImageView> m_imageView;
     };
 

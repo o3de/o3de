@@ -13,7 +13,7 @@
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/FrameGraph.h>
-#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/ScopeProducerEmpty.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
@@ -180,8 +180,8 @@ namespace AZ::RHI
         //! Returns the descriptor which has information on the properties of a TransientAttachmentPool.
         const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
 
-        //! Adds a SingleDeviceRayTracingShaderTable to be built this frame
-        void QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable);
+        //! Adds a RayTracingShaderTable to be built this frame
+        void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable);
 
         //! Returns PhysicalDeviceDescriptor which can be used to extract vendor/driver information
         const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
@@ -231,7 +231,7 @@ namespace AZ::RHI
         AZStd::unordered_map<ScopeId, ScopeProducer*> m_scopeProducerLookup;
 
         // list of RayTracingShaderTables that should be built this frame
-        AZStd::vector<RHI::Ptr<SingleDeviceRayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
+        AZStd::vector<RHI::Ptr<RayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
 
         AZ::TaskGraphActiveInterface* m_taskGraphActive = nullptr;
     };

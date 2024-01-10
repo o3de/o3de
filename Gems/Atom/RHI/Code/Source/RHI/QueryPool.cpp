@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/QueryPool.h>
-#include <Atom/RHI/SingleDeviceQuery.h>
+#include <Atom/RHI/Query.h>
 
 #include <AzCore/std/parallel/lock.h>
 
@@ -53,12 +53,12 @@ namespace AZ::RHI
         });
     }
 
-    ResultCode QueryPool::InitQuery(SingleDeviceQuery* query)
+    ResultCode QueryPool::InitQuery(Query* query)
     {
         return InitQuery(&query, 1);
     }
 
-    ResultCode QueryPool::InitQuery(SingleDeviceQuery** queries, uint32_t queryCount)
+    ResultCode QueryPool::InitQuery(Query** queries, uint32_t queryCount)
     {
         AZ_Assert(queries, "Null queries");
         AZStd::vector<QueryPoolSubAllocator::Allocation> allocationIntervals;
@@ -79,7 +79,7 @@ namespace AZ::RHI
             uint32_t end = allocationInterval.m_offset + allocationInterval.m_count;
             for (uint32_t i = allocationInterval.m_offset; i < end; ++i, ++queryIndex)
             {
-                SingleDeviceQuery& query = *queries[queryIndex];
+                Query& query = *queries[queryIndex];
                 query.m_handle = QueryHandle(i);
                 result = ResourcePool::InitResource(&query, [this, &query]() {return InitQueryInternal(query); });
                 if (result != ResultCode::Success)
@@ -94,11 +94,11 @@ namespace AZ::RHI
         return result;
     }
 
-    ResultCode QueryPool::ValidateQueries(SingleDeviceQuery** queries, uint32_t queryCount)
+    ResultCode QueryPool::ValidateQueries(Query** queries, uint32_t queryCount)
     {
         if (!queryCount)
         {
-            AZ_Error("RHI", false, "SingleDeviceQuery count is 0");
+            AZ_Error("RHI", false, "Query count is 0");
             return RHI::ResultCode::InvalidArgument;
         }
 
@@ -113,7 +113,7 @@ namespace AZ::RHI
 
             if (query->GetQueryPool() != this)
             {
-                AZ_Error("RHI", false, "SingleDeviceQuery does not belong to this pool");
+                AZ_Error("RHI", false, "Query does not belong to this pool");
                 return RHI::ResultCode::InvalidArgument;
             }
 
@@ -133,12 +133,12 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    ResultCode QueryPool::GetResults(SingleDeviceQuery* query, uint64_t* result, uint32_t resultsCount, QueryResultFlagBits flags)
+    ResultCode QueryPool::GetResults(Query* query, uint64_t* result, uint32_t resultsCount, QueryResultFlagBits flags)
     {
         return GetResults(&query, 1, result, resultsCount, flags);
     }
 
-    ResultCode QueryPool::GetResults(SingleDeviceQuery** queries, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, QueryResultFlagBits flags)
+    ResultCode QueryPool::GetResults(Query** queries, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, QueryResultFlagBits flags)
     {
         AZ_Assert(queries && queryCount, "Null queries");
         AZ_Assert(results && resultsCount, "Null results");
@@ -161,7 +161,7 @@ namespace AZ::RHI
 
         AZStd::vector<uint32_t> resultsOrder;
         // Get the group of consecutive queries from the provided list.
-        AZStd::vector<SingleDeviceQuery*> sortedQueries(queries, queries + queryCount);
+        AZStd::vector<Query*> sortedQueries(queries, queries + queryCount);
         SortQueries(sortedQueries);
 
         AZStd::vector<Interval> intervals = GetQueryIntervalsSorted(sortedQueries);
@@ -194,7 +194,7 @@ namespace AZ::RHI
         AZStd::vector<uint64_t> tempResult(perResultSize);
         for (size_t i = 0; i < sortedQueries.size();)
         {
-            SingleDeviceQuery* sortedQuery = sortedQueries[i];
+            Query* sortedQuery = sortedQueries[i];
             uint32_t slot = queryToSlotMap[sortedQuery->GetHandle().GetIndex()];
             if (i == slot)
             {
@@ -215,7 +215,7 @@ namespace AZ::RHI
     ResultCode QueryPool::GetResults(uint64_t* results, uint32_t resultsCount, QueryResultFlagBits flags)
     {
         AZ_Assert(resultsCount <= m_queries.size(), "Invalid size for writing the query results");
-        AZStd::vector<SingleDeviceQuery*> queries = GetQueries();
+        AZStd::vector<Query*> queries = GetQueries();
         return GetResults(queries.data(), static_cast<uint32_t>(queries.size()), results, resultsCount, flags);
     }
 
@@ -224,13 +224,13 @@ namespace AZ::RHI
         return m_descriptor;
     }
 
-    const SingleDeviceQuery* QueryPool::GetQuery(QueryHandle handle) const
+    const Query* QueryPool::GetQuery(QueryHandle handle) const
     {
         AZStd::unique_lock<AZStd::mutex> lock(m_queriesMutex);
         return m_queries[handle.GetIndex()];
     }
 
-    SingleDeviceQuery* QueryPool::GetQuery(QueryHandle handle)
+    Query* QueryPool::GetQuery(QueryHandle handle)
     {
         AZStd::unique_lock<AZStd::mutex> lock(m_queriesMutex);
         return m_queries[handle.GetIndex()];
@@ -242,19 +242,19 @@ namespace AZ::RHI
         m_queries.clear();
     }
 
-    void QueryPool::ShutdownResourceInternal(SingleDeviceResource& resource)
+    void QueryPool::ShutdownResourceInternal(Resource& resource)
     {
         AZStd::unique_lock<AZStd::mutex> lock(m_queriesMutex);
-        auto& query = static_cast<SingleDeviceQuery&>(resource);
+        auto& query = static_cast<Query&>(resource);
         m_queries[query.m_handle.GetIndex()] = nullptr;
         m_queryAllocator.DeAllocate(query.m_handle.GetIndex());
     }
 
-    AZStd::vector<SingleDeviceQuery*> QueryPool::GetQueries()
+    AZStd::vector<Query*> QueryPool::GetQueries()
     {
-        AZStd::vector<SingleDeviceQuery*> queries;
+        AZStd::vector<Query*> queries;
         AZStd::unique_lock<AZStd::mutex> lock(m_queriesMutex);
-        AZStd::for_each(m_queries.begin(), m_queries.end(), [&queries](SingleDeviceQuery* query)
+        AZStd::for_each(m_queries.begin(), m_queries.end(), [&queries](Query* query)
         {
             if (query)
             {

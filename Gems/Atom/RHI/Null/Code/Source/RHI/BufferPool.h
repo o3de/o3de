@@ -36,11 +36,11 @@ namespace AZ
             // RHI::BufferPool
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::BufferPoolDescriptor& descriptor) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
-            RHI::ResultCode InitBufferInternal([[maybe_unused]] RHI::SingleDeviceBuffer& buffer, [[maybe_unused]] const RHI::BufferDescriptor& rhiDescriptor) override{ return RHI::ResultCode::Success;}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::SingleDeviceResource& resource) override {}
-            RHI::ResultCode OrphanBufferInternal([[maybe_unused]] RHI::SingleDeviceBuffer& buffer) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitBufferInternal([[maybe_unused]] RHI::Buffer& buffer, [[maybe_unused]] const RHI::BufferDescriptor& rhiDescriptor) override{ return RHI::ResultCode::Success;}
+            void ShutdownResourceInternal([[maybe_unused]] RHI::Resource& resource) override {}
+            RHI::ResultCode OrphanBufferInternal([[maybe_unused]] RHI::Buffer& buffer) override { return RHI::ResultCode::Success;}
             RHI::ResultCode MapBufferInternal([[maybe_unused]] const RHI::BufferMapRequest& mapRequest, [[maybe_unused]] RHI::BufferMapResponse& response) override { return RHI::ResultCode::Success;}
-            void UnmapBufferInternal([[maybe_unused]] RHI::SingleDeviceBuffer& buffer) override {}
+            void UnmapBufferInternal([[maybe_unused]] RHI::Buffer& buffer) override {}
             RHI::ResultCode StreamBufferInternal([[maybe_unused]] const RHI::BufferStreamRequest& request) override { return RHI::ResultCode::Success;}
             void BufferCopy([[maybe_unused]] void* destination, [[maybe_unused]] const void* source, [[maybe_unused]] size_t num) override {}
             void ComputeFragmentation() const override {}

@@ -62,7 +62,7 @@ namespace AZ
 
         private:
             struct FramePacket;
-            RHI::AsyncWorkHandle CreateAsyncWork(Fence& fence, RHI::SingleDeviceFence::SignalCallback callback = nullptr);
+            RHI::AsyncWorkHandle CreateAsyncWork(Fence& fence, RHI::Fence::SignalCallback callback = nullptr);
             void ProcessCallback(const RHI::AsyncWorkHandle& handle);
             void CopyBufferToImage(FramePacket* framePacket,
                                    Image* destImage,

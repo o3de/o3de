@@ -41,7 +41,7 @@ namespace AZ
             void ShutdownInternal() override;
             uint32_t PresentInternal() override;
             RHI::ResultCode InitImageInternal(const InitImageRequest& request) override;
-            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
             RHI::ResultCode ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions) override;
             //////////////////////////////////////////////////////////////////////////
             

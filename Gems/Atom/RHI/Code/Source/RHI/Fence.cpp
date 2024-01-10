@@ -6,21 +6,21 @@
  *
  */
 
-#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/Fence.h>
 
 #include <AzCore/Debug/Profiler.h>
 
 namespace AZ::RHI
 {
-    SingleDeviceFence::~SingleDeviceFence() {}
+    Fence::~Fence() {}
 
-    bool SingleDeviceFence::ValidateIsInitialized() const
+    bool Fence::ValidateIsInitialized() const
     {
         if (Validation::IsEnabled())
         {
             if (!IsInitialized())
             {
-                AZ_Error("SingleDeviceFence", false, "SingleDeviceFence is not initialized!");
+                AZ_Error("Fence", false, "Fence is not initialized!");
                 return false;
             }
         }
@@ -28,13 +28,13 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode SingleDeviceFence::Init(Device& device, FenceState initialState)
+    ResultCode Fence::Init(Device& device, FenceState initialState)
     {
         if (Validation::IsEnabled())
         {
             if (IsInitialized())
             {
-                AZ_Error("SingleDeviceFence", false, "SingleDeviceFence is already initialized!");
+                AZ_Error("Fence", false, "Fence is already initialized!");
                 return ResultCode::InvalidOperation;
             }
         }
@@ -53,7 +53,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    void SingleDeviceFence::Shutdown()
+    void Fence::Shutdown()
     {
         if (IsInitialized())
         {
@@ -67,7 +67,7 @@ namespace AZ::RHI
         }
     }
 
-    ResultCode SingleDeviceFence::SignalOnCpu()
+    ResultCode Fence::SignalOnCpu()
     {
         if (!ValidateIsInitialized())
         {
@@ -78,19 +78,19 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    ResultCode SingleDeviceFence::WaitOnCpu() const
+    ResultCode Fence::WaitOnCpu() const
     {
         if (!ValidateIsInitialized())
         {
             return ResultCode::InvalidOperation;
         }
 
-        AZ_PROFILE_SCOPE(RHI, "SingleDeviceFence: WaitOnCpu");
+        AZ_PROFILE_SCOPE(RHI, "Fence: WaitOnCpu");
         WaitOnCpuInternal();
         return ResultCode::Success;
     }
 
-    ResultCode SingleDeviceFence::WaitOnCpuAsync(SignalCallback callback)
+    ResultCode Fence::WaitOnCpuAsync(SignalCallback callback)
     {
         if (!ValidateIsInitialized())
         {
@@ -99,7 +99,7 @@ namespace AZ::RHI
 
         if (!callback)
         {
-            AZ_Error("SingleDeviceFence", false, "Callback is null.");
+            AZ_Error("Fence", false, "Callback is null.");
             return ResultCode::InvalidOperation;
         }
 
@@ -108,14 +108,14 @@ namespace AZ::RHI
             m_waitThread.join();
         }
 
-        AZStd::thread_desc threadDesc{ "SingleDeviceFence WaitOnCpu Thread" };
+        AZStd::thread_desc threadDesc{ "Fence WaitOnCpu Thread" };
 
         m_waitThread = AZStd::thread(threadDesc, [this, callback]()
         {
             ResultCode resultCode = WaitOnCpu();
             if (resultCode != ResultCode::Success)
             {
-                AZ_Error("SingleDeviceFence", false, "Failed to call WaitOnCpu in async thread.");
+                AZ_Error("Fence", false, "Failed to call WaitOnCpu in async thread.");
             }
             callback();
         });
@@ -123,7 +123,7 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    ResultCode SingleDeviceFence::Reset()
+    ResultCode Fence::Reset()
     {
         if (!ValidateIsInitialized())
         {
@@ -134,7 +134,7 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    FenceState SingleDeviceFence::GetFenceState() const
+    FenceState Fence::GetFenceState() const
     {
         if (!ValidateIsInitialized())
         {

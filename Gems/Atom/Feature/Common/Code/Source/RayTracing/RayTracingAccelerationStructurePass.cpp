@@ -130,7 +130,7 @@ namespace AZ
             {
                 if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision)
                 {
-                    RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
+                    RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
                     RayTracingFeatureProcessor::SubMeshVector& subMeshes = rayTracingFeatureProcessor->GetSubMeshes();
                     uint32_t rayTracingSubMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
 
@@ -155,11 +155,11 @@ namespace AZ
                     }
 
                     // create the TLAS buffers based on the descriptor
-                    RHI::Ptr<RHI::SingleDeviceRayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
+                    RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
                     rayTracingTlas->CreateBuffers(*device, &tlasDescriptor, rayTracingBufferPools);
 
                     // import and attach the TLAS buffer
-                    const RHI::Ptr<RHI::SingleDeviceBuffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
+                    const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
                     if (rayTracingTlasBuffer && rayTracingSubMeshCount)
                     {
                         AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
@@ -234,7 +234,7 @@ namespace AZ
             BeginScopeQuery(context);
 
             // build newly added or skinned BLAS objects
-            AZStd::vector<const AZ::RHI::SingleDeviceRayTracingBlas*> changedBlasList;
+            AZStd::vector<const AZ::RHI::RayTracingBlas*> changedBlasList;
             RayTracingFeatureProcessor::BlasInstanceMap& blasInstances = rayTracingFeatureProcessor->GetBlasInstances();
             for (auto& blasInstance : blasInstances)
             {

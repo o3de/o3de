@@ -161,7 +161,7 @@ namespace UnitTest
             return writer;
         }
 
-        void ValidateSignature(const RHI::SingleDeviceIndirectBufferSignature& signature)
+        void ValidateSignature(const RHI::IndirectBufferSignature& signature)
         {
             ValidateLayout(signature.GetLayout());
             EXPECT_TRUE(signature.IsInitialized());

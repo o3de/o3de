@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
 #include <RHI/Descriptor.h>
 #include <RHI/MemoryView.h>
 #include <AzCore/std/containers/vector.h>
@@ -39,9 +39,9 @@ namespace AZ
         };
 
         class ShaderResourceGroup final
-            : public RHI::SingleDeviceShaderResourceGroup
+            : public RHI::ShaderResourceGroup
         {
-            using Base = RHI::SingleDeviceShaderResourceGroup;
+            using Base = RHI::ShaderResourceGroup;
         public:
             AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
 

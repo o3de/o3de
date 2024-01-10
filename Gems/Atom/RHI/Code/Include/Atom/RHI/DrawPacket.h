@@ -122,10 +122,10 @@ namespace AZ::RHI
         const DrawFilterMask* m_drawFilterMasks = nullptr;
 
         // List of shader resource groups shared by all draw items.
-        const SingleDeviceShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
+        const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
 
         // List of shader resource groups that aren't shared, but unique for each draw item.
-        const SingleDeviceShaderResourceGroup* const* m_uniqueShaderResourceGroups = nullptr;
+        const ShaderResourceGroup* const* m_uniqueShaderResourceGroups = nullptr;
 
         // List of inline constants shared by all draw items.
         const uint8_t* m_rootConstants = nullptr;

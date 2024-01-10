@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDevicePipelineLibrary.h>
+#include <Atom/RHI/PipelineLibrary.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
@@ -15,7 +15,7 @@ namespace AZ
     namespace Null
     {
         class PipelineLibrary final
-            : public RHI::SingleDevicePipelineLibrary
+            : public RHI::PipelineLibrary
         {
         public:
             AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
@@ -27,10 +27,10 @@ namespace AZ
             PipelineLibrary() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::SingleDevicePipelineLibrary
+            // RHI::PipelineLibrary
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineLibraryDescriptor& descriptor) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
-            RHI::ResultCode MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::SingleDevicePipelineLibrary* const> libraries) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> libraries) override { return RHI::ResultCode::Success;}
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr;}
             bool SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const override { return true;}
             //////////////////////////////////////////////////////////////////////////

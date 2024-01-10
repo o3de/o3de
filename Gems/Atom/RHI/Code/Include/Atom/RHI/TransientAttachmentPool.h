@@ -10,8 +10,8 @@
 #include <Atom/RHI.Reflect/AliasedHeapEnums.h>
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
 #include <Atom/RHI/Scope.h>
-#include <Atom/RHI/SingleDeviceImage.h>
-#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/Image.h>
+#include <Atom/RHI/Buffer.h>
 
 #include <AzCore/std/optional.h>
 
@@ -89,12 +89,12 @@ namespace AZ::RHI
         //! Called when an image is being activated for the first time. This class should acquire
         //! an image from the pool, configured for the provided descriptor. This may involve aliasing
         //! from a heap, or simple object pooling.
-        virtual SingleDeviceImage* ActivateImage(const TransientImageDescriptor& descriptor) = 0;
+        virtual Image* ActivateImage(const TransientImageDescriptor& descriptor) = 0;
 
         //! Called when an buffer is being activated for the first time. This class should acquire
         //! an buffer from the pool, configured for the provided descriptor. This may involve aliasing
         //! from a heap, or simple object pooling.
-        virtual SingleDeviceBuffer* ActivateBuffer(const TransientBufferDescriptor& descriptor) = 0;
+        virtual Buffer* ActivateBuffer(const TransientBufferDescriptor& descriptor) = 0;
 
         //! Called when a buffer is being de-allocated from the pool. Called during the last scope the attachment
         //! is used, after all allocations for that scope have been processed.
