@@ -58,6 +58,8 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
     
     with patch('o3de.manifest.get_o3de_folder') as mock_get_o3de_folder,\
          patch('o3de.export_project.get_default_asset_platform', return_value='pc') as mock_get_asset_platform,\
+         patch('o3de.android.configure_android_options'),\
+         patch('o3de.android.generate_android_project'),\
          patch('export_source_android.export_source_android_project') as mock_export_func:
         
         mock_get_o3de_folder.return_value = pathlib.Path(tmpdir.join('.o3de').realpath())
@@ -140,6 +142,8 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
          patch('o3de.export_project.get_asset_processor_batch_path', return_value=tmpdir/'assetproc'),\
          patch('o3de.export_project.get_asset_bundler_batch_path', return_value=tmpdir/'assetbundles'),\
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+         patch('o3de.android.configure_android_options'),\
+         patch('o3de.android.generate_android_project'),\
          patch('export_source_android.export_source_android_project') as mock_export_func:
         
         mock_get_o3de_folder.return_value = pathlib.Path(tmpdir.join('.o3de').realpath())
@@ -308,6 +312,8 @@ def test_build_tool_combinations(tmp_path, use_sdk, should_build_tools_flag, has
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
          patch('o3de.android_support.get_android_config', return_value=mock_config),\
+         patch('o3de.android.configure_android_options'),\
+         patch('o3de.android.generate_android_project'),\
          patch('pathlib.Path.is_dir', return_value=True),\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
@@ -401,6 +407,8 @@ def test_asset_bundler_combinations(tmp_path, use_sdk, should_build_tools_flag, 
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
          patch('o3de.android_support.get_android_config', return_value=mock_config),\
+         patch('o3de.android.configure_android_options'),\
+         patch('o3de.android.generate_android_project'),\
          patch('pathlib.Path.is_dir', return_value=True),\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
@@ -508,6 +516,10 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
          patch('o3de.android_support.get_android_config', return_value=mock_config),\
+         patch('o3de.android.configure_android_options'),\
+         patch('o3de.android.generate_android_project'),\
+         patch('o3de.android.add_args'),\
+         patch('argparse.ArgumentParser.parse_args'),\
          patch('pathlib.Path.is_file'),\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
         
@@ -587,6 +599,8 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
          patch('o3de.android_support.get_android_config', return_value=mock_config),\
+         patch('o3de.android.configure_android_options'),\
+         patch('o3de.android.generate_android_project'),\
          patch('pathlib.Path.is_dir', return_value=True),\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         

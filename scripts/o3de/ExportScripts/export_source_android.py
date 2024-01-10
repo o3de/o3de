@@ -48,12 +48,14 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
 
     is_installer_sdk = manifest.is_sdk_engine(engine_path=ctx.engine_path)
 
-    def run_android_command(args, cwd, error_msg):
-        has_errors = exp.process_command(args, cwd=cwd)
-        if has_errors:
-            raise exp.ExportProjectError(error_msg)
+    android_arg_parser = argparse.ArgumentParser()
+    android_subparser = android_arg_parser.add_subparsers(title="Android sub-commands")
+    android.add_args(android_subparser)
+
+    # run_android_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=ctx.project_path, error_msg="Invalid Android Configuration")
+    parsed_android_configure_command = android_arg_parser.parse_args(['android-configure', '--validate'])
+    android.configure_android_options(parsed_android_configure_command)
     
-    run_android_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=ctx.project_path, error_msg="Invalid Android Configuration")
 
     # Calculate the tools and game build paths
     default_base_path = ctx.engine_path if engine_centric else ctx.project_path
@@ -88,14 +90,14 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
 
     android_sdk_home = pathlib.Path(android_project_config.get_value(key=android_support.SETTINGS_SDK_ROOT.key))
 
-    run_android_command([o3de_cli_script_path, 'android-generate', '-p', ctx.project_name, '-B', target_android_project_path, "--asset-mode", asset_pack_mode],
-                        cwd=default_base_path,
-                        error_msg="Android Project Generation Failure.")
+    parsed_android_generate_command = android_arg_parser.parse_args(['android-generate', '-p', str(ctx.project_name), '-B', str(target_android_project_path), '--asset-mode', asset_pack_mode])
+    android.generate_android_project(parsed_android_generate_command)
 
-    run_android_command([target_android_project_path / f'gradlew{android_support.GRADLE_EXTENSION}', f'assemble{build_config.title()}'],
-                        cwd=target_android_project_path,
-                        error_msg="Gradle Build Failure.")
-    
+    gradle_build_command = [target_android_project_path / f'gradlew{android_support.GRADLE_EXTENSION}', f'assemble{build_config.title()}']
+    has_errors = exp.process_command(gradle_build_command, cwd=target_android_project_path)
+    if has_errors:
+        raise exp.ExportProjectError("Gradle Build Failure.")
+
     if deploy_to_device:
         
         activity_name = f'{ctx.project_name}Activity'
@@ -165,6 +167,7 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
         exit(0)
 
     return parsed_args
+
 
 def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext, args, export_config: command_utils.O3DEConfig, o3de_logger):
     option_build_assets = export_config.get_parsed_boolean_option(parsed_args=args,
