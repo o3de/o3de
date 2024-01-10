@@ -52,7 +52,8 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
     android_subparser = android_arg_parser.add_subparsers(title="Android sub-commands")
     android.add_args(android_subparser)
 
-    # run_android_command([o3de_cli_script_path, 'android-configure', '--validate'], cwd=ctx.project_path, error_msg="Invalid Android Configuration")
+    # We invoke the o3de.android APIs to configure, validate, and generate the android project
+    # Parsed CLI arguments are passed along to the API in question.
     parsed_android_configure_command = android_arg_parser.parse_args(['android-configure', '--validate'])
     android.configure_android_options(parsed_android_configure_command)
     
