@@ -8,7 +8,7 @@
 #pragma once
 
 #if defined(CARBONATED)
-// aefiov engine analytics bus to enable stats event from the engine, game's analytics processes those events
+// aefimov engine analytics bus to enable stats event from the engine, game's analytics processes those events
 
 namespace AZ
 {

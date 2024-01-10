@@ -37,7 +37,9 @@ const char c_sys_localization_debug[] = "sys_localization_debug";
 const char c_sys_localization_encode[] = "sys_localization_encode";
 #endif // !defined(_RELEASE)
 
+#if defined(CARBONATED)
 const char c_sys_localization_test[] = "sys_localization_test";
+#endif
 
 #define LOC_WINDOW "Localization"
 const char* c_sys_localization_format = "sys_localization_format";
@@ -211,6 +213,7 @@ static void TestFormatMessage ([[maybe_unused]] IConsoleCmdArgs* pArgs)
 #endif //#if !defined(_RELEASE)
 
 
+#if defined(CARBONATED)
 //////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
 void CLocalizedStringsManager::LocalizationDumpLoadedInfo([[maybe_unused]] IConsoleCmdArgs* pArgs)
@@ -257,6 +260,7 @@ void CLocalizedStringsManager::LocalizationDumpLoadedInfo([[maybe_unused]] ICons
     }
 #endif
 }
+#endif
 
 #endif //#if !defined(_RELEASE)
 //////////////////////////////////////////////////////////////////////
@@ -267,10 +271,12 @@ void CLocalizedStringsManager::LocalizationDumpLoadedInfo([[maybe_unused]] ICons
 CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
     : m_cvarLocalizationDebug(0)
     , m_cvarLocalizationEncode(1)
+#if defined(CARBONATED)
 // Gruber patch begin
     , m_cvarLocalizationTest(0)
     , m_cvarLocalizationFormat(1)
 // Gruber patch end
+#endif
     , m_availableLocalizations(0)
 {
     m_pSystem = pSystem;
@@ -302,6 +308,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
         "1: Huffman encode translated text, saves approx 30% with a small runtime performance cost\n"
         "Default is 1.");
 
+#if defined(CARBONATED)
     REGISTER_CVAR2(c_sys_localization_test, &m_cvarLocalizationTest, m_cvarLocalizationTest, VF_CHEAT,
         "Toggles test mode for localization.  Provides mechanism to render localization token instead of text as a way to check which text are localized.\n"
         "Usage: sys_localization_test [0..2]\n"
@@ -311,13 +318,16 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
         "Default is 0 (off).");
 
     REGISTER_COMMAND("LocalizationDumpLoadedInfo", LocalizationDumpLoadedInfo, VF_NULL, "Dump out into about the loaded localization files");
+#endif
 #endif //#if !defined(_RELEASE)
 
+#if defined(CARBONATED)
     REGISTER_CVAR2(c_sys_localization_format, &m_cvarLocalizationFormat, m_cvarLocalizationFormat, VF_NULL,
         "Usage: sys_localization_format [0..1]\n"
         "    0: Crytek Legacy Localization (Excel 2003)\n"
         "    1: AGS XML\n"
         "Default is 1 (AGS Xml)");
+#endif
     //Check that someone hasn't added a language ID without a language name
     assert(PLATFORM_INDEPENDENT_LANGUAGE_NAMES[ ILocalizationManager::ePILID_MAX_OR_INVALID - 1 ] != 0);
 
@@ -343,7 +353,12 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
             }
         }
     }
-/* Gruber patch begin.
+#if defined(CARBONATED)
+    AZ_Warning(
+        "Localization",
+        !(m_cvarLocalizationFormat == 0 && availableLanguages == 0 && ProjectUsesLocalization()),
+        "No localization files found!");
+#else
     int32_t localizationFormat{};
     if (auto console = AZ::Interface<AZ::IConsole>::Get();
         console !=nullptr)
@@ -351,9 +366,7 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
         console->GetCvarValue(c_sys_localization_format, localizationFormat);
     }
     AZ_Warning("Localization", !(localizationFormat == 0 && availableLanguages == 0 && ProjectUsesLocalization()), "No localization files found!");
-*/
-    AZ_Warning("Localization", !(m_cvarLocalizationFormat == 0 && availableLanguages == 0 && ProjectUsesLocalization()), "No localization files found!");
-// Gruber patch end
+#endif
     SetAvailableLocalizationsBitfield(availableLanguages);
     LocalizationManagerRequestBus::Handler::BusConnect();
 }
@@ -556,7 +569,9 @@ void CLocalizedStringsManager::AddSupportedLanguage(const AZStd::string& langNam
 //////////////////////////////////////////////////////////////////////////
 int CLocalizedStringsManager::GetLocalizationFormat() const
 {
-/* Gruber patch begin
+#if defined(CARBONATED)
+    return m_cvarLocalizationFormat;
+#else
     int32_t localizationFormat{};
     if (auto console = AZ::Interface<AZ::IConsole>::Get();
         console !=nullptr)
@@ -564,9 +579,7 @@ int CLocalizedStringsManager::GetLocalizationFormat() const
         console->GetCvarValue(c_sys_localization_format, localizationFormat);
     }
     return localizationFormat;
-*/
-    return m_cvarLocalizationFormat;
-// Gruber patch end
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -838,22 +851,25 @@ bool CLocalizedStringsManager::LoadLocalizationDataByTag(
     bool bResult = true;
 
     stack_string const sLocalizationFolder(PathUtil::GetLocalizationFolder());
-/* Gruber patch begin
+#if defined(CARBONATED)
+#else
     int32_t localizationFormat{};
     if (auto console = AZ::Interface<AZ::IConsole>::Get();
         console !=nullptr)
     {
         console->GetCvarValue(c_sys_localization_format, localizationFormat);
     }
-*/
+#endif
     LoadFunc loadFunction = GetLoadFunction();
     TStringVec& vEntries = it->second.filenames;
     for (TStringVec::iterator it2 = vEntries.begin(); it2 != vEntries.end(); ++it2)
     {
         //Only load files of the correct type for the configured format
-        // Gruber patch
-        //if ((localizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (localizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
+#if defined(CARBONATED)
         if ((m_cvarLocalizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (m_cvarLocalizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
+#else
+        if ((localizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (localizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
+#endif
         {
             bResult &= (this->*loadFunction)(it2->c_str(), it->second.id, bReload);
         }
@@ -1850,16 +1866,18 @@ CLocalizedStringsManager::LoadFunc CLocalizedStringsManager::GetLoadFunction() c
     CRY_ASSERT_MESSAGE(gEnv && gEnv->pConsole, "System environment or console missing!");
     if (gEnv && gEnv->pConsole)
     {
-/* Gruber patch begin
+#if defined(CARBONATED)
+        if (m_cvarLocalizationFormat == 1)
+#else
         int32_t localizationFormat{};
         if (auto console = AZ::Interface<AZ::IConsole>::Get();
             console !=nullptr)
         {
             console->GetCvarValue(c_sys_localization_format, localizationFormat);
         }
-        if(localizationFormat == 1)*/
-        if(m_cvarLocalizationFormat == 1)
-// Gruber patch end
+        if(localizationFormat == 1)
+#endif
+        if (m_cvarLocalizationFormat == 1)
         {
             return &CLocalizedStringsManager::DoLoadAGSXmlDocument;
         }
@@ -2247,7 +2265,8 @@ bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, AZStd::string& 
 
             if (entry != NULL)
             {
-// Gruber patch begin
+#if defined(CARBONATED)
+#else
                 switch (m_cvarLocalizationTest)
                 {
                 case 0:  // Ignore the cvar, continue localization as expected
@@ -2261,7 +2280,7 @@ bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, AZStd::string& 
                 default:
                     break;
                 }
-// Gruber patch end
+#endif
                 AZStd::string translatedText = entry->GetTranslatedText(m_pLanguage);
                 if ((bEnglish || translatedText.empty()) && entry->pEditorExtension != NULL)
                 {
@@ -2891,6 +2910,7 @@ namespace
         FileTimeToSystemTime(&filetime, systemtime);
     }
 
+#if defined(CARBONATED)
     time_t UnixTimeFromFileTime(const FILETIME* filetime)
     {
         LONGLONG longlong = filetime->dwHighDateTime;
@@ -2909,6 +2929,7 @@ namespace
         time_t unixtime = UnixTimeFromFileTime(&filetime);
         return unixtime;
     }
+#endif
 };
 
 void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, AZStd::string& outTimeString)

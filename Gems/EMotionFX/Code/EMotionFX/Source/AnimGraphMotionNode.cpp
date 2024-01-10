@@ -791,8 +791,8 @@ namespace EMotionFX
         }
     }
 
-#if 0 // Gbuber patch begin : EmotionFX has different version
 #if defined(CARBONATED)
+#if 0 // Gruber patch begin : EmotionFX has different version
     // aefimov invalidate data for specific instance only, the original version above invalidates the data for all the instaces attached to the node
     void AnimGraphMotionNode::ReloadAndInvalidateUniqueData(AnimGraphInstance* animGraphInstanceToReload)
     {
@@ -817,7 +817,7 @@ namespace EMotionFX
         }
     }
 #endif
-#endif // Gbuber patch end
+#endif // Gruber patch end
 
     void AnimGraphMotionNode::OnActorMotionExtractionNodeChanged()
     {
@@ -827,7 +827,16 @@ namespace EMotionFX
     void AnimGraphMotionNode::RecursiveOnChangeMotionSet(AnimGraphInstance* animGraphInstance, MotionSet* newMotionSet)
     {
         AnimGraphNode::RecursiveOnChangeMotionSet(animGraphInstance, newMotionSet);
+#if defined(CARBONATED)
         ReloadAndInvalidateUniqueDatas();// Gruber patch begin : EmotionFX version in o3de is not compatible
+#else
+        UniqueData* uniqueData = static_cast<UniqueData*>(animGraphInstance->GetUniqueObjectData(m_objectIndex));
+        if (uniqueData)
+        {
+            uniqueData->m_reload = true;
+            uniqueData->Invalidate();
+        }
+#endif
     }
 
     void AnimGraphMotionNode::OnMotionIdsChanged()
