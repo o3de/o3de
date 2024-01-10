@@ -111,7 +111,6 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
                                   max_bundle_size=mock_bundle_size,
                                   fail_on_asset_errors=False,
                                   deploy_to_device=args.deploy_to_android,
-                                  activity_name=args.activity_name,
                                   org_name=args.org_name,
                                   logger=mock_logger)
 
@@ -263,7 +262,6 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                   max_bundle_size=2048,
                                   fail_on_asset_errors=check_fail_asset_err,
                                   deploy_to_device=args.deploy_to_android,
-                                  activity_name=args.activity_name,
                                   org_name=args.org_name,
                                   logger=mock_logger)
                 mock_export_func.reset_mock()
@@ -344,7 +342,6 @@ def test_build_tool_combinations(tmp_path, use_sdk, should_build_tools_flag, has
                             fail_on_asset_errors = False,
                             deploy_to_device = False,
                             org_name = None,
-                            activity_name = None,
                             logger=mock_logger)
                 
             if expect_toolchain_build_called:
@@ -437,7 +434,6 @@ def test_asset_bundler_combinations(tmp_path, use_sdk, should_build_tools_flag, 
                             fail_on_asset_errors = False,
                             deploy_to_device = False,
                             org_name = None,
-                            activity_name = None,
                             logger=mock_logger)
                 
             selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
@@ -449,7 +445,7 @@ def test_asset_bundler_combinations(tmp_path, use_sdk, should_build_tools_flag, 
                 selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
             
             mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
-                                                    selected_platform='android',
+                                                    selected_platforms=['android'],
                                                     seedlist_paths=[],
                                                     seedfile_paths=[],
                                                     tools_build_path=selected_tools_build_path,
@@ -510,6 +506,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
          patch('o3de.android_support.get_android_config', return_value=mock_config),\
+         patch('pathlib.Path.is_file'),\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -533,7 +530,6 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
                                 False,
                                 False,
                                 None,
-                                None,
                                 logger=mock_logger)
         
         combined_seedfiles = test_seedfiles 
@@ -541,7 +537,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
             combined_seedfiles.append(test_project_path / f'Cache/android/levels' / ln.lower() / (ln.lower() + ".spawnable"))
         
         mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
-                                              selected_platform='android',
+                                              selected_platforms=['android'],
                                               seedlist_paths=test_seedlists,
                                               seedfile_paths=combined_seedfiles,
                                               tools_build_path=test_tools_sdk_path,
@@ -624,7 +620,6 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
                             fail_on_asset_errors = False,
                             deploy_to_device = False,
                             org_name = None,
-                            activity_name = None,
                             logger=mock_logger)
                 
             selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
@@ -646,7 +641,7 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
                                                     fail_on_ap_errors=False,
                                                     using_installer_sdk=use_sdk,
                                                     tool_config='profile',
-                                                    selected_platform='android',
+                                                    selected_platform=['android'],
                                                     logger=mock_logger)
                     
             mock_get_asset_processor_path.reset_mock()
@@ -670,7 +665,6 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
                             fail_on_asset_errors = False,
                             deploy_to_device = False,
                             org_name = None,
-                            activity_name = None,
                             logger=mock_logger)
                 
             selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path

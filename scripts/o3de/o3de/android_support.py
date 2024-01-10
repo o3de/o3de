@@ -197,9 +197,6 @@ def deloy_to_android_device(target_android_project_path: pathlib.Path,
     if has_error:
         raise AndroidToolError(f"Installing APK '{apk_file}' has failed for the android device.")
     
-    has_error = exp.process_command([adb_exec_path, 'shell', 'am', 'start', '-a', 'android.intent.action.MAIN','-n', f'{org_name}/.{activity_name}'])
-    if has_error:
-        raise AndroidToolError(f"Unable to start activity {org_name}/.{activity_name}.")
 """
 Map to make troubleshooting java issues related to mismatched java versions when running the sdkmanager.
 """

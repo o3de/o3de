@@ -295,7 +295,7 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                     mock_get_asset_bundler_path.assert_not_called()
                     
                     mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
-                                                            selected_platform=mock_platform,
+                                                            selected_platforms=[mock_platform],
                                                             seedlist_paths=[],
                                                             seedfile_paths=[],
                                                             tools_build_path=selected_tools_build_path,
@@ -347,6 +347,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
          patch('o3de.export_project.build_assets') as mock_build_assets,\
          patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
          patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('pathlib.Path.is_file'),\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -370,7 +371,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
             combined_seedfiles.append(test_project_path / f'Cache/{mock_platform}/levels' / ln.lower() / (ln.lower() + ".spawnable"))
         
         mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
-                                              selected_platform=mock_platform,
+                                              selected_platforms=[mock_platform],
                                               seedlist_paths=test_seedlists,
                                               seedfile_paths=combined_seedfiles,
                                               tools_build_path=test_tools_sdk_path,
@@ -491,7 +492,7 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                                             fail_on_ap_errors=False,
                                                             using_installer_sdk=use_sdk,
                                                             tool_config='profile',
-                                                            selected_platform=None,
+                                                            selected_platform=[mock_platform],
                                                             logger=mock_logger)
 
                 mock_get_asset_processor_path.reset_mock()

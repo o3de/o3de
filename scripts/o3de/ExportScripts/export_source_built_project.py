@@ -130,13 +130,30 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
     # Make sure there are no running processes for the current project before continuing
     exp.kill_existing_processes(ctx.project_name)
 
-    tools_build_path = eutil.handle_tools(ctx, should_build_tools, is_installer_sdk, tool_config, selected_platform, tools_build_path, default_base_path, engine_centric, logger)
+    tools_build_path = eutil.handle_tools(ctx,
+                                          should_build_tools,
+                                          is_installer_sdk,
+                                          tool_config,
+                                          selected_platform,
+                                          tools_build_path,
+                                          default_base_path,
+                                          engine_centric,
+                                          logger)
 
     # Generate the bundle
-    expected_bundles_path = eutil.handle_assets(ctx, should_build_all_assets, tools_build_path, is_installer_sdk, tool_config, 
-                                                engine_centric, fail_on_asset_errors, None, selected_platform, validated_seedslist_paths, 
-                                                preprocessed_seedfile_paths, asset_bundling_path, max_bundle_size,
-                                                logger)
+    expected_bundles_path = eutil.build_and_bundle_assets(ctx,
+                                                          should_build_all_assets,
+                                                          tools_build_path,
+                                                          is_installer_sdk,
+                                                          tool_config, 
+                                                          engine_centric,
+                                                          fail_on_asset_errors,
+                                                          [selected_platform],
+                                                          validated_seedslist_paths, 
+                                                          preprocessed_seedfile_paths,
+                                                          asset_bundling_path,
+                                                          max_bundle_size,
+                                                          logger)
 
     # Build the requested game launcher types (if any)
     launcher_type = 0

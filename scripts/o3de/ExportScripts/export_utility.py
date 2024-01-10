@@ -23,10 +23,14 @@ from typing import List
 
 def process_level_names(ctx, seedfile_paths, level_names, platform):
     for level in level_names:
-        seedfile_paths.append(ctx.project_path / f'Cache/{platform}/levels' / level.lower() / (level.lower() + ".spawnable"))
+        seedfile_set = set(seedfile_paths)
+        new_level_path = ctx.project_path / f'Cache/{platform}/levels' / level.lower() / (level.lower() + ".spawnable")
+        if new_level_path.is_file() and new_level_path not in seedfile_set:
+            seedfile_paths.append(new_level_path)
+            seedfile_set.add(new_level_path)
     
 def compute_tools_build_path(ctx, is_installer_sdk, selected_platform, tool_config, tools_build_path, default_base_path, logger=None):
-     # Note, when resolving the relative paths used for the export process, there is a debate about 
+    # Note, when resolving the relative paths used for the export process, there is a debate about 
     # whether to use the current working directory, or to forcefully set the base path to an O3DE directory.
     # In practice, there was noticeable surprise whenever the relative folder wasn't found in an O3DE directory,
     # and sometimes commands are carelessly run from sensitive directories (such as C:\\Windows\\System32)
@@ -45,7 +49,15 @@ def compute_tools_build_path(ctx, is_installer_sdk, selected_platform, tool_conf
     
     return tools_build_path
 
-def handle_tools(ctx, should_build_tools, is_installer_sdk, tool_config, selected_platform, tools_build_path, default_base_path, engine_centric,logger ):
+def handle_tools(ctx: exp.O3DEScriptExportContext,
+                 should_build_tools: bool,
+                 is_installer_sdk: bool,
+                 tool_config: str,
+                 selected_platform: str,
+                 tools_build_path: pathlib.Path,
+                 default_base_path: pathlib.Path,
+                 engine_centric: bool,
+                 logger: logging.Logger|None ):
     tools_build_path = compute_tools_build_path(ctx, is_installer_sdk, selected_platform, tool_config, tools_build_path, default_base_path)
 
     if should_build_tools and not is_installer_sdk:
@@ -57,9 +69,19 @@ def handle_tools(ctx, should_build_tools, is_installer_sdk, tool_config, selecte
     
     return tools_build_path
 
-def handle_assets(ctx, should_build_all_assets, tools_build_path, is_installer_sdk, tool_config, engine_centric, fail_on_asset_errors,
-                  ap_selected_platform, ab_selected_platform, seedlist_paths, seedfile_paths, asset_bundling_path, max_bundle_size,
-                  logger=None):
+def build_and_bundle_assets(ctx: exp.O3DEScriptExportContext,
+                            should_build_all_assets: bool,
+                            tools_build_path: pathlib.Path,
+                            is_installer_sdk: bool,
+                            tool_config: str,
+                            engine_centric: bool,
+                            fail_on_asset_errors: bool,
+                            asset_platforms: List[str],
+                            seedlist_paths: List[pathlib.Path],
+                            seedfile_paths: List[pathlib.Path],
+                            asset_bundling_path: pathlib.Path,
+                            max_bundle_size: int,
+                            logger: logging.Logger|None =None):
     # Optionally build the assets
     if should_build_all_assets:
         asset_processor_path = exp.get_asset_processor_batch_path(tools_build_path=tools_build_path,
@@ -74,19 +96,19 @@ def handle_assets(ctx, should_build_all_assets, tools_build_path, is_installer_s
                          fail_on_ap_errors=fail_on_asset_errors,
                          using_installer_sdk=is_installer_sdk,
                          tool_config=tool_config,
-                         selected_platform=ap_selected_platform,
+                         selected_platform=asset_platforms,
                          logger=logger)
     
     expected_bundles_path = exp.bundle_assets(ctx=ctx,
-                      selected_platform=ab_selected_platform,
-                      seedlist_paths=seedlist_paths,
-                      seedfile_paths=seedfile_paths,
-                      tools_build_path=tools_build_path,
-                      engine_centric=engine_centric,
-                      asset_bundling_path=asset_bundling_path,
-                      using_installer_sdk=is_installer_sdk,
-                      tool_config=tool_config,
-                      max_bundle_size=max_bundle_size)
+                                              selected_platforms=asset_platforms,
+                                              seedlist_paths=seedlist_paths,
+                                              seedfile_paths=seedfile_paths,
+                                              tools_build_path=tools_build_path,
+                                              engine_centric=engine_centric,
+                                              asset_bundling_path=asset_bundling_path,
+                                              using_installer_sdk=is_installer_sdk,
+                                              tool_config=tool_config,
+                                              max_bundle_size=max_bundle_size)
 
     return expected_bundles_path
 
@@ -111,7 +133,7 @@ def create_common_export_params_and_config(parser, export_config):
 
     default_max_size = export_config.get_value(exp.SETTINGS_MAX_BUNDLE_SIZE.key, exp.SETTINGS_MAX_BUNDLE_SIZE.default)
     parser.add_argument('-maxsize', '--max-bundle-size', type=int, default=int(default_max_size),
-                        help=f"Specify the maximum size of a given asset bundle.. If not specified, default is {default_max_size}.")
+                        help=f"Specify the maximum size of a given asset bundle in MB.")
 
     export_config.add_boolean_argument(parser=parser,
                                            key=exp.SETTINGS_OPTION_BUILD_TOOLS.key,
