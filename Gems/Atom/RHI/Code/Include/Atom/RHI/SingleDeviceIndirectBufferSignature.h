@@ -14,34 +14,34 @@
 namespace AZ::RHI
 {
     class Device;
-    class PipelineState;
+    class SingleDevicePipelineState;
 
     struct IndirectBufferSignatureDescriptor
     {
         IndirectBufferLayout m_layout;
-        const PipelineState* m_pipelineState = nullptr;
+        const SingleDevicePipelineState* m_pipelineState = nullptr;
     };
 
-    //! The IndirectBufferSignature is an implementation object that represents
+    //! The SingleDeviceIndirectBufferSignature is an implementation object that represents
     //! the signature of the commands contained in an Indirect Buffer.
     //! Indirect Buffers hold the commands that will be used for
     //! doing Indirect Rendering.
     //!
     //! It also exposes implementation dependent offsets for the commands in
     //! a layout. This information is useful when writing commands into a buffer.
-    class IndirectBufferSignature :
+    class SingleDeviceIndirectBufferSignature :
         public DeviceObject
     {
         using Base = RHI::DeviceObject;
     public:
-        AZ_RTTI(IndirectBufferSignature, "{3A2F9DF0-589B-4E05-9205-B688EB896AEA}", Base);
-        virtual ~IndirectBufferSignature() {};
+        AZ_RTTI(SingleDeviceIndirectBufferSignature, "{3A2F9DF0-589B-4E05-9205-B688EB896AEA}", Base);
+        virtual ~SingleDeviceIndirectBufferSignature() {};
 
-        //! Initialize an IndirectBufferSignature object.
+        //! Initialize an SingleDeviceIndirectBufferSignature object.
         //! @param device The device that will contain the signature.
         //! @param descriptor Descriptor with the necessary information for initializing the signature.
-        //! @return A result code denoting the status of the call. If successful, the IndirectBufferSignature is considered
-        //!      initialized and can be used. If failure, the IndirectBufferSignature remains uninitialized.
+        //! @return A result code denoting the status of the call. If successful, the SingleDeviceIndirectBufferSignature is considered
+        //!      initialized and can be used. If failure, the SingleDeviceIndirectBufferSignature remains uninitialized.
         ResultCode Init(Device& device, const IndirectBufferSignatureDescriptor& descriptor);
 
         /// Returns the stride in bytes of the command sequence defined by the provided layout.
@@ -58,7 +58,7 @@ namespace AZ::RHI
         void Shutdown() final;
 
     protected:
-        IndirectBufferSignature() = default;
+        SingleDeviceIndirectBufferSignature() = default;
 
     private:
         ///////////////////////////////////////////////////////////////////

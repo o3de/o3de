@@ -49,7 +49,7 @@ namespace AZ
             static Data::Instance<ShaderResourceGroupPool> FindOrCreate(
                 const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
             
-            RHI::Ptr<RHI::ShaderResourceGroup> CreateRHIShaderResourceGroup();
+            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> CreateRHIShaderResourceGroup();
 
             RHI::ShaderResourceGroupPool* GetRHIPool();
             const RHI::ShaderResourceGroupPool* GetRHIPool() const;

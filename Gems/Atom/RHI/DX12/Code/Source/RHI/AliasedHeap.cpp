@@ -84,7 +84,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        void AliasedHeap::ShutdownResourceInternal(RHI::Resource& resource)
+        void AliasedHeap::ShutdownResourceInternal(RHI::SingleDeviceResource& resource)
         {
             Device& device = GetDX12RHIDevice();
             if (Buffer* buffer = azrtti_cast <Buffer*>(&resource))

@@ -9,7 +9,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/SingleDeviceFence.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
@@ -52,12 +52,12 @@ namespace AZ
             WaitForUpload();
         }
 
-        RHI::Buffer* Buffer::GetRHIBuffer()
+        RHI::SingleDeviceBuffer* Buffer::GetRHIBuffer()
         {
             return m_rhiBuffer.get();
         }
 
-        const RHI::Buffer* Buffer::GetRHIBuffer() const
+        const RHI::SingleDeviceBuffer* Buffer::GetRHIBuffer() const
         {
             return m_rhiBuffer.get();
         }

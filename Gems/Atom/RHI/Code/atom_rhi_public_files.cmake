@@ -15,14 +15,14 @@ set(FILES
     Source/RHI/FreeListAllocator.cpp
     Source/RHI/LinearAllocator.cpp
     Source/RHI/PoolAllocator.cpp
-    Include/Atom/RHI/Buffer.h
+    Include/Atom/RHI/SingleDeviceBuffer.h
     Include/Atom/RHI/MultiDeviceBuffer.h
     Include/Atom/RHI/BufferView.h
     Include/Atom/RHI/IndexBufferView.h
     Include/Atom/RHI/MultiDeviceIndexBufferView.h
     Include/Atom/RHI/StreamBufferView.h
     Include/Atom/RHI/MultiDeviceStreamBufferView.h
-    Source/RHI/Buffer.cpp
+    Source/RHI/SingleDeviceBuffer.cpp
     Source/RHI/MultiDeviceBuffer.cpp
     Source/RHI/BufferView.cpp
     Source/RHI/IndexBufferView.cpp
@@ -81,9 +81,9 @@ set(FILES
     Include/Atom/RHI/Factory.h
     Source/RHI/Factory.cpp
     Include/Atom/RHI/FactoryManagerBus.h
-    Include/Atom/RHI/Fence.h
+    Include/Atom/RHI/SingleDeviceFence.h
     Include/Atom/RHI/MultiDeviceFence.h
-    Source/RHI/Fence.cpp
+    Source/RHI/SingleDeviceFence.cpp
     Source/RHI/MultiDeviceFence.cpp
     Include/Atom/RHI/BufferFrameAttachment.h
     Include/Atom/RHI/FrameAttachment.h
@@ -115,10 +115,10 @@ set(FILES
     Include/Atom/RHI/FrameEventBus.h
     Include/Atom/RHI/FrameScheduler.h
     Source/RHI/FrameScheduler.cpp
-    Include/Atom/RHI/Image.h
+    Include/Atom/RHI/SingleDeviceImage.h
     Include/Atom/RHI/MultiDeviceImage.h
     Include/Atom/RHI/ImageView.h
-    Source/RHI/Image.cpp
+    Source/RHI/SingleDeviceImage.cpp
     Source/RHI/MultiDeviceImage.cpp
     Source/RHI/ImageView.cpp
     Include/Atom/RHI/ImagePool.h
@@ -133,13 +133,13 @@ set(FILES
     Source/RHI/MultiDeviceImagePoolBase.cpp
     Source/RHI/StreamingImagePool.cpp
     Source/RHI/MultiDeviceStreamingImagePool.cpp
-    Include/Atom/RHI/IndirectBufferSignature.h
+    Include/Atom/RHI/SingleDeviceIndirectBufferSignature.h
     Include/Atom/RHI/MultiDeviceIndirectBufferSignature.h
     Include/Atom/RHI/IndirectBufferView.h
     Include/Atom/RHI/MultiDeviceIndirectBufferView.h
     Include/Atom/RHI/IndirectBufferWriter.h
     Include/Atom/RHI/MultiDeviceIndirectBufferWriter.h
-    Source/RHI/IndirectBufferSignature.cpp
+    Source/RHI/SingleDeviceIndirectBufferSignature.cpp
     Source/RHI/MultiDeviceIndirectBufferSignature.cpp
     Source/RHI/IndirectBufferView.cpp
     Source/RHI/MultiDeviceIndirectBufferView.cpp
@@ -155,21 +155,21 @@ set(FILES
     Source/RHI/PageTileAllocator.cpp
     Include/Atom/RHI/PhysicalDevice.h
     Source/RHI/PhysicalDevice.cpp
-    Include/Atom/RHI/PipelineLibrary.h
+    Include/Atom/RHI/SingleDevicePipelineLibrary.h
     Include/Atom/RHI/MultiDevicePipelineLibrary.h
-    Include/Atom/RHI/PipelineState.h
+    Include/Atom/RHI/SingleDevicePipelineState.h
     Include/Atom/RHI/MultiDevicePipelineState.h
     Include/Atom/RHI/PipelineStateCache.h
     Include/Atom/RHI/PipelineStateDescriptor.h
-    Source/RHI/PipelineLibrary.cpp
+    Source/RHI/SingleDevicePipelineLibrary.cpp
     Source/RHI/MultiDevicePipelineLibrary.cpp
-    Source/RHI/PipelineState.cpp
+    Source/RHI/SingleDevicePipelineState.cpp
     Source/RHI/MultiDevicePipelineState.cpp
     Source/RHI/PipelineStateCache.cpp
     Source/RHI/PipelineStateDescriptor.cpp
-    Include/Atom/RHI/Query.h
+    Include/Atom/RHI/SingleDeviceQuery.h
     Include/Atom/RHI/MultiDeviceQuery.h
-    Source/RHI/Query.cpp
+    Source/RHI/SingleDeviceQuery.cpp
     Source/RHI/MultiDeviceQuery.cpp
     Include/Atom/RHI/QueryPool.h
     Include/Atom/RHI/MultiDeviceQueryPool.h
@@ -177,11 +177,11 @@ set(FILES
     Source/RHI/QueryPool.cpp
     Source/RHI/MultiDeviceQueryPool.cpp
     Source/RHI/QueryPoolSubAllocator.cpp
-    Include/Atom/RHI/Resource.h
+    Include/Atom/RHI/SingleDeviceResource.h
     Include/Atom/RHI/MultiDeviceResource.h
     Include/Atom/RHI/ResourceInvalidateBus.h
     Include/Atom/RHI/ResourceView.h
-    Source/RHI/Resource.cpp
+    Source/RHI/SingleDeviceResource.cpp
     Source/RHI/MultiDeviceResource.cpp
     Source/RHI/ResourceView.cpp
     Include/Atom/RHI/ResourcePool.h
@@ -207,7 +207,7 @@ set(FILES
     Source/RHI/ImageScopeAttachment.cpp
     Source/RHI/ResolveScopeAttachment.cpp
     Source/RHI/ScopeAttachment.cpp
-    Include/Atom/RHI/ShaderResourceGroup.h
+    Include/Atom/RHI/SingleDeviceShaderResourceGroup.h
     Include/Atom/RHI/MultiDeviceShaderResourceGroup.h
     Include/Atom/RHI/ShaderResourceGroupData.h
     Include/Atom/RHI/MultiDeviceShaderResourceGroupData.h
@@ -215,7 +215,7 @@ set(FILES
     Include/Atom/RHI/ShaderResourceGroupInvalidateRegistry.h
     Include/Atom/RHI/ShaderResourceGroupPool.h
     Include/Atom/RHI/MultiDeviceShaderResourceGroupPool.h
-    Source/RHI/ShaderResourceGroup.cpp
+    Source/RHI/SingleDeviceShaderResourceGroup.cpp
     Source/RHI/MultiDeviceShaderResourceGroup.cpp
     Source/RHI/ShaderResourceGroupData.cpp
     Source/RHI/MultiDeviceShaderResourceGroupData.cpp
@@ -251,21 +251,21 @@ set(FILES
     Source/RHI/RHIUtils.cpp
     Include/Atom/RHI/RayTracingAccelerationStructure.h
     Include/Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h
-    Include/Atom/RHI/RayTracingPipelineState.h
+    Include/Atom/RHI/SingleDeviceRayTracingPipelineState.h
     Include/Atom/RHI/MultiDeviceRayTracingPipelineState.h
-    Include/Atom/RHI/RayTracingShaderTable.h
+    Include/Atom/RHI/SingleDeviceRayTracingShaderTable.h
     Include/Atom/RHI/MultiDeviceRayTracingShaderTable.h
-    Include/Atom/RHI/RayTracingBufferPools.h
+    Include/Atom/RHI/SingleDeviceRayTracingBufferPools.h
     Include/Atom/RHI/MultiDeviceRayTracingBufferPools.h
     Include/Atom/RHI/DispatchRaysItem.h
     Include/Atom/RHI/MultiDeviceDispatchRaysItem.h
     Source/RHI/RayTracingAccelerationStructure.cpp
     Source/RHI/MultiDeviceRayTracingAccelerationStructure.cpp
-    Source/RHI/RayTracingPipelineState.cpp
+    Source/RHI/SingleDeviceRayTracingPipelineState.cpp
     Source/RHI/MultiDeviceRayTracingPipelineState.cpp
-    Source/RHI/RayTracingShaderTable.cpp
+    Source/RHI/SingleDeviceRayTracingShaderTable.cpp
     Source/RHI/MultiDeviceRayTracingShaderTable.cpp
-    Source/RHI/RayTracingBufferPools.cpp
+    Source/RHI/SingleDeviceRayTracingBufferPools.cpp
     Source/RHI/MultiDeviceRayTracingBufferPools.cpp
     Include/Atom/RHI/interval_map.h
     Include/Atom/RHI/ImageProperty.h

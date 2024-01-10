@@ -7,7 +7,7 @@
  */
 #include <Atom/RHI/ResourcePool.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/SingleDeviceResource.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 
 //#define ASSERT_UNNAMED_RESOURCE_POOLS
@@ -42,13 +42,13 @@ namespace AZ::RHI
         m_resolver = AZStd::move(resolver);
     }
 
-    bool ResourcePool::ValidateIsRegistered(const Resource* resource) const
+    bool ResourcePool::ValidateIsRegistered(const SingleDeviceResource* resource) const
     {
         if (Validation::IsEnabled())
         {
             if (!resource || resource->GetPool() != this)
             {
-                AZ_Error("ResourcePool", false, "'%s': Resource is not registered on this pool.", GetName().GetCStr());
+                AZ_Error("ResourcePool", false, "'%s': SingleDeviceResource is not registered on this pool.", GetName().GetCStr());
                 return false;
             }
         }
@@ -56,13 +56,13 @@ namespace AZ::RHI
         return true;
     }
 
-    bool ResourcePool::ValidateIsUnregistered(const Resource* resource) const
+    bool ResourcePool::ValidateIsUnregistered(const SingleDeviceResource* resource) const
     {
         if (Validation::IsEnabled())
         {
             if (!resource || resource->GetPool() != nullptr)
             {
-                AZ_Error("ResourcePool", false, "'%s': Resource is null or registered on another pool.", GetName().GetCStr());
+                AZ_Error("ResourcePool", false, "'%s': SingleDeviceResource is null or registered on another pool.", GetName().GetCStr());
                 return false;
             }
         }
@@ -76,7 +76,7 @@ namespace AZ::RHI
         {
             if (IsInitialized() == false)
             {
-                AZ_Error("ResourcePool", false, "Resource pool is not initialized.");
+                AZ_Error("ResourcePool", false, "SingleDeviceResource pool is not initialized.");
                 return false;
             }
         }
@@ -98,7 +98,7 @@ namespace AZ::RHI
         return true;
     }
 
-    void ResourcePool::Register(Resource& resource)
+    void ResourcePool::Register(SingleDeviceResource& resource)
     {
         resource.SetPool(this);
 
@@ -106,7 +106,7 @@ namespace AZ::RHI
         m_registry.emplace(&resource);
     }
 
-    void ResourcePool::Unregister(Resource& resource)
+    void ResourcePool::Unregister(SingleDeviceResource& resource)
     {
         resource.SetPool(nullptr);
 
@@ -157,7 +157,7 @@ namespace AZ::RHI
             GetDevice().GetResourcePoolDatabase().DetachPool(this);
             FrameEventBus::Handler::BusDisconnect();
             MemoryStatisticsEventBus::Handler::BusDisconnect();
-            for (Resource* resource : m_registry)
+            for (SingleDeviceResource* resource : m_registry)
             {
                 resource->SetPool(nullptr);
                 ShutdownResourceInternal(*resource);
@@ -171,7 +171,7 @@ namespace AZ::RHI
         }
     }
 
-    ResultCode ResourcePool::InitResource(Resource* resource, const PlatformMethod& platformInitResourceMethod)
+    ResultCode ResourcePool::InitResource(SingleDeviceResource* resource, const PlatformMethod& platformInitResourceMethod)
     {
         if (!ValidateIsInitialized())
         {
@@ -192,7 +192,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    void ResourcePool::ShutdownResource(Resource* resource)
+    void ResourcePool::ShutdownResource(SingleDeviceResource* resource)
     {
         // [GFX_TODO][bethelz][LY-83244]: Frame processing validation disabled. See Jira.
         if (ValidateIsInitialized() && ValidateIsRegistered(resource) /* && ValidateNotProcessingFrame() */)
@@ -203,7 +203,7 @@ namespace AZ::RHI
     }
 
     void ResourcePool::ShutdownInternal() {}
-    void ResourcePool::ShutdownResourceInternal(Resource&) {}
+    void ResourcePool::ShutdownResourceInternal(SingleDeviceResource&) {}
 
     const HeapMemoryUsage& ResourcePool::GetHeapMemoryUsage(HeapMemoryLevel memoryType) const
     {
@@ -243,7 +243,7 @@ namespace AZ::RHI
 
         if (builder.GetReportFlags() == MemoryStatisticsReportFlags::Detail)
         {
-            ForEach<Resource>([&builder](const Resource& resource)
+            ForEach<SingleDeviceResource>([&builder](const SingleDeviceResource& resource)
             {
                 resource.ReportMemoryUsage(builder);
             });

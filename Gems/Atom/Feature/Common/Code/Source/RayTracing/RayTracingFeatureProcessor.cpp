@@ -50,7 +50,7 @@ namespace AZ
             m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<TransformServiceFeatureProcessor>();
 
             // initialize the ray tracing buffer pools
-            m_bufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
+            m_bufferPools = RHI::SingleDeviceRayTracingBufferPools::CreateRHIRayTracingBufferPools();
             m_bufferPools->Init(device);
 
             // create TLAS attachmentId
@@ -58,7 +58,7 @@ namespace AZ
             m_tlasAttachmentId = RHI::AttachmentId(AZStd::string::format("RayTracingTlasAttachmentId_%s", uuidString.c_str()));
 
             // create the TLAS object
-            m_tlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
+            m_tlas = AZ::RHI::SingleDeviceRayTracingTlas::CreateRHIRayTracingTlas();
 
             // load the RayTracingSrg asset asset
             m_rayTracingSrgAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>("shaderlib/atom/features/rayTracing/raytracingsrgs.azshader");
@@ -184,7 +184,7 @@ namespace AZ
                     AZ_Assert(blasInstanceFound == false, "Partial set of RayTracingBlas objects found for mesh");
 
                     // create the BLAS object and store it in the BLAS list
-                    RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+                    RHI::Ptr<RHI::SingleDeviceRayTracingBlas> rayTracingBlas = AZ::RHI::SingleDeviceRayTracingBlas::CreateRHIRayTracingBlas();
                     itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
 
                     // create the buffers from the BLAS descriptor

@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/QueryPool.h>
 
 namespace AZ::RHI
@@ -17,9 +17,9 @@ namespace AZ::RHI
     {
         CopyBufferDescriptor() = default;
 
-        const Buffer* m_sourceBuffer = nullptr;
+        const SingleDeviceBuffer* m_sourceBuffer = nullptr;
         uint32_t m_sourceOffset = 0;
-        const Buffer* m_destinationBuffer = nullptr;
+        const SingleDeviceBuffer* m_destinationBuffer = nullptr;
         uint32_t m_destinationOffset = 0;
         uint32_t m_size = 0;
     };
@@ -28,11 +28,11 @@ namespace AZ::RHI
     {
         CopyImageDescriptor() = default;
 
-        const Image* m_sourceImage = nullptr;
+        const SingleDeviceImage* m_sourceImage = nullptr;
         ImageSubresource m_sourceSubresource;
         Origin m_sourceOrigin;
         Size m_sourceSize;
-        const Image* m_destinationImage = nullptr;
+        const SingleDeviceImage* m_destinationImage = nullptr;
         ImageSubresource m_destinationSubresource;
         Origin m_destinationOrigin;
     };
@@ -41,12 +41,12 @@ namespace AZ::RHI
     {
         CopyBufferToImageDescriptor() = default;
 
-        const Buffer* m_sourceBuffer = nullptr;
+        const SingleDeviceBuffer* m_sourceBuffer = nullptr;
         uint32_t m_sourceOffset = 0;
         uint32_t m_sourceBytesPerRow = 0;
         uint32_t m_sourceBytesPerImage = 0;
         Size m_sourceSize;
-        const Image* m_destinationImage = nullptr;
+        const SingleDeviceImage* m_destinationImage = nullptr;
         ImageSubresource m_destinationSubresource;
         Origin m_destinationOrigin;
     };
@@ -55,11 +55,11 @@ namespace AZ::RHI
     {
         CopyImageToBufferDescriptor() = default;
 
-        const Image* m_sourceImage = nullptr;
+        const SingleDeviceImage* m_sourceImage = nullptr;
         ImageSubresource m_sourceSubresource;
         Origin m_sourceOrigin;
         Size m_sourceSize;
-        const  Buffer* m_destinationBuffer = nullptr;
+        const  SingleDeviceBuffer* m_destinationBuffer = nullptr;
         uint32_t m_destinationOffset = 0;
         uint32_t m_destinationBytesPerRow = 0;
         uint32_t m_destinationBytesPerImage = 0;
@@ -75,7 +75,7 @@ namespace AZ::RHI
         const QueryPool* m_sourceQueryPool = nullptr;
         QueryHandle m_firstQuery = QueryHandle(0);
         uint32_t m_queryCount = 0;
-        const  Buffer* m_destinationBuffer = nullptr;
+        const  SingleDeviceBuffer* m_destinationBuffer = nullptr;
         uint32_t m_destinationOffset = 0;
         uint32_t m_destinationStride = 0;
     };
@@ -93,17 +93,17 @@ namespace AZ::RHI
     struct CopyItem
     {
         CopyItem()
-            : m_type{CopyItemType::Buffer}
+            : m_type{CopyItemType::SingleDeviceBuffer}
             , m_buffer{}
         {}
 
         CopyItem(const CopyBufferDescriptor& descriptor)
-            : m_type{CopyItemType::Buffer}
+            : m_type{CopyItemType::SingleDeviceBuffer}
             , m_buffer{descriptor}
         {}
 
         CopyItem(const CopyImageDescriptor& descriptor)
-            : m_type{CopyItemType::Image}
+            : m_type{CopyItemType::SingleDeviceImage}
             , m_image{descriptor}
         {}
 

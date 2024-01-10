@@ -123,7 +123,7 @@ namespace AZ
         {
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_compileMutex);
             RHI::ShaderResourceGroupData srgData = MergeShaderResourceData(m_mergedShaderResourceGroupList);
-            RHI::ShaderResourceGroup::Compile(srgData, RHI::ShaderResourceGroup::CompileMode::Sync);
+            RHI::SingleDeviceShaderResourceGroup::Compile(srgData, RHI::SingleDeviceShaderResourceGroup::CompileMode::Sync);
             // Update the last frame iteration value.
             for (uint32_t i = 0; i < m_mergedShaderResourceGroupList.size(); ++i)
             {

@@ -40,14 +40,14 @@ namespace AZ::RHI
         return m_currentPool;
     }
 
-    MemoryStatistics::Buffer* MemoryStatisticsBuilder::AddBuffer()
+    MemoryStatistics::SingleDeviceBuffer* MemoryStatisticsBuilder::AddBuffer()
     {
         AZ_Assert(m_currentPool, "Pool is null. Make sure to call BeginPool before using this method.");
         m_currentPool->m_buffers.emplace_back();
         return &m_currentPool->m_buffers.back();
     }
 
-    MemoryStatistics::Image* MemoryStatisticsBuilder::AddImage()
+    MemoryStatistics::SingleDeviceImage* MemoryStatisticsBuilder::AddImage()
     {
         AZ_Assert(m_currentPool, "Pool is null. Make sure to call BeginPool before using this method.");
         m_currentPool->m_images.emplace_back();

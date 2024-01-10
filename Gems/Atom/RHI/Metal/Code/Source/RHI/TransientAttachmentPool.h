@@ -38,8 +38,8 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::TransientAttachmentPoolDescriptor& descriptor) override;
             void BeginInternal(const RHI::TransientAttachmentPoolCompileFlags flags, const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
             void EndInternal() override;
-            RHI::Image* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
-            RHI::Buffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
+            RHI::SingleDeviceImage* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
+            RHI::SingleDeviceBuffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
             void DeactivateBuffer(const RHI::AttachmentId& attachmentId) override;
             void DeactivateImage(const RHI::AttachmentId& attachmentId) override;
             void ShutdownInternal() override;

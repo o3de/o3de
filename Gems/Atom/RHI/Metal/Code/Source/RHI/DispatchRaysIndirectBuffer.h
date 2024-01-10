@@ -32,7 +32,7 @@ namespace AZ
             void Init(RHI::BufferPool*, RHI::BufferPool*) override
             {
             }
-            void Build(RHI::RayTracingShaderTable*) override
+            void Build(RHI::SingleDeviceRayTracingShaderTable*) override
             {
             }
         };

@@ -5,38 +5,38 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/SingleDeviceQuery.h>
 #include <Atom/RHI/QueryPool.h>
 
 namespace AZ::RHI
 {
-    void Query::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
+    void SingleDeviceQuery::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
     {
         AZ_UNUSED(builder);
     }
 
-    QueryHandle Query::GetHandle() const
+    QueryHandle SingleDeviceQuery::GetHandle() const
     {
         return m_handle;
     }
 
-    const QueryPool* Query::GetQueryPool() const
+    const QueryPool* SingleDeviceQuery::GetQueryPool() const
     {
         return static_cast<const QueryPool*>(GetPool());
     }
 
-    QueryPool* Query::GetQueryPool()
+    QueryPool* SingleDeviceQuery::GetQueryPool()
     {
         return static_cast<QueryPool*>(GetPool());
     }
 
-    ResultCode Query::Begin(CommandList& commandList, QueryControlFlags flags /*= QueryControlFlags::None*/)
+    ResultCode SingleDeviceQuery::Begin(CommandList& commandList, QueryControlFlags flags /*= QueryControlFlags::None*/)
     {
         if (Validation::IsEnabled())
         {
             if (m_currentCommandList)
             {
-                AZ_Error("RHI", false, "Query was never ended");
+                AZ_Error("RHI", false, "SingleDeviceQuery was never ended");
                 return ResultCode::Fail;
             }
 
@@ -58,7 +58,7 @@ namespace AZ::RHI
         return BeginInternal(commandList, flags);
     }
 
-    ResultCode Query::End(CommandList& commandList)
+    ResultCode SingleDeviceQuery::End(CommandList& commandList)
     {
         if (Validation::IsEnabled())
         {
@@ -70,7 +70,7 @@ namespace AZ::RHI
 
             if (!m_currentCommandList)
             {
-                AZ_Error("RHI", false, "Query must begin before it can end");
+                AZ_Error("RHI", false, "SingleDeviceQuery must begin before it can end");
                 return ResultCode::Fail;
             }
 
@@ -87,7 +87,7 @@ namespace AZ::RHI
         return result;
     }
 
-    ResultCode Query::WriteTimestamp(CommandList& commandList)
+    ResultCode SingleDeviceQuery::WriteTimestamp(CommandList& commandList)
     {
         if (Validation::IsEnabled())
         {

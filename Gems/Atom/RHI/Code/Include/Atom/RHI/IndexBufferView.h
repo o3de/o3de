@@ -12,7 +12,7 @@
 
 namespace AZ::RHI
 {
-    class Buffer;
+    class SingleDeviceBuffer;
 
     enum class IndexFormat : uint32_t
     {
@@ -28,7 +28,7 @@ namespace AZ::RHI
         IndexBufferView() = default;
 
         IndexBufferView(
-            const Buffer& buffer,
+            const SingleDeviceBuffer& buffer,
             uint32_t byteOffset,
             uint32_t byteCount,
             IndexFormat format);
@@ -37,7 +37,7 @@ namespace AZ::RHI
         HashValue64 GetHash() const;
 
         //! Returns the buffer associated with the data in the view.
-        const Buffer* GetBuffer() const;
+        const SingleDeviceBuffer* GetBuffer() const;
 
         //! Returns the byte offset into the buffer returned by GetBuffer
         uint32_t GetByteOffset() const;
@@ -50,7 +50,7 @@ namespace AZ::RHI
 
     private:
         HashValue64 m_hash = HashValue64{ 0 };
-        const Buffer* m_buffer = nullptr;
+        const SingleDeviceBuffer* m_buffer = nullptr;
         uint32_t m_byteOffset = 0;
         uint32_t m_byteCount = 0;
         IndexFormat m_format = IndexFormat::Uint32;

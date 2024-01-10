@@ -10,7 +10,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ImagePool.h>
 
@@ -38,10 +38,10 @@ namespace AZ
             bool IsInitialized() const;
 
             //! Returns the mutable GPU image instance initialized at asset load time.
-            RHI::Image* GetRHIImage();
+            RHI::SingleDeviceImage* GetRHIImage();
 
             //! Returns the immutable GPU image instance initialized at asset load time.
-            const RHI::Image* GetRHIImage() const;
+            const RHI::SingleDeviceImage* GetRHIImage() const;
 
             //! Returns the default image view instance, mapping the full (resident) image.
             const RHI::ImageView* GetImageView() const;
@@ -60,7 +60,7 @@ namespace AZ
             Image();
 
             // The RHI image instance is created at load time. It contains the resident set of mip levels.
-            RHI::Ptr<RHI::Image> m_image;
+            RHI::Ptr<RHI::SingleDeviceImage> m_image;
 
             // The default view instance mapping the full resident set of the image mip levels and array slices.
             RHI::Ptr<RHI::ImageView> m_imageView;

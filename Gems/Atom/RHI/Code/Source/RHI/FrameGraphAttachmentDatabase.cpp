@@ -71,7 +71,7 @@ namespace AZ::RHI
 
     ResultCode FrameGraphAttachmentDatabase::ImportImage(
         const AttachmentId& attachmentId,
-        Ptr<Image> image)
+        Ptr<SingleDeviceImage> image)
     {
         // Only import the attachment if it hasn't already been imported
         if (FindAttachment(attachmentId) == nullptr)
@@ -85,7 +85,7 @@ namespace AZ::RHI
 
     ResultCode FrameGraphAttachmentDatabase::ImportBuffer(
         const AttachmentId& attachmentId,
-        Ptr<Buffer> buffer)
+        Ptr<SingleDeviceBuffer> buffer)
     {
         // Only import the attachment if it hasn't already been imported
         if (FindAttachment(attachmentId) == nullptr)

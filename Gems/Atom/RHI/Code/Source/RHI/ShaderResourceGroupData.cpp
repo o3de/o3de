@@ -19,7 +19,7 @@ namespace AZ::RHI
     ShaderResourceGroupData::ShaderResourceGroupData() = default;
     ShaderResourceGroupData::~ShaderResourceGroupData() = default;
 
-    ShaderResourceGroupData::ShaderResourceGroupData(const ShaderResourceGroup& shaderResourceGroup)
+    ShaderResourceGroupData::ShaderResourceGroupData(const SingleDeviceShaderResourceGroup& shaderResourceGroup)
         : ShaderResourceGroupData(*shaderResourceGroup.GetPool())
     {}
 

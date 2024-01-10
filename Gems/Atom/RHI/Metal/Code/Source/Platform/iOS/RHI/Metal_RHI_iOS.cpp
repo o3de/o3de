@@ -118,7 +118,7 @@ namespace Platform
         return AZ::RHI::ResultCode::Success;
     }
     
-    void UnMapBufferInternal(AZ::RHI::Buffer& bufferBase)
+    void UnMapBufferInternal(AZ::RHI::SingleDeviceBuffer& bufferBase)
     {
         //No need to do anything here as ios does not support MTLStorageModeManaged
         AZ_UNUSED(bufferBase);

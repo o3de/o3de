@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/BufferProperty.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <AzCore/Memory/PoolAllocator.h>
@@ -30,9 +30,9 @@ namespace AZ
         class CommandQueue;
 
         class Buffer final
-            : public RHI::Buffer
+            : public RHI::SingleDeviceBuffer
         {
-            using Base = RHI::Buffer;
+            using Base = RHI::SingleDeviceBuffer;
             friend class BufferPool;
             friend class AliasedHeap;
             friend class Device;
@@ -78,7 +78,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::SingleDeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
    

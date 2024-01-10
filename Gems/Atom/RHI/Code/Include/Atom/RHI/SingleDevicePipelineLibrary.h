@@ -15,39 +15,39 @@
 namespace AZ::RHI
 {
     /// A handle typed to the pipeline library. Used by the PipelineStateCache to abstract access.
-    using PipelineLibraryHandle = Handle<uint32_t, class PipelineLibrary>;
+    using PipelineLibraryHandle = Handle<uint32_t, class SingleDevicePipelineLibrary>;
 
     struct PipelineLibraryDescriptor
     {
-        //Serialized data with which to init the PipelineLibrary
+        //Serialized data with which to init the SingleDevicePipelineLibrary
         ConstPtr<PipelineLibraryData> m_serializedData = nullptr;
         //The file path name associated with serialized data. It can be passed
         //to the RHI backend to do load/save operation via the drivers.
         AZStd::string m_filePath;
     };
             
-    //! PipelineState initialization is an expensive operation on certain platforms. If multiple pipeline states
+    //! SingleDevicePipelineState initialization is an expensive operation on certain platforms. If multiple pipeline states
     //! are created with little variation between them, the contents are still duplicated. This class is an allocation
-    //! context for pipeline states, provided at PipelineState::Init, which will perform de-duplication of
+    //! context for pipeline states, provided at SingleDevicePipelineState::Init, which will perform de-duplication of
     //! internal pipeline state components and cache the results.
     //!
     //! Practically speaking, if many pipeline states are created with shared data between them (e.g. permutations
-    //! of the same shader), then providing a PipelineLibrary instance will reduce the memory footprint and cost
+    //! of the same shader), then providing a SingleDevicePipelineLibrary instance will reduce the memory footprint and cost
     //! of compilation.
     //!
-    //! Additionally, the PipelineLibrary is able to serialize the internal driver-contents to and from an opaque
+    //! Additionally, the SingleDevicePipelineLibrary is able to serialize the internal driver-contents to and from an opaque
     //! data blob. This enables building up a pipeline state cache on disk, which can dramatically reduce pipeline
     //! state compilation cost when run from a pre-warmed cache.
     //!
-    //! PipelineLibrary is thread-safe, in the sense that it will take a lock during compilation. It is possible
-    //! to initialize pipeline states across threads using the same PipelineLibrary instance, but this will
+    //! SingleDevicePipelineLibrary is thread-safe, in the sense that it will take a lock during compilation. It is possible
+    //! to initialize pipeline states across threads using the same SingleDevicePipelineLibrary instance, but this will
     //! result in the two calls serializing on the mutex. Instead, see PipelineStateCache which stores
-    //! a PipelineLibrary instance per thread to avoid this contention.
-    class PipelineLibrary : public DeviceObject
+    //! a SingleDevicePipelineLibrary instance per thread to avoid this contention.
+    class SingleDevicePipelineLibrary : public DeviceObject
     {
     public:
-        AZ_RTTI(PipelineLibrary, "{843579BE-57E4-4527-AB00-C0217885AEA9}");
-        virtual ~PipelineLibrary() = default;
+        AZ_RTTI(SingleDevicePipelineLibrary, "{843579BE-57E4-4527-AB00-C0217885AEA9}");
+        virtual ~SingleDevicePipelineLibrary() = default;
 
         //! Initializes the pipeline library from a platform-specific data payload. This data is generated
         //! by calling GetSerializedData in a previous run of the application. When run for the first
@@ -55,7 +55,7 @@ namespace AZ::RHI
         //! serialized and the contents saved to disk. Subsequent loads will experience much faster pipeline
         //! state creation times (on supported platforms). On success, the library is transitioned to the
         //! initialized state. On failure, the library remains uninitialized.
-        //! @param descriptor The descriptor needed to init the PipelineLibrary.
+        //! @param descriptor The descriptor needed to init the SingleDevicePipelineLibrary.
         ResultCode Init(Device& device, const PipelineLibraryDescriptor& descriptor);
 
         //! Merges the contents of other libraries into this library. This method must be called
@@ -63,7 +63,7 @@ namespace AZ::RHI
         //! libraries and merge them into a single unified library. The serialized data can then be
         //! extracted from the unified library. An error code is returned on failure and the behavior
         //! is as if the method was never called.
-        ResultCode MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge);
+        ResultCode MergeInto(AZStd::span<const SingleDevicePipelineLibrary* const> librariesToMerge);
 
         //! Serializes the platform-specific data and returns it as a new PipelineLibraryData instance.
         //! The data is opaque to the user and can only be used to re-initialize the library. Use
@@ -93,7 +93,7 @@ namespace AZ::RHI
         virtual void ShutdownInternal() = 0;
 
         /// Called when libraries are being merged into this one.
-        virtual ResultCode MergeIntoInternal(AZStd::span<const PipelineLibrary* const> libraries) = 0;
+        virtual ResultCode MergeIntoInternal(AZStd::span<const SingleDevicePipelineLibrary* const> libraries) = 0;
 
         /// Called when the library is serializing out platform-specific data.
         virtual ConstPtr<PipelineLibraryData> GetSerializedDataInternal() const = 0;

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/ResourcePool.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 
 namespace AZ::RHI
 {
@@ -26,17 +26,17 @@ namespace AZ::RHI
         BufferPoolBase() = default;
 
         ResultCode InitBuffer(
-            Buffer* buffer,
+            SingleDeviceBuffer* buffer,
             const BufferDescriptor& descriptor,
             PlatformMethod platformInitResourceMethod);
 
         /// Validates that the map operation succeeded by printing a warning otherwise. Increments
         /// the map reference counts for the buffer and the pool.
-        void ValidateBufferMap(Buffer& buffer, bool isDataValid);
+        void ValidateBufferMap(SingleDeviceBuffer& buffer, bool isDataValid);
 
         /// Validates that the buffer map reference count isn't negative. Decrements the global
         /// reference count.
-        bool ValidateBufferUnmap(Buffer& buffer);
+        bool ValidateBufferUnmap(SingleDeviceBuffer& buffer);
 
         uint32_t GetMapRefCount() const;
 

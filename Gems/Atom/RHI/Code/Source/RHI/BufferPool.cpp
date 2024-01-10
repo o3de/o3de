@@ -33,7 +33,7 @@ namespace AZ::RHI
             // Bind flags of the buffer must match the pool bind flags.
             if (initRequest.m_descriptor.m_bindFlags != poolDescriptor.m_bindFlags)
             {
-                AZ_Error("BufferPool", false, "Buffer bind flags don't match pool bind flags in pool '%s'", GetName().GetCStr());
+                AZ_Error("BufferPool", false, "SingleDeviceBuffer bind flags don't match pool bind flags in pool '%s'", GetName().GetCStr());
                 return false;
             }
 
@@ -142,7 +142,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    ResultCode BufferPool::OrphanBuffer(Buffer& buffer)
+    ResultCode BufferPool::OrphanBuffer(SingleDeviceBuffer& buffer)
     {
         if (!ValidateIsInitialized() || !ValidateIsHostHeap() || !ValidateNotProcessingFrame())
         {
@@ -182,7 +182,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    void BufferPool::UnmapBuffer(Buffer& buffer)
+    void BufferPool::UnmapBuffer(SingleDeviceBuffer& buffer)
     {
         if (ValidateIsInitialized() && ValidateNotProcessingFrame() && ValidateIsRegistered(&buffer) && ValidateBufferUnmap(buffer))
         {

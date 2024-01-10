@@ -32,7 +32,7 @@ namespace AZ
             void ShutdownInternal() override {}
             uint32_t PresentInternal() override {return 0;}
             RHI::ResultCode InitImageInternal([[maybe_unused]] const InitImageRequest& request) override { return RHI::ResultCode::Success;}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::Resource& resourceBase) override {}
+            void ShutdownResourceInternal([[maybe_unused]] RHI::SingleDeviceResource& resourceBase) override {}
             RHI::ResultCode ResizeInternal([[maybe_unused]] const RHI::SwapChainDimensions& dimensions, [[maybe_unused]] RHI::SwapChainDimensions* nativeDimensions) override { return RHI::ResultCode::Success;}
             //////////////////////////////////////////////////////////////////////////
         };

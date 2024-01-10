@@ -21,34 +21,34 @@ AZ_CVAR_EXTERNED(bool, r_gpuMarkersMergeGroups);
 
 namespace AZ::RHI
 {
-    class Buffer;
+    class SingleDeviceBuffer;
     class BufferPool;
     class BufferView;
     class Device;
     class DispatchRaysIndirectBuffer;
-    class Image;
+    class SingleDeviceImage;
     class ImagePool;
     class ImageView;
-    class IndirectBufferSignature;
+    class SingleDeviceIndirectBufferSignature;
     class IndirectBufferWriter;
-    class Fence;
+    class SingleDeviceFence;
     class FrameGraphCompiler;
     class FrameGraphExecuter;
-    class PipelineState;
-    class PipelineLibrary;
-    class Query;
+    class SingleDevicePipelineState;
+    class SingleDevicePipelineLibrary;
+    class SingleDeviceQuery;
     class QueryPool;
     class Scope;
-    class ShaderResourceGroup;
+    class SingleDeviceShaderResourceGroup;
     class ShaderResourceGroupPool;
     class StreamingImagePool;
     class SwapChain;
     class TransientAttachmentPool;
-    class RayTracingBufferPools;
-    class RayTracingBlas;
-    class RayTracingTlas;
-    class RayTracingPipelineState;
-    class RayTracingShaderTable;
+    class SingleDeviceRayTracingBufferPools;
+    class SingleDeviceRayTracingBlas;
+    class SingleDeviceRayTracingTlas;
+    class SingleDeviceRayTracingPipelineState;
+    class SingleDeviceRayTracingShaderTable;
 
     //! Priority of a Factory. The lower the number the higher the priority.
     //! Used when there's multiple factories available and the user hasn't define
@@ -160,7 +160,7 @@ namespace AZ::RHI
         //! in an uninitialized state; the operation simply allocates the memory for the appropriate
         //! platform type and returns the pointer.
 
-        virtual Ptr<Buffer> CreateBuffer() = 0;
+        virtual Ptr<SingleDeviceBuffer> CreateBuffer() = 0;
 
         virtual Ptr<BufferPool> CreateBufferPool() = 0;
 
@@ -168,13 +168,13 @@ namespace AZ::RHI
 
         virtual Ptr<Device> CreateDevice() = 0;
 
-        virtual Ptr<Fence> CreateFence() = 0;
+        virtual Ptr<SingleDeviceFence> CreateFence() = 0;
 
         virtual Ptr<FrameGraphCompiler> CreateFrameGraphCompiler() = 0;
 
         virtual Ptr<FrameGraphExecuter> CreateFrameGraphExecuter() = 0;
 
-        virtual Ptr<Image> CreateImage() = 0;
+        virtual Ptr<SingleDeviceImage> CreateImage() = 0;
 
         virtual Ptr<ImagePool> CreateImagePool() = 0;
 
@@ -182,13 +182,13 @@ namespace AZ::RHI
 
         virtual Ptr<StreamingImagePool> CreateStreamingImagePool() = 0;
 
-        virtual Ptr<PipelineState> CreatePipelineState() = 0;
+        virtual Ptr<SingleDevicePipelineState> CreatePipelineState() = 0;
 
-        virtual Ptr<PipelineLibrary> CreatePipelineLibrary() = 0;
+        virtual Ptr<SingleDevicePipelineLibrary> CreatePipelineLibrary() = 0;
 
         virtual Ptr<Scope> CreateScope() = 0;
 
-        virtual Ptr<ShaderResourceGroup> CreateShaderResourceGroup() = 0;
+        virtual Ptr<SingleDeviceShaderResourceGroup> CreateShaderResourceGroup() = 0;
 
         virtual Ptr<ShaderResourceGroupPool> CreateShaderResourceGroupPool() = 0;
 
@@ -198,21 +198,21 @@ namespace AZ::RHI
 
         virtual Ptr<QueryPool> CreateQueryPool() = 0;
 
-        virtual Ptr<Query> CreateQuery() = 0;
+        virtual Ptr<SingleDeviceQuery> CreateQuery() = 0;
 
-        virtual Ptr<IndirectBufferSignature> CreateIndirectBufferSignature() = 0;
+        virtual Ptr<SingleDeviceIndirectBufferSignature> CreateIndirectBufferSignature() = 0;
 
         virtual Ptr<IndirectBufferWriter> CreateIndirectBufferWriter() = 0;
 
-        virtual Ptr<RayTracingBufferPools> CreateRayTracingBufferPools() = 0;
+        virtual Ptr<SingleDeviceRayTracingBufferPools> CreateRayTracingBufferPools() = 0;
 
-        virtual Ptr<RayTracingBlas> CreateRayTracingBlas() = 0;
+        virtual Ptr<SingleDeviceRayTracingBlas> CreateRayTracingBlas() = 0;
 
-        virtual Ptr<RayTracingTlas> CreateRayTracingTlas() = 0;
+        virtual Ptr<SingleDeviceRayTracingTlas> CreateRayTracingTlas() = 0;
 
-        virtual Ptr<RayTracingPipelineState> CreateRayTracingPipelineState() = 0;
+        virtual Ptr<SingleDeviceRayTracingPipelineState> CreateRayTracingPipelineState() = 0;
 
-        virtual Ptr<RayTracingShaderTable> CreateRayTracingShaderTable() = 0;
+        virtual Ptr<SingleDeviceRayTracingShaderTable> CreateRayTracingShaderTable() = 0;
 
         virtual Ptr<DispatchRaysIndirectBuffer> CreateDispatchRaysIndirectBuffer() = 0;
     };

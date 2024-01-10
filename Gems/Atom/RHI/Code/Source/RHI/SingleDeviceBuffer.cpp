@@ -5,43 +5,43 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 
 namespace AZ::RHI
 {
-    void Buffer::SetDescriptor(const BufferDescriptor& descriptor)
+    void SingleDeviceBuffer::SetDescriptor(const BufferDescriptor& descriptor)
     {
         m_descriptor = descriptor;
     }
 
-    const RHI::BufferDescriptor& Buffer::GetDescriptor() const
+    const RHI::BufferDescriptor& SingleDeviceBuffer::GetDescriptor() const
     {
         return m_descriptor;
     }
 
-    const BufferFrameAttachment* Buffer::GetFrameAttachment() const
+    const BufferFrameAttachment* SingleDeviceBuffer::GetFrameAttachment() const
     {
-        return static_cast<const BufferFrameAttachment*>(Resource::GetFrameAttachment());
+        return static_cast<const BufferFrameAttachment*>(SingleDeviceResource::GetFrameAttachment());
     }
 
-    void Buffer::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
+    void SingleDeviceBuffer::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
     {
         const BufferDescriptor& descriptor = GetDescriptor();
 
-        MemoryStatistics::Buffer* bufferStats = builder.AddBuffer();
+        MemoryStatistics::SingleDeviceBuffer* bufferStats = builder.AddBuffer();
         bufferStats->m_name = GetName();
         bufferStats->m_bindFlags = descriptor.m_bindFlags;
         bufferStats->m_sizeInBytes = descriptor.m_byteCount;
     }
     
-    Ptr<BufferView> Buffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
+    Ptr<BufferView> SingleDeviceBuffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
     {
         return Base::GetResourceView(bufferViewDescriptor);
     }
 
-    const HashValue64 Buffer::GetHash() const
+    const HashValue64 SingleDeviceBuffer::GetHash() const
     {
         HashValue64 hash = HashValue64{ 0 };
         hash = m_descriptor.GetHash();

@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -32,9 +32,9 @@ namespace UnitTest
 
         void BeginInternal(const AZ::RHI::TransientAttachmentPoolCompileFlags flags, const AZ::RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
 
-        AZ::RHI::Image* ActivateImage(const AZ::RHI::TransientImageDescriptor&) override;
+        AZ::RHI::SingleDeviceImage* ActivateImage(const AZ::RHI::TransientImageDescriptor&) override;
 
-        AZ::RHI::Buffer* ActivateBuffer(const AZ::RHI::TransientBufferDescriptor&) override;
+        AZ::RHI::SingleDeviceBuffer* ActivateBuffer(const AZ::RHI::TransientBufferDescriptor&) override;
 
         void DeactivateBuffer(const AZ::RHI::AttachmentId&) override;
 
@@ -44,7 +44,7 @@ namespace UnitTest
 
         AZ::RHI::Ptr<AZ::RHI::ImagePool> m_imagePool;
         AZ::RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
-        AZStd::unordered_map<AZ::RHI::AttachmentId, AZ::RHI::Ptr<AZ::RHI::Resource>> m_attachments;
+        AZStd::unordered_map<AZ::RHI::AttachmentId, AZ::RHI::Ptr<AZ::RHI::SingleDeviceResource>> m_attachments;
 
         AZStd::unordered_set<AZ::RHI::AttachmentId> m_activeSet;
     };

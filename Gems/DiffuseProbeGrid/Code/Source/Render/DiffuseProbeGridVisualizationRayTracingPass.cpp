@@ -143,7 +143,7 @@ namespace AZ
             if (!m_rayTracingShaderTable)
             {
                 RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-                RHI::RayTracingBufferPools& rayTracingBufferPools = diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools();
+                RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools = diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools();
 
                 m_rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();
                 m_rayTracingShaderTable->Init(*device.get(), rayTracingBufferPools);
@@ -182,7 +182,7 @@ namespace AZ
                 // TLAS
                 {
                     AZ::RHI::AttachmentId tlasAttachmentId = diffuseProbeGrid->GetProbeVisualizationTlasAttachmentId();
-                    const RHI::Ptr<RHI::Buffer>& visualizationTlasBuffer = diffuseProbeGrid->GetVisualizationTlas()->GetTlasBuffer();
+                    const RHI::Ptr<RHI::SingleDeviceBuffer>& visualizationTlasBuffer = diffuseProbeGrid->GetVisualizationTlas()->GetTlasBuffer();
                     if (visualizationTlasBuffer)
                     {
                         if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId))
@@ -295,7 +295,7 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
+                const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroups[] = {
                     diffuseProbeGrid->GetVisualizationRayTraceSrg()->GetRHIShaderResourceGroup(),
                     rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup(),
                     views[0]->GetRHIShaderResourceGroup(),

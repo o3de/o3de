@@ -123,7 +123,7 @@ namespace AZ
             struct ShaderVariantInfo
             {
                 const bool m_isFullyBaked = false;
-                const RHI::PipelineState* m_pipelineState = nullptr;
+                const RHI::SingleDevicePipelineState* m_pipelineState = nullptr;
             };
 
             AZStd::vector<ShaderVariantInfo> m_shaderVariant;

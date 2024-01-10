@@ -9,7 +9,7 @@
 
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/SingleDeviceFence.h>
 #include <Atom/RHI/StreamingImagePool.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -107,7 +107,7 @@ namespace AZ
                 const AZStd::vector<Fence*> fencesToSignal,
                 Args&& ...args);
             
-            RHI::AsyncWorkHandle CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::Fence::SignalCallback callback = nullptr);
+            RHI::AsyncWorkHandle CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::SingleDeviceFence::SignalCallback callback = nullptr);
             void ProcessCallback(const RHI::AsyncWorkHandle& handle);
 
             Descriptor m_descriptor;

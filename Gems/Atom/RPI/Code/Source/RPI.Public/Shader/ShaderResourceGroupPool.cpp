@@ -65,10 +65,10 @@ namespace AZ
             return resultCode;
         }
 
-        RHI::Ptr<RHI::ShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
+        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> ShaderResourceGroupPool::CreateRHIShaderResourceGroup()
         {
-            RHI::Ptr<RHI::ShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
-            AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::ShaderResourceGroup");
+            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
+            AZ_Error("ShaderResourceGroupPool", srg, "Failed to create RHI::SingleDeviceShaderResourceGroup");
 
             if (srg)
             {
@@ -76,7 +76,7 @@ namespace AZ
                 if (result != RHI::ResultCode::Success)
                 {
                     srg.reset();
-                    AZ_Error("ShaderResourceGroupPool", false, "Failed to initialize RHI::ShaderResourceGroup");
+                    AZ_Error("ShaderResourceGroupPool", false, "Failed to initialize RHI::SingleDeviceShaderResourceGroup");
                 }
             }
 

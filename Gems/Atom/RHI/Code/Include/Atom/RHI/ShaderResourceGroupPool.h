@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupPoolDescriptor.h>
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/ShaderResourceGroupInvalidateRegistry.h>
 #include <Atom/RHI/ResourcePool.h>
 
@@ -24,7 +24,7 @@ namespace AZ::RHI
     class ShaderResourceGroupPool
         : public ResourcePool
     {
-        friend class ShaderResourceGroup;
+        friend class SingleDeviceShaderResourceGroup;
     public:
         AZ_RTTI(ShaderResourceGroupPool, "{9AAB5A85-4063-4BAE-9A9C-E25640F18FFA}", ResourcePool);
         virtual ~ShaderResourceGroupPool() override;
@@ -34,10 +34,10 @@ namespace AZ::RHI
 
         //! Initializes the resource group and associates it with the pool. The resource
         //! group must be updated on this pool.
-        ResultCode InitGroup(ShaderResourceGroup& srg);
+        ResultCode InitGroup(SingleDeviceShaderResourceGroup& srg);
             
         //! Compile Shader Resource Group with the associated ShaderResourceGroupData
-        ResultCode CompileGroup(ShaderResourceGroup& shaderResourceGroup,
+        ResultCode CompileGroup(SingleDeviceShaderResourceGroup& shaderResourceGroup,
                                 const ShaderResourceGroupData& shaderResourceGroupData);
 
         //! Returns the descriptor passed at initialization time.
@@ -82,7 +82,7 @@ namespace AZ::RHI
         //////////////////////////////////////////////////////////////////////////
         // ResourcePool overrides
         void ShutdownInternal() override;
-        void ShutdownResourceInternal(Resource& resource) override;
+        void ShutdownResourceInternal(SingleDeviceResource& resource) override;
         void ComputeFragmentation() const override
         {
             // Fragmentation for SRG descriptors not currently measured
@@ -91,22 +91,22 @@ namespace AZ::RHI
 
     private:
         // Queues the shader resource group for compile and provides a new data packet (takes a lock).
-        void QueueForCompile(ShaderResourceGroup& group, const ShaderResourceGroupData& groupData);
+        void QueueForCompile(SingleDeviceShaderResourceGroup& group, const ShaderResourceGroupData& groupData);
 
         // Queues the shader resource group for compile. Legal to call on a queued group. Takes a lock.
-        void QueueForCompile(ShaderResourceGroup& group);
+        void QueueForCompile(SingleDeviceShaderResourceGroup& group);
 
         // Queues the shader resource group for compile. Legal to call on a queued group. Does NOT take a lock.
-        void QueueForCompileNoLock(ShaderResourceGroup& group);
+        void QueueForCompileNoLock(SingleDeviceShaderResourceGroup& group);
 
         // Un-queues the shader resource group for compile. Legal to call on an un-queued group. Takes a lock.
-        void UnqueueForCompile(ShaderResourceGroup& shaderResourceGroup);
+        void UnqueueForCompile(SingleDeviceShaderResourceGroup& shaderResourceGroup);
 
         // Compiles an SRG synchronously. 
-        void Compile(ShaderResourceGroup& group, const ShaderResourceGroupData& groupData);
+        void Compile(SingleDeviceShaderResourceGroup& group, const ShaderResourceGroupData& groupData);
 
         // Calculate diffs for updating the resource registry.
-        void CalculateGroupDataDiff(ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData);
+        void CalculateGroupDataDiff(SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData);
 
         // Calculate the hash for all the views passed in
         template<typename T>
@@ -116,14 +116,14 @@ namespace AZ::RHI
         // will ensure that the view will be compiled by the back end
         template<typename T>
         void UpdateMaskBasedOnViewHash(
-            ShaderResourceGroup& shaderResourceGroup,
+            SingleDeviceShaderResourceGroup& shaderResourceGroup,
             Name entryName,
             AZStd::span<const RHI::ConstPtr<T>> views,
             ShaderResourceGroupData::ResourceType resourceType);
 
         // Check all the resource types in order to ensure none of the views were invalidated or modified
         void ResetUpdateMaskForModifiedViews(
-            ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& shaderResourceGroupData);
+            SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& shaderResourceGroupData);
 
         //////////////////////////////////////////////////////////////////////////
         // Platform API
@@ -132,12 +132,12 @@ namespace AZ::RHI
         virtual ResultCode InitInternal(Device& device, const ShaderResourceGroupPoolDescriptor& descriptor);
 
         // Initializes backing resources for the resource group.
-        virtual ResultCode InitGroupInternal(ShaderResourceGroup& shaderResourceGroup);
+        virtual ResultCode InitGroupInternal(SingleDeviceShaderResourceGroup& shaderResourceGroup);
 
-        // Compiles a ShaderResourceGroup within the pool. Return true if the resource group was also resolved in
+        // Compiles a SingleDeviceShaderResourceGroup within the pool. Return true if the resource group was also resolved in
         // this method. If false, it will be queued for resolve in ResolveInternal.
         virtual ResultCode CompileGroupInternal(
-            ShaderResourceGroup& shaderResourceGroup,
+            SingleDeviceShaderResourceGroup& shaderResourceGroup,
             const ShaderResourceGroupData& shaderResourceGroupData) = 0;
 
         //////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ namespace AZ::RHI
         bool m_isCompiling = false;
 
         mutable AZStd::shared_mutex m_groupsToCompileMutex;
-        AZStd::vector<ShaderResourceGroup*> m_groupsToCompile;
+        AZStd::vector<SingleDeviceShaderResourceGroup*> m_groupsToCompile;
 
         AZStd::mutex m_invalidateRegistryMutex;
         ShaderResourceGroupInvalidateRegistry m_invalidateRegistry;

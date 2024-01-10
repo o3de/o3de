@@ -17,12 +17,12 @@ namespace AZ::RHI
         Signaled
     };
 
-    class Fence
+    class SingleDeviceFence
         : public DeviceObject
     {
     public:
-        AZ_RTTI(Fence, "{D66C8B8F-226A-4018-89C1-F190A730CBC3}", Object);
-        virtual ~Fence() = 0;
+        AZ_RTTI(SingleDeviceFence, "{D66C8B8F-226A-4018-89C1-F190A730CBC3}", Object);
+        virtual ~SingleDeviceFence() = 0;
 
         /// Initializes the fence using the provided device and initial state.
         ResultCode Init(Device& device, FenceState initialState);

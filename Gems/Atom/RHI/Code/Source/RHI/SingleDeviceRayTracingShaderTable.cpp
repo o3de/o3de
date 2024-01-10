@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ::RHI
@@ -24,7 +24,7 @@ namespace AZ::RHI
         }
     }
 
-    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::Build(const AZ::Name& name, const RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState)
+    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::Build(const AZ::Name& name, const RHI::Ptr<SingleDeviceRayTracingPipelineState>& rayTracingPipelineState)
     {
         m_name = name;
         m_rayTracingPipelineState = rayTracingPipelineState;
@@ -65,22 +65,22 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::ShaderResourceGroup(const RHI::ShaderResourceGroup* shaderResourceGroup)
+    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::ShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup)
     {
-        AZ_Assert(m_buildContext, "ShaderResourceGroup can only be added to a shader table record");
-        AZ_Assert(m_buildContext->m_shaderResourceGroup == nullptr, "Records can only have one ShaderResourceGroup");
+        AZ_Assert(m_buildContext, "SingleDeviceShaderResourceGroup can only be added to a shader table record");
+        AZ_Assert(m_buildContext->m_shaderResourceGroup == nullptr, "Records can only have one SingleDeviceShaderResourceGroup");
         m_buildContext->m_shaderResourceGroup = shaderResourceGroup;
         return this;
     }
 
-    RHI::Ptr<RHI::RayTracingShaderTable> RayTracingShaderTable::CreateRHIRayTracingShaderTable()
+    RHI::Ptr<RHI::SingleDeviceRayTracingShaderTable> SingleDeviceRayTracingShaderTable::CreateRHIRayTracingShaderTable()
     {
-        RHI::Ptr<RHI::RayTracingShaderTable> rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();
-        AZ_Error("RayTracingShaderTable", rayTracingShaderTable, "Failed to create RHI::RayTracingShaderTable");
+        RHI::Ptr<RHI::SingleDeviceRayTracingShaderTable> rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();
+        AZ_Error("SingleDeviceRayTracingShaderTable", rayTracingShaderTable, "Failed to create RHI::SingleDeviceRayTracingShaderTable");
         return rayTracingShaderTable;
     }
 
-    void RayTracingShaderTable::Init(Device& device, const RayTracingBufferPools& bufferPools)
+    void SingleDeviceRayTracingShaderTable::Init(Device& device, const SingleDeviceRayTracingBufferPools& bufferPools)
     {
 #if defined (AZ_RHI_ENABLE_VALIDATION)
         // [GFX TODO][ATOM-5217] Validate shaders in the ray tracing shader table are present in the pipeline state
@@ -89,18 +89,18 @@ namespace AZ::RHI
         m_bufferPools = &bufferPools;
     }
 
-    void RayTracingShaderTable::Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor)
+    void SingleDeviceRayTracingShaderTable::Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor)
     {
-        AZ_Assert(!m_isQueuedForBuild, "Attempting to build a RayTracingShaderTable that's already been queued. Only build once per frame.")
+        AZ_Assert(!m_isQueuedForBuild, "Attempting to build a SingleDeviceRayTracingShaderTable that's already been queued. Only build once per frame.")
         m_descriptor = descriptor;
 
         RHI::RHISystemInterface::Get()->QueueRayTracingShaderTableForBuild(this);
         m_isQueuedForBuild = true;
     }
 
-    void RayTracingShaderTable::Validate()
+    void SingleDeviceRayTracingShaderTable::Validate()
     {
-        AZ_Assert(m_isQueuedForBuild, "Attempting to build a RayTracingShaderTable that is not queued.");
-        AZ_Assert(m_bufferPools, "RayTracingBufferPools pointer is null.");
+        AZ_Assert(m_isQueuedForBuild, "Attempting to build a SingleDeviceRayTracingShaderTable that is not queued.");
+        AZ_Assert(m_bufferPools, "SingleDeviceRayTracingBufferPools pointer is null.");
     }
 }

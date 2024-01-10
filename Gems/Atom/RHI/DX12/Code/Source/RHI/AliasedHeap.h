@@ -52,7 +52,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::ResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resource) override;
+            void ShutdownResourceInternal(RHI::SingleDeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////////
 
             Device& GetDX12RHIDevice();

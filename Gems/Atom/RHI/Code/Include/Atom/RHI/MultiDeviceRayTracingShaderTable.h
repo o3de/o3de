@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI/MultiDeviceRayTracingPipelineState.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 

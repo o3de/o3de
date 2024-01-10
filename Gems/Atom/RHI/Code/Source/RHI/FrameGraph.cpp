@@ -424,7 +424,7 @@ namespace AZ::RHI
         }
     }
 
-    void FrameGraph::SignalFence(Fence& fence)
+    void FrameGraph::SignalFence(SingleDeviceFence& fence)
     {
         m_currentScope->m_fencesToSignal.push_back(&fence);
     }

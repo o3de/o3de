@@ -24,7 +24,7 @@ namespace AZ::RHI
 {
     class ResourcePool;
     class QueryPool;
-    class Fence;
+    class SingleDeviceFence;
     struct Interval;
 
     //! This interface exposes FrameGraph functionality to non-RHI systems (like the RPI).
@@ -204,7 +204,7 @@ namespace AZ::RHI
         }
             
         //! Requests that the provided fence be signaled after the scope has completed.
-        void SignalFence(Fence& fence)
+        void SignalFence(SingleDeviceFence& fence)
         {
             m_frameGraph.SignalFence(fence);
         }

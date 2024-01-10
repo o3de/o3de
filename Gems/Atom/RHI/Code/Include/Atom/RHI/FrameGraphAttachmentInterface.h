@@ -16,8 +16,8 @@
 
 namespace AZ::RHI
 {
-    class Image;
-    class Buffer;
+    class SingleDeviceImage;
+    class SingleDeviceBuffer;
 
     //! This interface exposes FrameGraphAttachmentDatabase functionality to non-RHI systems (like the RPI). This is in order
     //! to reduce access to certain public functions in FrameGraphAttachmentDatabase that are intended for RHI use only.
@@ -46,7 +46,7 @@ namespace AZ::RHI
 
         //! Imports a persistent image as an attachment.
         //! \param imageAttachment The image attachment to import.
-        ResultCode ImportImage(const AttachmentId& attachmentId, Ptr<Image> image)
+        ResultCode ImportImage(const AttachmentId& attachmentId, Ptr<SingleDeviceImage> image)
         {
             return m_attachmentDatabase.ImportImage(attachmentId, image);
         }
@@ -60,7 +60,7 @@ namespace AZ::RHI
 
         //! Imports a persistent buffer as an attachment.
         //! \param bufferAttachment The buffer attachment to import.
-        ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<Buffer> buffer)
+        ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<SingleDeviceBuffer> buffer)
         {
             return m_attachmentDatabase.ImportBuffer(attachmentId, buffer);
         }

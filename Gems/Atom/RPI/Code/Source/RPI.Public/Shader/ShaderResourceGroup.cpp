@@ -175,7 +175,7 @@ namespace AZ
             return m_layout;
         }
 
-        RHI::ShaderResourceGroup* ShaderResourceGroup::GetRHIShaderResourceGroup()
+        RHI::SingleDeviceShaderResourceGroup* ShaderResourceGroup::GetRHIShaderResourceGroup()
         {
             return m_shaderResourceGroup.get();
         }

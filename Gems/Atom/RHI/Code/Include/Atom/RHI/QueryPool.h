@@ -13,13 +13,13 @@
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
 #include <Atom/RHI/ResourcePool.h>
 #include <Atom/RHI.Reflect/Interval.h>
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/SingleDeviceQuery.h>
 #include <Atom/RHI/QueryPoolSubAllocator.h>
 
 namespace AZ::RHI
 {
-    class Buffer;
-    class Query;
+    class SingleDeviceBuffer;
+    class SingleDeviceQuery;
 
     //! Controls how the results of a query are retrieved.
     enum class QueryResultFlagBits : uint32_t
@@ -46,15 +46,15 @@ namespace AZ::RHI
 
         //! Initialize a query from the pool. When initializing multiple queries use the other version of InitQuery
         //! because the pool will try to group the queries together.
-        //!  @param query Query to initialize.
-        ResultCode InitQuery(Query* query);
+        //!  @param query SingleDeviceQuery to initialize.
+        ResultCode InitQuery(SingleDeviceQuery* query);
 
         //!  Initialize a group of queries from the pool. The initialization will try to allocate
         //!  the queries in a consecutive space. The reason for this is that is more efficient when requesting
         //!  results or copying multiple query results.
         //!  @param queries Pointer to an array of queries to initialize.
         //!  @param queryCount Number of queries.
-        ResultCode InitQuery(Query** queries, uint32_t queryCount);
+        ResultCode InitQuery(SingleDeviceQuery** queries, uint32_t queryCount);
 
         //!  Get the results from all queries in the pool. Results are always returned as uint64_t data.
         //!  The "results" parameter must contain enough space to save the results from all queries in the pool.
@@ -68,25 +68,25 @@ namespace AZ::RHI
         //!                            and the results are not ready, ResultCode::NotReady will be returned
         ResultCode GetResults(uint64_t* results, uint32_t resultsCount, QueryResultFlagBits flags);
 
-        //!  Same as GetResults(uint64_t, uint32_t, QueryResultFlagBits) but for one specific Query
-        ResultCode GetResults(Query* query, uint64_t* result, uint32_t resultsCount, QueryResultFlagBits flags);
+        //!  Same as GetResults(uint64_t, uint32_t, QueryResultFlagBits) but for one specific SingleDeviceQuery
+        ResultCode GetResults(SingleDeviceQuery* query, uint64_t* result, uint32_t resultsCount, QueryResultFlagBits flags);
 
         //!  Same as GetResults(uint64_t, uint32_t, QueryResultFlagBits) but for a list of queries.
         //!  It's more efficient if the list of queries is sorted by handle in ascending order because there's no need to sort the results
         //! before returning.
-        ResultCode GetResults(Query** queries, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, QueryResultFlagBits flags);
+        ResultCode GetResults(SingleDeviceQuery** queries, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, QueryResultFlagBits flags);
 
         //!  Returns the buffer descriptor used to initialize the query pool. Descriptor contents
         //!  are undefined for uninitialized pools.
         const QueryPoolDescriptor& GetDescriptor() const override final;
 
         //!  Returns the query by their handle.
-        const Query* GetQuery(QueryHandle handle) const;
+        const SingleDeviceQuery* GetQuery(QueryHandle handle) const;
 
     protected:
         QueryPool() = default; 
 
-        Query* GetQuery(QueryHandle handle);
+        SingleDeviceQuery* GetQuery(QueryHandle handle);
 
         //!  Find groups of consecutive QueryHandle values from a list of unsorted queries.
         //!  @param queries The list of queries to search.
@@ -104,7 +104,7 @@ namespace AZ::RHI
         //////////////////////////////////////////////////////////////////////////
         // ResourcePool overrides
         void ShutdownInternal() override;
-        void ShutdownResourceInternal(Resource& resource) override;
+        void ShutdownResourceInternal(SingleDeviceResource& resource) override;
         void ComputeFragmentation() const override {}
         //////////////////////////////////////////////////////////////////////////
 
@@ -116,7 +116,7 @@ namespace AZ::RHI
         virtual ResultCode InitInternal(Device& device, const QueryPoolDescriptor& descriptor) = 0;
 
         /// Called when a query is being initialized onto the pool.
-        virtual ResultCode InitQueryInternal(Query& query) = 0;
+        virtual ResultCode InitQueryInternal(SingleDeviceQuery& query) = 0;
 
         /// Gets the results for a group of consecutive queries.
         virtual ResultCode GetResultsInternal(uint32_t startIndex, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, QueryResultFlagBits flags) = 0;
@@ -124,15 +124,15 @@ namespace AZ::RHI
 
 
         /// Validates that the queries are not null and that they belong to this pool.
-        ResultCode ValidateQueries(Query** queries, uint32_t queryCount);
+        ResultCode ValidateQueries(SingleDeviceQuery** queries, uint32_t queryCount);
 
         /// Returns a vector with all queries of the pool. This function is thread safe.
-        AZStd::vector<Query*> GetQueries();
+        AZStd::vector<SingleDeviceQuery*> GetQueries();
 
         QueryPoolDescriptor m_descriptor;
         mutable AZStd::mutex m_queriesMutex;
         QueryPoolSubAllocator m_queryAllocator; ///< Used to allocate which index a query will use.
-        AZStd::vector<Query*> m_queries; ///< The list with all the queries of the pool ordered by their handle index.
+        AZStd::vector<SingleDeviceQuery*> m_queries; ///< The list with all the queries of the pool ordered by their handle index.
     };
 
     template<class T>

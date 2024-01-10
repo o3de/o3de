@@ -11,18 +11,18 @@
 
 namespace AZ::RHI
 {
-    class Resource;
-    class ShaderResourceGroup;
+    class SingleDeviceResource;
+    class SingleDeviceShaderResourceGroup;
 
-    //! This data structure associates Resource invalidation events with Shader Resource Group compilation events.
+    //! This data structure associates SingleDeviceResource invalidation events with Shader Resource Group compilation events.
     //!
     //! Shader Resource Groups (SRG's) can hold buffer and image views. These views point to resources (buffers and images)
     //! which can become invalid in several specific cases:
     //!
-    //!  - The user shuts down and re-initializes a Buffer / Image. This effectively invalidates the platform data of all child
+    //!  - The user shuts down and re-initializes a SingleDeviceBuffer / SingleDeviceImage. This effectively invalidates the platform data of all child
     //!    views and the SRG's which hold them.
     //!
-    //!  - A Buffer / Image pool assigns a new backing platform resource or redefines the descriptor of said resource (e.g. by
+    //!  - A SingleDeviceBuffer / Image pool assigns a new backing platform resource or redefines the descriptor of said resource (e.g. by
     //!    making certain mip levels in an image inaccessible for streaming). This can occur due to DMA memory orphaning, heap
     //!    de-fragmentation, etc.
     //!
@@ -40,15 +40,15 @@ namespace AZ::RHI
         : public ResourceInvalidateBus::MultiHandler
     {
     public:
-        using CompileGroupFunction = AZStd::function<void(ShaderResourceGroup&)>;
+        using CompileGroupFunction = AZStd::function<void(SingleDeviceShaderResourceGroup&)>;
 
         ShaderResourceGroupInvalidateRegistry() = default;
 
         void SetCompileGroupFunction(CompileGroupFunction compileGroupFunction);
 
-        void OnAttach(const Resource* resource, ShaderResourceGroup* shaderResourceGroup);
+        void OnAttach(const SingleDeviceResource* resource, SingleDeviceShaderResourceGroup* shaderResourceGroup);
 
-        void OnDetach(const Resource* resource, ShaderResourceGroup* shaderResourceGroup);
+        void OnDetach(const SingleDeviceResource* resource, SingleDeviceShaderResourceGroup* shaderResourceGroup);
 
         bool IsEmpty() const;
 
@@ -62,8 +62,8 @@ namespace AZ::RHI
         /// uses multiple views to the same resource (or the same view multiple times).
         using RefCountType = uint32_t;
 
-        using Registry = AZStd::unordered_map<ShaderResourceGroup*, RefCountType>;
-        using ResourceToRegistry = AZStd::unordered_map<const Resource*, Registry>;
+        using Registry = AZStd::unordered_map<SingleDeviceShaderResourceGroup*, RefCountType>;
+        using ResourceToRegistry = AZStd::unordered_map<const SingleDeviceResource*, Registry>;
 
         ResourceToRegistry m_resourceToRegistryMap;
         CompileGroupFunction m_compileGroupFunction;

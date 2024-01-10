@@ -421,7 +421,7 @@ namespace AZ
             ProcessCallback(workHandle);
         }
     
-        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(Fence& fence, RHI::Fence::SignalCallback callback )
+        RHI::AsyncWorkHandle AsyncUploadQueue::CreateAsyncWork(Fence& fence, RHI::SingleDeviceFence::SignalCallback callback )
         {
             return m_asyncWaitQueue.CreateAsyncWork([fence, callback]()
             {

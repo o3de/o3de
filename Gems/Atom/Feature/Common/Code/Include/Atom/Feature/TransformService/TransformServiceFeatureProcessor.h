@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Scene.h>

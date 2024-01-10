@@ -20,13 +20,13 @@ namespace UnitTest
         AZ_CLASS_ALLOCATOR(ImageView, AZ::SystemAllocator);
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::Resource&) override;
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::SingleDeviceResource&) override;
         AZ::RHI::ResultCode InvalidateInternal() override;
         void ShutdownInternal() override;
     };
 
     class Image
-        : public AZ::RHI::Image
+        : public AZ::RHI::SingleDeviceImage
     {
     public:
         AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
@@ -50,6 +50,6 @@ namespace UnitTest
 
         AZ::RHI::ResultCode UpdateImageContentsInternal(const AZ::RHI::ImageUpdateRequest&) override { return AZ::RHI::ResultCode::Success; }
 
-        void ShutdownResourceInternal(AZ::RHI::Resource& image) override;
+        void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource& image) override;
     };
 }

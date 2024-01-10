@@ -110,7 +110,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup& groupBase)
+        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
 
@@ -155,7 +155,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
 
@@ -196,7 +196,7 @@ namespace AZ
         }
 
         RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(
-            RHI::ShaderResourceGroup& groupBase,
+            RHI::SingleDeviceShaderResourceGroup& groupBase,
             const RHI::ShaderResourceGroupData& groupData)
         {
             typedef AZ::RHI::ShaderResourceGroupData::ResourceTypeMask ResourceMask;
@@ -266,7 +266,7 @@ namespace AZ
         }
 
         void ShaderResourceGroupPool::UpdateViewsDescriptorTable(DescriptorTable descriptorTable,
-                                                                 RHI::ShaderResourceGroup& group,
+                                                                 RHI::SingleDeviceShaderResourceGroup& group,
                                                                  const RHI::ShaderResourceGroupData& groupData,
                                                                  bool forceUpdateViews /*= false*/ )
         {
@@ -348,7 +348,7 @@ namespace AZ
 
         void ShaderResourceGroupPool::UpdateSamplersDescriptorTable(
             DescriptorTable descriptorTable,
-            RHI::ShaderResourceGroup& group,
+            RHI::SingleDeviceShaderResourceGroup& group,
             const RHI::ShaderResourceGroupData& groupData)
         {
             if(group.IsResourceTypeEnabledForCompilation(static_cast<uint32_t>(RHI::ShaderResourceGroupData::ResourceTypeMask::SamplerMask)))

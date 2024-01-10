@@ -6,50 +6,50 @@
  *
  */
 
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
 
 namespace AZ::RHI
 {
-    RHI::Ptr<RHI::RayTracingBufferPools> RayTracingBufferPools::CreateRHIRayTracingBufferPools()
+    RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> SingleDeviceRayTracingBufferPools::CreateRHIRayTracingBufferPools()
     {
-        RHI::Ptr<RHI::RayTracingBufferPools> rayTracingBufferPools = RHI::Factory::Get().CreateRayTracingBufferPools();
-        AZ_Error("RayTracingBufferPools", rayTracingBufferPools.get(), "Failed to create RHI::RayTracingBufferPools");
+        RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> rayTracingBufferPools = RHI::Factory::Get().CreateRayTracingBufferPools();
+        AZ_Error("SingleDeviceRayTracingBufferPools", rayTracingBufferPools.get(), "Failed to create RHI::SingleDeviceRayTracingBufferPools");
         return rayTracingBufferPools;
     }
 
-    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetShaderTableBufferPool() const
+    const RHI::Ptr<RHI::BufferPool>& SingleDeviceRayTracingBufferPools::GetShaderTableBufferPool() const
     {
-        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        AZ_Assert(m_initialized, "SingleDeviceRayTracingBufferPools was not initialized");
         return m_shaderTableBufferPool;
     }
 
-    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetScratchBufferPool() const
+    const RHI::Ptr<RHI::BufferPool>& SingleDeviceRayTracingBufferPools::GetScratchBufferPool() const
     {
-        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        AZ_Assert(m_initialized, "SingleDeviceRayTracingBufferPools was not initialized");
         return m_scratchBufferPool;
     }
 
-    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetBlasBufferPool() const
+    const RHI::Ptr<RHI::BufferPool>& SingleDeviceRayTracingBufferPools::GetBlasBufferPool() const
     {
-        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        AZ_Assert(m_initialized, "SingleDeviceRayTracingBufferPools was not initialized");
         return m_blasBufferPool;
     }
 
-    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetTlasInstancesBufferPool() const
+    const RHI::Ptr<RHI::BufferPool>& SingleDeviceRayTracingBufferPools::GetTlasInstancesBufferPool() const
     {
-        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        AZ_Assert(m_initialized, "SingleDeviceRayTracingBufferPools was not initialized");
         return m_tlasInstancesBufferPool;
     }
 
-    const RHI::Ptr<RHI::BufferPool>& RayTracingBufferPools::GetTlasBufferPool() const
+    const RHI::Ptr<RHI::BufferPool>& SingleDeviceRayTracingBufferPools::GetTlasBufferPool() const
     {
-        AZ_Assert(m_initialized, "RayTracingBufferPools was not initialized");
+        AZ_Assert(m_initialized, "SingleDeviceRayTracingBufferPools was not initialized");
         return m_tlasBufferPool;
     }
 
-    void RayTracingBufferPools::Init(RHI::Ptr<RHI::Device>& device)
+    void SingleDeviceRayTracingBufferPools::Init(RHI::Ptr<RHI::Device>& device)
     {
         if (m_initialized)
         {

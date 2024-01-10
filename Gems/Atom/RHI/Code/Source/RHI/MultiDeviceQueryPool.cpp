@@ -84,8 +84,8 @@ namespace AZ::RHI
         AZ_Assert(queries, "Null queries");
         auto resultCode = IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
-            AZStd::vector<RHI::Ptr<Query>> deviceQueries(queryCount);
-            AZStd::vector<Query*> rawDeviceQueries(queryCount);
+            AZStd::vector<RHI::Ptr<SingleDeviceQuery>> deviceQueries(queryCount);
+            AZStd::vector<SingleDeviceQuery*> rawDeviceQueries(queryCount);
             for (auto index{ 0u }; index < queryCount; ++index)
             {
                 deviceQueries[index] = RHI::Factory::Get().CreateQuery();
@@ -207,7 +207,7 @@ namespace AZ::RHI
 
         return IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
-            AZStd::vector<Query*> deviceQueries(queryCount);
+            AZStd::vector<SingleDeviceQuery*> deviceQueries(queryCount);
             for (auto index{ 0u }; index < queryCount; ++index)
             {
                 deviceQueries[index] = queries[index]->GetDeviceQuery(deviceIndex).get();

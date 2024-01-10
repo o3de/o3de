@@ -43,7 +43,7 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
             RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
             RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
-            RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode TrimImageInternal(RHI::SingleDeviceImage& image, uint32_t targetMipLevel) override;
             RHI::ResultCode SetMemoryBudgetInternal(size_t newBudget) override;
             bool SupportTiledImageInternal() const override;
             //////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::ResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
 
             // Streaming images are either committed resource or using tiles from heap pages. So there is no fragmentation
             void ComputeFragmentation() const override {}

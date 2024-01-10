@@ -16,7 +16,7 @@
 
 namespace AZ::RHI
 {
-    class RayTracingBufferPools;
+    class SingleDeviceRayTracingBufferPools;
 
         //! RayTracingAccelerationStructureBuildFlags
         //!
@@ -57,7 +57,7 @@ namespace AZ::RHI
     //! RayTracingGeometry
     //!
     //! The geometry entry contains the vertex and index buffers associated with geometry in the
-    //! scene.  Each RayTracingBlas contains a list of these entries.
+    //! scene.  Each SingleDeviceRayTracingBlas contains a list of these entries.
     struct RayTracingGeometry
     {
         RHI::Format m_vertexFormat = RHI::Format::Unknown;
@@ -105,22 +105,22 @@ namespace AZ::RHI
         RayTracingAccelerationStructureBuildFlags m_buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
     };
 
-    //! RayTracingBlas
+    //! SingleDeviceRayTracingBlas
     //!
-    //! A RayTracingBlas is created from the information in the RayTracingBlasDescriptor.
-    class RayTracingBlas
+    //! A SingleDeviceRayTracingBlas is created from the information in the RayTracingBlasDescriptor.
+    class SingleDeviceRayTracingBlas
         : public DeviceObject
     {
     public:
-        RayTracingBlas() = default;
-        virtual ~RayTracingBlas() = default;
+        SingleDeviceRayTracingBlas() = default;
+        virtual ~SingleDeviceRayTracingBlas() = default;
 
-        static RHI::Ptr<RHI::RayTracingBlas> CreateRHIRayTracingBlas();
+        static RHI::Ptr<RHI::SingleDeviceRayTracingBlas> CreateRHIRayTracingBlas();
 
         //! Creates the internal BLAS buffers from the descriptor
-        ResultCode CreateBuffers(Device& device, const RayTracingBlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools);
+        ResultCode CreateBuffers(Device& device, const RayTracingBlasDescriptor* descriptor, const SingleDeviceRayTracingBufferPools& rayTracingBufferPools);
 
-        //! Returns true if the RayTracingBlas has been initialized
+        //! Returns true if the SingleDeviceRayTracingBlas has been initialized
         virtual bool IsValid() const = 0;
 
         RayTracingGeometryVector& GetGeometries()
@@ -130,7 +130,7 @@ namespace AZ::RHI
 
     private:
         // Platform API
-        virtual RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools) = 0;
+        virtual RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const SingleDeviceRayTracingBufferPools& rayTracingBufferPools) = 0;
 
         RayTracingGeometryVector m_geometries;
     };
@@ -140,9 +140,9 @@ namespace AZ::RHI
 
     //! RayTracingTlasInstance
     //!
-    //! Each TLAS instance entry refers to a RayTracingBlas, and can contain a transform which
+    //! Each TLAS instance entry refers to a SingleDeviceRayTracingBlas, and can contain a transform which
     //! will be applied to all of the geometry entries in the Blas.  It also contains a hitGroupIndex
-    //! which is used to index into the RayTracingShaderTable to determine the hit shader when a
+    //! which is used to index into the SingleDeviceRayTracingShaderTable to determine the hit shader when a
     //! ray hits any geometry in the instance.
     struct RayTracingTlasInstance
     {
@@ -152,7 +152,7 @@ namespace AZ::RHI
         AZ::Transform m_transform = AZ::Transform::CreateIdentity();
         AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
         bool m_transparent = false;
-        RHI::Ptr<RHI::RayTracingBlas> m_blas;
+        RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_blas;
     };
     using RayTracingTlasInstanceVector = AZStd::vector<RayTracingTlasInstance>;
 
@@ -184,8 +184,8 @@ namespace AZ::RHI
         const RayTracingTlasInstanceVector& GetInstances() const { return m_instances; }
         RayTracingTlasInstanceVector& GetInstances() { return m_instances; }
 
-        const RHI::Ptr<RHI::Buffer>& GetInstancesBuffer() const { return  m_instancesBuffer; }
-        RHI::Ptr<RHI::Buffer>& GetInstancesBuffer() { return  m_instancesBuffer; }
+        const RHI::Ptr<RHI::SingleDeviceBuffer>& GetInstancesBuffer() const { return  m_instancesBuffer; }
+        RHI::Ptr<RHI::SingleDeviceBuffer>& GetInstancesBuffer() { return  m_instancesBuffer; }
 
         uint32_t GetNumInstancesInBuffer() const { return m_numInstancesInBuffer; }
 
@@ -198,8 +198,8 @@ namespace AZ::RHI
         RayTracingTlasDescriptor* Transform(const AZ::Transform& transform);
         RayTracingTlasDescriptor* NonUniformScale(const AZ::Vector3& nonUniformScale);
         RayTracingTlasDescriptor* Transparent(bool transparent);
-        RayTracingTlasDescriptor* Blas(const RHI::Ptr<RHI::RayTracingBlas>& blas);
-        RayTracingTlasDescriptor* InstancesBuffer(const RHI::Ptr<RHI::Buffer>& tlasInstances);
+        RayTracingTlasDescriptor* Blas(const RHI::Ptr<RHI::SingleDeviceRayTracingBlas>& blas);
+        RayTracingTlasDescriptor* InstancesBuffer(const RHI::Ptr<RHI::SingleDeviceBuffer>& tlasInstances);
         RayTracingTlasDescriptor* NumInstances(uint32_t numInstancesInBuffer);
 
     private:
@@ -207,31 +207,31 @@ namespace AZ::RHI
         RayTracingTlasInstance* m_buildContext = nullptr;
 
         // externally created Instances buffer, cannot be combined with other Instances
-        RHI::Ptr<RHI::Buffer> m_instancesBuffer;
+        RHI::Ptr<RHI::SingleDeviceBuffer> m_instancesBuffer;
         uint32_t m_numInstancesInBuffer;
     };
 
-    //! RayTracingTlas
+    //! SingleDeviceRayTracingTlas
     //!
-    //! A RayTracingTlas is created from the information in the RayTracingTlasDescriptor.
-    class RayTracingTlas
+    //! A SingleDeviceRayTracingTlas is created from the information in the RayTracingTlasDescriptor.
+    class SingleDeviceRayTracingTlas
         : public DeviceObject
     {
     public:
-        RayTracingTlas() = default;
-        virtual ~RayTracingTlas() = default;
+        SingleDeviceRayTracingTlas() = default;
+        virtual ~SingleDeviceRayTracingTlas() = default;
 
-        static RHI::Ptr<RHI::RayTracingTlas> CreateRHIRayTracingTlas();
+        static RHI::Ptr<RHI::SingleDeviceRayTracingTlas> CreateRHIRayTracingTlas();
 
         //! Creates the internal TLAS buffers from the descriptor
-        ResultCode CreateBuffers(Device& device, const RayTracingTlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools);
+        ResultCode CreateBuffers(Device& device, const RayTracingTlasDescriptor* descriptor, const SingleDeviceRayTracingBufferPools& rayTracingBufferPools);
 
         //! Returns the TLAS RHI buffer
-        virtual const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const = 0;
-        virtual const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const = 0;
+        virtual const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasBuffer() const = 0;
+        virtual const RHI::Ptr<RHI::SingleDeviceBuffer> GetTlasInstancesBuffer() const = 0;
 
     private:
         // Platform API
-        virtual RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingTlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools) = 0;
+        virtual RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingTlasDescriptor* descriptor, const SingleDeviceRayTracingBufferPools& rayTracingBufferPools) = 0;
     };
 }

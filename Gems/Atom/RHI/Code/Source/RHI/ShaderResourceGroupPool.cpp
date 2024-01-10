@@ -42,7 +42,7 @@ namespace AZ::RHI
         }
 
         m_invalidateRegistry.SetCompileGroupFunction(
-            [this](ShaderResourceGroup& shaderResourceGroup)
+            [this](SingleDeviceShaderResourceGroup& shaderResourceGroup)
         {
             QueueForCompile(shaderResourceGroup);
         });
@@ -58,10 +58,10 @@ namespace AZ::RHI
 
     void ShaderResourceGroupPool::ShutdownInternal()
     {
-        AZ_Error("ShaderResourceGroupPool", m_invalidateRegistry.IsEmpty(), "ShaderResourceGroup Registry is not Empty!");
+        AZ_Error("ShaderResourceGroupPool", m_invalidateRegistry.IsEmpty(), "SingleDeviceShaderResourceGroup Registry is not Empty!");
     }
 
-    ResultCode ShaderResourceGroupPool::InitGroup(ShaderResourceGroup& group)
+    ResultCode ShaderResourceGroupPool::InitGroup(SingleDeviceShaderResourceGroup& group)
     {
         ResultCode resultCode = ResourcePool::InitResource(&group, [this, &group]() { return InitGroupInternal(group); });
         if (resultCode == ResultCode::Success)
@@ -77,9 +77,9 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    void ShaderResourceGroupPool::ShutdownResourceInternal(Resource& resourceBase)
+    void ShaderResourceGroupPool::ShutdownResourceInternal(SingleDeviceResource& resourceBase)
     {
-        ShaderResourceGroup& shaderResourceGroup = static_cast<ShaderResourceGroup&>(resourceBase);
+        SingleDeviceShaderResourceGroup& shaderResourceGroup = static_cast<SingleDeviceShaderResourceGroup&>(resourceBase);
 
         UnqueueForCompile(shaderResourceGroup);
 
@@ -108,7 +108,7 @@ namespace AZ::RHI
         shaderResourceGroup.SetData(ShaderResourceGroupData());
     }
 
-    void ShaderResourceGroupPool::QueueForCompile(ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData)
+    void ShaderResourceGroupPool::QueueForCompile(SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData)
     {
         AZStd::lock_guard<AZStd::shared_mutex> lock(m_groupsToCompileMutex);
 
@@ -128,13 +128,13 @@ namespace AZ::RHI
         }
     }
 
-    void ShaderResourceGroupPool::QueueForCompile(ShaderResourceGroup& group)
+    void ShaderResourceGroupPool::QueueForCompile(SingleDeviceShaderResourceGroup& group)
     {
         AZStd::lock_guard<AZStd::shared_mutex> lock(m_groupsToCompileMutex);
         QueueForCompileNoLock(group);
     }
 
-    void ShaderResourceGroupPool::QueueForCompileNoLock(ShaderResourceGroup& group)
+    void ShaderResourceGroupPool::QueueForCompileNoLock(SingleDeviceShaderResourceGroup& group)
     {
         if (!group.m_isQueuedForCompile)
         {
@@ -143,7 +143,7 @@ namespace AZ::RHI
         }
     }
 
-    void ShaderResourceGroupPool::UnqueueForCompile(ShaderResourceGroup& shaderResourceGroup)
+    void ShaderResourceGroupPool::UnqueueForCompile(SingleDeviceShaderResourceGroup& shaderResourceGroup)
     {
         AZStd::lock_guard<AZStd::shared_mutex> lock(m_groupsToCompileMutex);
         if (shaderResourceGroup.m_isQueuedForCompile)
@@ -153,20 +153,20 @@ namespace AZ::RHI
         }
     }
 
-    void ShaderResourceGroupPool::Compile(ShaderResourceGroup& group, const ShaderResourceGroupData& groupData)
+    void ShaderResourceGroupPool::Compile(SingleDeviceShaderResourceGroup& group, const ShaderResourceGroupData& groupData)
     {
         CalculateGroupDataDiff(group, groupData);
         group.SetData(groupData);
         CompileGroup(group, group.GetData());
     }
 
-    void ShaderResourceGroupPool::CalculateGroupDataDiff(ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData)
+    void ShaderResourceGroupPool::CalculateGroupDataDiff(SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData)
     {
         // Calculate diffs for updating the resource registry.
         if (HasImageGroup() || HasBufferGroup())
         {
             // SRG's hold references to views, and views references to resources. Resources can become invalid, either
-            // due to an explicit Shutdown() / Init() event, or an explicit call to RHI::Resource::Invalidate. In either
+            // due to an explicit Shutdown() / Init() event, or an explicit call to RHI::SingleDeviceResource::Invalidate. In either
             // case, the SRG will need to be re-compiled.
             //
             // To facilitate this, we compare the new data with the previous data and compare views. When views are attached
@@ -263,7 +263,7 @@ namespace AZ::RHI
 
     template<typename T>
     void ShaderResourceGroupPool::UpdateMaskBasedOnViewHash(
-        ShaderResourceGroup& shaderResourceGroup, Name entryName, AZStd::span<const RHI::ConstPtr<T>> views,
+        SingleDeviceShaderResourceGroup& shaderResourceGroup, Name entryName, AZStd::span<const RHI::ConstPtr<T>> views,
         ShaderResourceGroupData::ResourceType resourceType)
     {
         //Get the view hash and check if it was updated in which case we need to compile those views. 
@@ -277,7 +277,7 @@ namespace AZ::RHI
     }
 
     void ShaderResourceGroupPool::ResetUpdateMaskForModifiedViews(
-        ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& shaderResourceGroupData)
+        SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& shaderResourceGroupData)
     {
         const RHI::ShaderResourceGroupLayout& groupLayout = *shaderResourceGroupData.GetLayout();
         uint32_t shaderInputIndex = 0;
@@ -327,7 +327,7 @@ namespace AZ::RHI
         }
     }
 
-    ResultCode ShaderResourceGroupPool::CompileGroup(ShaderResourceGroup& shaderResourceGroup,
+    ResultCode ShaderResourceGroupPool::CompileGroup(SingleDeviceShaderResourceGroup& shaderResourceGroup,
                                                         const ShaderResourceGroupData& shaderResourceGroupData)
     {
         if (r_DisablePartialSrgCompilation)
@@ -364,7 +364,7 @@ namespace AZ::RHI
 
         for (uint32_t i = interval.m_min; i < interval.m_max; ++i)
         {
-            ShaderResourceGroup* group = m_groupsToCompile[i];
+            SingleDeviceShaderResourceGroup* group = m_groupsToCompile[i];
             RHI_PROFILE_SCOPE_VERBOSE("CompileGroupsForInterval %s", group->GetName().GetCStr());
 
             CompileGroup(*group, group->GetData());
@@ -377,7 +377,7 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    ResultCode ShaderResourceGroupPool::InitGroupInternal(ShaderResourceGroup&)
+    ResultCode ShaderResourceGroupPool::InitGroupInternal(SingleDeviceShaderResourceGroup&)
     {
         return ResultCode::Success;
     }

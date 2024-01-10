@@ -24,17 +24,17 @@ namespace AZ::RHI
     struct BufferViewDescriptor;
     
         
-    //! ResourceBase is a base class for pooled RHI resources (Image / Buffer / ShaderResourceGroup, etc). It provides
-    //! some common lifecycle management semantics. Resource creation is separate from initialization. Resources are
+    //! SingleDeviceResource is a base class for pooled RHI resources (SingleDeviceImage / SingleDeviceBuffer / SingleDeviceShaderResourceGroup, etc). It provides
+    //! some common lifecycle management semantics. SingleDeviceResource creation is separate from initialization. Resources are
     //! created separate from any pool, but its backing platform data is associated at initialization time on a specific pool.
-    class Resource
+    class SingleDeviceResource
         : public DeviceObject
     {
         friend class FrameAttachment;
         friend class ResourcePool;
     public:
-        AZ_RTTI(Resource, "{9D02CDAC-80EB-4B77-8E62-849AC6E69206}", DeviceObject);
-        virtual ~Resource();
+        AZ_RTTI(SingleDeviceResource, "{9D02CDAC-80EB-4B77-8E62-849AC6E69206}", DeviceObject);
+        virtual ~SingleDeviceResource();
 
         /// Returns whether the resource is currently an attachment on a frame graph.
         bool IsAttachment() const;
@@ -75,7 +75,7 @@ namespace AZ::RHI
         void EraseResourceView(ResourceView* resourceView) const;
                                     
     protected:
-        Resource() = default;
+        SingleDeviceResource() = default;
 
         //! Returns view based on the descriptor
         Ptr<ImageView> GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const;
@@ -110,7 +110,7 @@ namespace AZ::RHI
         bool m_isInvalidationQueued = false;
             
         // Cache the resourceViews in order to avoid re-creation
-        // Since ResourceView has a dependency to Resource this cache holds raw pointers here in order to ensure there
+        // Since ResourceView has a dependency to SingleDeviceResource this cache holds raw pointers here in order to ensure there
         // is no circular dependency between the resource and it's resourceview.
         mutable AZStd::unordered_map<size_t, ResourceView*> m_resourceViewCache;
         // This should help provide thread safe access to resourceView cache

@@ -32,7 +32,7 @@
 #include <RHI/RenderPass.h>
 #include <RHI/ShaderResourceGroup.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 #include <Atom/RHI/DispatchRaysItem.h>
 
@@ -84,12 +84,12 @@ namespace AZ
             m_state.m_scissorState.Set(AZStd::span<const RHI::Scissor>(rhiScissors, count));
         }
 
-        void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDraw(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup(shaderResourceGroup, RHI::PipelineStateType::Draw);
         }
 
-        void CommandList::SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup) 
+        void CommandList::SetShaderResourceGroupForDispatch(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) 
         {
             SetShaderResourceGroup(shaderResourceGroup, RHI::PipelineStateType::Dispatch);
         }
@@ -598,7 +598,7 @@ namespace AZ
             }
         }
 
-        void CommandList::BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation)
+        void CommandList::BeginPredication(const RHI::SingleDeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation)
         {
             if (!m_supportsPredication)
             {
@@ -814,7 +814,7 @@ namespace AZ
             return m_validator;
         }
 
-        void CommandList::SetShaderResourceGroup(const RHI::ShaderResourceGroup& shaderResourceGroupBase, RHI::PipelineStateType type)
+        void CommandList::SetShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroupBase, RHI::PipelineStateType type)
         {
             const uint32_t bindingSlot = shaderResourceGroupBase.GetBindingSlot();
             const auto& shaderResourceGroup = static_cast<const ShaderResourceGroup&>(shaderResourceGroupBase);
@@ -1140,7 +1140,7 @@ namespace AZ
 #endif
         }
 
-        void CommandList::BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::SingleDeviceRayTracingBlas& rayTracingBlas)
         {
             const RayTracingBlas& vulkanRayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
             const RayTracingBlas::BlasBuffers& blasBuffers = vulkanRayTracingBlas.GetBuffers();
@@ -1152,7 +1152,7 @@ namespace AZ
             context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &blasBuffers.m_buildInfo, &rangeInfos);
         }
 
-        void CommandList::UpdateBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::UpdateBottomLevelAccelerationStructure([[maybe_unused]] const RHI::SingleDeviceRayTracingBlas& rayTracingBlas)
         {
             const RayTracingBlas& vulkanRayTracingBlas = dynamic_cast<const RayTracingBlas&>(rayTracingBlas);
             const RayTracingBlas::BlasBuffers& blasBuffers = vulkanRayTracingBlas.GetBuffers();
@@ -1170,7 +1170,7 @@ namespace AZ
         }
 
         void CommandList::BuildTopLevelAccelerationStructure(
-            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList)
+            const RHI::SingleDeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::SingleDeviceRayTracingBlas*>& changedBlasList)
         {
             const auto& context = static_cast<Device&>(GetDevice()).GetContext();
 

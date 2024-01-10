@@ -10,7 +10,7 @@
 
 namespace AZ::RHI
 {
-    ResultCode BufferPoolBase::InitBuffer(Buffer* buffer, const BufferDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
+    ResultCode BufferPoolBase::InitBuffer(SingleDeviceBuffer* buffer, const BufferDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
     {
         // The descriptor is assigned regardless of whether initialization succeeds. Descriptors are considered
         // undefined for uninitialized resources. This makes the buffer descriptor well defined at initialization
@@ -20,7 +20,7 @@ namespace AZ::RHI
         return ResourcePool::InitResource(buffer, platformInitResourceMethod);
     }
 
-    void BufferPoolBase::ValidateBufferMap(Buffer& buffer, bool isDataValid)
+    void BufferPoolBase::ValidateBufferMap(SingleDeviceBuffer& buffer, bool isDataValid)
     {
         if (Validation::IsEnabled())
         {
@@ -39,7 +39,7 @@ namespace AZ::RHI
         }
     }
 
-    bool BufferPoolBase::ValidateBufferUnmap(Buffer& buffer)
+    bool BufferPoolBase::ValidateBufferUnmap(SingleDeviceBuffer& buffer)
     {
         if (Validation::IsEnabled())
         {
@@ -51,7 +51,7 @@ namespace AZ::RHI
 
             if (--buffer.m_mapRefCount == -1)
             {
-                AZ_Error("BufferPoolBase", false, "Buffer '%s' was unmapped more times than it was mapped.", buffer.GetName().GetCStr());
+                AZ_Error("BufferPoolBase", false, "SingleDeviceBuffer '%s' was unmapped more times than it was mapped.", buffer.GetName().GetCStr());
 
                 // Undo the ref-count to keep the validation state sane.
                 ++buffer.m_mapRefCount;

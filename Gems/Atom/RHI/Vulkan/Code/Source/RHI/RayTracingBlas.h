@@ -20,7 +20,7 @@ namespace AZ
 
         //! This class builds and contains the Vulkan RayTracing BLAS buffers.
         class RayTracingBlas final
-            : public RHI::RayTracingBlas
+            : public RHI::SingleDeviceRayTracingBlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator);
@@ -29,8 +29,8 @@ namespace AZ
 
             struct BlasBuffers
             {
-                RHI::Ptr<RHI::Buffer> m_blasBuffer;
-                RHI::Ptr<RHI::Buffer> m_scratchBuffer;
+                RHI::Ptr<RHI::SingleDeviceBuffer> m_blasBuffer;
+                RHI::Ptr<RHI::SingleDeviceBuffer> m_scratchBuffer;
                 VkAccelerationStructureKHR m_accelerationStructure = VK_NULL_HANDLE;
 
                 AZStd::vector<VkAccelerationStructureGeometryKHR> m_geometryDescs;
@@ -40,14 +40,14 @@ namespace AZ
 
             const BlasBuffers& GetBuffers() const { return m_buffers[m_currentBufferIndex]; }
 
-            // RHI::RayTracingBlas overrides...
+            // RHI::SingleDeviceRayTracingBlas overrides...
             virtual bool IsValid() const override { return m_buffers[m_currentBufferIndex].m_accelerationStructure != VK_NULL_HANDLE; }
 
         private:
             RayTracingBlas() = default;
 
-            // RHI::RayTracingBlas overrides...
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RHI::RayTracingBufferPools& rayTracingBufferPools) override;
+            // RHI::SingleDeviceRayTracingBlas overrides...
+            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
             static VkBuildAccelerationStructureFlagsKHR GetAccelerationStructureBuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags);
 

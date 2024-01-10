@@ -8,16 +8,16 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/SingleDeviceResource.h>
 
 namespace AZ::RHI
 {
     class ImageFrameAttachment;
-    class ShaderResourceGroup;
+    class SingleDeviceShaderResourceGroup;
     class ImageView;
     struct ImageViewDescriptor;
         
-    //! Image represents a collection of Image Subresources, where each subresource comprises a one to three
+    //! SingleDeviceImage represents a collection of SingleDeviceImage Subresources, where each subresource comprises a one to three
     //! dimensional grid of pixels. Images are divided into an array of mip-map chains. A mip map chain is
     //! a list of subresources, progressively halved on each axis, down to a 1x1 pixel base image. If an array is used,
     //! each array 'slice' is its own mip chain. All mip chains in an array share the same size.
@@ -26,16 +26,16 @@ namespace AZ::RHI
     //! number of subresources is equal to mipLevels * arraySize. All subresources share the same pixel format.
     //!
     //! @see ImageView on how to interpret contents of an image.
-    class Image
-        : public Resource
+    class SingleDeviceImage
+        : public SingleDeviceResource
     {
         friend class ImagePoolBase;
         friend class StreamingImagePool;
             
-        using Base = Resource;
+        using Base = SingleDeviceResource;
     public:
-        AZ_RTTI(Image, "{39FFE66C-805A-41AD-9092-91327D51F64B}", Resource);
-        virtual ~Image() = default;
+        AZ_RTTI(SingleDeviceImage, "{39FFE66C-805A-41AD-9092-91327D51F64B}", SingleDeviceResource);
+        virtual ~SingleDeviceImage() = default;
             
         //! Returns the image descriptor used to initialize the image. If the image is uninitialized, the contents
         //! are considered undefined.
@@ -88,7 +88,7 @@ namespace AZ::RHI
         bool IsStreamable() const;
 
     protected:
-        Image() = default;
+        SingleDeviceImage() = default;
 
         virtual void SetDescriptor(const ImageDescriptor& descriptor);
 

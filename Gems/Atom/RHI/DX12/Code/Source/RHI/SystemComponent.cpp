@@ -108,7 +108,7 @@ namespace AZ
             return PhysicalDevice::Enumerate();
         }
 
-        RHI::Ptr<RHI::Buffer> SystemComponent::CreateBuffer()
+        RHI::Ptr<RHI::SingleDeviceBuffer> SystemComponent::CreateBuffer()
         {
             return Buffer::Create();
         }
@@ -128,7 +128,7 @@ namespace AZ
             return Device::Create();
         }
 
-        RHI::Ptr<RHI::Fence> SystemComponent::CreateFence()
+        RHI::Ptr<RHI::SingleDeviceFence> SystemComponent::CreateFence()
         {
             return FenceImpl::Create();
         }
@@ -143,7 +143,7 @@ namespace AZ
             return FrameGraphExecuter::Create();
         }
 
-        RHI::Ptr<RHI::Image> SystemComponent::CreateImage()
+        RHI::Ptr<RHI::SingleDeviceImage> SystemComponent::CreateImage()
         {
             return Image::Create();
         }
@@ -163,12 +163,12 @@ namespace AZ
             return StreamingImagePool::Create();
         }
 
-        RHI::Ptr<RHI::PipelineLibrary> SystemComponent::CreatePipelineLibrary()
+        RHI::Ptr<RHI::SingleDevicePipelineLibrary> SystemComponent::CreatePipelineLibrary()
         {
             return PipelineLibrary::Create();
         }
 
-        RHI::Ptr<RHI::PipelineState> SystemComponent::CreatePipelineState()
+        RHI::Ptr<RHI::SingleDevicePipelineState> SystemComponent::CreatePipelineState()
         {
             return PipelineState::Create();
         }
@@ -178,7 +178,7 @@ namespace AZ
             return Scope::Create();
         }
 
-        RHI::Ptr<RHI::ShaderResourceGroup> SystemComponent::CreateShaderResourceGroup()
+        RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> SystemComponent::CreateShaderResourceGroup()
         {
             return ShaderResourceGroup::Create();
         }
@@ -203,12 +203,12 @@ namespace AZ
             return QueryPool::Create();
         }
 
-        RHI::Ptr<RHI::Query> SystemComponent::CreateQuery()
+        RHI::Ptr<RHI::SingleDeviceQuery> SystemComponent::CreateQuery()
         {
             return Query::Create();
         }
 
-        RHI::Ptr<RHI::IndirectBufferSignature> SystemComponent::CreateIndirectBufferSignature()
+        RHI::Ptr<RHI::SingleDeviceIndirectBufferSignature> SystemComponent::CreateIndirectBufferSignature()
         {
             return IndirectBufferSignature::Create();
         }
@@ -218,27 +218,27 @@ namespace AZ
             return IndirectBufferWriter::Create();
         }
 
-        RHI::Ptr<RHI::RayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
+        RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()
         {
             return RayTracingBufferPools::Create();
         }
 
-        RHI::Ptr<RHI::RayTracingBlas> SystemComponent::CreateRayTracingBlas()
+        RHI::Ptr<RHI::SingleDeviceRayTracingBlas> SystemComponent::CreateRayTracingBlas()
         {
             return RayTracingBlas::Create();
         }
 
-        RHI::Ptr<RHI::RayTracingTlas> SystemComponent::CreateRayTracingTlas()
+        RHI::Ptr<RHI::SingleDeviceRayTracingTlas> SystemComponent::CreateRayTracingTlas()
         {
             return RayTracingTlas::Create();
         }
 
-        RHI::Ptr<RHI::RayTracingPipelineState> SystemComponent::CreateRayTracingPipelineState()
+        RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> SystemComponent::CreateRayTracingPipelineState()
         {
             return RayTracingPipelineState::Create();
         }
 
-        RHI::Ptr<RHI::RayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
+        RHI::Ptr<RHI::SingleDeviceRayTracingShaderTable> SystemComponent::CreateRayTracingShaderTable()
         {
             return RayTracingShaderTable::Create();
         }

@@ -22,7 +22,7 @@
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
@@ -391,7 +391,7 @@ namespace AZ::RHI
             rayTracingShaderTable->Validate();
 
             [[maybe_unused]] ResultCode resultCode = rayTracingShaderTable->BuildInternal();
-            AZ_Assert(resultCode == ResultCode::Success, "RayTracingShaderTable build failed");
+            AZ_Assert(resultCode == ResultCode::Success, "SingleDeviceRayTracingShaderTable build failed");
 
             rayTracingShaderTable->m_isQueuedForBuild = false;
         }
@@ -638,7 +638,7 @@ namespace AZ::RHI
         return m_transientAttachmentPool ? &m_transientAttachmentPool->GetDescriptor() : nullptr;
     }
 
-    void FrameScheduler::QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable)
+    void FrameScheduler::QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable)
     {
         m_rayTracingShaderTablesToBuild.push_back(rayTracingShaderTable);
     }

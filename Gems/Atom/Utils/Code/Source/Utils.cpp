@@ -12,7 +12,7 @@ namespace AZ
 {
     namespace Render
     {
-        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::Buffer> buffer, const void* data, size_t dataSize)
+        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::SingleDeviceBuffer> buffer, const void* data, size_t dataSize)
         {
             // Map the buffer, copy data to the mapped pointer, and unmap it.
             RHI::BufferMapRequest mapRequest(*buffer, 0, dataSize);

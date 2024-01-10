@@ -38,13 +38,13 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
             RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
             RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
-            RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode TrimImageInternal(RHI::SingleDeviceImage& image, uint32_t targetMipLevel) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::ResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
         };

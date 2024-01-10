@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/UnitTest/TestTypes.h>
-#include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
 #include <Atom/RHI/IndirectBufferWriter.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -35,7 +35,7 @@ namespace UnitTest
     using NiceIndirectBufferWriter = ::testing::NiceMock<IndirectBufferWriter>;
 
     class IndirectBufferSignature
-        : public AZ::RHI::IndirectBufferSignature
+        : public AZ::RHI::SingleDeviceIndirectBufferSignature
     {
     public:
         AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::SystemAllocator);

@@ -164,14 +164,14 @@ namespace AZ::RHI
     struct MultiDeviceCopyItem
     {
         MultiDeviceCopyItem()
-            : m_type{ CopyItemType::Buffer }
+            : m_type{ CopyItemType::SingleDeviceBuffer }
             , m_mdBuffer{}
         {
         }
 
         MultiDeviceCopyItem(
             const MultiDeviceCopyBufferDescriptor& descriptor, RHI::MultiDevice::DeviceMask mask = RHI::MultiDevice::AllDevices)
-            : m_type{ CopyItemType::Buffer }
+            : m_type{ CopyItemType::SingleDeviceBuffer }
             , m_mdBuffer{ descriptor }
             , m_deviceMask{ mask }
         {
@@ -179,7 +179,7 @@ namespace AZ::RHI
 
         MultiDeviceCopyItem(
             const MultiDeviceCopyImageDescriptor& descriptor, RHI::MultiDevice::DeviceMask mask = RHI::MultiDevice::AllDevices)
-            : m_type{ CopyItemType::Image }
+            : m_type{ CopyItemType::SingleDeviceImage }
             , m_mdImage{ descriptor }
             , m_deviceMask{ mask }
         {
@@ -214,9 +214,9 @@ namespace AZ::RHI
         {
             switch (m_type)
             {
-            case CopyItemType::Buffer:
+            case CopyItemType::SingleDeviceBuffer:
                 return CopyItem(m_mdBuffer.GetDeviceCopyBufferDescriptor(deviceIndex));
-            case CopyItemType::Image:
+            case CopyItemType::SingleDeviceImage:
                 return CopyItem(m_mdImage.GetDeviceCopyImageDescriptor(deviceIndex));
             case CopyItemType::BufferToImage:
                 return CopyItem(m_mdBufferToImage.GetDeviceCopyBufferToImageDescriptor(deviceIndex));

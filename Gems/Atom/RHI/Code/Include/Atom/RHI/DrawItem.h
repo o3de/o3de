@@ -16,8 +16,8 @@
 
 namespace AZ::RHI
 {
-    class PipelineState;
-    class ShaderResourceGroup;
+    class SingleDevicePipelineState;
+    class SingleDeviceShaderResourceGroup;
     struct Scissor;
     struct Viewport;
     struct DefaultNamespaceType;
@@ -141,7 +141,7 @@ namespace AZ::RHI
             uint8_t m_allFlags = 1;     //< Update default value if you add flags. Also update in DrawPacketBuilder::End()
         };
 
-        const PipelineState* m_pipelineState = nullptr;
+        const SingleDevicePipelineState* m_pipelineState = nullptr;
 
         /// The index buffer used when drawing with an indexed draw call.
         const IndexBufferView* m_indexBufferView = nullptr;
@@ -150,10 +150,10 @@ namespace AZ::RHI
         const StreamBufferView* m_streamBufferViews = nullptr;
 
         /// Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
-        const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
+        const SingleDeviceShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
 
         /// Unique SRG, not shared within the draw packet. This is usually a per-draw SRG, populated with the shader variant fallback key
-        const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
+        const SingleDeviceShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
 
         /// Array of root constants to bind (count must match m_rootConstantSize).
         const uint8_t* m_rootConstants = nullptr;

@@ -12,7 +12,7 @@
 namespace AZ::RHI
 {
     StreamBufferView::StreamBufferView(
-        const Buffer& buffer,
+        const SingleDeviceBuffer& buffer,
         uint32_t byteOffset,
         uint32_t byteCount,
         uint32_t byteStride)
@@ -34,7 +34,7 @@ namespace AZ::RHI
         return m_hash;
     }
 
-    const Buffer* StreamBufferView::GetBuffer() const
+    const SingleDeviceBuffer* StreamBufferView::GetBuffer() const
     {
         return m_buffer;
     }

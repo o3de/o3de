@@ -12,8 +12,8 @@
 namespace AZ::RHI
 {
     IndirectBufferView::IndirectBufferView(
-        const Buffer& buffer,
-        const IndirectBufferSignature& signature,
+        const SingleDeviceBuffer& buffer,
+        const SingleDeviceIndirectBufferSignature& signature,
         uint32_t byteOffset,
         uint32_t byteCount,
         uint32_t byteStride)
@@ -37,7 +37,7 @@ namespace AZ::RHI
         return m_hash;
     }
 
-    const Buffer* IndirectBufferView::GetBuffer() const
+    const SingleDeviceBuffer* IndirectBufferView::GetBuffer() const
     {
         return m_buffer;
     }
@@ -57,7 +57,7 @@ namespace AZ::RHI
         return m_byteStride;
     }
 
-    const IndirectBufferSignature* IndirectBufferView::GetSignature() const
+    const SingleDeviceIndirectBufferSignature* IndirectBufferView::GetSignature() const
     {
         return m_signature;
     }

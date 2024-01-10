@@ -201,7 +201,7 @@ namespace AZ
                 return RHI::ResultCode::Success;
             }
 
-            AZ_Warning("StreamingImagePool", false, "Failed to initialize RHI::Image on RHI::StreamingImagePool.");
+            AZ_Warning("StreamingImagePool", false, "Failed to initialize RHI::SingleDeviceImage on RHI::StreamingImagePool.");
             return resultCode;
         }
 

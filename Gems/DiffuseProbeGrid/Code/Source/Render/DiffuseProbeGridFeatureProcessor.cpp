@@ -20,7 +20,7 @@
 #include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
 // This component invokes shaders based on Nvidia's RTX-GI SDK.
@@ -119,7 +119,7 @@ namespace AZ
             if (device->GetFeatures().m_rayTracing)
             {
                 // initialize the buffer pools for the DiffuseProbeGrid visualization
-                m_visualizationBufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
+                m_visualizationBufferPools = RHI::SingleDeviceRayTracingBufferPools::CreateRHIRayTracingBufferPools();
                 m_visualizationBufferPools->Init(device);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
@@ -970,7 +970,7 @@ namespace AZ
             ;
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_visualizationBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
+            m_visualizationBlas = AZ::RHI::SingleDeviceRayTracingBlas::CreateRHIRayTracingBlas();
             if (device->GetFeatures().m_rayTracing)
             {
                 m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);

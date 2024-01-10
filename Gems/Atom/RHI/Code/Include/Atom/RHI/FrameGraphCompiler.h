@@ -226,8 +226,8 @@ namespace AZ::RHI
                                 ObjectCache<ObjectCacheType>& objectCache);
             
         // Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
-        ImageView* GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor);
-        BufferView* GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
+        ImageView* GetImageViewFromLocalCache(SingleDeviceImage* image, const ImageViewDescriptor& imageViewDescriptor);
+        BufferView* GetBufferViewFromLocalCache(SingleDeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
             
         // This cache is mainly for transient resources. It adds a dependency to the resource views and hence they wont be
         // deleted at the end of the frame and re-created at the start. Mainly used as an optimization.  

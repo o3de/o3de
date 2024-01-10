@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/SingleDeviceResource.h>
 
 namespace AZ::RHI
 {
@@ -27,18 +27,18 @@ namespace AZ::RHI
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::QueryControlFlags)
 
-    //! Query resource for recording gpu data like occlusion, timestamp or pipeline statistics.
+    //! SingleDeviceQuery resource for recording gpu data like occlusion, timestamp or pipeline statistics.
     //! Queries belong to a QueryPool and their types are determined by the pool.
-    class Query
-        : public Resource
+    class SingleDeviceQuery
+        : public SingleDeviceResource
     {
         friend class QueryPool;
     public:
-        AZ_RTTI(Query, "{5E4AAD1B-E1A5-45FA-B965-9E212CE58B57}", Resource);
-        virtual ~Query() override = default;
+        AZ_RTTI(SingleDeviceQuery, "{5E4AAD1B-E1A5-45FA-B965-9E212CE58B57}", SingleDeviceResource);
+        virtual ~SingleDeviceQuery() override = default;
 
         ///////////////////////////////////////////////////////////////////
-        // RHI::Resource overrides
+        // RHI::SingleDeviceResource overrides
         void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const override;
         ///////////////////////////////////////////////////////////////////
 
@@ -65,7 +65,7 @@ namespace AZ::RHI
         ResultCode WriteTimestamp(CommandList& commandList);
 
     protected:
-        Query() = default;
+        SingleDeviceQuery() = default;
 
         ////////////////////////////////////////////////////////////////////////
         // Interfaces that the platform implementation overrides.
@@ -75,7 +75,7 @@ namespace AZ::RHI
         ////////////////////////////////////////////////////////////////////////
 
     private:
-        QueryHandle m_handle; ///< Handle of the Query. Assigned when initializing the Query.
+        QueryHandle m_handle; ///< Handle of the SingleDeviceQuery. Assigned when initializing the SingleDeviceQuery.
         CommandList* m_currentCommandList = nullptr;
     };
 }

@@ -9,12 +9,12 @@
 
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/ImagePoolBase.h>
 
 namespace AZ::RHI
 {
-    //! @brief The data structure used to initialize an RHI::Image on an RHI::ImagePool.
+    //! @brief The data structure used to initialize an RHI::SingleDeviceImage on an RHI::ImagePool.
     template <typename ImageClass>
     struct ImageInitRequestTemplate
     {
@@ -41,7 +41,7 @@ namespace AZ::RHI
         const ClearValue* m_optimizedClearValue = nullptr;
     };
 
-    //!@brief The data structure used to update contents of an RHI::Image on an RHI::ImagePool.
+    //!@brief The data structure used to update contents of an RHI::SingleDeviceImage on an RHI::ImagePool.
     template <typename ImageClass, typename ImageSubresourceLayoutClass>
     struct ImageUpdateRequestTemplate
     {
@@ -63,8 +63,8 @@ namespace AZ::RHI
         ImageSubresourceLayoutClass m_sourceSubresourceLayout;
     };
 
-    using ImageInitRequest = ImageInitRequestTemplate<Image>;
-    using ImageUpdateRequest = ImageUpdateRequestTemplate<Image, ImageSubresourceLayout>;
+    using ImageInitRequest = ImageInitRequestTemplate<SingleDeviceImage>;
+    using ImageUpdateRequest = ImageUpdateRequestTemplate<SingleDeviceImage, ImageSubresourceLayout>;
 
     //! ImagePool is a pool of images that will be bound as attachments to the frame scheduler.
     //! As a result, they are intended to be produced and consumed by the GPU. Persistent Color / Depth Stencil / Image

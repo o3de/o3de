@@ -35,9 +35,9 @@ namespace AZ
             static RHI::Ptr<DispatchRaysIndirectBuffer> Create();
 
             void Init(RHI::BufferPool* bufferPool) override;
-            void Build(RHI::RayTracingShaderTable* shaderTable) override;
+            void Build(RHI::SingleDeviceRayTracingShaderTable* shaderTable) override;
 
-            RHI::Ptr<RHI::Buffer> m_buffer;
+            RHI::Ptr<RHI::SingleDeviceBuffer> m_buffer;
             MemoryView m_shaderTableStagingMemory;
             bool m_shaderTableNeedsCopy = false;
         };

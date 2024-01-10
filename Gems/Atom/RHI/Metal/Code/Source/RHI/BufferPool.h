@@ -41,11 +41,11 @@ namespace AZ
             // RHI::BufferPool
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::BufferPoolDescriptor& descriptor) override;
             void ShutdownInternal() override;
-            RHI::ResultCode InitBufferInternal(RHI::Buffer& buffer, const RHI::BufferDescriptor& rhiDescriptor) override;
-            void ShutdownResourceInternal(RHI::Resource& resource) override;
-            RHI::ResultCode OrphanBufferInternal(RHI::Buffer& buffer) override;
+            RHI::ResultCode InitBufferInternal(RHI::SingleDeviceBuffer& buffer, const RHI::BufferDescriptor& rhiDescriptor) override;
+            void ShutdownResourceInternal(RHI::SingleDeviceResource& resource) override;
+            RHI::ResultCode OrphanBufferInternal(RHI::SingleDeviceBuffer& buffer) override;
             RHI::ResultCode MapBufferInternal(const RHI::BufferMapRequest& mapRequest, RHI::BufferMapResponse& response) override;
-            void UnmapBufferInternal(RHI::Buffer& buffer) override;
+            void UnmapBufferInternal(RHI::SingleDeviceBuffer& buffer) override;
             RHI::ResultCode StreamBufferInternal(const RHI::BufferStreamRequest& request) override;
             void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////

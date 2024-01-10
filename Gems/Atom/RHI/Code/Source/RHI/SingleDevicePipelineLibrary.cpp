@@ -6,31 +6,31 @@
  *
  */
 
-#include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/SingleDevicePipelineLibrary.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ::RHI
 {
-    bool PipelineLibrary::ValidateIsInitialized() const
+    bool SingleDevicePipelineLibrary::ValidateIsInitialized() const
     {
         if (Validation::IsEnabled())
         {
             if (!IsInitialized())
             {
-                AZ_Error("PipelineLibrary", false, "PipelineLibrary is not initialized. This operation is only permitted on an initialized library.");
+                AZ_Error("SingleDevicePipelineLibrary", false, "SingleDevicePipelineLibrary is not initialized. This operation is only permitted on an initialized library.");
                 return false;
             }
         }
         return true;
     }
 
-    ResultCode PipelineLibrary::Init(Device& device, const PipelineLibraryDescriptor& descriptor)
+    ResultCode SingleDevicePipelineLibrary::Init(Device& device, const PipelineLibraryDescriptor& descriptor)
     {
         if (Validation::IsEnabled())
         {
             if (IsInitialized())
             {
-                AZ_Error("PipelineLibrary", false, "PipelineLibrary is initialized. This operation is only permitted on an uninitialized library.");
+                AZ_Error("SingleDevicePipelineLibrary", false, "SingleDevicePipelineLibrary is initialized. This operation is only permitted on an uninitialized library.");
                 return ResultCode::InvalidOperation;
             }
         }
@@ -46,7 +46,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    ResultCode PipelineLibrary::MergeInto(AZStd::span<const PipelineLibrary* const> librariesToMerge)
+    ResultCode SingleDevicePipelineLibrary::MergeInto(AZStd::span<const SingleDevicePipelineLibrary* const> librariesToMerge)
     {
         if (!ValidateIsInitialized())
         {
@@ -56,7 +56,7 @@ namespace AZ::RHI
         return MergeIntoInternal(librariesToMerge);
     }
 
-    void PipelineLibrary::Shutdown()
+    void SingleDevicePipelineLibrary::Shutdown()
     {
         if (IsInitialized())
         {
@@ -65,7 +65,7 @@ namespace AZ::RHI
         }
     }
 
-    ConstPtr<PipelineLibraryData> PipelineLibrary::GetSerializedData() const
+    ConstPtr<PipelineLibraryData> SingleDevicePipelineLibrary::GetSerializedData() const
     {
         if (!ValidateIsInitialized())
         {
@@ -75,7 +75,7 @@ namespace AZ::RHI
         return GetSerializedDataInternal();
     }
     
-    bool PipelineLibrary::SaveSerializedData(const AZStd::string& filePath) const
+    bool SingleDevicePipelineLibrary::SaveSerializedData(const AZStd::string& filePath) const
     {
         if (!ValidateIsInitialized())
         {
@@ -85,7 +85,7 @@ namespace AZ::RHI
         return SaveSerializedDataInternal(filePath);
     }
 
-    bool PipelineLibrary::IsMergeRequired() const
+    bool SingleDevicePipelineLibrary::IsMergeRequired() const
     {
         return true;
     }

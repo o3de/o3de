@@ -6,11 +6,11 @@
  *
  */
 
-#include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
 
 namespace AZ::RHI
 {
-    ResultCode IndirectBufferSignature::Init(Device& device, const IndirectBufferSignatureDescriptor& descriptor)
+    ResultCode SingleDeviceIndirectBufferSignature::Init(Device& device, const IndirectBufferSignatureDescriptor& descriptor)
     {
         ResultCode result = InitInternal(device, descriptor);
         if (result == ResultCode::Success)
@@ -22,13 +22,13 @@ namespace AZ::RHI
         return result;
     }
 
-    uint32_t IndirectBufferSignature::GetByteStride() const
+    uint32_t SingleDeviceIndirectBufferSignature::GetByteStride() const
     {
         AZ_Assert(IsInitialized(), "Signature is not initialized");
         return GetByteStrideInternal();
     }
 
-    uint32_t IndirectBufferSignature::GetOffset(IndirectCommandIndex index) const
+    uint32_t SingleDeviceIndirectBufferSignature::GetOffset(IndirectCommandIndex index) const
     {
         AZ_Assert(IsInitialized(), "Signature is not initialized");
         if (Validation::IsEnabled())
@@ -49,17 +49,17 @@ namespace AZ::RHI
         return GetOffsetInternal(index);
     }
 
-    const IndirectBufferSignatureDescriptor& IndirectBufferSignature::GetDescriptor() const
+    const IndirectBufferSignatureDescriptor& SingleDeviceIndirectBufferSignature::GetDescriptor() const
     {
         return m_descriptor;
     }
 
-    const AZ::RHI::IndirectBufferLayout& IndirectBufferSignature::GetLayout() const
+    const AZ::RHI::IndirectBufferLayout& SingleDeviceIndirectBufferSignature::GetLayout() const
     {
         return m_descriptor.m_layout;
     }
 
-    void IndirectBufferSignature::Shutdown()
+    void SingleDeviceIndirectBufferSignature::Shutdown()
     {
         ShutdownInternal();
         DeviceObject::Shutdown();

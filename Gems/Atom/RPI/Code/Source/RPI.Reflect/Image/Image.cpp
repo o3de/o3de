@@ -39,12 +39,12 @@ namespace AZ
             return m_image->IsInitialized();
         }
 
-        RHI::Image* Image::GetRHIImage()
+        RHI::SingleDeviceImage* Image::GetRHIImage()
         {
             return m_image.get();
         }
 
-        const RHI::Image* Image::GetRHIImage() const
+        const RHI::SingleDeviceImage* Image::GetRHIImage() const
         {
             return m_image.get();
         }

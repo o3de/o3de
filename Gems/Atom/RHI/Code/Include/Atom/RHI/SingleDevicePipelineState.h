@@ -12,7 +12,7 @@
 
 namespace AZ::RHI
 {
-    class PipelineLibrary;
+    class SingleDevicePipelineLibrary;
 
     //! The pipeline state object is an opaque data structure representing compiled
     //! graphics or compute state. Typically called a 'PSO', it holds the following
@@ -27,32 +27,32 @@ namespace AZ::RHI
     //!   Blend, Raster, and Depth-Stencil state.
     //! 
     //! - [Graphics Only] State to identify stream buffers to the fixed function input assembly unit.
-    class PipelineState
+    class SingleDevicePipelineState
         : public DeviceObject
     {
     public:
-        virtual ~PipelineState() = default;
+        virtual ~SingleDevicePipelineState() = default;
 
         //! Initializes a graphics pipeline state, associated with the provided device, using the
         //! provided descriptor. If successful, the PSO is valid to use with DrawItems within scopes
         //! executing on device used for initialization.
         //! @param pipelineLibrary An optional pipeline library used to de-duplicate and cache the internal
         //! platform pipeline state data, reducing compilation and memory cost. It can be left null.
-        ResultCode Init(Device& device, const PipelineStateDescriptorForDraw& descriptor, PipelineLibrary* pipelineLibrary = nullptr);
+        ResultCode Init(Device& device, const PipelineStateDescriptorForDraw& descriptor, SingleDevicePipelineLibrary* pipelineLibrary = nullptr);
 
         //! Initializes a compute pipeline state, associated with the provided device, using the
         //! provided descriptor. If successful, the PSO is valid to use with DispatchItems within scopes
         //! executing on device used for initialization.
         //! @param pipelineLibrary An optional pipeline library used to de-duplicate and cache the internal
         //! platform pipeline state data, reducing compilation and memory cost. It can be left null.
-        ResultCode Init(Device& device, const PipelineStateDescriptorForDispatch& descriptor, PipelineLibrary* pipelineLibrary = nullptr);
+        ResultCode Init(Device& device, const PipelineStateDescriptorForDispatch& descriptor, SingleDevicePipelineLibrary* pipelineLibrary = nullptr);
 
         //! Initializes a ray tracing pipeline state, associated with the provided device, using the
         //! provided descriptor. If successful, the PSO is valid to use with DispatchRaysItems within scopes
         //! executing on device used for initialization.
         //! @param pipelineLibrary An optional pipeline library used to de-duplicate and cache the internal
         //! platform pipeline state data, reducing compilation and memory cost. It can be left null.
-        ResultCode Init(Device& device, const PipelineStateDescriptorForRayTracing& descriptor, PipelineLibrary* pipelineLibrary = nullptr);
+        ResultCode Init(Device& device, const PipelineStateDescriptorForRayTracing& descriptor, SingleDevicePipelineLibrary* pipelineLibrary = nullptr);
 
         PipelineStateType GetType() const;
 
@@ -66,13 +66,13 @@ namespace AZ::RHI
         // Platform API
 
         /// Called when a graphics PSO is being initialized.
-        virtual ResultCode InitInternal(Device& device, const PipelineStateDescriptorForDraw& descriptor, PipelineLibrary* pipelineLibrary) = 0;
+        virtual ResultCode InitInternal(Device& device, const PipelineStateDescriptorForDraw& descriptor, SingleDevicePipelineLibrary* pipelineLibrary) = 0;
 
         /// Called when a compute PSO is being initialized.
-        virtual ResultCode InitInternal(Device& device, const PipelineStateDescriptorForDispatch& descriptor, PipelineLibrary* pipelineLibrary) = 0;
+        virtual ResultCode InitInternal(Device& device, const PipelineStateDescriptorForDispatch& descriptor, SingleDevicePipelineLibrary* pipelineLibrary) = 0;
 
         /// Called when a ray tracing PSO is being initialized.
-        virtual ResultCode InitInternal(Device& device, const PipelineStateDescriptorForRayTracing& descriptor, PipelineLibrary* pipelineLibrary) = 0;
+        virtual ResultCode InitInternal(Device& device, const PipelineStateDescriptorForRayTracing& descriptor, SingleDevicePipelineLibrary* pipelineLibrary) = 0;
 
         /// Called when the PSO is being shutdown.
         virtual void ShutdownInternal() = 0;

@@ -51,7 +51,7 @@ namespace UnitTest
 
     TEST_F(QueryTests, TestNoop)
     {
-        RHI::Ptr<RHI::Query> noopQuery;
+        RHI::Ptr<RHI::SingleDeviceQuery> noopQuery;
         noopQuery = RHI::Factory::Get().CreateQuery();
         AZ_TEST_ASSERT(noopQuery);
 
@@ -62,7 +62,7 @@ namespace UnitTest
 
     TEST_F(QueryTests, Test)
     {
-        RHI::Ptr<RHI::Query> queryA;
+        RHI::Ptr<RHI::SingleDeviceQuery> queryA;
         queryA = RHI::Factory::Get().CreateQuery();
 
         queryA->SetName(Name("QueryA"));
@@ -75,7 +75,7 @@ namespace UnitTest
 
             EXPECT_EQ(1, queryPool->use_count());
 
-            RHI::Ptr<RHI::Query> queryB;
+            RHI::Ptr<RHI::SingleDeviceQuery> queryB;
             queryB = RHI::Factory::Get().CreateQuery();
             EXPECT_EQ(1, queryB->use_count());
 
@@ -104,13 +104,13 @@ namespace UnitTest
             {
                 uint32_t queryIndex = 0;
 
-                const RHI::Query* queries[] =
+                const RHI::SingleDeviceQuery* queries[] =
                 {
                     queryA.get(),
                     queryB.get()
                 };
 
-                queryPool->ForEach<RHI::Query>([&queryIndex, &queries]([[maybe_unused]] RHI::Query& query)
+                queryPool->ForEach<RHI::SingleDeviceQuery>([&queryIndex, &queries]([[maybe_unused]] RHI::SingleDeviceQuery& query)
                 {
                     AZ_UNUSED(queries); // Prevent unused warning in release builds
                     AZ_Assert(queries[queryIndex] == &query, "Queries don't match");
@@ -143,7 +143,7 @@ namespace UnitTest
     TEST_F(QueryTests, TestAllocations)
     {
         static const uint32_t numQueries = 10;
-        AZStd::array<RHI::Ptr<RHI::Query>, numQueries> queries;
+        AZStd::array<RHI::Ptr<RHI::SingleDeviceQuery>, numQueries> queries;
         for (auto& query : queries)
         {
             query = RHI::Factory::Get().CreateQuery();
@@ -158,7 +158,7 @@ namespace UnitTest
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
         queryPool->Init(*m_device, queryPoolDesc);
 
-        AZStd::vector<RHI::Query*> queriesToInitialize(numQueries);
+        AZStd::vector<RHI::SingleDeviceQuery*> queriesToInitialize(numQueries);
         for (size_t i = 0; i < queries.size(); ++i)
         {
             queriesToInitialize[i] = queries[i].get();
@@ -166,7 +166,7 @@ namespace UnitTest
 
         RHI::ResultCode result = queryPool->InitQuery(queriesToInitialize.data(), static_cast<uint32_t>(queriesToInitialize.size()));
         EXPECT_EQ(result, RHI::ResultCode::Success);
-        auto checkSlotsFunc = [](const AZStd::vector<RHI::Query*>& queries)
+        auto checkSlotsFunc = [](const AZStd::vector<RHI::SingleDeviceQuery*>& queries)
         {
             if (queries.size() < 2)
             {
@@ -198,7 +198,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(!extraQuery->IsInitialized());
 
         AZStd::vector<uint32_t> queriesIndicesToShutdown = { 5, 6 };
-        AZStd::vector<RHI::Query*> queriesToShutdown;
+        AZStd::vector<RHI::SingleDeviceQuery*> queriesToShutdown;
         for (auto& index : queriesIndicesToShutdown)
         {
             queries[index]->Shutdown();
@@ -233,7 +233,7 @@ namespace UnitTest
     TEST_F(QueryTests, TestIntervals)
     {
         static const uint32_t numQueries = 10;
-        AZStd::array<RHI::Ptr<RHI::Query>, numQueries> queries;
+        AZStd::array<RHI::Ptr<RHI::SingleDeviceQuery>, numQueries> queries;
         for (auto& query : queries)
         {
             query = RHI::Factory::Get().CreateQuery();
@@ -248,7 +248,7 @@ namespace UnitTest
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
         queryPool->Init(*m_device, queryPoolDesc);
 
-        AZStd::vector<RHI::Query*> queriesToInitialize(numQueries);
+        AZStd::vector<RHI::SingleDeviceQuery*> queriesToInitialize(numQueries);
         for (size_t i = 0; i < queries.size(); ++i)
         {
             queriesToInitialize[i] = queries[i].get();
@@ -271,7 +271,7 @@ namespace UnitTest
         EXPECT_EQ(testQueryPoolIntervals.front(), RHI::Interval(queryToTest->GetHandle().GetIndex(), queryToTest->GetHandle().GetIndex()));
 
         AZStd::vector<RHI::Interval> intervalsToTest = { RHI::Interval(5, 5), RHI::Interval(0, 3), RHI::Interval(8, 9) };
-        AZStd::vector<RHI::Query*> queriesToTest;
+        AZStd::vector<RHI::SingleDeviceQuery*> queriesToTest;
         for (auto& interval : intervalsToTest)
         {
             for (uint32_t i = interval.m_min; i <= interval.m_max; ++i)
@@ -450,7 +450,7 @@ namespace UnitTest
         // Results count is too small
         anotherQuery->Shutdown();
         queryPools[0]->InitQuery(anotherQuery.get());
-        RHI::Query* queries[] = { query.get(), anotherQuery.get() };
+        RHI::SingleDeviceQuery* queries[] = { query.get(), anotherQuery.get() };
         AZ_TEST_START_ASSERTTEST;
         EXPECT_EQ(queryPools[0]->GetResults(queries, 2, results.data(), numPipelineStatistics, RHI::QueryResultFlagBits::None), RHI::ResultCode::InvalidArgument);
         AZ_TEST_STOP_ASSERTTEST(1);
@@ -461,7 +461,7 @@ namespace UnitTest
         // Unsorted queries
         {
             const size_t numQueries = 5;
-            AZStd::array<RHI::Ptr<AZ::RHI::Query>, numQueries> queries2;
+            AZStd::array<RHI::Ptr<AZ::RHI::SingleDeviceQuery>, numQueries> queries2;
             AZStd::vector<uint64_t> results2(numQueries);
 
             RHI::Ptr<RHI::QueryPool> queryPool = RHI::Factory::Get().CreateQueryPool();
@@ -476,7 +476,7 @@ namespace UnitTest
                 queryPool->InitQuery(queries2[i].get());
             }
 
-            AZStd::array<RHI::Query*, numQueries> queriesPtr = { queries2[2].get(), queries2[0].get(), queries2[1].get(), queries2[3].get(), queries2[4].get() };
+            AZStd::array<RHI::SingleDeviceQuery*, numQueries> queriesPtr = { queries2[2].get(), queries2[0].get(), queries2[1].get(), queries2[3].get(), queries2[4].get() };
             EXPECT_EQ(queryPool->GetResults(queriesPtr.data(), numQueries, results2.data(), numQueries, RHI::QueryResultFlagBits::None), RHI::ResultCode::Success);
             for (uint32_t i = 0; i < numQueries; ++i)
             {

@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/SingleDeviceRayTracingPipelineState.h>
 
 namespace AZ::RHI
 {
@@ -18,28 +18,28 @@ namespace AZ::RHI
 
     RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxPayloadSize(uint32_t maxPayloadSize)
     {
-        AZ_Assert(IsTopLevelBuildContext(), "MaxPayloadSize can only be added to the top level of the RayTracingPipelineState");
+        AZ_Assert(IsTopLevelBuildContext(), "MaxPayloadSize can only be added to the top level of the SingleDeviceRayTracingPipelineState");
         m_configuration.m_maxPayloadSize = maxPayloadSize;
         return this;
     }
 
     RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxAttributeSize(uint32_t maxAttributeSize)
     {
-        AZ_Assert(IsTopLevelBuildContext(), "MaxAttributeSize can only be added to the top level of the RayTracingPipelineState");
+        AZ_Assert(IsTopLevelBuildContext(), "MaxAttributeSize can only be added to the top level of the SingleDeviceRayTracingPipelineState");
         m_configuration.m_maxAttributeSize = maxAttributeSize;
         return this;
     }
 
     RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxRecursionDepth(uint32_t maxRecursionDepth)
     {
-        AZ_Assert(IsTopLevelBuildContext(), "MaxRecursionDepth can only be added to the top level of the RayTracingPipelineState");
+        AZ_Assert(IsTopLevelBuildContext(), "MaxRecursionDepth can only be added to the top level of the SingleDeviceRayTracingPipelineState");
         m_configuration.m_maxRecursionDepth = maxRecursionDepth;
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::PipelineState(const RHI::PipelineState* pipelineState)
+    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::PipelineState(const RHI::SingleDevicePipelineState* pipelineState)
     {
-        AZ_Assert(IsTopLevelBuildContext(), "PipelineState can only be added to the top level of the RayTracingPipelineState");
+        AZ_Assert(IsTopLevelBuildContext(), "SingleDevicePipelineState can only be added to the top level of the SingleDeviceRayTracingPipelineState");
         m_pipelineState = pipelineState;
         return this;
     }
@@ -127,14 +127,14 @@ namespace AZ::RHI
         return (m_shaderLibraryBuildContext == nullptr && m_hitGroupBuildContext == nullptr);
     }
 
-    RHI::Ptr<RHI::RayTracingPipelineState> RayTracingPipelineState::CreateRHIRayTracingPipelineState()
+    RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> SingleDeviceRayTracingPipelineState::CreateRHIRayTracingPipelineState()
     {
-        RHI::Ptr<RHI::RayTracingPipelineState> rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
-        AZ_Error("RayTracingPipelineState", rayTracingPipelineState, "Failed to create RHI::RayTracingPipelineState");
+        RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
+        AZ_Error("SingleDeviceRayTracingPipelineState", rayTracingPipelineState, "Failed to create RHI::SingleDeviceRayTracingPipelineState");
         return rayTracingPipelineState;
     }
 
-    ResultCode RayTracingPipelineState::Init(Device& device, const RayTracingPipelineStateDescriptor* descriptor)
+    ResultCode SingleDeviceRayTracingPipelineState::Init(Device& device, const RayTracingPipelineStateDescriptor* descriptor)
     {
         m_descriptor = *descriptor;
 
@@ -146,7 +146,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    void RayTracingPipelineState::Shutdown()
+    void SingleDeviceRayTracingPipelineState::Shutdown()
     {
         ShutdownInternal();
         DeviceObject::Shutdown();

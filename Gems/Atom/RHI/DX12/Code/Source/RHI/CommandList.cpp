@@ -137,12 +137,12 @@ namespace AZ
             m_state.m_scissorState.Set(AZStd::span<const RHI::Scissor>(scissors, count));
         }
 
-        void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDraw(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Draw>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDispatch(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
@@ -649,7 +649,7 @@ namespace AZ
             }
         }
 
-        void CommandList::BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation)
+        void CommandList::BeginPredication(const RHI::SingleDeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation)
         {
             GetCommandList()->SetPredication(
                 static_cast<const Buffer&>(buffer).GetMemoryView().GetMemory(), 
@@ -663,7 +663,7 @@ namespace AZ
             GetCommandList()->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
         }
 
-        void CommandList::BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::SingleDeviceRayTracingBlas& rayTracingBlas)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             const RayTracingBlas& dx12RayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
@@ -679,7 +679,7 @@ namespace AZ
 #endif
         }
 
-        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             const RayTracingBlas& dx12RayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
@@ -710,7 +710,7 @@ namespace AZ
         }
 
         void CommandList::BuildTopLevelAccelerationStructure(
-            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList)
+            const RHI::SingleDeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::SingleDeviceRayTracingBlas*>& changedBlasList)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());

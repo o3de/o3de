@@ -128,7 +128,7 @@ namespace AZ
             list.erase(AZStd::remove_if(list.begin(), list.end(), predicate), list.end());
         }
 
-        void BufferPoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void BufferPoolResolver::OnResourceShutdown(const RHI::SingleDeviceResource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
             const Buffer* buffer = static_cast<const Buffer*>(&resource);

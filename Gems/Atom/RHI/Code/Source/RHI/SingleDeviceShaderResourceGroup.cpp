@@ -5,14 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/ImageView.h>
 
 namespace AZ::RHI
 {
-    void ShaderResourceGroup::Compile(const ShaderResourceGroupData& groupData, CompileMode compileMode /*= CompileMode::Async*/)
+    void SingleDeviceShaderResourceGroup::Compile(const ShaderResourceGroupData& groupData, CompileMode compileMode /*= CompileMode::Async*/)
     {
         switch (compileMode)
         {
@@ -28,32 +28,32 @@ namespace AZ::RHI
         }            
     }
 
-    uint32_t ShaderResourceGroup::GetBindingSlot() const
+    uint32_t SingleDeviceShaderResourceGroup::GetBindingSlot() const
     {
         return m_bindingSlot;
     }
 
-    bool ShaderResourceGroup::IsQueuedForCompile() const
+    bool SingleDeviceShaderResourceGroup::IsQueuedForCompile() const
     {
         return m_isQueuedForCompile;
     }
 
-    const ShaderResourceGroupPool* ShaderResourceGroup::GetPool() const
+    const ShaderResourceGroupPool* SingleDeviceShaderResourceGroup::GetPool() const
     {
-        return static_cast<const ShaderResourceGroupPool*>(Resource::GetPool());
+        return static_cast<const ShaderResourceGroupPool*>(SingleDeviceResource::GetPool());
     }
 
-    ShaderResourceGroupPool* ShaderResourceGroup::GetPool()
+    ShaderResourceGroupPool* SingleDeviceShaderResourceGroup::GetPool()
     {
-        return static_cast<ShaderResourceGroupPool*>(Resource::GetPool());
+        return static_cast<ShaderResourceGroupPool*>(SingleDeviceResource::GetPool());
     }
 
-    const ShaderResourceGroupData& ShaderResourceGroup::GetData() const
+    const ShaderResourceGroupData& SingleDeviceShaderResourceGroup::GetData() const
     {
         return m_data;
     }
 
-    void ShaderResourceGroup::SetData(const ShaderResourceGroupData& data)
+    void SingleDeviceShaderResourceGroup::SetData(const ShaderResourceGroupData& data)
     {
         m_data = data;
         uint32_t sourceUpdateMask = data.GetUpdateMask();
@@ -69,7 +69,7 @@ namespace AZ::RHI
         }
     }
 
-    void ShaderResourceGroup::DisableCompilationForAllResourceTypes()
+    void SingleDeviceShaderResourceGroup::DisableCompilationForAllResourceTypes()
     {
         for (uint32_t i = 0; i < static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count); i++)
         {
@@ -86,37 +86,37 @@ namespace AZ::RHI
         }
     }
     
-    bool ShaderResourceGroup::IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const
+    bool SingleDeviceShaderResourceGroup::IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const
     {
         return RHI::CheckBitsAny(m_rhiUpdateMask, resourceTypeMask);
     }
 
-    bool ShaderResourceGroup::IsAnyResourceTypeUpdated() const
+    bool SingleDeviceShaderResourceGroup::IsAnyResourceTypeUpdated() const
     {
         return m_rhiUpdateMask != 0;
     }
 
-    void ShaderResourceGroup::EnableRhiResourceTypeCompilation(const ShaderResourceGroupData::ResourceTypeMask resourceTypeMask)
+    void SingleDeviceShaderResourceGroup::EnableRhiResourceTypeCompilation(const ShaderResourceGroupData::ResourceTypeMask resourceTypeMask)
     {
         m_rhiUpdateMask = AZ::RHI::SetBits(m_rhiUpdateMask, static_cast<uint32_t>(resourceTypeMask));
     }
 
-    void ShaderResourceGroup::ResetResourceTypeIteration(const ShaderResourceGroupData::ResourceType resourceType)
+    void SingleDeviceShaderResourceGroup::ResetResourceTypeIteration(const ShaderResourceGroupData::ResourceType resourceType)
     {
         m_resourceTypeIteration[static_cast<uint32_t>(resourceType)] = 0;
     }
 
-    HashValue64 ShaderResourceGroup::GetViewHash(const AZ::Name& viewName)
+    HashValue64 SingleDeviceShaderResourceGroup::GetViewHash(const AZ::Name& viewName)
     {
         return m_viewHash[viewName];
     }
 
-    void ShaderResourceGroup::UpdateViewHash(const AZ::Name& viewName, const HashValue64 viewHash)
+    void SingleDeviceShaderResourceGroup::UpdateViewHash(const AZ::Name& viewName, const HashValue64 viewHash)
     {
         m_viewHash[viewName] = viewHash;
     }
     
-    void ShaderResourceGroup::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
+    void SingleDeviceShaderResourceGroup::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
     {
         AZ_UNUSED(builder);
     }

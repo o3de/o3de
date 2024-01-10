@@ -71,7 +71,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup& groupBase)
+        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase)
         {
             RHI::ResultCode result = RHI::ResultCode::Success;
 
@@ -102,7 +102,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
+        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
         {
             auto& group = static_cast<ShaderResourceGroup&>(groupBase);
 
@@ -178,7 +178,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
             for (size_t i = 0; i < m_descriptorSetCount; ++i)

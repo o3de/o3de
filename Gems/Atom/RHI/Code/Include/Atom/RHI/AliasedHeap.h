@@ -22,10 +22,10 @@
 
 namespace AZ::RHI
 {
-    class Resource;
+    class SingleDeviceResource;
     class Scope;
-    class Buffer;
-    class Image;
+    class SingleDeviceBuffer;
+    class SingleDeviceImage;
 
     struct AliasedHeapDescriptor
         : public ResourcePoolDescriptor
@@ -65,7 +65,7 @@ namespace AZ::RHI
         ResultCode ActivateBuffer(
             const TransientBufferDescriptor& descriptor,
             Scope& scope,
-            Buffer** activatedBuffer);
+            SingleDeviceBuffer** activatedBuffer);
 
         //! Ends the use of a previously activated buffer.
         void DeactivateBuffer(
@@ -76,7 +76,7 @@ namespace AZ::RHI
         ResultCode ActivateImage(
             const TransientImageDescriptor& descriptor,
             Scope& scope,
-            Image** activatedImage);
+            SingleDeviceImage** activatedImage);
 
         //! Ends the use of a previously activated image.
         void DeactivateImage(
@@ -129,7 +129,7 @@ namespace AZ::RHI
         FreeListAllocator m_firstFitAllocator;
 
         /// Cache of attachments.
-        ObjectCache<Resource> m_cache;
+        ObjectCache<SingleDeviceResource> m_cache;
 
         /// The aliasing barrier tracker used to compute aliasing barriers when activations
         /// and deactivations occur.
@@ -148,7 +148,7 @@ namespace AZ::RHI
         /// Reverse lookup for getting the attachment index the heap statistics.
         struct AttachmentData
         {
-            Resource* m_resource = nullptr;
+            SingleDeviceResource* m_resource = nullptr;
             uint32_t m_attachmentIndex = 0;
             Scope* m_activateScope = nullptr;
         };

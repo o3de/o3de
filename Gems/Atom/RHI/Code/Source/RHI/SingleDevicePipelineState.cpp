@@ -8,17 +8,17 @@
 
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 
 namespace AZ::RHI
 {
-    bool PipelineState::ValidateNotInitialized() const
+    bool SingleDevicePipelineState::ValidateNotInitialized() const
     {
         if (Validation::IsEnabled())
         {
             if (IsInitialized())
             {
-                AZ_Error("PipelineState", false, "PipelineState already initialized!");
+                AZ_Error("SingleDevicePipelineState", false, "SingleDevicePipelineState already initialized!");
                 return false;
             }
         }
@@ -26,7 +26,7 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode PipelineState::Init(Device& device, const PipelineStateDescriptorForDraw& descriptor, PipelineLibrary* pipelineLibrary)
+    ResultCode SingleDevicePipelineState::Init(Device& device, const PipelineStateDescriptorForDraw& descriptor, SingleDevicePipelineLibrary* pipelineLibrary)
     {
         if (!ValidateNotInitialized())
         {
@@ -39,7 +39,7 @@ namespace AZ::RHI
 
             if (!descriptor.m_inputStreamLayout.IsFinalized())
             {
-                AZ_Error("PipelineState", false, "InputStreamLayout is not finalized!");
+                AZ_Error("SingleDevicePipelineState", false, "InputStreamLayout is not finalized!");
                 error = true;
             }
 
@@ -47,7 +47,7 @@ namespace AZ::RHI
 
             if (renderTargetConfiguration.m_subpassIndex >= renderTargetConfiguration.m_renderAttachmentLayout.m_subpassCount)
             {
-                AZ_Error("PipelineState", false, "Invalid subpassIndex %d. SubpassCount is %d.", renderTargetConfiguration.m_subpassIndex, renderTargetConfiguration.m_renderAttachmentLayout.m_subpassCount);
+                AZ_Error("SingleDevicePipelineState", false, "Invalid subpassIndex %d. SubpassCount is %d.", renderTargetConfiguration.m_subpassIndex, renderTargetConfiguration.m_renderAttachmentLayout.m_subpassCount);
                 return ResultCode::InvalidOperation;
             }
 
@@ -55,7 +55,7 @@ namespace AZ::RHI
             {
                 if (renderTargetConfiguration.GetDepthStencilFormat() == RHI::Format::Unknown)
                 {
-                    AZ_Error("PipelineState", false, "Depth-stencil format is not set.");
+                    AZ_Error("SingleDevicePipelineState", false, "Depth-stencil format is not set.");
                     error = true;
                 }
             }
@@ -64,7 +64,7 @@ namespace AZ::RHI
             {
                 if (renderTargetConfiguration.GetRenderTargetFormat(i) == RHI::Format::Unknown)
                 {
-                    AZ_Error("PipelineState", false, "Rendertarget attachment %d format is not set.", i);
+                    AZ_Error("SingleDevicePipelineState", false, "Rendertarget attachment %d format is not set.", i);
                     error = true;
                 }
             }
@@ -73,7 +73,7 @@ namespace AZ::RHI
             {
                 if (renderTargetConfiguration.GetSubpassInputFormat(i) == RHI::Format::Unknown)
                 {
-                    AZ_Error("PipelineState", false, "Subpass input attachment %d format is not set.", i);
+                    AZ_Error("SingleDevicePipelineState", false, "Subpass input attachment %d format is not set.", i);
                     error = true;
                 }
             }
@@ -83,7 +83,7 @@ namespace AZ::RHI
                 if (renderTargetConfiguration.DoesRenderTargetResolve(i) &&
                     renderTargetConfiguration.GetRenderTargetResolveFormat(i) != renderTargetConfiguration.GetRenderTargetFormat(i))
                 {
-                    AZ_Error("PipelineState", false, "Invalid resolve format for attachment %d.", i);
+                    AZ_Error("SingleDevicePipelineState", false, "Invalid resolve format for attachment %d.", i);
                     error = true;
                 }
             }
@@ -105,7 +105,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    ResultCode PipelineState::Init(Device& device, const PipelineStateDescriptorForDispatch& descriptor, PipelineLibrary* pipelineLibrary)
+    ResultCode SingleDevicePipelineState::Init(Device& device, const PipelineStateDescriptorForDispatch& descriptor, SingleDevicePipelineLibrary* pipelineLibrary)
     {
         if (!ValidateNotInitialized())
         {
@@ -123,7 +123,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    ResultCode PipelineState::Init(Device& device, const PipelineStateDescriptorForRayTracing& descriptor, PipelineLibrary* pipelineLibrary)
+    ResultCode SingleDevicePipelineState::Init(Device& device, const PipelineStateDescriptorForRayTracing& descriptor, SingleDevicePipelineLibrary* pipelineLibrary)
     {
         if (!ValidateNotInitialized())
         {
@@ -141,7 +141,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    void PipelineState::Shutdown()
+    void SingleDevicePipelineState::Shutdown()
     {
         if (IsInitialized())
         {
@@ -150,7 +150,7 @@ namespace AZ::RHI
         }
     }
 
-    PipelineStateType PipelineState::GetType() const
+    PipelineStateType SingleDevicePipelineState::GetType() const
     {
         return m_type;
     }
