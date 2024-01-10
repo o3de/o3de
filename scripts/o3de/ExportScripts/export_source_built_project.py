@@ -220,6 +220,7 @@ def export_standalone_project(ctx: exp.O3DEScriptExportContext,
                                             archive_output_format=archive_output_format,
                                             logger=logger)
 
+
 def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
 
         parser = argparse.ArgumentParser(
@@ -330,6 +331,7 @@ def export_standalone_parse_args(o3de_context: exp.O3DEScriptExportContext, expo
             exit(0)
 
         return parsed_args
+
 
 def export_standalone_run_command(o3de_context, args, export_config: command_utils.O3DEConfig, o3de_logger):
     option_build_assets = export_config.get_parsed_boolean_option(parsed_args=args,

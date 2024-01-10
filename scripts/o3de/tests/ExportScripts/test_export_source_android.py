@@ -21,8 +21,6 @@ utils.prepend_to_system_path(pathlib.Path(__file__).parent.parent.parent / 'Expo
 import export_source_android as expa
 import export_utility as eutil
 
-
-
 from export_test_utility import setup_local_export_config_test
 import o3de.export_project as exp
 from itertools import product
@@ -46,6 +44,7 @@ def test_export_android_parse_args_should_run_with_output(tmpdir):
         test_android_config = android_support.get_android_config(project_path=None)
 
         expa.export_source_android_parse_args(mock_ctx, test_export_config, test_android_config)
+
 
 @pytest.mark.parametrize("seedlists, seedfiles, levelnames, gamefile_patterns, serverfile_patterns, project_patterns",[
     pytest.param([],[],[], [], [], []),
@@ -126,6 +125,7 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
 def test_export_standalone_exhaustive(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets, dum_engine_centric):
     test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets, dum_engine_centric)
 
+
 @pytest.mark.parametrize("dum_fail_asset_err, dum_build_tools, dum_build_assets, dum_engine_centric",[])
 def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets, dum_engine_centric):
     dummy_build_config = 'release'
@@ -156,7 +156,6 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
         mock_logger = create_autospec(logging.Logger)
         test_export_config = exp.get_export_project_config(project_path=None)
         test_android_config = android_support.get_android_config(project_path=None)
-
         
         for use_asset_arg, use_build_tool_arg, use_asset_fail_arg, use_engine_centric, build_config in product(
                     [True, False],
@@ -183,7 +182,6 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                 if not check_tool_config:
                     check_tool_config = test_export_config.get_value("tool.build.config")
 
-                
                 #now check for the boolean arguments
 
                 check_asset_build = dum_build_assets
@@ -217,8 +215,6 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                         mock_ctx.args += ['--project-centric']
                     else:
                         mock_ctx.args += ['--engine-centric']
-                    
-                
 
                 args = expa.export_source_android_parse_args(mock_ctx, test_export_config, test_android_config)
 
@@ -272,6 +268,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                   logger=mock_logger)
                 mock_export_func.reset_mock()
 
+
 @pytest.mark.parametrize("use_sdk", [True,False])
 @pytest.mark.parametrize("should_build_tools_flag", [True,False])
 @pytest.mark.parametrize("has_monolithic", [True,False])
@@ -295,8 +292,6 @@ def test_build_tool_combinations(tmp_path, use_sdk, should_build_tools_flag, has
     mock_config.set_config_value(key=android_support.SETTINGS_SDK_ROOT.key, value=str(tmp_path/'android-sdk').replace('\\', '/'), validate_value=False)
 
     expect_toolchain_build_called = ((not use_sdk) and should_build_tools_flag)
-
-    
 
     with patch('o3de.manifest.is_sdk_engine', return_value=use_sdk) as mock_is_sdk_engine,\
          patch('o3de.export_project.has_monolithic_artifacts', return_value=has_monolithic) as mock_has_mono_artifacts,\
@@ -368,7 +363,6 @@ def test_build_tool_combinations(tmp_path, use_sdk, should_build_tools_flag, has
                 
             
             mock_build_export_toolchain.reset_mock()
-
 
 
 @pytest.mark.parametrize("use_sdk", [True,False])
@@ -469,6 +463,7 @@ def test_asset_bundler_combinations(tmp_path, use_sdk, should_build_tools_flag, 
             mock_bundle_assets.reset_mock()
             mock_build_export_toolchain.reset_mock()
 
+
 @pytest.mark.parametrize("test_seedlists, test_seedfiles, test_levelnames",[
     pytest.param([],[],[]),
     pytest.param([pathlib.PurePath("C:\\test\\test.seedlist")],[pathlib.PurePath("C:\\test1\\test.seed")],[]),
@@ -501,7 +496,6 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
 
     mock_config = create_autospec(O3DEConfig)
     mock_config.set_config_value(key=android_support.SETTINGS_SDK_ROOT.key, value=str(tmp_path/'android-sdk').replace('\\', '/'), validate_value=False)
-
 
     with patch('o3de.manifest.is_sdk_engine', return_value=True) as mock_is_sdk_engine,\
          patch('o3de.export_project.has_monolithic_artifacts', return_value=True) as mock_has_mono_artifacts,\
@@ -561,6 +555,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
                                               tool_config='profile',
                                               max_bundle_size=2048)
 
+
 @pytest.mark.parametrize("use_sdk", [True,False])
 @pytest.mark.parametrize("should_build_tools_flag", [True,False])
 @pytest.mark.parametrize("has_monolithic", [True,False])
@@ -582,8 +577,6 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
 
     mock_config = create_autospec(O3DEConfig)
     mock_config.set_config_value(key=android_support.SETTINGS_SDK_ROOT.key, value=str(tmp_path/'android-sdk').replace('\\', '/'), validate_value=False)
-
-    
 
     with patch('o3de.manifest.is_sdk_engine', return_value=use_sdk) as mock_is_sdk_engine,\
          patch('o3de.export_project.has_monolithic_artifacts', return_value=has_monolithic) as mock_has_mono_artifacts,\
@@ -696,4 +689,3 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
                     
             mock_get_asset_processor_path.reset_mock()
             mock_build_assets.reset_mock()
-

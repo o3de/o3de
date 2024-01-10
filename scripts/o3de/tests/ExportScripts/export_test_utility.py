@@ -55,7 +55,6 @@ signconfig.key.password = o3depass
 asset.mode = PAK
 """
 
-
 def setup_local_export_config_test(tmpdir, **command_settings_kwargs):
     tmpdir.ensure('.o3de', dir=True)
 

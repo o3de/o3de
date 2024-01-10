@@ -20,6 +20,7 @@ utils.prepend_to_system_path(pathlib.Path(__file__).parent.parent.parent / 'Expo
 from export_source_built_project import export_standalone_project, export_standalone_parse_args, export_standalone_run_command
 import export_utility as eutil
 
+
 def test_should_fail_immediately_for_installer_mono_build_with_no_artifacts(tmp_path):
     test_project_name = "TestProject"
     test_project_path = tmp_path / "project"
@@ -308,6 +309,7 @@ def test_asset_bundler_combinations(tmp_path, is_engine_centric, use_sdk, has_mo
                 mock_get_asset_bundler_path.reset_mock()
                 mock_bundle_assets.reset_mock()
 
+
 @pytest.mark.parametrize("test_seedlists, test_seedfiles, test_levelnames",[
     pytest.param([],[],[]),
     pytest.param([pathlib.PurePath("C:\\test\\test.seedlist")],[pathlib.PurePath("C:\\test1\\test.seed")],[]),
@@ -534,10 +536,12 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
 
 from itertools import chain, combinations
 
+
 # helper function for generating launcher combinations
 def launcher_powerset_indices():
     s = list([1,2,3,4])
     return list(chain.from_iterable(combinations(s, r) for r in range(len(s) +  1))) 
+
 
 @pytest.mark.parametrize("is_engine_centric, use_sdk, has_monolithic, use_monolithic", [
     pytest.param(False, True, True, True),
@@ -587,7 +591,6 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
-
         mock_ctx = create_autospec(O3DEScriptExportContext)
         mock_ctx.project_path = test_project_path
         mock_ctx.engine_path = test_engine_path
@@ -688,6 +691,7 @@ def test_build_game_targets_combinations(tmp_path, is_engine_centric, use_sdk, h
                                                                             monolithic_build=use_monolithic,
                                                                             logger=mock_logger)
                     mock_build_game_targets.reset_mock()
+
 
 @pytest.mark.parametrize("is_engine_centric, use_sdk, has_monolithic, use_monolithic", [
     pytest.param(False, True, True, True),
@@ -884,7 +888,6 @@ from itertools import product
 
 
 def test_export_standalone_parse_args_should_require_output(tmpdir):
-    
     # Test Data
     test_project_name, test_project_path, test_engine_path = setup_local_export_config_test(tmpdir)
 
@@ -920,6 +923,7 @@ def test_export_standalone_parse_args_should_require_output(tmpdir):
 
         export_standalone_parse_args(mock_ctx, test_export_config)
 
+
 @pytest.mark.parametrize('dum_fail_asset_err', [True, False])
 @pytest.mark.parametrize('dum_build_tools', [True, False])
 @pytest.mark.parametrize('dum_build_assets', [True, False])
@@ -936,6 +940,7 @@ def test_export_standalone_exhaustive(tmpdir, dum_fail_asset_err, dum_build_tool
     test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets,
                                                      dum_build_game, dum_build_server, dum_build_headless_server, dum_build_unified,
                                                      dum_engine_centric, dum_monolithic, dum_reg_override)
+
 
 @pytest.mark.parametrize("dum_fail_asset_err, dum_build_tools, dum_build_assets,dum_build_game, dum_build_server, dum_build_headless_server, dum_build_unified,dum_engine_centric, dum_monolithic, dum_reg_override",[])
 def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, dum_build_assets,
@@ -1206,6 +1211,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                     monolithic_build=check_mono,
                                     logger=mock_logger)
                     mock_export_func.reset_mock()
+
 
 @pytest.mark.parametrize("seedlists, seedfiles, levelnames, gamefile_patterns, serverfile_patterns, project_patterns",[
     pytest.param([],[],[], [], [], []),
