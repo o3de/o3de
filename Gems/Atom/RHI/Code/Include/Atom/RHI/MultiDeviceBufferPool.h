@@ -121,6 +121,8 @@ namespace AZ::RHI
         //! the map reference counts for the buffer and the pool.
         void ValidateBufferMap(MultiDeviceBuffer& buffer, bool isDataValid);
 
+        bool ValidateNotDeviceLevel() const;
+
         bool ValidatePoolDescriptor(const BufferPoolDescriptor& descriptor) const;
         bool ValidateInitRequest(const MultiDeviceBufferInitRequest& initRequest) const;
         bool ValidateIsHostHeap() const;

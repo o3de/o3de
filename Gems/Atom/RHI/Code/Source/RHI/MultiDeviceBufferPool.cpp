@@ -172,7 +172,7 @@ namespace AZ::RHI
 
     ResultCode MultiDeviceBufferPool::OrphanBuffer(MultiDeviceBuffer& buffer)
     {
-        if (!ValidateIsInitialized() || !ValidateIsHostHeap())
+        if (!ValidateIsInitialized() || !ValidateIsHostHeap() || !ValidateNotDeviceLevel())
         {
             return ResultCode::InvalidOperation;
         }
@@ -242,7 +242,7 @@ namespace AZ::RHI
 
     void MultiDeviceBufferPool::UnmapBuffer(MultiDeviceBuffer& buffer)
     {
-        if (ValidateIsInitialized() && ValidateIsRegistered(&buffer))
+        if (ValidateIsInitialized() && ValidateNotDeviceLevel() && ValidateIsRegistered(&buffer))
         {
             IterateObjects<SingleDeviceBufferPool>([&buffer](auto deviceIndex, auto deviceBufferPool)
             {
@@ -293,6 +293,11 @@ namespace AZ::RHI
                 AZ_Error("MultiDeviceBufferPool", false, "Failed to map buffer '%s'.", buffer.GetName().GetCStr());
             }
         }
+    }
+
+    bool MultiDeviceBufferPool::ValidateNotDeviceLevel() const
+    {
+        return GetDescriptor().m_heapMemoryLevel != HeapMemoryLevel::Device;
     }
 
     void MultiDeviceBufferPool::Shutdown()
