@@ -955,12 +955,12 @@ namespace AZ
 
         bool RenderPipeline::SetActiveAAMethod(AZStd::string aaMethodName)
         {
-            AntiAliasingMode aaMethod = GetAAMethodByName(aaMethodName);
-            if (aaMethod == AntiAliasingMode::Default)
+            AntiAliasingMode antiAliasingMode = GetAAMethodByName(aaMethodName);
+            if (antiAliasingMode == AntiAliasingMode::Default)
             {
                 return false;
             }
-            m_activeAAMethod = aaMethod;
+            m_activeAAMethod = antiAliasingMode;
             return SetAAMethod(this, m_activeAAMethod);
         }
 
@@ -1016,25 +1016,27 @@ namespace AZ
 
         bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AZStd::string aaMethodName)
         {
-            AntiAliasingMode aaMethod = GetAAMethodByName(aaMethodName);
-            return SetAAMethod(pipeline, aaMethod);
+            AntiAliasingMode antiAliasingMode = GetAAMethodByName(aaMethodName);
+            return SetAAMethod(pipeline, antiAliasingMode);
         }
 
-        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AntiAliasingMode aaMethod)
+        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AntiAliasingMode antiAliasingMode)
         {
-            if (aaMethod == AntiAliasingMode::Default)
+            if (antiAliasingMode == AntiAliasingMode::Default)
             {
                 return false;
             }
 
-            static AZStd::unordered_map<AntiAliasingMode, Name> AAPassNamesLookup = {
-                {AntiAliasingMode::SMAA, Name("SMAA1xApplyLinearHDRColorPass")}, 
-                {AntiAliasingMode::TAA, Name("TaaPass")}
+            static AZStd::unordered_map<AntiAliasingMode, AZStd::vector<Name>> AAPassNamesLookup = {
+                {AntiAliasingMode::SMAA, {Name("SMAA1xApplyLinearHDRColorPass")}}, 
+                {AntiAliasingMode::TAA, {Name("TaaPass"), Name("ContrastAdaptiveSharpeningPass")}}
             };
 
             for (auto& aaPassMap : AAPassNamesLookup)
             {
-                EnablePass(pipeline, aaPassMap.second, aaPassMap.first == aaMethod);
+                AZStd::for_each(aaPassMap.second.begin(), aaPassMap.second.end(), [&pipeline, &aaPassMap, &antiAliasingMode](Name passName){
+                    EnablePass(pipeline, passName, aaPassMap.first == antiAliasingMode);
+                });
             }
             return true;
         }
