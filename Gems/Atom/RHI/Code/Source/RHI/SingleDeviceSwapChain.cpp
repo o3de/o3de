@@ -46,7 +46,7 @@ namespace AZ::RHI
             m_xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
             AZ_Assert(m_xrSystem, "XR System is null");
         }
-        SetName(AZ::Name("SingleDeviceSwapChain"));
+        SetName(AZ::Name("SwapChain"));
         SwapChainDimensions nativeDimensions = descriptor.m_dimensions;
         ResultCode resultCode = SingleDeviceResourcePool::Init(
             device, descriptor,

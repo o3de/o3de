@@ -85,7 +85,7 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        AZ_PROFILE_SCOPE(RHI, "SingleDeviceFence: WaitOnCpu");
+        AZ_PROFILE_SCOPE(RHI, "Fence: WaitOnCpu");
         WaitOnCpuInternal();
         return ResultCode::Success;
     }

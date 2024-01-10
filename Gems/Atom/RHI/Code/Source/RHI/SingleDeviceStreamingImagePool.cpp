@@ -62,7 +62,7 @@ namespace AZ::RHI
     ResultCode SingleDeviceStreamingImagePool::Init(Device& device, const StreamingImagePoolDescriptor& descriptor)
     {
         AZ_PROFILE_FUNCTION(RHI);
-        SetName(AZ::Name("SingleDeviceStreamingImagePool"));
+        SetName(AZ::Name("StreamingImagePool"));
         return SingleDeviceResourcePool::Init(
             device, descriptor,
             [this, &device, &descriptor]()

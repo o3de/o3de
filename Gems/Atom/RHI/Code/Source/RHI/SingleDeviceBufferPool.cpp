@@ -154,7 +154,7 @@ namespace AZ::RHI
             return ResultCode::InvalidArgument;
         }
             
-        AZ_PROFILE_SCOPE(RHI, "SingleDeviceBufferPool::OrphanBuffer");
+        AZ_PROFILE_SCOPE(RHI, "BufferPool::OrphanBuffer");
         return OrphanBufferInternal(buffer);
     }
 
