@@ -639,11 +639,15 @@ namespace Terrain
 
         // Upload the image changes to the GPU.
         const uint32_t BytesPerPixel = 4;
-        AZ::RHI::MultiDeviceImageUpdateRequest imageUpdateRequest;
+        AZ::RHI::SingleDeviceImageUpdateRequest imageUpdateRequest;
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = updateLeftPixel;
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = updateTopPixel;
-        AZ::RHI::SingleDeviceImageSubresourceLayout layout{{updateWidth, updateHeight, 1}, updateHeight, updateWidth * BytesPerPixel, updateWidth * updateHeight * BytesPerPixel, 1, 1};
-        imageUpdateRequest.m_sourceSubresourceLayout.Init(m_colorImage->GetRHIImage()->GetDeviceMask(), layout);
+        imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = updateWidth * BytesPerPixel;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = updateWidth * updateHeight * BytesPerPixel;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = updateHeight;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = updateWidth;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = updateHeight;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
         imageUpdateRequest.m_sourceData = sourceData;
         imageUpdateRequest.m_image = m_colorImage->GetRHIImage();
         m_colorImage->UpdateImageContents(imageUpdateRequest);

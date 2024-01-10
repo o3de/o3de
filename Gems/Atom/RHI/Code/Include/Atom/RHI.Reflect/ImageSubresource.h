@@ -10,7 +10,6 @@
 #include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
-#include <Atom/RHI/RHISystemInterface.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -128,25 +127,12 @@ namespace AZ::RHI
         uint32_t m_offset = 0;
     };
 
-        struct MultiDeviceImageSubresourceLayout
-        {
-            AZ_TYPE_INFO(MultiDeviceImageSubresourceLayout, "{8AD0DC97-5AAA-470F-8853-C8A55E023CD1}");
-            // static void Reflect(AZ::ReflectContext* context);
+    struct MultiDeviceImageSubresourceLayout
+    {
+        AZ_TYPE_INFO(MultiDeviceImageSubresourceLayout, "{8AD0DC97-5AAA-470F-8853-C8A55E023CD1}");
+        static void Reflect(AZ::ReflectContext* context);
 
-            MultiDeviceImageSubresourceLayout() = default;
-
-            void Init(RHI::MultiDevice::DeviceMask deviceMask, const SingleDeviceImageSubresourceLayout& deviceLayout)
-            {
-                int deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
-
-            for (auto deviceIndex { 0 }; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
-                {
-                    m_deviceImageSubresourceLayout[deviceIndex] = deviceLayout;
-                }
-            }
-            }
+        MultiDeviceImageSubresourceLayout() = default;
 
         SingleDeviceImageSubresourceLayout& GetDeviceImageSubresource(int deviceIndex)
         {

@@ -599,7 +599,7 @@ namespace Terrain
 
             if (ref)
             {
-                imageIndex = ref->GetImageView()->GetDeviceImageView(AZ::RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex();
+                imageIndex = ref->GetImageView()->GetBindlessReadIndex();
             }
             else if (imageIndex != InvalidImageIndex)
             {
@@ -917,11 +917,15 @@ namespace Terrain
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;
 
-        AZ::RHI::MultiDeviceImageUpdateRequest imageUpdateRequest;
+        AZ::RHI::SingleDeviceImageUpdateRequest imageUpdateRequest;
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = aznumeric_cast<uint32_t>(left);
         imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = aznumeric_cast<uint32_t>(top);
-        AZ::RHI::SingleDeviceImageSubresourceLayout layout{{static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1}, static_cast<uint32_t>(height), static_cast<uint32_t>(width * sizeof(DetailMaterialPixel)), static_cast<uint32_t>(width * height * sizeof(DetailMaterialPixel)), 1, 1};
-        imageUpdateRequest.m_sourceSubresourceLayout.Init(m_detailTextureImage->GetRHIImage()->GetDeviceMask(), layout);
+        imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = width * sizeof(DetailMaterialPixel);
+        imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = width * height * sizeof(DetailMaterialPixel);
+        imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = height;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = width;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = height;
+        imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
         imageUpdateRequest.m_sourceData = pixels.data();
         imageUpdateRequest.m_image = m_detailTextureImage->GetRHIImage();
 

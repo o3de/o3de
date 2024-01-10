@@ -12,7 +12,8 @@
 
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
 
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
@@ -22,8 +23,8 @@ namespace AZ
     {
         struct DisplayMapperLut
         {
-            RHI::Ptr<RHI::MultiDeviceImage> m_lutImage;
-            RHI::Ptr<RHI::MultiDeviceImageView> m_lutImageView;
+            RHI::Ptr<RHI::SingleDeviceImage>        m_lutImage;
+            RHI::Ptr<RHI::SingleDeviceImageView>    m_lutImageView;
             RHI::ImageViewDescriptor    m_lutImageViewDescriptor = {};
         };
 

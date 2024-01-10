@@ -10,6 +10,8 @@
 
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 
+#include <Atom/RHI/Factory.h>
+
 namespace AZ
 {
     namespace RPI
@@ -27,7 +29,8 @@ namespace AZ
              * pointer around at all times, and then only initialize the image view once.
              */
 
-            m_image = aznew RHI::MultiDeviceImage;
+            auto& factory = RHI::Factory::Get();
+            m_image = factory.CreateImage();
             AZ_Assert(m_image, "Failed to acquire an image instance from the RHI. Is the RHI initialized?");
         }
 
@@ -36,17 +39,17 @@ namespace AZ
             return m_image->IsInitialized();
         }
 
-        RHI::MultiDeviceImage* Image::GetRHIImage()
+        RHI::SingleDeviceImage* Image::GetRHIImage()
         {
             return m_image.get();
         }
 
-        const RHI::MultiDeviceImage* Image::GetRHIImage() const
+        const RHI::SingleDeviceImage* Image::GetRHIImage() const
         {
             return m_image.get();
         }
 
-        const RHI::MultiDeviceImageView* Image::GetImageView() const
+        const RHI::SingleDeviceImageView* Image::GetImageView() const
         {
             return m_imageView.get();
         }
@@ -61,9 +64,9 @@ namespace AZ
             return m_image->GetDescriptor().m_mipLevels;
         }
 
-        RHI::ResultCode Image::UpdateImageContents(const RHI::MultiDeviceImageUpdateRequest& request)
+        RHI::ResultCode Image::UpdateImageContents(const RHI::SingleDeviceImageUpdateRequest& request)
         {
-            RHI::MultiDeviceImagePool* imagePool = azrtti_cast<RHI::MultiDeviceImagePool*>(m_image->GetPool());
+            RHI::SingleDeviceImagePool* imagePool = azrtti_cast<RHI::SingleDeviceImagePool*> (m_image->GetPool());
             return imagePool->UpdateImageContents(request);
         }     
     }

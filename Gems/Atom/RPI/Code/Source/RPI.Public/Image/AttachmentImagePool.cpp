@@ -11,7 +11,7 @@
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 
@@ -28,11 +28,10 @@ namespace AZ
                 resourcePoolAsset);
         }
 
-        Data::Instance<AttachmentImagePool> AttachmentImagePool::CreateInternal(
-            RHI::MultiDevice::DeviceMask deviceMask, ResourcePoolAsset& poolAsset)
+        Data::Instance<AttachmentImagePool> AttachmentImagePool::CreateInternal(RHI::Device& device, ResourcePoolAsset& poolAsset)
         {
             Data::Instance<AttachmentImagePool> imagePool = aznew AttachmentImagePool();
-            RHI::ResultCode resultCode = imagePool->Init(deviceMask, poolAsset);
+            RHI::ResultCode resultCode = imagePool->Init(device, poolAsset);
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -42,12 +41,12 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode AttachmentImagePool::Init(RHI::MultiDevice::DeviceMask deviceMask, ResourcePoolAsset& poolAsset)
+        RHI::ResultCode AttachmentImagePool::Init(RHI::Device& device, ResourcePoolAsset& poolAsset)
         {
-            RHI::Ptr<RHI::MultiDeviceImagePool> imagePool = aznew RHI::MultiDeviceImagePool;
+            RHI::Ptr<RHI::SingleDeviceImagePool> imagePool = RHI::Factory::Get().CreateImagePool();
             if (!imagePool)
             {
-                AZ_Error("RPI::ImagePool", false, "Failed to create RHI::MultiDeviceImagePool");
+                AZ_Error("RPI::ImagePool", false, "Failed to create RHI::SingleDeviceImagePool");
                 return RHI::ResultCode::Fail;
             }
 
@@ -59,7 +58,7 @@ namespace AZ
             }
 
             imagePool->SetName(AZ::Name(poolAsset.GetPoolName()));
-            RHI::ResultCode resultCode = imagePool->Init(deviceMask, *desc);
+            RHI::ResultCode resultCode = imagePool->Init(device, *desc);
             if (resultCode == RHI::ResultCode::Success)
             {
                 m_pool = imagePool;
@@ -67,12 +66,12 @@ namespace AZ
             return resultCode;
         }
 
-        const RHI::MultiDeviceImagePool* AttachmentImagePool::GetRHIPool() const
+        const RHI::SingleDeviceImagePool* AttachmentImagePool::GetRHIPool() const
         {
             return m_pool.get();
         }
 
-        RHI::MultiDeviceImagePool* AttachmentImagePool::GetRHIPool()
+        RHI::SingleDeviceImagePool* AttachmentImagePool::GetRHIPool()
         {
             return m_pool.get();
         }

@@ -15,7 +15,7 @@
 #include <Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/MultiDeviceImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -132,9 +132,9 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::MultiDeviceImagePool* rhiPool = pool->GetRHIPool();
+            RHI::SingleDeviceImagePool* rhiPool = pool->GetRHIPool();
 
-            RHI::MultiDeviceImageInitRequest initRequest;
+            RHI::SingleDeviceImageInitRequest initRequest;
             initRequest.m_image = GetRHIImage();
             initRequest.m_descriptor = imageAsset.GetImageDescriptor();
             initRequest.m_optimizedClearValue = imageAsset.GetOptimizedClearValue();
@@ -143,7 +143,7 @@ namespace AZ
             if (resultCode == RHI::ResultCode::Success)
             {
                 m_imagePool = pool;
-                m_imageView = m_image->BuildImageView(imageAsset.GetImageViewDescriptor());
+                m_imageView = m_image->GetImageView(imageAsset.GetImageViewDescriptor());
                 if(!m_imageView.get())
                 {
                     AZ_Error("AttachmentImage", false, "AttachmentImage::Init() failed to initialize RHI image view.");
