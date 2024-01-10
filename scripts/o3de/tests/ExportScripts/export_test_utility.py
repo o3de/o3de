@@ -52,6 +52,7 @@ signconfig.store.file = C:\\Users\\o3deuser\\O3DE\\Projects\\DevTestProject\\o3d
 signconfig.key.alias = o3dekey
 signconfig.store.password = o3depass
 signconfig.key.password = o3depass
+asset.mode = PAK
 """
 
 

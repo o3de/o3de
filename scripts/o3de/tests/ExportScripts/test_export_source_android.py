@@ -43,8 +43,9 @@ def test_export_android_parse_args_should_run_with_output(tmpdir):
         mock_ctx.args = ['--build-dir', str(tmpdir/'output')]
 
         test_export_config = exp.get_export_project_config(project_path=None)
+        test_android_config = android_support.get_android_config(project_path=None)
 
-        expa.export_source_android_parse_args(mock_ctx, test_export_config)
+        expa.export_source_android_parse_args(mock_ctx, test_export_config, test_android_config)
 
 @pytest.mark.parametrize("seedlists, seedfiles, levelnames, gamefile_patterns, serverfile_patterns, project_patterns",[
     pytest.param([],[],[], [], [], []),
@@ -68,6 +69,7 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
         
         mock_logger = create_autospec(logging.Logger)
         test_export_config = exp.get_export_project_config(project_path=None)
+        test_android_config = android_support.get_android_config(project_path=None)
 
         mock_bundle_size = 777
 
@@ -87,7 +89,7 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
             mock_ctx.args += ['-sf', sf]
             verify_seedfiles += [pathlib.Path(sf)]
 
-        args = expa.export_source_android_parse_args(mock_ctx, test_export_config)
+        args = expa.export_source_android_parse_args(mock_ctx, test_export_config, test_android_config)
 
         assert 'level_names' in args and getattr(args, 'level_names')  == levelnames
 
@@ -149,7 +151,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
         
         mock_logger = create_autospec(logging.Logger)
         test_export_config = exp.get_export_project_config(project_path=None)
-
+        test_android_config = android_support.get_android_config(project_path=None)
 
         
         for use_asset_arg, use_build_tool_arg, use_asset_fail_arg, use_engine_centric, build_config in product(
@@ -214,7 +216,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                     
                 
 
-                args = expa.export_source_android_parse_args(mock_ctx, test_export_config)
+                args = expa.export_source_android_parse_args(mock_ctx, test_export_config, test_android_config)
 
                 assert getattr(args, 'build_dir') == tmpdir/'output'
                 assert getattr(args, 'config') == check_build_config

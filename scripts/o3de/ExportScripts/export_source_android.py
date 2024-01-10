@@ -125,7 +125,9 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
             logger.error("Unable to verify build.gradle file or that it contains proper signing configs. Aborting deployment...")
         
 
-def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
+def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
+                                     export_config: command_utils.O3DEConfig,
+                                     android_config: command_utils.O3DEConfig):
     parser = argparse.ArgumentParser(
                     prog=f'o3de.py export-project -es {__file__}',
                     description="Exports a project as an Android APK that is optionally deployed to an android device. "
@@ -146,10 +148,12 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext, 
                                           help=f"The location to write the android project scripts to. Default: '{android.DEFAULT_ANDROID_BUILD_FOLDER}'", 
                                           default=android.DEFAULT_ANDROID_BUILD_FOLDER) 
 
-    
-    
-    parser.add_argument('-apkm', '--asset-mode', type=str, default='PAK', choices=['PAK', 'LOOSE'],
-                        help='Choose how O3DE will package project assets into the final APK file.')
+    asset_mode = android_config.get_value(android_support.SETTINGS_ASSET_MODE.key, default=android_support.ASSET_MODE_LOOSE)
+    parser.add_argument('--asset-mode', type=str,
+                                            help=f"The mode of asset deployment to use. "
+                                                 f" Default: {asset_mode}",
+                                            choices=android_support.ASSET_MODES,
+                                            default=asset_mode)
 
     if o3de_context is None:
         parser.print_help()
@@ -223,13 +227,22 @@ if "o3de_context" in globals():
             project_name, project_path = command_utils.resolve_project_name_and_path()
             export_config = exp.get_export_project_config(project_path=project_name)
         else:
-            export_config = exp.get_export_project_config(project_path=o3de_context.project_path)
+            project_path=o3de_context.project_path
+            export_config = exp.get_export_project_config(project_path=project_path)
     except command_utils.O3DEConfigError:
         o3de_logger.debug(f"No project detected at {os.getcwd()}, using default settings from global config.")
         project_name = None
+        project_path = None
         export_config = exp.get_export_project_config(project_path=None)
     
-    args = export_source_android_parse_args(o3de_context, export_config)
+    #Resolve the android config
+    try:
+        android_config = android_support.get_android_config(project_path=project_path)
+    except (android_support.AndroidToolError, command_utils.O3DEConfigError):
+        android_config = android_support.get_android_config(project_path=None)
+        
+
+    args = export_source_android_parse_args(o3de_context, export_config, android_config)
 
     export_source_android_run_command(o3de_context, args, export_config, o3de_logger)
     o3de_logger.info(f"Finished exporting android project to {args.build_dir}")
