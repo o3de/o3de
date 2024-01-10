@@ -36,15 +36,17 @@ namespace AZ
 
         void ReflectionProbeFeatureProcessor::Activate()
         {
+            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
+
             m_reflectionProbes.reserve(InitialProbeAllocationSize);
 
             RHI::BufferPoolDescriptor desc;
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = aznew RHI::MultiDeviceBufferPool;
+            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
             m_bufferPool->SetName(Name("ReflectionProbeBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(RHI::MultiDevice::AllDevices, desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*rhiSystem->GetDevice(), desc);
             AZ_Error("ReflectionProbeFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -614,8 +616,8 @@ namespace AZ
             m_boxStreamLayout = layoutBuilder.End();
 
             // create index buffer
-            AZ::RHI::MultiDeviceBufferInitRequest request;
-            m_boxIndexBuffer = aznew RHI::MultiDeviceBuffer;
+            AZ::RHI::SingleDeviceBufferInitRequest request;
+            m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
             request.m_initialData = m_boxIndices.data();
@@ -625,7 +627,7 @@ namespace AZ
             // create index buffer view
             AZ::RHI::SingleDeviceIndexBufferView indexBufferView =
             {
-                *m_boxIndexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
+                *m_boxIndexBuffer,
                 0,
                 sizeof(indices),
                 AZ::RHI::IndexFormat::Uint16,
@@ -634,7 +636,7 @@ namespace AZ
             m_reflectionRenderData.m_boxIndexCount = numIndices;
 
             // create position buffer
-            m_boxPositionBuffer = aznew RHI::MultiDeviceBuffer;
+            m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
             request.m_buffer = m_boxPositionBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxPositions.size() * sizeof(Position) };
             request.m_initialData = m_boxPositions.data();
@@ -644,7 +646,7 @@ namespace AZ
             // create position buffer view
             RHI::SingleDeviceStreamBufferView positionBufferView =
             {
-                *m_boxPositionBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
+                *m_boxPositionBuffer,
                 0,
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
                 sizeof(Position),

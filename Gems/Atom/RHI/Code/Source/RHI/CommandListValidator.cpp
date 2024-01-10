@@ -10,6 +10,7 @@
 #include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
 #include <Atom/RHI/SingleDeviceResourcePool.h>
+#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
 #include <Atom/RHI/SingleDeviceImagePoolBase.h>
 #include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/SingleDeviceResourceView.h>

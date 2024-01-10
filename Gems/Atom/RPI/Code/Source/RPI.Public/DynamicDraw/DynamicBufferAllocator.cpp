@@ -38,9 +38,7 @@ namespace AZ
             }
             
             m_ringBufferSize = ringBufferSize;
-
-            AZ_Assert(RHI::CheckBitsAny(m_ringBuffer->GetRHIBuffer()->GetDeviceMask(), RHI::MultiDevice::DefaultDevice), "DynamicBufferAllocator currently only supports the default device.");
-            m_ringBufferStartAddress = m_ringBuffer->Map(m_ringBufferSize, 0)[RHI::MultiDevice::DefaultDeviceIndex];
+            m_ringBufferStartAddress = m_ringBuffer->Map(m_ringBufferSize, 0);
             
             m_currentPosition = 0;
             m_endPositionLimit = 0;
@@ -134,7 +132,7 @@ namespace AZ
         RHI::SingleDeviceIndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
         {
             return RHI::SingleDeviceIndexBufferView(
-                *m_ringBuffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
+                *m_ringBuffer->GetRHIBuffer(),
                 GetBufferAddressOffset(dynamicBuffer),
                 dynamicBuffer->m_size,
                 format
@@ -144,7 +142,7 @@ namespace AZ
         RHI::SingleDeviceStreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
         {
             return RHI::SingleDeviceStreamBufferView(
-                *m_ringBuffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
+                *m_ringBuffer->GetRHIBuffer(),
                 GetBufferAddressOffset(dynamicBuffer),
                 dynamicBuffer->m_size,
                 strideByteCount

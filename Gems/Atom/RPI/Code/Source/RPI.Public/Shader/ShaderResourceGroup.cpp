@@ -518,10 +518,9 @@ namespace AZ
 
         bool ShaderResourceGroup::SetBuffer(RHI::ShaderInputBufferIndex inputIndex, const Data::Instance<Buffer>& buffer, uint32_t arrayIndex)
         {
-            const auto bufferView =
-                buffer ? buffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex) : nullptr;
+            const RHI::SingleDeviceBufferView* bufferView = buffer ? buffer->GetBufferView() : nullptr;
 
-            if (m_data.SetBufferView(inputIndex, bufferView.get(), arrayIndex))
+            if (m_data.SetBufferView(inputIndex, bufferView, arrayIndex))
             {
                 const RHI::Interval interval = m_layout->GetGroupInterval(inputIndex);
 
