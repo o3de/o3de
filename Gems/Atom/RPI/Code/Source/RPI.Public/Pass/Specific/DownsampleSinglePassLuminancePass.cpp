@@ -78,7 +78,7 @@ namespace AZ::RPI
         }
         const uint32_t mipLevelCount = attachment->m_descriptor.m_image.m_mipLevels;
         RHI::AttachmentId attachmentId = attachment->GetAttachmentId();
-        const RHI::Image* rhiImage = context.GetImage(attachmentId);
+        const RHI::SingleDeviceImage* rhiImage = context.GetImage(attachmentId);
         if (!rhiImage)
         {
             return;

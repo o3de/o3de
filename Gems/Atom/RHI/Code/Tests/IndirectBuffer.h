@@ -8,8 +8,8 @@
 #pragma once
 
 #include <AzCore/UnitTest/TestTypes.h>
-#include <Atom/RHI/IndirectBufferSignature.h>
-#include <Atom/RHI/IndirectBufferWriter.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferWriter.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <gmock/gmock.h>
@@ -17,15 +17,15 @@
 namespace UnitTest
 {
     class IndirectBufferWriter
-        : public AZ::RHI::IndirectBufferWriter
+        : public AZ::RHI::SingleDeviceIndirectBufferWriter
     {
     public:
         AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::SystemAllocator);
 
         uint8_t* GetData() const { return GetTargetMemory(); };
 
-        MOCK_METHOD2(SetVertexViewInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::StreamBufferView& view));
-        MOCK_METHOD2(SetIndexViewInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::IndexBufferView& view));
+        MOCK_METHOD2(SetVertexViewInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::SingleDeviceStreamBufferView& view));
+        MOCK_METHOD2(SetIndexViewInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::SingleDeviceIndexBufferView& view));
         MOCK_METHOD2(DrawInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DrawLinear& arguments));
         MOCK_METHOD2(DrawIndexedInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DrawIndexed& arguments));
         MOCK_METHOD2(DispatchInternal, void(AZ::RHI::IndirectCommandIndex index, const AZ::RHI::DispatchDirect& arguments));
@@ -35,7 +35,7 @@ namespace UnitTest
     using NiceIndirectBufferWriter = ::testing::NiceMock<IndirectBufferWriter>;
 
     class IndirectBufferSignature
-        : public AZ::RHI::IndirectBufferSignature
+        : public AZ::RHI::SingleDeviceIndirectBufferSignature
     {
     public:
         AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::SystemAllocator);

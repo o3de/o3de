@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -19,7 +19,7 @@ namespace AZ
         class Buffer;
 
         class RayTracingShaderTable final
-            : public RHI::RayTracingShaderTable
+            : public RHI::SingleDeviceRayTracingShaderTable
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator);
@@ -29,7 +29,7 @@ namespace AZ
             RayTracingShaderTable() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::RayTracingShaderTable
+            // RHI::SingleDeviceRayTracingShaderTable
             RHI::ResultCode BuildInternal() override {return RHI::ResultCode::Success;}
             //////////////////////////////////////////////////////////////////////////
         };

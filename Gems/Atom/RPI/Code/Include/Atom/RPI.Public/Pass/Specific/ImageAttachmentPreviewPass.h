@@ -9,7 +9,7 @@
 
 #include <AtomCore/Instance/Instance.h>
 
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 

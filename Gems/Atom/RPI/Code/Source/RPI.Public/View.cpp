@@ -98,7 +98,7 @@ namespace AZ
             m_passesByDrawList = nullptr;
         }
 
-        RHI::ShaderResourceGroup* View::GetRHIShaderResourceGroup() const
+        RHI::SingleDeviceShaderResourceGroup* View::GetRHIShaderResourceGroup() const
         {
             return m_shaderResourceGroup->GetRHIShaderResourceGroup();
         }

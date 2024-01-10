@@ -7,57 +7,57 @@
  */
 
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/Factory.h>
 
 namespace AZ::RHI
 {
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::Build()
+    SingleDeviceRayTracingBlasDescriptor* SingleDeviceRayTracingBlasDescriptor::Build()
     {
         return this;
     }
 
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::Geometry()
+    SingleDeviceRayTracingBlasDescriptor* SingleDeviceRayTracingBlasDescriptor::Geometry()
     {
         m_geometries.emplace_back();
         m_buildContext = &m_geometries.back();
         return this;
     }
 
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::VertexBuffer(const RHI::StreamBufferView& vertexBuffer)
+    SingleDeviceRayTracingBlasDescriptor* SingleDeviceRayTracingBlasDescriptor::VertexBuffer(const RHI::SingleDeviceStreamBufferView& vertexBuffer)
     {
         AZ_Assert(m_buildContext, "VertexBuffer property can only be added to a Geometry entry");
         m_buildContext->m_vertexBuffer = vertexBuffer;
         return this;
     }
 
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::VertexFormat(RHI::Format vertexFormat)
+    SingleDeviceRayTracingBlasDescriptor* SingleDeviceRayTracingBlasDescriptor::VertexFormat(RHI::Format vertexFormat)
     {
         AZ_Assert(m_buildContext, "VertexFormat property can only be added to a Geometry entry");
         m_buildContext->m_vertexFormat = vertexFormat;
         return this;
     }
 
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::IndexBuffer(const RHI::IndexBufferView& indexBuffer)
+    SingleDeviceRayTracingBlasDescriptor* SingleDeviceRayTracingBlasDescriptor::IndexBuffer(const RHI::SingleDeviceIndexBufferView& indexBuffer)
     {
         AZ_Assert(m_buildContext, "IndexBuffer property can only be added to a Geometry entry");
         m_buildContext->m_indexBuffer = indexBuffer;
         return this;
     }
 
-    RayTracingBlasDescriptor* RayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
+    SingleDeviceRayTracingBlasDescriptor* SingleDeviceRayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
     {
         AZ_Assert(m_buildContext, "BuildFlags property can only be added to a Geometry entry");
         m_buildFlags = buildFlags;
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Build()
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::Build()
     {
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Instance()
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::Instance()
     {
         AZ_Assert(m_instancesBuffer == nullptr, "Instance cannot be combined with an instances buffer");
         m_instances.emplace_back();
@@ -65,56 +65,56 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstanceID(uint32_t instanceID)
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::InstanceID(uint32_t instanceID)
     {
         AZ_Assert(m_buildContext, "InstanceID property can only be added to an Instance entry");
         m_buildContext->m_instanceID = instanceID;
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstanceMask(uint32_t instanceMask)
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::InstanceMask(uint32_t instanceMask)
     {
         AZ_Assert(m_buildContext, "InstanceMask property can only be added to an Instance entry");
         m_buildContext->m_instanceMask = instanceMask;
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::HitGroupIndex(uint32_t hitGroupIndex)
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::HitGroupIndex(uint32_t hitGroupIndex)
     {
         AZ_Assert(m_buildContext, "HitGroupIndex property can only be added to an Instance entry");
         m_buildContext->m_hitGroupIndex = hitGroupIndex;
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Transform(const AZ::Transform& transform)
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::Transform(const AZ::Transform& transform)
     {
         AZ_Assert(m_buildContext, "Transform property can only be added to an Instance entry");
         m_buildContext->m_transform = transform;
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::NonUniformScale(const AZ::Vector3& nonUniformScale)
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::NonUniformScale(const AZ::Vector3& nonUniformScale)
     {
         AZ_Assert(m_buildContext, "NonUniformSCale property can only be added to an Instance entry");
         m_buildContext->m_nonUniformScale = nonUniformScale;
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Transparent(bool transparent)
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::Transparent(bool transparent)
     {
         AZ_Assert(m_buildContext, "Transparent property can only be added to a Geometry entry");
         m_buildContext->m_transparent = transparent;
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::Blas(const RHI::Ptr<RHI::RayTracingBlas>& blas)
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::Blas(const RHI::Ptr<RHI::SingleDeviceRayTracingBlas>& blas)
     {
         AZ_Assert(m_buildContext, "Blas property can only be added to an Instance entry");
         m_buildContext->m_blas = blas;
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstancesBuffer(const RHI::Ptr<RHI::Buffer>& instancesBuffer)
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::InstancesBuffer(const RHI::Ptr<RHI::SingleDeviceBuffer>& instancesBuffer)
     {
         AZ_Assert(!m_buildContext, "InstancesBuffer property can only be added to the top level");
         AZ_Assert(m_instances.size() == 0, "InstancesBuffer cannot exist with instance entries");
@@ -122,21 +122,21 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingTlasDescriptor* RayTracingTlasDescriptor::NumInstances(uint32_t numInstancesInBuffer)
+    SingleDeviceRayTracingTlasDescriptor* SingleDeviceRayTracingTlasDescriptor::NumInstances(uint32_t numInstancesInBuffer)
     {
         AZ_Assert(m_instancesBuffer.get(), "NumInstances property can only be added to the InstancesBuffer entry");
         m_numInstancesInBuffer = numInstancesInBuffer;
         return this;
     }
 
-    RHI::Ptr<RHI::RayTracingBlas> RayTracingBlas::CreateRHIRayTracingBlas()
+    RHI::Ptr<RHI::SingleDeviceRayTracingBlas> SingleDeviceRayTracingBlas::CreateRHIRayTracingBlas()
     {
-        RHI::Ptr<RHI::RayTracingBlas> rayTracingBlas = RHI::Factory::Get().CreateRayTracingBlas();
-        AZ_Error("RayTracingBlas", rayTracingBlas.get(), "Failed to create RHI::RayTracingBlas");
+        RHI::Ptr<RHI::SingleDeviceRayTracingBlas> rayTracingBlas = RHI::Factory::Get().CreateRayTracingBlas();
+        AZ_Error("SingleDeviceRayTracingBlas", rayTracingBlas.get(), "Failed to create RHI::SingleDeviceRayTracingBlas");
         return rayTracingBlas;
     }
 
-    ResultCode RayTracingBlas::CreateBuffers(Device& device, const RayTracingBlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools)
+    ResultCode SingleDeviceRayTracingBlas::CreateBuffers(Device& device, const SingleDeviceRayTracingBlasDescriptor* descriptor, const SingleDeviceRayTracingBufferPools& rayTracingBufferPools)
     {
         ResultCode resultCode = CreateBuffersInternal(device, descriptor, rayTracingBufferPools);
         if (resultCode == ResultCode::Success)
@@ -147,14 +147,14 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    RHI::Ptr<RHI::RayTracingTlas> RayTracingTlas::CreateRHIRayTracingTlas()
+    RHI::Ptr<RHI::SingleDeviceRayTracingTlas> SingleDeviceRayTracingTlas::CreateRHIRayTracingTlas()
     {
-        RHI::Ptr<RHI::RayTracingTlas> rayTracingTlas = RHI::Factory::Get().CreateRayTracingTlas();
-        AZ_Error("RayTracingTlas", rayTracingTlas.get(), "Failed to create RHI::RayTracingTlas");
+        RHI::Ptr<RHI::SingleDeviceRayTracingTlas> rayTracingTlas = RHI::Factory::Get().CreateRayTracingTlas();
+        AZ_Error("SingleDeviceRayTracingTlas", rayTracingTlas.get(), "Failed to create RHI::SingleDeviceRayTracingTlas");
         return rayTracingTlas;
     }
 
-    ResultCode RayTracingTlas::CreateBuffers(Device& device, const RayTracingTlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools)
+    ResultCode SingleDeviceRayTracingTlas::CreateBuffers(Device& device, const SingleDeviceRayTracingTlasDescriptor* descriptor, const SingleDeviceRayTracingBufferPools& rayTracingBufferPools)
     {
         ResultCode resultCode = CreateBuffersInternal(device, descriptor, rayTracingBufferPools);
         if (resultCode == ResultCode::Success)

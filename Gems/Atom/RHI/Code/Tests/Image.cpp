@@ -11,7 +11,7 @@ namespace UnitTest
 {
     using namespace AZ;
 
-    RHI::ResultCode ImageView::InitInternal(RHI::Device&, const RHI::Resource&)
+    RHI::ResultCode ImageView::InitInternal(RHI::Device&, const RHI::SingleDeviceResource&)
     {
         return RHI::ResultCode::Success;
     }
@@ -39,7 +39,7 @@ namespace UnitTest
         return RHI::ResultCode::Success;
     }
 
-    void ImagePool::ShutdownResourceInternal(RHI::Resource&)
+    void ImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource&)
     {
     }
 }

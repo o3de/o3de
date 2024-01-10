@@ -9,8 +9,8 @@
 #pragma once
 
 #include <Atom/RHI/ObjectCollector.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

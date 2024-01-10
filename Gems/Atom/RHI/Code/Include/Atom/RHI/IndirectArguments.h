@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/IndirectBufferView.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferView.h>
 
 namespace AZ::RHI
 {
@@ -20,7 +20,7 @@ namespace AZ::RHI
 
         IndirectArgumentsTemplate(
             uint32_t maxSequenceCount,
-            const IndirectBufferView& indirectBuffer,
+            const SingleDeviceIndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset)
             : IndirectArgumentsTemplate(
                 maxSequenceCount,
@@ -32,9 +32,9 @@ namespace AZ::RHI
 
         IndirectArgumentsTemplate(
             uint32_t maxSequenceCount,
-            const IndirectBufferView& indirectBuffer,
+            const SingleDeviceIndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
-            const Buffer* countBuffer,
+            const SingleDeviceBuffer* countBuffer,
             uint64_t countBufferByteOffset)
             : m_maxSequenceCount(maxSequenceCount)
             , m_indirectBufferView(&indirectBuffer)
@@ -50,7 +50,7 @@ namespace AZ::RHI
         //! 2) If m_countBuffer is NULL, the m_maxSequenceCount specifies the exact number of operations which will be performed.
         uint32_t m_maxSequenceCount = 0;
 
-        //! Specifies an offset into IndirectBufferView to identify the first command argument.
+        //! Specifies an offset into SingleDeviceIndirectBufferView to identify the first command argument.
         uint64_t m_indirectBufferByteOffset = 0;
         //! Specifies an offset into m_countBuffer, identifying the argument count.
         uint64_t m_countBufferByteOffset = 0;
@@ -62,5 +62,5 @@ namespace AZ::RHI
         const BufferClass* m_countBuffer = nullptr;
     };
 
-    using IndirectArguments = IndirectArgumentsTemplate<Buffer, IndirectBufferView>;
+    using IndirectArguments = IndirectArgumentsTemplate<SingleDeviceBuffer, SingleDeviceIndirectBufferView>;
 }

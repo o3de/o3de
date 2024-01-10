@@ -87,7 +87,7 @@ namespace AZ
             m_uploadPackets.clear();
         }
 
-        void BufferPoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void BufferPoolResolver::OnResourceShutdown(const RHI::SingleDeviceResource& resource)
         {
             const Buffer& buffer = static_cast<const Buffer&>(resource);
             if (!buffer.m_pendingResolves)

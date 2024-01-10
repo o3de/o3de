@@ -9,7 +9,7 @@
 
 #include <RHI/TileAllocator.h>
 #include <RHI/MemoryView.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/Allocator.h>
 #include <Atom/RHI/ImageProperty.h>
 #include <Atom/RHI.Reflect/Handle.h>
@@ -60,9 +60,9 @@ namespace AZ
         };
 
         class Image final
-            : public RHI::Image
+            : public RHI::SingleDeviceImage
         {
-            using Base = RHI::Image;
+            using Base = RHI::SingleDeviceImage;
         public:
             AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
             AZ_RTTI(Image, "{D2B32EE2-2ED5-477A-8346-95AF0D11DAC8}", Base);
@@ -128,15 +128,15 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::SingleDeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Image
+            // RHI::SingleDeviceImage
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayout* subresourceLayouts,
+                RHI::SingleDeviceImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
                                 
             bool IsStreamableInternal() const override;
@@ -161,7 +161,7 @@ namespace AZ
             // The minimum resident size of this image. The size is the same as resident size when image was initialized.
             size_t m_minimumResidentSizeInBytes = 0;
 
-            AZStd::array<RHI::ImageSubresourceLayout, RHI::Limits::Image::MipCountMax> m_subresourceLayoutsPerMipChain;
+            AZStd::array<RHI::SingleDeviceImageSubresourceLayout, RHI::Limits::Image::MipCountMax> m_subresourceLayoutsPerMipChain;
 
             // The layout of tiles with respect to each subresource in the image.
             ImageTileLayout m_tileLayout;

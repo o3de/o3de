@@ -45,7 +45,7 @@ namespace AZ::RHI
 
     void MultiDeviceBuffer::Shutdown()
     {
-        IterateObjects<Buffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
+        IterateObjects<SingleDeviceBuffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
         {
             deviceBuffer->Shutdown();
         });
@@ -55,7 +55,7 @@ namespace AZ::RHI
 
     void MultiDeviceBuffer::InvalidateViews()
     {
-        IterateObjects<Buffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
+        IterateObjects<SingleDeviceBuffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
         {
             deviceBuffer->InvalidateViews();
                                            });
@@ -64,7 +64,7 @@ namespace AZ::RHI
     bool MultiDeviceBuffer::IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor)
     {
         bool isInResourceCache{true};
-        IterateObjects<Buffer>([&isInResourceCache, &bufferViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
+        IterateObjects<SingleDeviceBuffer>([&isInResourceCache, &bufferViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
         {
             isInResourceCache &= deviceBuffer->IsInResourceCache(bufferViewDescriptor);
         });

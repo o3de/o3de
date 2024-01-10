@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraph.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 
 namespace AZ::RHI
 {

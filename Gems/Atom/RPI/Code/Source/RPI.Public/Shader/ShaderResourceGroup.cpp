@@ -115,7 +115,7 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
             m_shaderResourceGroup->SetName(m_pool->GetRHIPool()->GetName());
-            m_data = RHI::ShaderResourceGroupData(m_layout);
+            m_data = RHI::SingleDeviceShaderResourceGroupData(m_layout);
             m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 
             // The RPI groups match the same dimensions as the RHI group.
@@ -175,7 +175,7 @@ namespace AZ
             return m_layout;
         }
 
-        RHI::ShaderResourceGroup* ShaderResourceGroup::GetRHIShaderResourceGroup()
+        RHI::SingleDeviceShaderResourceGroup* ShaderResourceGroup::GetRHIShaderResourceGroup()
         {
             return m_shaderResourceGroup.get();
         }

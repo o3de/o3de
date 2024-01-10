@@ -7,14 +7,14 @@
  */
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/Scope.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
-#include <Atom/RHI/ResourcePool.h>
-#include <Atom/RHI/BufferPoolBase.h>
-#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/SingleDeviceResourcePool.h>
+#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
+#include <Atom/RHI/SingleDeviceImagePoolBase.h>
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/ResourceView.h>
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/SingleDeviceResource.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/FrameAttachment.h>
@@ -49,7 +49,7 @@ namespace AZ::RHI
         m_attachments.clear();
     }
 
-    bool CommandListValidator::ValidateShaderResourceGroup(const ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const
+    bool CommandListValidator::ValidateShaderResourceGroup(const SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const
     {
         if (!Validation::IsEnabled())
         {
@@ -74,7 +74,7 @@ namespace AZ::RHI
 
         bool isSuccess = true;
 
-        const ShaderResourceGroupData& groupData = shaderResourceGroup.GetData();
+        const SingleDeviceShaderResourceGroupData& groupData = shaderResourceGroup.GetData();
         const ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
 
         // Validate buffers
@@ -230,7 +230,7 @@ namespace AZ::RHI
     bool CommandListValidator::ValidateView(const ValidateViewContext& context, bool ignoreAttachmentValidation) const
     {
         const ResourceView& resourceView = *context.m_resourceView;
-        const Resource& resource = resourceView.GetResource();
+        const SingleDeviceResource& resource = resourceView.GetResource();
         [[maybe_unused]] const char* resourceViewName = resourceView.GetName().GetCStr();
         [[maybe_unused]] const char* resourceName = resource.GetName().GetCStr();
 
@@ -238,7 +238,7 @@ namespace AZ::RHI
         {
             AZ_Warning(
                 "CommandListValidator", false,
-                "[Scope '%s', SRG '%s']: ResourceView '%s' of Resource '%s' is stale! This indicates that the SRG was not properly "
+                "[Scope '%s', SRG '%s']: ResourceView '%s' of SingleDeviceResource '%s' is stale! This indicates that the SRG was not properly "
                 "compiled, or was invalidated after compilation during the command list recording phase.",
                 context.m_scopeName,
                 context.m_srgName,
@@ -253,12 +253,12 @@ namespace AZ::RHI
             return ValidateAttachment(context, resource.GetFrameAttachment());
         }
 
-        // Resource is not an attachment. It must be in a read-only state.
+        // SingleDeviceResource is not an attachment. It must be in a read-only state.
         if (!ignoreAttachmentValidation && context.m_scopeAttachmentAccess != ScopeAttachmentAccess::Read)
         {
             AZ_Warning(
                 "CommandListValidator", false,
-                "[Scope '%s', SRG '%s']: ResourceView '%s' of Resource '%s' is declared as '%s', but this type "
+                "[Scope '%s', SRG '%s']: ResourceView '%s' of SingleDeviceResource '%s' is declared as '%s', but this type "
                 "requires that the resource be an attachment.",
                 context.m_scopeName,
                 context.m_srgName,

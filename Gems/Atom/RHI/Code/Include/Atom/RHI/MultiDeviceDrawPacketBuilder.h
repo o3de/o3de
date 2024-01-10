@@ -13,7 +13,7 @@
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/MultiDeviceDrawPacket.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 
 namespace AZ
 {
@@ -58,7 +58,7 @@ namespace AZ::RHI
             //! A map of all device-specific StreamBufferViews, indexed by the device index
             //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
             //! and the device-specific DrawItem holds a pointer to it.
-            AZStd::unordered_map<int, AZStd::vector<StreamBufferView>> m_deviceStreamBufferViews;
+            AZStd::unordered_map<int, AZStd::vector<SingleDeviceStreamBufferView>> m_deviceStreamBufferViews;
         };
 
         explicit MultiDeviceDrawPacketBuilder(RHI::MultiDevice::DeviceMask deviceMask)
@@ -103,7 +103,7 @@ namespace AZ::RHI
         //! Passes a Viewport to all singl-device DrawPacketBuilders
         void SetViewport(const Viewport& viewport);
 
-        //! Passes the ShaderResourceGroup to all single-device DrawPacketBuilders
+        //! Passes the SingleDeviceShaderResourceGroup to all single-device DrawPacketBuilders
         void AddShaderResourceGroup(const MultiDeviceShaderResourceGroup* shaderResourceGroup);
 
         //! Passes the single-device DrawRequests to all single-device DrawPacketBuilders,

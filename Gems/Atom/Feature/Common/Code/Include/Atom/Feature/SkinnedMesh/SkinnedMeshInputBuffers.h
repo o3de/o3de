@@ -107,7 +107,7 @@ namespace AZ
 
         private:
             RHI::BufferViewDescriptor CreateInputViewDescriptor(
-                SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::StreamBufferView& streamBufferView);
+                SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::SingleDeviceStreamBufferView& streamBufferView);
             
             using HasInputStreamArray = AZStd::array<bool, static_cast<uint8_t>(SkinnedMeshInputVertexStreams::NumVertexStreams)>;
             HasInputStreamArray CreateInputBufferViews(

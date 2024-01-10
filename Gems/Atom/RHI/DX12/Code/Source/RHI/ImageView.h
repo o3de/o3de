@@ -55,7 +55,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::ImageView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::Resource& resourceBase) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

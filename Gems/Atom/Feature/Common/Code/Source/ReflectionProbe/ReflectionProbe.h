@@ -27,8 +27,8 @@ namespace AZ
         // shared data for rendering reflections, loaded and stored by the ReflectionProbeFeatureProcessor and passed to all probes
         struct ReflectionRenderData
         {
-            AZStd::array<RHI::StreamBufferView, 1> m_boxPositionBufferView;
-            RHI::IndexBufferView m_boxIndexBufferView;
+            AZStd::array<RHI::SingleDeviceStreamBufferView, 1> m_boxPositionBufferView;
+            RHI::SingleDeviceIndexBufferView m_boxIndexBufferView;
             uint32_t m_boxIndexCount = 0;
 
             RPI::Ptr<RPI::PipelineStateForDraw> m_stencilPipelineState;

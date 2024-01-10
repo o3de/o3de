@@ -17,7 +17,7 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Model/Model.h>
@@ -72,7 +72,7 @@ namespace AZ
             //! Render pass data
             Data::Instance<RPI::ShaderResourceGroup> RenderObjectSrg;     // Per object render data - includes instanceId and vertex buffers
             AZStd::vector<SrgBufferDescriptor> RenderBuffersDescriptors;
-            RHI::IndexBufferView IndexBufferView;
+            RHI::SingleDeviceIndexBufferView IndexBufferView;
             AZStd::vector<Data::Instance<RHI::BufferView>> RenderBuffersViews; 
             AZStd::vector <Data::Instance<RPI::Buffer>> RenderBuffers;    // stand alone non shared buffers
 

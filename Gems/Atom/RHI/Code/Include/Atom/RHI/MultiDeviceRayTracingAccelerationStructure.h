@@ -52,8 +52,8 @@ namespace AZ::RHI
         MultiDeviceRayTracingBlasDescriptor() = default;
         ~MultiDeviceRayTracingBlasDescriptor() = default;
 
-        //! Returns the device-specific RayTracingBlasDescriptor for the given index
-        RayTracingBlasDescriptor GetDeviceRayTracingBlasDescriptor(int deviceIndex) const;
+        //! Returns the device-specific SingleDeviceRayTracingBlasDescriptor for the given index
+        SingleDeviceRayTracingBlasDescriptor GetDeviceRayTracingBlasDescriptor(int deviceIndex) const;
 
         //! Accessors
         const MultiDeviceRayTracingGeometryVector& GetGeometries() const
@@ -154,8 +154,8 @@ namespace AZ::RHI
         MultiDeviceRayTracingTlasDescriptor() = default;
         ~MultiDeviceRayTracingTlasDescriptor() = default;
 
-        //! Returns the device-specific RayTracingTlasDescriptor for the given index
-        RayTracingTlasDescriptor GetDeviceRayTracingTlasDescriptor(int deviceIndex) const;
+        //! Returns the device-specific SingleDeviceRayTracingTlasDescriptor for the given index
+        SingleDeviceRayTracingTlasDescriptor GetDeviceRayTracingTlasDescriptor(int deviceIndex) const;
 
         //! Accessors
         const MultiDeviceRayTracingTlasInstanceVector& GetInstances() const

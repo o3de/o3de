@@ -30,7 +30,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::BufferView
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::Resource& resourceBase) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::SingleDeviceResource& resourceBase) override { return RHI::ResultCode::Success;}
             RHI::ResultCode InvalidateInternal() override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override{};
             //////////////////////////////////////////////////////////////////////////

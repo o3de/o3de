@@ -8,9 +8,9 @@
 #pragma once
 
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <AzCore/std/containers/span.h>

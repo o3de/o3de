@@ -49,7 +49,7 @@ namespace AZ
         {
             if (!m_resolveRequests.empty())
             {
-                scope.AddFenceToSignal(AZStd::static_pointer_cast<RHI::Fence>(m_resolveFence));
+                scope.AddFenceToSignal(AZStd::static_pointer_cast<RHI::SingleDeviceFence>(m_resolveFence));
             }
         }
 

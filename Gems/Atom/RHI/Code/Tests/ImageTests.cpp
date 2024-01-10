@@ -40,7 +40,7 @@ namespace UnitTest
 
     TEST_F(ImageTests, TestNoop)
     {
-        RHI::Ptr<RHI::Image> noopImage;
+        RHI::Ptr<RHI::SingleDeviceImage> noopImage;
         noopImage = RHI::Factory::Get().CreateImage();
     }
 
@@ -48,7 +48,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::Image> imageA;
+        RHI::Ptr<RHI::SingleDeviceImage> imageA;
         imageA = RHI::Factory::Get().CreateImage();
         imageA->SetName(Name("ImageA"));
 
@@ -56,12 +56,12 @@ namespace UnitTest
         ASSERT_TRUE(imageA->use_count() == 1);
 
         {
-            RHI::Ptr<RHI::Image> imageB;
+            RHI::Ptr<RHI::SingleDeviceImage> imageB;
             imageB = RHI::Factory::Get().CreateImage();
 
             ASSERT_TRUE(imageB->use_count() == 1);
 
-            RHI::Ptr<RHI::ImagePool> imagePool;
+            RHI::Ptr<RHI::SingleDeviceImagePool> imagePool;
             imagePool = RHI::Factory::Get().CreateImagePool();
 
             ASSERT_TRUE(imagePool->use_count() == 1);
@@ -100,13 +100,13 @@ namespace UnitTest
             {
                 uint32_t imageIndex = 0;
 
-                const RHI::Image* images[] =
+                const RHI::SingleDeviceImage* images[] =
                 {
                     imageA.get(),
                     imageB.get()
                 };
 
-                imagePool->ForEach<RHI::Image>([&imageIndex, &images]([[maybe_unused]] const RHI::Image& image)
+                imagePool->ForEach<RHI::SingleDeviceImage>([&imageIndex, &images]([[maybe_unused]] const RHI::SingleDeviceImage& image)
                 {
                     AZ_UNUSED(images); // Prevent unused warning in release builds
                     AZ_Assert(images[imageIndex] == &image, "images don't match");
@@ -117,7 +117,7 @@ namespace UnitTest
             imageB->Shutdown();
             ASSERT_TRUE(imageB->GetPool() == nullptr);
 
-            RHI::Ptr<RHI::ImagePool> imagePoolB;
+            RHI::Ptr<RHI::SingleDeviceImagePool> imagePoolB;
             imagePoolB = RHI::Factory::Get().CreateImagePool();
             imagePoolB->Init(*device, imagePoolDesc);
 
@@ -145,14 +145,14 @@ namespace UnitTest
         RHI::Ptr<RHI::ImageView> imageViewA;
         
         {
-            RHI::Ptr<RHI::ImagePool> imagePool;
+            RHI::Ptr<RHI::SingleDeviceImagePool> imagePool;
             imagePool = RHI::Factory::Get().CreateImagePool();
 
             RHI::ImagePoolDescriptor imagePoolDesc;
             imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::Color;
             imagePool->Init(*device, imagePoolDesc);
 
-            RHI::Ptr<RHI::Image> image;
+            RHI::Ptr<RHI::SingleDeviceImage> image;
             image = RHI::Factory::Get().CreateImage();
 
             RHI::ImageInitRequest initRequest;
@@ -244,8 +244,8 @@ namespace UnitTest
         }
 
         RHI::Ptr<RHI::Device> m_device;
-        RHI::Ptr<RHI::ImagePool> m_imagePool;
-        RHI::Ptr<RHI::Image> m_image;
+        RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;
+        RHI::Ptr<RHI::SingleDeviceImage> m_image;
         RHI::Ptr<RHI::ImageView> m_imageView;
     };
 

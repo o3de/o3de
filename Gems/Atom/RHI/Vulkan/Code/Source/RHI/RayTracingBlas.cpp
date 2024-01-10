@@ -11,8 +11,8 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
@@ -24,7 +24,7 @@ namespace AZ
             return aznew RayTracingBlas;
         }
 
-        RHI::ResultCode RayTracingBlas::CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RHI::RayTracingBufferPools& bufferPools)
+        RHI::ResultCode RayTracingBlas::CreateBuffersInternal(RHI::Device& deviceBase, const RHI::SingleDeviceRayTracingBlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& bufferPools)
         {
             auto& device = static_cast<Device&>(deviceBase);
             auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());

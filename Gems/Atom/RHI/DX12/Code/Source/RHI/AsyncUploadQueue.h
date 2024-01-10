@@ -9,8 +9,8 @@
 
 #include <RHI/CommandQueue.h>
 
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
 #include <AzCore/std/containers/span.h>
 
 namespace AZ

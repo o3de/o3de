@@ -43,12 +43,12 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::SingleDeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resource) override;
+            void ShutdownResourceInternal(RHI::SingleDeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////////
 
-            void DeactivateResourceInternal(RHI::Resource& resource, Scope& scope);
+            void DeactivateResourceInternal(RHI::SingleDeviceResource& resource, Scope& scope);
 
             Device& GetMetalRHIDevice() const;        
 

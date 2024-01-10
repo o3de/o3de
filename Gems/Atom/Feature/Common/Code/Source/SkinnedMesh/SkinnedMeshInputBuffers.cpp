@@ -59,7 +59,7 @@ namespace AZ
         }
 
         RHI::BufferViewDescriptor SkinnedMeshInputLod::CreateInputViewDescriptor(
-            SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::StreamBufferView& streamBufferView)
+            SkinnedMeshInputVertexStreams inputStream, RHI::Format elementFormat, const RHI::SingleDeviceStreamBufferView& streamBufferView)
         {
             RHI::BufferViewDescriptor descriptor;
             uint32_t elementOffset = streamBufferView.GetByteOffset() / streamBufferView.GetByteStride();
@@ -108,7 +108,7 @@ namespace AZ
                 const SkinnedMeshVertexStreamInfo* streamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetInputStreamInfo(
                     inputLayout.GetStreamChannels()[meshStreamIndex].m_semantic);
 
-                const RHI::StreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
+                const RHI::SingleDeviceStreamBufferView& streamBufferView = streamBufferViews[meshStreamIndex];
                 if (streamInfo && streamBufferView.GetByteCount() > 0)
                 {
                     RHI::BufferViewDescriptor descriptor =

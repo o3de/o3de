@@ -82,7 +82,7 @@ namespace AZ
                         return RHI::ResultCode::InvalidOperation;
                     }
 
-                    meshInstance.m_indexBufferView = RHI::IndexBufferView(
+                    meshInstance.m_indexBufferView = RHI::SingleDeviceIndexBufferView(
                         *indexBuffer->GetRHIBuffer(),
                         bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize,
                         bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize,
@@ -302,7 +302,7 @@ namespace AZ
 
                         RHI::Format dummyStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
-                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
+                        RHI::SingleDeviceStreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, RHI::GetFormatSize(dummyStreamFormat)};
                         streamBufferViewsOut.push_back(dummyBuffer);
                     }
                     else
@@ -328,7 +328,7 @@ namespace AZ
                         // Note, don't use iter->m_semantic as it can be a UV name matching.
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, iter->m_format);
 
-                        RHI::StreamBufferView bufferView(*m_buffers[iter->m_bufferIndex]->GetRHIBuffer(), iter->m_byteOffset, iter->m_byteCount, iter->m_stride);
+                        RHI::SingleDeviceStreamBufferView bufferView(*m_buffers[iter->m_bufferIndex]->GetRHIBuffer(), iter->m_byteOffset, iter->m_byteCount, iter->m_stride);
                         streamBufferViewsOut.push_back(bufferView);
                     }
                 }

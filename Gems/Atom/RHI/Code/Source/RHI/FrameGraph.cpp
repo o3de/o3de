@@ -6,16 +6,16 @@
  *
  */
 #include <Atom/RHI/BufferFrameAttachment.h>
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
-#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/SingleDeviceImagePoolBase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
-#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/SingleDeviceQueryPool.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/Scope.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
 
 namespace AZ::RHI
@@ -391,7 +391,7 @@ namespace AZ::RHI
         return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy);
     }
 
-    ResultCode FrameGraph::UseQueryPool(Ptr<QueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access)
+    ResultCode FrameGraph::UseQueryPool(Ptr<SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access)
     {
         // We only insert an edge into the graph if the type of attachment is Local (i.e. is going to be accessed by other scopes in the current frame)
         if (type == QueryPoolScopeAttachmentType::Local)
@@ -424,7 +424,7 @@ namespace AZ::RHI
         }
     }
 
-    void FrameGraph::SignalFence(Fence& fence)
+    void FrameGraph::SignalFence(SingleDeviceFence& fence)
     {
         m_currentScope->m_fencesToSignal.push_back(&fence);
     }

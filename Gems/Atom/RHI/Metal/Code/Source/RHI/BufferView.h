@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <AzCore/Memory/PoolAllocator.h>
@@ -47,7 +47,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::BufferView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::Resource& resourceBase) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

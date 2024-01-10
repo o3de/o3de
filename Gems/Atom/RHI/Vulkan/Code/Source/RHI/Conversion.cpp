@@ -9,7 +9,7 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ScopeAttachment.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/ImageView.h>
 #include <RHI/Conversion.h>
 #include <RHI/Image.h>

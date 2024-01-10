@@ -20,16 +20,16 @@ namespace UnitTest
     {
     }
 
-    RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup&)
+    RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::SingleDeviceShaderResourceGroup&)
     {
         return RHI::ResultCode::Success;
     }
 
-    void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource&)
+    void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::SingleDeviceResource&)
     {
     }
 
-    RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::ShaderResourceGroup&, const RHI::ShaderResourceGroupData&)
+    RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup&, const RHI::SingleDeviceShaderResourceGroupData&)
     {
         return RHI::ResultCode::Success;
     }

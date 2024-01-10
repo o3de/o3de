@@ -12,7 +12,7 @@
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/DrawListContext.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/std/sort.h>
@@ -25,14 +25,14 @@ namespace UnitTest
 
     struct DrawItemData
     {
-        DrawItemData(SimpleLcgRandom& random, const RHI::Buffer* bufferEmpty, const RHI::PipelineState* psoEmpty)
+        DrawItemData(SimpleLcgRandom& random, const RHI::SingleDeviceBuffer* bufferEmpty, const RHI::SingleDevicePipelineState* psoEmpty)
         {
             m_pipelineState = psoEmpty;
 
             // Fill with deterministic random data to compare against.
             for (auto& streamBufferView : m_streamBufferViews)
             {
-                streamBufferView = RHI::StreamBufferView{ *bufferEmpty, random.GetRandom(), random.GetRandom(), random.GetRandom() };
+                streamBufferView = RHI::SingleDeviceStreamBufferView{ *bufferEmpty, random.GetRandom(), random.GetRandom(), random.GetRandom() };
             }
 
             m_tag = RHI::DrawListTag(random.GetRandom() % RHI::Limits::Pipeline::DrawListTagCountMax);
@@ -40,9 +40,9 @@ namespace UnitTest
             m_sortKey = random.GetRandom();
         }
 
-        AZStd::array<RHI::StreamBufferView, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferViews;
+        AZStd::array<RHI::SingleDeviceStreamBufferView, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferViews;
 
-        const RHI::PipelineState* m_pipelineState;
+        const RHI::SingleDevicePipelineState* m_pipelineState;
         RHI::DrawListTag m_tag;
         RHI::DrawItemSortKey m_sortKey;
         uint8_t m_stencilRef;
@@ -73,7 +73,7 @@ namespace UnitTest
                 m_drawItemDatas.emplace_back(random, m_bufferEmpty.get(), m_psoEmpty.get());
             }
 
-            m_indexBufferView = RHI::IndexBufferView(*m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16);
+            m_indexBufferView = RHI::SingleDeviceIndexBufferView(*m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16);
         }
 
         void ValidateDrawItem(const DrawItemData& drawItemData, RHI::DrawItemProperties itemProperties) const
@@ -147,12 +147,12 @@ namespace UnitTest
             return drawPacket;
         }
 
-        RHI::Ptr<RHI::Buffer> m_bufferEmpty;
-        RHI::ConstPtr<RHI::PipelineState> m_psoEmpty;
+        RHI::Ptr<RHI::SingleDeviceBuffer> m_bufferEmpty;
+        RHI::ConstPtr<RHI::SingleDevicePipelineState> m_psoEmpty;
 
-        AZStd::array<RHI::Ptr<RHI::ShaderResourceGroup>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgs;
+        AZStd::array<RHI::Ptr<RHI::SingleDeviceShaderResourceGroup>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgs;
         AZStd::array<uint8_t, sizeof(unsigned int) * 4> m_rootConstants;
-        RHI::IndexBufferView m_indexBufferView;
+        RHI::SingleDeviceIndexBufferView m_indexBufferView;
 
         AZStd::vector<DrawItemData> m_drawItemDatas;
     };
@@ -477,8 +477,8 @@ namespace UnitTest
 
                 for (uint8_t j = 0; j < streamBufferViewCount; ++j)
                 {
-                    const RHI::StreamBufferView* streamBufferView = drawPacket->m_streamBufferViews + j;
-                    const RHI::StreamBufferView* streamBufferViewClone = drawPacketClone->m_streamBufferViews + j;
+                    const RHI::SingleDeviceStreamBufferView* streamBufferView = drawPacket->m_streamBufferViews + j;
+                    const RHI::SingleDeviceStreamBufferView* streamBufferViewClone = drawPacketClone->m_streamBufferViews + j;
                     EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
                     EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
                     EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());
@@ -515,8 +515,8 @@ namespace UnitTest
 
             for (uint8_t i = 0; i < streamBufferViewCount; ++i)
             {
-                const RHI::StreamBufferView* streamBufferView = drawPacket->m_streamBufferViews + i;
-                const RHI::StreamBufferView* streamBufferViewClone = drawPacketClone->m_streamBufferViews + i;
+                const RHI::SingleDeviceStreamBufferView* streamBufferView = drawPacket->m_streamBufferViews + i;
+                const RHI::SingleDeviceStreamBufferView* streamBufferViewClone = drawPacketClone->m_streamBufferViews + i;
                 EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
                 EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
                 EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());

@@ -15,11 +15,11 @@
 #include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 
 namespace AZ::RHI
 {
-    class Query;
+    class SingleDeviceQuery;
     class ScopeProducer;
 
     //! Supported operations for rendering predication.
@@ -54,12 +54,12 @@ namespace AZ::RHI
         //! Assigns a shader resource group for draw on the graphics pipe, at the binding slot
         //! determined by the layout used to create the shader resource group.
         //! @param shaderResourceGroup The shader resource group to bind.
-        virtual void SetShaderResourceGroupForDraw(const ShaderResourceGroup& shaderResourceGroup) = 0;
+        virtual void SetShaderResourceGroupForDraw(const SingleDeviceShaderResourceGroup& shaderResourceGroup) = 0;
 
         //! Assigns a shader resource group for dispatch on compute pipe, at the binding slot
         //! determined by the layout used to create the shader resource group.
         //! @param shaderResourceGroup The shader resource group to bind.
-        virtual void SetShaderResourceGroupForDispatch(const ShaderResourceGroup& shaderResourceGroup) = 0;
+        virtual void SetShaderResourceGroupForDispatch(const SingleDeviceShaderResourceGroup& shaderResourceGroup) = 0;
 
         /// Submits a single copy item for processing on the command list.
         virtual void Submit(const CopyItem& copyItem, uint32_t submitIndex = 0) = 0;
@@ -74,21 +74,21 @@ namespace AZ::RHI
         virtual void Submit(const DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) = 0;
 
         /// Starts predication on the command list.
-        virtual void BeginPredication(const Buffer& buffer, uint64_t offset, PredicationOp operation) = 0;
+        virtual void BeginPredication(const SingleDeviceBuffer& buffer, uint64_t offset, PredicationOp operation) = 0;
 
         /// End predication on the command list.
         virtual void EndPredication() = 0;
 
         /// Builds a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of RayTracingGeometry entries
-        virtual void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) = 0;
+        virtual void BuildBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) = 0;
 
         /// Updates a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of RayTracingGeometry entries
-        virtual void UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) = 0;
+        virtual void UpdateBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) = 0;
 
         /// Builds a Top Level Acceleration Structure (TLAS) for ray tracing operations, which is made up of RayTracingInstance entries that
         /// refer to a BLAS entry
         virtual void BuildTopLevelAccelerationStructure(
-            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList) = 0;
+            const RHI::SingleDeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::SingleDeviceRayTracingBlas*>& changedBlasList) = 0;
 
         /// Defines the submit range for a CommandList
         /// Note: the default is 0 items, which disables validation for items submitted outside of the framegraph

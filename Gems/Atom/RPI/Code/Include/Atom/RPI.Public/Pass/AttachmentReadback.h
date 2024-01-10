@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>
@@ -173,7 +173,7 @@ namespace AZ
 
             ReadbackState m_state = ReadbackState::Uninitialized;
 
-            Ptr<RHI::Fence> m_fence;
+            Ptr<RHI::SingleDeviceFence> m_fence;
 
             // Callback function when read back finished
             CallbackFunction m_callback = nullptr;

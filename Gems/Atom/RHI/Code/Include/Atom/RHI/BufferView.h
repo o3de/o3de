@@ -12,7 +12,7 @@
 
 namespace AZ::RHI
 {
-    class Buffer;
+    class SingleDeviceBuffer;
 
     //! BufferView is contains a platform-specific descriptor mapping to a linear sub-region of a specific buffer resource.
     //! It associates 1-to-1 with a BufferViewDescriptor.
@@ -26,13 +26,13 @@ namespace AZ::RHI
         static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
 
         //! Initializes the buffer view with the provided buffer and view descriptor.
-        ResultCode Init(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor);
+        ResultCode Init(const SingleDeviceBuffer& buffer, const BufferViewDescriptor& viewDescriptor);
 
         //! Returns the view descriptor used at initialization time.
         const BufferViewDescriptor& GetDescriptor() const;
 
         //! Returns the buffer associated with this view.
-        const Buffer& GetBuffer() const;
+        const SingleDeviceBuffer& GetBuffer() const;
 
         //! Returns whether the view maps to the full buffer.
         bool IsFullView() const override final;
@@ -58,7 +58,7 @@ namespace AZ::RHI
         HashValue64 m_hash = HashValue64{ 0 };
 
     private:
-        bool ValidateForInit(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor) const;
+        bool ValidateForInit(const SingleDeviceBuffer& buffer, const BufferViewDescriptor& viewDescriptor) const;
 
         /// The RHI descriptor for this view.
         BufferViewDescriptor m_descriptor;

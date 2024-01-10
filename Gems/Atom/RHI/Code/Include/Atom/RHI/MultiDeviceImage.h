@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/MultiDeviceResource.h>
 

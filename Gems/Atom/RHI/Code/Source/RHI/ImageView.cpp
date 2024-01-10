@@ -7,11 +7,11 @@
  */
 
 #include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 
 namespace AZ::RHI
 {
-    ResultCode ImageView::Init(const Image& image, const ImageViewDescriptor& viewDescriptor)
+    ResultCode ImageView::Init(const SingleDeviceImage& image, const ImageViewDescriptor& viewDescriptor)
     {
         if (!ValidateForInit(image, viewDescriptor))
         {
@@ -24,7 +24,7 @@ namespace AZ::RHI
         return ResourceView::Init(image);
     }
 
-    bool ImageView::ValidateForInit(const Image& image, const ImageViewDescriptor& viewDescriptor) const
+    bool ImageView::ValidateForInit(const SingleDeviceImage& image, const ImageViewDescriptor& viewDescriptor) const
     {
         if (Validation::IsEnabled())
         {
@@ -56,9 +56,9 @@ namespace AZ::RHI
         return m_descriptor;
     }
 
-    const Image& ImageView::GetImage() const
+    const SingleDeviceImage& ImageView::GetImage() const
     {
-        return static_cast<const Image&>(GetResource());
+        return static_cast<const SingleDeviceImage&>(GetResource());
     }
 
     bool ImageView::IsFullView() const

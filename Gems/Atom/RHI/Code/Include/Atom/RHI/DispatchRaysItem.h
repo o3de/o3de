@@ -15,10 +15,10 @@
 
 namespace AZ::RHI
 {
-    class PipelineState;
-    class RayTracingPipelineState;
-    class RayTracingShaderTable;
-    class ShaderResourceGroup;
+    class SingleDevicePipelineState;
+    class SingleDeviceRayTracingPipelineState;
+    class SingleDeviceRayTracingShaderTable;
+    class SingleDeviceShaderResourceGroup;
     class ImageView;
     class BufferView;
     class DispatchRaysIndirectBuffer;
@@ -47,7 +47,7 @@ namespace AZ::RHI
 
         DispatchRaysIndirect(
             uint32_t maxSequenceCount,
-            const IndirectBufferView& indirectBuffer,
+            const SingleDeviceIndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
             DispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer)
             : DispatchRaysIndirect(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, dispatchRaysIndirectBuffer, nullptr, 0)
@@ -56,10 +56,10 @@ namespace AZ::RHI
 
         DispatchRaysIndirect(
             uint32_t maxSequenceCount,
-            const IndirectBufferView& indirectBuffer,
+            const SingleDeviceIndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
             DispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer,
-            const Buffer* countBuffer,
+            const SingleDeviceBuffer* countBuffer,
             uint64_t countBufferByteOffset)
             : IndirectArguments(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, countBuffer, countBufferByteOffset)
             , m_dispatchRaysIndirectBuffer(dispatchRaysIndirectBuffer)
@@ -116,16 +116,16 @@ namespace AZ::RHI
         DispatchRaysArguments m_arguments;
 
         /// Ray tracing pipeline state
-        const RayTracingPipelineState* m_rayTracingPipelineState = nullptr;
+        const SingleDeviceRayTracingPipelineState* m_rayTracingPipelineState = nullptr;
 
         /// Ray tracing shader table
-        const RayTracingShaderTable* m_rayTracingShaderTable = nullptr;
+        const SingleDeviceRayTracingShaderTable* m_rayTracingShaderTable = nullptr;
 
         /// Shader Resource Groups
         uint32_t m_shaderResourceGroupCount = 0;
-        const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
+        const SingleDeviceShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
 
         /// Global shader pipeline state
-        const PipelineState* m_globalPipelineState = nullptr;
+        const SingleDevicePipelineState* m_globalPipelineState = nullptr;
     };
 } // namespace AZ::RHI

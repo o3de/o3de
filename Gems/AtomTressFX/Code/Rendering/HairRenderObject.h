@@ -380,8 +380,8 @@ namespace AZ
                 Data::Instance<RPI::ShaderResourceGroup> m_hairRenderSrg;   
  
                 //! Index buffer for the render pass via draw calls - naming was kept
-                Data::Instance<RHI::Buffer> m_indexBuffer;
-                RHI::IndexBufferView m_indexBufferView;
+                Data::Instance<RHI::SingleDeviceBuffer> m_indexBuffer;
+                RHI::SingleDeviceIndexBufferView m_indexBufferView;
                 //-------------------------------------------------------------------
 
                 AZStd::mutex m_mutex;

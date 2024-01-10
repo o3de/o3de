@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/ImageProperty.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
@@ -110,9 +110,9 @@ namespace AZ
         };
 
         class Image final
-            : public RHI::Image
+            : public RHI::SingleDeviceImage
         {
-            using Base = RHI::Image;
+            using Base = RHI::SingleDeviceImage;
             friend class ImagePool;
             friend class StreamingImagePool;
             friend class AliasedHeap;
@@ -200,21 +200,21 @@ namespace AZ
             RHI::ResultCode TrimImage(StreamingImagePool& imagePool, uint16_t targetMipLevel, bool updateMemoryBind);
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Image
+            // RHI::SingleDeviceImage
             void SetDescriptor(const RHI::ImageDescriptor& descriptor) override;
             bool IsStreamableInternal() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::SingleDeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Image
+            // RHI::SingleDeviceImage
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayout* subresourceLayouts,
+                RHI::SingleDeviceImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
             //////////////////////////////////////////////////////////////////////////
 

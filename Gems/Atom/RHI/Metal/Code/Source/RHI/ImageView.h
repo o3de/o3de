@@ -45,11 +45,11 @@ namespace AZ
             
         private:
             ImageView() = default;
-            void BuildImageSubResourceRange(const RHI::Resource& resourceBase);
+            void BuildImageSubResourceRange(const RHI::SingleDeviceResource& resourceBase);
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::ImageView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::Resource& resourceBase) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

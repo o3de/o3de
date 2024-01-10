@@ -12,9 +12,9 @@
 
 namespace AZ::RHI
 {
-    class Resource;
+    class SingleDeviceResource;
 
-    //! ResourceView is a base class for views which are dependent on a Resource instance.
+    //! ResourceView is a base class for views which are dependent on a SingleDeviceResource instance.
     //!
     //! NOTE: While initialization is separate from creation, explicit shutdown is not allowed
     //! for resource views. This is because the cost of dependency tracking with ShaderResourceGroups
@@ -26,12 +26,12 @@ namespace AZ::RHI
     public:
         // The resource owns a cache of resource views, and it needs access to the refcount
         // of the resource views to prevent threading issues.
-        friend class Resource;
+        friend class SingleDeviceResource;
 
         virtual ~ResourceView() = default;
 
         //! Returns the resource associated with this view.
-        const Resource& GetResource() const;
+        const SingleDeviceResource& GetResource() const;
 
         //! Returns whether this view is stale (i.e. the original image contents have
         //! been shutdown.
@@ -45,7 +45,7 @@ namespace AZ::RHI
     protected:
 
         /// The derived class should call this method at Init time.
-        ResultCode Init(const Resource& resource);
+        ResultCode Init(const SingleDeviceResource& resource);
 
     private:
         //////////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ namespace AZ::RHI
         // Platform API
 
         //! Called when the view is being initialized.
-        virtual ResultCode InitInternal(Device& device, const Resource& resource) = 0;
+        virtual ResultCode InitInternal(Device& device, const SingleDeviceResource& resource) = 0;
 
         //! Called when the view is shutting down.
         virtual void ShutdownInternal() = 0;
@@ -73,9 +73,9 @@ namespace AZ::RHI
 
         //////////////////////////////////////////////////////////////////////////
 
-        //This is a smart pointer to make sure a Resource is not destroyed before all
+        //This is a smart pointer to make sure a SingleDeviceResource is not destroyed before all
         //the views (for example Srg resource views) are destroyed first.
-        ConstPtr<Resource> m_resource = nullptr;
+        ConstPtr<SingleDeviceResource> m_resource = nullptr;
 
         /// The version number from the resource at view creation time. If the keys differ, the view is stale.
         uint32_t m_version = 0;

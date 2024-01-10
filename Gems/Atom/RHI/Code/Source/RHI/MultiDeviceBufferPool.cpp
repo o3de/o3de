@@ -154,7 +154,7 @@ namespace AZ::RHI
             initRequest.m_descriptor,
             [this, &initRequest]()
             {
-                return IterateObjects<BufferPool>([&initRequest](auto deviceIndex, auto deviceBufferPool)
+                return IterateObjects<SingleDeviceBufferPool>([&initRequest](auto deviceIndex, auto deviceBufferPool)
                 {
                     if (!initRequest.m_buffer->m_deviceObjects.contains(deviceIndex))
                     {
@@ -215,7 +215,7 @@ namespace AZ::RHI
 
         BufferMapResponse deviceMapResponse{};
 
-        ResultCode resultCode = IterateObjects<BufferPool>([&](auto deviceIndex, auto deviceBufferPool)
+        ResultCode resultCode = IterateObjects<SingleDeviceBufferPool>([&](auto deviceIndex, auto deviceBufferPool)
         {
             deviceMapRequest.m_buffer = request.m_buffer->GetDeviceBuffer(deviceIndex).get();
             auto resultCode = deviceBufferPool->MapBuffer(deviceMapRequest, deviceMapResponse);
@@ -244,7 +244,7 @@ namespace AZ::RHI
     {
         if (ValidateIsInitialized() && ValidateNotDeviceLevel() && ValidateIsRegistered(&buffer))
         {
-            IterateObjects<BufferPool>([&buffer](auto deviceIndex, auto deviceBufferPool)
+            IterateObjects<SingleDeviceBufferPool>([&buffer](auto deviceIndex, auto deviceBufferPool)
             {
                 deviceBufferPool->UnmapBuffer(*buffer.GetDeviceBuffer(deviceIndex));
             });
@@ -263,7 +263,7 @@ namespace AZ::RHI
             return ResultCode::InvalidArgument;
         }
 
-        return IterateObjects<BufferPool>([&request](auto deviceIndex, auto deviceBufferPool)
+        return IterateObjects<SingleDeviceBufferPool>([&request](auto deviceIndex, auto deviceBufferPool)
         {
             auto* buffer = request.m_buffer->GetDeviceBuffer(deviceIndex).get();
 
@@ -302,7 +302,7 @@ namespace AZ::RHI
 
     void MultiDeviceBufferPool::Shutdown()
     {
-        IterateObjects<BufferPool>([]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
+        IterateObjects<SingleDeviceBufferPool>([]([[maybe_unused]] auto deviceIndex, auto deviceBufferPool)
         {
             deviceBufferPool->Shutdown();
         });

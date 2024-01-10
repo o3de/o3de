@@ -11,7 +11,7 @@
 #include <AtomCore/Instance/InstanceData.h>
 #include <AtomCore/Instance/Instance.h>
 
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>

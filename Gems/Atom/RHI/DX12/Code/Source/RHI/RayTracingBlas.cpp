@@ -10,8 +10,8 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 
 
 namespace AZ
@@ -23,7 +23,7 @@ namespace AZ
             return aznew RayTracingBlas;
         }
 
-        RHI::ResultCode RayTracingBlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::RayTracingBufferPools& bufferPools)
+        RHI::ResultCode RayTracingBlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SingleDeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& bufferPools)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);

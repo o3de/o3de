@@ -16,7 +16,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 
 #include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 
 #include <AzCore/std/containers/span.h>
 #include <AtomCore/Instance/InstanceId.h>
@@ -88,7 +88,7 @@ namespace AZ
             const RHI::ShaderResourceGroupLayout* GetLayout() const;
 
             /// Returns the underlying RHI shader resource group.
-            RHI::ShaderResourceGroup* GetRHIShaderResourceGroup();
+            RHI::SingleDeviceShaderResourceGroup* GetRHIShaderResourceGroup();
 
             //////////////////////////////////////////////////////////////////////////
             // Methods for assignment / access of RPI Image types.
@@ -342,14 +342,14 @@ namespace AZ
             /// If true, Init() was called and was successful.
             bool m_isInitialized = false;
 
-            /// Pool for allocating RHI::ShaderResourceGroup objects
+            /// Pool for allocating RHI::SingleDeviceShaderResourceGroup objects
             Data::Instance<ShaderResourceGroupPool> m_pool;
 
             /// The shader resource group data that is manipulated by this class
-            RHI::ShaderResourceGroupData m_data;
+            RHI::SingleDeviceShaderResourceGroupData m_data;
 
             /// The shader resource group that can be submitted to the renderer
-            RHI::Ptr<RHI::ShaderResourceGroup> m_shaderResourceGroup;
+            RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> m_shaderResourceGroup;
 
             /// A reference to the SRG asset used to initialize and manipulate this group.
             AZ::Data::Asset<ShaderAsset> m_asset;
