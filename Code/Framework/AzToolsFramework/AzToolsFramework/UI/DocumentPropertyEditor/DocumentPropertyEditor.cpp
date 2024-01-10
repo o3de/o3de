@@ -525,7 +525,6 @@ namespace AzToolsFramework
         ClearCachedAttributes();
         m_domOrderedChildren.clear();
         m_columnLayout->Clear();
-        m_childIndexToCachedAttributeInfo.clear();
 
         m_parentRow = nullptr;
         m_depth = -1;

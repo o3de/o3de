@@ -69,7 +69,7 @@ namespace AzToolsFramework::Prefab
     bool PrefabOverrideLabelHandler::ResetToDefaults()
     {
         m_overridden = false;
-        m_textLabel->clear();
+        m_textLabel->setText(QString());
         m_textLabel->setProperty(OverriddenPropertyName, false);
         m_iconButton->setIcon(*m_emptyIcon);
         m_iconButton->setIconSize(kIconSize);
