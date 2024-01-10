@@ -22,7 +22,7 @@ namespace AZ
         using ShaderOption = AZStd::pair<Name, Name>;
         using ShaderOptionList = AZStd::vector<ShaderOption>;
 
-        //! The PipelineStateForDraw caches descriptor for RHI::MultiDevicePipelineState's creation so the RHI::MultiDevicePipelineState can be created
+        //! The PipelineStateForDraw caches descriptor for RHI::SingleDevicePipelineState's creation so the RHI::SingleDevicePipelineState can be created
         //! or updated later when Scene's render pipelines changed or any other data in the descriptor has changed.
         class PipelineStateForDraw
             : public AZStd::intrusive_base
@@ -48,13 +48,13 @@ namespace AZ
             //! Set input stream
             void SetInputStreamLayout(const RHI::InputStreamLayout& inputStreamLayout);
 
-            //! Re-create the RHI::MultiDevicePipelineState for the input Scene.
-            //! The created RHI::MultiDevicePipelineState will be cached and can be acquired by using GetPipelineState()
-            const RHI::MultiDevicePipelineState* Finalize();
+            //! Re-create the RHI::SingleDevicePipelineState for the input Scene.
+            //! The created RHI::SingleDevicePipelineState will be cached and can be acquired by using GetPipelineState()
+            const RHI::SingleDevicePipelineState* Finalize();
 
-            //! Get cached RHI::MultiDevicePipelineState.
+            //! Get cached RHI::SingleDevicePipelineState.
             //! It triggers an assert if the pipeline state is dirty.
-            const RHI::MultiDevicePipelineState* GetRHIPipelineState() const;
+            const RHI::SingleDevicePipelineState* GetRHIPipelineState() const;
 
             //! Return the reference of the RenderStates overlay which will be applied to original m_renderState which are loaded from shader variant
             //! Use this function to modify pipeline states RenderStates. 
@@ -92,11 +92,11 @@ namespace AZ
 
             RHI::PipelineStateDescriptorForDraw m_descriptor;
 
-            // The render state overlay which would be applied to render states acquired from shader variant before create the RHI::MultiDevicePipelineState
+            // The render state overlay which would be applied to render states acquired from shader variant before create the RHI::SingleDevicePipelineState
             RHI::RenderStates m_renderStatesOverlay;
 
             Data::Instance<Shader> m_shader;
-            const RHI::MultiDevicePipelineState* m_pipelineState = nullptr;
+            const RHI::SingleDevicePipelineState* m_pipelineState = nullptr;
 
             ShaderVariantId m_shaderVariantId;
             

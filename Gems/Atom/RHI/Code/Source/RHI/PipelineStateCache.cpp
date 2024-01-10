@@ -15,15 +15,14 @@
 
 namespace AZ::RHI
 {
-    Ptr<PipelineStateCache> PipelineStateCache::Create(MultiDevice::DeviceMask deviceMask)
+    Ptr<PipelineStateCache> PipelineStateCache::Create(Device& device)
     {
-        return aznew PipelineStateCache(deviceMask);
+        return aznew PipelineStateCache(device);
     }
 
-    PipelineStateCache::PipelineStateCache(MultiDevice::DeviceMask deviceMask)
-        : m_deviceMask{ deviceMask }
-    {
-    }
+    PipelineStateCache::PipelineStateCache(Device& device)
+        : m_device{&device}
+    {}
 
     void PipelineStateCache::ValidateCacheIntegrity() const
     {
@@ -58,7 +57,7 @@ namespace AZ::RHI
 
                 if (!m_globalLibraryActiveBits[i])
                 {
-                    AZ_Assert(!threadLibraryEntry.m_library, "Inactive library has a valid RHI::MultiDevicePipelineLibrary instance.");
+                    AZ_Assert(!threadLibraryEntry.m_library, "Inactive library has a valid RHI::SingleDevicePipelineLibrary instance.");
                 }
 
                 AZ_Assert(threadLibraryEntry.m_threadLocalCache.empty(), "Thread library should not have any items in its local cache.");
@@ -75,17 +74,16 @@ namespace AZ::RHI
         {
             if (m_globalLibraryActiveBits[i])
             {
-                ResetLibraryImpl(MultiDevicePipelineLibraryHandle(i));
+                ResetLibraryImpl(SingleDevicePipelineLibraryHandle(i));
             }
         }
     }
 
-    MultiDevicePipelineLibraryHandle PipelineStateCache::CreateLibrary(
-        const AZStd::unordered_map<int, ConstPtr<RHI::PipelineLibraryData>>& serializedData, const AZStd::unordered_map<int, AZStd::string>& filePaths)
+    SingleDevicePipelineLibraryHandle PipelineStateCache::CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath)
     {
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
-        MultiDevicePipelineLibraryHandle handle;
+        SingleDevicePipelineLibraryHandle handle;
         if (!m_libraryFreeList.empty())
         {
             handle = m_libraryFreeList.back();
@@ -96,14 +94,13 @@ namespace AZ::RHI
             if (m_globalLibrarySet.size() == LibraryCountMax)
             {
                 AZ_Error(
-                    "PipelineStateCache",
-                    false,
+                    "PipelineStateCache", false,
                     "Exceeded maximum number of allowed pipeline libraries in "
                     "cache. You must update LibraryCountMax to add more.");
                 return {};
             }
 
-            handle = MultiDevicePipelineLibraryHandle(m_globalLibrarySet.size());
+            handle = SingleDevicePipelineLibraryHandle(m_globalLibrarySet.size());
             m_globalLibrarySet.emplace_back();
         }
 
@@ -111,13 +108,14 @@ namespace AZ::RHI
         m_globalLibraryActiveBits[handle.GetIndex()] = true;
 
         GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
-        libraryEntry.m_pipelineLibraryDescriptor.Init(m_deviceMask, serializedData, filePaths);
+        libraryEntry.m_pipelineLibraryDescriptor.m_serializedData = serializedData;
+        libraryEntry.m_pipelineLibraryDescriptor.m_filePath = filePath;
         AZ_Assert(libraryEntry.m_readOnlyCache.empty() && libraryEntry.m_pendingCache.empty(), "Library entry has entries in its caches!");
 
         return handle;
     }
 
-    void PipelineStateCache::ReleaseLibrary(MultiDevicePipelineLibraryHandle handle)
+    void PipelineStateCache::ReleaseLibrary(SingleDevicePipelineLibraryHandle handle)
     {
         if (handle.IsValid())
         {
@@ -128,14 +126,15 @@ namespace AZ::RHI
 
             GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
             libraryEntry.m_readOnlyCache.clear();
-            libraryEntry.m_pipelineLibraryDescriptor.Init(m_deviceMask, {}, {});
-
+            libraryEntry.m_pipelineLibraryDescriptor.m_serializedData = nullptr;
+            libraryEntry.m_pipelineLibraryDescriptor.m_filePath = "";
+                
             m_globalLibraryActiveBits[handle.GetIndex()] = false;
             m_libraryFreeList.push_back(handle);
         }
     }
 
-    void PipelineStateCache::ResetLibrary(MultiDevicePipelineLibraryHandle handle)
+    void PipelineStateCache::ResetLibrary(SingleDevicePipelineLibraryHandle handle)
     {
         if (handle.IsValid())
         {
@@ -144,15 +143,14 @@ namespace AZ::RHI
         }
     }
 
-    void PipelineStateCache::ResetLibraryImpl(MultiDevicePipelineLibraryHandle handle)
+    void PipelineStateCache::ResetLibraryImpl(SingleDevicePipelineLibraryHandle handle)
     {
-        m_threadLibrarySet.ForEach(
-            [handle](ThreadLibrarySet& librarySet)
-            {
-                ThreadLibraryEntry& libraryEntry = librarySet[handle.GetIndex()];
-                libraryEntry.m_library = nullptr;
-                libraryEntry.m_threadLocalCache.clear();
-            });
+        m_threadLibrarySet.ForEach([handle](ThreadLibrarySet& librarySet)
+        {
+            ThreadLibraryEntry& libraryEntry = librarySet[handle.GetIndex()];
+            libraryEntry.m_library = nullptr;
+            libraryEntry.m_threadLocalCache.clear();
+        });
 
         GlobalLibraryEntry& libraryEntry = m_globalLibrarySet[handle.GetIndex()];
 
@@ -163,7 +161,7 @@ namespace AZ::RHI
         libraryEntry.m_pendingCacheMutex.unlock();
     }
 
-    Ptr<MultiDevicePipelineLibrary> PipelineStateCache::GetMergedLibrary(MultiDevicePipelineLibraryHandle handle) const
+    Ptr<SingleDevicePipelineLibrary> PipelineStateCache::GetMergedLibrary(SingleDevicePipelineLibraryHandle handle) const
     {
         if (handle.IsNull())
         {
@@ -173,40 +171,33 @@ namespace AZ::RHI
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
         const GlobalLibraryEntry& entry = m_globalLibrarySet[handle.GetIndex()];
 
-        //! Each thread has its own MultiDevicePipelineLibrary instance. To produce the final serialized data, we
+        //! Each thread has its own SingleDevicePipelineLibrary instance. To produce the final serialized data, we
         //! coalesce data from each individual library by merging the thread-local ones into a single
         //! global (temporary) library. The data is then extracted from this global library and returned.
         //! This operation is designed to happen once at application shutdown; certainly not every frame.
-        AZStd::vector<const MultiDevicePipelineLibrary*> threadLibraries;
-        m_threadLibrarySet.ForEach(
-            [handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
+        AZStd::vector<const SingleDevicePipelineLibrary*> threadLibraries;
+        m_threadLibrarySet.ForEach([handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
+        {
+            const ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[handle.GetIndex()];
+
+            // Skip libraries that failed to initialize.
+            if (threadLibraryEntry.m_library && threadLibraryEntry.m_library->IsInitialized())
             {
-                const ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[handle.GetIndex()];
+                threadLibraries.push_back(threadLibraryEntry.m_library.get());
+            }
+        });
 
-                // Skip libraries that failed to initialize.
-                if (threadLibraryEntry.m_library && threadLibraryEntry.m_library->IsInitialized())
-                {
-                    threadLibraries.push_back(threadLibraryEntry.m_library.get());
-                }
-            });
-
-        bool doesPSODataExist{ false };
-
-        for (auto& [deviceIndex, devicePipelineLibraryDescriptor] : entry.m_pipelineLibraryDescriptor.m_devicePipelineLibraryDescriptors)
+        bool doesPSODataExist = entry.m_pipelineLibraryDescriptor.m_serializedData.get();
+        for (const RHI::SingleDevicePipelineLibrary* libraryBase : threadLibraries)
         {
-            doesPSODataExist |= devicePipelineLibraryDescriptor.m_serializedData.get() != nullptr;
-        }
-
-        for (const RHI::MultiDevicePipelineLibrary* libraryBase : threadLibraries)
-        {
-            const MultiDevicePipelineLibrary* library = static_cast<const MultiDevicePipelineLibrary*>(libraryBase);
+            const SingleDevicePipelineLibrary* library = static_cast<const SingleDevicePipelineLibrary*>(libraryBase);
             doesPSODataExist |= library->IsMergeRequired();
         }
 
         if (doesPSODataExist)
         {
-            Ptr<MultiDevicePipelineLibrary> pipelineLibrary = aznew MultiDevicePipelineLibrary;
-            ResultCode resultCode = pipelineLibrary->Init(m_deviceMask, entry.m_pipelineLibraryDescriptor);
+            Ptr<SingleDevicePipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
+            ResultCode resultCode = pipelineLibrary->Init(*m_device, entry.m_pipelineLibraryDescriptor);
 
             if (resultCode == ResultCode::Success)
             {
@@ -272,8 +263,7 @@ namespace AZ::RHI
         ValidateCacheIntegrity();
     }
 
-    const MultiDevicePipelineState* PipelineStateCache::FindPipelineState(
-        const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor)
+    const SingleDevicePipelineState* PipelineStateCache::FindPipelineState(const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor)
     {
         auto pipelineStateIt = pipelineStateSet.find(PipelineStateEntry(descriptor.GetHash(), nullptr, descriptor));
         if (pipelineStateIt != pipelineStateSet.end())
@@ -289,8 +279,8 @@ namespace AZ::RHI
         return ret.second;
     }
 
-    const MultiDevicePipelineState* PipelineStateCache::AcquirePipelineState(
-        MultiDevicePipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor, const AZ::Name& name /*= AZ::Name()*/)
+    const SingleDevicePipelineState* PipelineStateCache::AcquirePipelineState(
+        SingleDevicePipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor, const AZ::Name& name /*= AZ::Name()*/)
     {
         if (handle.IsNull())
         {
@@ -303,7 +293,7 @@ namespace AZ::RHI
         PipelineStateHash pipelineStateHash = descriptor.GetHash();
 
         // Search the read-only cache first.
-        if (const MultiDevicePipelineState* pipelineState = FindPipelineState(globalLibraryEntry.m_readOnlyCache, descriptor))
+        if (const SingleDevicePipelineState* pipelineState = FindPipelineState(globalLibraryEntry.m_readOnlyCache, descriptor))
         {
             return pipelineState;
         }
@@ -314,7 +304,7 @@ namespace AZ::RHI
             ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[handle.GetIndex()];
             PipelineStateSet& threadLocalCache = threadLibraryEntry.m_threadLocalCache;
 
-            if (const MultiDevicePipelineState* pipelineState = FindPipelineState(threadLocalCache, descriptor))
+            if (const SingleDevicePipelineState* pipelineState = FindPipelineState(threadLocalCache, descriptor))
             {
                 return pipelineState;
             }
@@ -325,14 +315,11 @@ namespace AZ::RHI
                 // Lazy-init the library on first access.
                 if (!threadLibraryEntry.m_library)
                 {
-                    Ptr<MultiDevicePipelineLibrary> pipelineLibrary = aznew MultiDevicePipelineLibrary;
-                    RHI::ResultCode resultCode = pipelineLibrary->Init(m_deviceMask, globalLibraryEntry.m_pipelineLibraryDescriptor);
+                    Ptr<SingleDevicePipelineLibrary> pipelineLibrary = Factory::Get().CreatePipelineLibrary();
+                    RHI::ResultCode resultCode = pipelineLibrary->Init(*m_device, globalLibraryEntry.m_pipelineLibraryDescriptor);
                     if (resultCode != RHI::ResultCode::Success)
                     {
-                        AZ_Warning(
-                            "PipelineStateCache",
-                            false,
-                            "Failed to initialize pipeline library. MultiDevicePipelineLibrary usage is disabled.");
+                        AZ_Warning("PipelineStateCache", false, "Failed to initialize pipeline library. SingleDevicePipelineLibrary usage is disabled.");
                     }
 
                     // We store a valid pointer even if initialization failed, to avoid attempting
@@ -340,11 +327,9 @@ namespace AZ::RHI
                     threadLibraryEntry.m_library = AZStd::move(pipelineLibrary);
                 }
 
-                ConstPtr<MultiDevicePipelineState> pipelineState =
-                    CompilePipelineState(globalLibraryEntry, threadLibraryEntry, descriptor, pipelineStateHash, name);
+                ConstPtr<SingleDevicePipelineState> pipelineState = CompilePipelineState(globalLibraryEntry, threadLibraryEntry, descriptor, pipelineStateHash, name);
 
-                [[maybe_unused]] bool success =
-                    InsertPipelineState(threadLocalCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
+                [[maybe_unused]] bool success = InsertPipelineState(threadLocalCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
                 AZ_Assert(success, "PipelineStateEntry already exists in the thread cache.");
 
                 return pipelineState.get();
@@ -352,14 +337,14 @@ namespace AZ::RHI
         }
     }
 
-    ConstPtr<MultiDevicePipelineState> PipelineStateCache::CompilePipelineState(
+    ConstPtr<SingleDevicePipelineState> PipelineStateCache::CompilePipelineState(
         GlobalLibraryEntry& globalLibraryEntry,
         ThreadLibraryEntry& threadLibraryEntry,
         const PipelineStateDescriptor& descriptor,
         PipelineStateHash pipelineStateHash,
         const AZ::Name& name)
     {
-        Ptr<MultiDevicePipelineState> pipelineState;
+        Ptr<SingleDevicePipelineState> pipelineState;
 
         PipelineStateSet& pendingCache = globalLibraryEntry.m_pendingCache;
 
@@ -367,17 +352,16 @@ namespace AZ::RHI
             AZStd::lock_guard<AZStd::mutex> lock(globalLibraryEntry.m_pendingCacheMutex);
 
             // Another thread may have started compiling this pipeline state. Check the pending cache.
-            if (const MultiDevicePipelineState* pipeline = FindPipelineState(pendingCache, descriptor))
+            if (const SingleDevicePipelineState* pipeline = FindPipelineState(pendingCache, descriptor))
             {
                 return pipeline;
             }
 
             // We need to create and insert the pipeline state into the locked cache. Create the pipeline state
             // but don't initialize it yet. We can safely allocate the 'empty' instance and cache it.
-            pipelineState = aznew MultiDevicePipelineState;
+            pipelineState = Factory::Get().CreatePipelineState();
 
-            [[maybe_unused]] bool success =
-                InsertPipelineState(pendingCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
+            [[maybe_unused]] bool success = InsertPipelineState(pendingCache, PipelineStateEntry(pipelineStateHash, pipelineState, descriptor));
             AZ_Assert(success, "PipelineStateEntry already exists in the pending cache.");
         }
 
@@ -391,7 +375,7 @@ namespace AZ::RHI
         }
 
         // If the pipeline library failed to initialize, then we don't use it.
-        MultiDevicePipelineLibrary* pipelineLibrary = threadLibraryEntry.m_library.get();
+        SingleDevicePipelineLibrary* pipelineLibrary = threadLibraryEntry.m_library.get();
         if (!pipelineLibrary->IsInitialized())
         {
             pipelineLibrary = nullptr;
@@ -399,7 +383,23 @@ namespace AZ::RHI
 
         // We no longer have the lock, but we own compilation of the pipeline state. Use the
         // thread-local library to perform compilation without blocking other threads.
-        resultCode = pipelineState->Init(m_deviceMask, descriptor, pipelineLibrary);
+        switch (descriptor.GetType())
+        {
+        case PipelineStateType::Draw:
+            resultCode = pipelineState->Init(*m_device, static_cast<const PipelineStateDescriptorForDraw&>(descriptor), pipelineLibrary);
+            break;
+
+        case PipelineStateType::Dispatch:
+            resultCode = pipelineState->Init(*m_device, static_cast<const PipelineStateDescriptorForDispatch&>(descriptor), pipelineLibrary);
+            break;
+
+        case PipelineStateType::RayTracing:
+            resultCode = pipelineState->Init(*m_device, static_cast<const PipelineStateDescriptorForRayTracing&>(descriptor), pipelineLibrary);
+            break;
+
+        default:
+            AZ_Assert(false, "Invalid pipeline state descriptor type specified.");
+        }
 
         pipelineState->SetName(name);
 
@@ -411,19 +411,15 @@ namespace AZ::RHI
         // NOTE: We can't return null on a failure, since other threads will return the entry without compiling
         // it. Instead, the pipeline state remains uninitialized.
 
-        AZ_Error(
-            "PipelineStateCache",
-            resultCode == ResultCode::Success,
-            "Failed to compile pipeline state. It will remain in an initialized state.");
+        AZ_Error("PipelineStateCache", resultCode == ResultCode::Success, "Failed to compile pipeline state. It will remain in an initialized state.");
         return AZStd::move(pipelineState);
     }
 
-    PipelineStateCache::PipelineStateEntry::PipelineStateEntry(
-        PipelineStateHash hash, ConstPtr<MultiDevicePipelineState> pipelineState, const PipelineStateDescriptor& descriptor)
+    PipelineStateCache::PipelineStateEntry::PipelineStateEntry(PipelineStateHash hash, ConstPtr<SingleDevicePipelineState> pipelineState, const PipelineStateDescriptor& descriptor)
         : m_hash{ hash }
         , m_pipelineState{ AZStd::move(pipelineState) }
     {
-        switch (descriptor.GetType())
+        switch(descriptor.GetType())
         {
         case PipelineStateType::Dispatch:
             m_pipelineStateDescriptorVariant = static_cast<const AZ::RHI::PipelineStateDescriptorForDispatch&>(descriptor);
