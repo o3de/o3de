@@ -125,6 +125,10 @@ set(FILES
     StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.ui
     StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.cpp
     StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.h
+    StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.cpp
+    StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.h
+    StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerTableModel.cpp
+    StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerTableModel.h
     StaticLib/GraphCanvas/Widgets/ComboBox/ComboBoxItemModels.h
     StaticLib/GraphCanvas/Widgets/ComboBox/ComboBoxItemModelInterface.h
     StaticLib/GraphCanvas/Widgets/ConstructPresetDialog/ConstructPresetDialog.cpp
