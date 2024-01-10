@@ -241,6 +241,11 @@ public: // member functions
     // UiTextInterface
     AZStd::string GetText() override;
     void SetText(const AZStd::string& text) override;
+#if defined(CARBONATED)
+    AZStd::string GetLocText() override;
+    void SetTextLocalized(const AZStd::string& text) override;
+    int GetTextLinesCount() override;
+#endif
     AZStd::string GetTextWithFlags(GetTextFlags flags = GetAsIs) override;
     void SetTextWithFlags(const AZStd::string& text, SetTextFlags flags = SetAsIs) override;
     AZ::Color GetColor() override;
@@ -425,6 +430,14 @@ protected: // member functions
     //! ChangeNotify callback for markup enabled change
     void OnMarkupEnabledChange();
 
+#if defined(CARBONATED)
+    //! ChangeNotify callback for localization enabled change
+    void OnLocalizationEnabledChange();
+
+    //! ChangeNotify callback for font mapping enabled change
+    void OnFontMappingEnabledChange();
+#endif
+
     //! Populate the list for the font effect combo box in the properties pane
     FontEffectComboBoxVec PopulateFontEffectList();
 
@@ -599,6 +612,9 @@ private: // member functions
     //! Calculate m_requestFontSize if needed then return it
     int GetRequestFontSize();
 
+#if defined(CARBONATED)
+    AZStd::string MapLocalizedFontName(const AZStd::string& fontName, float& outMappedFontSize, float& outMappedFontScale) const;
+#endif
 private: // types
 
     struct RenderCacheBatch
@@ -692,6 +708,12 @@ private: // data
     float m_clipOffsetMultiplier;                   //!< Used to adjust clip offset based on horizontal alignment settings
 
     bool m_isMarkupEnabled;                         //!< Enables markup in the text string. If false string will not be XML parsed
+#if defined(CARBONATED)
+    bool m_isLocalizationEnabled;                   //!< Enables localization of the text string. If false string will not be localized
+    bool m_isFontMappingEnabled;                    //!< Enables the font mapping. If false font will not be modified
+    float m_mappedFontSize;
+    float m_mappedFontScale;
+#endif
 
     RenderCacheData m_renderCache;                  //! Cached render data used to optimize rendering when nothing is changing frame to frame
 

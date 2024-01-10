@@ -5736,9 +5736,9 @@ LUA_API const Node* lua_getDummyNode()
                 }
                 else
                 {
-#if (!defined(_RELEASE))
                     switch (error)
                     {
+#if (!defined(_RELEASE))
                     case ScriptContext::ErrorType::Error:
                         AZ_Error("Script", false, "%s", message);
                         break;
@@ -5748,9 +5748,14 @@ LUA_API const Node* lua_getDummyNode()
                     case ScriptContext::ErrorType::Log:
                         AZ_Printf("Script", "%s", message);
                         break;
-                    }
 #endif
-                }
+#if defined(CARBONATED)
+                    case ScriptContext::ErrorType::LogAlways:
+                        AZ_Printf(AZ::Debug::Trace::GetDefaultSystemWindow(), "(Script) - %s", message); //Very hacky, but I want this picked up by the AZCoreLogSink as a logalways event from the system
+                        break;
+#endif
+                    }
+               }
             }
 
             //////////////////////////////////////////////////////////////////////////

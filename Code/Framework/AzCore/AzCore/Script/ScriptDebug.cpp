@@ -83,6 +83,12 @@ namespace AZ
         {
             dc.GetScriptContext()->Error(ScriptContext::ErrorType::Log, false, "%s", ExtractUserMessage(dc).c_str());
         }
+#if defined(CARBONATED)
+        void ScriptLogAlways(ScriptDataContext& dc)
+        {
+            dc.GetScriptContext()->Error(ScriptContext::ErrorType::LogAlways, false, "%s", ExtractUserMessage(dc).c_str());
+        }
+#endif
 
         /**
          * Warning, Error, and Assert messages take variable condition arguments, allowing validation of multiple
@@ -144,6 +150,9 @@ namespace AZ
             behaviorContext->Class<ScriptDebug>("Debug")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Method("Log", &Internal::ScriptLog)
+#if defined(CARBONATED)
+                ->Method("LogAlways", &Internal::ScriptLogAlways)
+#endif
                 ->Method("Warning", &Internal::ScriptWarning)
                 ->Method("Error", &Internal::ScriptError)
                 ->Method("Assert", &Internal::ScriptAssert)

@@ -112,7 +112,7 @@ namespace ShaderManagementConsole
         AZ::RPI::ShaderVariantListSourceData newSourceData{ m_shaderVariantListSourceData };
         AZ::u32 stableId = newSourceData.m_shaderVariants.empty() ? 1 : newSourceData.m_shaderVariants.back().m_stableId + 1;
         // add "line by line"
-        int numLines = matrixOfValues.size() / optionHeaders.size();
+        int numLines = static_cast<int>(matrixOfValues.size() / optionHeaders.size()); // Gruber patch // conversion from 'size_type'
         for (int line = 0; line < numLines; ++line)
         {
             AZ::RPI::ShaderOptionValuesSourceData mapOfOptionNameToValues;
@@ -124,7 +124,7 @@ namespace ShaderManagementConsole
                 auto indexIt = nameToHeaderIndex.find(optionName);
                 if (indexIt != nameToHeaderIndex.end())
                 {
-                    int index = line * optionHeaders.size() + indexIt->second;
+                    int index = static_cast<int>(line * optionHeaders.size() + indexIt->second); // Gruber patch // conversion from 'size_type'
                     mapOfOptionNameToValues[optionName] = matrixOfValues[index];
                 }
             }
@@ -161,7 +161,7 @@ namespace ShaderManagementConsole
         //                           A   |b   |false
         //                           A   |a   |true
         //                           A   |b   |true
-        int numLines = matrixOfValues.size() / optionHeaders.size();
+        int numLines = static_cast<int>(matrixOfValues.size() / optionHeaders.size()); // Gruber patch // conversion from 'size_type'
         for (int line = 0; line < numLines; ++line)
         {
             for (const AZ::RPI::ShaderVariantListSourceData::VariantInfo& oldVariant : m_shaderVariantListSourceData.m_shaderVariants)
@@ -176,7 +176,7 @@ namespace ShaderManagementConsole
                     if (indexIt != nameToHeaderIndex.end())
                     {
                         // if exists an entry from the arguments, it is prioritized
-                        int index = line * optionHeaders.size() + indexIt->second;
+                        int index = static_cast<int>(line * optionHeaders.size() + indexIt->second); // Gruber patch // conversion from 'size_type'
                         mapOfOptionNameToValues[optionName] = matrixOfValues[index];
                     }
                     else

@@ -19,6 +19,9 @@
 namespace AZ::Debug
 {
     AZ_CVAR_EXTERNED(int, bg_traceLogLevel);
+#if defined(CARBONATED)
+    AZ_CVAR_EXTERNED(int, bg_assertDialogReady);  // enables showing assertion popup
+#endif
 }
 
 /**

@@ -453,11 +453,21 @@ namespace PhysX
             sharedColliderConfig,
             AZStd::make_shared<Physics::PhysicsAssetShapeConfiguration>(m_proxyShapeConfiguration.m_physicsAsset.m_configuration)) });
 
+        // carbonated begin : Having valid collider mesh is critical for objects where Characters can walk / climb on.
+#if defined(CARBONATED)
+        AZ_Error(   
+            "PhysX",
+            m_proxyShapeConfiguration.m_physicsAsset.m_pxAsset.GetId().IsValid(),
+            "EditorMeshColliderComponent::BuildGameEntity. No asset assigned to Collider Component. Entity: %s",
+            GetEntity()->GetName().c_str());
+#else
         AZ_Warning(
             "PhysX",
             m_proxyShapeConfiguration.m_physicsAsset.m_pxAsset.GetId().IsValid(),
             "EditorMeshColliderComponent::BuildGameEntity. No asset assigned to Collider Component. Entity: %s",
             GetEntity()->GetName().c_str());
+#endif
+        // carbonated end
     }
 
     AZ::Transform EditorMeshColliderComponent::GetColliderLocalTransform() const

@@ -144,6 +144,10 @@ struct ILocalizationManager
     virtual ILocalizationManager::TLocalizationBitfield IsLanguageSupported(const ILocalizationManager::EPlatformIndependentLanguageID id) = 0;
     bool SetLanguage([[maybe_unused]] const char* sLanguage) override { return false; }
     const char* GetLanguage() override { return nullptr; }
+#if defined(CARBONATED)
+    virtual void RemoveAllSupportedLanguages() = 0;
+    virtual void AddSupportedLanguage(const AZStd::string& langName) = 0;
+#endif
 
     int GetLocalizationFormat() const override { return -1; }
     AZStd::string GetLocalizedSubtitleFilePath([[maybe_unused]] const AZStd::string& localVideoPath, [[maybe_unused]] const AZStd::string& subtitleFileExtension) const override { return ""; }

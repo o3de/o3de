@@ -368,6 +368,13 @@ namespace PhysX
 
     // carbonated begin enable_carbonated_1: Methods called from o3de-gruber
  #if defined(CARBONATED)
+    //This exists solely to help differentiate the character collider from the other colliders we use for vision/touch/etc
+    void CharacterControllerComponent::SetCharacterCollisions(const AZStd::string& layer, const AZStd::string& group)
+    {
+        SetCollisionLayer(layer, AZ::Crc32());
+        SetCollisionGroup(group, AZ::Crc32());
+    }
+    
     // Pilfered/inspired from SystemComponent::UpdateMaterialSelection
     void CharacterControllerComponent::SetMaterialByName(uint32_t /*index*/, const AZStd::string& /*name*/) // Parameters are temporary commented to prevent warning
     {

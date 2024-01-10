@@ -831,10 +831,10 @@ void CLevelSystem::UnloadLevel()
     CryLog("UnloadLevel Start");
     INDENT_LOG_DURING_SCOPE();
 // Gruber patch begin // A firing of this event was lost in O3DE. Let's try to restore it
-#ifdef CARBONATED
+#if defined(CARBONATED)
     if (gEnv && gEnv->pSystem)
     {
-        gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_PREPARE, 0, 0);
+        gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_UNLOAD, 0, 0);
     }
 #endif
 // Gruber patch end

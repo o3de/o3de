@@ -934,6 +934,14 @@ AZ::Vector2 UiCanvasComponent::GetCanvasSize()
     return m_targetCanvasSize;
 }
 
+#if defined(CARBONATED)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::Vector2 UiCanvasComponent::GetAuthoredCanvasSize()
+{
+    return m_canvasSize;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::SetCanvasSize(const AZ::Vector2& canvasSize)
 {
@@ -2513,6 +2521,8 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
 // Carbonated begin. (vlagutin/CarbonatedUiCanvasBus): Missing custom (CARBONATED) multitouch functionality from LY
 #if defined CARBONATED
             ->Event("GetMousePosition", &UiCanvasBus::Events::GetMousePosition)
+            ->Event("GetCanvasSize", &UiCanvasBus::Events::GetCanvasSize)
+            ->Event("GetAuthoredCanvasSize", &UiCanvasBus::Events::GetAuthoredCanvasSize)
 #endif
 // Carbonated end
             ->Event("ForceEnterInputEventOnInteractable", &UiCanvasBus::Events::ForceEnterInputEventOnInteractable);

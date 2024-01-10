@@ -42,6 +42,10 @@ namespace AZ::NativeUI
         {
             return {};
         }
+#if defined(CARBONATED) // aefimov MAD-10299 assert modal dialog fix
+            // returns true if a blocking dialog is displayed
+            virtual bool IsDisplayingBlockingDialog() const { return false; }
+#endif
 
         //! Waits for user to select an option ('Ok' or optionally 'Cancel') before execution continues
         //! Returns the option string selected by the user
