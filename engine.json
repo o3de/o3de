@@ -4,7 +4,7 @@
     "O3DEVersion": "0.1.0.0",
     "O3DEBuildNumber": 0,
     "display_version": "00.00",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "api_versions": {
         "editor": "1.0.0",
         "framework": "1.1.0",
@@ -60,6 +60,7 @@
         "Gems/MessagePopup",
         "Gems/Metastream",
         "Gems/Microphone",
+        "Gems/MiniAudio",
         "Gems/MotionMatching",
         "Gems/Multiplayer",
         "Gems/MultiplayerCompression",
