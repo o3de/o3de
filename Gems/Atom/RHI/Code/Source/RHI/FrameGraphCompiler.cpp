@@ -16,7 +16,7 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <Atom/RHI/MultiDeviceTransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/optional.h>
@@ -453,7 +453,7 @@ namespace AZ::RHI
 
     void FrameGraphCompiler::CompileTransientAttachments(
         FrameGraph& frameGraph,
-        MultiDeviceTransientAttachmentPool& transientAttachmentPool,
+        SingleDeviceTransientAttachmentPool& transientAttachmentPool,
         FrameSchedulerCompileFlags compileFlags,
         FrameSchedulerStatisticsFlags statisticsFlags)
     {
@@ -650,12 +650,11 @@ namespace AZ::RHI
                     descriptor.m_attachmentId = bufferFrameAttachment->GetId();
                     descriptor.m_bufferDescriptor = bufferFrameAttachment->GetBufferDescriptor();
 
-                    auto buffer = transientAttachmentPool.ActivateBuffer(descriptor);
+                    SingleDeviceBuffer* buffer = transientAttachmentPool.ActivateBuffer(descriptor);
                     if (allocateResources && buffer)
                     {
-                        auto deviceBuffer = buffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
-                        bufferFrameAttachment->SetResource(deviceBuffer);
-                        transientBuffers[attachmentIndex] = deviceBuffer;
+                        bufferFrameAttachment->SetResource(buffer);
+                        transientBuffers[attachmentIndex] = buffer;
                     }
                     break;
                 }
@@ -679,12 +678,11 @@ namespace AZ::RHI
                         descriptor.m_optimizedClearValue = &optimizedClearValue;
                     }
 
-                    auto image = transientAttachmentPool.ActivateImage(descriptor);
+                    SingleDeviceImage* image = transientAttachmentPool.ActivateImage(descriptor);
                     if (allocateResources && image)
                     {
-                        auto deviceImage = image->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
-                        imageFrameAttachment->SetResource(deviceImage);
-                        transientImages[attachmentIndex] = deviceImage;
+                        imageFrameAttachment->SetResource(image);
+                        transientImages[attachmentIndex] = image;
                     }
                     break;
                 }
@@ -702,11 +700,7 @@ namespace AZ::RHI
         {
             // First pass to calculate size needed.
             processCommands(TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources);
-            auto statistics = transientAttachmentPool.GetStatistics();
-            for (auto& [deviceIndex, deviceStatistics] : statistics)
-            {
-                memoryUsage = deviceStatistics.m_reservedMemory;
-            }
+            memoryUsage = transientAttachmentPool.GetStatistics().m_reservedMemory;
         }
 
         // Second pass uses the information about memory usage

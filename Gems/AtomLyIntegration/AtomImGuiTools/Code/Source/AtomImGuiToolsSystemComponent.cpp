@@ -97,10 +97,10 @@ namespace AtomImGuiTools
         }
         if (m_showTransientAttachmentProfiler)
         {
-            auto transientStats = AZ::RHI::RHIMemoryStatisticsInterface::Get()->GetTransientAttachmentStatistics();
-            if (!transientStats.empty())
+            auto* transientStats = AZ::RHI::RHIMemoryStatisticsInterface::Get()->GetTransientAttachmentStatistics();
+            if (transientStats)
             {
-                m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(transientStats);
+                m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(*transientStats);
             }
         }
 

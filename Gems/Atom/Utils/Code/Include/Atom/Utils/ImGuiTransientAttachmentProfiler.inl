@@ -15,7 +15,7 @@ namespace AZ
     {
         constexpr double BytesToMB = 1.0 / (1024.0 * 1024.0);
 
-        inline bool ImGuiTransientAttachmentProfiler::Draw(const AZStd::unordered_map<int, RHI::TransientAttachmentStatistics>& statistics)
+        inline bool ImGuiTransientAttachmentProfiler::Draw(const RHI::TransientAttachmentStatistics& stats)
         {
             ImVec2 windowSize(300, 500.f);
             ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
@@ -24,33 +24,23 @@ namespace AZ
             {
                 if (ImGui::TreeNodeEx("Memory", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    RHI::TransientAttachmentStatistics::MemoryUsage memoryUsage{};
-
-                    for (auto& [deviceIndex, deviceStatistics] : statistics)
-                    {
-                        memoryUsage = deviceStatistics.m_reservedMemory;
-                    }
-
                     ImGui::Text("Strategy: %s", ToString(RHI::RHISystemInterface::Get()->GetTransientAttachmentPoolDescriptor()->m_heapParameters.m_type));
-                    ImGui::Text("Buffer Memory: %.1f MB", static_cast<double>(memoryUsage.m_bufferMemoryInBytes * BytesToMB));
-                    ImGui::Text("Image Memory: %.1f MB", static_cast<double>(memoryUsage.m_imageMemoryInBytes * BytesToMB));
-                    ImGui::Text("Rendertarget Memory: %.1f MB", static_cast<double>(memoryUsage.m_rendertargetMemoryInBytes * BytesToMB));
+                    ImGui::Text("Buffer Memory: %.1f MB", static_cast<double>(stats.m_reservedMemory.m_bufferMemoryInBytes * BytesToMB));
+                    ImGui::Text("Image Memory: %.1f MB", static_cast<double>(stats.m_reservedMemory.m_imageMemoryInBytes * BytesToMB));
+                    ImGui::Text("Rendertarget Memory: %.1f MB", static_cast<double>(stats.m_reservedMemory.m_rendertargetMemoryInBytes * BytesToMB));
                     ImGui::Text("Total Memory: %.1f MB", static_cast<double>(
-                        (memoryUsage.m_bufferMemoryInBytes +
-                            memoryUsage.m_imageMemoryInBytes +
-                            memoryUsage.m_rendertargetMemoryInBytes)
+                        (stats.m_reservedMemory.m_bufferMemoryInBytes +
+                            stats.m_reservedMemory.m_imageMemoryInBytes +
+                            stats.m_reservedMemory.m_rendertargetMemoryInBytes)
                         * BytesToMB));
                     ImGui::TreePop();
                 }
 
                 if (ImGui::TreeNodeEx("Heaps", ImGuiTreeNodeFlags_DefaultOpen))
                 {
-                    for (auto& [deviceIndex, deviceStatistics] : statistics)
+                    for (uint32_t i = 0; i < stats.m_heaps.size(); ++i)
                     {
-                        for (uint32_t i = 0; i < deviceStatistics.m_heaps.size(); ++i)
-                        {
-                            DrawHeap(deviceStatistics.m_heaps[i], deviceStatistics.m_scopes);
-                        }
+                        DrawHeap(stats.m_heaps[i], stats.m_scopes);
                     }
                     ImGui::TreePop();
                 }
