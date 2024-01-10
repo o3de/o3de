@@ -44,7 +44,7 @@ namespace AZ
             const uint32_t Default = 0;
         }
 
-        const uint32_t ShaderSubStageCountMax = 1;
+        const uint32_t ShaderSubStageCountMax = 2;
 
         class ShaderStageFunction
             : public RHI::ShaderStageFunction
