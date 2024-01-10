@@ -1477,7 +1477,7 @@ bool AZ::FFont::UpdateTexture()
 
     RHI::MultiDeviceImageUpdateRequest imageUpdateReq;
     imageUpdateReq.m_image = m_fontImage.get();
-    imageUpdateReq.m_imageSubresource = RHI::ImageSubresource{ 0, 0 };
+    imageUpdateReq.m_imageSubresource = RHI::ImageSubresource{ 0, 0 };  
     imageUpdateReq.m_sourceData = m_fontTexture->GetBuffer();
     imageUpdateReq.m_sourceSubresourceLayout = layout;
 
