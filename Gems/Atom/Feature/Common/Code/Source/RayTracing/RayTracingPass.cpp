@@ -11,7 +11,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
@@ -333,7 +333,7 @@ namespace AZ
                 return;
             }
 
-            RHI::DispatchRaysItem dispatchRaysItem;
+            RHI::SingleDeviceDispatchRaysItem dispatchRaysItem;
 
             // calculate thread counts if this is a full screen raytracing pass
             if (m_passData->m_makeFullscreenPass)

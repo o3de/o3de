@@ -225,7 +225,7 @@ namespace AZ
                     views[0]->GetRHIShaderResourceGroup()
                 };
 
-                RHI::DispatchItem dispatchItem;
+                RHI::SingleDeviceDispatchItem dispatchItem;
                 dispatchItem.m_pipelineState = m_pipelineState;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_shaderResourceGroupCount = srgCount;

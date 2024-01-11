@@ -73,7 +73,7 @@ namespace UnitTest
             ASSERT_TRUE(imageA->IsInitialized() == false);
             ASSERT_TRUE(imageB->IsInitialized() == false);
 
-            RHI::ImageInitRequest initRequest;
+            RHI::SingleDeviceImageInitRequest initRequest;
             initRequest.m_image = imageA.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::Color, 16, 16, RHI::Format::R8G8B8A8_UNORM_SRGB);
             imagePool->InitImage(initRequest);
@@ -155,7 +155,7 @@ namespace UnitTest
             RHI::Ptr<RHI::SingleDeviceImage> image;
             image = RHI::Factory::Get().CreateImage();
 
-            RHI::ImageInitRequest initRequest;
+            RHI::SingleDeviceImageInitRequest initRequest;
             initRequest.m_image = image.get();
             initRequest.m_descriptor = RHI::ImageDescriptor::Create2DArray(RHI::ImageBindFlags::Color, 8, 8, 2, RHI::Format::R8G8B8A8_UNORM_SRGB);
             imagePool->InitImage(initRequest);
@@ -237,7 +237,7 @@ namespace UnitTest
             imageDescriptor.m_bindFlags = GetParam().imageBindFlags;
 
             m_image = RHI::Factory::Get().CreateImage();
-            RHI::ImageInitRequest initRequest;
+            RHI::SingleDeviceImageInitRequest initRequest;
             initRequest.m_image = m_image.get();
             initRequest.m_descriptor = imageDescriptor;
             m_imagePool->InitImage(initRequest);

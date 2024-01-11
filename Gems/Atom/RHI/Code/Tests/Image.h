@@ -32,7 +32,7 @@ namespace UnitTest
         AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
 
     private:
-        void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::ImageSubresourceLayout*, size_t*) const override {}
+        void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::SingleDeviceImageSubresourceLayout*, size_t*) const override {}
     };
 
     class ImagePool
@@ -46,9 +46,9 @@ namespace UnitTest
 
         void ShutdownInternal() override;
 
-        AZ::RHI::ResultCode InitImageInternal(const AZ::RHI::ImageInitRequest& request) override;
+        AZ::RHI::ResultCode InitImageInternal(const AZ::RHI::SingleDeviceImageInitRequest& request) override;
 
-        AZ::RHI::ResultCode UpdateImageContentsInternal(const AZ::RHI::ImageUpdateRequest&) override { return AZ::RHI::ResultCode::Success; }
+        AZ::RHI::ResultCode UpdateImageContentsInternal(const AZ::RHI::SingleDeviceImageUpdateRequest&) override { return AZ::RHI::ResultCode::Success; }
 
         void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource& image) override;
     };

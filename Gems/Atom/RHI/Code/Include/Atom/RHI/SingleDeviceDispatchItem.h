@@ -75,18 +75,18 @@ namespace AZ::RHI
 
     //! Encapsulates the arguments that are specific to a type of dispatch.
     //! It uses a union to be able to store all possible arguments.
-    struct DispatchArguments
+    struct SingleDeviceDispatchArguments
     {
-        AZ_TYPE_INFO(DispatchArguments, "0A354A63-D2C5-4C59-B3E0-0800FA7FBA63");
+        AZ_TYPE_INFO(SingleDeviceDispatchArguments, "0A354A63-D2C5-4C59-B3E0-0800FA7FBA63");
 
-        DispatchArguments() : DispatchArguments(DispatchDirect{}) {}
+        SingleDeviceDispatchArguments() : SingleDeviceDispatchArguments(DispatchDirect{}) {}
 
-        DispatchArguments(const DispatchDirect& direct)
+        SingleDeviceDispatchArguments(const DispatchDirect& direct)
             : m_type{ DispatchType::Direct }
             , m_direct{ direct }
         {}
 
-        DispatchArguments(const DispatchIndirect& indirect)
+        SingleDeviceDispatchArguments(const DispatchIndirect& indirect)
             : m_type{ DispatchType::Indirect }
             , m_indirect{ indirect }
         {}
@@ -104,12 +104,12 @@ namespace AZ::RHI
     //! Encapsulates all the necessary information for doing a dispatch call.
     //! This includes all common arguments for the different dispatch type, plus
     //! arguments that are specific to a type.
-    struct DispatchItem
+    struct SingleDeviceDispatchItem
     {
-        DispatchItem() = default;
+        SingleDeviceDispatchItem() = default;
 
         /// Arguments specific to a dispatch type.
-        DispatchArguments m_arguments;
+        SingleDeviceDispatchArguments m_arguments;
 
         /// The number of shader resource groups and inline constants in each array.
         uint8_t m_shaderResourceGroupCount = 0;

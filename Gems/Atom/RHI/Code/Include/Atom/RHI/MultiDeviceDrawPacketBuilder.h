@@ -57,7 +57,7 @@ namespace AZ::RHI
 
             //! A map of all device-specific StreamBufferViews, indexed by the device index
             //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
-            //! and the device-specific DrawItem holds a pointer to it.
+            //! and the device-specific SingleDeviceDrawItem holds a pointer to it.
             AZStd::unordered_map<int, AZStd::vector<SingleDeviceStreamBufferView>> m_deviceStreamBufferViews;
         };
 
@@ -83,7 +83,7 @@ namespace AZ::RHI
         //! initializes the multi-device DrawPacket which will be returned after calling End()
         void Begin(IAllocator* allocator);
 
-        //! Passes the DrawArguments to all single-device DrawPacketBuilders
+        //! Passes the SingleDeviceDrawArguments to all single-device DrawPacketBuilders
         void SetDrawArguments(const MultiDeviceDrawArguments& drawArguments);
 
         //! Passes the IndexBufferViews to all single-device DrawPacketBuilders
@@ -114,11 +114,11 @@ namespace AZ::RHI
 
         //! Builds all single-device DrawPackets linearly in memory using their allocator
         //! and captures them in the multi-device DrawPacket, correctly linking the
-        //! single-device DrawItems with the corresponding multi-device DrawItem as well
+        //! single-device DrawItems with the corresponding multi-device SingleDeviceDrawItem as well
         RHI::Ptr<MultiDeviceDrawPacket> End();
 
         //! Clones all single-device DrawPackets and then sets all corresponding pointers
-        //! in the multi-device DrawPacket and DrawItem objects
+        //! in the multi-device DrawPacket and SingleDeviceDrawItem objects
         RHI::Ptr<MultiDeviceDrawPacket> Clone(const MultiDeviceDrawPacket* original);
 
     private:

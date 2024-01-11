@@ -199,7 +199,7 @@ namespace AZ
                 NullDescriptorManager::ImageTypes type = static_cast<NullDescriptorManager::ImageTypes>(i);
                 auto& desc = m_imageNullDescriptors[i];
                 desc.m_image = Image::Create();
-                RHI::ImageInitRequest request(*desc.m_image, desc.m_descriptor);
+                RHI::SingleDeviceImageInitRequest request(*desc.m_image, desc.m_descriptor);
                 result = m_imagePool->InitImage(request);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
                 desc.m_image->SetLayout(desc.m_layout);

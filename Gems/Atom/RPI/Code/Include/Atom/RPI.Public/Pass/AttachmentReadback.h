@@ -9,7 +9,7 @@
 
 #include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/SingleDeviceCopyItem.h>
-#include <Atom/RHI/DispatchItem.h>
+#include <Atom/RHI/SingleDeviceDispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
@@ -183,7 +183,7 @@ namespace AZ
             Data::Instance<ShaderResourceGroup> m_decomposeSrg;
             RHI::ShaderInputImageIndex m_decomposeInputImageIndex;
             RHI::ShaderInputImageIndex m_decomposeOutputImageIndex;
-            RHI::DispatchItem m_dispatchItem;
+            RHI::SingleDeviceDispatchItem m_dispatchItem;
 
             // Scope producer for decomposing multi-sample image
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_decomposeScopeProducer;

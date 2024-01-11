@@ -76,9 +76,9 @@ namespace UnitTest
             m_indexBufferView = RHI::SingleDeviceIndexBufferView(*m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16);
         }
 
-        void ValidateDrawItem(const DrawItemData& drawItemData, RHI::DrawItemProperties itemProperties) const
+        void ValidateDrawItem(const DrawItemData& drawItemData, RHI::SingleDeviceDrawItemProperties itemProperties) const
         {
-            const RHI::DrawItem* drawItem = itemProperties.m_item;
+            const RHI::SingleDeviceDrawItem* drawItem = itemProperties.m_item;
 
             EXPECT_EQ(itemProperties.m_sortKey, drawItemData.m_sortKey);
             EXPECT_EQ(drawItem->m_stencilRef, drawItemData.m_stencilRef);
@@ -454,8 +454,8 @@ namespace UnitTest
                 EXPECT_EQ(drawPacket->GetDrawFilterMask(i), drawPacketClone->GetDrawFilterMask(i));
                 EXPECT_EQ(*(drawPacket->m_drawItemSortKeys + i), *(drawPacketClone->m_drawItemSortKeys + i));
 
-                const RHI::DrawItem* drawItem = drawPacket->m_drawItems + i;
-                const RHI::DrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
+                const RHI::SingleDeviceDrawItem* drawItem = drawPacket->m_drawItems + i;
+                const RHI::SingleDeviceDrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
 
                 // Check the clone is an actual copy not an identical pointer.
                 EXPECT_NE(drawItem, drawItemClone);
@@ -568,7 +568,7 @@ namespace UnitTest
             // Test default value
             for (uint8_t i = 0; i < drawItemCount; ++i)
             {
-                const RHI::DrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
+                const RHI::SingleDeviceDrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
                 EXPECT_EQ(drawItemClone->m_arguments.m_type, RHI::DrawType::Indexed);
                 EXPECT_EQ(drawItemClone->m_arguments.m_indexed.m_instanceCount, 1);
             }
@@ -577,11 +577,11 @@ namespace UnitTest
 
             for (uint8_t i = 0; i < drawItemCount; ++i)
             {
-                const RHI::DrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
+                const RHI::SingleDeviceDrawItem* drawItemClone = drawPacketClone->m_drawItems + i;
                 EXPECT_EQ(drawItemClone->m_arguments.m_indexed.m_instanceCount, 12);
 
                 // Check that the original draw packet is not affected
-                const RHI::DrawItem* drawItem = drawPacket->m_drawItems + i;
+                const RHI::SingleDeviceDrawItem* drawItem = drawPacket->m_drawItems + i;
                 EXPECT_EQ(drawItem->m_arguments.m_indexed.m_instanceCount, 1);
             }
 

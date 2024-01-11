@@ -212,7 +212,7 @@ namespace AZ
             return true;
         }
 
-        const RHI::DispatchItem& SkinnedMeshDispatchItem::GetRHIDispatchItem() const
+        const RHI::SingleDeviceDispatchItem& SkinnedMeshDispatchItem::GetRHIDispatchItem() const
         {
             return m_dispatchItem;
         }

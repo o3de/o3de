@@ -53,7 +53,7 @@ namespace AZ
             uint16_t GetMipLevelCount();
                         
             //! Updates content of a single sub-resource in the image from the CPU.
-            virtual RHI::ResultCode UpdateImageContents(const RHI::ImageUpdateRequest& request);
+            virtual RHI::ResultCode UpdateImageContents(const RHI::SingleDeviceImageUpdateRequest& request);
             
         protected:
             // This is a base class for a derived instance variant.

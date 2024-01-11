@@ -277,7 +277,7 @@ namespace AZ
             static const BufferViewIndexType InvalidIndex = static_cast<BufferViewIndexType>(-1);
             struct DrawItemInfo
             {
-                RHI::DrawItem m_drawItem;
+                RHI::SingleDeviceDrawItem m_drawItem;
                 RHI::DrawItemSortKey m_sortKey = 0;
                 BufferViewIndexType m_vertexBufferViewIndex = InvalidIndex;
                 BufferViewIndexType m_indexBufferViewIndex = InvalidIndex;

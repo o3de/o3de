@@ -22,11 +22,11 @@ namespace AZ
         {
         }
     
-        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred)
+        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::SingleDeviceImageUpdateRequest& request, size_t& bytesTransferred)
         {
             Image* image = static_cast<Image*>(request.m_image);
 
-            const RHI::ImageSubresourceLayout& sourceSubresourceLayout = request.m_sourceSubresourceLayout;
+            const RHI::SingleDeviceImageSubresourceLayout& sourceSubresourceLayout = request.m_sourceSubresourceLayout;
 
             const uint32_t stagingRowPitch = sourceSubresourceLayout.m_bytesPerRow;
             const uint32_t stagingSlicePitch = sourceSubresourceLayout.m_bytesPerImage;
@@ -79,7 +79,7 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             for (const auto& packet : m_uploadPackets)
             {
-                const RHI::ImageSubresourceLayout& subresourceLayout = packet.m_subresourceLayout;
+                const RHI::SingleDeviceImageSubresourceLayout& subresourceLayout = packet.m_subresourceLayout;
                 const uint32_t stagingRowPitch = subresourceLayout.m_bytesPerRow;
                 const uint32_t stagingSlicePitch = subresourceLayout.m_rowCount * stagingRowPitch;
 

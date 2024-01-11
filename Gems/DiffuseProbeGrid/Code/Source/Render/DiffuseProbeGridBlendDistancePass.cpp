@@ -195,7 +195,7 @@ namespace AZ
 
                 probeCountX = AZ::DivideAndRoundUp(probeCountX, diffuseProbeGrid->GetFrameUpdateCount());
 
-                RHI::DispatchItem dispatchItem;
+                RHI::SingleDeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = shader.m_dispatchArgs;
                 dispatchItem.m_pipelineState = shader.m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * dispatchItem.m_arguments.m_direct.m_threadsPerGroupX;

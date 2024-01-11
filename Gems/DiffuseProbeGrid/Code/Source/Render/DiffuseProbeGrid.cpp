@@ -350,7 +350,7 @@ namespace AZ
 
                     m_rayTraceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
 
-                    RHI::ImageInitRequest request;
+                    RHI::SingleDeviceImageInitRequest request;
                     request.m_image = m_rayTraceImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::RayTraceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
@@ -364,7 +364,7 @@ namespace AZ
 
                     m_irradianceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
 
-                    RHI::ImageInitRequest request;
+                    RHI::SingleDeviceImageInitRequest request;
                     request.m_image = m_irradianceImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::IrradianceImageFormat);
                     RHI::ClearValue clearValue = RHI::ClearValue::CreateVector4Float(0.0f, 0.0f, 0.0f, 0.0f);
@@ -380,7 +380,7 @@ namespace AZ
 
                     m_distanceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
 
-                    RHI::ImageInitRequest request;
+                    RHI::SingleDeviceImageInitRequest request;
                     request.m_image = m_distanceImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::DistanceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
@@ -394,7 +394,7 @@ namespace AZ
 
                     m_probeDataImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
 
-                    RHI::ImageInitRequest request;
+                    RHI::SingleDeviceImageInitRequest request;
                     request.m_image = m_probeDataImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::ProbeDataImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);

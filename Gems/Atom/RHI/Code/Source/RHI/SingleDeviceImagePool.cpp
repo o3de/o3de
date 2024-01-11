@@ -26,7 +26,7 @@ namespace AZ::RHI
         });
     }
 
-    bool SingleDeviceImagePool::ValidateUpdateRequest(const ImageUpdateRequest& updateRequest) const
+    bool SingleDeviceImagePool::ValidateUpdateRequest(const SingleDeviceImageUpdateRequest& updateRequest) const
     {
         if (Validation::IsEnabled())
         {
@@ -48,7 +48,7 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode SingleDeviceImagePool::InitImage(const ImageInitRequest& initRequest)
+    ResultCode SingleDeviceImagePool::InitImage(const SingleDeviceImageInitRequest& initRequest)
     {
         return SingleDeviceImagePoolBase::InitImage(
             initRequest.m_image,
@@ -56,7 +56,7 @@ namespace AZ::RHI
             [this, &initRequest]() { return InitImageInternal(initRequest); });
     }
 
-    ResultCode SingleDeviceImagePool::UpdateImageContents(const ImageUpdateRequest& request)
+    ResultCode SingleDeviceImagePool::UpdateImageContents(const SingleDeviceImageUpdateRequest& request)
     {
         if (!ValidateIsInitialized() || !ValidateNotProcessingFrame())
         {

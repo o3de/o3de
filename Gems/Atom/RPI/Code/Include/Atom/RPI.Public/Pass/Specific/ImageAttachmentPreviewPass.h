@@ -135,7 +135,7 @@ namespace AZ
                 // Cached pipeline state descriptor
                 RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
                 // The draw item for drawing the image preview for this type of image
-                RHI::DrawItem m_item;
+                RHI::SingleDeviceDrawItem m_item;
 
                 // Key to pass to the SRG when desired shader variant isn't found
                 ShaderVariantKey m_shaderVariantKeyFallback;

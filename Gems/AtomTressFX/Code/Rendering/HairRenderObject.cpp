@@ -1193,7 +1193,7 @@ namespace AZ
                 return iter->second;
             }
 
-            const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
+            const RHI::SingleDeviceDispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
             {
                 auto dispatchIter = m_dispatchItems.find(computeShader);
                 if (dispatchIter == m_dispatchItems.end())

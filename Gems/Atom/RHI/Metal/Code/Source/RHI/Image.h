@@ -72,7 +72,7 @@ namespace AZ
             // RHI::SingleDeviceImage
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayout* subresourceLayouts,
+                RHI::SingleDeviceImageSubresourceLayout* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
             //////////////////////////////////////////////////////////////////////////
             

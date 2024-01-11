@@ -77,22 +77,22 @@ namespace AZ::RHI
 
     //! Encapsulates the arguments that are specific to a type of dispatch.
     //! It uses a union to be able to store all possible arguments.
-    struct DispatchRaysArguments
+    struct SingleDeviceDispatchRaysArguments
     {
-        AZ_TYPE_INFO(DispatchRaysArguments, "F8BE4C19-F35D-4545-B17F-3C2B4D7EF4FF");
+        AZ_TYPE_INFO(SingleDeviceDispatchRaysArguments, "F8BE4C19-F35D-4545-B17F-3C2B4D7EF4FF");
 
-        DispatchRaysArguments()
-            : DispatchRaysArguments(DispatchRaysDirect{})
+        SingleDeviceDispatchRaysArguments()
+            : SingleDeviceDispatchRaysArguments(DispatchRaysDirect{})
         {
         }
 
-        DispatchRaysArguments(const DispatchRaysDirect& direct)
+        SingleDeviceDispatchRaysArguments(const DispatchRaysDirect& direct)
             : m_type{ DispatchRaysType::Direct }
             , m_direct{ direct }
         {
         }
 
-        DispatchRaysArguments(const DispatchRaysIndirect& indirect)
+        SingleDeviceDispatchRaysArguments(const DispatchRaysIndirect& indirect)
             : m_type{ DispatchRaysType::Indirect }
             , m_indirect{ indirect }
         {
@@ -108,12 +108,12 @@ namespace AZ::RHI
     };
 
     //! Encapsulates all the necessary information for doing a ray tracing dispatch call.
-    struct DispatchRaysItem
+    struct SingleDeviceDispatchRaysItem
     {
-        DispatchRaysItem() = default;
+        SingleDeviceDispatchRaysItem() = default;
 
         /// Arguments specific to a dispatch type.
-        DispatchRaysArguments m_arguments;
+        SingleDeviceDispatchRaysArguments m_arguments;
 
         /// Ray tracing pipeline state
         const SingleDeviceRayTracingPipelineState* m_rayTracingPipelineState = nullptr;

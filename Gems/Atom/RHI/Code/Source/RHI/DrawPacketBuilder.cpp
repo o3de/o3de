@@ -22,7 +22,7 @@ namespace AZ::RHI
         m_allocator = allocator ? allocator : &AllocatorInstance<SystemAllocator>::Get();
     }
 
-    void DrawPacketBuilder::SetDrawArguments(const DrawArguments& drawArguments)
+    void DrawPacketBuilder::SetDrawArguments(const SingleDeviceDrawArguments& drawArguments)
     {
         m_drawArguments = drawArguments;
     }
@@ -118,8 +118,8 @@ namespace AZ::RHI
             AZStd::alignment_of<DrawPacket>::value);
 
         const VirtualAddress drawItemsOffset = linearAllocator.Allocate(
-            sizeof(DrawItem) * m_drawRequests.size(),
-            AZStd::alignment_of<DrawItem>::value);
+            sizeof(SingleDeviceDrawItem) * m_drawRequests.size(),
+            AZStd::alignment_of<SingleDeviceDrawItem>::value);
 
         const VirtualAddress drawItemSortKeysOffset = linearAllocator.Allocate(
             sizeof(DrawItemSortKey) * m_drawRequests.size(),
@@ -214,7 +214,7 @@ namespace AZ::RHI
             drawPacket->m_viewportsCount = aznumeric_caster(m_viewports.size());
         }
 
-        auto drawItems = reinterpret_cast<DrawItem*>(allocationData + drawItemsOffset.m_ptr);
+        auto drawItems = reinterpret_cast<SingleDeviceDrawItem*>(allocationData + drawItemsOffset.m_ptr);
         auto drawItemSortKeys = reinterpret_cast<DrawItemSortKey*>(allocationData + drawItemSortKeysOffset.m_ptr);
         auto drawListTags = reinterpret_cast<DrawListTag*>(allocationData + drawListTagsOffset.m_ptr);
         auto drawFilterMasks = reinterpret_cast<DrawFilterMask*>(allocationData + drawFilterMasksOffset.m_ptr);
@@ -240,7 +240,7 @@ namespace AZ::RHI
                 drawListTagDisabled = drawListTagDisabled || (drawRequest.m_listTag == disabledTag);
             }
 
-            DrawItem& drawItem = drawItems[i];
+            SingleDeviceDrawItem& drawItem = drawItems[i];
             drawItem.m_enabled = !drawListTagDisabled;
             drawItem.m_arguments = m_drawArguments;
             drawItem.m_stencilRef = drawRequest.m_stencilRef;
@@ -316,7 +316,7 @@ namespace AZ::RHI
         }
         for (uint8_t i = 0; i < original->m_drawItemCount; ++i)
         {
-            const DrawItem* drawItem = original->m_drawItems + i;
+            const SingleDeviceDrawItem* drawItem = original->m_drawItems + i;
             DrawRequest drawRequest;
             drawRequest.m_drawFilterMask = *(original->m_drawFilterMasks + i);
             drawRequest.m_listTag = *(original->m_drawListTags + i);

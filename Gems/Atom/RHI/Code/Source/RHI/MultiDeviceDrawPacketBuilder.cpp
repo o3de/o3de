@@ -151,7 +151,7 @@ namespace AZ::RHI
         // Setup single-device DrawItems
         for (auto i{ 0 }; i < m_drawRequests.size(); ++i)
         {
-            AZStd::unordered_map<int, DrawItem*> deviceDrawItemPtrs;
+            AZStd::unordered_map<int, SingleDeviceDrawItem*> deviceDrawItemPtrs;
             for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
             {
                 deviceDrawItemPtrs.emplace(deviceIndex, m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex]->GetDrawItem(0));
@@ -209,7 +209,7 @@ namespace AZ::RHI
         // Setup single-device DrawItems
         for (auto i{ 0 }; i < drawRequestCount; ++i)
         {
-            AZStd::unordered_map<int, DrawItem*> deviceDrawItemPtrs;
+            AZStd::unordered_map<int, SingleDeviceDrawItem*> deviceDrawItemPtrs;
             for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
             {
                 deviceDrawItemPtrs.emplace(deviceIndex, m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex]->GetDrawItem(0));

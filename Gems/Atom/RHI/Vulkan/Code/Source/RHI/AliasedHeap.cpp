@@ -77,7 +77,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::ImageInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::SingleDeviceImageInitRequest& request, size_t heapOffset)
         {
             Image* image = static_cast<Image*>(request.m_image);
             RHI::ImageDescriptor imageDescriptor = request.m_descriptor;

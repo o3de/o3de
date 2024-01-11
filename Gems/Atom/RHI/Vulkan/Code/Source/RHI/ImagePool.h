@@ -31,8 +31,8 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::SingleDeviceImagePool
             RHI::ResultCode InitInternal(RHI::Device&, const RHI::ImagePoolDescriptor&) override;
-            RHI::ResultCode InitImageInternal(const RHI::ImageInitRequest& request) override;
-            RHI::ResultCode UpdateImageContentsInternal(const RHI::ImageUpdateRequest& request) override;
+            RHI::ResultCode InitImageInternal(const RHI::SingleDeviceImageInitRequest& request) override;
+            RHI::ResultCode UpdateImageContentsInternal(const RHI::SingleDeviceImageUpdateRequest& request) override;
             void ShutdownInternal() override;
             void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////

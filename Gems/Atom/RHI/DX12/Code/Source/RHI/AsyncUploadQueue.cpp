@@ -274,7 +274,7 @@ namespace AZ
                     for (uint32_t curMip = endMip; curMip <= startMip; curMip++)
                     {
                         size_t sliceIndex = curMip - endMip;
-                        const RHI::ImageSubresourceLayout& subresourceLayout = cachedRequest.m_mipSlices[sliceIndex].m_subresourceLayout;
+                        const RHI::SingleDeviceImageSubresourceLayout& subresourceLayout = cachedRequest.m_mipSlices[sliceIndex].m_subresourceLayout;
                         uint32_t arraySlice = 0;
                         const uint32_t subresourceSlicePitch = subresourceLayout.m_bytesPerImage;
 

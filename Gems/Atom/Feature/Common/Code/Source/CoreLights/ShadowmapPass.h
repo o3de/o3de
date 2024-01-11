@@ -84,7 +84,7 @@ namespace AZ
             uint32_t GetNumDraws() const;
 
             RHI::ConstPtr<RHI::DrawPacket> m_clearShadowDrawPacket;
-            RHI::DrawItemProperties m_clearShadowDrawItemProperties;
+            RHI::SingleDeviceDrawItemProperties m_clearShadowDrawItemProperties;
             RHI::Handle<uint32_t> m_casterMovedBit;
             uint16_t m_arraySlice = 0;
             bool m_clearEnabled = true;

@@ -10,9 +10,9 @@
 #include <Atom/RHI.Reflect/Viewport.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/VariableRateShadingEnums.h>
-#include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/DispatchItem.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
+#include <Atom/RHI/SingleDeviceDispatchItem.h>
+#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/SingleDeviceCopyItem.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
@@ -65,13 +65,13 @@ namespace AZ::RHI
         virtual void Submit(const SingleDeviceCopyItem& copyItem, uint32_t submitIndex = 0) = 0;
 
         /// Submits a single draw item for processing on the command list.
-        virtual void Submit(const DrawItem& drawItem, uint32_t submitIndex = 0) = 0;
+        virtual void Submit(const SingleDeviceDrawItem& drawItem, uint32_t submitIndex = 0) = 0;
 
         /// Submits a single dispatch item for processing on the command list.
-        virtual void Submit(const DispatchItem& dispatchItem, uint32_t submitIndex = 0) = 0;
+        virtual void Submit(const SingleDeviceDispatchItem& dispatchItem, uint32_t submitIndex = 0) = 0;
 
         /// Submits a single dispatch rays item for processing on the command list.
-        virtual void Submit(const DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) = 0;
+        virtual void Submit(const SingleDeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) = 0;
 
         /// Starts predication on the command list.
         virtual void BeginPredication(const SingleDeviceBuffer& buffer, uint64_t offset, PredicationOp operation) = 0;

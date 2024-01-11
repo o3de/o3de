@@ -79,24 +79,24 @@ namespace AZ::RHI
         Indirect
     };
 
-    struct DrawArguments
+    struct SingleDeviceDrawArguments
     {
-        AZ_TYPE_INFO(DrawArguments, "B8127BDE-513E-4D5C-98C2-027BA1DE9E6E");
+        AZ_TYPE_INFO(SingleDeviceDrawArguments, "B8127BDE-513E-4D5C-98C2-027BA1DE9E6E");
 
-        DrawArguments() : DrawArguments(DrawIndexed{}) {}
+        SingleDeviceDrawArguments() : SingleDeviceDrawArguments(DrawIndexed{}) {}
 
-        DrawArguments(const DrawIndexed& indexed)
+        SingleDeviceDrawArguments(const DrawIndexed& indexed)
             : m_type{DrawType::Indexed}
             , m_indexed{indexed}
         {}
 
-        DrawArguments(const DrawLinear& linear)
+        SingleDeviceDrawArguments(const DrawLinear& linear)
             : m_type{DrawType::Linear}
             , m_linear{linear}
         {}
 
 
-        DrawArguments(const DrawIndirect& indirect)
+        SingleDeviceDrawArguments(const DrawIndirect& indirect)
             : m_type{ DrawType::Indirect }
             , m_indirect{ indirect }
         {}
@@ -110,16 +110,16 @@ namespace AZ::RHI
         };
     };
 
-    // A DrawItem corresponds to one draw of one mesh in one pass. Multiple draw items are bundled
+    // A SingleDeviceDrawItem corresponds to one draw of one mesh in one pass. Multiple draw items are bundled
     // in a DrawPacket, which corresponds to multiple draws of one mesh in multiple passes.
     // NOTE: Do not rely solely on default member initialization here, as DrawItems are bulk allocated for
     // DrawPackets and their memory aliased in DrawPacketBuilder. Any default values should also be specified
     // in the DrawPacketBuilder::End() function (see DrawPacketBuilder.cpp)
-    struct DrawItem
+    struct SingleDeviceDrawItem
     {
-        DrawItem() = default;
+        SingleDeviceDrawItem() = default;
 
-        DrawArguments m_arguments;
+        SingleDeviceDrawArguments m_arguments;
 
         uint8_t m_stencilRef = 0;
         uint8_t m_streamBufferViewCount = 0;
@@ -159,25 +159,25 @@ namespace AZ::RHI
         const uint8_t* m_rootConstants = nullptr;
 
         /// List of scissors to be applied to this draw item only. Scissor will be restore to the previous state
-        /// after the DrawItem has been processed.
+        /// after the SingleDeviceDrawItem has been processed.
         const Scissor* m_scissors = nullptr;
 
         /// List of viewports to be applied to this draw item only. Viewports will be restore to the previous state
-        /// after the DrawItem has been processed.
+        /// after the SingleDeviceDrawItem has been processed.
         const Viewport* m_viewports = nullptr;
     };
 
     using DrawItemSortKey = AZ::s64;
 
-    // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
+    // A filter associate to a SingleDeviceDrawItem which can be used to filter the SingleDeviceDrawItem when submitting to command list
     using DrawFilterTag = Handle<uint8_t, DefaultNamespaceType>;
     using DrawFilterMask = uint32_t; // AZStd::bitset's impelmentation is too expensive.
     constexpr uint32_t DrawFilterMaskDefaultValue = uint32_t(-1);  // Default all bit to 1.
     static_assert(sizeof(DrawFilterMask) * 8 >= Limits::Pipeline::DrawFilterTagCountMax, "DrawFilterMask doesn't have enough bits for maximum tag count");
 
-    struct DrawItemProperties
+    struct SingleDeviceDrawItemProperties
     {
-        bool operator==(const DrawItemProperties& rhs) const
+        bool operator==(const SingleDeviceDrawItemProperties& rhs) const
         {
             return m_item == rhs.m_item &&
                 m_sortKey == rhs.m_sortKey &&
@@ -186,18 +186,18 @@ namespace AZ::RHI
                 ;
         }
 
-        bool operator!=(const DrawItemProperties& rhs) const
+        bool operator!=(const SingleDeviceDrawItemProperties& rhs) const
         {
             return !(*this == rhs);
         }
 
-        bool operator<(const DrawItemProperties& rhs) const
+        bool operator<(const SingleDeviceDrawItemProperties& rhs) const
         {
             return m_sortKey < rhs.m_sortKey;
         }
 
         //! A pointer to the draw item
-        const DrawItem* m_item = nullptr;
+        const SingleDeviceDrawItem* m_item = nullptr;
         //! A sorting key of this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         DrawItemSortKey m_sortKey = 0;

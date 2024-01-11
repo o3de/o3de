@@ -413,7 +413,7 @@ namespace AZ
                         range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
                     }
 
-                    AZStd::vector<RHI::ImageSubresourceLayout> imageSubresourceLayouts;
+                    AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
                     imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
                     size_t totalSizeInBytes = 0;
                     image->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
@@ -591,7 +591,7 @@ namespace AZ
                     else if (m_attachmentType == RHI::AttachmentType::Image)
                     {
                         RHI::Size mipSize = readbackItem.m_mipInfo.m_size;
-                        RHI::ImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(mipSize,
+                        RHI::SingleDeviceImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(mipSize,
                             m_imageDescriptor.m_format);
 
                         auto rowCount = imageLayout.m_rowCount;

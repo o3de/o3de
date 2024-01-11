@@ -34,7 +34,7 @@ namespace UnitTest
     {
     }
 
-    RHI::ResultCode ImagePool::InitImageInternal(const RHI::ImageInitRequest&)
+    RHI::ResultCode ImagePool::InitImageInternal(const RHI::SingleDeviceImageInitRequest&)
     {
         return RHI::ResultCode::Success;
     }

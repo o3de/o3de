@@ -27,7 +27,7 @@ namespace AZ::RHI
     
     void SingleDeviceImage::GetSubresourceLayouts(
         const ImageSubresourceRange& subresourceRange,
-        ImageSubresourceLayout* subresourceLayouts,
+        SingleDeviceImageSubresourceLayout* subresourceLayouts,
         size_t* totalSizeInBytes) const
     {
         const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();

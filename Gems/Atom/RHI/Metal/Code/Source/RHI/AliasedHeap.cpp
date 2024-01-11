@@ -67,7 +67,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::ImageInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::SingleDeviceImageInitRequest& request, size_t heapOffset)
         {
             Image* image = static_cast<Image*>(request.m_image);
             RHI::ResourceMemoryRequirements memoryRequirements = GetDevice().GetResourceMemoryRequirements(request.m_descriptor);

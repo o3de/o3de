@@ -12,7 +12,7 @@
 #include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
 #include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/SingleDeviceQuery.h>
 #include <Atom/RHI.Reflect/InputStreamLayout.h>

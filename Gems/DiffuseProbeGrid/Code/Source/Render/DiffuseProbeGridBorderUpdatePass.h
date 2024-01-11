@@ -50,7 +50,7 @@ namespace AZ
             struct SubmitItem
             {
                 RHI::SingleDeviceShaderResourceGroup* m_shaderResourceGroup = nullptr;
-                RHI::DispatchItem m_dispatchItem;
+                RHI::SingleDeviceDispatchItem m_dispatchItem;
             };
 
             AZStd::vector<SubmitItem> m_submitItems;

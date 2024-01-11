@@ -43,10 +43,10 @@ set(FILES
     Include/Atom/RHI/SingleDeviceCopyItem.h
     Include/Atom/RHI/MultiDeviceCopyItem.h
     Include/Atom/RHI/ConstantsData.h
-    Include/Atom/RHI/DispatchItem.h
+    Include/Atom/RHI/SingleDeviceDispatchItem.h
     Include/Atom/RHI/MultiDeviceDispatchItem.h
     Include/Atom/RHI/DrawFilterTagRegistry.h
-    Include/Atom/RHI/DrawItem.h
+    Include/Atom/RHI/SingleDeviceDrawItem.h
     Include/Atom/RHI/MultiDeviceDrawItem.h
     Include/Atom/RHI/DrawList.h
     Include/Atom/RHI/DrawListTagRegistry.h
@@ -257,7 +257,7 @@ set(FILES
     Include/Atom/RHI/MultiDeviceRayTracingShaderTable.h
     Include/Atom/RHI/SingleDeviceRayTracingBufferPools.h
     Include/Atom/RHI/MultiDeviceRayTracingBufferPools.h
-    Include/Atom/RHI/DispatchRaysItem.h
+    Include/Atom/RHI/SingleDeviceDispatchRaysItem.h
     Include/Atom/RHI/MultiDeviceDispatchRaysItem.h
     Source/RHI/RayTracingAccelerationStructure.cpp
     Source/RHI/MultiDeviceRayTracingAccelerationStructure.cpp

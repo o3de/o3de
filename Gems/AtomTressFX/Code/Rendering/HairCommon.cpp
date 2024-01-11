@@ -145,7 +145,7 @@ namespace AZ
             Data::Instance<RHI::SingleDeviceImage> UtilityClass::CreateImage2D(RHI::SingleDeviceImagePool* imagePool, RHI::ImageDescriptor& imageDesc)
             {
                 Data::Instance<RHI::SingleDeviceImage> rhiImage = RHI::Factory::Get().CreateImage();
-                RHI::ImageInitRequest request;
+                RHI::SingleDeviceImageInitRequest request;
                 request.m_image = rhiImage.get();
                 request.m_descriptor = imageDesc;
                 RHI::ResultCode result = imagePool->InitImage(request);

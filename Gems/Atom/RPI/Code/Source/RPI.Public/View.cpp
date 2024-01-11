@@ -134,7 +134,7 @@ namespace AZ
             AddVisibleObject(userData, depth);
         }
 
-        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
+        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::SingleDeviceDrawItemProperties& drawItemProperties)
         {
             m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
         }

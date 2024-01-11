@@ -98,7 +98,7 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
 
         private:
-            void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::ImageSubresourceLayout*, size_t*) const override {}
+            void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::SingleDeviceImageSubresourceLayout*, size_t*) const override {}
             bool IsStreamableInternal() const override {return true;};
         };
 
@@ -196,8 +196,8 @@ namespace UnitTest
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::ImagePoolDescriptor&) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
-            AZ::RHI::ResultCode UpdateImageContentsInternal(const AZ::RHI::ImageUpdateRequest&) override { return AZ::RHI::ResultCode::Success; }
-            AZ::RHI::ResultCode InitImageInternal(const AZ::RHI::ImageInitRequest&) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode UpdateImageContentsInternal(const AZ::RHI::SingleDeviceImageUpdateRequest&) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitImageInternal(const AZ::RHI::SingleDeviceImageInitRequest&) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource&) override {}
         };
 

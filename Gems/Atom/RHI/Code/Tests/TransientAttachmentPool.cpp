@@ -60,7 +60,7 @@ namespace UnitTest
 
         RHI::Ptr<RHI::SingleDeviceImage> image = RHI::Factory::Get().CreateImage();
 
-        RHI::ImageInitRequest request;
+        RHI::SingleDeviceImageInitRequest request;
         request.m_image = image.get();
         request.m_descriptor = descriptor.m_imageDescriptor;
         m_imagePool->InitImage(request);

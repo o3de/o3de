@@ -86,7 +86,7 @@ namespace AZ
             void AddVisibleObject(const void* userData, const Vector3& worldPosition);
 
             //! Add a draw item to this view with its associated draw list tag
-            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
+            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::SingleDeviceDrawItemProperties& drawItemProperties);
 
             //! Applies some flags to the view that are reset each frame. The provided flags are combined with m_andFlags
             //! using &, and are combined with m_orFlags using |.

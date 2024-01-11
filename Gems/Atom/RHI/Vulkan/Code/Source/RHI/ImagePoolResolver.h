@@ -36,7 +36,7 @@ namespace AZ
             ImagePoolResolver(Device& device);
 
             /// Uploads new content to an image subresource.
-            RHI::ResultCode UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred);
+            RHI::ResultCode UpdateImage(const RHI::SingleDeviceImageUpdateRequest& request, size_t& bytesTransferred);
 
             //////////////////////////////////////////////////////////////////////
             ///ResourcePoolResolver
@@ -53,7 +53,7 @@ namespace AZ
             {
                 Image* m_destinationImage = nullptr;
                 RHI::Ptr<Buffer> m_stagingBuffer;
-                RHI::ImageSubresourceLayout m_subresourceLayout;
+                RHI::SingleDeviceImageSubresourceLayout m_subresourceLayout;
                 RHI::ImageSubresource m_subresource;
                 RHI::Origin m_offset;
             };

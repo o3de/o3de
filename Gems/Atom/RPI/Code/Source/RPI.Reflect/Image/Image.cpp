@@ -64,7 +64,7 @@ namespace AZ
             return m_image->GetDescriptor().m_mipLevels;
         }
 
-        RHI::ResultCode Image::UpdateImageContents(const RHI::ImageUpdateRequest& request)
+        RHI::ResultCode Image::UpdateImageContents(const RHI::SingleDeviceImageUpdateRequest& request)
         {
             RHI::SingleDeviceImagePool* imagePool = azrtti_cast<RHI::SingleDeviceImagePool*> (m_image->GetPool());
             return imagePool->UpdateImageContents(request);

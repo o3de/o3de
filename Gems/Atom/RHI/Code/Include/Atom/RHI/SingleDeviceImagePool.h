@@ -63,8 +63,8 @@ namespace AZ::RHI
         ImageSubresourceLayoutClass m_sourceSubresourceLayout;
     };
 
-    using ImageInitRequest = ImageInitRequestTemplate<SingleDeviceImage>;
-    using ImageUpdateRequest = ImageUpdateRequestTemplate<SingleDeviceImage, ImageSubresourceLayout>;
+    using SingleDeviceImageInitRequest = ImageInitRequestTemplate<SingleDeviceImage>;
+    using SingleDeviceImageUpdateRequest = ImageUpdateRequestTemplate<SingleDeviceImage, SingleDeviceImageSubresourceLayout>;
 
     //! SingleDeviceImagePool is a pool of images that will be bound as attachments to the frame scheduler.
     //! As a result, they are intended to be produced and consumed by the GPU. Persistent Color / Depth Stencil / Image
@@ -81,10 +81,10 @@ namespace AZ::RHI
         ResultCode Init(Device& device, const ImagePoolDescriptor& descriptor);
 
         /// Initializes an image onto the pool. The pool provides backing GPU resources to the image.
-        ResultCode InitImage(const ImageInitRequest& request);
+        ResultCode InitImage(const SingleDeviceImageInitRequest& request);
 
         /// Updates image content from the CPU.
-        ResultCode UpdateImageContents(const ImageUpdateRequest& request);
+        ResultCode UpdateImageContents(const SingleDeviceImageUpdateRequest& request);
 
         /// Returns the descriptor used to initialize the pool.
         const ImagePoolDescriptor& GetDescriptor() const override final;
@@ -99,7 +99,7 @@ namespace AZ::RHI
         using SingleDeviceResourcePool::Init;
         using SingleDeviceImagePoolBase::InitImage;
 
-        bool ValidateUpdateRequest(const ImageUpdateRequest& updateRequest) const;
+        bool ValidateUpdateRequest(const SingleDeviceImageUpdateRequest& updateRequest) const;
 
         //////////////////////////////////////////////////////////////////////////
         // Platform API
@@ -108,10 +108,10 @@ namespace AZ::RHI
         virtual ResultCode InitInternal(Device& device, const ImagePoolDescriptor& descriptor) = 0;
 
         /// Called when an image contents are being updated.
-        virtual ResultCode UpdateImageContentsInternal(const ImageUpdateRequest& request) = 0;
+        virtual ResultCode UpdateImageContentsInternal(const SingleDeviceImageUpdateRequest& request) = 0;
 
         /// Called when an image is being initialized on the pool.
-        virtual ResultCode InitImageInternal(const ImageInitRequest& request) = 0;
+        virtual ResultCode InitImageInternal(const SingleDeviceImageInitRequest& request) = 0;
 
         //////////////////////////////////////////////////////////////////////////
 

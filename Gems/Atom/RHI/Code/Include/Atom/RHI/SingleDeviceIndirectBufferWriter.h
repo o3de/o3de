@@ -8,8 +8,8 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
-#include <Atom/RHI/DispatchItem.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/SingleDeviceDispatchItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 

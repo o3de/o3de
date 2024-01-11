@@ -1046,7 +1046,7 @@ namespace AZ
 
                         for (size_t drawItemIdx = 0; drawItemIdx < numDrawItems; ++drawItemIdx)
                         {
-                            RHI::DrawItem* drawItem = drawPacket->GetDrawItem(drawItemIdx);
+                            RHI::SingleDeviceDrawItem* drawItem = drawPacket->GetDrawItem(drawItemIdx);
                             RHI::DrawListTag tag = drawPacket->GetDrawListTag(drawItemIdx);
                             stringOutput += AZStd::string::format("Item %zu | ", drawItemIdx);
                             stringOutput += drawItem->m_enabled ? "Enabled  | " : "Disabled | ";

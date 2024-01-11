@@ -62,10 +62,10 @@ namespace AZ
             void SetScissors(const RHI::Scissor* scissors, uint32_t count) override;
             void SetShaderResourceGroupForDraw(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
             void SetShaderResourceGroupForDispatch(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
-            void Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::SingleDeviceDrawItem& drawItem, uint32_t submitIndex = 0) override;
             void Submit(const RHI::SingleDeviceCopyItem& copyItem, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::SingleDeviceDispatchItem& dispatchItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::SingleDeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
             void BeginPredication(const RHI::SingleDeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation) override {}
             void EndPredication() override {}
             void BuildBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) override;

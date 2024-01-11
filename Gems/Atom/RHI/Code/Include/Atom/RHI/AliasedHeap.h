@@ -107,7 +107,7 @@ namespace AZ::RHI
         virtual ResultCode InitInternal(Device& device, const AliasedHeapDescriptor& descriptor) = 0;
         //! Implementation initialization of an Aliased image.
         //! @param heapOffset Offset in bytes of the heap where the resource should be created.
-        virtual ResultCode InitImageInternal(const ImageInitRequest& request, size_t heapOffset) = 0;
+        virtual ResultCode InitImageInternal(const SingleDeviceImageInitRequest& request, size_t heapOffset) = 0;
         //! Implementation initialization of an Aliased buffer.
         //! @param heapOffset Offset in bytes of the heap where the resource should be created.
         virtual ResultCode InitBufferInternal(const SingleDeviceBufferInitRequest& request, size_t heapOffset) = 0;

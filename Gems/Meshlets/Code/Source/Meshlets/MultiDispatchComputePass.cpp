@@ -89,7 +89,7 @@ namespace AZ
             */
         }
 
-        void MultiDispatchComputePass::AddDispatchItems(AZStd::list<RHI::DispatchItem*>& dispatchItems)
+        void MultiDispatchComputePass::AddDispatchItems(AZStd::list<RHI::SingleDeviceDispatchItem*>& dispatchItems)
         {
             for (auto& dispatchItem : dispatchItems)
             {
@@ -112,7 +112,7 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            for (const RHI::DispatchItem* dispatchItem : m_dispatchItems)
+            for (const RHI::SingleDeviceDispatchItem* dispatchItem : m_dispatchItems)
             {
                 // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
                 // and sends them to the command list ahead of the dispatch.

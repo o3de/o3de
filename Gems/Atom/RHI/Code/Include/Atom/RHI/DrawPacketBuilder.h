@@ -55,7 +55,7 @@ namespace AZ::RHI
 
         void Begin(IAllocator* allocator);
 
-        void SetDrawArguments(const DrawArguments& drawArguments);
+        void SetDrawArguments(const SingleDeviceDrawArguments& drawArguments);
 
         void SetIndexBufferView(const SingleDeviceIndexBufferView& indexBufferView);
 
@@ -85,7 +85,7 @@ namespace AZ::RHI
         void ClearData();
 
         IAllocator* m_allocator = nullptr;
-        DrawArguments m_drawArguments;
+        SingleDeviceDrawArguments m_drawArguments;
         DrawListMask m_drawListMask = 0;
         size_t m_streamBufferViewCount = 0;
         SingleDeviceIndexBufferView m_indexBufferView;

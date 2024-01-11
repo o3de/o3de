@@ -273,7 +273,7 @@ namespace AZ::RHI
                     image,
                     [this, image, &descriptor, heapOffsetInBytes]
                 {
-                    ImageInitRequest request(*image, descriptor.m_imageDescriptor, descriptor.m_optimizedClearValue);
+                    SingleDeviceImageInitRequest request(*image, descriptor.m_imageDescriptor, descriptor.m_optimizedClearValue);
                     return InitImageInternal(request, heapOffsetInBytes);
                 });
 

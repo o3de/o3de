@@ -134,7 +134,7 @@ namespace AZ
 
             RHI::SingleDeviceImagePool* rhiPool = pool->GetRHIPool();
 
-            RHI::ImageInitRequest initRequest;
+            RHI::SingleDeviceImageInitRequest initRequest;
             initRequest.m_image = GetRHIImage();
             initRequest.m_descriptor = imageAsset.GetImageDescriptor();
             initRequest.m_optimizedClearValue = imageAsset.GetOptimizedClearValue();

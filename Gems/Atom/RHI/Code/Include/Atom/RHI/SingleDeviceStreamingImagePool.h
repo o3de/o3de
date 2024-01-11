@@ -31,7 +31,7 @@ namespace AZ::RHI
         AZStd::span<const StreamingImageSubresourceData> m_subresources;
 
         /// The layout of each image in the array.
-        ImageSubresourceLayout m_subresourceLayout;
+        SingleDeviceImageSubresourceLayout m_subresourceLayout;
     };
         
     using CompleteCallback = AZStd::function<void()>;

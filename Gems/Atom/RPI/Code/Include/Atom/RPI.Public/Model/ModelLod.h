@@ -12,7 +12,7 @@
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
 
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -69,7 +69,7 @@ namespace AZ
             //! Mesh data associated with a specific material.
             struct Mesh final
             {
-                RHI::DrawArguments m_drawArguments;
+                RHI::SingleDeviceDrawArguments m_drawArguments;
                 RHI::SingleDeviceIndexBufferView m_indexBufferView;
 
                 StreamInfoList m_streamInfo;

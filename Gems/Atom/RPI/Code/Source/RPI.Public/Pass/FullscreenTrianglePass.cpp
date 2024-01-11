@@ -179,7 +179,7 @@ namespace AZ
             RHI::DrawLinear draw = RHI::DrawLinear();
             draw.m_vertexCount = 3;
 
-            m_item.m_arguments = RHI::DrawArguments(draw);
+            m_item.m_arguments = RHI::SingleDeviceDrawArguments(draw);
             m_item.m_pipelineState = m_pipelineStateForDraw.Finalize();
             m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
         }

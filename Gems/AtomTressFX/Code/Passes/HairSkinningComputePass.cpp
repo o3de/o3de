@@ -203,7 +203,7 @@ namespace AZ
                         continue;
                     }
 
-                    const RHI::DispatchItem* dispatchItem = renderObject->GetDispatchItem(m_shader.get());
+                    const RHI::SingleDeviceDispatchItem* dispatchItem = renderObject->GetDispatchItem(m_shader.get());
                     if (!dispatchItem)
                     {
                         continue;
@@ -232,12 +232,12 @@ namespace AZ
                 // This includes the PerView, PerScene and PerPass srgs (what about per draw?)
                 SetSrgsForDispatch(commandList);
 
-                AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_dispatchItems.begin();
+                AZStd::unordered_set<const RHI::SingleDeviceDispatchItem*>::iterator it = m_dispatchItems.begin();
                 AZStd::advance(it, context.GetSubmitRange().m_startIndex);
 
                 for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index, ++it)
                 {
-                    const RHI::DispatchItem* dispatchItem = *it;
+                    const RHI::SingleDeviceDispatchItem* dispatchItem = *it;
                     commandList->Submit(*dispatchItem, index);
                 }
 

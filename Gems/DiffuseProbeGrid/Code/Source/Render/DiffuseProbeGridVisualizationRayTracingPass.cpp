@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -301,7 +301,7 @@ namespace AZ
                     views[0]->GetRHIShaderResourceGroup(),
                 };
 
-                RHI::DispatchRaysItem dispatchRaysItem;
+                RHI::SingleDeviceDispatchRaysItem dispatchRaysItem;
                 dispatchRaysItem.m_arguments.m_direct.m_width = m_outputAttachmentSize.m_width;
                 dispatchRaysItem.m_arguments.m_direct.m_height = m_outputAttachmentSize.m_height;
                 dispatchRaysItem.m_arguments.m_direct.m_depth = 1;
