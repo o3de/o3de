@@ -233,7 +233,7 @@ def create_shadervariantlist_for_shader(filename):
         with open(systemOptionFilePath, "r") as systemOptionFile:
             systemOptionDict = json.load(systemOptionFile)
 
-    # Generate the shader variant list data by collecting shader option name-value pairs.s
+    # Generate the shader variant list data by collecting shader option name-value pairs.
     shaderVariants = []
     systemOptionDescriptor = {}
     stableId = 1
