@@ -1877,7 +1877,9 @@ CLocalizedStringsManager::LoadFunc CLocalizedStringsManager::GetLoadFunction() c
         }
         if(localizationFormat == 1)
 #endif
+#if defined(CARBONATED)
         if (m_cvarLocalizationFormat == 1)
+#endif
         {
             return &CLocalizedStringsManager::DoLoadAGSXmlDocument;
         }
@@ -2266,7 +2268,6 @@ bool CLocalizedStringsManager::LocalizeLabel(const char* sLabel, AZStd::string& 
             if (entry != NULL)
             {
 #if defined(CARBONATED)
-#else
                 switch (m_cvarLocalizationTest)
                 {
                 case 0:  // Ignore the cvar, continue localization as expected
