@@ -119,7 +119,7 @@ enum ESystemConfigSpec
 enum ESystemUpdateFlags
 {
     ESYSUPDATE_EDITOR = 0x0004
-}
+};
 #endif
 
 // Description:
