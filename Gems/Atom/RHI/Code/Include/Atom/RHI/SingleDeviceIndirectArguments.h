@@ -62,5 +62,5 @@ namespace AZ::RHI
         const BufferClass* m_countBuffer = nullptr;
     };
 
-    using IndirectArguments = IndirectArgumentsTemplate<SingleDeviceBuffer, SingleDeviceIndirectBufferView>;
+    using SingleDeviceIndirectArguments = IndirectArgumentsTemplate<SingleDeviceBuffer, SingleDeviceIndirectBufferView>;
 }

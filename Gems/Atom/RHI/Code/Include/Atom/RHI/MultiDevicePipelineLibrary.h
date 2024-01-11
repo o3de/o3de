@@ -42,8 +42,8 @@ namespace AZ::RHI
             }
         }
 
-        //! Returns the device-specific PipelineLibraryDescriptor for the given index
-        inline PipelineLibraryDescriptor GetDevicePipelineLibraryDescriptor(int deviceIndex) const
+        //! Returns the device-specific SingleDevicePipelineLibraryDescriptor for the given index
+        inline SingleDevicePipelineLibraryDescriptor GetDevicePipelineLibraryDescriptor(int deviceIndex) const
         {
             AZ_Assert(
                 m_devicePipelineLibraryDescriptors.find(deviceIndex) != m_devicePipelineLibraryDescriptors.end(),
@@ -56,12 +56,12 @@ namespace AZ::RHI
             }
             else
             {
-                return PipelineLibraryDescriptor{};
+                return SingleDevicePipelineLibraryDescriptor{};
             }
         }
 
         //! A map of all device-specific PipelineLibraryDescriptors, indexed by the device index
-        AZStd::unordered_map<int, PipelineLibraryDescriptor> m_devicePipelineLibraryDescriptors;
+        AZStd::unordered_map<int, SingleDevicePipelineLibraryDescriptor> m_devicePipelineLibraryDescriptors;
     };
 
     //! MultiDevicePipelineLibrary is a multi-device class (representing a SingleDevicePipelineLibrary on multiple devices).

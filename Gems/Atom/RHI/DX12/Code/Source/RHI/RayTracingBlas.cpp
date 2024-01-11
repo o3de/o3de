@@ -39,7 +39,7 @@ namespace AZ
             m_geometryDescs.clear();
             m_geometryDescs.reserve(geometries.size());
             D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
-            for (const RHI::RayTracingGeometry& geometry : geometries)
+            for (const RHI::SingleDeviceRayTracingGeometry& geometry : geometries)
             {
                 geometryDesc = {};
                 geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;

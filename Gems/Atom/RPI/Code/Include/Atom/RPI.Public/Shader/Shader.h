@@ -194,7 +194,7 @@ namespace AZ
             RHI::PipelineStateCache* m_pipelineStateCache = nullptr;
 
             //! A handle to the pipeline library in the pipeline state cache.
-            RHI::PipelineLibraryHandle m_pipelineLibraryHandle;
+            RHI::SingleDevicePipelineLibraryHandle m_pipelineLibraryHandle;
 
             //! Used for thread safety for FindVariantStableId() and GetVariant().
             AZStd::shared_mutex m_variantCacheMutex;

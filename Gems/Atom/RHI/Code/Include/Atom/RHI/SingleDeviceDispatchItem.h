@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/SingleDeviceIndirectArguments.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/Casting/numeric_cast.h>
 
@@ -65,7 +65,7 @@ namespace AZ::RHI
 
     //! Arguments used when submitting an indirect dispatch call into a CommandList.
     //! The indirect dispatch arguments are the same ones as the indirect draw ones.
-    using DispatchIndirect = IndirectArguments;
+    using DispatchIndirect = SingleDeviceIndirectArguments;
 
     enum class DispatchType : uint8_t
     {

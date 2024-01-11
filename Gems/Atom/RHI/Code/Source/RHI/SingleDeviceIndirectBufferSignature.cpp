@@ -10,7 +10,7 @@
 
 namespace AZ::RHI
 {
-    ResultCode SingleDeviceIndirectBufferSignature::Init(Device& device, const IndirectBufferSignatureDescriptor& descriptor)
+    ResultCode SingleDeviceIndirectBufferSignature::Init(Device& device, const SingleDeviceIndirectBufferSignatureDescriptor& descriptor)
     {
         ResultCode result = InitInternal(device, descriptor);
         if (result == ResultCode::Success)
@@ -49,7 +49,7 @@ namespace AZ::RHI
         return GetOffsetInternal(index);
     }
 
-    const IndirectBufferSignatureDescriptor& SingleDeviceIndirectBufferSignature::GetDescriptor() const
+    const SingleDeviceIndirectBufferSignatureDescriptor& SingleDeviceIndirectBufferSignature::GetDescriptor() const
     {
         return m_descriptor;
     }

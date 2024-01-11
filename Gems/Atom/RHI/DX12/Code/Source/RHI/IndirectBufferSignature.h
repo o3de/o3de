@@ -35,7 +35,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::SingleDeviceIndirectBufferSignature
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::IndirectBufferSignatureDescriptor& descriptor) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDeviceIndirectBufferSignatureDescriptor& descriptor) override;
             uint32_t GetByteStrideInternal() const override;
             uint32_t GetOffsetInternal(RHI::IndirectCommandIndex index) const override;
             void ShutdownInternal() override;

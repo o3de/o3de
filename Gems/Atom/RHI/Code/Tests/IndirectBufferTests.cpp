@@ -181,7 +181,7 @@ namespace UnitTest
         AZStd::vector<RHI::IndirectCommandDescriptor> m_commands;
 
         AZStd::unique_ptr<SerializeContext> m_serializeContext;
-        RHI::IndirectBufferSignatureDescriptor m_signatureDescriptor;
+        RHI::SingleDeviceIndirectBufferSignatureDescriptor m_signatureDescriptor;
 
         RHI::Ptr<BufferPool> m_bufferPool;
         RHI::Ptr<Buffer> m_buffer;
@@ -300,7 +300,7 @@ namespace UnitTest
                 .Times(1)
                 .WillOnce(
                     testing::Return(RHI::ResultCode::InvalidOperation));
-            RHI::IndirectBufferSignatureDescriptor descriptor;
+            RHI::SingleDeviceIndirectBufferSignatureDescriptor descriptor;
             EXPECT_TRUE(signature->Init(*m_device, descriptor) == RHI::ResultCode::InvalidOperation);
             EXPECT_FALSE(signature->IsInitialized());
         }

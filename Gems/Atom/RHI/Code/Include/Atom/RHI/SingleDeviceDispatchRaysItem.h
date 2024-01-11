@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/SingleDeviceIndirectArguments.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <AzCore/std/containers/array.h>
 
@@ -41,7 +41,7 @@ namespace AZ::RHI
     };
 
     //! Arguments used when submitting an indirect dispatch rays call into a CommandList.
-    struct DispatchRaysIndirect : public IndirectArguments
+    struct DispatchRaysIndirect : public SingleDeviceIndirectArguments
     {
         DispatchRaysIndirect() = default;
 
@@ -61,7 +61,7 @@ namespace AZ::RHI
             DispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer,
             const SingleDeviceBuffer* countBuffer,
             uint64_t countBufferByteOffset)
-            : IndirectArguments(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, countBuffer, countBufferByteOffset)
+            : SingleDeviceIndirectArguments(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, countBuffer, countBufferByteOffset)
             , m_dispatchRaysIndirectBuffer(dispatchRaysIndirectBuffer)
         {
         }

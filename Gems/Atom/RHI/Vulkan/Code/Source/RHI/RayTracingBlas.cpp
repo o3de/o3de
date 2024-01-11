@@ -51,7 +51,7 @@ namespace AZ
             AZStd::vector<uint32_t> primitiveCounts;
             primitiveCounts.reserve(geometries.size());
 
-            for (const RHI::RayTracingGeometry& geometry : geometries)
+            for (const RHI::SingleDeviceRayTracingGeometry& geometry : geometries)
             {
                 VkAccelerationStructureGeometryKHR geometryDesc = {};
                 geometryDesc.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;

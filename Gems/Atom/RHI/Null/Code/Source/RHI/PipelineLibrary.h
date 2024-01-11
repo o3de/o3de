@@ -28,7 +28,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::SingleDevicePipelineLibrary
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineLibraryDescriptor& descriptor) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::SingleDevicePipelineLibraryDescriptor& descriptor) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
             RHI::ResultCode MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::SingleDevicePipelineLibrary* const> libraries) override { return RHI::ResultCode::Success;}
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr;}

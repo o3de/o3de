@@ -54,18 +54,18 @@ namespace AZ::RHI
     };
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::RayTracingAccelerationStructureInstanceInclusionMask);
 
-    //! RayTracingGeometry
+    //! SingleDeviceRayTracingGeometry
     //!
     //! The geometry entry contains the vertex and index buffers associated with geometry in the
     //! scene.  Each SingleDeviceRayTracingBlas contains a list of these entries.
-    struct RayTracingGeometry
+    struct SingleDeviceRayTracingGeometry
     {
         RHI::Format m_vertexFormat = RHI::Format::Unknown;
         RHI::SingleDeviceStreamBufferView m_vertexBuffer;
         RHI::SingleDeviceIndexBufferView m_indexBuffer;
         // [GFX TODO][ATOM-4989] Add DXR BLAS Transform Buffer
     };
-    using RayTracingGeometryVector = AZStd::vector<RayTracingGeometry>;
+    using RayTracingGeometryVector = AZStd::vector<SingleDeviceRayTracingGeometry>;
 
     //! SingleDeviceRayTracingBlasDescriptor
     //!
@@ -101,7 +101,7 @@ namespace AZ::RHI
 
     private:
         RayTracingGeometryVector m_geometries;
-        RayTracingGeometry* m_buildContext = nullptr;
+        SingleDeviceRayTracingGeometry* m_buildContext = nullptr;
         RayTracingAccelerationStructureBuildFlags m_buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
     };
 

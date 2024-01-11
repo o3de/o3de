@@ -31,7 +31,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::SingleDevicePipelineLibrary
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineLibraryDescriptor& descriptor) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDevicePipelineLibraryDescriptor& descriptor) override;
             void ShutdownInternal() override;
             RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::SingleDevicePipelineLibrary* const> libraries) override;
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
@@ -39,7 +39,7 @@ namespace AZ
             bool SaveSerializedDataInternal(const AZStd::string& filePath) const;
             //////////////////////////////////////////////////////////////////////////
 
-            RHI::PipelineLibraryDescriptor m_descriptor;
+            RHI::SingleDevicePipelineLibraryDescriptor m_descriptor;
             id<MTLBinaryArchive> m_mtlBinaryArchive = nil;
             mutable AZStd::mutex m_mutex;
             

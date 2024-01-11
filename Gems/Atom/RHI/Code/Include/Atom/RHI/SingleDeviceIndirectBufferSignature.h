@@ -16,7 +16,7 @@ namespace AZ::RHI
     class Device;
     class SingleDevicePipelineState;
 
-    struct IndirectBufferSignatureDescriptor
+    struct SingleDeviceIndirectBufferSignatureDescriptor
     {
         IndirectBufferLayout m_layout;
         const SingleDevicePipelineState* m_pipelineState = nullptr;
@@ -42,7 +42,7 @@ namespace AZ::RHI
         //! @param descriptor Descriptor with the necessary information for initializing the signature.
         //! @return A result code denoting the status of the call. If successful, the SingleDeviceIndirectBufferSignature is considered
         //!      initialized and can be used. If failure, the SingleDeviceIndirectBufferSignature remains uninitialized.
-        ResultCode Init(Device& device, const IndirectBufferSignatureDescriptor& descriptor);
+        ResultCode Init(Device& device, const SingleDeviceIndirectBufferSignatureDescriptor& descriptor);
 
         /// Returns the stride in bytes of the command sequence defined by the provided layout.
         uint32_t GetByteStride() const;
@@ -51,7 +51,7 @@ namespace AZ::RHI
         //! @param index The location in the layout of the command.
         uint32_t GetOffset(IndirectCommandIndex index) const;
 
-        const IndirectBufferSignatureDescriptor& GetDescriptor() const;
+        const SingleDeviceIndirectBufferSignatureDescriptor& GetDescriptor() const;
 
         const IndirectBufferLayout& GetLayout() const;
 
@@ -65,7 +65,7 @@ namespace AZ::RHI
         // Platform API
 
         /// Called when initializing the object,
-        virtual RHI::ResultCode InitInternal(Device& device, const IndirectBufferSignatureDescriptor& descriptor) = 0;
+        virtual RHI::ResultCode InitInternal(Device& device, const SingleDeviceIndirectBufferSignatureDescriptor& descriptor) = 0;
         /// Called when requesting the stride of the command sequence.
         virtual uint32_t GetByteStrideInternal() const = 0;
         /// Called when requesting the offset of a command.
@@ -75,6 +75,6 @@ namespace AZ::RHI
 
         ///////////////////////////////////////////////////////////////////
 
-        IndirectBufferSignatureDescriptor m_descriptor;
+        SingleDeviceIndirectBufferSignatureDescriptor m_descriptor;
     };
 }

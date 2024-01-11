@@ -15,9 +15,9 @@
 namespace AZ::RHI
 {
     /// A handle typed to the pipeline library. Used by the PipelineStateCache to abstract access.
-    using PipelineLibraryHandle = Handle<uint32_t, class SingleDevicePipelineLibrary>;
+    using SingleDevicePipelineLibraryHandle = Handle<uint32_t, class SingleDevicePipelineLibrary>;
 
-    struct PipelineLibraryDescriptor
+    struct SingleDevicePipelineLibraryDescriptor
     {
         //Serialized data with which to init the SingleDevicePipelineLibrary
         ConstPtr<PipelineLibraryData> m_serializedData = nullptr;
@@ -56,7 +56,7 @@ namespace AZ::RHI
         //! state creation times (on supported platforms). On success, the library is transitioned to the
         //! initialized state. On failure, the library remains uninitialized.
         //! @param descriptor The descriptor needed to init the SingleDevicePipelineLibrary.
-        ResultCode Init(Device& device, const PipelineLibraryDescriptor& descriptor);
+        ResultCode Init(Device& device, const SingleDevicePipelineLibraryDescriptor& descriptor);
 
         //! Merges the contents of other libraries into this library. This method must be called
         //! on an initialized library. A common use case for this method is to construct thread-local
@@ -87,7 +87,7 @@ namespace AZ::RHI
         // Platform API
 
         /// Called when the library is being created.
-        virtual ResultCode InitInternal(Device& device, const PipelineLibraryDescriptor& descriptor) = 0;
+        virtual ResultCode InitInternal(Device& device, const SingleDevicePipelineLibraryDescriptor& descriptor) = 0;
 
         /// Called when the library is being shutdown.
         virtual void ShutdownInternal() = 0;

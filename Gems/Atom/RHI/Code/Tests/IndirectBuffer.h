@@ -40,7 +40,7 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::SystemAllocator);
 
-        MOCK_METHOD2(InitInternal, AZ::RHI::ResultCode(AZ::RHI::Device& device, const AZ::RHI::IndirectBufferSignatureDescriptor& descriptor));
+        MOCK_METHOD2(InitInternal, AZ::RHI::ResultCode(AZ::RHI::Device& device, const AZ::RHI::SingleDeviceIndirectBufferSignatureDescriptor& descriptor));
         MOCK_CONST_METHOD0(GetByteStrideInternal, uint32_t());
         MOCK_CONST_METHOD1(GetOffsetInternal, uint32_t(AZ::RHI::IndirectCommandIndex index));
         MOCK_METHOD0(ShutdownInternal, void());

@@ -79,10 +79,10 @@ namespace AZ::RHI
         /// End predication on the command list.
         virtual void EndPredication() = 0;
 
-        /// Builds a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of RayTracingGeometry entries
+        /// Builds a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of SingleDeviceRayTracingGeometry entries
         virtual void BuildBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) = 0;
 
-        /// Updates a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of RayTracingGeometry entries
+        /// Updates a Bottom Level Acceleration Structure (BLAS) for ray tracing operations, which is made up of SingleDeviceRayTracingGeometry entries
         virtual void UpdateBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas) = 0;
 
         /// Builds a Top Level Acceleration Structure (TLAS) for ray tracing operations, which is made up of RayTracingInstance entries that

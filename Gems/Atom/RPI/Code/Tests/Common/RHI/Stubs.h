@@ -271,7 +271,7 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, [[maybe_unused]] const AZ::RHI::PipelineLibraryDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, [[maybe_unused]] const AZ::RHI::SingleDevicePipelineLibraryDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
             AZ::RHI::ResultCode MergeIntoInternal(AZStd::span<const AZ::RHI::SingleDevicePipelineLibrary* const>) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ConstPtr<AZ::RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr; }
@@ -412,7 +412,7 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::ThreadPoolAllocator);
 
         private:
-            AZ::RHI::ResultCode InitInternal([[maybe_unused]] AZ::RHI::Device& device, [[maybe_unused]] const AZ::RHI::IndirectBufferSignatureDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal([[maybe_unused]] AZ::RHI::Device& device, [[maybe_unused]] const AZ::RHI::SingleDeviceIndirectBufferSignatureDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }
             uint32_t GetByteStrideInternal() const override { return 0; }
             uint32_t GetOffsetInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index) const override { return 0; }
             void ShutdownInternal() override {}

@@ -26,7 +26,7 @@
 #include <RHI/BufferPool.h>
 #include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/SingleDeviceIndirectArguments.h>
 
 #include <RHI/DispatchRaysIndirectBuffer.h>
 
@@ -841,7 +841,7 @@ namespace AZ
             m_state.m_shadingRateState.m_isDirty = false;
         }
 
-        void CommandList::ExecuteIndirect(const RHI::IndirectArguments& arguments)
+        void CommandList::ExecuteIndirect(const RHI::SingleDeviceIndirectArguments& arguments)
         {
             const IndirectBufferSignature* signature = static_cast<const IndirectBufferSignature*>(arguments.m_indirectBufferView->GetSignature());
 

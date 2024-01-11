@@ -191,12 +191,12 @@ namespace UnitTest
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
         RHI::Ptr<RHI::SingleDevicePipelineLibrary> pipelineLibrary = RHI::Factory::Get().CreatePipelineLibrary();
-        RHI::ResultCode resultCode = pipelineLibrary->Init(*device, RHI::PipelineLibraryDescriptor{});
+        RHI::ResultCode resultCode = pipelineLibrary->Init(*device, RHI::SingleDevicePipelineLibraryDescriptor{});
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         // Second init should fail and throw validation error.
         AZ_TEST_START_ASSERTTEST;
-        resultCode = pipelineLibrary->Init(*device, RHI::PipelineLibraryDescriptor{});
+        resultCode = pipelineLibrary->Init(*device, RHI::SingleDevicePipelineLibraryDescriptor{});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);
@@ -207,7 +207,7 @@ namespace UnitTest
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
         RHI::Ptr<RHI::PipelineStateCache> pipelineStateCache = RHI::PipelineStateCache::Create(*device);
 
-        AZStd::array<RHI::PipelineLibraryHandle, RHI::PipelineStateCache::LibraryCountMax> handles;
+        AZStd::array<RHI::SingleDevicePipelineLibraryHandle, RHI::PipelineStateCache::LibraryCountMax> handles;
         for (size_t i = 0; i < handles.size(); ++i)
         {
             handles[i] = pipelineStateCache->CreateLibrary(nullptr);
@@ -222,7 +222,7 @@ namespace UnitTest
 
         // Creating more than the maximum number of libraries should assert but still function.
         AZ_TEST_START_ASSERTTEST;
-        EXPECT_EQ(pipelineStateCache->CreateLibrary(nullptr), RHI::PipelineLibraryHandle{});
+        EXPECT_EQ(pipelineStateCache->CreateLibrary(nullptr), RHI::SingleDevicePipelineLibraryHandle{});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         // Reset should no-op.
@@ -267,7 +267,7 @@ namespace UnitTest
 
         RHI::PipelineStateDescriptorForDraw descriptor = CreatePipelineStateDescriptor(0);
 
-        RHI::PipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary(nullptr);
+        RHI::SingleDevicePipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary(nullptr);
 
         AZStd::mutex mutex;
         AZStd::unordered_set<const RHI::SingleDevicePipelineState*> pipelineStatesMerged;
@@ -313,7 +313,7 @@ namespace UnitTest
             descriptors.push_back(CreatePipelineStateDescriptor(static_cast<uint32_t>(i)));
         }
 
-        AZStd::vector<RHI::PipelineLibraryHandle> libraryHandles;
+        AZStd::vector<RHI::SingleDevicePipelineLibraryHandle> libraryHandles;
         for (size_t i = 0; i < LibraryCountMax; ++i)
         {
             libraryHandles.push_back(pipelineStateCache->CreateLibrary(nullptr));
@@ -325,7 +325,7 @@ namespace UnitTest
         {
             for (size_t libraryIndex = 0; libraryIndex < LibraryCountMax; ++libraryIndex)
             {
-                RHI::PipelineLibraryHandle libraryHandle = libraryHandles[libraryIndex];
+                RHI::SingleDevicePipelineLibraryHandle libraryHandle = libraryHandles[libraryIndex];
 
                 AZStd::unordered_set<const RHI::SingleDevicePipelineState*> pipelineStatesMerged;
 

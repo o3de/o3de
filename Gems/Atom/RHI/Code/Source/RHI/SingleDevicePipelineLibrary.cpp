@@ -24,7 +24,7 @@ namespace AZ::RHI
         return true;
     }
 
-    ResultCode SingleDevicePipelineLibrary::Init(Device& device, const PipelineLibraryDescriptor& descriptor)
+    ResultCode SingleDevicePipelineLibrary::Init(Device& device, const SingleDevicePipelineLibraryDescriptor& descriptor)
     {
         if (Validation::IsEnabled())
         {

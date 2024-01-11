@@ -74,16 +74,16 @@ namespace AZ::RHI
         {
             if (m_globalLibraryActiveBits[i])
             {
-                ResetLibraryImpl(PipelineLibraryHandle(i));
+                ResetLibraryImpl(SingleDevicePipelineLibraryHandle(i));
             }
         }
     }
 
-    PipelineLibraryHandle PipelineStateCache::CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath)
+    SingleDevicePipelineLibraryHandle PipelineStateCache::CreateLibrary(const PipelineLibraryData* serializedData, const AZStd::string& filePath)
     {
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_mutex);
 
-        PipelineLibraryHandle handle;
+        SingleDevicePipelineLibraryHandle handle;
         if (!m_libraryFreeList.empty())
         {
             handle = m_libraryFreeList.back();
@@ -100,7 +100,7 @@ namespace AZ::RHI
                 return {};
             }
 
-            handle = PipelineLibraryHandle(m_globalLibrarySet.size());
+            handle = SingleDevicePipelineLibraryHandle(m_globalLibrarySet.size());
             m_globalLibrarySet.emplace_back();
         }
 
@@ -115,7 +115,7 @@ namespace AZ::RHI
         return handle;
     }
 
-    void PipelineStateCache::ReleaseLibrary(PipelineLibraryHandle handle)
+    void PipelineStateCache::ReleaseLibrary(SingleDevicePipelineLibraryHandle handle)
     {
         if (handle.IsValid())
         {
@@ -134,7 +134,7 @@ namespace AZ::RHI
         }
     }
 
-    void PipelineStateCache::ResetLibrary(PipelineLibraryHandle handle)
+    void PipelineStateCache::ResetLibrary(SingleDevicePipelineLibraryHandle handle)
     {
         if (handle.IsValid())
         {
@@ -143,7 +143,7 @@ namespace AZ::RHI
         }
     }
 
-    void PipelineStateCache::ResetLibraryImpl(PipelineLibraryHandle handle)
+    void PipelineStateCache::ResetLibraryImpl(SingleDevicePipelineLibraryHandle handle)
     {
         m_threadLibrarySet.ForEach([handle](ThreadLibrarySet& librarySet)
         {
@@ -161,7 +161,7 @@ namespace AZ::RHI
         libraryEntry.m_pendingCacheMutex.unlock();
     }
 
-    Ptr<SingleDevicePipelineLibrary> PipelineStateCache::GetMergedLibrary(PipelineLibraryHandle handle) const
+    Ptr<SingleDevicePipelineLibrary> PipelineStateCache::GetMergedLibrary(SingleDevicePipelineLibraryHandle handle) const
     {
         if (handle.IsNull())
         {
@@ -280,7 +280,7 @@ namespace AZ::RHI
     }
 
     const SingleDevicePipelineState* PipelineStateCache::AcquirePipelineState(
-        PipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor, const AZ::Name& name /*= AZ::Name()*/)
+        SingleDevicePipelineLibraryHandle handle, const PipelineStateDescriptor& descriptor, const AZ::Name& name /*= AZ::Name()*/)
     {
         if (handle.IsNull())
         {

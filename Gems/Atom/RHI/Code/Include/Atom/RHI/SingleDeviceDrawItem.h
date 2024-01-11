@@ -11,7 +11,7 @@
 #include <Atom/RHI/SingleDeviceStreamBufferView.h>
 #include <Atom/RHI/SingleDeviceIndexBufferView.h>
 #include <Atom/RHI/SingleDeviceIndirectBufferView.h>
-#include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/SingleDeviceIndirectArguments.h>
 #include <AzCore/std/containers/array.h>
 
 namespace AZ::RHI
@@ -70,7 +70,7 @@ namespace AZ::RHI
         uint32_t m_indexOffset = 0;
     };
 
-    using DrawIndirect = IndirectArguments;
+    using DrawIndirect = SingleDeviceIndirectArguments;
 
     enum class DrawType : uint8_t
     {

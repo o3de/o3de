@@ -55,7 +55,7 @@ set(FILES
     Include/Atom/RHI/MultiDeviceDrawPacket.h
     Include/Atom/RHI/DrawPacketBuilder.h
     Include/Atom/RHI/MultiDeviceDrawPacketBuilder.h
-    Include/Atom/RHI/IndirectArguments.h
+    Include/Atom/RHI/SingleDeviceIndirectArguments.h
     Include/Atom/RHI/MultiDeviceIndirectArguments.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandListValidator.cpp

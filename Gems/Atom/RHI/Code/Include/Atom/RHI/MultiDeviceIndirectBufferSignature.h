@@ -23,8 +23,8 @@ namespace AZ::RHI
     //! devices) as well as a MultiDevicePipelineState
     struct MultiDeviceIndirectBufferSignatureDescriptor
     {
-        //! Returns the device-specific IndirectBufferSignatureDescriptor for the given index
-        IndirectBufferSignatureDescriptor GetDeviceIndirectBufferSignatureDescriptor(int deviceIndex) const;
+        //! Returns the device-specific SingleDeviceIndirectBufferSignatureDescriptor for the given index
+        SingleDeviceIndirectBufferSignatureDescriptor GetDeviceIndirectBufferSignatureDescriptor(int deviceIndex) const;
 
         const MultiDevicePipelineState* m_pipelineState{ nullptr };
         IndirectBufferLayout m_layout;

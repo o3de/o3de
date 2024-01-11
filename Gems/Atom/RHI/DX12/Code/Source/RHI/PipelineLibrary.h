@@ -31,7 +31,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::SingleDevicePipelineLibrary
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineLibraryDescriptor& descriptor) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDevicePipelineLibraryDescriptor& descriptor) override;
             void ShutdownInternal() override;
             RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::SingleDevicePipelineLibrary* const> libraries) override;
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
