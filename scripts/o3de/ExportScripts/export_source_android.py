@@ -13,10 +13,10 @@ import o3de.manifest as manifest
 
 from o3de import android, android_support
 
-
 import argparse
 import logging
 import pathlib
+import re
 import sys
 
 from typing import List
@@ -38,10 +38,7 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
                                   max_bundle_size: int,
                                   fail_on_asset_errors: bool,
                                   deploy_to_device: bool,
-                                  org_name: str|None,
                                   logger: logging.Logger|None) -> None:
-    o3de_cli_script_path = ctx.engine_path / (f'scripts/o3de{android_support.O3DE_SCRIPT_EXTENSION}')
-
     if not logger:
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
@@ -104,28 +101,26 @@ def export_source_android_project(ctx: exp.O3DEScriptExportContext,
         activity_name = f'{ctx.project_name}Activity'
         logger.info(f"Activity name set to {activity_name}")
 
-        if not org_name:
-            org_name = f'org.o3de.{ctx.project_name}'
-            logger.info(f"Organization name set to  {org_name}")
+        
+        org_name = f'org.o3de.{ctx.project_name}'
+        logger.info(f"Organization name set to  {org_name}")
 
         signing_config_file_path = target_android_project_path /'app/build.gradle'
 
         try:
-            with open(signing_config_file_path,'r') as sf:
-                sf_text = sf.read()
-                signing_config_verified = ('signingConfigs' in sf_text and
-                                           'storeFile' in sf_text and
-                                           'storePassword' in sf_text and
-                                           'keyPassword' in sf_text and
-                                           'keyAlias' in sf_text)
-                if signing_config_verified:
-                    android_support.deloy_to_android_device(target_android_project_path,
-                                                build_config,
-                                                android_sdk_home,
-                                                org_name,
-                                                activity_name)
-        except RuntimeError:
-            logger.error("Unable to verify build.gradle file or that it contains proper signing configs. Aborting deployment...")
+            build_gradle_content = signing_config_file_path.read_text('utf-8','ignore')
+            match_signing_config = re.compile("(signingConfigs\\s).*(storeFile\\s).*(storePassword\\s).*(keyPassword\\s).*(keyAlias\\s).*", re.DOTALL)
+            signing_config_verified = match_signing_config.search(build_gradle_content) is not None
+            if signing_config_verified:
+                android_support.deloy_to_android_device(target_android_project_path,
+                                                        build_config,
+                                                        android_sdk_home,
+                                                        org_name,
+                                                        activity_name)
+            else:
+                logger.error("Unable to verify signing configuration in build.gradle. Aborting deployment...")
+        except FileNotFoundError:
+            logger.error("Unable to open build.gradle file. Aborting deployment...")
         
 
 def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
@@ -143,10 +138,7 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
     eutil.create_common_export_params_and_config(parser, export_config)
 
     parser.add_argument('--deploy-to-android',action='store_true',help='At completion of build, deploy to a connected android device.')
-    
-    parser.add_argument('--org-name', type=str, default=f'org.o3de.{o3de_context.project_name}',
-                        help='The name of the organization identifier (i.e. org.o3de) used to construct the full activity name.')
-
+ 
     parser.add_argument('-B', '--build-dir', type=str, 
                                           help=f"The location to write the android project scripts to. Default: '{android.DEFAULT_ANDROID_BUILD_FOLDER}'", 
                                           default=android.DEFAULT_ANDROID_BUILD_FOLDER) 
@@ -214,7 +206,6 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
                                       max_bundle_size=args.max_bundle_size,
                                       fail_on_asset_errors=fail_on_asset_errors,
                                       deploy_to_device=args.deploy_to_android,
-                                      org_name=args.org_name,
                                       logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)

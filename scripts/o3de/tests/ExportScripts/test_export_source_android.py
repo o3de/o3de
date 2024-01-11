@@ -114,7 +114,6 @@ def test_export_standalone_multipart_args(tmpdir, seedlists, seedfiles, levelnam
                                   max_bundle_size=mock_bundle_size,
                                   fail_on_asset_errors=False,
                                   deploy_to_device=args.deploy_to_android,
-                                  org_name=args.org_name,
                                   logger=mock_logger)
 
 
@@ -264,7 +263,6 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                   max_bundle_size=2048,
                                   fail_on_asset_errors=check_fail_asset_err,
                                   deploy_to_device=args.deploy_to_android,
-                                  org_name=args.org_name,
                                   logger=mock_logger)
                 mock_export_func.reset_mock()
 
@@ -344,7 +342,6 @@ def test_build_tool_combinations(tmp_path, use_sdk, should_build_tools_flag, has
                             max_bundle_size = 2048,
                             fail_on_asset_errors = False,
                             deploy_to_device = False,
-                            org_name = None,
                             logger=mock_logger)
                 
             if expect_toolchain_build_called:
@@ -437,7 +434,6 @@ def test_asset_bundler_combinations(tmp_path, use_sdk, should_build_tools_flag, 
                             max_bundle_size = 2048,
                             fail_on_asset_errors = False,
                             deploy_to_device = False,
-                            org_name = None,
                             logger=mock_logger)
                 
             selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
@@ -537,7 +533,6 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
                                 2048,
                                 False,
                                 False,
-                                None,
                                 logger=mock_logger)
         
         combined_seedfiles = test_seedfiles 
@@ -633,7 +628,6 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
                             max_bundle_size = 2048,
                             fail_on_asset_errors = False,
                             deploy_to_device = False,
-                            org_name = None,
                             logger=mock_logger)
                 
             selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
@@ -678,7 +672,6 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
                             max_bundle_size = 2048,
                             fail_on_asset_errors = False,
                             deploy_to_device = False,
-                            org_name = None,
                             logger=mock_logger)
                 
             selected_tools_build_path = test_tools_build_path if not use_sdk else test_tools_sdk_path
