@@ -15,6 +15,8 @@
 
 # Discover all the platforms that are available
 
+include(CMakePrintHelpers)
+
 set(LY_PAL_TOOLS_DEFINES)
 file(GLOB pal_tools_files "cmake/Platform/*/PALTools_*.cmake")
 foreach(pal_tools_file ${pal_tools_files})
@@ -46,4 +48,17 @@ function(ly_get_pal_tool_dirs out_list pal_path)
         list(APPEND pal_paths ${path})
     endforeach()
     set(${out_list} ${pal_paths} PARENT_SCOPE)
+endfunction()
+
+function(copy_java_to_build_dir common_relative_path file_paths)
+  foreach(file_path ${file_paths})
+    get_filename_component(target_path "${file_path}" DIRECTORY)
+    # External Python script launches cmake with -B like C:/myProjectAndroid/app/o3de/profile/6v5z4r4t/arm64-v8a
+    # We want to copy the extra Java source to C:/myProjectAndroid/app/src/main/${file_path}
+    set(java_file_src ${CMAKE_CURRENT_SOURCE_DIR}/${common_relative_path}/${file_path})
+    set(java_file_dest ${CMAKE_BINARY_DIR}/../../../../src/main/${target_path})
+    cmake_print_variables(java_file_src)
+    cmake_print_variables(java_file_dest)
+    file(COPY ${java_file_src} DESTINATION ${java_file_dest})
+  endforeach()
 endfunction()
