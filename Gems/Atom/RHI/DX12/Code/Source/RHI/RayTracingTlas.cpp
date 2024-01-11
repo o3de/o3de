@@ -24,7 +24,7 @@ namespace AZ
             return aznew RayTracingTlas;
         }
 
-        RHI::ResultCode RayTracingTlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingTlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& bufferPools)
+        RHI::ResultCode RayTracingTlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SingleDeviceRayTracingTlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& bufferPools)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);
@@ -58,7 +58,7 @@ namespace AZ
                 tlasInstancesBufferDescriptor.m_byteCount = instanceDescsSizeInBytes;
                 tlasInstancesBufferDescriptor.m_alignment = D3D12_RAYTRACING_INSTANCE_DESCS_BYTE_ALIGNMENT;
             
-                AZ::RHI::BufferInitRequest tlasInstancesBufferRequest;
+                AZ::RHI::SingleDeviceBufferInitRequest tlasInstancesBufferRequest;
                 tlasInstancesBufferRequest.m_buffer = buffers.m_tlasInstancesBuffer.get();
                 tlasInstancesBufferRequest.m_descriptor = tlasInstancesBufferDescriptor;
                 [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetTlasInstancesBufferPool()->InitBuffer(tlasInstancesBufferRequest);
@@ -67,8 +67,8 @@ namespace AZ
                 MemoryView& tlasInstancesMemoryView = static_cast<Buffer*>(buffers.m_tlasInstancesBuffer.get())->GetMemoryView();
                 tlasInstancesMemoryView.SetName(L"TLAS Instance");
             
-                RHI::BufferMapResponse mapResponse;
-                resultCode = bufferPools.GetTlasInstancesBufferPool()->MapBuffer(RHI::BufferMapRequest(*buffers.m_tlasInstancesBuffer, 0, instanceDescsSizeInBytes), mapResponse);
+                RHI::SingleDeviceBufferMapResponse mapResponse;
+                resultCode = bufferPools.GetTlasInstancesBufferPool()->MapBuffer(RHI::SingleDeviceBufferMapRequest(*buffers.m_tlasInstancesBuffer, 0, instanceDescsSizeInBytes), mapResponse);
                 AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to map TLAS instances buffer");
                 D3D12_RAYTRACING_INSTANCE_DESC* mappedData = reinterpret_cast<D3D12_RAYTRACING_INSTANCE_DESC*>(mapResponse.m_data);
             
@@ -122,7 +122,7 @@ namespace AZ
             scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = prebuildInfo.ScratchDataSizeInBytes;
             
-            AZ::RHI::BufferInitRequest scratchBufferRequest;
+            AZ::RHI::SingleDeviceBufferInitRequest scratchBufferRequest;
             scratchBufferRequest.m_buffer = buffers.m_scratchBuffer.get();
             scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
@@ -137,7 +137,7 @@ namespace AZ
             tlasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::RayTracingAccelerationStructure;
             tlasBufferDescriptor.m_byteCount = prebuildInfo.ResultDataMaxSizeInBytes;
             
-            AZ::RHI::BufferInitRequest tlasBufferRequest;
+            AZ::RHI::SingleDeviceBufferInitRequest tlasBufferRequest;
             tlasBufferRequest.m_buffer = buffers.m_tlasBuffer.get();
             tlasBufferRequest.m_descriptor = tlasBufferDescriptor;
             resultCode = bufferPools.GetTlasBufferPool()->InitBuffer(tlasBufferRequest);

@@ -27,7 +27,7 @@ namespace AZ::RHI
         m_drawArguments = drawArguments;
     }
 
-    void DrawPacketBuilder::SetIndexBufferView(const IndexBufferView& indexBufferView)
+    void DrawPacketBuilder::SetIndexBufferView(const SingleDeviceIndexBufferView& indexBufferView)
     {
         m_indexBufferView = indexBufferView;
     }
@@ -146,8 +146,8 @@ namespace AZ::RHI
             AZStd::alignment_of<uint8_t>::value);
 
         const VirtualAddress streamBufferViewsOffset = linearAllocator.Allocate(
-            sizeof(StreamBufferView) * m_streamBufferViewCount,
-            AZStd::alignment_of<StreamBufferView>::value);
+            sizeof(SingleDeviceStreamBufferView) * m_streamBufferViewCount,
+            AZStd::alignment_of<SingleDeviceStreamBufferView>::value);
 
         const VirtualAddress scissorOffset = linearAllocator.Allocate(
             sizeof(Scissor) * m_scissors.size(),
@@ -261,7 +261,7 @@ namespace AZ::RHI
 
         if (streamBufferViewsOffset.IsValid())
         {
-            auto streamBufferViews = reinterpret_cast<StreamBufferView*>(allocationData + streamBufferViewsOffset.m_ptr);
+            auto streamBufferViews = reinterpret_cast<SingleDeviceStreamBufferView*>(allocationData + streamBufferViewsOffset.m_ptr);
 
             drawPacket->m_streamBufferViews = streamBufferViews;
             drawPacket->m_streamBufferViewCount = aznumeric_caster(m_streamBufferViewCount);
@@ -275,7 +275,7 @@ namespace AZ::RHI
                     drawItems[i].m_streamBufferViews = streamBufferViews;
                     drawItems[i].m_streamBufferViewCount = aznumeric_caster(drawRequest.m_streamBufferViews.size());
 
-                    for (const StreamBufferView& streamBufferView : drawRequest.m_streamBufferViews)
+                    for (const SingleDeviceStreamBufferView& streamBufferView : drawRequest.m_streamBufferViews)
                     {
                         *streamBufferViews++ = streamBufferView;
                     }

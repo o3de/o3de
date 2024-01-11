@@ -35,7 +35,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::SingleDevicePipelineState
-            RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::RayTracingPipelineStateDescriptor* descriptor) override;
+            RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::SingleDeviceRayTracingPipelineStateDescriptor* descriptor) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 

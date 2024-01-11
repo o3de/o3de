@@ -28,12 +28,12 @@ namespace AZ::RHI
     };
     using RayTracingShaderTableRecordList = AZStd::list<RayTracingShaderTableRecord>;
 
-    //! RayTracingShaderTableDescriptor
+    //! SingleDeviceRayTracingShaderTableDescriptor
     //!
     //! The Build() operation in the descriptor allows the shader table to be initialized
     //! using the following pattern:
     //!
-    //! RHI::RayTracingShaderTableDescriptor descriptor;
+    //! RHI::SingleDeviceRayTracingShaderTableDescriptor descriptor;
     //! descriptor.Build(AZ::Name("RayTracingExampleShaderTable"), m_rayTracingPipelineState)
     //!     ->RayGenerationRecord(AZ::Name("RayGenerationShader"))
     //!     ->MissRecord(AZ::Name("MissShader"))
@@ -44,11 +44,11 @@ namespace AZ::RHI
     //!         ->ShaderResourceGroup(hitGroupSrg2)
     //!     ;
     //!
-    class RayTracingShaderTableDescriptor
+    class SingleDeviceRayTracingShaderTableDescriptor
     {
     public:
-        RayTracingShaderTableDescriptor() = default;
-        ~RayTracingShaderTableDescriptor() = default;
+        SingleDeviceRayTracingShaderTableDescriptor() = default;
+        ~SingleDeviceRayTracingShaderTableDescriptor() = default;
 
         // accessors
         const RHI::Ptr<SingleDeviceRayTracingPipelineState>& GetPipelineState() const { return m_rayTracingPipelineState; }
@@ -68,12 +68,12 @@ namespace AZ::RHI
         void RemoveHitGroupRecords(uint32_t key);
 
         // build operations
-        RayTracingShaderTableDescriptor* Build(const AZ::Name& name, const RHI::Ptr<SingleDeviceRayTracingPipelineState>& rayTracingPipelineState);
-        RayTracingShaderTableDescriptor* RayGenerationRecord(const AZ::Name& name);
-        RayTracingShaderTableDescriptor* MissRecord(const AZ::Name& name);
-        RayTracingShaderTableDescriptor* CallableRecord(const AZ::Name& name);
-        RayTracingShaderTableDescriptor* HitGroupRecord(const AZ::Name& name, uint32_t key = RayTracingShaderTableRecord::InvalidKey);
-        RayTracingShaderTableDescriptor* ShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup);
+        SingleDeviceRayTracingShaderTableDescriptor* Build(const AZ::Name& name, const RHI::Ptr<SingleDeviceRayTracingPipelineState>& rayTracingPipelineState);
+        SingleDeviceRayTracingShaderTableDescriptor* RayGenerationRecord(const AZ::Name& name);
+        SingleDeviceRayTracingShaderTableDescriptor* MissRecord(const AZ::Name& name);
+        SingleDeviceRayTracingShaderTableDescriptor* CallableRecord(const AZ::Name& name);
+        SingleDeviceRayTracingShaderTableDescriptor* HitGroupRecord(const AZ::Name& name, uint32_t key = RayTracingShaderTableRecord::InvalidKey);
+        SingleDeviceRayTracingShaderTableDescriptor* ShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup);
 
     private:
         AZ::Name m_name;
@@ -100,11 +100,11 @@ namespace AZ::RHI
 
         //! Queues this SingleDeviceRayTracingShaderTable to be built by the FrameScheduler.
         //! Note that the descriptor must be heap allocated, preferably using make_shared.
-        void Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor);
+        void Build(const AZStd::shared_ptr<SingleDeviceRayTracingShaderTableDescriptor> descriptor);
 
     protected:
 
-        AZStd::shared_ptr<RayTracingShaderTableDescriptor> m_descriptor;
+        AZStd::shared_ptr<SingleDeviceRayTracingShaderTableDescriptor> m_descriptor;
         const SingleDeviceRayTracingBufferPools* m_bufferPools = nullptr;
 
     private:

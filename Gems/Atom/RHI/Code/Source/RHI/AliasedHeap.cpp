@@ -151,7 +151,7 @@ namespace AZ::RHI
                     buffer,
                     [this, buffer, &descriptor, heapOffsetInBytes]
                 {
-                    BufferInitRequest request(*buffer, descriptor.m_bufferDescriptor);
+                    SingleDeviceBufferInitRequest request(*buffer, descriptor.m_bufferDescriptor);
                     return InitBufferInternal(request, heapOffsetInBytes);
                 });
 

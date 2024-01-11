@@ -182,7 +182,7 @@ namespace UnitTest
             return aznew IndirectBufferSignature;
         }
 
-        AZ::RHI::Ptr<AZ::RHI::IndirectBufferWriter> Factory::CreateIndirectBufferWriter()
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceIndirectBufferWriter> Factory::CreateIndirectBufferWriter()
         {
             return aznew IndirectBufferWriter;
         }

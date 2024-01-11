@@ -66,7 +66,7 @@ namespace AZ
             RHI::Ptr<RHI::SingleDeviceQueryPool> CreateQueryPool() override;
             RHI::Ptr<RHI::SingleDeviceQuery> CreateQuery() override;
             RHI::Ptr<RHI::SingleDeviceIndirectBufferSignature> CreateIndirectBufferSignature() override;
-            RHI::Ptr<RHI::IndirectBufferWriter> CreateIndirectBufferWriter() override;
+            RHI::Ptr<RHI::SingleDeviceIndirectBufferWriter> CreateIndirectBufferWriter() override;
             RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> CreateRayTracingBufferPools() override;
             RHI::Ptr<RHI::SingleDeviceRayTracingBlas> CreateRayTracingBlas() override;
             RHI::Ptr<RHI::SingleDeviceRayTracingTlas> CreateRayTracingTlas() override;

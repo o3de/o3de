@@ -171,7 +171,7 @@ namespace AZ::RHI
             {
                 drawItem->m_streamBufferViewCount = static_cast<uint8_t>(streamBufferViewCount);
 
-                auto [it, insertOK]{ m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::vector<StreamBufferView>{}) };
+                auto [it, insertOK]{ m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::vector<SingleDeviceStreamBufferView>{}) };
 
                 auto& [index, deviceStreamBufferView]{ *it };
 
@@ -259,11 +259,11 @@ namespace AZ::RHI
         //! A map of all device-specific IndexBufferViews, indexed by the device index
         //! This additional cache is needed since device-specific IndexBufferViews are returned as objects
         //! and the device-specific DrawItem holds a pointer to it.
-        AZStd::unordered_map<int, IndexBufferView> m_deviceIndexBufferView;
+        AZStd::unordered_map<int, SingleDeviceIndexBufferView> m_deviceIndexBufferView;
         //! A map of all device-specific StreamBufferViews, indexed by the device index
         //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
         //! and the device-specific DrawItem holds a pointer to it.
-        AZStd::unordered_map<int, AZStd::vector<StreamBufferView>> m_deviceStreamBufferViews;
+        AZStd::unordered_map<int, AZStd::vector<SingleDeviceStreamBufferView>> m_deviceStreamBufferViews;
         //! A map of all device-specific ShaderResourceGroups, indexed by the device index
         //! This additional cache is needed since device-specific ShaderResourceGroups are provided as a SingleDeviceShaderResourceGroup**,
         //! which are then locally cached in a vector (per device) and the device-specific DrawItem holds a pointer to this vector's data.

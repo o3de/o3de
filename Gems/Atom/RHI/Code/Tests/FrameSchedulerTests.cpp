@@ -176,7 +176,7 @@ namespace UnitTest
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
                 desc.m_byteCount = BufferSize;
 
-                RHI::BufferInitRequest request;
+                RHI::SingleDeviceBufferInitRequest request;
                 request.m_descriptor = desc;
                 request.m_buffer = buffer.get();
                 m_state->m_bufferPool->InitBuffer(request);

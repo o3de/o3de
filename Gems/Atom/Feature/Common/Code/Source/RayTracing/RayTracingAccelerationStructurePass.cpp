@@ -135,8 +135,8 @@ namespace AZ
                     uint32_t rayTracingSubMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
 
                     // create the TLAS descriptor
-                    RHI::RayTracingTlasDescriptor tlasDescriptor;
-                    RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+                    RHI::SingleDeviceRayTracingTlasDescriptor tlasDescriptor;
+                    RHI::SingleDeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                     uint32_t instanceIndex = 0;
                     for (auto& subMesh : subMeshes)

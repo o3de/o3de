@@ -289,7 +289,7 @@ namespace AZ
             bufferDescriptor.m_sharedQueueMask = bufferPoolDesc.m_sharedQueueMask;
 
             m_bufferNull = Buffer::Create();
-            RHI::BufferInitRequest request(*m_bufferNull, bufferDescriptor);
+            RHI::SingleDeviceBufferInitRequest request(*m_bufferNull, bufferDescriptor);
             result = m_bufferPool->InitBuffer(request);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
            

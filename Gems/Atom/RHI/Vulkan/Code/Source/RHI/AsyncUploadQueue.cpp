@@ -57,7 +57,7 @@ namespace AZ
             m_callbackList.clear();
         }
 
-        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::BufferStreamRequest& request)
+        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::SingleDeviceBufferStreamRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -76,11 +76,11 @@ namespace AZ
             {
                 // No need to use staging buffers since it's host memory.
                 // We just map, copy and then unmap.
-                RHI::BufferMapRequest mapRequest;
+                RHI::SingleDeviceBufferMapRequest mapRequest;
                 mapRequest.m_buffer = request.m_buffer;
                 mapRequest.m_byteCount = request.m_byteCount;
                 mapRequest.m_byteOffset = request.m_byteOffset;
-                RHI::BufferMapResponse mapResponse;
+                RHI::SingleDeviceBufferMapResponse mapResponse;
                 bufferPool->MapBuffer(mapRequest, mapResponse);
                 ::memcpy(mapResponse.m_data, request.m_sourceData, request.m_byteCount);
                 bufferPool->UnmapBuffer(*request.m_buffer);
@@ -119,14 +119,14 @@ namespace AZ
                     memcpy(mapped, sourceData + pendingByteOffset, bytesToCopy);
                     framePacket->m_stagingBuffer->GetBufferMemoryView()->Unmap(RHI::HostMemoryAccess::Write);
 
-                    RHI::CopyBufferDescriptor copyDescriptor;
+                    RHI::SingleDeviceCopyBufferDescriptor copyDescriptor;
                     copyDescriptor.m_sourceBuffer = framePacket->m_stagingBuffer.get();
                     copyDescriptor.m_sourceOffset = 0;
                     copyDescriptor.m_destinationBuffer = buffer;
                     copyDescriptor.m_destinationOffset = static_cast<uint32_t>(pendingByteOffset);
                     copyDescriptor.m_size = static_cast<uint32_t>(bytesToCopy);
 
-                    m_commandList->Submit(RHI::CopyItem(copyDescriptor));
+                    m_commandList->Submit(RHI::SingleDeviceCopyItem(copyDescriptor));
 
                     pendingByteOffset += bytesToCopy;
                     pendingByteCount -= bytesToCopy;
@@ -266,7 +266,7 @@ namespace AZ
                                 }
 
                                 // Add copy command to copy image subresource from staging memory to image GPU resource.
-                                RHI::CopyBufferToImageDescriptor copyDescriptor;
+                                RHI::SingleDeviceCopyBufferToImageDescriptor copyDescriptor;
                                 copyDescriptor.m_sourceBuffer = framePacket->m_stagingBuffer.get();
                                 copyDescriptor.m_sourceOffset = framePacket->m_dataOffset;
                                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
@@ -280,7 +280,7 @@ namespace AZ
                                 copyDescriptor.m_destinationOrigin.m_top = 0;
                                 copyDescriptor.m_destinationOrigin.m_front = depth;
 
-                                m_commandList->Submit(RHI::CopyItem(copyDescriptor));
+                                m_commandList->Submit(RHI::SingleDeviceCopyItem(copyDescriptor));
 
                                 framePacket->m_dataOffset += stagingSlicePitch;
                             }
@@ -298,7 +298,7 @@ namespace AZ
                                 const uint8_t* subresourceDataStart = reinterpret_cast<const uint8_t*>(subresourceData.m_data) + (depth * subresourceSlicePitch);
 
                                 // The copy destination is same for each subresource.
-                                RHI::CopyBufferToImageDescriptor copyDescriptor;
+                                RHI::SingleDeviceCopyBufferToImageDescriptor copyDescriptor;
                                 copyDescriptor.m_sourceBuffer = framePacket->m_stagingBuffer.get();
                                 copyDescriptor.m_sourceOffset = framePacket->m_dataOffset;
                                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
@@ -354,7 +354,7 @@ namespace AZ
                                     copyDescriptor.m_sourceSize.m_height = heightToCopy;
                                     copyDescriptor.m_sourceOffset = framePacket->m_dataOffset;
 
-                                    m_commandList->Submit(RHI::CopyItem(copyDescriptor));
+                                    m_commandList->Submit(RHI::SingleDeviceCopyItem(copyDescriptor));
 
                                     framePacket->m_dataOffset += stagingSize;
                                     startRow = endRow;

@@ -82,7 +82,7 @@ namespace UnitTest
 
             AZ::RHI::Ptr<AZ::RHI::SingleDeviceIndirectBufferSignature> CreateIndirectBufferSignature() override;
 
-            AZ::RHI::Ptr<AZ::RHI::IndirectBufferWriter> CreateIndirectBufferWriter() override;
+            AZ::RHI::Ptr<AZ::RHI::SingleDeviceIndirectBufferWriter> CreateIndirectBufferWriter() override;
 
             AZ::RHI::Ptr<AZ::RHI::SingleDeviceRayTracingBufferPools> CreateRayTracingBufferPools() override;
 

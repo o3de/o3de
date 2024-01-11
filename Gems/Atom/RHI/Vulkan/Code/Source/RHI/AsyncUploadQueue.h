@@ -58,7 +58,7 @@ namespace AZ
             RHI::ResultCode Init(const Descriptor& descriptor);
             void Shutdown();
 
-            RHI::AsyncWorkHandle QueueUpload(const RHI::BufferStreamRequest& request);
+            RHI::AsyncWorkHandle QueueUpload(const RHI::SingleDeviceBufferStreamRequest& request);
             RHI::AsyncWorkHandle QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
 
             void WaitForUpload(const RHI::AsyncWorkHandle& workHandle);

@@ -147,7 +147,7 @@ namespace AZ
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::SingleDeviceCopyItem& copyItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -156,7 +156,7 @@ namespace AZ
 
             case RHI::CopyItemType::Buffer:
             {
-                const RHI::CopyBufferDescriptor& descriptor = copyItem.m_buffer;
+                const RHI::SingleDeviceCopyBufferDescriptor& descriptor = copyItem.m_buffer;
                 const Buffer* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                 const Buffer* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -171,7 +171,7 @@ namespace AZ
 
             case RHI::CopyItemType::Image:
             {
-                const RHI::CopyImageDescriptor& descriptor = copyItem.m_image;
+                const RHI::SingleDeviceCopyImageDescriptor& descriptor = copyItem.m_image;
                 const Image* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                 const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -214,7 +214,7 @@ namespace AZ
 
             case RHI::CopyItemType::BufferToImage:
             {
-                const RHI::CopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
+                const RHI::SingleDeviceCopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
                 const Buffer* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                 const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -250,7 +250,7 @@ namespace AZ
 
             case RHI::CopyItemType::ImageToBuffer:
             {
-                const RHI::CopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
+                const RHI::SingleDeviceCopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
                 const Image* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                 const Buffer* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -277,7 +277,7 @@ namespace AZ
             }
             case RHI::CopyItemType::QueryToBuffer:
             {
-                const RHI::CopyQueryToBufferDescriptor& descriptor = copyItem.m_queryToBuffer;
+                const RHI::SingleDeviceCopyQueryToBufferDescriptor& descriptor = copyItem.m_queryToBuffer;
 
                 GetCommandList()->ResolveQueryData(
                     static_cast<const QueryPool*>(descriptor.m_sourceQueryPool)->GetHeap(),
@@ -857,7 +857,7 @@ namespace AZ
             );
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::SingleDeviceStreamBufferView* streams, uint32_t count)
         {
             bool needsBinding = false;
 
@@ -893,7 +893,7 @@ namespace AZ
             }
         }
 
-        void CommandList::SetIndexBuffer(const RHI::IndexBufferView& indexBufferView)
+        void CommandList::SetIndexBuffer(const RHI::SingleDeviceIndexBufferView& indexBufferView)
         {
             uint64_t indexBufferHash = static_cast<uint64_t>(indexBufferView.GetHash());
             if (indexBufferHash != m_state.m_indexBufferHash)

@@ -17,12 +17,12 @@ namespace AZ::RHI
 
     //! Provides a view into a buffer, to be used as an indirect buffer. The content of the view is a contiguous
     //! list of commands sequences. It is provided to the RHI back-end at draw time.
-    class alignas(8) IndirectBufferView
+    class alignas(8) SingleDeviceIndirectBufferView
     {
     public:
-        IndirectBufferView() = default;
+        SingleDeviceIndirectBufferView() = default;
 
-        IndirectBufferView(
+        SingleDeviceIndirectBufferView(
             const SingleDeviceBuffer& buffer,
             const SingleDeviceIndirectBufferSignature& signature,
             uint32_t byteOffset,

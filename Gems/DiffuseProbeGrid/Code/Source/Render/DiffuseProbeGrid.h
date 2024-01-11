@@ -33,8 +33,8 @@ namespace AZ
             RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;          
             RHI::Ptr<RHI::SingleDeviceBufferPool> m_bufferPool;
 
-            AZStd::array<RHI::StreamBufferView, 1> m_boxPositionBufferView;
-            RHI::IndexBufferView m_boxIndexBufferView;
+            AZStd::array<RHI::SingleDeviceStreamBufferView, 1> m_boxPositionBufferView;
+            RHI::SingleDeviceIndexBufferView m_boxIndexBufferView;
             uint32_t m_boxIndexCount = 0;
 
             // image views

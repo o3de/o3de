@@ -79,7 +79,7 @@ namespace AZ
             void SetScissors(const RHI::Scissor* rhiScissors, uint32_t count) override;
             void SetShaderResourceGroupForDraw(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
             void SetShaderResourceGroupForDispatch(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
-            void Submit(const RHI::CopyItem& copyItems, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::SingleDeviceCopyItem& copyItems, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DrawItem& itemList, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DispatchItem& dispatchItems, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
@@ -162,8 +162,8 @@ namespace AZ
             RHI::ResultCode BuildNativeCommandBuffer();
 
             void SetShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup, RHI::PipelineStateType type);
-            void SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count);
-            void SetIndexBuffer(const RHI::IndexBufferView& indexBufferView);
+            void SetStreamBuffers(const RHI::SingleDeviceStreamBufferView* streams, uint32_t count);
+            void SetIndexBuffer(const RHI::SingleDeviceIndexBufferView& indexBufferView);
             void SetStencilRef(uint8_t stencilRef);
             void BindPipeline(const PipelineState* pipelineState);
             void CommitViewportState();

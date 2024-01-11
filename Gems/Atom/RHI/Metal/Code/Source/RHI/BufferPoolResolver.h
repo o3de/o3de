@@ -34,7 +34,7 @@ namespace AZ
             BufferPoolResolver(Device& device, const RHI::BufferPoolDescriptor& descriptor);
 
             ///Get a pointer to write a content to upload to GPU.
-            void* MapBuffer(const RHI::BufferMapRequest& request);
+            void* MapBuffer(const RHI::SingleDeviceBufferMapRequest& request);
 
             //////////////////////////////////////////////////////////////////////
             ///ResourcePoolResolver

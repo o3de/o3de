@@ -36,9 +36,9 @@ namespace AZ::RHI
         //! group must be updated on this pool.
         ResultCode InitGroup(SingleDeviceShaderResourceGroup& srg);
             
-        //! Compile Shader Resource Group with the associated ShaderResourceGroupData
+        //! Compile Shader Resource Group with the associated SingleDeviceShaderResourceGroupData
         ResultCode CompileGroup(SingleDeviceShaderResourceGroup& shaderResourceGroup,
-                                const ShaderResourceGroupData& shaderResourceGroupData);
+                                const SingleDeviceShaderResourceGroupData& shaderResourceGroupData);
 
         //! Returns the descriptor passed at initialization time.
         const ShaderResourceGroupPoolDescriptor& GetDescriptor() const override;
@@ -91,7 +91,7 @@ namespace AZ::RHI
 
     private:
         // Queues the shader resource group for compile and provides a new data packet (takes a lock).
-        void QueueForCompile(SingleDeviceShaderResourceGroup& group, const ShaderResourceGroupData& groupData);
+        void QueueForCompile(SingleDeviceShaderResourceGroup& group, const SingleDeviceShaderResourceGroupData& groupData);
 
         // Queues the shader resource group for compile. Legal to call on a queued group. Takes a lock.
         void QueueForCompile(SingleDeviceShaderResourceGroup& group);
@@ -103,10 +103,10 @@ namespace AZ::RHI
         void UnqueueForCompile(SingleDeviceShaderResourceGroup& shaderResourceGroup);
 
         // Compiles an SRG synchronously. 
-        void Compile(SingleDeviceShaderResourceGroup& group, const ShaderResourceGroupData& groupData);
+        void Compile(SingleDeviceShaderResourceGroup& group, const SingleDeviceShaderResourceGroupData& groupData);
 
         // Calculate diffs for updating the resource registry.
-        void CalculateGroupDataDiff(SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData);
+        void CalculateGroupDataDiff(SingleDeviceShaderResourceGroup& shaderResourceGroup, const SingleDeviceShaderResourceGroupData& groupData);
 
         // Calculate the hash for all the views passed in
         template<typename T>
@@ -119,11 +119,11 @@ namespace AZ::RHI
             SingleDeviceShaderResourceGroup& shaderResourceGroup,
             Name entryName,
             AZStd::span<const RHI::ConstPtr<T>> views,
-            ShaderResourceGroupData::ResourceType resourceType);
+            SingleDeviceShaderResourceGroupData::ResourceType resourceType);
 
         // Check all the resource types in order to ensure none of the views were invalidated or modified
         void ResetUpdateMaskForModifiedViews(
-            SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& shaderResourceGroupData);
+            SingleDeviceShaderResourceGroup& shaderResourceGroup, const SingleDeviceShaderResourceGroupData& shaderResourceGroupData);
 
         //////////////////////////////////////////////////////////////////////////
         // Platform API
@@ -138,7 +138,7 @@ namespace AZ::RHI
         // this method. If false, it will be queued for resolve in ResolveInternal.
         virtual ResultCode CompileGroupInternal(
             SingleDeviceShaderResourceGroup& shaderResourceGroup,
-            const ShaderResourceGroupData& shaderResourceGroupData) = 0;
+            const SingleDeviceShaderResourceGroupData& shaderResourceGroupData) = 0;
 
         //////////////////////////////////////////////////////////////////////////
 

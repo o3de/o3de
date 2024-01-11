@@ -161,7 +161,7 @@ namespace AZ::RHI
                         initRequest.m_buffer->m_deviceObjects[deviceIndex] = Factory::Get().CreateBuffer();
                     }
 
-                    BufferInitRequest bufferInitRequest(
+                    SingleDeviceBufferInitRequest bufferInitRequest(
                         *initRequest.m_buffer->GetDeviceBuffer(deviceIndex), initRequest.m_descriptor, initRequest.m_initialData);
                     return deviceBufferPool->InitBuffer(bufferInitRequest);
                 });
@@ -209,11 +209,11 @@ namespace AZ::RHI
             return ResultCode::InvalidArgument;
         }
 
-        BufferMapRequest deviceMapRequest{};
+        SingleDeviceBufferMapRequest deviceMapRequest{};
         deviceMapRequest.m_byteCount = request.m_byteCount;
         deviceMapRequest.m_byteOffset = request.m_byteOffset;
 
-        BufferMapResponse deviceMapResponse{};
+        SingleDeviceBufferMapResponse deviceMapResponse{};
 
         ResultCode resultCode = IterateObjects<SingleDeviceBufferPool>([&](auto deviceIndex, auto deviceBufferPool)
         {
@@ -267,7 +267,7 @@ namespace AZ::RHI
         {
             auto* buffer = request.m_buffer->GetDeviceBuffer(deviceIndex).get();
 
-            BufferStreamRequest bufferStreamRequest{ request.m_fenceToSignal ? request.m_fenceToSignal->GetDeviceFence(deviceIndex).get()
+            SingleDeviceBufferStreamRequest bufferStreamRequest{ request.m_fenceToSignal ? request.m_fenceToSignal->GetDeviceFence(deviceIndex).get()
                                                                              : nullptr,
                                                      buffer,
                                                      request.m_byteOffset,

@@ -23,14 +23,14 @@ namespace AZ::RHI
     //! and a StreamBufferDescriptor, which is provided to the RHI back-end at PSO compile time.
     //! - The view will be associated with one or more StreamChannelDescriptors to describe its specific content. 
     //!   Channels maybe be stored in separate StreamBufferViews (each view having a separate StreamChannelDescriptor)
-    //!   or interleaved in a single StreamBufferView (one view having multiple StreamChannelDescriptors).
+    //!   or interleaved in a single SingleDeviceStreamBufferView (one view having multiple StreamChannelDescriptors).
     //! - The view will correspond to a single StreamBufferDescriptor.
-    class alignas(8) StreamBufferView
+    class alignas(8) SingleDeviceStreamBufferView
     {
     public:
-        StreamBufferView() = default;
+        SingleDeviceStreamBufferView() = default;
 
-        StreamBufferView(
+        SingleDeviceStreamBufferView(
             const SingleDeviceBuffer& buffer,
             uint32_t byteOffset,
             uint32_t byteCount,
@@ -61,5 +61,5 @@ namespace AZ::RHI
     };
 
     //! Utility function for checking that the set of StreamBufferViews aligns with the InputStreamLayout
-    bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, AZStd::span<const StreamBufferView> streamBufferViews);
+    bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, AZStd::span<const SingleDeviceStreamBufferView> streamBufferViews);
 }

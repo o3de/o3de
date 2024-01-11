@@ -83,7 +83,7 @@ namespace UnitTest
 
         RHI::Ptr<RHI::SingleDeviceBuffer> buffer = RHI::Factory::Get().CreateBuffer();
 
-        RHI::BufferInitRequest request;
+        RHI::SingleDeviceBufferInitRequest request;
         request.m_descriptor = descriptor.m_bufferDescriptor;
         request.m_buffer = buffer.get();
         m_bufferPool->InitBuffer(request);

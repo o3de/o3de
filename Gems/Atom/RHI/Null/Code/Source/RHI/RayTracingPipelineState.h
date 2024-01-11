@@ -28,7 +28,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::SingleDevicePipelineState
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingPipelineStateDescriptor* descriptor) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SingleDeviceRayTracingPipelineStateDescriptor* descriptor) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
             //////////////////////////////////////////////////////////////////////////
         };

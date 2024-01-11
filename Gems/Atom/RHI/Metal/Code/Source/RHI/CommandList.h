@@ -63,7 +63,7 @@ namespace AZ
             void SetShaderResourceGroupForDraw(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
             void SetShaderResourceGroupForDispatch(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override;
             void Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex = 0) override;
-            void Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex = 0) override;
+            void Submit(const RHI::SingleDeviceCopyItem& copyItem, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex = 0) override;
             void Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) override;
             void BeginPredication(const RHI::SingleDeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation) override {}
@@ -80,8 +80,8 @@ namespace AZ
         private:
             
             void SetPipelineState(const PipelineState* pipelineState);
-            void SetStreamBuffers(const RHI::StreamBufferView* descriptors, AZ::u32 count);
-            void SetIndexBuffer(const RHI::IndexBufferView& descriptor);
+            void SetStreamBuffers(const RHI::SingleDeviceStreamBufferView* descriptors, AZ::u32 count);
+            void SetIndexBuffer(const RHI::SingleDeviceIndexBufferView& descriptor);
             void SetStencilRef(AZ::u8 stencilRef);
             void SetRasterizerState(const RasterizerState& rastState);
                         

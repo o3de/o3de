@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/SingleDeviceIndexBufferView.h>
 #include <Atom/RHI/SingleDeviceQuery.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 

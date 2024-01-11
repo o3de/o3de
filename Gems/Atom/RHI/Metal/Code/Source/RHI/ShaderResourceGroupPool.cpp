@@ -58,9 +58,9 @@ namespace AZ
             Base::ShutdownResourceInternal(resourceBase);
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
+        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::SingleDeviceShaderResourceGroupData& groupData)
         {
-            typedef AZ::RHI::ShaderResourceGroupData::ResourceTypeMask ResourceMask;
+            typedef AZ::RHI::SingleDeviceShaderResourceGroupData::ResourceTypeMask ResourceMask;
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
 
             group.UpdateCompiledDataIndex();

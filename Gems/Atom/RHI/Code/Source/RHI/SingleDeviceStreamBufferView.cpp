@@ -6,12 +6,12 @@
  *
  */
 
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 
 namespace AZ::RHI
 {
-    StreamBufferView::StreamBufferView(
+    SingleDeviceStreamBufferView::SingleDeviceStreamBufferView(
         const SingleDeviceBuffer& buffer,
         uint32_t byteOffset,
         uint32_t byteCount,
@@ -29,32 +29,32 @@ namespace AZ::RHI
         m_hash = static_cast<HashValue64>(seed);
     }
 
-    HashValue64 StreamBufferView::GetHash() const
+    HashValue64 SingleDeviceStreamBufferView::GetHash() const
     {
         return m_hash;
     }
 
-    const SingleDeviceBuffer* StreamBufferView::GetBuffer() const
+    const SingleDeviceBuffer* SingleDeviceStreamBufferView::GetBuffer() const
     {
         return m_buffer;
     }
 
-    uint32_t StreamBufferView::GetByteOffset() const
+    uint32_t SingleDeviceStreamBufferView::GetByteOffset() const
     {
         return m_byteOffset;
     }
 
-    uint32_t StreamBufferView::GetByteCount() const
+    uint32_t SingleDeviceStreamBufferView::GetByteCount() const
     {
         return m_byteCount;
     }
 
-    uint32_t StreamBufferView::GetByteStride() const
+    uint32_t SingleDeviceStreamBufferView::GetByteStride() const
     {
         return m_byteStride;
     }
 
-    bool ValidateStreamBufferViews(const RHI::InputStreamLayout& inputStreamLayout, AZStd::span<const RHI::StreamBufferView> streamBufferViews)
+    bool ValidateStreamBufferViews(const RHI::InputStreamLayout& inputStreamLayout, AZStd::span<const RHI::SingleDeviceStreamBufferView> streamBufferViews)
     {
         bool ok = true;
 
@@ -87,7 +87,7 @@ namespace AZ::RHI
 
                 if (bufferDescriptor.m_byteStride != bufferView.GetByteStride())
                 {
-                    AZ_Error("InputStreamLayout", false, "InputStreamLayout's buffer[%d] has stride=%d but StreamBufferView[%d] has stride=%d.",
+                    AZ_Error("InputStreamLayout", false, "InputStreamLayout's buffer[%d] has stride=%d but SingleDeviceStreamBufferView[%d] has stride=%d.",
                         i, bufferDescriptor.m_byteStride, i, bufferView.GetByteStride());
                     ok = false;
                 }

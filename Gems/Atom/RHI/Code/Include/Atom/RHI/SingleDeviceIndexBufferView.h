@@ -22,12 +22,12 @@ namespace AZ::RHI
 
     uint32_t GetIndexFormatSize(IndexFormat indexFormat);
 
-    class alignas(8) IndexBufferView
+    class alignas(8) SingleDeviceIndexBufferView
     {
     public:
-        IndexBufferView() = default;
+        SingleDeviceIndexBufferView() = default;
 
-        IndexBufferView(
+        SingleDeviceIndexBufferView(
             const SingleDeviceBuffer& buffer,
             uint32_t byteOffset,
             uint32_t byteCount,

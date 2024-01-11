@@ -47,7 +47,7 @@ namespace AZ::RHI
 
         DispatchRaysIndirect(
             uint32_t maxSequenceCount,
-            const IndirectBufferView& indirectBuffer,
+            const SingleDeviceIndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
             DispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer)
             : DispatchRaysIndirect(maxSequenceCount, indirectBuffer, indirectBufferByteOffset, dispatchRaysIndirectBuffer, nullptr, 0)
@@ -56,7 +56,7 @@ namespace AZ::RHI
 
         DispatchRaysIndirect(
             uint32_t maxSequenceCount,
-            const IndirectBufferView& indirectBuffer,
+            const SingleDeviceIndirectBufferView& indirectBuffer,
             uint64_t indirectBufferByteOffset,
             DispatchRaysIndirectBuffer* dispatchRaysIndirectBuffer,
             const SingleDeviceBuffer* countBuffer,

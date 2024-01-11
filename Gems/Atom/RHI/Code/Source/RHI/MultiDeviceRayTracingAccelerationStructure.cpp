@@ -14,9 +14,9 @@
 
 namespace AZ::RHI
 {
-    RayTracingBlasDescriptor MultiDeviceRayTracingBlasDescriptor::GetDeviceRayTracingBlasDescriptor(int deviceIndex) const
+    SingleDeviceRayTracingBlasDescriptor MultiDeviceRayTracingBlasDescriptor::GetDeviceRayTracingBlasDescriptor(int deviceIndex) const
     {
-        RayTracingBlasDescriptor descriptor;
+        SingleDeviceRayTracingBlasDescriptor descriptor;
 
         for (const auto& geometry : m_mdGeometries)
         {
@@ -71,11 +71,11 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingTlasDescriptor MultiDeviceRayTracingTlasDescriptor::GetDeviceRayTracingTlasDescriptor(int deviceIndex) const
+    SingleDeviceRayTracingTlasDescriptor MultiDeviceRayTracingTlasDescriptor::GetDeviceRayTracingTlasDescriptor(int deviceIndex) const
     {
         AZ_Assert(m_mdInstancesBuffer, "No MultiDeviceBuffer available!\n");
 
-        RayTracingTlasDescriptor descriptor;
+        SingleDeviceRayTracingTlasDescriptor descriptor;
 
         for (const auto& instance : m_mdInstances)
         {

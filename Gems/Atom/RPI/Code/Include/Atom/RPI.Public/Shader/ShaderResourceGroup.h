@@ -346,7 +346,7 @@ namespace AZ
             Data::Instance<ShaderResourceGroupPool> m_pool;
 
             /// The shader resource group data that is manipulated by this class
-            RHI::ShaderResourceGroupData m_data;
+            RHI::SingleDeviceShaderResourceGroupData m_data;
 
             /// The shader resource group that can be submitted to the renderer
             RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> m_shaderResourceGroup;

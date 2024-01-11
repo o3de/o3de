@@ -102,7 +102,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
+        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::SingleDeviceShaderResourceGroupData& groupData)
         {
             auto& group = static_cast<ShaderResourceGroup&>(groupBase);
 

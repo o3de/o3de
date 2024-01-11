@@ -242,7 +242,7 @@ namespace AZ
             return IndirectBufferSignature::Create();
         }
 
-        RHI::Ptr<RHI::IndirectBufferWriter> SystemComponent::CreateIndirectBufferWriter()
+        RHI::Ptr<RHI::SingleDeviceIndirectBufferWriter> SystemComponent::CreateIndirectBufferWriter()
         {
             return IndirectBufferWriter::Create();
         }

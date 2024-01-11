@@ -10,8 +10,8 @@
 
 #include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/SingleDeviceIndexBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/DrawList.h>
 
@@ -77,12 +77,12 @@ namespace AZ
 
         private: // types
 
-            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::StreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
+            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::SingleDeviceStreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
 
             struct DynamicBufferGroup
             {
                 //! The view into the index buffer
-                AZ::RHI::IndexBufferView m_indexBufferView;
+                AZ::RHI::SingleDeviceIndexBufferView m_indexBufferView;
 
                 //! The stream views into the vertex buffer (we only have one in our case)
                 StreamBufferViewsForAllStreams m_streamBufferViews;

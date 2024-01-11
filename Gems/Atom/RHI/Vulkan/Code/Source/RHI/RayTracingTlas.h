@@ -50,7 +50,7 @@ namespace AZ
             RayTracingTlas() = default;
 
             // RHI::SingleDeviceRayTracingTlas overrides
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingTlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override;
+            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::SingleDeviceRayTracingTlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
             // buffer list to keep buffers alive for several frames
             static const uint32_t BufferCount = 3;

@@ -15,8 +15,8 @@ namespace AZ
         AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::SingleDeviceBuffer> buffer, const void* data, size_t dataSize)
         {
             // Map the buffer, copy data to the mapped pointer, and unmap it.
-            RHI::BufferMapRequest mapRequest(*buffer, 0, dataSize);
-            RHI::BufferMapResponse response;
+            RHI::SingleDeviceBufferMapRequest mapRequest(*buffer, 0, dataSize);
+            RHI::SingleDeviceBufferMapResponse response;
             RHI::SingleDeviceBufferPool* bufferPool = static_cast<RHI::SingleDeviceBufferPool*>(buffer->GetPool());
             RHI::ResultCode resultCode = bufferPool->MapBuffer(mapRequest, response);
 

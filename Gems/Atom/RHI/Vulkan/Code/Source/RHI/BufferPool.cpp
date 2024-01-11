@@ -121,7 +121,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::BufferMapRequest& mapRequest, RHI::BufferMapResponse& response) 
+        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::SingleDeviceBufferMapRequest& mapRequest, RHI::SingleDeviceBufferMapResponse& response) 
         {
             const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
             auto* buffer = static_cast<Buffer*>(mapRequest.m_buffer);
@@ -189,7 +189,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::BufferStreamRequest& request)
+        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::SingleDeviceBufferStreamRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
             device.GetAsyncUploadQueue().QueueUpload(request);

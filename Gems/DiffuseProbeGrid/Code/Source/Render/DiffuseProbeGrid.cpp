@@ -60,7 +60,7 @@ namespace AZ
             descriptor.m_byteCount = DiffuseProbeGridRenderData::GridDataBufferSize;
             descriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
 
-            RHI::BufferInitRequest request;
+            RHI::SingleDeviceBufferInitRequest request;
             request.m_buffer = m_gridDataBuffer.get();
             request.m_descriptor = descriptor;
             [[maybe_unused]] RHI::ResultCode result = m_renderData->m_bufferPool->InitBuffer(request);

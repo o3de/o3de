@@ -13,9 +13,9 @@
 
 namespace AZ::RHI
 {
-    struct CopyBufferDescriptor
+    struct SingleDeviceCopyBufferDescriptor
     {
-        CopyBufferDescriptor() = default;
+        SingleDeviceCopyBufferDescriptor() = default;
 
         const SingleDeviceBuffer* m_sourceBuffer = nullptr;
         uint32_t m_sourceOffset = 0;
@@ -24,9 +24,9 @@ namespace AZ::RHI
         uint32_t m_size = 0;
     };
 
-    struct CopyImageDescriptor
+    struct SingleDeviceCopyImageDescriptor
     {
-        CopyImageDescriptor() = default;
+        SingleDeviceCopyImageDescriptor() = default;
 
         const SingleDeviceImage* m_sourceImage = nullptr;
         ImageSubresource m_sourceSubresource;
@@ -37,9 +37,9 @@ namespace AZ::RHI
         Origin m_destinationOrigin;
     };
 
-    struct CopyBufferToImageDescriptor
+    struct SingleDeviceCopyBufferToImageDescriptor
     {
-        CopyBufferToImageDescriptor() = default;
+        SingleDeviceCopyBufferToImageDescriptor() = default;
 
         const SingleDeviceBuffer* m_sourceBuffer = nullptr;
         uint32_t m_sourceOffset = 0;
@@ -51,9 +51,9 @@ namespace AZ::RHI
         Origin m_destinationOrigin;
     };
 
-    struct CopyImageToBufferDescriptor
+    struct SingleDeviceCopyImageToBufferDescriptor
     {
-        CopyImageToBufferDescriptor() = default;
+        SingleDeviceCopyImageToBufferDescriptor() = default;
 
         const SingleDeviceImage* m_sourceImage = nullptr;
         ImageSubresource m_sourceSubresource;
@@ -68,9 +68,9 @@ namespace AZ::RHI
         Format m_destinationFormat; 
     };
 
-    struct CopyQueryToBufferDescriptor
+    struct SingleDeviceCopyQueryToBufferDescriptor
     {
-        CopyQueryToBufferDescriptor() = default;
+        SingleDeviceCopyQueryToBufferDescriptor() = default;
 
         const SingleDeviceQueryPool* m_sourceQueryPool = nullptr;
         QueryHandle m_firstQuery = QueryHandle(0);
@@ -90,34 +90,34 @@ namespace AZ::RHI
         Invalid
     };
 
-    struct CopyItem
+    struct SingleDeviceCopyItem
     {
-        CopyItem()
+        SingleDeviceCopyItem()
             : m_type{CopyItemType::Buffer}
             , m_buffer{}
         {}
 
-        CopyItem(const CopyBufferDescriptor& descriptor)
+        SingleDeviceCopyItem(const SingleDeviceCopyBufferDescriptor& descriptor)
             : m_type{CopyItemType::Buffer}
             , m_buffer{descriptor}
         {}
 
-        CopyItem(const CopyImageDescriptor& descriptor)
+        SingleDeviceCopyItem(const SingleDeviceCopyImageDescriptor& descriptor)
             : m_type{CopyItemType::Image}
             , m_image{descriptor}
         {}
 
-        CopyItem(const CopyBufferToImageDescriptor& descriptor)
+        SingleDeviceCopyItem(const SingleDeviceCopyBufferToImageDescriptor& descriptor)
             : m_type{CopyItemType::BufferToImage}
             , m_bufferToImage{descriptor}
         {}
 
-        CopyItem(const CopyImageToBufferDescriptor& descriptor)
+        SingleDeviceCopyItem(const SingleDeviceCopyImageToBufferDescriptor& descriptor)
             : m_type{CopyItemType::ImageToBuffer}
             , m_imageToBuffer{descriptor}
         {}
 
-        CopyItem(const CopyQueryToBufferDescriptor& descriptor)
+        SingleDeviceCopyItem(const SingleDeviceCopyQueryToBufferDescriptor& descriptor)
             : m_type{CopyItemType::QueryToBuffer}
             , m_queryToBuffer{descriptor}
         {}
@@ -125,11 +125,11 @@ namespace AZ::RHI
         CopyItemType m_type;
         union
         {
-            CopyBufferDescriptor m_buffer;
-            CopyImageDescriptor m_image;
-            CopyBufferToImageDescriptor m_bufferToImage;
-            CopyImageToBufferDescriptor m_imageToBuffer;
-            CopyQueryToBufferDescriptor m_queryToBuffer;
+            SingleDeviceCopyBufferDescriptor m_buffer;
+            SingleDeviceCopyImageDescriptor m_image;
+            SingleDeviceCopyBufferToImageDescriptor m_bufferToImage;
+            SingleDeviceCopyImageToBufferDescriptor m_imageToBuffer;
+            SingleDeviceCopyQueryToBufferDescriptor m_queryToBuffer;
         };
     };
 }

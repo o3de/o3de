@@ -99,7 +99,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::BufferInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::SingleDeviceBufferInitRequest& request, size_t heapOffset)
         {
             const RHI::BufferDescriptor& descriptor = request.m_descriptor;
             Buffer* buffer = static_cast<Buffer*>(request.m_buffer);

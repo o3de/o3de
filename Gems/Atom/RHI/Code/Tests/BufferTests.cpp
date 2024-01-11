@@ -81,7 +81,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(bufferA->IsInitialized() == false);
             AZ_TEST_ASSERT(bufferB->IsInitialized() == false);
 
-            RHI::BufferInitRequest initRequest;
+            RHI::SingleDeviceBufferInitRequest initRequest;
             initRequest.m_buffer = bufferA.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::Constant, 32);
             initRequest.m_initialData = testData.data();
@@ -171,7 +171,7 @@ namespace UnitTest
             RHI::Ptr<RHI::SingleDeviceBuffer> buffer;
             buffer = RHI::Factory::Get().CreateBuffer();
 
-            RHI::BufferInitRequest initRequest;
+            RHI::SingleDeviceBufferInitRequest initRequest;
             initRequest.m_buffer = buffer.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::Constant, 32);
             bufferPool->InitBuffer(initRequest);
@@ -236,7 +236,7 @@ namespace UnitTest
             m_bufferPool->Init(*m_device, bufferPoolDesc);
 
             m_buffer = RHI::Factory::Get().CreateBuffer();
-            RHI::BufferInitRequest initRequest;
+            RHI::SingleDeviceBufferInitRequest initRequest;
             initRequest.m_buffer = m_buffer.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(GetParam().bufferBindFlags, 32);
             m_bufferPool->InitBuffer(initRequest);
@@ -475,7 +475,7 @@ namespace UnitTest
         RHI::Ptr<RHI::SingleDeviceBuffer> buffer;
         buffer = RHI::Factory::Get().CreateBuffer();
 
-        RHI::BufferInitRequest initRequest;
+        RHI::SingleDeviceBufferInitRequest initRequest;
         initRequest.m_buffer = buffer.get();
         initRequest.m_descriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::Constant, bufferSize);
         bufferPool->InitBuffer(initRequest);

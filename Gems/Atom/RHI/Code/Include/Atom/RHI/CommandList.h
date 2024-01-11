@@ -13,7 +13,7 @@
 #include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/DispatchRaysItem.h>
-#include <Atom/RHI/CopyItem.h>
+#include <Atom/RHI/SingleDeviceCopyItem.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 
@@ -62,7 +62,7 @@ namespace AZ::RHI
         virtual void SetShaderResourceGroupForDispatch(const SingleDeviceShaderResourceGroup& shaderResourceGroup) = 0;
 
         /// Submits a single copy item for processing on the command list.
-        virtual void Submit(const CopyItem& copyItem, uint32_t submitIndex = 0) = 0;
+        virtual void Submit(const SingleDeviceCopyItem& copyItem, uint32_t submitIndex = 0) = 0;
 
         /// Submits a single draw item for processing on the command list.
         virtual void Submit(const DrawItem& drawItem, uint32_t submitIndex = 0) = 0;

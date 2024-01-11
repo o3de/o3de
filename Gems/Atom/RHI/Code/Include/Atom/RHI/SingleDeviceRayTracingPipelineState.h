@@ -50,12 +50,12 @@ namespace AZ::RHI
         uint32_t m_maxRecursionDepth = MaxRecursionDepthDefault;
     };
 
-    //! RayTracingPipelineStateDescriptor
+    //! SingleDeviceRayTracingPipelineStateDescriptor
     //!
     //! The Build() operation in the descriptor allows the pipeline state to be initialized
     //! using the following pattern:
     //!
-    //! RHI::RayTracingPipelineStateDescriptor descriptor;
+    //! RHI::SingleDeviceRayTracingPipelineStateDescriptor descriptor;
     //! descriptor.Build()
     //!     ->ShaderLibrary(shaderDescriptor)
     //!         ->RayGenerationShaderName(AZ::Name("RayGenerationShader"))
@@ -71,11 +71,11 @@ namespace AZ::RHI
     //!         ->ClosestHitShaderName(AZ::Name("ClosestHitShader2"))
     //!     ;
     //!
-    class RayTracingPipelineStateDescriptor final
+    class SingleDeviceRayTracingPipelineStateDescriptor final
     {
     public:
-        RayTracingPipelineStateDescriptor() = default;
-        ~RayTracingPipelineStateDescriptor() = default;
+        SingleDeviceRayTracingPipelineStateDescriptor() = default;
+        ~SingleDeviceRayTracingPipelineStateDescriptor() = default;
 
         // accessors
         const RayTracingConfiguration& GetConfiguration() const { return m_configuration; }
@@ -90,20 +90,20 @@ namespace AZ::RHI
         RayTracingHitGroupVector& GetHitGroups() { return m_hitGroups; }
 
         // build operations
-        RayTracingPipelineStateDescriptor* Build();
-        RayTracingPipelineStateDescriptor* MaxPayloadSize(uint32_t maxPayloadSize);
-        RayTracingPipelineStateDescriptor* MaxAttributeSize(uint32_t maxAttributeSize);
-        RayTracingPipelineStateDescriptor* MaxRecursionDepth(uint32_t maxRecursionDepth);
-        RayTracingPipelineStateDescriptor* PipelineState(const RHI::SingleDevicePipelineState* pipelineState);
-        RayTracingPipelineStateDescriptor* ShaderLibrary(RHI::PipelineStateDescriptorForRayTracing& descriptor);
+        SingleDeviceRayTracingPipelineStateDescriptor* Build();
+        SingleDeviceRayTracingPipelineStateDescriptor* MaxPayloadSize(uint32_t maxPayloadSize);
+        SingleDeviceRayTracingPipelineStateDescriptor* MaxAttributeSize(uint32_t maxAttributeSize);
+        SingleDeviceRayTracingPipelineStateDescriptor* MaxRecursionDepth(uint32_t maxRecursionDepth);
+        SingleDeviceRayTracingPipelineStateDescriptor* PipelineState(const RHI::SingleDevicePipelineState* pipelineState);
+        SingleDeviceRayTracingPipelineStateDescriptor* ShaderLibrary(RHI::PipelineStateDescriptorForRayTracing& descriptor);
 
-        RayTracingPipelineStateDescriptor* RayGenerationShaderName(const AZ::Name& name);
-        RayTracingPipelineStateDescriptor* MissShaderName(const AZ::Name& name);
-        RayTracingPipelineStateDescriptor* CallableShaderName(const AZ::Name& callableShaderName);
-        RayTracingPipelineStateDescriptor* ClosestHitShaderName(const AZ::Name& closestHitShaderName);
-        RayTracingPipelineStateDescriptor* AnyHitShaderName(const AZ::Name& anyHitShaderName);
+        SingleDeviceRayTracingPipelineStateDescriptor* RayGenerationShaderName(const AZ::Name& name);
+        SingleDeviceRayTracingPipelineStateDescriptor* MissShaderName(const AZ::Name& name);
+        SingleDeviceRayTracingPipelineStateDescriptor* CallableShaderName(const AZ::Name& callableShaderName);
+        SingleDeviceRayTracingPipelineStateDescriptor* ClosestHitShaderName(const AZ::Name& closestHitShaderName);
+        SingleDeviceRayTracingPipelineStateDescriptor* AnyHitShaderName(const AZ::Name& anyHitShaderName);
 
-        RayTracingPipelineStateDescriptor* HitGroup(const AZ::Name& name);
+        SingleDeviceRayTracingPipelineStateDescriptor* HitGroup(const AZ::Name& name);
 
     private:
 
@@ -132,8 +132,8 @@ namespace AZ::RHI
 
         static RHI::Ptr<RHI::SingleDeviceRayTracingPipelineState> CreateRHIRayTracingPipelineState();
 
-        const RayTracingPipelineStateDescriptor& GetDescriptor() const { return m_descriptor; }
-        ResultCode Init(Device& device, const RayTracingPipelineStateDescriptor* descriptor);
+        const SingleDeviceRayTracingPipelineStateDescriptor& GetDescriptor() const { return m_descriptor; }
+        ResultCode Init(Device& device, const SingleDeviceRayTracingPipelineStateDescriptor* descriptor);
 
     private:
 
@@ -142,10 +142,10 @@ namespace AZ::RHI
 
         //////////////////////////////////////////////////////////////////////////
         // Platform API
-        virtual RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::RayTracingPipelineStateDescriptor* descriptor) = 0;
+        virtual RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::SingleDeviceRayTracingPipelineStateDescriptor* descriptor) = 0;
         virtual void ShutdownInternal() = 0;
         //////////////////////////////////////////////////////////////////////////
 
-        RayTracingPipelineStateDescriptor m_descriptor;
+        SingleDeviceRayTracingPipelineStateDescriptor m_descriptor;
     };
 }

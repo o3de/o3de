@@ -2208,7 +2208,7 @@ namespace AZ
                 uint32_t uvBufferByteCount = static_cast<uint32_t>(const_cast<RHI::SingleDeviceBuffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount);
                 RHI::BufferViewDescriptor uvBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, uvBufferByteCount);
 
-                const RHI::IndexBufferView& indexBufferView = mesh.m_indexBufferView;
+                const RHI::SingleDeviceIndexBufferView& indexBufferView = mesh.m_indexBufferView;
                 uint32_t indexElementSize = indexBufferView.GetIndexFormat() == RHI::IndexFormat::Uint16 ? 2 : 4;
                 uint32_t indexElementCount = (uint32_t)indexBufferView.GetBuffer()->GetDescriptor().m_byteCount / indexElementSize;
                 RHI::BufferViewDescriptor indexBufferDescriptor;

@@ -69,7 +69,7 @@ namespace AZ::RHI
             const ShaderResourceGroupLayout* layout = GetLayout();
 
             // Pre-initialize the data so that we can build view diffs later.
-            group.m_data = ShaderResourceGroupData(layout);
+            group.m_data = SingleDeviceShaderResourceGroupData(layout);
 
             // Cache off the binding slot for one less indirection.
             group.m_bindingSlot = layout->GetBindingSlot();
@@ -105,10 +105,10 @@ namespace AZ::RHI
             }
         }
 
-        shaderResourceGroup.SetData(ShaderResourceGroupData());
+        shaderResourceGroup.SetData(SingleDeviceShaderResourceGroupData());
     }
 
-    void SingleDeviceShaderResourceGroupPool::QueueForCompile(SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData)
+    void SingleDeviceShaderResourceGroupPool::QueueForCompile(SingleDeviceShaderResourceGroup& shaderResourceGroup, const SingleDeviceShaderResourceGroupData& groupData)
     {
         AZStd::lock_guard<AZStd::shared_mutex> lock(m_groupsToCompileMutex);
 
@@ -153,14 +153,14 @@ namespace AZ::RHI
         }
     }
 
-    void SingleDeviceShaderResourceGroupPool::Compile(SingleDeviceShaderResourceGroup& group, const ShaderResourceGroupData& groupData)
+    void SingleDeviceShaderResourceGroupPool::Compile(SingleDeviceShaderResourceGroup& group, const SingleDeviceShaderResourceGroupData& groupData)
     {
         CalculateGroupDataDiff(group, groupData);
         group.SetData(groupData);
         CompileGroup(group, group.GetData());
     }
 
-    void SingleDeviceShaderResourceGroupPool::CalculateGroupDataDiff(SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData)
+    void SingleDeviceShaderResourceGroupPool::CalculateGroupDataDiff(SingleDeviceShaderResourceGroup& shaderResourceGroup, const SingleDeviceShaderResourceGroupData& groupData)
     {
         // Calculate diffs for updating the resource registry.
         if (HasImageGroup() || HasBufferGroup())
@@ -205,7 +205,7 @@ namespace AZ::RHI
             {
                 AZStd::span<const ConstPtr<SingleDeviceImageView>> viewGroupOld = shaderResourceGroup.GetData().GetImageGroup();
                 AZStd::span<const ConstPtr<SingleDeviceImageView>> viewGroupNew = groupData.GetImageGroup();
-                AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
+                AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "SingleDeviceShaderResourceGroupData layouts do not match.");
                 for (size_t i = 0; i < viewGroupOld.size(); ++i)
                 {
                     ComputeDiffs(viewGroupOld[i].get(), viewGroupNew[i].get());
@@ -217,7 +217,7 @@ namespace AZ::RHI
             {
                 AZStd::span<const ConstPtr<SingleDeviceBufferView>> viewGroupOld = shaderResourceGroup.GetData().GetBufferGroup();
                 AZStd::span<const ConstPtr<SingleDeviceBufferView>> viewGroupNew = groupData.GetBufferGroup();
-                AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
+                AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "SingleDeviceShaderResourceGroupData layouts do not match.");
                 for (size_t i = 0; i < viewGroupOld.size(); ++i)
                 {
                     ComputeDiffs(viewGroupOld[i].get(), viewGroupNew[i].get());
@@ -264,20 +264,20 @@ namespace AZ::RHI
     template<typename T>
     void SingleDeviceShaderResourceGroupPool::UpdateMaskBasedOnViewHash(
         SingleDeviceShaderResourceGroup& shaderResourceGroup, Name entryName, AZStd::span<const RHI::ConstPtr<T>> views,
-        ShaderResourceGroupData::ResourceType resourceType)
+        SingleDeviceShaderResourceGroupData::ResourceType resourceType)
     {
         //Get the view hash and check if it was updated in which case we need to compile those views. 
         HashValue64 viewHash = GetViewHash<T>(views);
         if (shaderResourceGroup.GetViewHash(entryName) != viewHash)
         {
-            shaderResourceGroup.EnableRhiResourceTypeCompilation(static_cast<ShaderResourceGroupData::ResourceTypeMask>(AZ_BIT(static_cast<uint32_t>(resourceType))));
+            shaderResourceGroup.EnableRhiResourceTypeCompilation(static_cast<SingleDeviceShaderResourceGroupData::ResourceTypeMask>(AZ_BIT(static_cast<uint32_t>(resourceType))));
             shaderResourceGroup.ResetResourceTypeIteration(resourceType);
             shaderResourceGroup.UpdateViewHash(entryName, viewHash);
         }
     }
 
     void SingleDeviceShaderResourceGroupPool::ResetUpdateMaskForModifiedViews(
-        SingleDeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& shaderResourceGroupData)
+        SingleDeviceShaderResourceGroup& shaderResourceGroup, const SingleDeviceShaderResourceGroupData& shaderResourceGroupData)
     {
         const RHI::ShaderResourceGroupLayout& groupLayout = *shaderResourceGroupData.GetLayout();
         uint32_t shaderInputIndex = 0;
@@ -287,7 +287,7 @@ namespace AZ::RHI
             const RHI::ShaderInputImageIndex imageInputIndex(shaderInputIndex);
             UpdateMaskBasedOnViewHash<RHI::SingleDeviceImageView>(
                 shaderResourceGroup, shaderInputImage.m_name, shaderResourceGroupData.GetImageViewArray(imageInputIndex),
-                ShaderResourceGroupData::ResourceType::SingleDeviceImageView);
+                SingleDeviceShaderResourceGroupData::ResourceType::SingleDeviceImageView);
             ++shaderInputIndex;
         }
 
@@ -298,7 +298,7 @@ namespace AZ::RHI
             const RHI::ShaderInputBufferIndex bufferInputIndex(shaderInputIndex);
             UpdateMaskBasedOnViewHash<RHI::SingleDeviceBufferView>(
                 shaderResourceGroup, shaderInputBuffer.m_name, shaderResourceGroupData.GetBufferViewArray(bufferInputIndex),
-                ShaderResourceGroupData::ResourceType::SingleDeviceBufferView);
+                SingleDeviceShaderResourceGroupData::ResourceType::SingleDeviceBufferView);
             ++shaderInputIndex;
         }
 
@@ -310,7 +310,7 @@ namespace AZ::RHI
             UpdateMaskBasedOnViewHash<RHI::SingleDeviceImageView>(
                 shaderResourceGroup, shaderInputImageUnboundedArray.m_name,
                 shaderResourceGroupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex),
-                ShaderResourceGroupData::ResourceType::ImageViewUnboundedArray);
+                SingleDeviceShaderResourceGroupData::ResourceType::ImageViewUnboundedArray);
             ++shaderInputIndex;
         }
 
@@ -322,20 +322,20 @@ namespace AZ::RHI
             UpdateMaskBasedOnViewHash<RHI::SingleDeviceBufferView>(
                 shaderResourceGroup, shaderInputBufferUnboundedArray.m_name,
                 shaderResourceGroupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex),
-                ShaderResourceGroupData::ResourceType::BufferViewUnboundedArray);
+                SingleDeviceShaderResourceGroupData::ResourceType::BufferViewUnboundedArray);
             ++shaderInputIndex;
         }
     }
 
     ResultCode SingleDeviceShaderResourceGroupPool::CompileGroup(SingleDeviceShaderResourceGroup& shaderResourceGroup,
-                                                        const ShaderResourceGroupData& shaderResourceGroupData)
+                                                        const SingleDeviceShaderResourceGroupData& shaderResourceGroupData)
     {
         if (r_DisablePartialSrgCompilation)
         {
             //Reset m_rhiUpdateMask for all resource types which will disable partial SRG compilation
-            for (uint32_t i = 0; i < static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count); i++)
+            for (uint32_t i = 0; i < static_cast<uint32_t>(SingleDeviceShaderResourceGroupData::ResourceType::Count); i++)
             {
-                shaderResourceGroup.EnableRhiResourceTypeCompilation(static_cast<ShaderResourceGroupData::ResourceTypeMask>(AZ_BIT(i)));
+                shaderResourceGroup.EnableRhiResourceTypeCompilation(static_cast<SingleDeviceShaderResourceGroupData::ResourceTypeMask>(AZ_BIT(i)));
             }
         }
 

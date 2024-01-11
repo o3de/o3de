@@ -83,7 +83,7 @@ namespace AZ
                 const uint32_t stagingRowPitch = subresourceLayout.m_bytesPerRow;
                 const uint32_t stagingSlicePitch = subresourceLayout.m_rowCount * stagingRowPitch;
 
-                RHI::CopyBufferToImageDescriptor copyDescriptor;
+                RHI::SingleDeviceCopyBufferToImageDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = packet.m_stagingBuffer.get();
                 copyDescriptor.m_sourceOffset = 0;
                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
@@ -96,7 +96,7 @@ namespace AZ
                 copyDescriptor.m_destinationOrigin.m_top = packet.m_offset.m_top;
                 copyDescriptor.m_destinationOrigin.m_front = packet.m_offset.m_front;
 
-                commandList.Submit(RHI::CopyItem(copyDescriptor));
+                commandList.Submit(RHI::SingleDeviceCopyItem(copyDescriptor));
                 device.QueueForRelease(packet.m_stagingBuffer->GetMemoryView());
             }
         }

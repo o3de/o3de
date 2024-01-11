@@ -266,8 +266,8 @@ namespace AZ
             RHI::DrawFilterMask m_drawFilter = RHI::DrawFilterMaskDefaultValue;
 
             // Cached draw data
-            AZStd::vector<RHI::StreamBufferView> m_cachedStreamBufferViews;
-            AZStd::vector<RHI::IndexBufferView> m_cachedIndexBufferViews;
+            AZStd::vector<RHI::SingleDeviceStreamBufferView> m_cachedStreamBufferViews;
+            AZStd::vector<RHI::SingleDeviceIndexBufferView> m_cachedIndexBufferViews;
             AZStd::vector<Data::Instance<ShaderResourceGroup>> m_cachedDrawSrg;
 
             uint32_t m_nextDrawSrgIdx = 0;

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/SingleDeviceResource.h>
-#include <Atom/RHI/ShaderResourceGroupData.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupData.h>
 
 namespace AZ::RHI
 {
@@ -32,7 +32,7 @@ namespace AZ::RHI
         //! Compiles the SRG with the provided data.
         //! When using Async compile mode, it queues a request that the parent pool compile this group (compilation is deferred).
         //! When using Sync compile mode the SRG compilation will happen immediately.
-        void Compile(const ShaderResourceGroupData& shaderResourceGroupData, CompileMode compileMode = CompileMode::Async);
+        void Compile(const SingleDeviceShaderResourceGroupData& shaderResourceGroupData, CompileMode compileMode = CompileMode::Async);
 
         //! Returns the shader resource group pool that this group is registered on.
         SingleDeviceShaderResourceGroupPool* GetPool();
@@ -43,7 +43,7 @@ namespace AZ::RHI
         void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const override;
 
         //! Returns the data currently bound on the shader resource group.
-        const ShaderResourceGroupData& GetData() const;
+        const SingleDeviceShaderResourceGroupData& GetData() const;
 
         //! Returns the binding slot specified by the layout associated to this shader resource group.
         uint32_t GetBindingSlot() const;
@@ -61,11 +61,11 @@ namespace AZ::RHI
         bool IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const;
 
         //! Update the m_rhiUpdateMask for a given resource type which will ensure we will compile that type for the current frame
-        void EnableRhiResourceTypeCompilation(const ShaderResourceGroupData::ResourceTypeMask resourceTypeMask);
+        void EnableRhiResourceTypeCompilation(const SingleDeviceShaderResourceGroupData::ResourceTypeMask resourceTypeMask);
 
         //! Reset the iteration counter to 0 for a resource type which will ensure that the given type will
         //! be compiled for another m_updateMaskResetLatency number of Compile calls
-        void ResetResourceTypeIteration(const ShaderResourceGroupData::ResourceType resourceType);
+        void ResetResourceTypeIteration(const SingleDeviceShaderResourceGroupData::ResourceType resourceType);
 
         //! Return the view hash stored within m_viewHash
         HashValue64 GetViewHash(const AZ::Name& viewName);
@@ -77,9 +77,9 @@ namespace AZ::RHI
         SingleDeviceShaderResourceGroup() = default;
 
     private:
-        void SetData(const ShaderResourceGroupData& data);
+        void SetData(const SingleDeviceShaderResourceGroupData& data);
 
-        ShaderResourceGroupData m_data;
+        SingleDeviceShaderResourceGroupData m_data;
 
         // The binding slot cached from the layout.
         uint32_t m_bindingSlot = aznumeric_cast<uint32_t>(-1);
@@ -91,7 +91,7 @@ namespace AZ::RHI
         uint32_t m_rhiUpdateMask = 0;
 
         // Track iteration for each resource type in order to keep compiling it for m_updateMaskResetLatency number of times
-        uint32_t m_resourceTypeIteration[static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count)] = { 0 };
+        uint32_t m_resourceTypeIteration[static_cast<uint32_t>(SingleDeviceShaderResourceGroupData::ResourceType::Count)] = { 0 };
         uint32_t m_updateMaskResetLatency = RHI::Limits::Device::FrameCountMax - 1; //we do -1 because we update after compile
 
         // Track hash related to views. This will help ensure we compile views in case they get invalidated and partial srg compilation is enabled

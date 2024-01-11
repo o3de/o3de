@@ -78,7 +78,7 @@ namespace AZ
             Base::Shutdown();
         }
 
-        uint64_t AsyncUploadQueue::QueueUpload(const RHI::BufferStreamRequest& uploadRequest)
+        uint64_t AsyncUploadQueue::QueueUpload(const RHI::SingleDeviceBufferStreamRequest& uploadRequest)
         {
             Buffer& destBuffer = static_cast<Buffer&>(*uploadRequest.m_buffer);
             const MemoryView& destMemoryView = destBuffer.GetMemoryView();
@@ -89,11 +89,11 @@ namespace AZ
             // We just map, copy and then unmap.
             if(mtlStorageMode == MTLStorageModeShared || mtlStorageMode == GetCPUGPUMemoryMode())
             {
-                RHI::BufferMapRequest mapRequest;
+                RHI::SingleDeviceBufferMapRequest mapRequest;
                 mapRequest.m_buffer = uploadRequest.m_buffer;
                 mapRequest.m_byteCount = uploadRequest.m_byteCount;
                 mapRequest.m_byteOffset = uploadRequest.m_byteOffset;
-                RHI::BufferMapResponse mapResponse;
+                RHI::SingleDeviceBufferMapResponse mapResponse;
                 bufferPool.MapBuffer(mapRequest, mapResponse);
                 ::memcpy(mapResponse.m_data, uploadRequest.m_sourceData, uploadRequest.m_byteCount);
                 bufferPool.UnmapBuffer(*uploadRequest.m_buffer);

@@ -18,16 +18,16 @@ set(FILES
     Include/Atom/RHI/SingleDeviceBuffer.h
     Include/Atom/RHI/MultiDeviceBuffer.h
     Include/Atom/RHI/SingleDeviceBufferView.h
-    Include/Atom/RHI/IndexBufferView.h
+    Include/Atom/RHI/SingleDeviceIndexBufferView.h
     Include/Atom/RHI/MultiDeviceIndexBufferView.h
-    Include/Atom/RHI/StreamBufferView.h
+    Include/Atom/RHI/SingleDeviceStreamBufferView.h
     Include/Atom/RHI/MultiDeviceStreamBufferView.h
     Source/RHI/SingleDeviceBuffer.cpp
     Source/RHI/MultiDeviceBuffer.cpp
     Source/RHI/SingleDeviceBufferView.cpp
-    Source/RHI/IndexBufferView.cpp
+    Source/RHI/SingleDeviceIndexBufferView.cpp
     Source/RHI/MultiDeviceIndexBufferView.cpp
-    Source/RHI/StreamBufferView.cpp
+    Source/RHI/SingleDeviceStreamBufferView.cpp
     Source/RHI/MultiDeviceStreamBufferView.cpp
     Include/Atom/RHI/SingleDeviceBufferPool.h
     Include/Atom/RHI/MultiDeviceBufferPool.h
@@ -40,7 +40,7 @@ set(FILES
     Include/Atom/RHI/CommandList.h
     Include/Atom/RHI/CommandListValidator.h
     Include/Atom/RHI/CommandListStates.h
-    Include/Atom/RHI/CopyItem.h
+    Include/Atom/RHI/SingleDeviceCopyItem.h
     Include/Atom/RHI/MultiDeviceCopyItem.h
     Include/Atom/RHI/ConstantsData.h
     Include/Atom/RHI/DispatchItem.h
@@ -135,15 +135,15 @@ set(FILES
     Source/RHI/MultiDeviceStreamingImagePool.cpp
     Include/Atom/RHI/SingleDeviceIndirectBufferSignature.h
     Include/Atom/RHI/MultiDeviceIndirectBufferSignature.h
-    Include/Atom/RHI/IndirectBufferView.h
+    Include/Atom/RHI/SingleDeviceIndirectBufferView.h
     Include/Atom/RHI/MultiDeviceIndirectBufferView.h
-    Include/Atom/RHI/IndirectBufferWriter.h
+    Include/Atom/RHI/SingleDeviceIndirectBufferWriter.h
     Include/Atom/RHI/MultiDeviceIndirectBufferWriter.h
     Source/RHI/SingleDeviceIndirectBufferSignature.cpp
     Source/RHI/MultiDeviceIndirectBufferSignature.cpp
-    Source/RHI/IndirectBufferView.cpp
+    Source/RHI/SingleDeviceIndirectBufferView.cpp
     Source/RHI/MultiDeviceIndirectBufferView.cpp
-    Source/RHI/IndirectBufferWriter.cpp
+    Source/RHI/SingleDeviceIndirectBufferWriter.cpp
     Source/RHI/MultiDeviceIndirectBufferWriter.cpp
     Include/Atom/RHI/Object.h
     Include/Atom/RHI/ObjectCache.h
@@ -209,7 +209,7 @@ set(FILES
     Source/RHI/ScopeAttachment.cpp
     Include/Atom/RHI/SingleDeviceShaderResourceGroup.h
     Include/Atom/RHI/MultiDeviceShaderResourceGroup.h
-    Include/Atom/RHI/ShaderResourceGroupData.h
+    Include/Atom/RHI/SingleDeviceShaderResourceGroupData.h
     Include/Atom/RHI/MultiDeviceShaderResourceGroupData.h
     Include/Atom/RHI/ShaderResourceGroupDebug.h
     Include/Atom/RHI/ShaderResourceGroupInvalidateRegistry.h
@@ -217,7 +217,7 @@ set(FILES
     Include/Atom/RHI/MultiDeviceShaderResourceGroupPool.h
     Source/RHI/SingleDeviceShaderResourceGroup.cpp
     Source/RHI/MultiDeviceShaderResourceGroup.cpp
-    Source/RHI/ShaderResourceGroupData.cpp
+    Source/RHI/SingleDeviceShaderResourceGroupData.cpp
     Source/RHI/MultiDeviceShaderResourceGroupData.cpp
     Source/RHI/ShaderResourceGroupDebug.cpp
     Source/RHI/ShaderResourceGroupInvalidateRegistry.cpp

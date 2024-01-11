@@ -33,7 +33,7 @@ namespace AZ::RHI
             uint8_t m_stencilRef = 0;
 
             //! The array of stream buffers to bind for this draw item.
-            AZStd::span<const StreamBufferView> m_streamBufferViews;
+            AZStd::span<const SingleDeviceStreamBufferView> m_streamBufferViews;
 
             //! Shader resource group unique for this draw request
             const SingleDeviceShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
@@ -57,7 +57,7 @@ namespace AZ::RHI
 
         void SetDrawArguments(const DrawArguments& drawArguments);
 
-        void SetIndexBufferView(const IndexBufferView& indexBufferView);
+        void SetIndexBufferView(const SingleDeviceIndexBufferView& indexBufferView);
 
         void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
 
@@ -88,7 +88,7 @@ namespace AZ::RHI
         DrawArguments m_drawArguments;
         DrawListMask m_drawListMask = 0;
         size_t m_streamBufferViewCount = 0;
-        IndexBufferView m_indexBufferView;
+        SingleDeviceIndexBufferView m_indexBufferView;
         AZStd::fixed_vector<DrawRequest, DrawItemCountMax> m_drawRequests;
         AZStd::fixed_vector<const SingleDeviceShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
         AZStd::span<const uint8_t> m_rootConstants;

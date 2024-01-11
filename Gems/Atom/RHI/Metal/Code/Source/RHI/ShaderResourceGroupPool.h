@@ -32,7 +32,7 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
             RHI::ResultCode InitGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase) override;
             void ShutdownInternal() override;
-            RHI::ResultCode CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData) override;
+            RHI::ResultCode CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::SingleDeviceShaderResourceGroupData& groupData) override;
             void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
 

@@ -12,7 +12,7 @@
 
 namespace AZ::RHI
 {
-    void RayTracingShaderTableDescriptor::RemoveHitGroupRecords(uint32_t key)
+    void SingleDeviceRayTracingShaderTableDescriptor::RemoveHitGroupRecords(uint32_t key)
     {
         for (RayTracingShaderTableRecordList::iterator itHitGroup = m_hitGroupRecords.begin(); itHitGroup != m_hitGroupRecords.end(); ++itHitGroup)
         {
@@ -24,14 +24,14 @@ namespace AZ::RHI
         }
     }
 
-    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::Build(const AZ::Name& name, const RHI::Ptr<SingleDeviceRayTracingPipelineState>& rayTracingPipelineState)
+    SingleDeviceRayTracingShaderTableDescriptor* SingleDeviceRayTracingShaderTableDescriptor::Build(const AZ::Name& name, const RHI::Ptr<SingleDeviceRayTracingPipelineState>& rayTracingPipelineState)
     {
         m_name = name;
         m_rayTracingPipelineState = rayTracingPipelineState;
         return this;
     }
 
-    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::RayGenerationRecord(const AZ::Name& name)
+    SingleDeviceRayTracingShaderTableDescriptor* SingleDeviceRayTracingShaderTableDescriptor::RayGenerationRecord(const AZ::Name& name)
     {
         AZ_Assert(m_rayGenerationRecord.empty(), "Ray generation record already added");
         m_rayGenerationRecord.emplace_back();
@@ -40,7 +40,7 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::MissRecord(const AZ::Name& name)
+    SingleDeviceRayTracingShaderTableDescriptor* SingleDeviceRayTracingShaderTableDescriptor::MissRecord(const AZ::Name& name)
     {
         m_missRecords.emplace_back();
         m_buildContext = &m_missRecords.back();
@@ -48,7 +48,7 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::CallableRecord(const AZ::Name& name)
+    SingleDeviceRayTracingShaderTableDescriptor* SingleDeviceRayTracingShaderTableDescriptor::CallableRecord(const AZ::Name& name)
     {
         m_callableRecords.emplace_back();
         m_buildContext = &m_callableRecords.back();
@@ -56,7 +56,7 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::HitGroupRecord(const AZ::Name& name, uint32_t key /* = RayTracingShaderTableRecord::InvalidKey */)
+    SingleDeviceRayTracingShaderTableDescriptor* SingleDeviceRayTracingShaderTableDescriptor::HitGroupRecord(const AZ::Name& name, uint32_t key /* = RayTracingShaderTableRecord::InvalidKey */)
     {
         m_hitGroupRecords.emplace_back();
         m_buildContext = &m_hitGroupRecords.back();
@@ -65,7 +65,7 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::ShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup)
+    SingleDeviceRayTracingShaderTableDescriptor* SingleDeviceRayTracingShaderTableDescriptor::ShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup)
     {
         AZ_Assert(m_buildContext, "SingleDeviceShaderResourceGroup can only be added to a shader table record");
         AZ_Assert(m_buildContext->m_shaderResourceGroup == nullptr, "Records can only have one SingleDeviceShaderResourceGroup");
@@ -89,7 +89,7 @@ namespace AZ::RHI
         m_bufferPools = &bufferPools;
     }
 
-    void SingleDeviceRayTracingShaderTable::Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor)
+    void SingleDeviceRayTracingShaderTable::Build(const AZStd::shared_ptr<SingleDeviceRayTracingShaderTableDescriptor> descriptor)
     {
         AZ_Assert(!m_isQueuedForBuild, "Attempting to build a SingleDeviceRayTracingShaderTable that's already been queued. Only build once per frame.")
         m_descriptor = descriptor;

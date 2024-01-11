@@ -12,12 +12,12 @@
 
 namespace AZ::RHI
 {
-    RayTracingPipelineStateDescriptor MultiDeviceRayTracingPipelineStateDescriptor::GetDeviceRayTracingPipelineStateDescriptor(
+    SingleDeviceRayTracingPipelineStateDescriptor MultiDeviceRayTracingPipelineStateDescriptor::GetDeviceRayTracingPipelineStateDescriptor(
         int deviceIndex) const
     {
         AZ_Assert(m_mdPipelineState, "No MultiDevicePipelineState available\n");
 
-        RayTracingPipelineStateDescriptor descriptor{ m_descriptor };
+        SingleDeviceRayTracingPipelineStateDescriptor descriptor{ m_descriptor };
 
         if (m_mdPipelineState)
         {

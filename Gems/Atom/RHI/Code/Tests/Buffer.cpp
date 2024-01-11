@@ -67,7 +67,7 @@ namespace UnitTest
         buffer.m_data.clear();
     }
 
-    RHI::ResultCode BufferPool::MapBufferInternal(const RHI::BufferMapRequest& request, RHI::BufferMapResponse& response)
+    RHI::ResultCode BufferPool::MapBufferInternal(const RHI::SingleDeviceBufferMapRequest& request, RHI::SingleDeviceBufferMapResponse& response)
     {
         Buffer& buffer = static_cast<Buffer&>(*request.m_buffer);
         response.m_data = static_cast<uint8_t*>(buffer.Map()) + request.m_byteOffset;
@@ -86,7 +86,7 @@ namespace UnitTest
         return RHI::ResultCode::Success;
     }
 
-    AZ::RHI::ResultCode BufferPool::StreamBufferInternal([[maybe_unused]] const AZ::RHI::BufferStreamRequest& request)
+    AZ::RHI::ResultCode BufferPool::StreamBufferInternal([[maybe_unused]] const AZ::RHI::SingleDeviceBufferStreamRequest& request)
     {
         return RHI::ResultCode::Success;
     }

@@ -377,7 +377,7 @@ namespace AZ
                 m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
                 // copy buffer
-                RHI::CopyBufferDescriptor copyBuffer;
+                RHI::SingleDeviceCopyBufferDescriptor copyBuffer;
                 copyBuffer.m_sourceBuffer = buffer;
                 copyBuffer.m_destinationBuffer = m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
                 copyBuffer.m_size = aznumeric_cast<uint32_t>(desc.m_byteCount);
@@ -430,7 +430,7 @@ namespace AZ
                     m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
 
                     // copy descriptor for copying image to buffer
-                    RHI::CopyImageToBufferDescriptor copyImageToBuffer;
+                    RHI::SingleDeviceCopyImageToBufferDescriptor copyImageToBuffer;
                     copyImageToBuffer.m_sourceImage = image;
                     copyImageToBuffer.m_sourceSize = imageSubresourceLayouts[mipSlice].m_size;
                     copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(mipSlice, 0 /*arraySlice*/, imageAspect);

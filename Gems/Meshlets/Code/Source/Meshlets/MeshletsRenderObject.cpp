@@ -408,7 +408,7 @@ namespace AZ
                         uint8_t mappedIdx = uint8_t(ComputeStreamsSemantics::Indices);
                         bufferDesc.m_viewOffsetInBytes = meshRenderData.ComputeBuffersDescriptors[mappedIdx].m_viewOffsetInBytes;
 
-                        meshRenderData.IndexBufferView = RHI::IndexBufferView(
+                        meshRenderData.IndexBufferView = RHI::SingleDeviceIndexBufferView(
                             meshRenderData.ComputeBuffersViews[mappedIdx]->GetBuffer(),
                             bufferDesc.m_viewOffsetInBytes,
                             (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize,

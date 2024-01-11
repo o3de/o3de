@@ -57,7 +57,7 @@ namespace AZ
             };
 
             // Utility function that merges multiple ShaderResoruceGroup data into one.
-            RHI::ShaderResourceGroupData MergeShaderResourceData(const ShaderResourceGroupArray& srgList) const;
+            RHI::SingleDeviceShaderResourceGroupData MergeShaderResourceData(const ShaderResourceGroupArray& srgList) const;
             // List of the ShaderResourceGroup instances that are being merged.
             ShaderResourceGroupArray m_mergedShaderResourceGroupList = {};
             // Keeps track of the frame iteration for each ShaderResourceGroup when the last compile happens. This is used

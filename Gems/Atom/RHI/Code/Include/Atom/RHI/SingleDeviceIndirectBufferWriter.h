@@ -17,77 +17,77 @@ namespace AZ::RHI
 {
     class SingleDeviceBuffer;
     struct IndirectBufferLayout;
-    class IndexBufferView;
-    class StreamBufferView;
+    class SingleDeviceIndexBufferView;
+    class SingleDeviceStreamBufferView;
     class SingleDeviceIndirectBufferSignature;
 
-    //! IndirectBufferWriter is a helper class to write indirect commands
+    //! SingleDeviceIndirectBufferWriter is a helper class to write indirect commands
     //! to a buffer or a memory location in a platform independent way. Different APIs may
     //! have different layouts for the arguments of an indirect command. This class provides
     //! a secure and simple way to write the commands without worrying about API differences.
     //!
     //! It also provides basic checks, like trying to write more commands than allowed, or
     //! writing commands that are not specified in the layout.
-    class IndirectBufferWriter :
+    class SingleDeviceIndirectBufferWriter :
         public Object
     {
         using Base = Object;
     public:
-        AZ_RTTI(IndirectBufferWriter, "{7F569E74-382B-44EC-B0C5-89C07A184B47}");
-        virtual ~IndirectBufferWriter() = default;
+        AZ_RTTI(SingleDeviceIndirectBufferWriter, "{7F569E74-382B-44EC-B0C5-89C07A184B47}");
+        virtual ~SingleDeviceIndirectBufferWriter() = default;
 
-        //! Initialize the IndirectBufferWriter to write commands into a buffer.
+        //! Initialize the SingleDeviceIndirectBufferWriter to write commands into a buffer.
         //! @param buffer The buffer where to write the commands. Any previous values for the specified range will be overwritten.
         //!               The buffer must be big enough to contain the max number of sequences.
         //! @param byteOffset The offset into the buffer.
         //! @param byteStride The stride between command sequences. Must be larger than the stride calculated from the signature.
-        //! @param maxCommandSequences The max number of sequences that the IndirectBufferWriter can write.
+        //! @param maxCommandSequences The max number of sequences that the SingleDeviceIndirectBufferWriter can write.
         //! @param signature Signature of the indirect buffer.
-        //! @return A result code denoting the status of the call. If successful, the IndirectBufferWriter is considered
-        //!      initialized and is able to service write requests. If failure, the IndirectBufferWriter remains uninitialized.
+        //! @return A result code denoting the status of the call. If successful, the SingleDeviceIndirectBufferWriter is considered
+        //!      initialized and is able to service write requests. If failure, the SingleDeviceIndirectBufferWriter remains uninitialized.
         ResultCode Init(SingleDeviceBuffer& buffer, size_t byteOffset, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature);
 
-        //! Initialize the IndirectBufferWriter to write commands into a memory location.
+        //! Initialize the SingleDeviceIndirectBufferWriter to write commands into a memory location.
         //! @param memoryPtr The memory location where the commands will be written. Must not be null.
         //! @param byteStride The stride between command sequences. Must be larger than the stride calculated from the signature.
-        //! @param maxCommandSequences The max number of sequences that the IndirectBufferWriter can write.
+        //! @param maxCommandSequences The max number of sequences that the SingleDeviceIndirectBufferWriter can write.
         //! @param signature Signature of the indirect buffer.
-        //! @return A result code denoting the status of the call. If successful, the IndirectBufferWriter is considered
-        //!      initialized and is able to service write requests. If failure, the IndirectBufferWriter remains uninitialized.
+        //! @return A result code denoting the status of the call. If successful, the SingleDeviceIndirectBufferWriter is considered
+        //!      initialized and is able to service write requests. If failure, the SingleDeviceIndirectBufferWriter remains uninitialized.
         ResultCode Init(void* memoryPtr, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature);
 
         //! Writes a vertex buffer view command into the current sequence.
         //! @param slot The stream buffer slot that the view will set.
-        //! @param view The StreamBufferView that will be set.
-        //! @return A pointer to the IndirectBufferWriter object (this).
-        IndirectBufferWriter* SetVertexView(uint32_t slot, const StreamBufferView& view);
+        //! @param view The SingleDeviceStreamBufferView that will be set.
+        //! @return A pointer to the SingleDeviceIndirectBufferWriter object (this).
+        SingleDeviceIndirectBufferWriter* SetVertexView(uint32_t slot, const SingleDeviceStreamBufferView& view);
 
         //! Writes an index buffer view command into the current sequence.
-        //! @param view The IndexBufferView that will be set.
-        //! @return A pointer to the IndirectBufferWriter object (this).
-        IndirectBufferWriter* SetIndexView(const IndexBufferView& view);
+        //! @param view The SingleDeviceIndexBufferView that will be set.
+        //! @return A pointer to the SingleDeviceIndirectBufferWriter object (this).
+        SingleDeviceIndirectBufferWriter* SetIndexView(const SingleDeviceIndexBufferView& view);
 
         //! Writes a draw command into the current sequence.
         //! @param arguments The draw arguments that will be written.
-        //! @return A pointer to the IndirectBufferWriter object (this).
-        IndirectBufferWriter* Draw(const DrawLinear& arguments);
+        //! @return A pointer to the SingleDeviceIndirectBufferWriter object (this).
+        SingleDeviceIndirectBufferWriter* Draw(const DrawLinear& arguments);
 
         //! Writes a draw indexed command into the current sequence.
         //! @param arguments The draw indexed arguments that will be written.
-        //! @return A pointer to the IndirectBufferWriter object (this).
-        IndirectBufferWriter* DrawIndexed(const DrawIndexed& arguments);
+        //! @return A pointer to the SingleDeviceIndirectBufferWriter object (this).
+        SingleDeviceIndirectBufferWriter* DrawIndexed(const DrawIndexed& arguments);
 
         //! Writes a dispatch command into the current sequence.
         //! @param arguments The dispatch arguments that will be written.
-        //! @return A pointer to the IndirectBufferWriter object (this).
-        IndirectBufferWriter* Dispatch(const DispatchDirect& arguments);
+        //! @return A pointer to the SingleDeviceIndirectBufferWriter object (this).
+        SingleDeviceIndirectBufferWriter* Dispatch(const DispatchDirect& arguments);
 
         //! Writes an inline constants command into the current sequence. This command will set
         //! the values of all inline constants of the Pipeline.
         //! @param data A pointer to the data that contains the values that will be written.
         //! @param byteSize The size of the data that will be written.
-        //! @return A pointer to the IndirectBufferWriter object (this).
-        IndirectBufferWriter* SetRootConstants(const uint8_t* data, uint32_t byteSize);
+        //! @return A pointer to the SingleDeviceIndirectBufferWriter object (this).
+        SingleDeviceIndirectBufferWriter* SetRootConstants(const uint8_t* data, uint32_t byteSize);
 
         //! Advance the current sequence index by 1.
         //! @return True if the sequence index was increased correctly. False otherwise.
@@ -131,9 +131,9 @@ namespace AZ::RHI
         // Platform API
 
         /// Called when writing a vertex view command.
-        virtual void SetVertexViewInternal(IndirectCommandIndex index, const StreamBufferView& view) = 0;
+        virtual void SetVertexViewInternal(IndirectCommandIndex index, const SingleDeviceStreamBufferView& view) = 0;
         /// Called when writing an index view command.
-        virtual void SetIndexViewInternal(IndirectCommandIndex index, const IndexBufferView& view) = 0;
+        virtual void SetIndexViewInternal(IndirectCommandIndex index, const SingleDeviceIndexBufferView& view) = 0;
         /// Called when writing a draw command.
         virtual void DrawInternal(IndirectCommandIndex index, const DrawLinear& arguments) = 0;
         /// Call when writing a draw indexed command.

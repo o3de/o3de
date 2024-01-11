@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Format.h>
-#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/SingleDeviceIndexBufferView.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ::RHI
@@ -27,8 +27,8 @@ namespace AZ::RHI
 
         MultiDeviceIndexBufferView(const MultiDeviceBuffer& buffer, uint32_t byteOffset, uint32_t byteCount, IndexFormat format);
 
-        //! Returns the device-specific IndexBufferView for the given index
-        IndexBufferView GetDeviceIndexBufferView(int deviceIndex) const;
+        //! Returns the device-specific SingleDeviceIndexBufferView for the given index
+        SingleDeviceIndexBufferView GetDeviceIndexBufferView(int deviceIndex) const;
 
         //! Returns the hash of the view. This hash is precomputed at creation time.
         HashValue64 GetHash() const;

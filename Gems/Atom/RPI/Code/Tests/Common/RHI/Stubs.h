@@ -15,7 +15,7 @@
 #include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
-#include <Atom/RHI/IndirectBufferWriter.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferWriter.h>
 #include <Atom/RHI/SingleDeviceStreamingImagePool.h>
 #include <Atom/RHI/SingleDeviceSwapChain.h>
 #include <Atom/RHI/SingleDeviceFence.h>
@@ -169,7 +169,7 @@ namespace UnitTest
                 buffer.m_data.clear();
             }
 
-            AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::BufferMapRequest& request, AZ::RHI::BufferMapResponse& response) override
+            AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::SingleDeviceBufferMapRequest& request, AZ::RHI::SingleDeviceBufferMapResponse& response) override
             {
                 Buffer& buffer = static_cast<Buffer&>(*request.m_buffer);
                 response.m_data = buffer.Map();
@@ -183,7 +183,7 @@ namespace UnitTest
             }
 
             AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::SingleDeviceBuffer&) override { return AZ::RHI::ResultCode::Success; }
-            AZ::RHI::ResultCode StreamBufferInternal([[maybe_unused]] const AZ::RHI::BufferStreamRequest& request) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode StreamBufferInternal([[maybe_unused]] const AZ::RHI::SingleDeviceBufferStreamRequest& request) override { return AZ::RHI::ResultCode::Success; }
             void ComputeFragmentation() const override {}
         };
 
@@ -254,7 +254,7 @@ namespace UnitTest
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::ShaderResourceGroupPoolDescriptor&) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode InitGroupInternal(AZ::RHI::SingleDeviceShaderResourceGroup&) override { return AZ::RHI::ResultCode::Success; }
-            AZ::RHI::ResultCode CompileGroupInternal(AZ::RHI::SingleDeviceShaderResourceGroup&,const AZ::RHI::ShaderResourceGroupData&) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode CompileGroupInternal(AZ::RHI::SingleDeviceShaderResourceGroup&,const AZ::RHI::SingleDeviceShaderResourceGroupData&) override { return AZ::RHI::ResultCode::Success; }
         };
 
         class ShaderResourceGroup
@@ -391,14 +391,14 @@ namespace UnitTest
         };
 
         class IndirectBufferWriter
-            : public AZ::RHI::IndirectBufferWriter
+            : public AZ::RHI::SingleDeviceIndirectBufferWriter
         {
         public:
             AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::ThreadPoolAllocator);
 
         private:
-            void SetVertexViewInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::StreamBufferView& view) override {}
-            void SetIndexViewInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::IndexBufferView& view) override {}
+            void SetVertexViewInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::SingleDeviceStreamBufferView& view) override {}
+            void SetIndexViewInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::SingleDeviceIndexBufferView& view) override {}
             void DrawInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawLinear& arguments) override {}
             void DrawIndexedInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DrawIndexed& arguments) override {}
             void DispatchInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::DispatchDirect& arguments) override {}

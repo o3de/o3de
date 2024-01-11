@@ -87,7 +87,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::BufferInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::SingleDeviceBufferInitRequest& request, size_t heapOffset)
         {
             Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
             RHI::ResourceMemoryRequirements memoryRequirements = GetDevice().GetResourceMemoryRequirements(request.m_descriptor);

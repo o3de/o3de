@@ -9,7 +9,7 @@
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <Atom/RHI/SingleDeviceFence.h>
 #include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
-#include <Atom/RHI/IndirectBufferWriter.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferWriter.h>
 #include <Atom/RHI/PhysicalDevice.h>
 #include <Atom/RHI/SingleDeviceQueryPool.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
@@ -204,9 +204,9 @@ namespace AZ
             return RHI::Ptr<RHI::SingleDeviceIndirectBufferSignature>();
         }
 
-        RHI::Ptr<RHI::IndirectBufferWriter> SystemComponent::CreateIndirectBufferWriter()
+        RHI::Ptr<RHI::SingleDeviceIndirectBufferWriter> SystemComponent::CreateIndirectBufferWriter()
         {
-            return RHI::Ptr<RHI::IndirectBufferWriter>();
+            return RHI::Ptr<RHI::SingleDeviceIndirectBufferWriter>();
         }
 
         RHI::Ptr<RHI::SingleDeviceRayTracingBufferPools> SystemComponent::CreateRayTracingBufferPools()

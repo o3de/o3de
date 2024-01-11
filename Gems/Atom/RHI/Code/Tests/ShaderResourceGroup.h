@@ -35,7 +35,7 @@ namespace UnitTest
 
         AZ::RHI::ResultCode CompileGroupInternal(
             AZ::RHI::SingleDeviceShaderResourceGroup& groupBase,
-            const AZ::RHI::ShaderResourceGroupData& groupData) override;
+            const AZ::RHI::SingleDeviceShaderResourceGroupData& groupData) override;
 
         void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource& resourceBase) override;
     };

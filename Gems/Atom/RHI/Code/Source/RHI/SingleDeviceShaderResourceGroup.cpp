@@ -12,7 +12,7 @@
 
 namespace AZ::RHI
 {
-    void SingleDeviceShaderResourceGroup::Compile(const ShaderResourceGroupData& groupData, CompileMode compileMode /*= CompileMode::Async*/)
+    void SingleDeviceShaderResourceGroup::Compile(const SingleDeviceShaderResourceGroupData& groupData, CompileMode compileMode /*= CompileMode::Async*/)
     {
         switch (compileMode)
         {
@@ -48,19 +48,19 @@ namespace AZ::RHI
         return static_cast<SingleDeviceShaderResourceGroupPool*>(SingleDeviceResource::GetPool());
     }
 
-    const ShaderResourceGroupData& SingleDeviceShaderResourceGroup::GetData() const
+    const SingleDeviceShaderResourceGroupData& SingleDeviceShaderResourceGroup::GetData() const
     {
         return m_data;
     }
 
-    void SingleDeviceShaderResourceGroup::SetData(const ShaderResourceGroupData& data)
+    void SingleDeviceShaderResourceGroup::SetData(const SingleDeviceShaderResourceGroupData& data)
     {
         m_data = data;
         uint32_t sourceUpdateMask = data.GetUpdateMask();
             
         //RHI has it's own copy of update mask that is reset after Compile is called m_updateMaskResetLatency times.
         m_rhiUpdateMask |= sourceUpdateMask;
-        for (uint32_t i = 0; i < static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count); i++)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(SingleDeviceShaderResourceGroupData::ResourceType::Count); i++)
         {
             if (RHI::CheckBit(sourceUpdateMask, static_cast<AZ::u8>(i)))
             {
@@ -71,7 +71,7 @@ namespace AZ::RHI
 
     void SingleDeviceShaderResourceGroup::DisableCompilationForAllResourceTypes()
     {
-        for (uint32_t i = 0; i < static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count); i++)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(SingleDeviceShaderResourceGroupData::ResourceType::Count); i++)
         {
             if (RHI::CheckBit(m_rhiUpdateMask, static_cast<AZ::u8>(i)))
             {
@@ -96,12 +96,12 @@ namespace AZ::RHI
         return m_rhiUpdateMask != 0;
     }
 
-    void SingleDeviceShaderResourceGroup::EnableRhiResourceTypeCompilation(const ShaderResourceGroupData::ResourceTypeMask resourceTypeMask)
+    void SingleDeviceShaderResourceGroup::EnableRhiResourceTypeCompilation(const SingleDeviceShaderResourceGroupData::ResourceTypeMask resourceTypeMask)
     {
         m_rhiUpdateMask = AZ::RHI::SetBits(m_rhiUpdateMask, static_cast<uint32_t>(resourceTypeMask));
     }
 
-    void SingleDeviceShaderResourceGroup::ResetResourceTypeIteration(const ShaderResourceGroupData::ResourceType resourceType)
+    void SingleDeviceShaderResourceGroup::ResetResourceTypeIteration(const SingleDeviceShaderResourceGroupData::ResourceType resourceType)
     {
         m_resourceTypeIteration[static_cast<uint32_t>(resourceType)] = 0;
     }

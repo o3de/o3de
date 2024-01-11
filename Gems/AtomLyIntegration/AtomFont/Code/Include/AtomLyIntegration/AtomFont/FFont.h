@@ -25,8 +25,8 @@
 #include <AzFramework/Font/FontInterface.h>
 
 #include <Atom/RHI.Reflect/Base.h>
-#include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
+#include <Atom/RHI/SingleDeviceIndexBufferView.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/SingleDeviceImage.h>

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/CopyItem.h>
+#include <Atom/RHI/SingleDeviceCopyItem.h>
 #include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -147,7 +147,7 @@ namespace AZ
             struct ReadbackItem
             {
                 // The copy item used to read back a buffer, or a particular mip level of an image
-                RHI::CopyItem m_copyItem;
+                RHI::SingleDeviceCopyItem m_copyItem;
 
                 // Host accessible buffer to save read back result
                 // Using triple buffer pointers, as it allows use to clear the buffer outside the async callback.

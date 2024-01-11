@@ -50,7 +50,7 @@ namespace AZ::RHI
             AZStd::unique_ptr<AliasingBarrierTracker> CreateBarrierTrackerInternal() override           { return AZStd::make_unique<NoBarrierAliasingBarrierTracker>(); }
             ResultCode InitInternal([[maybe_unused]] Device& device, [[maybe_unused]] const AliasedHeapDescriptor& descriptor) override   { return ResultCode::Success; }
             ResultCode InitImageInternal([[maybe_unused]] const ImageInitRequest& request, [[maybe_unused]] size_t heapOffset) override   { return ResultCode::Success; }
-            ResultCode InitBufferInternal([[maybe_unused]] const BufferInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return ResultCode::Success; }
+            ResultCode InitBufferInternal([[maybe_unused]] const SingleDeviceBufferInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return ResultCode::Success; }
             //////////////////////////////////////////////////////////////////////////
         };
     }

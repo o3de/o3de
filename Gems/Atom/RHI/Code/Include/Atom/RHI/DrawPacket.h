@@ -99,7 +99,7 @@ namespace AZ::RHI
         DrawListMask m_drawListMask = 0;
 
         // The index buffer view used when the draw call is indexed.
-        IndexBufferView m_indexBufferView;
+        SingleDeviceIndexBufferView m_indexBufferView;
 
         uint8_t m_drawItemCount = 0;
         uint8_t m_streamBufferViewCount = 0;
@@ -131,7 +131,7 @@ namespace AZ::RHI
         const uint8_t* m_rootConstants = nullptr;
 
         // The list of stream buffer views. Each draw item has a view into the array.
-        const StreamBufferView* m_streamBufferViews = nullptr;
+        const SingleDeviceStreamBufferView* m_streamBufferViews = nullptr;
 
         // Optional list of scissors to be used by all draw items.
         const Scissor* m_scissors = nullptr;

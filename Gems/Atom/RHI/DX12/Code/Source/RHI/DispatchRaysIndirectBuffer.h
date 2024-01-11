@@ -9,7 +9,7 @@
 
 #include "RHI/MemoryView.h"
 #include <Atom/RHI/DispatchRaysIndirectBuffer.h>
-#include <Atom/RHI/IndirectBufferView.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferView.h>
 
 struct ID3D12GraphicsCommandList;
 namespace AZ

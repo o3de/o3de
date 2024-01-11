@@ -365,8 +365,8 @@ namespace UnitTest
 
                     for (uint8_t j = 0; j < streamBufferViewCount; ++j)
                     {
-                        const RHI::StreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + j;
-                        const RHI::StreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + j;
+                        const RHI::SingleDeviceStreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + j;
+                        const RHI::SingleDeviceStreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + j;
                         EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
                         EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
                         EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());
@@ -409,8 +409,8 @@ namespace UnitTest
 
                 for (uint8_t i = 0; i < streamBufferViewCount; ++i)
                 {
-                    const RHI::StreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + i;
-                    const RHI::StreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + i;
+                    const RHI::SingleDeviceStreamBufferView* streamBufferView = deviceDrawPacket->m_streamBufferViews + i;
+                    const RHI::SingleDeviceStreamBufferView* streamBufferViewClone = deviceDrawPacketClone->m_streamBufferViews + i;
                     EXPECT_EQ(streamBufferView->GetByteCount(), streamBufferViewClone->GetByteCount());
                     EXPECT_EQ(streamBufferView->GetByteOffset(), streamBufferViewClone->GetByteOffset());
                     EXPECT_EQ(streamBufferView->GetByteStride(), streamBufferViewClone->GetByteStride());

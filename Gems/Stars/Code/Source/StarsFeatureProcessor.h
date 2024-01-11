@@ -71,11 +71,11 @@ namespace AZ::Render
             const Data::Instance<RPI::ShaderResourceGroup>& srg,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             const RHI::DrawListTag& drawListTag,
-            const AZStd::span<const AZ::RHI::StreamBufferView>& streamBufferViews,
+            const AZStd::span<const AZ::RHI::SingleDeviceStreamBufferView>& streamBufferViews,
             uint32_t vertexCount);
 
         RPI::Ptr<RPI::PipelineStateForDraw> m_meshPipelineState;
-        AZStd::array<AZ::RHI::StreamBufferView, 1> m_meshStreamBufferViews;
+        AZStd::array<AZ::RHI::SingleDeviceStreamBufferView, 1> m_meshStreamBufferViews;
 
         Data::Instance<RPI::ShaderResourceGroup> m_drawSrg = nullptr;
         Data::Instance<RPI::Shader> m_shader = nullptr;

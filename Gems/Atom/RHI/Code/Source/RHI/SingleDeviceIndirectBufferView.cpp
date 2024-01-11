@@ -6,12 +6,12 @@
  *
  */
 
-#include <Atom/RHI/IndirectBufferView.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferView.h>
 #include <AzCore/std/hash.h>
 
 namespace AZ::RHI
 {
-    IndirectBufferView::IndirectBufferView(
+    SingleDeviceIndirectBufferView::SingleDeviceIndirectBufferView(
         const SingleDeviceBuffer& buffer,
         const SingleDeviceIndirectBufferSignature& signature,
         uint32_t byteOffset,
@@ -32,32 +32,32 @@ namespace AZ::RHI
         m_hash = static_cast<HashValue64>(seed);
     }
 
-    HashValue64 IndirectBufferView::GetHash() const
+    HashValue64 SingleDeviceIndirectBufferView::GetHash() const
     {
         return m_hash;
     }
 
-    const SingleDeviceBuffer* IndirectBufferView::GetBuffer() const
+    const SingleDeviceBuffer* SingleDeviceIndirectBufferView::GetBuffer() const
     {
         return m_buffer;
     }
 
-    uint32_t IndirectBufferView::GetByteOffset() const
+    uint32_t SingleDeviceIndirectBufferView::GetByteOffset() const
     {
         return m_byteOffset;
     }
 
-    uint32_t IndirectBufferView::GetByteCount() const
+    uint32_t SingleDeviceIndirectBufferView::GetByteCount() const
     {
         return m_byteCount;
     }
 
-    uint32_t IndirectBufferView::GetByteStride() const
+    uint32_t SingleDeviceIndirectBufferView::GetByteStride() const
     {
         return m_byteStride;
     }
 
-    const SingleDeviceIndirectBufferSignature* IndirectBufferView::GetSignature() const
+    const SingleDeviceIndirectBufferSignature* SingleDeviceIndirectBufferView::GetSignature() const
     {
         return m_signature;
     }

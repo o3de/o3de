@@ -45,7 +45,7 @@ namespace AZ
             RayTracingBlas() = default;
 
             // RHI::SingleDeviceRayTracingBlas overrides...
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override;
+            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::SingleDeviceRayTracingBlasDescriptor* descriptor, const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
 #ifdef AZ_DX12_DXR_SUPPORT
             AZStd::vector<D3D12_RAYTRACING_GEOMETRY_DESC> m_geometryDescs;

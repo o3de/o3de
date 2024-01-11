@@ -29,7 +29,7 @@ namespace UnitTest
     {
     }
 
-    RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup&, const RHI::ShaderResourceGroupData&)
+    RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup&, const RHI::SingleDeviceShaderResourceGroupData&)
     {
         return RHI::ResultCode::Success;
     }

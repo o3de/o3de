@@ -151,7 +151,7 @@ namespace AZ
 
         void CopyPass::CopyBuffer(const RHI::FrameGraphCompileContext& context)
         {
-            RHI::CopyBufferDescriptor copyDesc;
+            RHI::SingleDeviceCopyBufferDescriptor copyDesc;
 
             // Source Buffer
             PassAttachmentBinding& copySource = GetInputBinding(0);
@@ -170,7 +170,7 @@ namespace AZ
 
         void CopyPass::CopyImage(const RHI::FrameGraphCompileContext& context)
         {
-            RHI::CopyImageDescriptor copyDesc;
+            RHI::SingleDeviceCopyImageDescriptor copyDesc;
 
             // Source Image
             PassAttachmentBinding& copySource = GetInputBinding(0);
@@ -191,7 +191,7 @@ namespace AZ
 
         void CopyPass::CopyBufferToImage(const RHI::FrameGraphCompileContext& context)
         {
-            RHI::CopyBufferToImageDescriptor copyDesc;
+            RHI::SingleDeviceCopyBufferToImageDescriptor copyDesc;
 
             // Source Buffer
             PassAttachmentBinding& copySource = GetInputBinding(0);
@@ -213,7 +213,7 @@ namespace AZ
 
         void CopyPass::CopyImageToBuffer(const RHI::FrameGraphCompileContext& context)
         {
-            RHI::CopyImageToBufferDescriptor copyDesc;
+            RHI::SingleDeviceCopyImageToBufferDescriptor copyDesc;
 
             // Source Image
             PassAttachmentBinding& copySource = GetInputBinding(0);

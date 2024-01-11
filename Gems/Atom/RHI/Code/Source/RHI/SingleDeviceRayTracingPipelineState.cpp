@@ -11,40 +11,40 @@
 
 namespace AZ::RHI
 {
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::Build()
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::Build()
     {
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxPayloadSize(uint32_t maxPayloadSize)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::MaxPayloadSize(uint32_t maxPayloadSize)
     {
         AZ_Assert(IsTopLevelBuildContext(), "MaxPayloadSize can only be added to the top level of the SingleDeviceRayTracingPipelineState");
         m_configuration.m_maxPayloadSize = maxPayloadSize;
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxAttributeSize(uint32_t maxAttributeSize)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::MaxAttributeSize(uint32_t maxAttributeSize)
     {
         AZ_Assert(IsTopLevelBuildContext(), "MaxAttributeSize can only be added to the top level of the SingleDeviceRayTracingPipelineState");
         m_configuration.m_maxAttributeSize = maxAttributeSize;
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MaxRecursionDepth(uint32_t maxRecursionDepth)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::MaxRecursionDepth(uint32_t maxRecursionDepth)
     {
         AZ_Assert(IsTopLevelBuildContext(), "MaxRecursionDepth can only be added to the top level of the SingleDeviceRayTracingPipelineState");
         m_configuration.m_maxRecursionDepth = maxRecursionDepth;
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::PipelineState(const RHI::SingleDevicePipelineState* pipelineState)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::PipelineState(const RHI::SingleDevicePipelineState* pipelineState)
     {
         AZ_Assert(IsTopLevelBuildContext(), "SingleDevicePipelineState can only be added to the top level of the SingleDeviceRayTracingPipelineState");
         m_pipelineState = pipelineState;
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ShaderLibrary(RHI::PipelineStateDescriptorForRayTracing& descriptor)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::ShaderLibrary(RHI::PipelineStateDescriptorForRayTracing& descriptor)
     {
         ClearBuildContext();
 
@@ -53,28 +53,28 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::RayGenerationShaderName(const AZ::Name& name)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::RayGenerationShaderName(const AZ::Name& name)
     {
         AZ_Assert(m_shaderLibraryBuildContext && m_hitGroupBuildContext == nullptr, "RayGenerationShaderName can only be added to a ShaderLibrary");
         m_shaderLibraryBuildContext->m_rayGenerationShaderName = name;
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::MissShaderName(const AZ::Name& name)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::MissShaderName(const AZ::Name& name)
     {
         AZ_Assert(m_shaderLibraryBuildContext && m_hitGroupBuildContext == nullptr, "MissShaderName can only be added to a ShaderLibrary");
         m_shaderLibraryBuildContext->m_missShaderName = name;
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::CallableShaderName(const AZ::Name& callableShaderName)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::CallableShaderName(const AZ::Name& callableShaderName)
     {
         AZ_Assert(m_shaderLibraryBuildContext && m_hitGroupBuildContext == nullptr, "CallableShaderName can only be added to a ShaderLibrary");
         m_shaderLibraryBuildContext->m_callableShaderName = callableShaderName;
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ClosestHitShaderName(const AZ::Name& closestHitShaderName)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::ClosestHitShaderName(const AZ::Name& closestHitShaderName)
     {
         AZ_Assert(m_shaderLibraryBuildContext || m_hitGroupBuildContext, "ClosestHitShaderName can only be added to a ShaderLibrary or a HitGroup");
 
@@ -90,7 +90,7 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::AnyHitShaderName(const AZ::Name& anyHitShaderName)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::AnyHitShaderName(const AZ::Name& anyHitShaderName)
     {
         AZ_Assert(m_shaderLibraryBuildContext || m_hitGroupBuildContext, "AnyHitShaderName can only be added to a ShaderLibrary or a HitGroup");
 
@@ -106,7 +106,7 @@ namespace AZ::RHI
         return this;
     }
 
-    RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::HitGroup(const AZ::Name& hitGroupName)
+    SingleDeviceRayTracingPipelineStateDescriptor* SingleDeviceRayTracingPipelineStateDescriptor::HitGroup(const AZ::Name& hitGroupName)
     {
         ClearBuildContext();
 
@@ -116,13 +116,13 @@ namespace AZ::RHI
         return this;
     }
 
-    void RayTracingPipelineStateDescriptor::ClearBuildContext()
+    void SingleDeviceRayTracingPipelineStateDescriptor::ClearBuildContext()
     {
         m_shaderLibraryBuildContext = nullptr;
         m_hitGroupBuildContext = nullptr;
     }
 
-    bool RayTracingPipelineStateDescriptor::IsTopLevelBuildContext()
+    bool SingleDeviceRayTracingPipelineStateDescriptor::IsTopLevelBuildContext()
     {
         return (m_shaderLibraryBuildContext == nullptr && m_hitGroupBuildContext == nullptr);
     }
@@ -134,7 +134,7 @@ namespace AZ::RHI
         return rayTracingPipelineState;
     }
 
-    ResultCode SingleDeviceRayTracingPipelineState::Init(Device& device, const RayTracingPipelineStateDescriptor* descriptor)
+    ResultCode SingleDeviceRayTracingPipelineState::Init(Device& device, const SingleDeviceRayTracingPipelineStateDescriptor* descriptor)
     {
         m_descriptor = *descriptor;
 

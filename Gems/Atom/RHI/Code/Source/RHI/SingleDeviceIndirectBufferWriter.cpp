@@ -8,13 +8,13 @@
 
 #include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/IndirectBufferWriter.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferWriter.h>
 #include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
 #include <Atom/RHI.Reflect/IndirectBufferLayout.h>
 
 namespace AZ::RHI
 {
-    ResultCode IndirectBufferWriter::Init(SingleDeviceBuffer& buffer, size_t byteOffset, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature)
+    ResultCode SingleDeviceIndirectBufferWriter::Init(SingleDeviceBuffer& buffer, size_t byteOffset, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature)
     {
         if (!ValidateInitializedState(ValidateInitializedStateExpect::NotInitialized))
         {
@@ -46,7 +46,7 @@ namespace AZ::RHI
         return result;
     }
 
-    ResultCode IndirectBufferWriter::Init(void* memoryPtr, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature)
+    ResultCode SingleDeviceIndirectBufferWriter::Init(void* memoryPtr, uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature)
     {
         if (!ValidateInitializedState(ValidateInitializedStateExpect::NotInitialized))
         {
@@ -77,12 +77,12 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    bool IndirectBufferWriter::NextSequence()
+    bool SingleDeviceIndirectBufferWriter::NextSequence()
     {
         return Seek(m_currentSequenceIndex + 1);
     }
 
-    void IndirectBufferWriter::Shutdown()
+    void SingleDeviceIndirectBufferWriter::Shutdown()
     {
         if (m_buffer && m_targetMemory)
         {
@@ -97,7 +97,7 @@ namespace AZ::RHI
         m_currentSequenceIndex = static_cast<uint32_t>(-1);
     }
 
-    bool IndirectBufferWriter::ValidateArguments(uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature) const
+    bool SingleDeviceIndirectBufferWriter::ValidateArguments(uint32_t byteStride, uint32_t maxCommandSequences, const SingleDeviceIndirectBufferSignature& signature) const
     {
         if (Validation::IsEnabled())
         {
@@ -129,7 +129,7 @@ namespace AZ::RHI
         return true;
     }
 
-    bool IndirectBufferWriter::ValidateRootConstantsCommand(IndirectCommandIndex index, uint32_t byteSize) const
+    bool SingleDeviceIndirectBufferWriter::ValidateRootConstantsCommand(IndirectCommandIndex index, uint32_t byteSize) const
     {
         if (Validation::IsEnabled())
         {
@@ -149,7 +149,7 @@ namespace AZ::RHI
         return true;
     }
 
-    bool IndirectBufferWriter::PrepareWriting(IndirectCommandIndex commandIndex)
+    bool SingleDeviceIndirectBufferWriter::PrepareWriting(IndirectCommandIndex commandIndex)
     {
         if (Validation::IsEnabled())
         {
@@ -172,7 +172,7 @@ namespace AZ::RHI
         return true;
     }
 
-    AZ::RHI::ResultCode IndirectBufferWriter::MapBuffer()
+    AZ::RHI::ResultCode SingleDeviceIndirectBufferWriter::MapBuffer()
     {
         if (Validation::IsEnabled())
         {
@@ -185,8 +185,8 @@ namespace AZ::RHI
 
         // Map the buffer so the implementations can write to it.
         SingleDeviceBufferPool* pool = static_cast<SingleDeviceBufferPool*>(m_buffer->GetPool());
-        BufferMapRequest request = {};
-        BufferMapResponse response = {};
+        SingleDeviceBufferMapRequest request = {};
+        SingleDeviceBufferMapResponse response = {};
         request.m_buffer = m_buffer;
         request.m_byteCount = m_maxSequences * m_sequenceStride;
         request.m_byteOffset = m_bufferOffset;
@@ -194,7 +194,7 @@ namespace AZ::RHI
         RHI::ResultCode result = pool->MapBuffer(request, response);
         if (result != RHI::ResultCode::Success)
         {
-            AZ_Assert(false, "Failed to map buffer for IndirectBufferWriter");
+            AZ_Assert(false, "Failed to map buffer for SingleDeviceIndirectBufferWriter");
             return result;
         }
 
@@ -202,7 +202,7 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    void IndirectBufferWriter::UnmapBuffer()
+    void SingleDeviceIndirectBufferWriter::UnmapBuffer()
     {
         if (Validation::IsEnabled())
         {
@@ -217,30 +217,30 @@ namespace AZ::RHI
         m_targetMemory = nullptr;
     }
 
-    bool IndirectBufferWriter::ValidateInitializedState(ValidateInitializedStateExpect expect) const
+    bool SingleDeviceIndirectBufferWriter::ValidateInitializedState(ValidateInitializedStateExpect expect) const
     {
         if (Validation::IsEnabled())
         {
             if (expect == ValidateInitializedStateExpect::Initialized && !IsInitialized())
             {
-                AZ_Assert(false, "IndirectBufferWriter must be initialized when calling this method.");
+                AZ_Assert(false, "SingleDeviceIndirectBufferWriter must be initialized when calling this method.");
                 return false;
             }
             else if (expect == ValidateInitializedStateExpect::NotInitialized && IsInitialized())
             {
-                AZ_Assert(false, "IndirectBufferWriter cannot be initialized when calling this method.");
+                AZ_Assert(false, "SingleDeviceIndirectBufferWriter cannot be initialized when calling this method.");
                 return false;
             }
         }
         return true;
     }
 
-    uint8_t* IndirectBufferWriter::GetTargetMemory() const
+    uint8_t* SingleDeviceIndirectBufferWriter::GetTargetMemory() const
     {
         return m_targetMemory;
     }
 
-    IndirectBufferWriter* IndirectBufferWriter::SetVertexView(uint32_t slot, const StreamBufferView& view)
+    SingleDeviceIndirectBufferWriter* SingleDeviceIndirectBufferWriter::SetVertexView(uint32_t slot, const SingleDeviceStreamBufferView& view)
     {
         if (ValidateInitializedState(ValidateInitializedStateExpect::Initialized))
         {
@@ -254,7 +254,7 @@ namespace AZ::RHI
         return this;
     }
 
-    IndirectBufferWriter* IndirectBufferWriter::SetIndexView(const IndexBufferView& view)
+    SingleDeviceIndirectBufferWriter* SingleDeviceIndirectBufferWriter::SetIndexView(const SingleDeviceIndexBufferView& view)
     {
         if (ValidateInitializedState(ValidateInitializedStateExpect::Initialized))
         {
@@ -268,7 +268,7 @@ namespace AZ::RHI
         return this;
     }
 
-    IndirectBufferWriter* IndirectBufferWriter::Draw(const DrawLinear& arguments)
+    SingleDeviceIndirectBufferWriter* SingleDeviceIndirectBufferWriter::Draw(const DrawLinear& arguments)
     {
         if (ValidateInitializedState(ValidateInitializedStateExpect::Initialized))
         {
@@ -282,7 +282,7 @@ namespace AZ::RHI
         return this;
     }
 
-    IndirectBufferWriter* IndirectBufferWriter::DrawIndexed(const RHI::DrawIndexed& arguments)
+    SingleDeviceIndirectBufferWriter* SingleDeviceIndirectBufferWriter::DrawIndexed(const RHI::DrawIndexed& arguments)
     {
         if (ValidateInitializedState(ValidateInitializedStateExpect::Initialized))
         {
@@ -296,7 +296,7 @@ namespace AZ::RHI
         return this;
     }
 
-    IndirectBufferWriter* IndirectBufferWriter::Dispatch(const DispatchDirect& arguments)
+    SingleDeviceIndirectBufferWriter* SingleDeviceIndirectBufferWriter::Dispatch(const DispatchDirect& arguments)
     {
         if (ValidateInitializedState(ValidateInitializedStateExpect::Initialized))
         {
@@ -310,7 +310,7 @@ namespace AZ::RHI
         return this;
     }
 
-    IndirectBufferWriter* IndirectBufferWriter::SetRootConstants(const uint8_t* data, uint32_t byteSize)
+    SingleDeviceIndirectBufferWriter* SingleDeviceIndirectBufferWriter::SetRootConstants(const uint8_t* data, uint32_t byteSize)
     {
         if (ValidateInitializedState(ValidateInitializedStateExpect::Initialized))
         {
@@ -324,7 +324,7 @@ namespace AZ::RHI
         return this;
     }
 
-    bool IndirectBufferWriter::Seek(const uint32_t sequenceIndex)
+    bool SingleDeviceIndirectBufferWriter::Seek(const uint32_t sequenceIndex)
     {
         if (sequenceIndex >= m_maxSequences)
         {
@@ -335,7 +335,7 @@ namespace AZ::RHI
         return true;
     }
 
-    void IndirectBufferWriter::Flush()
+    void SingleDeviceIndirectBufferWriter::Flush()
     {
         if (ValidateInitializedState(ValidateInitializedStateExpect::Initialized) &&
             m_buffer && m_targetMemory)
@@ -348,12 +348,12 @@ namespace AZ::RHI
         }
     }
 
-    bool IndirectBufferWriter::IsInitialized() const
+    bool SingleDeviceIndirectBufferWriter::IsInitialized() const
     {
         return !!m_signature;
     }
 
-    uint32_t IndirectBufferWriter::GetCurrentSequenceIndex() const
+    uint32_t SingleDeviceIndirectBufferWriter::GetCurrentSequenceIndex() const
     {
         return m_currentSequenceIndex;
     }

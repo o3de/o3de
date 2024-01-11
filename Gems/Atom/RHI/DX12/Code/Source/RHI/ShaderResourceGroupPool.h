@@ -38,7 +38,7 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
             RHI::ResultCode InitGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase) override;
             void ShutdownInternal() override;
-            RHI::ResultCode CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData) override;
+            RHI::ResultCode CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::SingleDeviceShaderResourceGroupData& groupData) override;
             void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
 
@@ -49,22 +49,22 @@ namespace AZ
 
             void UpdateViewsDescriptorTable(DescriptorTable descriptorTable,
                                             RHI::SingleDeviceShaderResourceGroup& group,
-                                            const RHI::ShaderResourceGroupData& groupData,
+                                            const RHI::SingleDeviceShaderResourceGroupData& groupData,
                                             bool forceUpdateViews = false);
-            void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, RHI::SingleDeviceShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
-            void UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::ShaderResourceGroupData& groupData);
+            void UpdateSamplersDescriptorTable(DescriptorTable descriptorTable, RHI::SingleDeviceShaderResourceGroup& group, const RHI::SingleDeviceShaderResourceGroupData& groupData);
+            void UpdateUnboundedArrayDescriptorTables(ShaderResourceGroup& group, const RHI::SingleDeviceShaderResourceGroupData& groupData);
 
             //! Update all the buffer views for the unbounded array
             void UpdateUnboundedBuffersDescTable(
                 DescriptorTable descriptorTable,
-                const RHI::ShaderResourceGroupData& groupData,
+                const RHI::SingleDeviceShaderResourceGroupData& groupData,
                 uint32_t shaderInputIndex,
                 RHI::ShaderInputBufferAccess bufferAccess);
 
             //! Update all the image views for the unbounded array
             void UpdateUnboundedImagesDescTable(
                 DescriptorTable descriptorTable,
-                const RHI::ShaderResourceGroupData& groupData,
+                const RHI::SingleDeviceShaderResourceGroupData& groupData,
                 uint32_t shaderInputIndex,
                 RHI::ShaderInputImageAccess imageAccess,
                 RHI::ShaderInputImageType imageType);

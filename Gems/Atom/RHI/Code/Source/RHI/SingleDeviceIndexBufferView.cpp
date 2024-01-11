@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/RHI/IndexBufferView.h>
+#include <Atom/RHI/SingleDeviceIndexBufferView.h>
 #include <AzCore/Utils/TypeHash.h>
 
 namespace AZ::RHI
@@ -25,7 +25,7 @@ namespace AZ::RHI
         }
     }
 
-    IndexBufferView::IndexBufferView(
+    SingleDeviceIndexBufferView::SingleDeviceIndexBufferView(
         const SingleDeviceBuffer& buffer,
         uint32_t byteOffset,
         uint32_t byteCount,
@@ -38,27 +38,27 @@ namespace AZ::RHI
         m_hash = TypeHash64(*this);
     }
 
-    AZ::HashValue64 IndexBufferView::GetHash() const
+    AZ::HashValue64 SingleDeviceIndexBufferView::GetHash() const
     {
         return m_hash;
     }
 
-    const SingleDeviceBuffer* IndexBufferView::GetBuffer() const
+    const SingleDeviceBuffer* SingleDeviceIndexBufferView::GetBuffer() const
     {
         return m_buffer;
     }
 
-    uint32_t IndexBufferView::GetByteOffset() const
+    uint32_t SingleDeviceIndexBufferView::GetByteOffset() const
     {
         return m_byteOffset;
     }
 
-    uint32_t IndexBufferView::GetByteCount() const
+    uint32_t SingleDeviceIndexBufferView::GetByteCount() const
     {
         return m_byteCount;
     }
 
-    IndexFormat IndexBufferView::GetIndexFormat() const
+    IndexFormat SingleDeviceIndexBufferView::GetIndexFormat() const
     {
         return m_format;
     }

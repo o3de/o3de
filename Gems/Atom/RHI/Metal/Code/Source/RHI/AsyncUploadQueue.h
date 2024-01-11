@@ -50,7 +50,7 @@ namespace AZ
 
             //! Queue copy commands to upload buffer resource
             //! @return queue id which can be use to check whether upload finished or wait for upload finish
-            uint64_t QueueUpload(const RHI::BufferStreamRequest& request);
+            uint64_t QueueUpload(const RHI::SingleDeviceBufferStreamRequest& request);
 
             //! Queue copy commands to upload image subresources.
             //! @param residentMip is the resident mip level the expand request starts from.

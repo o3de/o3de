@@ -115,8 +115,8 @@ namespace AZ
                 }
 
                 // create the TLAS descriptor by adding an instance entry for each probe in the grid
-                RHI::RayTracingTlasDescriptor tlasDescriptor;
-                RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+                RHI::SingleDeviceRayTracingTlasDescriptor tlasDescriptor;
+                RHI::SingleDeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                 // initialize the transform for each probe to Identity(), they will be updated by the compute shader
                 AZ::Transform transform = AZ::Transform::Identity();

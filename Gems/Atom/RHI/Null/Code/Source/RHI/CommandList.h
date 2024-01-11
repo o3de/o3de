@@ -34,7 +34,7 @@ namespace AZ
             void SetShaderResourceGroupForDraw([[maybe_unused]] const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override {}
             void SetShaderResourceGroupForDispatch([[maybe_unused]] const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup) override {}
             void Submit([[maybe_unused]] const RHI::DrawItem& drawItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
-            void Submit([[maybe_unused]] const RHI::CopyItem& copyItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
+            void Submit([[maybe_unused]] const RHI::SingleDeviceCopyItem& copyItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
             void Submit([[maybe_unused]] const RHI::DispatchItem& dispatchItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
             void Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
             void BeginPredication([[maybe_unused]] const RHI::SingleDeviceBuffer& buffer, [[maybe_unused]] uint64_t offset, [[maybe_unused]] RHI::PredicationOp operation) override {}

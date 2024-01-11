@@ -161,7 +161,7 @@ namespace AZ
             {
                 SubMesh& subMesh = m_subMeshes[mesh.m_subMeshIndices[subMeshIndex]];
 
-                RHI::RayTracingBlasDescriptor blasDescriptor;
+                RHI::SingleDeviceRayTracingBlasDescriptor blasDescriptor;
                 blasDescriptor.Build()
                     ->Geometry()
                         ->VertexFormat(subMesh.m_positionFormat)

@@ -44,23 +44,23 @@ namespace AZ::RHI
     //! prefer to share the data between them (i.e. within a single job).
     //!
     //! NOTE [SRG Constants]: The ConstantsData class is used for efficiently setting/getting the constants values of the SRG.
-    class ShaderResourceGroupData
+    class SingleDeviceShaderResourceGroupData
     {
     public:
         //! By default creates an empty data structure. Must be initialized before use.
-        ShaderResourceGroupData();
-        ~ShaderResourceGroupData();
+        SingleDeviceShaderResourceGroupData();
+        ~SingleDeviceShaderResourceGroupData();
 
         //! Creates shader resource group data from a layout.
-        explicit ShaderResourceGroupData(const ShaderResourceGroupLayout* shaderResourceGroupLayout);
+        explicit SingleDeviceShaderResourceGroupData(const ShaderResourceGroupLayout* shaderResourceGroupLayout);
 
         //! Creates shader resource group data from a pool (usable on any SRG with the same layout).
-        explicit ShaderResourceGroupData(const SingleDeviceShaderResourceGroupPool& shaderResourceGroupPool);
+        explicit SingleDeviceShaderResourceGroupData(const SingleDeviceShaderResourceGroupPool& shaderResourceGroupPool);
 
         //! Creates shader resource group data from an SRG instance (usable on any SRG with the same layout).
-        explicit ShaderResourceGroupData(const SingleDeviceShaderResourceGroup& shaderResourceGroup);
+        explicit SingleDeviceShaderResourceGroupData(const SingleDeviceShaderResourceGroup& shaderResourceGroup);
 
-        AZ_DEFAULT_COPY_MOVE(ShaderResourceGroupData);
+        AZ_DEFAULT_COPY_MOVE(SingleDeviceShaderResourceGroupData);
 
         //! Resolves a shader input name to an index using reflection. For performance reasons, this resolve
         //! operation should be performed once at initialization time (or as infrequently as possible).
@@ -176,7 +176,7 @@ namespace AZ::RHI
         AZStd::span<const ConstPtr<SingleDeviceBufferView>> GetBufferGroup() const;
         AZStd::span<const SamplerState> GetSamplerGroup() const;
 
-        //! Reset image and buffer views setup for this ShaderResourceGroupData
+        //! Reset image and buffer views setup for this SingleDeviceShaderResourceGroupData
         //! So it won't hold references for any RHI resources
         void ResetViews();
 
@@ -295,28 +295,28 @@ namespace AZ::RHI
     };
 
     template <typename T>
-    bool ShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value)
+    bool SingleDeviceShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value)
     {
         EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
         return m_constantsData.SetConstant(inputIndex, value);
     }
 
     template <typename T>
-    bool ShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value, uint32_t arrayIndex)
+    bool SingleDeviceShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value, uint32_t arrayIndex)
     {
         EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
         return m_constantsData.SetConstant(inputIndex, value, arrayIndex);
     }
 
     template<typename T>
-    bool ShaderResourceGroupData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)
+    bool SingleDeviceShaderResourceGroupData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)
     {
         EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask);
         return m_constantsData.SetConstantMatrixRows(inputIndex, value, rowCount);
     }
 
     template <typename T>
-    bool ShaderResourceGroupData::SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::span<const T> values)
+    bool SingleDeviceShaderResourceGroupData::SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::span<const T> values)
     {
         if (!values.empty())
         {
@@ -326,25 +326,25 @@ namespace AZ::RHI
     }
 
     template <typename T>
-    AZStd::span<const T> ShaderResourceGroupData::GetConstantArray(ShaderInputConstantIndex inputIndex) const
+    AZStd::span<const T> SingleDeviceShaderResourceGroupData::GetConstantArray(ShaderInputConstantIndex inputIndex) const
     {
         return m_constantsData.GetConstantArray<T>(inputIndex);
     }
 
     template <typename T>
-    T ShaderResourceGroupData::GetConstant(ShaderInputConstantIndex inputIndex) const
+    T SingleDeviceShaderResourceGroupData::GetConstant(ShaderInputConstantIndex inputIndex) const
     {
         return m_constantsData.GetConstant<T>(inputIndex);
     }
 
     template <typename T>
-    T ShaderResourceGroupData::GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const
+    T SingleDeviceShaderResourceGroupData::GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const
     {
         return m_constantsData.GetConstant<T>(inputIndex, arrayIndex);
     }
 
     template<typename TShaderInput, typename TShaderInputDescriptor>
-    bool ShaderResourceGroupData::ValidateImageViewAccess(TShaderInput inputIndex, const SingleDeviceImageView* imageView, [[maybe_unused]] uint32_t arrayIndex) const
+    bool SingleDeviceShaderResourceGroupData::ValidateImageViewAccess(TShaderInput inputIndex, const SingleDeviceImageView* imageView, [[maybe_unused]] uint32_t arrayIndex) const
     {
         if (!Validation::IsEnabled())
         {
@@ -355,7 +355,7 @@ namespace AZ::RHI
 
         if (!imageView)
         {
-            AZ_Error("ShaderResourceGroupData", false,
+            AZ_Error("SingleDeviceShaderResourceGroupData", false,
                 "Image Array Input '%s[%d]' is null.",
                 shaderInputImage.m_name.GetCStr(), arrayIndex);
             return false;
@@ -373,7 +373,7 @@ namespace AZ::RHI
 
         if (!isValidAccess)
         {
-            AZ_Error("ShaderResourceGroupData", false,
+            AZ_Error("SingleDeviceShaderResourceGroupData", false,
                 "Image Input '%s[%d]': Invalid 'Read / Write' access. Expected '%s'.",
                 shaderInputImage.m_name.GetCStr(), arrayIndex, GetShaderInputAccessName(shaderInputImage.m_access));
             return false;
@@ -384,7 +384,7 @@ namespace AZ::RHI
             // An image view assigned to an input with read-write access must be an attachment on the frame scheduler.
             if (!frameAttachment)
             {
-                AZ_Error("ShaderResourceGroupData", false,
+                AZ_Error("SingleDeviceShaderResourceGroupData", false,
                     "Image Input '%s[%d]': SingleDeviceImage is bound to a ReadWrite shader input, "
                     "but it is not an attachment on the frame scheduler. All GPU-writable resources "
                     "must be declared as attachments in order to provide hazard tracking.",
@@ -403,7 +403,7 @@ namespace AZ::RHI
             {
                 AZ_UNUSED(shaderInputImage);
                 AZ_UNUSED(arrayIndex);
-                AZ_Error("ShaderResourceGroupData", false,
+                AZ_Error("SingleDeviceShaderResourceGroupData", false,
                     "Image Input '%s[%d]': The image is %dD but the shader expected %dD",
                     shaderInputImage.m_name.GetCStr(),
                     arrayIndex,
@@ -443,7 +443,7 @@ namespace AZ::RHI
             }
             if (imageDescriptor.m_multisampleState.m_samples != 1)
             {
-                AZ_Error("ShaderResourceGroupData", false,
+                AZ_Error("SingleDeviceShaderResourceGroupData", false,
                     "Image Input '%s[%d]': The image has multisample count %u but the shader expected 1.",
                     shaderInputImage.m_name.GetCStr(),
                     arrayIndex,
@@ -460,7 +460,7 @@ namespace AZ::RHI
             }
             if (imageDescriptor.m_multisampleState.m_samples <= 1)
             {
-                AZ_Error("ShaderResourceGroupData", false,
+                AZ_Error("SingleDeviceShaderResourceGroupData", false,
                     "Image Input '%s[%d]': The image has multisample count %u but the shader expected more than 1.",
                     shaderInputImage.m_name.GetCStr(),
                     arrayIndex,
@@ -484,7 +484,7 @@ namespace AZ::RHI
             }
             if (imageViewDescriptor.m_isCubemap == 0)
             {
-                AZ_Error("ShaderResourceGroupData", false,
+                AZ_Error("SingleDeviceShaderResourceGroupData", false,
                     "Image Input '%s[%d]': The shader expected a cubemap.",
                     shaderInputImage.m_name.GetCStr(),
                     arrayIndex);
@@ -501,7 +501,7 @@ namespace AZ::RHI
     }
 
     template<typename TShaderInput, typename TShaderInputDescriptor>
-    bool ShaderResourceGroupData::ValidateBufferViewAccess(TShaderInput inputIndex, const SingleDeviceBufferView* bufferView, [[maybe_unused]] uint32_t arrayIndex) const
+    bool SingleDeviceShaderResourceGroupData::ValidateBufferViewAccess(TShaderInput inputIndex, const SingleDeviceBufferView* bufferView, [[maybe_unused]] uint32_t arrayIndex) const
     {
         if (!Validation::IsEnabled())
         {
@@ -522,7 +522,7 @@ namespace AZ::RHI
 
         if (!isValidAccess)
         {
-            AZ_Error("ShaderResourceGroupData", false,
+            AZ_Error("SingleDeviceShaderResourceGroupData", false,
                 "Buffer Input '%s[%d]': Invalid 'Constant / Read / Write' access. Expected '%s'",
                 shaderInputBuffer.m_name.GetCStr(), arrayIndex, GetShaderInputAccessName(shaderInputBuffer.m_access));
             return false;
@@ -533,7 +533,7 @@ namespace AZ::RHI
             // A buffer view assigned to an input with read-write access must be an attachment on the frame scheduler.
             if (!frameAttachment)
             {
-                AZ_Error("ShaderResourceGroupData", false,
+                AZ_Error("SingleDeviceShaderResourceGroupData", false,
                     "Buffer Input '%s[%d]': SingleDeviceBuffer is bound to a ReadWrite shader input, "
                     "but it is not an attachment on the frame scheduler. All GPU-writable resources "
                     "must be declared as attachments in order to provide hazard tracking.",
@@ -551,7 +551,7 @@ namespace AZ::RHI
             //For Constant type the stride (full constant buffer) must be larger or equal than the buffer view size (element size x element count).
             if (!(shaderInputBuffer.m_strideSize >= (bufferViewDescriptor.m_elementSize * bufferViewDescriptor.m_elementCount)))
             {
-                AZ_Error("ShaderResourceGroupData", false,
+                AZ_Error("SingleDeviceShaderResourceGroupData", false,
                     "Buffer Input '%s[%d]': stride size %d must be larger than or equal to the buffer view size %d",
                     shaderInputBuffer.m_name.GetCStr(), arrayIndex, shaderInputBuffer.m_strideSize,
                     (bufferViewDescriptor.m_elementSize * bufferViewDescriptor.m_elementCount));
@@ -563,7 +563,7 @@ namespace AZ::RHI
             // For any other type the buffer view's element size should match the stride.
             if (shaderInputBuffer.m_strideSize != bufferViewDescriptor.m_elementSize)
             {
-                AZ_Error("ShaderResourceGroupData", false, "Buffer Input '%s[%d]': Does not match expected stride size %d",
+                AZ_Error("SingleDeviceShaderResourceGroupData", false, "Buffer Input '%s[%d]': Does not match expected stride size %d",
                     shaderInputBuffer.m_name.GetCStr(), arrayIndex, bufferViewDescriptor.m_elementSize);
                 return false;
             }
@@ -603,7 +603,7 @@ namespace AZ::RHI
 
         if (!isValidType)
         {
-            AZ_Error("ShaderResourceGroupData", false,
+            AZ_Error("SingleDeviceShaderResourceGroupData", false,
                 "Buffer Input '%s[%d]': Does not match expected type '%s'",
                 shaderInputBuffer.m_name.GetCStr(), arrayIndex, GetShaderInputTypeName(shaderInputBuffer.m_type));
             return false;

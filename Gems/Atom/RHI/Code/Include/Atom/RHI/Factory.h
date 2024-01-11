@@ -30,7 +30,7 @@ namespace AZ::RHI
     class SingleDeviceImagePool;
     class SingleDeviceImageView;
     class SingleDeviceIndirectBufferSignature;
-    class IndirectBufferWriter;
+    class SingleDeviceIndirectBufferWriter;
     class SingleDeviceFence;
     class FrameGraphCompiler;
     class FrameGraphExecuter;
@@ -202,7 +202,7 @@ namespace AZ::RHI
 
         virtual Ptr<SingleDeviceIndirectBufferSignature> CreateIndirectBufferSignature() = 0;
 
-        virtual Ptr<IndirectBufferWriter> CreateIndirectBufferWriter() = 0;
+        virtual Ptr<SingleDeviceIndirectBufferWriter> CreateIndirectBufferWriter() = 0;
 
         virtual Ptr<SingleDeviceRayTracingBufferPools> CreateRayTracingBufferPools() = 0;
 

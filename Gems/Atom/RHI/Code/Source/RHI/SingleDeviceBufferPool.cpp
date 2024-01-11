@@ -24,7 +24,7 @@ namespace AZ::RHI
         return true;
     }
 
-    bool SingleDeviceBufferPool::ValidateInitRequest(const BufferInitRequest& initRequest) const
+    bool SingleDeviceBufferPool::ValidateInitRequest(const SingleDeviceBufferInitRequest& initRequest) const
     {
         if (Validation::IsEnabled())
         {
@@ -60,7 +60,7 @@ namespace AZ::RHI
         return true;
     }
 
-    bool SingleDeviceBufferPool::ValidateMapRequest(const BufferMapRequest& request) const
+    bool SingleDeviceBufferPool::ValidateMapRequest(const SingleDeviceBufferMapRequest& request) const
     {
         if (Validation::IsEnabled())
         {
@@ -109,7 +109,7 @@ namespace AZ::RHI
         });
     }
 
-    ResultCode SingleDeviceBufferPool::InitBuffer(const BufferInitRequest& initRequest)
+    ResultCode SingleDeviceBufferPool::InitBuffer(const SingleDeviceBufferInitRequest& initRequest)
     {
         AZ_PROFILE_FUNCTION(RHI);
 
@@ -125,12 +125,12 @@ namespace AZ::RHI
 
         if (resultCode == ResultCode::Success && initRequest.m_initialData)
         {
-            BufferMapRequest mapRequest;
+            SingleDeviceBufferMapRequest mapRequest;
             mapRequest.m_buffer = initRequest.m_buffer;
             mapRequest.m_byteCount = initRequest.m_descriptor.m_byteCount;
             mapRequest.m_byteOffset = 0;
 
-            BufferMapResponse mapResponse;
+            SingleDeviceBufferMapResponse mapResponse;
             resultCode = MapBufferInternal(mapRequest, mapResponse);
             if (resultCode == ResultCode::Success)
             {
@@ -158,7 +158,7 @@ namespace AZ::RHI
         return OrphanBufferInternal(buffer);
     }
 
-    ResultCode SingleDeviceBufferPool::MapBuffer(const BufferMapRequest& request, BufferMapResponse& response)
+    ResultCode SingleDeviceBufferPool::MapBuffer(const SingleDeviceBufferMapRequest& request, SingleDeviceBufferMapResponse& response)
     {
         AZ_PROFILE_FUNCTION(RHI);
 
@@ -190,7 +190,7 @@ namespace AZ::RHI
         }
     }
 
-    ResultCode SingleDeviceBufferPool::StreamBuffer(const BufferStreamRequest& request)
+    ResultCode SingleDeviceBufferPool::StreamBuffer(const SingleDeviceBufferStreamRequest& request)
     {
         if (!ValidateIsInitialized())
         {
@@ -215,7 +215,7 @@ namespace AZ::RHI
         memcpy(destination, source, num);
     }
 
-    ResultCode SingleDeviceBufferPool::StreamBufferInternal([[maybe_unused]] const BufferStreamRequest& request)
+    ResultCode SingleDeviceBufferPool::StreamBufferInternal([[maybe_unused]] const SingleDeviceBufferStreamRequest& request)
     {
         return ResultCode::Unimplemented;
     }

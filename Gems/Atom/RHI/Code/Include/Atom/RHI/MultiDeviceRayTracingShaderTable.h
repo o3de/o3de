@@ -57,8 +57,8 @@ namespace AZ::RHI
         MultiDeviceRayTracingShaderTableDescriptor() = default;
         ~MultiDeviceRayTracingShaderTableDescriptor() = default;
 
-        //! Returns the device-specific RayTracingShaderTableDescriptor for the given index
-        AZStd::shared_ptr<RayTracingShaderTableDescriptor> GetDeviceRayTracingShaderTableDescriptor(int deviceIndex);
+        //! Returns the device-specific SingleDeviceRayTracingShaderTableDescriptor for the given index
+        AZStd::shared_ptr<SingleDeviceRayTracingShaderTableDescriptor> GetDeviceRayTracingShaderTableDescriptor(int deviceIndex);
 
         //! Accessors
         const RHI::Ptr<MultiDeviceRayTracingPipelineState>& GetPipelineState() const

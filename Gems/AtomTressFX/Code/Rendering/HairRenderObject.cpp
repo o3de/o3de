@@ -576,7 +576,7 @@ namespace AZ
                 //------------ Index Buffer  ------------
                 m_TotalIndices = asset.GetNumHairTriangleIndices();
 
-                RHI::BufferInitRequest request;
+                RHI::SingleDeviceBufferInitRequest request;
                 uint32_t indexBufferSize = m_TotalIndices * sizeof(uint32_t);
                 m_indexBuffer = RHI::Factory::Get().CreateBuffer();
                 request.m_buffer = m_indexBuffer.get();
@@ -597,7 +597,7 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::IndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
+                m_indexBufferView = RHI::SingleDeviceIndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
  
                 return true;
             }

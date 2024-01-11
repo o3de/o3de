@@ -23,7 +23,7 @@ namespace AZ
             return aznew RayTracingBlas;
         }
 
-        RHI::ResultCode RayTracingBlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& bufferPools)
+        RHI::ResultCode RayTracingBlas::CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SingleDeviceRayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& bufferPools)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             Device& device = static_cast<Device&>(deviceBase);
@@ -77,7 +77,7 @@ namespace AZ
             scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = prebuildInfo.ScratchDataSizeInBytes;
 
-            AZ::RHI::BufferInitRequest scratchBufferRequest;
+            AZ::RHI::SingleDeviceBufferInitRequest scratchBufferRequest;
             scratchBufferRequest.m_buffer = buffers.m_scratchBuffer.get();
             scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
@@ -92,7 +92,7 @@ namespace AZ
             blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
             blasBufferDescriptor.m_byteCount = prebuildInfo.ResultDataMaxSizeInBytes;
 
-            AZ::RHI::BufferInitRequest blasBufferRequest;
+            AZ::RHI::SingleDeviceBufferInitRequest blasBufferRequest;
             blasBufferRequest.m_buffer = buffers.m_blasBuffer.get();
             blasBufferRequest.m_descriptor = blasBufferDescriptor;
             resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);

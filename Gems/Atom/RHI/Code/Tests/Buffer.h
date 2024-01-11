@@ -65,11 +65,11 @@ namespace UnitTest
 
         AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::SingleDeviceBuffer& buffer) override;
 
-        AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::BufferMapRequest& request, AZ::RHI::BufferMapResponse& response) override;
+        AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::SingleDeviceBufferMapRequest& request, AZ::RHI::SingleDeviceBufferMapResponse& response) override;
 
         void UnmapBufferInternal(AZ::RHI::SingleDeviceBuffer& bufferBase) override;
 
-        AZ::RHI::ResultCode StreamBufferInternal(const AZ::RHI::BufferStreamRequest& request) override;
+        AZ::RHI::ResultCode StreamBufferInternal(const AZ::RHI::SingleDeviceBufferStreamRequest& request) override;
 
         void ComputeFragmentation() const override {}
     };

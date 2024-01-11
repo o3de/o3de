@@ -280,7 +280,7 @@ namespace UnitTest
             RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
             srgPool->InitGroup(*srg);
 
-            RHI::ShaderResourceGroupData srgData(*srg);
+            RHI::SingleDeviceShaderResourceGroupData srgData(*srg);
 
             float floatValue = 1.234f;
             srgData.SetConstant(floatValueIndex, floatValue);
@@ -446,7 +446,7 @@ namespace UnitTest
         }
     };
 
-    RHI::ShaderResourceGroupData PrepareSRGData(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
+    RHI::SingleDeviceShaderResourceGroupData PrepareSRGData(const RHI::ConstPtr<RHI::ShaderResourceGroupLayout>& srgLayout)
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
@@ -459,7 +459,7 @@ namespace UnitTest
         RHI::Ptr<RHI::SingleDeviceShaderResourceGroup> srg = RHI::Factory::Get().CreateShaderResourceGroup();
         srgPool->InitGroup(*srg);
 
-        RHI::ShaderResourceGroupData srgData(*srg);
+        RHI::SingleDeviceShaderResourceGroupData srgData(*srg);
         return srgData;
     }
 
@@ -472,7 +472,7 @@ namespace UnitTest
         const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
         EXPECT_EQ(vector4index.GetIndex(), 9);
 
-        RHI::ShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+        RHI::SingleDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
         const float vector2values[2] = { 1.0f, 2.0f };
         const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -507,7 +507,7 @@ namespace UnitTest
         const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
         EXPECT_EQ(vector4index.GetIndex(), 9);
 
-        RHI::ShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+        RHI::SingleDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
         const float vector2values[2] = { 1.0f, 2.0f };
         const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -558,7 +558,7 @@ namespace UnitTest
         const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
         EXPECT_EQ(vector4index.GetIndex(), 9);
 
-        RHI::ShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+        RHI::SingleDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
         const float vector2values[2] = { 1.0f, 2.0f };
         const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);
@@ -590,7 +590,7 @@ namespace UnitTest
         const RHI::ShaderInputConstantIndex vector4index = srgLayout->FindShaderInputConstantIndex(Name("m_vector4"));
         EXPECT_EQ(vector4index.GetIndex(), 9);
 
-        RHI::ShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
+        RHI::SingleDeviceShaderResourceGroupData srgData = PrepareSRGData(srgLayout);
 
         const float vector2values[2] = { 1.0f, 2.0f };
         const Vector2 vector2 = Vector2::CreateFromFloat2(vector2values);

@@ -104,7 +104,7 @@ namespace AZ
         void ImageAttachmentCopy::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             // copy descriptor for copying image
-            RHI::CopyImageDescriptor copyImage;
+            RHI::SingleDeviceCopyImageDescriptor copyImage;
             const AZ::RHI::SingleDeviceImage* image = context.GetImage(m_srcAttachmentId);
             copyImage.m_sourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;

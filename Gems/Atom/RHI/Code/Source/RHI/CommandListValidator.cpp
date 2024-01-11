@@ -74,7 +74,7 @@ namespace AZ::RHI
 
         bool isSuccess = true;
 
-        const ShaderResourceGroupData& groupData = shaderResourceGroup.GetData();
+        const SingleDeviceShaderResourceGroupData& groupData = shaderResourceGroup.GetData();
         const ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
 
         // Validate buffers

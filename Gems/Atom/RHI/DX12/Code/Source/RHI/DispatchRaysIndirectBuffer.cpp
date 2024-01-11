@@ -32,7 +32,7 @@ namespace AZ
             bufferDescriptor.m_bindFlags = bufferPool->GetDescriptor().m_bindFlags;
             bufferDescriptor.m_byteCount = sizeof(D3D12_DISPATCH_RAYS_DESC);
 
-            AZ::RHI::BufferInitRequest bufferRequest;
+            AZ::RHI::SingleDeviceBufferInitRequest bufferRequest;
             bufferRequest.m_buffer = m_buffer.get();
             bufferRequest.m_descriptor = bufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPool->InitBuffer(bufferRequest);

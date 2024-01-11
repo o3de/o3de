@@ -62,7 +62,7 @@ namespace AZ::RHI
     };
 
     //! A structure used as an argument to SingleDeviceBufferPool::MapBuffer.
-    struct BufferMapResponse
+    struct SingleDeviceBufferMapResponse
     {
         void* m_data = nullptr;
     };
@@ -89,9 +89,9 @@ namespace AZ::RHI
         const void* m_sourceData = nullptr;
     };
 
-    using BufferInitRequest = BufferInitRequestTemplate<SingleDeviceBuffer>;
-    using BufferMapRequest = BufferMapRequestTemplate<SingleDeviceBuffer>;
-    using BufferStreamRequest = BufferStreamRequestTemplate<SingleDeviceBuffer, SingleDeviceFence>;
+    using SingleDeviceBufferInitRequest = BufferInitRequestTemplate<SingleDeviceBuffer>;
+    using SingleDeviceBufferMapRequest = BufferMapRequestTemplate<SingleDeviceBuffer>;
+    using SingleDeviceBufferStreamRequest = BufferStreamRequestTemplate<SingleDeviceBuffer, SingleDeviceFence>;
 
     //! Buffer pool provides backing storage and context for buffer instances. The BufferPoolDescriptor
     //! contains properties defining memory characteristics of buffer pools. All buffers created on a pool
@@ -123,7 +123,7 @@ namespace AZ::RHI
         //!      buffer, it remain in a shutdown state. If the initial data upload fails, the buffer will be
         //!      initialized, but will remain empty and the call will return ResultCode::OutOfMemory. Checking
         //!      this amounts to seeing if buffer.IsInitialized() is true.
-        ResultCode InitBuffer(const BufferInitRequest& request);
+        ResultCode InitBuffer(const SingleDeviceBufferInitRequest& request);
 
         //! NOTE: Only applicable to 'Host' pools. Device pools will fail with ResultCode::InvalidOperation.
         //!
@@ -158,7 +158,7 @@ namespace AZ::RHI
         //!  @param response The map response structure holding the mapped data pointer (if successful), or null.
         //!  @return Returns a result code specifying whether the call succeeded, or a failure code specifying
         //!      why the call failed.
-        ResultCode MapBuffer(const BufferMapRequest& request, BufferMapResponse& response);
+        ResultCode MapBuffer(const SingleDeviceBufferMapRequest& request, SingleDeviceBufferMapResponse& response);
 
         //! Unmaps a buffer for CPU access. The mapped data pointer is considered invalid after this call and
         //! should not be accessed. This call unmaps the data region and unblocks the GPU for access.
@@ -167,7 +167,7 @@ namespace AZ::RHI
         //! Asynchronously streams buffer data up to the GPU. The operation is decoupled from the frame scheduler.
         //! It is not valid to use the buffer while the upload is running. The provided fence is signaled when the
         //! upload completes.
-        ResultCode StreamBuffer(const BufferStreamRequest& request);
+        ResultCode StreamBuffer(const SingleDeviceBufferStreamRequest& request);
 
         //! Returns the buffer descriptor used to initialize the buffer pool. Descriptor contents
         //! are undefined for uninitialized pools.
@@ -188,9 +188,9 @@ namespace AZ::RHI
         using SingleDeviceBufferPoolBase::InitBuffer;
 
         bool ValidatePoolDescriptor(const BufferPoolDescriptor& descriptor) const;
-        bool ValidateInitRequest(const BufferInitRequest& initRequest) const;
+        bool ValidateInitRequest(const SingleDeviceBufferInitRequest& initRequest) const;
         bool ValidateIsHostHeap() const;
-        bool ValidateMapRequest(const BufferMapRequest& request) const;
+        bool ValidateMapRequest(const SingleDeviceBufferMapRequest& request) const;
 
         //////////////////////////////////////////////////////////////////////////
         // Platform API
@@ -205,13 +205,13 @@ namespace AZ::RHI
         virtual ResultCode OrphanBufferInternal(SingleDeviceBuffer& buffer) = 0;
 
         /// Called when a buffer is being mapped.
-        virtual ResultCode MapBufferInternal(const BufferMapRequest& request, BufferMapResponse& response) = 0;
+        virtual ResultCode MapBufferInternal(const SingleDeviceBufferMapRequest& request, SingleDeviceBufferMapResponse& response) = 0;
 
         /// Called when a buffer is being unmapped.
         virtual void UnmapBufferInternal(SingleDeviceBuffer& buffer) = 0;
 
         /// Called when a buffer is being streamed asynchronously.
-        virtual ResultCode StreamBufferInternal(const BufferStreamRequest& request);
+        virtual ResultCode StreamBufferInternal(const SingleDeviceBufferStreamRequest& request);
 
         //Called in order to do a simple mem copy allowing Null rhi to opt out
         virtual void BufferCopy(void* destination, const void* source, size_t num);

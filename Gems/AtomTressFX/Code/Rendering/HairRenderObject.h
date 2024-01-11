@@ -381,7 +381,7 @@ namespace AZ
  
                 //! Index buffer for the render pass via draw calls - naming was kept
                 Data::Instance<RHI::SingleDeviceBuffer> m_indexBuffer;
-                RHI::IndexBufferView m_indexBufferView;
+                RHI::SingleDeviceIndexBufferView m_indexBufferView;
                 //-------------------------------------------------------------------
 
                 AZStd::mutex m_mutex;

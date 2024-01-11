@@ -51,7 +51,7 @@ namespace AZ
                 }
             }
 
-            CpuVirtualAddress MapBuffer(const RHI::BufferMapRequest& request)
+            CpuVirtualAddress MapBuffer(const RHI::SingleDeviceBufferMapRequest& request)
             {
                 AZ_PROFILE_FUNCTION(RHI);
 
@@ -309,7 +309,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
-        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::BufferMapRequest& request, RHI::BufferMapResponse& response)
+        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::SingleDeviceBufferMapRequest& request, RHI::SingleDeviceBufferMapResponse& response)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -356,7 +356,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::BufferStreamRequest& request)
+        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::SingleDeviceBufferStreamRequest& request)
         {
             GetDevice().GetAsyncUploadQueue().QueueUpload(request);
             return RHI::ResultCode::Success;

@@ -736,7 +736,7 @@ namespace AZ
             m_boxStreamLayout = layoutBuilder.End();
 
             // create index buffer
-            AZ::RHI::BufferInitRequest request;
+            AZ::RHI::SingleDeviceBufferInitRequest request;
             m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
@@ -745,7 +745,7 @@ namespace AZ
             AZ_Error("DiffuseProbeGridFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create index buffer view
-            AZ::RHI::IndexBufferView indexBufferView =
+            AZ::RHI::SingleDeviceIndexBufferView indexBufferView =
             {
                 *m_boxIndexBuffer,
                 0,
@@ -764,7 +764,7 @@ namespace AZ
             AZ_Error("DiffuseProbeGridFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create position buffer view
-            RHI::StreamBufferView positionBufferView =
+            RHI::SingleDeviceStreamBufferView positionBufferView =
             {
                 *m_boxPositionBuffer,
                 0,
@@ -961,7 +961,7 @@ namespace AZ
             m_visualizationIB = mesh.m_indexBufferView;
 
             // create the BLAS object
-            RHI::RayTracingBlasDescriptor blasDescriptor;
+            RHI::SingleDeviceRayTracingBlasDescriptor blasDescriptor;
             blasDescriptor.Build()
                 ->Geometry()
                 ->VertexFormat(PositionStreamFormat)

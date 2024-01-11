@@ -208,8 +208,8 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> m_visualizationModelAsset;
             RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_visualizationBlas;
             Data::Instance<RPI::Model> m_visualizationModel;
-            RHI::StreamBufferView m_visualizationVB;
-            RHI::IndexBufferView m_visualizationIB;
+            RHI::SingleDeviceStreamBufferView m_visualizationVB;
+            RHI::SingleDeviceIndexBufferView m_visualizationIB;
 
             // irradiance queries
             struct IrradianceQuery

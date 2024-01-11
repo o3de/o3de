@@ -33,7 +33,7 @@ namespace AZ
             RayTracingTlas() = default;
 
             // RHI::SingleDeviceRayTracingTlas overrides
-            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingTlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
+            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::SingleDeviceRayTracingTlasDescriptor* descriptor, [[maybe_unused]] const RHI::SingleDeviceRayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
 
         };
     }

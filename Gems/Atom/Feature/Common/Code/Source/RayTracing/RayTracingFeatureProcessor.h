@@ -83,27 +83,27 @@ namespace AZ
             {
                 // vertex streams
                 RHI::Format m_positionFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_positionVertexBufferView;
+                RHI::SingleDeviceStreamBufferView m_positionVertexBufferView;
                 RHI::Ptr<RHI::SingleDeviceBufferView> m_positionShaderBufferView;
 
                 RHI::Format m_normalFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_normalVertexBufferView;
+                RHI::SingleDeviceStreamBufferView m_normalVertexBufferView;
                 RHI::Ptr<RHI::SingleDeviceBufferView> m_normalShaderBufferView;
 
                 RHI::Format m_tangentFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_tangentVertexBufferView;
+                RHI::SingleDeviceStreamBufferView m_tangentVertexBufferView;
                 RHI::Ptr<RHI::SingleDeviceBufferView> m_tangentShaderBufferView;
 
                 RHI::Format m_bitangentFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_bitangentVertexBufferView;
+                RHI::SingleDeviceStreamBufferView m_bitangentVertexBufferView;
                 RHI::Ptr<RHI::SingleDeviceBufferView> m_bitangentShaderBufferView;
 
                 RHI::Format m_uvFormat = RHI::Format::Unknown;
-                RHI::StreamBufferView m_uvVertexBufferView;
+                RHI::SingleDeviceStreamBufferView m_uvVertexBufferView;
                 RHI::Ptr<RHI::SingleDeviceBufferView> m_uvShaderBufferView;
 
                 // index buffer
-                RHI::IndexBufferView m_indexBufferView;
+                RHI::SingleDeviceIndexBufferView m_indexBufferView;
                 RHI::Ptr<RHI::SingleDeviceBufferView> m_indexShaderBufferView;
 
                 // vertex buffer usage flags

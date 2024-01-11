@@ -8,9 +8,9 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/IndirectBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
+#include <Atom/RHI/SingleDeviceIndexBufferView.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferView.h>
 #include <Atom/RHI/IndirectArguments.h>
 #include <AzCore/std/containers/array.h>
 
@@ -144,10 +144,10 @@ namespace AZ::RHI
         const SingleDevicePipelineState* m_pipelineState = nullptr;
 
         /// The index buffer used when drawing with an indexed draw call.
-        const IndexBufferView* m_indexBufferView = nullptr;
+        const SingleDeviceIndexBufferView* m_indexBufferView = nullptr;
 
         /// Array of stream buffers to bind (count must match m_streamBufferViewCount).
-        const StreamBufferView* m_streamBufferViews = nullptr;
+        const SingleDeviceStreamBufferView* m_streamBufferViews = nullptr;
 
         /// Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
         const SingleDeviceShaderResourceGroup* const* m_shaderResourceGroups = nullptr;

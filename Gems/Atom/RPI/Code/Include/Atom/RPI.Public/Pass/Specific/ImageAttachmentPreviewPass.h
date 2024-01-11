@@ -10,7 +10,7 @@
 #include <AtomCore/Instance/Instance.h>
 
 #include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/CopyItem.h>
+#include <Atom/RHI/SingleDeviceCopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -59,7 +59,7 @@ namespace AZ
             u16 m_sourceArraySlice = 0;
 
             // Copy item to be submitted to command list
-            RHI::CopyItem m_copyItem;
+            RHI::SingleDeviceCopyItem m_copyItem;
         };
 
         //! Render preview of specified image attachment to the selected output attachment.
