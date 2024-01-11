@@ -43,7 +43,7 @@ namespace AZ
             struct SrgNameViewPair
             {
                 Name m_srgName;
-                RHI::Ptr<RHI::BufferView> m_bufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_bufferView;
             };
 
             //! Inputs to the skinning compute shader and their corresponding srg names

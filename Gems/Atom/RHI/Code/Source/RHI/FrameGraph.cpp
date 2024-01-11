@@ -6,11 +6,11 @@
  *
  */
 #include <Atom/RHI/BufferFrameAttachment.h>
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
-#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/SingleDeviceImagePoolBase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/SingleDeviceQueryPool.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>

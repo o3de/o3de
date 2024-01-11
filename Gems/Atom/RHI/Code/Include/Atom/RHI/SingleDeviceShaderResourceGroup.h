@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/SingleDeviceResource.h>
 #include <Atom/RHI/ShaderResourceGroupData.h>
 
 namespace AZ::RHI
@@ -15,11 +15,11 @@ namespace AZ::RHI
     //! This class is a platform-independent base class for a shader resource group. It has a
     //! pointer to the resource group pool, if the user initialized the group onto a pool.
     class SingleDeviceShaderResourceGroup
-        : public Resource
+        : public SingleDeviceResource
     {
         friend class SingleDeviceShaderResourceGroupPool;
     public:
-        AZ_RTTI(SingleDeviceShaderResourceGroup, "{91B217A5-EFEC-46C5-82DA-B4C77931BC1A}", Resource);
+        AZ_RTTI(SingleDeviceShaderResourceGroup, "{91B217A5-EFEC-46C5-82DA-B4C77931BC1A}", SingleDeviceResource);
         virtual ~SingleDeviceShaderResourceGroup() override = default;
 
         //! Defines the compilation modes for an SRG

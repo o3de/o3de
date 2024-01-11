@@ -12,7 +12,7 @@
 #include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/ShaderResourceGroupInvalidateRegistry.h>
-#include <Atom/RHI/ResourcePool.h>
+#include <Atom/RHI/SingleDeviceResourcePool.h>
 
 #include <AzCore/std/parallel/containers/concurrent_vector.h>
 
@@ -22,11 +22,11 @@ namespace AZ::RHI
     //! should inherit from this class to implement platform-dependent pooling of
     //! shader resource groups.
     class SingleDeviceShaderResourceGroupPool
-        : public ResourcePool
+        : public SingleDeviceResourcePool
     {
         friend class SingleDeviceShaderResourceGroup;
     public:
-        AZ_RTTI(SingleDeviceShaderResourceGroupPool, "{9AAB5A85-4063-4BAE-9A9C-E25640F18FFA}", ResourcePool);
+        AZ_RTTI(SingleDeviceShaderResourceGroupPool, "{9AAB5A85-4063-4BAE-9A9C-E25640F18FFA}", SingleDeviceResourcePool);
         virtual ~SingleDeviceShaderResourceGroupPool() override;
 
         //! Initializes the shader resource group pool.
@@ -80,9 +80,9 @@ namespace AZ::RHI
         SingleDeviceShaderResourceGroupPool();
 
         //////////////////////////////////////////////////////////////////////////
-        // ResourcePool overrides
+        // SingleDeviceResourcePool overrides
         void ShutdownInternal() override;
-        void ShutdownResourceInternal(Resource& resource) override;
+        void ShutdownResourceInternal(SingleDeviceResource& resource) override;
         void ComputeFragmentation() const override
         {
             // Fragmentation for SRG descriptors not currently measured

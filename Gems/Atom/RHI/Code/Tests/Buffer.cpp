@@ -11,7 +11,7 @@ namespace UnitTest
 {
     using namespace AZ;
 
-    RHI::ResultCode BufferView::InitInternal(RHI::Device&, const RHI::Resource&)
+    RHI::ResultCode BufferView::InitInternal(RHI::Device&, const RHI::SingleDeviceResource&)
     {
         return RHI::ResultCode::Success;
     }
@@ -61,7 +61,7 @@ namespace UnitTest
         return RHI::ResultCode::Success;
     }
 
-    void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+    void BufferPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
     {
         Buffer& buffer = static_cast<Buffer&>(resourceBase);
         buffer.m_data.clear();

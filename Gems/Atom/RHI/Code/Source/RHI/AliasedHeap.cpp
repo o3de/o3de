@@ -133,7 +133,7 @@ namespace AZ::RHI
             AZStd::hash_combine(reinterpret_cast<size_t&>(hash), heapOffsetInBytes);
 
             // Check the cache for the buffer.
-            if (RHI::Resource* attachment = m_cache.Find(static_cast<uint64_t>(hash)))
+            if (RHI::SingleDeviceResource* attachment = m_cache.Find(static_cast<uint64_t>(hash)))
             {
                 buffer = static_cast<SingleDeviceBuffer*>(attachment);
             }
@@ -255,7 +255,7 @@ namespace AZ::RHI
             AZStd::hash_combine(reinterpret_cast<size_t&>(hash), heapOffsetInBytes);
 
             // Check the cache for the image.
-            if (RHI::Resource* attachment = m_cache.Find(static_cast<uint64_t>(hash)))
+            if (RHI::SingleDeviceResource* attachment = m_cache.Find(static_cast<uint64_t>(hash)))
             {
                 image = static_cast<SingleDeviceImage*>(attachment);
             }

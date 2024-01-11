@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/ResourcePool.h>
+#include <Atom/RHI/SingleDeviceResourcePool.h>
 #include <Atom/RHI/SingleDeviceBuffer.h>
 
 namespace AZ::RHI
@@ -15,15 +15,15 @@ namespace AZ::RHI
     //! A simple base class for buffer pools. This mainly exists so that various
     //! buffer pool implementations can have some type safety separate from other
     //! resource pool types.
-    class BufferPoolBase
-        : public ResourcePool
+    class SingleDeviceBufferPoolBase
+        : public SingleDeviceResourcePool
     {
     public:
-        AZ_RTTI(BufferPoolBase, "{28D265BB-3B90-4676-BBA9-3F933F14CB01}", ResourcePool);
-        virtual ~BufferPoolBase() override = default;
+        AZ_RTTI(SingleDeviceBufferPoolBase, "{28D265BB-3B90-4676-BBA9-3F933F14CB01}", SingleDeviceResourcePool);
+        virtual ~SingleDeviceBufferPoolBase() override = default;
 
     protected:
-        BufferPoolBase() = default;
+        SingleDeviceBufferPoolBase() = default;
 
         ResultCode InitBuffer(
             SingleDeviceBuffer* buffer,
@@ -41,7 +41,7 @@ namespace AZ::RHI
         uint32_t GetMapRefCount() const;
 
     private:
-        using ResourcePool::InitResource;
+        using SingleDeviceResourcePool::InitResource;
 
         /// Returns whether there are any mapped buffers.
         bool ValidateNoMappedBuffers() const;

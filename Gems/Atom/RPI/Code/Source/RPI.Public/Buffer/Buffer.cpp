@@ -10,7 +10,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/SingleDeviceFence.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RPI.Public/Buffer/BufferPool.h>
@@ -62,7 +62,7 @@ namespace AZ
             return m_rhiBuffer.get();
         }
 
-        const RHI::BufferView* Buffer::GetBufferView() const
+        const RHI::SingleDeviceBufferView* Buffer::GetBufferView() const
         {
             if (m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::InputAssembly ||
                 m_rhiBuffer->GetDescriptor().m_bindFlags == RHI::BufferBindFlags::DynamicInputAssembly)

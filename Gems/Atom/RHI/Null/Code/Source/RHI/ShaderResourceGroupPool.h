@@ -31,7 +31,7 @@ namespace AZ
             RHI::ResultCode InitGroupInternal([[maybe_unused]] RHI::SingleDeviceShaderResourceGroup& groupBase) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override;
             RHI::ResultCode CompileGroupInternal([[maybe_unused]] RHI::SingleDeviceShaderResourceGroup& groupBase, [[maybe_unused]] const RHI::ShaderResourceGroupData& groupData) override { return RHI::ResultCode::Success;}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal([[maybe_unused]] RHI::SingleDeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

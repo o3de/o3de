@@ -216,7 +216,7 @@ namespace AZ
         {
         }
 
-        void StreamingImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void StreamingImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             auto& image = static_cast<Image&>(resourceBase);
 

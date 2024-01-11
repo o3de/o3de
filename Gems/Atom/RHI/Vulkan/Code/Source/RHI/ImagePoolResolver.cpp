@@ -164,7 +164,7 @@ namespace AZ
             m_epiloqueBarriers.clear();
         }
 
-        void ImagePoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void ImagePoolResolver::OnResourceShutdown(const RHI::SingleDeviceResource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
             const Image* image = static_cast<const Image*>(&resource);

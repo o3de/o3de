@@ -65,7 +65,7 @@ namespace AZ
 
             Device& m_device;
             AZStd::unordered_map<RHI::AttachmentId, uint32_t> m_attachmentsMap;
-            AZStd::unordered_map<const RHI::ResourceView*, uint32_t> m_lastSubpassResourceUse;
+            AZStd::unordered_map<const RHI::SingleDeviceResourceView*, uint32_t> m_lastSubpassResourceUse;
             RenderPass::Descriptor m_renderpassDesc;
             Framebuffer::Descriptor m_framebufferDesc;
             AZStd::vector<RHI::ClearValue> m_clearValues;

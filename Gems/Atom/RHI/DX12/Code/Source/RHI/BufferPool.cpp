@@ -135,7 +135,7 @@ namespace AZ
                 m_nonAttachmentBufferUnion.clear();
             }
 
-            void OnResourceShutdown(const RHI::Resource& resource) override
+            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override
             {
                 const Buffer& buffer = static_cast<const Buffer&>(resource);
                 if (!buffer.m_pendingResolves)
@@ -276,7 +276,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void BufferPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             if (auto* resolver = GetResolver())
             {

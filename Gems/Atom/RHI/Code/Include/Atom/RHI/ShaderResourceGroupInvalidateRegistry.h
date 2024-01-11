@@ -11,10 +11,10 @@
 
 namespace AZ::RHI
 {
-    class Resource;
+    class SingleDeviceResource;
     class SingleDeviceShaderResourceGroup;
 
-    //! This data structure associates Resource invalidation events with Shader Resource Group compilation events.
+    //! This data structure associates SingleDeviceResource invalidation events with Shader Resource Group compilation events.
     //!
     //! Shader Resource Groups (SRG's) can hold buffer and image views. These views point to resources (buffers and images)
     //! which can become invalid in several specific cases:
@@ -46,9 +46,9 @@ namespace AZ::RHI
 
         void SetCompileGroupFunction(CompileGroupFunction compileGroupFunction);
 
-        void OnAttach(const Resource* resource, SingleDeviceShaderResourceGroup* shaderResourceGroup);
+        void OnAttach(const SingleDeviceResource* resource, SingleDeviceShaderResourceGroup* shaderResourceGroup);
 
-        void OnDetach(const Resource* resource, SingleDeviceShaderResourceGroup* shaderResourceGroup);
+        void OnDetach(const SingleDeviceResource* resource, SingleDeviceShaderResourceGroup* shaderResourceGroup);
 
         bool IsEmpty() const;
 
@@ -63,7 +63,7 @@ namespace AZ::RHI
         using RefCountType = uint32_t;
 
         using Registry = AZStd::unordered_map<SingleDeviceShaderResourceGroup*, RefCountType>;
-        using ResourceToRegistry = AZStd::unordered_map<const Resource*, Registry>;
+        using ResourceToRegistry = AZStd::unordered_map<const SingleDeviceResource*, Registry>;
 
         ResourceToRegistry m_resourceToRegistryMap;
         CompileGroupFunction m_compileGroupFunction;

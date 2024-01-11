@@ -64,7 +64,7 @@ namespace AZ
              //! Compute render data
             Data::Instance<RPI::ShaderResourceGroup> ComputeSrg;          // Per object Compute data - can be shared across instances
             AZStd::vector<SrgBufferDescriptor> ComputeBuffersDescriptors;
-            AZStd::vector<Data::Instance<RHI::BufferView>> ComputeBuffersViews;
+            AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> ComputeBuffersViews;
             AZStd::vector<Data::Instance<Meshlets::SharedBufferAllocation>> ComputeBuffersAllocators;
             AZStd::vector <Data::Instance<RPI::Buffer>> ComputeBuffers;   // stand alone non shared buffers
             MeshletsDispatchItem MeshDispatchItem;
@@ -73,7 +73,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> RenderObjectSrg;     // Per object render data - includes instanceId and vertex buffers
             AZStd::vector<SrgBufferDescriptor> RenderBuffersDescriptors;
             RHI::IndexBufferView IndexBufferView;
-            AZStd::vector<Data::Instance<RHI::BufferView>> RenderBuffersViews; 
+            AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> RenderBuffersViews; 
             AZStd::vector <Data::Instance<RPI::Buffer>> RenderBuffers;    // stand alone non shared buffers
 
             const RHI::DrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure

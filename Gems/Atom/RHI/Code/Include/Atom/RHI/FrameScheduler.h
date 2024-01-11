@@ -113,7 +113,7 @@ namespace AZ::RHI
     //!
     //! FrameScheduler contains a single "root" Graphics scope which is always the first scope added to the graph. All
     //! subsequent scopes take on a dependency to this root scope. The reason for this is twofold:
-    //! 1) ResourcePool implementations need a scope to perform resolves (DMA uploads) to GPU memory. These operations
+    //! 1) SingleDeviceResourcePool implementations need a scope to perform resolves (DMA uploads) to GPU memory. These operations
     //! occur first in the frame to avoid complicating pool / scope dependencies. Hence, this is done synchronously
     //!       on the Graphics queue.
     //! 2) To make resource transitions and aliasing easier, the first scope in an attachment chain should be a

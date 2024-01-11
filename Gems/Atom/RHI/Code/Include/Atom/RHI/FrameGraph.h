@@ -14,7 +14,7 @@
 #include <Atom/RHI.Reflect/ResolveScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
 #include <Atom/RHI/FrameGraphAttachmentDatabase.h>
 #include <Atom/RHI/Scope.h>
 
@@ -27,7 +27,7 @@ namespace AZ::RHI
     class BufferScopeAttachment;
     class ResolveScopeAttachment;
     class SingleDeviceSwapChain;
-    class ResourcePool;
+    class SingleDeviceResourcePool;
     class SingleDeviceQueryPool;
     class SingleDeviceFence;
     struct Interval;

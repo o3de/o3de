@@ -17,25 +17,25 @@ set(FILES
     Source/RHI/PoolAllocator.cpp
     Include/Atom/RHI/SingleDeviceBuffer.h
     Include/Atom/RHI/MultiDeviceBuffer.h
-    Include/Atom/RHI/BufferView.h
+    Include/Atom/RHI/SingleDeviceBufferView.h
     Include/Atom/RHI/IndexBufferView.h
     Include/Atom/RHI/MultiDeviceIndexBufferView.h
     Include/Atom/RHI/StreamBufferView.h
     Include/Atom/RHI/MultiDeviceStreamBufferView.h
     Source/RHI/SingleDeviceBuffer.cpp
     Source/RHI/MultiDeviceBuffer.cpp
-    Source/RHI/BufferView.cpp
+    Source/RHI/SingleDeviceBufferView.cpp
     Source/RHI/IndexBufferView.cpp
     Source/RHI/MultiDeviceIndexBufferView.cpp
     Source/RHI/StreamBufferView.cpp
     Source/RHI/MultiDeviceStreamBufferView.cpp
     Include/Atom/RHI/SingleDeviceBufferPool.h
     Include/Atom/RHI/MultiDeviceBufferPool.h
-    Include/Atom/RHI/BufferPoolBase.h
+    Include/Atom/RHI/SingleDeviceBufferPoolBase.h
     Include/Atom/RHI/MultiDeviceBufferPoolBase.h
     Source/RHI/SingleDeviceBufferPool.cpp
     Source/RHI/MultiDeviceBufferPool.cpp
-    Source/RHI/BufferPoolBase.cpp
+    Source/RHI/SingleDeviceBufferPoolBase.cpp
     Source/RHI/MultiDeviceBufferPoolBase.cpp
     Include/Atom/RHI/CommandList.h
     Include/Atom/RHI/CommandListValidator.h
@@ -117,19 +117,19 @@ set(FILES
     Source/RHI/FrameScheduler.cpp
     Include/Atom/RHI/SingleDeviceImage.h
     Include/Atom/RHI/MultiDeviceImage.h
-    Include/Atom/RHI/ImageView.h
+    Include/Atom/RHI/SingleDeviceImageView.h
     Source/RHI/SingleDeviceImage.cpp
     Source/RHI/MultiDeviceImage.cpp
-    Source/RHI/ImageView.cpp
+    Source/RHI/SingleDeviceImageView.cpp
     Include/Atom/RHI/SingleDeviceImagePool.h
     Include/Atom/RHI/MultiDeviceImagePool.h
-    Include/Atom/RHI/ImagePoolBase.h
+    Include/Atom/RHI/SingleDeviceImagePoolBase.h
     Include/Atom/RHI/MultiDeviceImagePoolBase.h
     Include/Atom/RHI/SingleDeviceStreamingImagePool.h
     Include/Atom/RHI/MultiDeviceStreamingImagePool.h
     Source/RHI/SingleDeviceImagePool.cpp
     Source/RHI/MultiDeviceImagePool.cpp
-    Source/RHI/ImagePoolBase.cpp
+    Source/RHI/SingleDeviceImagePoolBase.cpp
     Source/RHI/MultiDeviceImagePoolBase.cpp
     Source/RHI/SingleDeviceStreamingImagePool.cpp
     Source/RHI/MultiDeviceStreamingImagePool.cpp
@@ -177,17 +177,17 @@ set(FILES
     Source/RHI/SingleDeviceQueryPool.cpp
     Source/RHI/MultiDeviceQueryPool.cpp
     Source/RHI/QueryPoolSubAllocator.cpp
-    Include/Atom/RHI/Resource.h
+    Include/Atom/RHI/SingleDeviceResource.h
     Include/Atom/RHI/MultiDeviceResource.h
     Include/Atom/RHI/ResourceInvalidateBus.h
-    Include/Atom/RHI/ResourceView.h
-    Source/RHI/Resource.cpp
+    Include/Atom/RHI/SingleDeviceResourceView.h
+    Source/RHI/SingleDeviceResource.cpp
     Source/RHI/MultiDeviceResource.cpp
-    Source/RHI/ResourceView.cpp
-    Include/Atom/RHI/ResourcePool.h
+    Source/RHI/SingleDeviceResourceView.cpp
+    Include/Atom/RHI/SingleDeviceResourcePool.h
     Include/Atom/RHI/MultiDeviceResourcePool.h
     Include/Atom/RHI/ResourcePoolDatabase.h
-    Source/RHI/ResourcePool.cpp
+    Source/RHI/SingleDeviceResourcePool.cpp
     Source/RHI/MultiDeviceResourcePool.cpp
     Source/RHI/ResourcePoolDatabase.cpp
     Include/Atom/RHI/MemoryAllocation.h

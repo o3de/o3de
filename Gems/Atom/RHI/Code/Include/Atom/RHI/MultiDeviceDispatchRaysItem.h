@@ -21,8 +21,8 @@ namespace AZ::RHI
     class MultiDeviceRayTracingPipelineState;
     class MultiDeviceRayTracingShaderTable;
     class MultiDeviceShaderResourceGroup;
-    class ImageView;
-    class BufferView;
+    class SingleDeviceImageView;
+    class SingleDeviceBufferView;
 
     //! Encapsulates all the necessary information for doing a ray tracing dispatch call.
     class MultiDeviceDispatchRaysItem

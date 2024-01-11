@@ -19,7 +19,7 @@
 namespace AZ::RHI
 {
     class CommandList;
-    class Resource;
+    class SingleDeviceResource;
     class MemoryStatisticsBuilder;
 
     //! The resource pool resolver is a platform specific class for resolving a resource pool. Platforms
@@ -34,15 +34,15 @@ namespace AZ::RHI
 
     //! A base class for resource pools. This class facilitates registration of resources
     //! into the pool, and allows iterating child resource instances.
-    class ResourcePool
+    class SingleDeviceResourcePool
         : public DeviceObject
         , public MemoryStatisticsEventBus::Handler
         , public FrameEventBus::Handler
     {
-        friend class Resource;
+        friend class SingleDeviceResource;
     public:
-        AZ_RTTI(ResourcePool, "{757EB674-25DC-4D00-9808-D3DAF33A4EFE}", DeviceObject);
-        virtual ~ResourcePool();
+        AZ_RTTI(SingleDeviceResourcePool, "{757EB674-25DC-4D00-9808-D3DAF33A4EFE}", DeviceObject);
+        virtual ~SingleDeviceResourcePool();
 
         //! Shuts down the pool. This method will shutdown all resources associated with the pool.
         void Shutdown() override final;
@@ -75,7 +75,7 @@ namespace AZ::RHI
         const PoolMemoryUsage& GetMemoryUsage() const;
 
     protected:
-        ResourcePool() = default;
+        SingleDeviceResourcePool() = default;
 
         //////////////////////////////////////////////////////////////////////////
         // FrameEventBus::Handler
@@ -103,7 +103,7 @@ namespace AZ::RHI
         virtual void ShutdownInternal();
 
         //! Called when a resource is being shut down.
-        virtual void ShutdownResourceInternal(Resource& resource);
+        virtual void ShutdownResourceInternal(SingleDeviceResource& resource);
 
         //! Compute the memory fragmentation for each constituent heap and store the results in m_memoryUsage. This method is invoked
         //! when memory statistics gathering is active.
@@ -127,15 +127,15 @@ namespace AZ::RHI
         //! Validates the state of resource, calls the provided init method, and registers the resource
         //! with the pool. If validation or the internal platform init method fail, the resource is not
         //! registered and an error code is returned.
-        ResultCode InitResource(Resource* resource, const PlatformMethod& initResourceMethod);
+        ResultCode InitResource(SingleDeviceResource* resource, const PlatformMethod& initResourceMethod);
 
         //! Validates the resource is registered / unregistered with the pool,
         //! and that it not null. In non-release builds this will issue a warning.
         //! Non-release builds will branch and fail the call if validation fails,
         //! but this should be treated as a bug, because release will disable
         //! validation.
-        bool ValidateIsRegistered(const Resource* resource) const;
-        bool ValidateIsUnregistered(const Resource* resource) const;
+        bool ValidateIsRegistered(const SingleDeviceResource* resource) const;
+        bool ValidateIsUnregistered(const SingleDeviceResource* resource) const;
 
         //! Validates that the resource pool is initialized and ready to service requests.
         bool ValidateIsInitialized() const;
@@ -152,17 +152,17 @@ namespace AZ::RHI
         //! Shuts down an resource by releasing all backing resources. This happens implicitly
         //! if the resource is released. The resource is still valid after this call, and can be
         //! re-initialized safely on another pool.
-        void ShutdownResource(Resource* resource);
+        void ShutdownResource(SingleDeviceResource* resource);
 
         //! Registers an resource instance with the pool (explicit pool derivations will do this).
-        void Register(Resource& resource);
+        void Register(SingleDeviceResource& resource);
 
         //! Unregisters an resource instance with the pool.
-        void Unregister(Resource& resource);
+        void Unregister(SingleDeviceResource& resource);
 
         //! The registry of resources initialized on the pool, guarded by a shared_mutex.
         mutable AZStd::shared_mutex m_registryMutex;
-        AZStd::unordered_set<Resource*> m_registry;
+        AZStd::unordered_set<SingleDeviceResource*> m_registry;
 
         //! The resolver is a policy object for handling a resolve operation (i.e. host to device data uploads). The
         //! derived class assigns this.
@@ -175,10 +175,10 @@ namespace AZ::RHI
     };
 
     template <typename ResourceType>
-    void ResourcePool::ForEach(AZStd::function<void(ResourceType&)> callback)
+    void SingleDeviceResourcePool::ForEach(AZStd::function<void(ResourceType&)> callback)
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_registryMutex);
-        for (Resource* resourceBase : m_registry)
+        for (SingleDeviceResource* resourceBase : m_registry)
         {
             ResourceType* resourceType = azrtti_cast<ResourceType*>(resourceBase);
             if (resourceType)
@@ -189,10 +189,10 @@ namespace AZ::RHI
     }
 
     template <typename ResourceType>
-    void ResourcePool::ForEach(AZStd::function<void(const ResourceType&)> callback) const
+    void SingleDeviceResourcePool::ForEach(AZStd::function<void(const ResourceType&)> callback) const
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_registryMutex);
-        for (const Resource* resourceBase : m_registry)
+        for (const SingleDeviceResource* resourceBase : m_registry)
         {
             const ResourceType* resourceType = azrtti_cast<const ResourceType*>(resourceBase);
             if (resourceType)

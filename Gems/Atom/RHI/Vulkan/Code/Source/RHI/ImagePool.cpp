@@ -72,7 +72,7 @@ namespace AZ
         {
         }
 
-        void ImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             auto& device = static_cast<Device&>(GetDevice());
             auto& image = static_cast<Image&>(resourceBase);

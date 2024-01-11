@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/StreamingImagePoolDescriptor.h>
 #include <Atom/RHI/SingleDeviceImage.h>
-#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/SingleDeviceImagePoolBase.h>
 
 #include <AzCore/std/containers/span.h>
 
@@ -88,10 +88,10 @@ namespace AZ::RHI
     using StreamingImageExpandRequest = StreamingImageExpandRequestTemplate<SingleDeviceImage>;
 
     class SingleDeviceStreamingImagePool
-        : public ImagePoolBase
+        : public SingleDeviceImagePoolBase
     {
     public:
-        AZ_RTTI(SingleDeviceStreamingImagePool, "{C9F1E40E-D852-4515-ADCC-E2D3AB4B56AB}", ImagePoolBase);
+        AZ_RTTI(SingleDeviceStreamingImagePool, "{C9F1E40E-D852-4515-ADCC-E2D3AB4B56AB}", SingleDeviceImagePoolBase);
         virtual ~SingleDeviceStreamingImagePool() = default;
 
         static const uint64_t ImagePoolMininumSizeInBytes = 16ul  * 1024 * 1024;
@@ -135,8 +135,8 @@ namespace AZ::RHI
         LowMemoryCallback m_memoryReleaseCallback = nullptr;
 
     private:
-        using ResourcePool::Init;
-        using ImagePoolBase::InitImage;
+        using SingleDeviceResourcePool::Init;
+        using SingleDeviceImagePoolBase::InitImage;
 
         bool ValidateInitRequest(const StreamingImageInitRequest& initRequest) const;
         bool ValidateExpandRequest(const StreamingImageExpandRequest& expandRequest) const;

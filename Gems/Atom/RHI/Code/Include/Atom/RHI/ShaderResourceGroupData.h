@@ -9,9 +9,9 @@
 
 #include <Atom/RHI/ConstantsData.h>
 #include <Atom/RHI/SingleDeviceImage.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <AzCore/Preprocessor/Enum.h>
 
 namespace AZ::RHI
@@ -71,22 +71,22 @@ namespace AZ::RHI
         ShaderInputConstantIndex FindShaderInputConstantIndex(const Name& name) const;
             
         //! Sets one image view for the given shader input index.
-        bool SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex);
+        bool SetImageView(ShaderInputImageIndex inputIndex, const SingleDeviceImageView* imageView, uint32_t arrayIndex);
 
         //! Sets an array of image view for the given shader input index.
-        bool SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::span<const ImageView* const> imageViews, uint32_t arrayIndex = 0);
+        bool SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::span<const SingleDeviceImageView* const> imageViews, uint32_t arrayIndex = 0);
 
         //! Sets an unbounded array of image view for the given shader input index.
-        bool SetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const ImageView* const> imageViews);
+        bool SetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const SingleDeviceImageView* const> imageViews);
 
         //! Sets one buffer view for the given shader input index.
-        bool SetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex = 0);
+        bool SetBufferView(ShaderInputBufferIndex inputIndex, const SingleDeviceBufferView* bufferView, uint32_t arrayIndex = 0);
 
         //! Sets an array of image view for the given shader input index.
-        bool SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::span<const BufferView* const> bufferViews, uint32_t arrayIndex = 0);
+        bool SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::span<const SingleDeviceBufferView* const> bufferViews, uint32_t arrayIndex = 0);
 
         //! Sets an unbounded array of buffer view for the given shader input index.
-        bool SetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::span<const BufferView* const> bufferViews);
+        bool SetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::span<const SingleDeviceBufferView* const> bufferViews);
 
         //! Sets one sampler for the given shader input index, using the bindingIndex as the key.
         bool SetSampler(ShaderInputSamplerIndex inputIndex, const SamplerState& sampler, uint32_t arrayIndex = 0);
@@ -125,22 +125,22 @@ namespace AZ::RHI
         bool SetConstantData(const void* bytes, uint32_t byteOffset, uint32_t byteCount);
 
         //! Returns a single image view associated with the image shader input index and array offset.
-        const ConstPtr<ImageView>& GetImageView(ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const;
+        const ConstPtr<SingleDeviceImageView>& GetImageView(ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const;
 
         //! Returns a span of image views associated with the given image shader input index.
-        AZStd::span<const ConstPtr<ImageView>> GetImageViewArray(ShaderInputImageIndex inputIndex) const;
+        AZStd::span<const ConstPtr<SingleDeviceImageView>> GetImageViewArray(ShaderInputImageIndex inputIndex) const;
 
         //! Returns an unbounded span of image views associated with the given buffer shader input index.
-        AZStd::span<const ConstPtr<ImageView>> GetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex) const;
+        AZStd::span<const ConstPtr<SingleDeviceImageView>> GetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex) const;
 
         //! Returns a single buffer view associated with the buffer shader input index and array offset.
-        const ConstPtr<BufferView>& GetBufferView(ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const;
+        const ConstPtr<SingleDeviceBufferView>& GetBufferView(ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const;
 
         //! Returns a span of buffer views associated with the given buffer shader input index.
-        AZStd::span<const ConstPtr<BufferView>> GetBufferViewArray(ShaderInputBufferIndex inputIndex) const;
+        AZStd::span<const ConstPtr<SingleDeviceBufferView>> GetBufferViewArray(ShaderInputBufferIndex inputIndex) const;
 
         //! Returns an unbounded span of buffer views associated with the given buffer shader input index.
-        AZStd::span<const ConstPtr<BufferView>> GetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex) const;
+        AZStd::span<const ConstPtr<SingleDeviceBufferView>> GetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex) const;
 
         //! Returns a single sampler associated with the sampler shader input index and array offset.
         const SamplerState& GetSampler(ShaderInputSamplerIndex inputIndex, uint32_t arrayIndex) const;
@@ -172,8 +172,8 @@ namespace AZ::RHI
         //! Returns a {Buffer, Image, Sampler} shader resource group. Each resource type has its own separate group.
         //!  - The size of this group matches the size provided by ShaderResourceGroupLayout::GetGroupSizeFor{Buffer, Image, Sampler}.
         //!  - Use ShaderResourceGroupLayout::GetGroupInterval to retrieve a [min, max) interval into the span.
-        AZStd::span<const ConstPtr<ImageView>> GetImageGroup() const;
-        AZStd::span<const ConstPtr<BufferView>> GetBufferGroup() const;
+        AZStd::span<const ConstPtr<SingleDeviceImageView>> GetImageGroup() const;
+        AZStd::span<const ConstPtr<SingleDeviceBufferView>> GetBufferGroup() const;
         AZStd::span<const SamplerState> GetSamplerGroup() const;
 
         //! Reset image and buffer views setup for this ShaderResourceGroupData
@@ -195,8 +195,8 @@ namespace AZ::RHI
         enum class ResourceType : uint32_t
         {
             ConstantData,
-            BufferView,
-            ImageView,
+            SingleDeviceBufferView,
+            SingleDeviceImageView,
             BufferViewUnboundedArray,
             ImageViewUnboundedArray,
             Sampler,
@@ -207,8 +207,8 @@ namespace AZ::RHI
         {
             None = 0,
             ConstantDataMask = AZ_BIT(static_cast<uint32_t>(ResourceType::ConstantData)),
-            BufferViewMask = AZ_BIT(static_cast<uint32_t>(ResourceType::BufferView)),
-            ImageViewMask = AZ_BIT(static_cast<uint32_t>(ResourceType::ImageView)),
+            BufferViewMask = AZ_BIT(static_cast<uint32_t>(ResourceType::SingleDeviceBufferView)),
+            ImageViewMask = AZ_BIT(static_cast<uint32_t>(ResourceType::SingleDeviceImageView)),
             BufferViewUnboundedArrayMask = AZ_BIT(static_cast<uint32_t>(ResourceType::BufferViewUnboundedArray)),
             ImageViewUnboundedArrayMask = AZ_BIT(static_cast<uint32_t>(ResourceType::ImageViewUnboundedArray)),
             SamplerMask = AZ_BIT(static_cast<uint32_t>(ResourceType::Sampler))
@@ -218,7 +218,7 @@ namespace AZ::RHI
         struct BindlessResourceViews
         {
             BindlessResourceType m_bindlessResourceType = AZ::RHI::BindlessResourceType::Count;
-            AZStd::vector<ConstPtr<ResourceView>> m_bindlessResources;
+            AZStd::vector<ConstPtr<SingleDeviceResourceView>> m_bindlessResources;
         };
             
         //! Reset the update mask
@@ -236,8 +236,8 @@ namespace AZ::RHI
         //! backends like the metal.
         void SetBindlessViews(
             ShaderInputBufferIndex indirectResourceBufferIndex,
-            const RHI::BufferView* indirectResourceBuffer,
-            AZStd::span<const ImageView* const> imageViews,
+            const RHI::SingleDeviceBufferView* indirectResourceBuffer,
+            AZStd::span<const SingleDeviceImageView* const> imageViews,
             uint32_t* outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex = 0);
@@ -248,8 +248,8 @@ namespace AZ::RHI
         //! backends like the metal.
         void SetBindlessViews(
             ShaderInputBufferIndex indirectResourceBufferIndex,
-            const RHI::BufferView* indirectResourceBuffer,
-            AZStd::span<const BufferView* const> bufferViews,
+            const RHI::SingleDeviceBufferView* indirectResourceBuffer,
+            AZStd::span<const SingleDeviceBufferView* const> bufferViews,
             uint32_t* outIndices,
             AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex = 0);
@@ -261,26 +261,26 @@ namespace AZ::RHI
         const AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, BindlessResourceViews>& GetBindlessResourceViews() const;
             
     private:
-        static const ConstPtr<ImageView> s_nullImageView;
-        static const ConstPtr<BufferView> s_nullBufferView;
+        static const ConstPtr<SingleDeviceImageView> s_nullImageView;
+        static const ConstPtr<SingleDeviceBufferView> s_nullBufferView;
         static const SamplerState s_nullSamplerState;
 
-        bool ValidateSetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex) const;
-        bool ValidateSetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex) const;
+        bool ValidateSetImageView(ShaderInputImageIndex inputIndex, const SingleDeviceImageView* imageView, uint32_t arrayIndex) const;
+        bool ValidateSetBufferView(ShaderInputBufferIndex inputIndex, const SingleDeviceBufferView* bufferView, uint32_t arrayIndex) const;
 
         template<typename TShaderInput, typename TShaderInputDescriptor>
-        bool ValidateImageViewAccess(TShaderInput inputIndex, const ImageView* imageView, uint32_t arrayIndex) const;
+        bool ValidateImageViewAccess(TShaderInput inputIndex, const SingleDeviceImageView* imageView, uint32_t arrayIndex) const;
         template<typename TShaderInput, typename TShaderInputDescriptor>
-        bool ValidateBufferViewAccess(TShaderInput inputIndex, const BufferView* bufferView, uint32_t arrayIndex) const;
+        bool ValidateBufferViewAccess(TShaderInput inputIndex, const SingleDeviceBufferView* bufferView, uint32_t arrayIndex) const;
 
         ConstPtr<ShaderResourceGroupLayout> m_shaderResourceGroupLayout;
 
         //! The backing data store of bound resources for the shader resource group.
-        AZStd::vector<ConstPtr<ImageView>> m_imageViews;
-        AZStd::vector<ConstPtr<BufferView>> m_bufferViews;
+        AZStd::vector<ConstPtr<SingleDeviceImageView>> m_imageViews;
+        AZStd::vector<ConstPtr<SingleDeviceBufferView>> m_bufferViews;
         AZStd::vector<SamplerState> m_samplers;
-        AZStd::vector<ConstPtr<ImageView>> m_imageViewsUnboundedArray;
-        AZStd::vector<ConstPtr<BufferView>> m_bufferViewsUnboundedArray;
+        AZStd::vector<ConstPtr<SingleDeviceImageView>> m_imageViewsUnboundedArray;
+        AZStd::vector<ConstPtr<SingleDeviceBufferView>> m_bufferViewsUnboundedArray;
 
         // The map below is used to manage ownership of buffer and image views that aren't bound directly to the shader, but implicitly
         // referenced through indirection constants. The key corresponds to the pair of (buffer input slot, index) where the indirection
@@ -344,7 +344,7 @@ namespace AZ::RHI
     }
 
     template<typename TShaderInput, typename TShaderInputDescriptor>
-    bool ShaderResourceGroupData::ValidateImageViewAccess(TShaderInput inputIndex, const ImageView* imageView, [[maybe_unused]] uint32_t arrayIndex) const
+    bool ShaderResourceGroupData::ValidateImageViewAccess(TShaderInput inputIndex, const SingleDeviceImageView* imageView, [[maybe_unused]] uint32_t arrayIndex) const
     {
         if (!Validation::IsEnabled())
         {
@@ -501,7 +501,7 @@ namespace AZ::RHI
     }
 
     template<typename TShaderInput, typename TShaderInputDescriptor>
-    bool ShaderResourceGroupData::ValidateBufferViewAccess(TShaderInput inputIndex, const BufferView* bufferView, [[maybe_unused]] uint32_t arrayIndex) const
+    bool ShaderResourceGroupData::ValidateBufferViewAccess(TShaderInput inputIndex, const SingleDeviceBufferView* bufferView, [[maybe_unused]] uint32_t arrayIndex) const
     {
         if (!Validation::IsEnabled())
         {

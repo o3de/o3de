@@ -6,11 +6,11 @@
  *
  */
 
-#include <Atom/RHI/ResourceView.h>
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/SingleDeviceResourceView.h>
+#include <Atom/RHI/SingleDeviceResource.h>
 namespace AZ::RHI
 {
-    ResultCode ResourceView::Init(const Resource& resource)
+    ResultCode SingleDeviceResourceView::Init(const SingleDeviceResource& resource)
     {
         RHI::Device& device = resource.GetDevice();
 
@@ -28,7 +28,7 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    void ResourceView::Shutdown()
+    void SingleDeviceResourceView::Shutdown()
     {
         if (IsInitialized())
         {
@@ -41,17 +41,17 @@ namespace AZ::RHI
         }
     }
 
-    const Resource& ResourceView::GetResource() const
+    const SingleDeviceResource& SingleDeviceResourceView::GetResource() const
     {
         return *m_resource;
     }
 
-    bool ResourceView::IsStale() const
+    bool SingleDeviceResourceView::IsStale() const
     {
         return m_resource && m_resource->GetVersion() != m_version;
     }
 
-    ResultCode ResourceView::OnResourceInvalidate()
+    ResultCode SingleDeviceResourceView::OnResourceInvalidate()
     {
         AZ_PROFILE_FUNCTION(RHI);
         ResultCode resultCode = InvalidateInternal();

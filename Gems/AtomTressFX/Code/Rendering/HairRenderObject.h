@@ -11,7 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector3.h>
 
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 
 // Hair specific
@@ -139,8 +139,8 @@ namespace AZ
                 //! This indirectly forces the sync to be applied to all 'sub-buffers' used by each of the
                 //!  HairObjects / HairDispatches and therefore allows us to change their data in the shader
                 //!  between passes.
-                AZStd::vector<Data::Instance<RHI::BufferView>> m_dynamicBuffersViews;   // RW used for the Compute
-                AZStd::vector<Data::Instance<RHI::BufferView>> m_readBuffersViews;      // Read only used for the Raster fill
+                AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> m_dynamicBuffersViews;   // RW used for the Compute
+                AZStd::vector<Data::Instance<RHI::SingleDeviceBufferView>> m_readBuffersViews;      // Read only used for the Raster fill
 
                 //! The following vector is required in order to keep the allocators 'alive' or
                 //!  else they are cleared from the buffer via the reference mechanism.

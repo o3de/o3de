@@ -25,7 +25,7 @@ namespace UnitTest
         return RHI::ResultCode::Success;
     }
 
-    void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource&)
+    void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::SingleDeviceResource&)
     {
     }
 

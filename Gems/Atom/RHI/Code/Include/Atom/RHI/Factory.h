@@ -23,12 +23,12 @@ namespace AZ::RHI
 {
     class SingleDeviceBuffer;
     class SingleDeviceBufferPool;
-    class BufferView;
+    class SingleDeviceBufferView;
     class Device;
     class DispatchRaysIndirectBuffer;
     class SingleDeviceImage;
     class SingleDeviceImagePool;
-    class ImageView;
+    class SingleDeviceImageView;
     class SingleDeviceIndirectBufferSignature;
     class IndirectBufferWriter;
     class SingleDeviceFence;
@@ -164,7 +164,7 @@ namespace AZ::RHI
 
         virtual Ptr<SingleDeviceBufferPool> CreateBufferPool() = 0;
 
-        virtual Ptr<BufferView> CreateBufferView() = 0;
+        virtual Ptr<SingleDeviceBufferView> CreateBufferView() = 0;
 
         virtual Ptr<Device> CreateDevice() = 0;
 
@@ -178,7 +178,7 @@ namespace AZ::RHI
 
         virtual Ptr<SingleDeviceImagePool> CreateImagePool() = 0;
 
-        virtual Ptr<ImageView> CreateImageView() = 0;
+        virtual Ptr<SingleDeviceImageView> CreateImageView() = 0;
 
         virtual Ptr<SingleDeviceStreamingImagePool> CreateStreamingImagePool() = 0;
 

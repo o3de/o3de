@@ -18,7 +18,7 @@ namespace AZ::RHI
     uint32_t GetIndexFormatSize(IndexFormat indexFormat);
 
     //! A multi-device class representing a view onto a MultiDeviceBuffer holding indices, distinct from
-    //! actual view classes (like BufferView), there is no representation on the API level.
+    //! actual view classes (like SingleDeviceBufferView), there is no representation on the API level.
     //! Its device-specific buffers are provided to the RHI back-end at draw time.
     class alignas(8) MultiDeviceIndexBufferView
     {

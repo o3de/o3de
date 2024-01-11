@@ -11,7 +11,7 @@ namespace AZ::RHI
 {
     ResultCode SingleDeviceImagePool::Init(Device& device, const ImagePoolDescriptor& descriptor)
     {
-        return ResourcePool::Init(
+        return SingleDeviceResourcePool::Init(
             device, descriptor,
             [this, &device, &descriptor]()
         {
@@ -50,7 +50,7 @@ namespace AZ::RHI
 
     ResultCode SingleDeviceImagePool::InitImage(const ImageInitRequest& initRequest)
     {
-        return ImagePoolBase::InitImage(
+        return SingleDeviceImagePoolBase::InitImage(
             initRequest.m_image,
             initRequest.m_descriptor,
             [this, &initRequest]() { return InitImageInternal(initRequest); });

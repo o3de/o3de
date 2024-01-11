@@ -9,19 +9,19 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace UnitTest
 {
     class BufferView
-        : public AZ::RHI::BufferView
+        : public AZ::RHI::SingleDeviceBufferView
     {
     public:
         AZ_CLASS_ALLOCATOR(BufferView, AZ::SystemAllocator);
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::Resource&) override;
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::SingleDeviceResource&) override;
         AZ::RHI::ResultCode InvalidateInternal() override;
         void ShutdownInternal() override;
     };
@@ -61,7 +61,7 @@ namespace UnitTest
 
         AZ::RHI::ResultCode InitBufferInternal(AZ::RHI::SingleDeviceBuffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor) override;
 
-        void ShutdownResourceInternal(AZ::RHI::Resource&) override;
+        void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource&) override;
 
         AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::SingleDeviceBuffer& buffer) override;
 

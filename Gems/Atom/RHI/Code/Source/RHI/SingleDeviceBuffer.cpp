@@ -23,7 +23,7 @@ namespace AZ::RHI
 
     const BufferFrameAttachment* SingleDeviceBuffer::GetFrameAttachment() const
     {
-        return static_cast<const BufferFrameAttachment*>(Resource::GetFrameAttachment());
+        return static_cast<const BufferFrameAttachment*>(SingleDeviceResource::GetFrameAttachment());
     }
 
     void SingleDeviceBuffer::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
@@ -36,7 +36,7 @@ namespace AZ::RHI
         bufferStats->m_sizeInBytes = descriptor.m_byteCount;
     }
     
-    Ptr<BufferView> SingleDeviceBuffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
+    Ptr<SingleDeviceBufferView> SingleDeviceBuffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
     {
         return Base::GetResourceView(bufferViewDescriptor);
     }

@@ -29,7 +29,7 @@ namespace AZ
             Buffer() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::SingleDeviceResource
             void ReportMemoryUsage([[maybe_unused]] RHI::MemoryStatisticsBuilder& builder) const override {}
             //////////////////////////////////////////////////////////////////////////
 

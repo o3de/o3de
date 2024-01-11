@@ -89,7 +89,7 @@ namespace AZ::RHI
 
     ResultCode SingleDeviceBufferPool::Init(Device& device, const BufferPoolDescriptor& descriptor)
     {
-        return ResourcePool::Init(
+        return SingleDeviceResourcePool::Init(
             device, descriptor,
             [this, &device, &descriptor]()
         {
@@ -118,7 +118,7 @@ namespace AZ::RHI
             return ResultCode::InvalidArgument;
         }
 
-        ResultCode resultCode = BufferPoolBase::InitBuffer(
+        ResultCode resultCode = SingleDeviceBufferPoolBase::InitBuffer(
             initRequest.m_buffer,
             initRequest.m_descriptor,
             [this, &initRequest]() { return InitBufferInternal(*initRequest.m_buffer, initRequest.m_descriptor); });
@@ -222,7 +222,7 @@ namespace AZ::RHI
 
     bool SingleDeviceBufferPool::ValidateNotProcessingFrame() const
     {
-        return GetDescriptor().m_heapMemoryLevel != HeapMemoryLevel::Device || BufferPoolBase::ValidateNotProcessingFrame();
+        return GetDescriptor().m_heapMemoryLevel != HeapMemoryLevel::Device || SingleDeviceBufferPoolBase::ValidateNotProcessingFrame();
     }
 
     void SingleDeviceBufferPool::OnFrameBegin()
@@ -235,6 +235,6 @@ namespace AZ::RHI
                 "unmapped when the frame is processing.", GetName().GetCStr());
         }
 
-        ResourcePool::OnFrameBegin();
+        SingleDeviceResourcePool::OnFrameBegin();
     }
 }

@@ -8,13 +8,13 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/SingleDeviceResource.h>
 
 namespace AZ::RHI
 {
     class ImageFrameAttachment;
     class SingleDeviceShaderResourceGroup;
-    class ImageView;
+    class SingleDeviceImageView;
     struct ImageViewDescriptor;
         
     //! SingleDeviceImage represents a collection of SingleDeviceImage Subresources, where each subresource comprises a one to three
@@ -25,16 +25,16 @@ namespace AZ::RHI
     //! Subresources are organized by a linear indexing scheme: mipSliceOffset + arraySliceOffset * arraySize. The total
     //! number of subresources is equal to mipLevels * arraySize. All subresources share the same pixel format.
     //!
-    //! @see ImageView on how to interpret contents of an image.
+    //! @see SingleDeviceImageView on how to interpret contents of an image.
     class SingleDeviceImage
-        : public Resource
+        : public SingleDeviceResource
     {
-        friend class ImagePoolBase;
+        friend class SingleDeviceImagePoolBase;
         friend class SingleDeviceStreamingImagePool;
             
-        using Base = Resource;
+        using Base = SingleDeviceResource;
     public:
-        AZ_RTTI(SingleDeviceImage, "{39FFE66C-805A-41AD-9092-91327D51F64B}", Resource);
+        AZ_RTTI(SingleDeviceImage, "{39FFE66C-805A-41AD-9092-91327D51F64B}", SingleDeviceResource);
         virtual ~SingleDeviceImage() = default;
             
         //! Returns the image descriptor used to initialize the image. If the image is uninitialized, the contents
@@ -76,7 +76,7 @@ namespace AZ::RHI
         //! images.
         const ImageFrameAttachment* GetFrameAttachment() const;
             
-        Ptr<ImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor);
+        Ptr<SingleDeviceImageView> GetImageView(const ImageViewDescriptor& imageViewDescriptor);
 
         //! Returns the aspects that are included in the image.
         ImageAspectFlags GetAspectFlags() const;

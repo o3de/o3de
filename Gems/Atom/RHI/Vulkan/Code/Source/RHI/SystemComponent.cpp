@@ -147,7 +147,7 @@ namespace AZ
             return BufferPool::Create();
         }
 
-        RHI::Ptr<RHI::BufferView> SystemComponent::CreateBufferView()
+        RHI::Ptr<RHI::SingleDeviceBufferView> SystemComponent::CreateBufferView()
         {
             return BufferView::Create();
         }
@@ -182,7 +182,7 @@ namespace AZ
             return ImagePool::Create();
         }
 
-        RHI::Ptr<RHI::ImageView> SystemComponent::CreateImageView()
+        RHI::Ptr<RHI::SingleDeviceImageView> SystemComponent::CreateImageView()
         {
             return ImageView::Create();
         }

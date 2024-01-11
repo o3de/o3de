@@ -697,7 +697,7 @@ namespace AZ
             m_visualizationPrepareSrg->SetConstant(m_renderData->m_visualizationPrepareSrgProbeSphereRadiusNameIndex, m_visualizationSphereRadius);
         }
 
-        void DiffuseProbeGrid::UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout, const RHI::ImageView* outputImageView)
+        void DiffuseProbeGrid::UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout, const RHI::SingleDeviceImageView* outputImageView)
         {
             if (!m_visualizationRayTraceSrg)
             {

@@ -54,9 +54,9 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::SingleDeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
             /// As streaming image tiles are allocated from a pool allocator, fragmentation will remain 0 for
             /// the streaming image pool
             void ComputeFragmentation() const override;

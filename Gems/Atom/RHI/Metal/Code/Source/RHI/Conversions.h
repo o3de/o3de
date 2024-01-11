@@ -8,9 +8,9 @@
 #pragma once
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/SingleDeviceImage.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/SingleDeviceBufferPool.h>

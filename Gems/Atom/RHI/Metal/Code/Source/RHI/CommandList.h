@@ -126,7 +126,7 @@ namespace AZ
                                                       ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxReadWrite);
             //! Helper function to return a bool to indicate if the resource is read only as well as the native resource pointer
             AZStd::pair<bool, id<MTLResource>> GetResourceInfo(RHI::BindlessResourceType resourceType,
-                                                               const RHI::ResourceView* resourceView);
+                                                               const RHI::SingleDeviceResourceView* resourceView);
             
             //Returns the SRG binding based on the PSO type
             ShaderResourceBindings& GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType pipelineType);

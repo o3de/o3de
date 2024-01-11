@@ -63,7 +63,7 @@ namespace AZ::RHI
     {
         AZ_PROFILE_FUNCTION(RHI);
         SetName(AZ::Name("SingleDeviceStreamingImagePool"));
-        return ResourcePool::Init(
+        return SingleDeviceResourcePool::Init(
             device, descriptor,
             [this, &device, &descriptor]()
         {
@@ -92,7 +92,7 @@ namespace AZ::RHI
             return ResultCode::InvalidArgument;
         }
 
-        ResultCode resultCode = ImagePoolBase::InitImage(
+        ResultCode resultCode = SingleDeviceImagePoolBase::InitImage(
             initRequest.m_image,
             initRequest.m_descriptor,
             [this, &initRequest]()

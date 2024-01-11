@@ -46,14 +46,14 @@ namespace AZ
             RHI::PhysicalDeviceList EnumeratePhysicalDevices() override;
             RHI::Ptr<RHI::SingleDeviceBuffer> CreateBuffer() override;
             RHI::Ptr<RHI::SingleDeviceBufferPool> CreateBufferPool() override;
-            RHI::Ptr<RHI::BufferView> CreateBufferView() override;
+            RHI::Ptr<RHI::SingleDeviceBufferView> CreateBufferView() override;
             RHI::Ptr<RHI::Device> CreateDevice() override;
             RHI::Ptr<RHI::SingleDeviceFence> CreateFence() override;
             RHI::Ptr<RHI::FrameGraphCompiler> CreateFrameGraphCompiler() override;
             RHI::Ptr<RHI::FrameGraphExecuter> CreateFrameGraphExecuter() override;
             RHI::Ptr<RHI::SingleDeviceImage> CreateImage() override;
             RHI::Ptr<RHI::SingleDeviceImagePool> CreateImagePool() override;
-            RHI::Ptr<RHI::ImageView> CreateImageView() override;
+            RHI::Ptr<RHI::SingleDeviceImageView> CreateImageView() override;
             RHI::Ptr<RHI::SingleDeviceStreamingImagePool> CreateStreamingImagePool() override;
             RHI::Ptr<RHI::SingleDevicePipelineLibrary> CreatePipelineLibrary() override;
             RHI::Ptr<RHI::SingleDevicePipelineState> CreatePipelineState() override;

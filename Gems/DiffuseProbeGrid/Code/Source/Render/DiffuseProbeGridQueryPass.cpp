@@ -232,7 +232,7 @@ namespace AZ
 
                 // bind output UAV
                 bufferIndex = m_srgLayout->FindShaderInputBufferIndex(AZ::Name("m_output"));
-                const RHI::BufferView* bufferView = context.GetBufferView(AZ::Name(m_outputBufferAttachmentId.GetCStr()), RHI::ScopeAttachmentUsage::Shader);
+                const RHI::SingleDeviceBufferView* bufferView = context.GetBufferView(AZ::Name(m_outputBufferAttachmentId.GetCStr()), RHI::ScopeAttachmentUsage::Shader);
                 diffuseProbeGrid->GetQuerySrg()->SetBufferView(bufferIndex, bufferView);
 
                 diffuseProbeGrid->GetQuerySrg()->Compile();

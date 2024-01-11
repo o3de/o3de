@@ -18,7 +18,7 @@
 
 namespace AZ::RHI
 {
-    class Resource;
+    class SingleDeviceResource;
     class Scope;
     class SingleDeviceBuffer;
     class SingleDeviceImage;

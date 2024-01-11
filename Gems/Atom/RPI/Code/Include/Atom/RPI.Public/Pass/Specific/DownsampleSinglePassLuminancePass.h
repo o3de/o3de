@@ -85,7 +85,7 @@ namespace AZ::RPI
         Ptr<PassAttachment> m_counterPassAttachment;
 
         // Retainer of image views for each mip level of in/out image.
-        AZStd::array<Ptr<RHI::ImageView>, SpdMipLevelCountMax> m_imageViews;
+        AZStd::array<Ptr<RHI::SingleDeviceImageView>, SpdMipLevelCountMax> m_imageViews;
 
         Data::Instance<Buffer> m_globalAtomicBuffer;
     };

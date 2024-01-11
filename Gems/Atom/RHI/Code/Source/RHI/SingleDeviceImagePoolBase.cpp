@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/SingleDeviceImagePoolBase.h>
 
 namespace AZ::RHI
 {
-    ResultCode ImagePoolBase::InitImage(SingleDeviceImage* image, const ImageDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
+    ResultCode SingleDeviceImagePoolBase::InitImage(SingleDeviceImage* image, const ImageDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
     {
             
         // The descriptor is assigned regardless of whether initialization succeeds. Descriptors are considered
@@ -17,6 +17,6 @@ namespace AZ::RHI
         // time rather than leftover data from the previous usage.             
         image->SetDescriptor(descriptor);
             
-        return ResourcePool::InitResource(image, platformInitResourceMethod);
+        return SingleDeviceResourcePool::InitResource(image, platformInitResourceMethod);
     }
 }

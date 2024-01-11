@@ -427,7 +427,7 @@ namespace AZ
         }
 
         CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::BindlessResourceType resourceType,
-                                                                    const RHI::ResourceView* resourceView)
+                                                                    const RHI::SingleDeviceResourceView* resourceView)
         {
             id<MTLResource> mtlResourceView = nil;
             bool isReadOnlyResource = false;

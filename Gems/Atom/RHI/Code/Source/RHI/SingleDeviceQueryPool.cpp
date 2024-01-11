@@ -38,7 +38,7 @@ namespace AZ::RHI
         m_queries.resize(descriptor.m_queriesCount, nullptr);
         m_queryAllocator.Init(descriptor.m_queriesCount);
 
-        return ResourcePool::Init(
+        return SingleDeviceResourcePool::Init(
             device, descriptor,
             [this, &device, &descriptor]()
         {
@@ -81,7 +81,7 @@ namespace AZ::RHI
             {
                 SingleDeviceQuery& query = *queries[queryIndex];
                 query.m_handle = QueryHandle(i);
-                result = ResourcePool::InitResource(&query, [this, &query]() {return InitQueryInternal(query); });
+                result = SingleDeviceResourcePool::InitResource(&query, [this, &query]() {return InitQueryInternal(query); });
                 if (result != ResultCode::Success)
                 {
                     return result;
@@ -242,7 +242,7 @@ namespace AZ::RHI
         m_queries.clear();
     }
 
-    void SingleDeviceQueryPool::ShutdownResourceInternal(Resource& resource)
+    void SingleDeviceQueryPool::ShutdownResourceInternal(SingleDeviceResource& resource)
     {
         AZStd::unique_lock<AZStd::mutex> lock(m_queriesMutex);
         auto& query = static_cast<SingleDeviceQuery&>(resource);

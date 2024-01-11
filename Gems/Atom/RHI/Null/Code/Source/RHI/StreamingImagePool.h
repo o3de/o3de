@@ -36,9 +36,9 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::SingleDeviceResourcePool
             void ShutdownInternal() override {}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::Resource& resourceBase) override {}
+            void ShutdownResourceInternal([[maybe_unused]] RHI::SingleDeviceResource& resourceBase) override {}
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
         };

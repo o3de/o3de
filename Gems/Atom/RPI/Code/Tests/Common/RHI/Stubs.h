@@ -9,9 +9,9 @@
 
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/SingleDeviceBuffer.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
@@ -80,13 +80,13 @@ namespace UnitTest
         };
 
         class ImageView
-            : public AZ::RHI::ImageView
+            : public AZ::RHI::SingleDeviceImageView
         {
         public:
             AZ_CLASS_ALLOCATOR(ImageView, AZ::SystemAllocator);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::Resource&) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::SingleDeviceResource&) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode InvalidateInternal() override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
         };
@@ -103,13 +103,13 @@ namespace UnitTest
         };
 
         class BufferView
-            : public AZ::RHI::BufferView
+            : public AZ::RHI::SingleDeviceBufferView
         {
         public:
             AZ_CLASS_ALLOCATOR(BufferView, AZ::SystemAllocator);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::Resource&) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::SingleDeviceResource&) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode InvalidateInternal() override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
         };
@@ -163,7 +163,7 @@ namespace UnitTest
                 return AZ::RHI::ResultCode::Success;
             }
 
-            void ShutdownResourceInternal(AZ::RHI::Resource& resourceBase) override
+            void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource& resourceBase) override
             {
                 Buffer& buffer = static_cast<Buffer&>(resourceBase);
                 buffer.m_data.clear();
@@ -198,7 +198,7 @@ namespace UnitTest
             void ShutdownInternal() override {}
             AZ::RHI::ResultCode UpdateImageContentsInternal(const AZ::RHI::ImageUpdateRequest&) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode InitImageInternal(const AZ::RHI::ImageInitRequest&) override { return AZ::RHI::ResultCode::Success; }
-            void ShutdownResourceInternal(AZ::RHI::Resource&) override {}
+            void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource&) override {}
         };
 
         class StreamingImagePool
@@ -212,7 +212,7 @@ namespace UnitTest
         private:
             AZ::RHI::ResultCode InitImageInternal([[maybe_unused]] const AZ::RHI::StreamingImageInitRequest& request) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
-            void ShutdownResourceInternal(AZ::RHI::Resource&) override {}
+            void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource&) override {}
             AZ::RHI::ResultCode ExpandImageInternal(const AZ::RHI::StreamingImageExpandRequest&) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode TrimImageInternal(AZ::RHI::SingleDeviceImage&, uint32_t) override { return AZ::RHI::ResultCode::Success; }
         };

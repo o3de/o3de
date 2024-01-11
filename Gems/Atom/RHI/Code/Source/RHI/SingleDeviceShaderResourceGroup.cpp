@@ -7,8 +7,8 @@
  */
 #include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 
 namespace AZ::RHI
 {
@@ -40,12 +40,12 @@ namespace AZ::RHI
 
     const SingleDeviceShaderResourceGroupPool* SingleDeviceShaderResourceGroup::GetPool() const
     {
-        return static_cast<const SingleDeviceShaderResourceGroupPool*>(Resource::GetPool());
+        return static_cast<const SingleDeviceShaderResourceGroupPool*>(SingleDeviceResource::GetPool());
     }
 
     SingleDeviceShaderResourceGroupPool* SingleDeviceShaderResourceGroup::GetPool()
     {
-        return static_cast<SingleDeviceShaderResourceGroupPool*>(Resource::GetPool());
+        return static_cast<SingleDeviceShaderResourceGroupPool*>(SingleDeviceResource::GetPool());
     }
 
     const ShaderResourceGroupData& SingleDeviceShaderResourceGroup::GetData() const

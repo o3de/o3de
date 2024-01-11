@@ -12,8 +12,8 @@
 
 namespace AZ::RHI
 {
-    const ConstPtr<ImageView> ShaderResourceGroupData::s_nullImageView;
-    const ConstPtr<BufferView> ShaderResourceGroupData::s_nullBufferView;
+    const ConstPtr<SingleDeviceImageView> ShaderResourceGroupData::s_nullImageView;
+    const ConstPtr<SingleDeviceBufferView> ShaderResourceGroupData::s_nullBufferView;
     const SamplerState ShaderResourceGroupData::s_nullSamplerState{};
 
     ShaderResourceGroupData::ShaderResourceGroupData() = default;
@@ -41,7 +41,7 @@ namespace AZ::RHI
         return m_shaderResourceGroupLayout.get();
     }
 
-    bool ShaderResourceGroupData::ValidateSetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex) const
+    bool ShaderResourceGroupData::ValidateSetImageView(ShaderInputImageIndex inputIndex, const SingleDeviceImageView* imageView, uint32_t arrayIndex) const
     {
         if (!Validation::IsEnabled())
         {
@@ -63,7 +63,7 @@ namespace AZ::RHI
         return true;
     }
 
-    bool ShaderResourceGroupData::ValidateSetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex) const
+    bool ShaderResourceGroupData::ValidateSetBufferView(ShaderInputBufferIndex inputIndex, const SingleDeviceBufferView* bufferView, uint32_t arrayIndex) const
     {
         if (!Validation::IsEnabled())
         {
@@ -105,13 +105,13 @@ namespace AZ::RHI
         return m_shaderResourceGroupLayout->FindShaderInputConstantIndex(name);
     }
 
-    bool ShaderResourceGroupData::SetImageView(ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex = 0)
+    bool ShaderResourceGroupData::SetImageView(ShaderInputImageIndex inputIndex, const SingleDeviceImageView* imageView, uint32_t arrayIndex = 0)
     {
-        AZStd::array<const ImageView*, 1> imageViews = {{imageView}};
+        AZStd::array<const SingleDeviceImageView*, 1> imageViews = {{imageView}};
         return SetImageViewArray(inputIndex, imageViews, arrayIndex);
     }
 
-    bool ShaderResourceGroupData::SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::span<const ImageView* const> imageViews, uint32_t arrayIndex)
+    bool ShaderResourceGroupData::SetImageViewArray(ShaderInputImageIndex inputIndex, AZStd::span<const SingleDeviceImageView* const> imageViews, uint32_t arrayIndex)
     {
         if (GetLayout()->ValidateAccess(inputIndex, static_cast<uint32_t>(arrayIndex + imageViews.size() - 1)))
         {
@@ -137,7 +137,7 @@ namespace AZ::RHI
         return false;
     }
 
-    bool ShaderResourceGroupData::SetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const ImageView* const> imageViews)
+    bool ShaderResourceGroupData::SetImageViewUnboundedArray(ShaderInputImageUnboundedArrayIndex inputIndex, AZStd::span<const SingleDeviceImageView* const> imageViews)
     {
         if (GetLayout()->ValidateAccess(inputIndex))
         {
@@ -162,13 +162,13 @@ namespace AZ::RHI
         return false;
     }
 
-    bool ShaderResourceGroupData::SetBufferView(ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex)
+    bool ShaderResourceGroupData::SetBufferView(ShaderInputBufferIndex inputIndex, const SingleDeviceBufferView* bufferView, uint32_t arrayIndex)
     {
-        AZStd::array<const BufferView*, 1> bufferViews = {{bufferView}};
+        AZStd::array<const SingleDeviceBufferView*, 1> bufferViews = {{bufferView}};
         return SetBufferViewArray(inputIndex, bufferViews, arrayIndex);
     }
 
-    bool ShaderResourceGroupData::SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::span<const BufferView* const> bufferViews, uint32_t arrayIndex)
+    bool ShaderResourceGroupData::SetBufferViewArray(ShaderInputBufferIndex inputIndex, AZStd::span<const SingleDeviceBufferView* const> bufferViews, uint32_t arrayIndex)
     {
         if (GetLayout()->ValidateAccess(inputIndex, static_cast<uint32_t>(arrayIndex + bufferViews.size() - 1)))
         {
@@ -193,7 +193,7 @@ namespace AZ::RHI
         return false;
     }
 
-    bool ShaderResourceGroupData::SetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::span<const BufferView* const> bufferViews)
+    bool ShaderResourceGroupData::SetBufferViewUnboundedArray(ShaderInputBufferUnboundedArrayIndex inputIndex, AZStd::span<const SingleDeviceBufferView* const> bufferViews)
     {
         if (GetLayout()->ValidateAccess(inputIndex))
         {
@@ -265,7 +265,7 @@ namespace AZ::RHI
         return m_constantsData.SetConstantData(bytes, byteOffset, byteCount);
     }
 
-    const RHI::ConstPtr<RHI::ImageView>& ShaderResourceGroupData::GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const
+    const RHI::ConstPtr<RHI::SingleDeviceImageView>& ShaderResourceGroupData::GetImageView(RHI::ShaderInputImageIndex inputIndex, uint32_t arrayIndex) const
     {
         if (GetLayout()->ValidateAccess(inputIndex, arrayIndex))
         {
@@ -275,26 +275,26 @@ namespace AZ::RHI
         return s_nullImageView;
     }
 
-    AZStd::span<const RHI::ConstPtr<RHI::ImageView>> ShaderResourceGroupData::GetImageViewArray(RHI::ShaderInputImageIndex inputIndex) const
+    AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>> ShaderResourceGroupData::GetImageViewArray(RHI::ShaderInputImageIndex inputIndex) const
     {
         if (GetLayout()->ValidateAccess(inputIndex, 0))
         {
             const Interval interval = GetLayout()->GetGroupInterval(inputIndex);
-            return AZStd::span<const RHI::ConstPtr<RHI::ImageView>>(&m_imageViews[interval.m_min], interval.m_max - interval.m_min);
+            return AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>>(&m_imageViews[interval.m_min], interval.m_max - interval.m_min);
         }
         return {};
     }
 
-    AZStd::span<const RHI::ConstPtr<RHI::ImageView>> ShaderResourceGroupData::GetImageViewUnboundedArray(RHI::ShaderInputImageUnboundedArrayIndex inputIndex) const
+    AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>> ShaderResourceGroupData::GetImageViewUnboundedArray(RHI::ShaderInputImageUnboundedArrayIndex inputIndex) const
     {
         if (GetLayout()->ValidateAccess(inputIndex))
         {
-            return AZStd::span<const RHI::ConstPtr<RHI::ImageView>>(m_imageViewsUnboundedArray.data(), m_imageViewsUnboundedArray.size());
+            return AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>>(m_imageViewsUnboundedArray.data(), m_imageViewsUnboundedArray.size());
         }
         return {};
     }
 
-    const RHI::ConstPtr<RHI::BufferView>& ShaderResourceGroupData::GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const
+    const RHI::ConstPtr<RHI::SingleDeviceBufferView>& ShaderResourceGroupData::GetBufferView(RHI::ShaderInputBufferIndex inputIndex, uint32_t arrayIndex) const
     {
         if (GetLayout()->ValidateAccess(inputIndex, arrayIndex))
         {
@@ -304,21 +304,21 @@ namespace AZ::RHI
         return s_nullBufferView;
     }
 
-    AZStd::span<const RHI::ConstPtr<RHI::BufferView>> ShaderResourceGroupData::GetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex) const
+    AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>> ShaderResourceGroupData::GetBufferViewArray(RHI::ShaderInputBufferIndex inputIndex) const
     {
         if (GetLayout()->ValidateAccess(inputIndex, 0))
         {
             const Interval interval = GetLayout()->GetGroupInterval(inputIndex);
-            return AZStd::span<const RHI::ConstPtr<RHI::BufferView>>(&m_bufferViews[interval.m_min], interval.m_max - interval.m_min);
+            return AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>>(&m_bufferViews[interval.m_min], interval.m_max - interval.m_min);
         }
         return {};
     }
 
-    AZStd::span<const RHI::ConstPtr<RHI::BufferView>> ShaderResourceGroupData::GetBufferViewUnboundedArray(RHI::ShaderInputBufferUnboundedArrayIndex inputIndex) const
+    AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>> ShaderResourceGroupData::GetBufferViewUnboundedArray(RHI::ShaderInputBufferUnboundedArrayIndex inputIndex) const
     {
         if (GetLayout()->ValidateAccess(inputIndex))
         {
-            return AZStd::span<const RHI::ConstPtr<RHI::BufferView>>(m_bufferViewsUnboundedArray.data(), m_bufferViewsUnboundedArray.size());
+            return AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>>(m_bufferViewsUnboundedArray.data(), m_bufferViewsUnboundedArray.size());
         }
         return {};
     }
@@ -344,12 +344,12 @@ namespace AZ::RHI
         return m_constantsData.GetConstantRaw(inputIndex);
     }
 
-    AZStd::span<const ConstPtr<ImageView>> ShaderResourceGroupData::GetImageGroup() const
+    AZStd::span<const ConstPtr<SingleDeviceImageView>> ShaderResourceGroupData::GetImageGroup() const
     {
         return m_imageViews;
     }
 
-    AZStd::span<const ConstPtr<BufferView>> ShaderResourceGroupData::GetBufferGroup() const
+    AZStd::span<const ConstPtr<SingleDeviceBufferView>> ShaderResourceGroupData::GetBufferGroup() const
     {
         return m_bufferViews;
     }
@@ -394,8 +394,8 @@ namespace AZ::RHI
     
     void ShaderResourceGroupData::SetBindlessViews(
         ShaderInputBufferIndex indirectResourceBufferIndex,
-        const RHI::BufferView* indirectResourceBuffer,
-        AZStd::span<const ImageView* const> imageViews,
+        const RHI::SingleDeviceBufferView* indirectResourceBuffer,
+        AZStd::span<const SingleDeviceImageView* const> imageViews,
         uint32_t* outIndices,
         AZStd::span<bool> isViewReadOnly,
         uint32_t arrayIndex)
@@ -417,7 +417,7 @@ namespace AZ::RHI
 
         AZ_Assert(imageViews.size() == isViewReadOnly.size(), "Mismatch sizes. For each view we need to know if it is read only or readwrite");
         size_t i = 0;
-        for (const ImageView* imageView : imageViews)
+        for (const SingleDeviceImageView* imageView : imageViews)
         {
             it->second.m_bindlessResources.push_back(imageView);
             BindlessResourceType resourceType = BindlessResourceType::m_Texture2D;
@@ -440,8 +440,8 @@ namespace AZ::RHI
 
     void ShaderResourceGroupData::SetBindlessViews(
         ShaderInputBufferIndex indirectResourceBufferIndex,
-        const RHI::BufferView* indirectResourceBuffer,
-        AZStd::span<const BufferView* const> bufferViews,
+        const RHI::SingleDeviceBufferView* indirectResourceBuffer,
+        AZStd::span<const SingleDeviceBufferView* const> bufferViews,
         uint32_t* outIndices,
         AZStd::span<bool> isViewReadOnly,
         uint32_t arrayIndex)
@@ -464,7 +464,7 @@ namespace AZ::RHI
         AZ_Assert(bufferViews.size() == isViewReadOnly.size(), "Mismatch sizes. For each view we need to know if it is read only or readwrite");
             
         size_t i = 0;
-        for (const BufferView* bufferView : bufferViews)
+        for (const SingleDeviceBufferView* bufferView : bufferViews)
         {
             it->second.m_bindlessResources.push_back(bufferView);
             BindlessResourceType resourceType = BindlessResourceType::m_ByteAddressBuffer;

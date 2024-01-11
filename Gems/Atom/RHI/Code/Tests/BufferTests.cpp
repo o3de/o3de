@@ -87,7 +87,7 @@ namespace UnitTest
             initRequest.m_initialData = testData.data();
             bufferPool->InitBuffer(initRequest);
 
-            RHI::Ptr<RHI::BufferView> bufferView;
+            RHI::Ptr<RHI::SingleDeviceBufferView> bufferView;
             bufferView = bufferA->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(0, 32));
             
             AZ_TEST_ASSERT(bufferView->IsInitialized());
@@ -158,7 +158,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::BufferView> bufferViewA;
+        RHI::Ptr<RHI::SingleDeviceBufferView> bufferViewA;
         
         {
             RHI::Ptr<RHI::SingleDeviceBufferPool> bufferPool;
@@ -208,7 +208,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(bufferViewA->IsStale() == false);
 
             // Create an uninitialized bufferview and let it go out of scope
-            RHI::Ptr<RHI::BufferView> uninitializedBufferViewPtr = RHI::Factory::Get().CreateBufferView();
+            RHI::Ptr<RHI::SingleDeviceBufferView> uninitializedBufferViewPtr = RHI::Factory::Get().CreateBufferView();
         }
     }
 
@@ -245,7 +245,7 @@ namespace UnitTest
         RHI::Ptr<RHI::Device> m_device; 
         RHI::Ptr<RHI::SingleDeviceBufferPool> m_bufferPool;
         RHI::Ptr<RHI::SingleDeviceBuffer> m_buffer;
-        RHI::Ptr<RHI::BufferView> m_bufferView;
+        RHI::Ptr<RHI::SingleDeviceBufferView> m_bufferView;
     };
 
     TEST_P(BufferBindFlagTests, InitView_ViewIsCreated)
@@ -487,7 +487,7 @@ namespace UnitTest
             viewDescriptors.push_back(RHI::BufferViewDescriptor::CreateRaw(i * viewSize, viewSize));
         }
 
-        AZStd::vector<AZStd::vector<RHI::Ptr<RHI::BufferView>>> referenceTable(bufferViewCount);
+        AZStd::vector<AZStd::vector<RHI::Ptr<RHI::SingleDeviceBufferView>>> referenceTable(bufferViewCount);
 
         AZStd::vector<AZStd::thread> threads;
         AZStd::mutex mutex;
@@ -514,7 +514,7 @@ namespace UnitTest
                         if (currentAction == ParrallelGetBufferViewCurrentAction::Get ||
                             currentAction == ParrallelGetBufferViewCurrentAction::Create)
                         {
-                            RHI::Ptr<RHI::BufferView> ptr = nullptr;
+                            RHI::Ptr<RHI::SingleDeviceBufferView> ptr = nullptr;
                             if (currentAction == ParrallelGetBufferViewCurrentAction::Get)
                             {
                                 ptr = buffer->GetBufferView(viewDescriptor);

@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/SingleDeviceImage.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
@@ -47,7 +47,7 @@ namespace AZ::RHI
 
     const ImageFrameAttachment* SingleDeviceImage::GetFrameAttachment() const
     {
-        return static_cast<const ImageFrameAttachment*>(Resource::GetFrameAttachment());
+        return static_cast<const ImageFrameAttachment*>(SingleDeviceResource::GetFrameAttachment());
     }
 
     void SingleDeviceImage::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
@@ -64,7 +64,7 @@ namespace AZ::RHI
         imageStats->m_minimumSizeInBytes = imageStats->m_minimumSizeInBytes;
     }
     
-    Ptr<ImageView> SingleDeviceImage::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
+    Ptr<SingleDeviceImageView> SingleDeviceImage::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
     {
         return Base::GetResourceView(imageViewDescriptor);
     }

@@ -52,12 +52,12 @@ namespace AZ
             using SubresourceRangeOwner = BufferOwnerProperty::PropertyRange;
 
             // Returns a list of queues that owns a subresource region.
-            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::BufferView& bufferView) const;
+            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::SingleDeviceBufferView& bufferView) const;
             AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::BufferSubresourceRange* range = nullptr) const;
 
             // Set the owner queue of a subresource region.
             void SetOwnerQueue(const QueueId& queueId, const RHI::BufferSubresourceRange* range = nullptr);
-            void SetOwnerQueue(const QueueId& queueId, const RHI::BufferView& bufferView);
+            void SetOwnerQueue(const QueueId& queueId, const RHI::SingleDeviceBufferView& bufferView);
 
             void SetUploadHandle(const RHI::AsyncWorkHandle& handle);
             const RHI::AsyncWorkHandle& GetUploadHandle() const;
@@ -78,7 +78,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::SingleDeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
    

@@ -11,7 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/SingleDeviceImage.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/SingleDeviceImagePool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
@@ -44,7 +44,7 @@ namespace AZ
             const RHI::SingleDeviceImage* GetRHIImage() const;
 
             //! Returns the default image view instance, mapping the full (resident) image.
-            const RHI::ImageView* GetImageView() const;
+            const RHI::SingleDeviceImageView* GetImageView() const;
 
             //! Returns the image descriptor which contains some image information
             const RHI::ImageDescriptor& GetDescriptor() const;
@@ -63,7 +63,7 @@ namespace AZ
             RHI::Ptr<RHI::SingleDeviceImage> m_image;
 
             // The default view instance mapping the full resident set of the image mip levels and array slices.
-            RHI::Ptr<RHI::ImageView> m_imageView;
+            RHI::Ptr<RHI::SingleDeviceImageView> m_imageView;
         };
     }
 }

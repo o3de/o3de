@@ -39,7 +39,7 @@ namespace AZ
             RHI::ResultCode InitGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase) override;
             void ShutdownInternal() override;
             RHI::ResultCode CompileGroupInternal(RHI::SingleDeviceShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData) override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ namespace AZ
             template<typename T, typename U>
             AZStd::vector<DescriptorHandle> GetUAVsFromImageViews(const AZStd::span<const RHI::ConstPtr<T>>& bufferViews, D3D12_UAV_DIMENSION dimension);
 
-            AZStd::vector<DescriptorHandle> GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews);
+            AZStd::vector<DescriptorHandle> GetCBVsFromBufferViews(const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>>& bufferViews);
 
             MemoryPoolSubAllocator m_constantAllocator;
             DescriptorContext* m_descriptorContext = nullptr;

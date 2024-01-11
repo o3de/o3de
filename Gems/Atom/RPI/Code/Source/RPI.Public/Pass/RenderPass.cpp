@@ -284,7 +284,7 @@ namespace AZ
                     {
                         inputIndex = imageIndex;
                     }
-                    const RHI::ImageView* imageView =
+                    const RHI::SingleDeviceImageView* imageView =
                         context.GetImageView(attachment->GetAttachmentId(), binding.m_unifiedScopeDesc.GetImageViewDescriptor(), binding.m_scopeAttachmentUsage);
 
                     if (binding.m_shaderImageDimensionsNameIndex.HasName())
@@ -324,7 +324,7 @@ namespace AZ
                     {
                         inputIndex = bufferIndex;
                     }
-                    const RHI::BufferView* bufferView = context.GetBufferView(attachment->GetAttachmentId(), binding.m_scopeAttachmentUsage);
+                    const RHI::SingleDeviceBufferView* bufferView = context.GetBufferView(attachment->GetAttachmentId(), binding.m_scopeAttachmentUsage);
                     m_shaderResourceGroup->SetBufferView(RHI::ShaderInputBufferIndex(inputIndex), bufferView, arrayIndex);
                     ++bufferIndex;
                 }

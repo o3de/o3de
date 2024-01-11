@@ -48,7 +48,7 @@ namespace AZ::RHI
         }
         SetName(AZ::Name("SingleDeviceSwapChain"));
         SwapChainDimensions nativeDimensions = descriptor.m_dimensions;
-        ResultCode resultCode = ResourcePool::Init(
+        ResultCode resultCode = SingleDeviceResourcePool::Init(
             device, descriptor,
             [this, &device, &descriptor, &nativeDimensions]()
         {
@@ -105,7 +105,7 @@ namespace AZ::RHI
             request.m_image = m_images[imageIdx].get();
             request.m_imageIndex = imageIdx;
 
-            resultCode = ImagePoolBase::InitImage(
+            resultCode = SingleDeviceImagePoolBase::InitImage(
                 request.m_image, imageDescriptor,
                 [this, &request]()
                 {
@@ -129,7 +129,7 @@ namespace AZ::RHI
     void SingleDeviceSwapChain::ShutdownInternal()
     {
         m_images.clear();
-        ResourcePool::ShutdownInternal();
+        SingleDeviceResourcePool::ShutdownInternal();
     }
 
     ResultCode SingleDeviceSwapChain::Resize(const RHI::SwapChainDimensions& dimensions)

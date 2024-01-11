@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/AsyncWorkQueue.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>

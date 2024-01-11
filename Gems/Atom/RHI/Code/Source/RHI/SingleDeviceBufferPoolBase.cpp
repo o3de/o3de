@@ -5,22 +5,22 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
 #include <Atom/RHI/RHIUtils.h>
 
 namespace AZ::RHI
 {
-    ResultCode BufferPoolBase::InitBuffer(SingleDeviceBuffer* buffer, const BufferDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
+    ResultCode SingleDeviceBufferPoolBase::InitBuffer(SingleDeviceBuffer* buffer, const BufferDescriptor& descriptor, PlatformMethod platformInitResourceMethod)
     {
         // The descriptor is assigned regardless of whether initialization succeeds. Descriptors are considered
         // undefined for uninitialized resources. This makes the buffer descriptor well defined at initialization
         // time rather than leftover data from the previous usage.             
         buffer->SetDescriptor(descriptor);
 
-        return ResourcePool::InitResource(buffer, platformInitResourceMethod);
+        return SingleDeviceResourcePool::InitResource(buffer, platformInitResourceMethod);
     }
 
-    void BufferPoolBase::ValidateBufferMap(SingleDeviceBuffer& buffer, bool isDataValid)
+    void SingleDeviceBufferPoolBase::ValidateBufferMap(SingleDeviceBuffer& buffer, bool isDataValid)
     {
         if (Validation::IsEnabled())
         {
@@ -32,14 +32,14 @@ namespace AZ::RHI
 
             if (!isDataValid)
             {
-                AZ_Error("BufferPoolBase", false, "Failed to map buffer '%s'.", buffer.GetName().GetCStr());
+                AZ_Error("SingleDeviceBufferPoolBase", false, "Failed to map buffer '%s'.", buffer.GetName().GetCStr());
             }
             ++buffer.m_mapRefCount;
             ++m_mapRefCount;
         }
     }
 
-    bool BufferPoolBase::ValidateBufferUnmap(SingleDeviceBuffer& buffer)
+    bool SingleDeviceBufferPoolBase::ValidateBufferUnmap(SingleDeviceBuffer& buffer)
     {
         if (Validation::IsEnabled())
         {
@@ -51,7 +51,7 @@ namespace AZ::RHI
 
             if (--buffer.m_mapRefCount == -1)
             {
-                AZ_Error("BufferPoolBase", false, "SingleDeviceBuffer '%s' was unmapped more times than it was mapped.", buffer.GetName().GetCStr());
+                AZ_Error("SingleDeviceBufferPoolBase", false, "SingleDeviceBuffer '%s' was unmapped more times than it was mapped.", buffer.GetName().GetCStr());
 
                 // Undo the ref-count to keep the validation state sane.
                 ++buffer.m_mapRefCount;
@@ -65,7 +65,7 @@ namespace AZ::RHI
         return true;
     }
 
-    uint32_t BufferPoolBase::GetMapRefCount() const
+    uint32_t SingleDeviceBufferPoolBase::GetMapRefCount() const
     {
         return m_mapRefCount;
     }

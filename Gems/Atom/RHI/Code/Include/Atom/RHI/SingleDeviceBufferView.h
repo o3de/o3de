@@ -8,20 +8,20 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
-#include <Atom/RHI/ResourceView.h>
+#include <Atom/RHI/SingleDeviceResourceView.h>
 
 namespace AZ::RHI
 {
     class SingleDeviceBuffer;
 
-    //! BufferView is contains a platform-specific descriptor mapping to a linear sub-region of a specific buffer resource.
+    //! SingleDeviceBufferView is contains a platform-specific descriptor mapping to a linear sub-region of a specific buffer resource.
     //! It associates 1-to-1 with a BufferViewDescriptor.
-    class BufferView
-        : public ResourceView
+    class SingleDeviceBufferView
+        : public SingleDeviceResourceView
     {
     public:
-        AZ_RTTI(BufferView, "{3012F770-1DD7-4CEC-A5D0-E2FC807548C1}", ResourceView);
-        virtual ~BufferView() = default;
+        AZ_RTTI(SingleDeviceBufferView, "{3012F770-1DD7-4CEC-A5D0-E2FC807548C1}", SingleDeviceResourceView);
+        virtual ~SingleDeviceBufferView() = default;
 
         static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
 

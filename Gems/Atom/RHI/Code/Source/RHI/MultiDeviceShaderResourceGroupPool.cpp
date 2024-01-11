@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceShaderResourceGroupPool.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/IConsole.h>

@@ -8,8 +8,8 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
-#include <Atom/RHI/Resource.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceResource.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 
 namespace AZ::RHI
 {
@@ -20,12 +20,12 @@ namespace AZ::RHI
     //! A buffer corresponds to a region of linear memory and used for rendering operations. The user
     //! manages the lifecycle of a buffer through a SingleDeviceBufferPool.
     class SingleDeviceBuffer
-        : public Resource
+        : public SingleDeviceResource
     {
-        using Base = Resource;
-        friend class BufferPoolBase;
+        using Base = SingleDeviceResource;
+        friend class SingleDeviceBufferPoolBase;
     public:
-        AZ_RTTI(SingleDeviceBuffer, "{3C918323-F39C-4DC6-BEE9-BC220DBA9414}", Resource);
+        AZ_RTTI(SingleDeviceBuffer, "{3C918323-F39C-4DC6-BEE9-BC220DBA9414}", SingleDeviceResource);
         virtual ~SingleDeviceBuffer() = default;
 
         const BufferDescriptor& GetDescriptor() const;
@@ -37,7 +37,7 @@ namespace AZ::RHI
         /// Returns the buffer frame attachment if the buffer is currently attached.
         const BufferFrameAttachment* GetFrameAttachment() const;
 
-        Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<SingleDeviceBufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
 
         // Get the hash associated with the SingleDeviceBuffer
         const HashValue64 GetHash() const;

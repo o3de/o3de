@@ -71,8 +71,8 @@ namespace AZ::RHI
         return isInResourceCache;
     }
 
-    //! Given a device index, return the corresponding BufferView for the selected device
-    const RHI::Ptr<RHI::BufferView> MultiDeviceBufferView::GetDeviceBufferView(int deviceIndex) const
+    //! Given a device index, return the corresponding SingleDeviceBufferView for the selected device
+    const RHI::Ptr<RHI::SingleDeviceBufferView> MultiDeviceBufferView::GetDeviceBufferView(int deviceIndex) const
     {
         auto iterator{ m_cache.find(deviceIndex) };
         if (iterator == m_cache.end())

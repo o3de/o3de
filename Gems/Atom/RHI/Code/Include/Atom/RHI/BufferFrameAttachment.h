@@ -15,7 +15,7 @@
 
 namespace AZ::RHI
 {
-    class BufferView;
+    class SingleDeviceBufferView;
     class BufferScopeAttachment;
 
     //! A specialization of Attachment for a buffer. Provides access to the buffer.

@@ -78,7 +78,7 @@ namespace AZ
             return result;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::Resource& resource) 
+        void BufferPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resource) 
         {
             auto& buffer = static_cast<Buffer&>(resource);
             auto& device = static_cast<Device&>(GetDevice());

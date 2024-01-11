@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferPoolDescriptor.h>
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
 
 namespace AZ::RHI
 {
@@ -97,10 +97,10 @@ namespace AZ::RHI
     //! contains properties defining memory characteristics of buffer pools. All buffers created on a pool
     //! share the same backing heap and buffer bind flags.
     class SingleDeviceBufferPool
-        : public BufferPoolBase
+        : public SingleDeviceBufferPoolBase
     {
     public:
-        AZ_RTTI(SingleDeviceBufferPool, "{6C7A657E-3940-465D-BC15-569741D9BBDF}", BufferPoolBase)
+        AZ_RTTI(SingleDeviceBufferPool, "{6C7A657E-3940-465D-BC15-569741D9BBDF}", SingleDeviceBufferPoolBase)
         virtual ~SingleDeviceBufferPool() override = default;
 
         //! Initializes the buffer pool with a provided descriptor. The pool must be in an uninitialized
@@ -184,8 +184,8 @@ namespace AZ::RHI
         bool ValidateNotProcessingFrame() const;
 
     private:
-        using ResourcePool::Init;
-        using BufferPoolBase::InitBuffer;
+        using SingleDeviceResourcePool::Init;
+        using SingleDeviceBufferPoolBase::InitBuffer;
 
         bool ValidatePoolDescriptor(const BufferPoolDescriptor& descriptor) const;
         bool ValidateInitRequest(const BufferInitRequest& initRequest) const;

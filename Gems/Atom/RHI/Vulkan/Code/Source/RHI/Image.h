@@ -154,9 +154,9 @@ namespace AZ
             using SubresourceRangeOwner = ImageOwnerProperty::PropertyRange;
 
             AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::ImageSubresourceRange* range = nullptr) const;
-            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::ImageView& view) const;
+            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::SingleDeviceImageView& view) const;
             void SetOwnerQueue(const QueueId& queueId, const RHI::ImageSubresourceRange* range = nullptr);
-            void SetOwnerQueue(const QueueId& queueId, const RHI::ImageView& view);
+            void SetOwnerQueue(const QueueId& queueId, const RHI::SingleDeviceImageView& view);
 
             using ImageLayoutProperty = RHI::ImageProperty<VkImageLayout>;
             using SubresourceRangeLayout = ImageLayoutProperty::PropertyRange;
@@ -206,7 +206,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::SingleDeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
 

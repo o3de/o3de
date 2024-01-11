@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/SingleDeviceSwapChain.h>
@@ -22,7 +22,7 @@
 
 namespace AZ::RHI
 {
-    class ResourcePool;
+    class SingleDeviceResourcePool;
     class SingleDeviceQueryPool;
     class SingleDeviceFence;
     struct Interval;

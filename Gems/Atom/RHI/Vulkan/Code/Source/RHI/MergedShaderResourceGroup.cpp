@@ -47,7 +47,7 @@ namespace AZ
                     }
 
                     const auto& sourceViews = srgData.GetBufferViewArray(RHI::ShaderInputBufferIndex(i));
-                    AZStd::vector<const RHI::BufferView*> destViews;
+                    AZStd::vector<const RHI::SingleDeviceBufferView*> destViews;
                     AZStd::transform(sourceViews.begin(), sourceViews.end(), AZStd::back_inserter(destViews), [](const auto& view) { return view.get(); });
                     data.SetBufferViewArray(shaderInputIndex, destViews);
                 }
@@ -65,7 +65,7 @@ namespace AZ
                     }
 
                     const auto& sourceViews = srgData.GetImageViewArray(RHI::ShaderInputImageIndex(i));
-                    AZStd::vector<const RHI::ImageView*> destViews;
+                    AZStd::vector<const RHI::SingleDeviceImageView*> destViews;
                     AZStd::transform(sourceViews.begin(), sourceViews.end(), AZStd::back_inserter(destViews), [](const auto& view) { return view.get(); });
                     data.SetImageViewArray(shaderInputIndex, destViews);
                 }

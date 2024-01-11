@@ -44,7 +44,7 @@ namespace UnitTest
 
         AZ::RHI::Ptr<AZ::RHI::SingleDeviceImagePool> m_imagePool;
         AZ::RHI::Ptr<AZ::RHI::SingleDeviceBufferPool> m_bufferPool;
-        AZStd::unordered_map<AZ::RHI::AttachmentId, AZ::RHI::Ptr<AZ::RHI::Resource>> m_attachments;
+        AZStd::unordered_map<AZ::RHI::AttachmentId, AZ::RHI::Ptr<AZ::RHI::SingleDeviceResource>> m_attachments;
 
         AZStd::unordered_set<AZ::RHI::AttachmentId> m_activeSet;
     };

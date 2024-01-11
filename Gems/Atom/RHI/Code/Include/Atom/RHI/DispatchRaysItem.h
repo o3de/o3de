@@ -19,8 +19,8 @@ namespace AZ::RHI
     class SingleDeviceRayTracingPipelineState;
     class SingleDeviceRayTracingShaderTable;
     class SingleDeviceShaderResourceGroup;
-    class ImageView;
-    class BufferView;
+    class SingleDeviceImageView;
+    class SingleDeviceBufferView;
     class DispatchRaysIndirectBuffer;
 
     //! Arguments used when submitting a (direct) dispatch rays call into a CommandList.

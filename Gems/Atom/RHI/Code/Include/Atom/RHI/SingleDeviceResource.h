@@ -14,27 +14,27 @@
 
 namespace AZ::RHI
 {
-    class ResourcePool;
+    class SingleDeviceResourcePool;
     class FrameAttachment;
     class MemoryStatisticsBuilder;
-    class ResourceView;
-    class ImageView;
-    class BufferView;
+    class SingleDeviceResourceView;
+    class SingleDeviceImageView;
+    class SingleDeviceBufferView;
     struct ImageViewDescriptor;
     struct BufferViewDescriptor;
     
         
     //! SingleDeviceResource is a base class for pooled RHI resources (SingleDeviceImage / SingleDeviceBuffer / SingleDeviceShaderResourceGroup, etc). It provides
-    //! some common lifecycle management semantics. Resource creation is separate from initialization. Resources are
+    //! some common lifecycle management semantics. SingleDeviceResource creation is separate from initialization. Resources are
     //! created separate from any pool, but its backing platform data is associated at initialization time on a specific pool.
-    class Resource
+    class SingleDeviceResource
         : public DeviceObject
     {
         friend class FrameAttachment;
-        friend class ResourcePool;
+        friend class SingleDeviceResourcePool;
     public:
-        AZ_RTTI(Resource, "{9D02CDAC-80EB-4B77-8E62-849AC6E69206}", DeviceObject);
-        virtual ~Resource();
+        AZ_RTTI(SingleDeviceResource, "{9D02CDAC-80EB-4B77-8E62-849AC6E69206}", DeviceObject);
+        virtual ~SingleDeviceResource();
 
         /// Returns whether the resource is currently an attachment on a frame graph.
         bool IsAttachment() const;
@@ -44,8 +44,8 @@ namespace AZ::RHI
 
         //! Returns the parent pool this resource is registered on. Since resource creation is
         //! separate from initialization, this will be null until the resource is registered on a pool.
-        const ResourcePool* GetPool() const;
-        ResourcePool* GetPool();
+        const SingleDeviceResourcePool* GetPool() const;
+        SingleDeviceResourcePool* GetPool();
 
         //! Returns the version number. This number is monotonically increased anytime
         //! new platform memory is assigned to the resource. Any dependent resource is
@@ -67,38 +67,38 @@ namespace AZ::RHI
         //! shutdown / re-initialization will need to call this method explicitly.
         void InvalidateViews();
             
-        //! Returns true if the ResourceView is in the cache
+        //! Returns true if the SingleDeviceResourceView is in the cache
         bool IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor);
         bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
             
-        //! Removes the provided ResourceView from the cache
-        void EraseResourceView(ResourceView* resourceView) const;
+        //! Removes the provided SingleDeviceResourceView from the cache
+        void EraseResourceView(SingleDeviceResourceView* resourceView) const;
                                     
     protected:
-        Resource() = default;
+        SingleDeviceResource() = default;
 
         //! Returns view based on the descriptor
-        Ptr<ImageView> GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const;
-        Ptr<BufferView> GetResourceView(const BufferViewDescriptor& bufferViewDescriptor) const;
+        Ptr<SingleDeviceImageView> GetResourceView(const ImageViewDescriptor& imageViewDescriptor) const;
+        Ptr<SingleDeviceBufferView> GetResourceView(const BufferViewDescriptor& bufferViewDescriptor) const;
 
     private:
         /// Returns whether this resource has been initialized before.
         bool IsFirstVersion() const;
 
         /// Called by the parent pool at initialization time.
-        void SetPool(ResourcePool* pool);
+        void SetPool(SingleDeviceResourcePool* pool);
 
         /// Called by the frame attachment at frame building time.
         void SetFrameAttachment(FrameAttachment* frameAttachment);
 
         /// Called by GetResourceView to insert a new image view
-        Ptr<ImageView> InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const;
+        Ptr<SingleDeviceImageView> InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const;
 
         /// Called by GetResourceView to insert a new buffer view
-        Ptr<BufferView> InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const;
+        Ptr<SingleDeviceBufferView> InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const;
                                     
         /// The parent pool this resource is registered with.
-        ResourcePool* m_pool = nullptr;
+        SingleDeviceResourcePool* m_pool = nullptr;
 
         /// The current frame attachment registered on this resource.
         FrameAttachment* m_frameAttachment = nullptr;
@@ -110,9 +110,9 @@ namespace AZ::RHI
         bool m_isInvalidationQueued = false;
             
         // Cache the resourceViews in order to avoid re-creation
-        // Since ResourceView has a dependency to Resource this cache holds raw pointers here in order to ensure there
+        // Since SingleDeviceResourceView has a dependency to SingleDeviceResource this cache holds raw pointers here in order to ensure there
         // is no circular dependency between the resource and it's resourceview.
-        mutable AZStd::unordered_map<size_t, ResourceView*> m_resourceViewCache;
+        mutable AZStd::unordered_map<size_t, SingleDeviceResourceView*> m_resourceViewCache;
         // This should help provide thread safe access to resourceView cache
         mutable AZStd::mutex m_cacheMutex;
     };

@@ -494,7 +494,7 @@ namespace AZ
             return m_ownerQueue.Get(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()));
         }
 
-        AZStd::vector<Image::SubresourceRangeOwner> Image::GetOwnerQueue(const RHI::ImageView& view) const
+        AZStd::vector<Image::SubresourceRangeOwner> Image::GetOwnerQueue(const RHI::SingleDeviceImageView& view) const
         {
             auto range = RHI::ImageSubresourceRange(view.GetDescriptor());
             return GetOwnerQueue(&range);
@@ -506,7 +506,7 @@ namespace AZ
             m_ownerQueue.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), queueId);
         }
 
-        void Image::SetOwnerQueue(const QueueId& queueId, const RHI::ImageView& view)
+        void Image::SetOwnerQueue(const QueueId& queueId, const RHI::SingleDeviceImageView& view)
         {
             auto range = RHI::ImageSubresourceRange(view.GetDescriptor());
             SetOwnerQueue(queueId , &range);

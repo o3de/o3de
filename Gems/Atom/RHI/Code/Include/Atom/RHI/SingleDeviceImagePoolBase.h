@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/ResourcePool.h>
+#include <Atom/RHI/SingleDeviceResourcePool.h>
 #include <Atom/RHI/SingleDeviceImage.h>
 
 namespace AZ::RHI
@@ -15,15 +15,15 @@ namespace AZ::RHI
     //! A simple base class for image pools. This mainly exists so that various
     //! image pool implementations can have some type safety separate from other
     //! resource pool types.
-    class ImagePoolBase
-        : public ResourcePool
+    class SingleDeviceImagePoolBase
+        : public SingleDeviceResourcePool
     {
     public:
-        AZ_RTTI(ImagePoolBase, "{6353E390-C5D2-42FF-8AA9-9AFCD1F2F1B5}", ResourcePool);
-        virtual ~ImagePoolBase() override = default;
+        AZ_RTTI(SingleDeviceImagePoolBase, "{6353E390-C5D2-42FF-8AA9-9AFCD1F2F1B5}", SingleDeviceResourcePool);
+        virtual ~SingleDeviceImagePoolBase() override = default;
 
     protected:
-        ImagePoolBase() = default;
+        SingleDeviceImagePoolBase() = default;
 
         ResultCode InitImage(
             SingleDeviceImage* image,
@@ -31,6 +31,6 @@ namespace AZ::RHI
             PlatformMethod platformInitResourceMethod);
 
     private:
-        using ResourcePool::InitResource;
+        using SingleDeviceResourcePool::InitResource;
     };
 }

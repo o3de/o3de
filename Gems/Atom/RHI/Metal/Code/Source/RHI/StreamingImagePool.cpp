@@ -70,7 +70,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
         
-        void StreamingImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void StreamingImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             auto& image = static_cast<Image&>(resourceBase);
             auto& device = static_cast<Device&>(GetDevice());

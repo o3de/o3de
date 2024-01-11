@@ -13,8 +13,8 @@
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 
@@ -84,27 +84,27 @@ namespace AZ
                 // vertex streams
                 RHI::Format m_positionFormat = RHI::Format::Unknown;
                 RHI::StreamBufferView m_positionVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_positionShaderBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_positionShaderBufferView;
 
                 RHI::Format m_normalFormat = RHI::Format::Unknown;
                 RHI::StreamBufferView m_normalVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_normalShaderBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_normalShaderBufferView;
 
                 RHI::Format m_tangentFormat = RHI::Format::Unknown;
                 RHI::StreamBufferView m_tangentVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_tangentShaderBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_tangentShaderBufferView;
 
                 RHI::Format m_bitangentFormat = RHI::Format::Unknown;
                 RHI::StreamBufferView m_bitangentVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_bitangentShaderBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_bitangentShaderBufferView;
 
                 RHI::Format m_uvFormat = RHI::Format::Unknown;
                 RHI::StreamBufferView m_uvVertexBufferView;
-                RHI::Ptr<RHI::BufferView> m_uvShaderBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_uvShaderBufferView;
 
                 // index buffer
                 RHI::IndexBufferView m_indexBufferView;
-                RHI::Ptr<RHI::BufferView> m_indexShaderBufferView;
+                RHI::Ptr<RHI::SingleDeviceBufferView> m_indexShaderBufferView;
 
                 // vertex buffer usage flags
                 RayTracingSubMeshBufferFlags m_bufferFlags = RayTracingSubMeshBufferFlags::None;
@@ -125,11 +125,11 @@ namespace AZ
                 RayTracingSubMeshTextureFlags m_textureFlags = RayTracingSubMeshTextureFlags::None;
 
                 // material textures
-                RHI::Ptr<const RHI::ImageView> m_baseColorImageView;
-                RHI::Ptr<const RHI::ImageView> m_normalImageView;
-                RHI::Ptr<const RHI::ImageView> m_metallicImageView;
-                RHI::Ptr<const RHI::ImageView> m_roughnessImageView;
-                RHI::Ptr<const RHI::ImageView> m_emissiveImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_baseColorImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_normalImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_metallicImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_roughnessImageView;
+                RHI::Ptr<const RHI::SingleDeviceImageView> m_emissiveImageView;
 
                 // parent mesh
                 Mesh* m_mesh = nullptr;
@@ -377,8 +377,8 @@ namespace AZ
             // without invalidating the indices held here in the m_meshBufferIndices and m_materialTextureIndices lists.
             
             // mesh buffer and material texture resource lists, accessed by the shader through an unbounded array
-            RayTracingResourceList<RHI::BufferView> m_meshBuffers;
-            RayTracingResourceList<const RHI::ImageView> m_materialTextures;
+            RayTracingResourceList<RHI::SingleDeviceBufferView> m_meshBuffers;
+            RayTracingResourceList<const RHI::SingleDeviceImageView> m_materialTextures;
 #endif
 
             // RayTracingIndexList implements an internal freelist chain stored inside the list itself, allowing entries to be

@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/ImageFrameAttachment.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <Atom/RHI/MultiDeviceImage.h>
 
 namespace AZ::RHI
@@ -110,8 +110,8 @@ namespace AZ::RHI
         return isInResourceCache;
     }
 
-    //! Given a device index, return the corresponding BufferView for the selected device
-    const RHI::Ptr<RHI::ImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
+    //! Given a device index, return the corresponding SingleDeviceBufferView for the selected device
+    const RHI::Ptr<RHI::SingleDeviceImageView> MultiDeviceImageView::GetDeviceImageView(int deviceIndex) const
     {
         auto iterator{ m_cache.find(deviceIndex) };
         if (iterator == m_cache.end())

@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/ScopeId.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Handle.h>
-#include <Atom/RHI/ResourcePool.h>
+#include <Atom/RHI/SingleDeviceResourcePool.h>
 #include <Atom/RHI/SingleDeviceQueryPool.h>
 #include <Atom/RHI/SingleDeviceFence.h>
 #include <AzCore/std/containers/vector.h>
@@ -23,8 +23,8 @@ namespace AZ::RHI
     class ImageScopeAttachment;
     class BufferScopeAttachment;
     class ResolveScopeAttachment;
-    class BufferPoolBase;
-    class ImagePoolBase;
+    class SingleDeviceBufferPoolBase;
+    class SingleDeviceImagePoolBase;
     class ResourcePoolDatabase;
     class FrameGraph;
     class Device;

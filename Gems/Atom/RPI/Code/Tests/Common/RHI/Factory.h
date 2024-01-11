@@ -48,13 +48,13 @@ namespace UnitTest
 
             AZ::RHI::Ptr<AZ::RHI::SingleDeviceBuffer> CreateBuffer() override;
 
-            AZ::RHI::Ptr<AZ::RHI::BufferView> CreateBufferView() override;
+            AZ::RHI::Ptr<AZ::RHI::SingleDeviceBufferView> CreateBufferView() override;
 
             AZ::RHI::Ptr<AZ::RHI::SingleDeviceBufferPool> CreateBufferPool() override;
 
             AZ::RHI::Ptr<AZ::RHI::SingleDeviceImage> CreateImage() override;
 
-            AZ::RHI::Ptr<AZ::RHI::ImageView> CreateImageView() override;
+            AZ::RHI::Ptr<AZ::RHI::SingleDeviceImageView> CreateImageView() override;
 
             AZ::RHI::Ptr<AZ::RHI::SingleDeviceImagePool> CreateImagePool() override;
 

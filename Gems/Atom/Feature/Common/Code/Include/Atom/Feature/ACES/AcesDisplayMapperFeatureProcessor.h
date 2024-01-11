@@ -15,7 +15,7 @@
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
 
 #include <Atom/RHI/SingleDeviceImagePool.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>

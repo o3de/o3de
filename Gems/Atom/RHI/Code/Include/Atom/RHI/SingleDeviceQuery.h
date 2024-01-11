@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/SingleDeviceResource.h>
 
 namespace AZ::RHI
 {
@@ -30,15 +30,15 @@ namespace AZ::RHI
     //! SingleDeviceQuery resource for recording gpu data like occlusion, timestamp or pipeline statistics.
     //! Queries belong to a SingleDeviceQueryPool and their types are determined by the pool.
     class SingleDeviceQuery
-        : public Resource
+        : public SingleDeviceResource
     {
         friend class SingleDeviceQueryPool;
     public:
-        AZ_RTTI(SingleDeviceQuery, "{5E4AAD1B-E1A5-45FA-B965-9E212CE58B57}", Resource);
+        AZ_RTTI(SingleDeviceQuery, "{5E4AAD1B-E1A5-45FA-B965-9E212CE58B57}", SingleDeviceResource);
         virtual ~SingleDeviceQuery() override = default;
 
         ///////////////////////////////////////////////////////////////////
-        // RHI::Resource overrides
+        // RHI::SingleDeviceResource overrides
         void ReportMemoryUsage(MemoryStatisticsBuilder& builder) const override;
         ///////////////////////////////////////////////////////////////////
 

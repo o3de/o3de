@@ -36,7 +36,7 @@ namespace AZ
             void Compile() override;
             void Resolve(CommandList& commandList) const override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::Resource& resource) override;
+            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////
             
         private:

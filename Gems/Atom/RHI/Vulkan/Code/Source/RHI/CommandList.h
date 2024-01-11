@@ -66,7 +66,7 @@ namespace AZ
             struct ResourceClearRequest
             {
                 RHI::ClearValue m_clearValue;
-                const RHI::ResourceView* m_resourceView = nullptr;
+                const RHI::SingleDeviceResourceView* m_resourceView = nullptr;
             };
 
             ~CommandList() = default;

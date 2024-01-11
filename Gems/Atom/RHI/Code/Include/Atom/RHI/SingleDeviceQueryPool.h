@@ -11,7 +11,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
-#include <Atom/RHI/ResourcePool.h>
+#include <Atom/RHI/SingleDeviceResourcePool.h>
 #include <Atom/RHI.Reflect/Interval.h>
 #include <Atom/RHI/SingleDeviceQuery.h>
 #include <Atom/RHI/QueryPoolSubAllocator.h>
@@ -34,11 +34,11 @@ namespace AZ::RHI
     //! contains properties defining memory characteristics of query pools. All queries created on a pool
     //! share the same backing and type.
     class SingleDeviceQueryPool
-        : public ResourcePool
+        : public SingleDeviceResourcePool
     {
-        using Base = ResourcePool;
+        using Base = SingleDeviceResourcePool;
     public:
-        AZ_RTTI(SingleDeviceQueryPool, "{D6744249-953F-45B6-AD90-B98B35E74521}", ResourcePool)
+        AZ_RTTI(SingleDeviceQueryPool, "{D6744249-953F-45B6-AD90-B98B35E74521}", SingleDeviceResourcePool)
         virtual ~SingleDeviceQueryPool() override = default;
 
         //!  Initialize the SingleDeviceQueryPool.
@@ -102,9 +102,9 @@ namespace AZ::RHI
         void SortQueries(AZStd::vector<T*>& queries);
 
         //////////////////////////////////////////////////////////////////////////
-        // ResourcePool overrides
+        // SingleDeviceResourcePool overrides
         void ShutdownInternal() override;
-        void ShutdownResourceInternal(Resource& resource) override;
+        void ShutdownResourceInternal(SingleDeviceResource& resource) override;
         void ComputeFragmentation() const override {}
         //////////////////////////////////////////////////////////////////////////
 

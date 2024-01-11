@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
-#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/SingleDeviceImagePoolBase.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
 namespace AZ::RHI
@@ -21,7 +21,7 @@ namespace AZ::RHI
     //! The frame scheduler controls presentation of the swap chain. The user may attach a swap chain to a scope
     //! in order to render to the current image.
     class SingleDeviceSwapChain
-        : public ImagePoolBase
+        : public SingleDeviceImagePoolBase
     {
     public:
         AZ_RTTI(SingleDeviceSwapChain, "{888B64A5-D956-406F-9C33-CF6A54FC41B0}", Object);
@@ -92,7 +92,7 @@ namespace AZ::RHI
         };
 
         //////////////////////////////////////////////////////////////////////////
-        // ResourcePool Overrides
+        // SingleDeviceResourcePool Overrides
 
         //! Called when the pool is shutting down.
         void ShutdownInternal() override;

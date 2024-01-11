@@ -289,7 +289,7 @@ namespace AZ
 
             m_dispatchItem.m_arguments = dispatchArgs;
 
-            const RHI::ImageView* imageView = context.GetImageView(m_attachmentId);
+            const RHI::SingleDeviceImageView* imageView = context.GetImageView(m_attachmentId);
             m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, imageView);
 
             imageView = context.GetImageView(m_copyAttachmentId);

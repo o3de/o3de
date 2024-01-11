@@ -5,50 +5,50 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/ResourcePool.h>
+#include <Atom/RHI/SingleDeviceResourcePool.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
-#include <Atom/RHI/Resource.h>
+#include <Atom/RHI/SingleDeviceResource.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 
 //#define ASSERT_UNNAMED_RESOURCE_POOLS
 
 namespace AZ::RHI
 {
-    ResourcePool::~ResourcePool()
+    SingleDeviceResourcePool::~SingleDeviceResourcePool()
     {
         AZ_Assert(m_registry.empty(), "ResourceType pool was not properly shutdown.");
     }
 
-    uint32_t ResourcePool::GetResourceCount() const
+    uint32_t SingleDeviceResourcePool::GetResourceCount() const
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_registryMutex);
         return static_cast<uint32_t>(m_registry.size());
     }
 
-    ResourcePoolResolver* ResourcePool::GetResolver()
+    ResourcePoolResolver* SingleDeviceResourcePool::GetResolver()
     {
         return m_resolver.get();
     }
 
-    const ResourcePoolResolver* ResourcePool::GetResolver() const
+    const ResourcePoolResolver* SingleDeviceResourcePool::GetResolver() const
     {
         return m_resolver.get();
     }
 
-    void ResourcePool::SetResolver(AZStd::unique_ptr<ResourcePoolResolver>&& resolver)
+    void SingleDeviceResourcePool::SetResolver(AZStd::unique_ptr<ResourcePoolResolver>&& resolver)
     {
         AZ_Assert(!IsInitialized(), "Assigning a resolver after the pool has been initialized is not allowed.");
 
         m_resolver = AZStd::move(resolver);
     }
 
-    bool ResourcePool::ValidateIsRegistered(const Resource* resource) const
+    bool SingleDeviceResourcePool::ValidateIsRegistered(const SingleDeviceResource* resource) const
     {
         if (Validation::IsEnabled())
         {
             if (!resource || resource->GetPool() != this)
             {
-                AZ_Error("ResourcePool", false, "'%s': Resource is not registered on this pool.", GetName().GetCStr());
+                AZ_Error("SingleDeviceResourcePool", false, "'%s': SingleDeviceResource is not registered on this pool.", GetName().GetCStr());
                 return false;
             }
         }
@@ -56,13 +56,13 @@ namespace AZ::RHI
         return true;
     }
 
-    bool ResourcePool::ValidateIsUnregistered(const Resource* resource) const
+    bool SingleDeviceResourcePool::ValidateIsUnregistered(const SingleDeviceResource* resource) const
     {
         if (Validation::IsEnabled())
         {
             if (!resource || resource->GetPool() != nullptr)
             {
-                AZ_Error("ResourcePool", false, "'%s': Resource is null or registered on another pool.", GetName().GetCStr());
+                AZ_Error("SingleDeviceResourcePool", false, "'%s': SingleDeviceResource is null or registered on another pool.", GetName().GetCStr());
                 return false;
             }
         }
@@ -70,13 +70,13 @@ namespace AZ::RHI
         return true;
     }
 
-    bool ResourcePool::ValidateIsInitialized() const
+    bool SingleDeviceResourcePool::ValidateIsInitialized() const
     {
         if (Validation::IsEnabled())
         {
             if (IsInitialized() == false)
             {
-                AZ_Error("ResourcePool", false, "Resource pool is not initialized.");
+                AZ_Error("SingleDeviceResourcePool", false, "SingleDeviceResource pool is not initialized.");
                 return false;
             }
         }
@@ -84,13 +84,13 @@ namespace AZ::RHI
         return true;
     }
 
-    bool ResourcePool::ValidateNotProcessingFrame() const
+    bool SingleDeviceResourcePool::ValidateNotProcessingFrame() const
     {
         if (Validation::IsEnabled())
         {
             if (m_isProcessingFrame)
             {
-                AZ_Error("ResourcePool", false, "'%s' Attempting an operation that is invalid when processing the frame.", GetName().GetCStr());
+                AZ_Error("SingleDeviceResourcePool", false, "'%s' Attempting an operation that is invalid when processing the frame.", GetName().GetCStr());
                 return false;
             }
         }
@@ -98,7 +98,7 @@ namespace AZ::RHI
         return true;
     }
 
-    void ResourcePool::Register(Resource& resource)
+    void SingleDeviceResourcePool::Register(SingleDeviceResource& resource)
     {
         resource.SetPool(this);
 
@@ -106,7 +106,7 @@ namespace AZ::RHI
         m_registry.emplace(&resource);
     }
 
-    void ResourcePool::Unregister(Resource& resource)
+    void SingleDeviceResourcePool::Unregister(SingleDeviceResource& resource)
     {
         resource.SetPool(nullptr);
 
@@ -114,19 +114,19 @@ namespace AZ::RHI
         m_registry.erase(&resource);
     }
 
-    ResultCode ResourcePool::Init(
+    ResultCode SingleDeviceResourcePool::Init(
         Device& device,
         const ResourcePoolDescriptor& descriptor,
         const PlatformMethod& platformInitMethod)
     {
 #ifdef ASSERT_UNNAMED_RESOURCE_POOLS
-        AZ_Assert(!GetName().IsEmpty(), "Unnamed ResourcePool created");
+        AZ_Assert(!GetName().IsEmpty(), "Unnamed SingleDeviceResourcePool created");
 #endif
         if (Validation::IsEnabled())
         {
             if (IsInitialized())
             {
-                AZ_Error("ResourcePool", false, "ResourcePool '%s' is already initialized.", GetName().GetCStr());
+                AZ_Error("SingleDeviceResourcePool", false, "SingleDeviceResourcePool '%s' is already initialized.", GetName().GetCStr());
                 return ResultCode::InvalidOperation;
             }
         }
@@ -147,7 +147,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    void ResourcePool::Shutdown()
+    void SingleDeviceResourcePool::Shutdown()
     {
         AZ_Assert(ValidateNotProcessingFrame(), "Shutting down a pool while the frame is processing is undefined behavior.");
 
@@ -157,7 +157,7 @@ namespace AZ::RHI
             GetDevice().GetResourcePoolDatabase().DetachPool(this);
             FrameEventBus::Handler::BusDisconnect();
             MemoryStatisticsEventBus::Handler::BusDisconnect();
-            for (Resource* resource : m_registry)
+            for (SingleDeviceResource* resource : m_registry)
             {
                 resource->SetPool(nullptr);
                 ShutdownResourceInternal(*resource);
@@ -171,7 +171,7 @@ namespace AZ::RHI
         }
     }
 
-    ResultCode ResourcePool::InitResource(Resource* resource, const PlatformMethod& platformInitResourceMethod)
+    ResultCode SingleDeviceResourcePool::InitResource(SingleDeviceResource* resource, const PlatformMethod& platformInitResourceMethod)
     {
         if (!ValidateIsInitialized())
         {
@@ -192,7 +192,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    void ResourcePool::ShutdownResource(Resource* resource)
+    void SingleDeviceResourcePool::ShutdownResource(SingleDeviceResource* resource)
     {
         // [GFX_TODO][bethelz][LY-83244]: Frame processing validation disabled. See Jira.
         if (ValidateIsInitialized() && ValidateIsRegistered(resource) /* && ValidateNotProcessingFrame() */)
@@ -202,26 +202,26 @@ namespace AZ::RHI
         }
     }
 
-    void ResourcePool::ShutdownInternal() {}
-    void ResourcePool::ShutdownResourceInternal(Resource&) {}
+    void SingleDeviceResourcePool::ShutdownInternal() {}
+    void SingleDeviceResourcePool::ShutdownResourceInternal(SingleDeviceResource&) {}
 
-    const HeapMemoryUsage& ResourcePool::GetHeapMemoryUsage(HeapMemoryLevel memoryType) const
+    const HeapMemoryUsage& SingleDeviceResourcePool::GetHeapMemoryUsage(HeapMemoryLevel memoryType) const
     {
         return m_memoryUsage.GetHeapMemoryUsage(memoryType);
     }
 
-    const PoolMemoryUsage& ResourcePool::GetMemoryUsage() const
+    const PoolMemoryUsage& SingleDeviceResourcePool::GetMemoryUsage() const
     {
         return m_memoryUsage;
     }
 
-    void ResourcePool::OnFrameBegin()
+    void SingleDeviceResourcePool::OnFrameBegin()
     {
         m_memoryUsage.m_transferPull = {};
         m_memoryUsage.m_transferPush = {};
     }
 
-    void ResourcePool::OnFrameCompile()
+    void SingleDeviceResourcePool::OnFrameCompile()
     {
         if (Validation::IsEnabled())
         {
@@ -229,7 +229,7 @@ namespace AZ::RHI
         }
     }
 
-    void ResourcePool::OnFrameEnd()
+    void SingleDeviceResourcePool::OnFrameEnd()
     {
         if (Validation::IsEnabled())
         {
@@ -237,13 +237,13 @@ namespace AZ::RHI
         }
     }
 
-    void ResourcePool::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
+    void SingleDeviceResourcePool::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
     {
         MemoryStatistics::Pool* poolStats = builder.BeginPool();
 
         if (builder.GetReportFlags() == MemoryStatisticsReportFlags::Detail)
         {
-            ForEach<Resource>([&builder](const Resource& resource)
+            ForEach<SingleDeviceResource>([&builder](const SingleDeviceResource& resource)
             {
                 resource.ReportMemoryUsage(builder);
             });

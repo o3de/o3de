@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI/SingleDeviceImage.h>
-#include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/SingleDeviceImagePoolBase.h>
 
 namespace AZ::RHI
 {
@@ -71,10 +71,10 @@ namespace AZ::RHI
     //! attachments should be created from this pool. This pool is not designed for intra-frame aliasing.
     //! If transient images are required, they can be created from the frame scheduler itself.
     class SingleDeviceImagePool
-        : public ImagePoolBase
+        : public SingleDeviceImagePoolBase
     {
     public:
-        AZ_RTTI(SingleDeviceImagePool, "{A5563DF9-191E-4DF7-86BA-CFF39BE07BDD}", ImagePoolBase);
+        AZ_RTTI(SingleDeviceImagePool, "{A5563DF9-191E-4DF7-86BA-CFF39BE07BDD}", SingleDeviceImagePoolBase);
         virtual ~SingleDeviceImagePool() = default;
 
         /// Initializes the pool. The pool must be initialized before images can be registered with it.
@@ -96,8 +96,8 @@ namespace AZ::RHI
         SingleDeviceImagePool() = default;
 
     private:
-        using ResourcePool::Init;
-        using ImagePoolBase::InitImage;
+        using SingleDeviceResourcePool::Init;
+        using SingleDeviceImagePoolBase::InitImage;
 
         bool ValidateUpdateRequest(const ImageUpdateRequest& updateRequest) const;
 

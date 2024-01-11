@@ -97,7 +97,7 @@ namespace UnitTest
             return aznew Buffer;
         }
 
-        RHI::Ptr<RHI::BufferView> Factory::CreateBufferView()
+        RHI::Ptr<RHI::SingleDeviceBufferView> Factory::CreateBufferView()
         {
             return aznew BufferView;
         }
@@ -112,7 +112,7 @@ namespace UnitTest
             return aznew Image;
         }
 
-        RHI::Ptr<RHI::ImageView> Factory::CreateImageView()
+        RHI::Ptr<RHI::SingleDeviceImageView> Factory::CreateImageView()
         {
             return aznew ImageView;
         }

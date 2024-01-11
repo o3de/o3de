@@ -10,7 +10,7 @@
 
 #include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/SingleDeviceFence.h>
 
 #include <Atom/RHI.Reflect/AttachmentId.h>
@@ -52,7 +52,7 @@ namespace AZ
 
             const RHI::SingleDeviceBuffer* GetRHIBuffer() const;
 
-            const RHI::BufferView* GetBufferView() const;
+            const RHI::SingleDeviceBufferView* GetBufferView() const;
 
             //! Update buffer's content with sourceData at an offset of bufferByteOffset
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0);
@@ -95,7 +95,7 @@ namespace AZ
             void InitBufferView();
 
             RHI::Ptr<RHI::SingleDeviceBuffer> m_rhiBuffer;
-            RHI::Ptr<RHI::BufferView> m_bufferView;
+            RHI::Ptr<RHI::SingleDeviceBufferView> m_bufferView;
             RHI::SingleDeviceBufferPool* m_rhiBufferPool = nullptr;
 
             Data::Instance<BufferPool> m_bufferPool;

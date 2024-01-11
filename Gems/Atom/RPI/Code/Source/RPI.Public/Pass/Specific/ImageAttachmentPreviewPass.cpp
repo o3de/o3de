@@ -438,7 +438,7 @@ namespace AZ
                 float aspectRatio = 1;
 
                 // Find image type
-                const RHI::ImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
+                const RHI::SingleDeviceImageView* inputImageView = context.GetImageView(m_imageAttachmentId);
                 if (!inputImageView)
                 {
                     AZ_Warning("RPI", false, "Image attachment [%s] doesn't have image view in current context", m_imageAttachmentId.GetCStr());
@@ -478,7 +478,7 @@ namespace AZ
                 }
                 
                 // config pipeline states related to output attachment
-                const RHI::ImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
+                const RHI::SingleDeviceImageView* outputImageView = context.GetImageView(m_outputColorAttachment->GetAttachmentId());
                 RHI::Format outputFormat = outputImageView->GetDescriptor().m_overrideFormat;
                 if (outputFormat == RHI::Format::Unknown)
                 {

@@ -99,7 +99,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void BufferPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             Buffer& buffer = static_cast<Buffer&>(resourceBase);
 

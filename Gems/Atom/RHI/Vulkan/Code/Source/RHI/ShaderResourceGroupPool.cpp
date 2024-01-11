@@ -6,8 +6,8 @@
  *
  */
 #include <Atom/RHI/SingleDeviceBufferPool.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/DescriptorPool.h>
@@ -178,7 +178,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
             for (size_t i = 0; i < m_descriptorSetCount; ++i)

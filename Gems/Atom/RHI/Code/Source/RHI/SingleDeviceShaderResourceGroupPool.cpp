@@ -6,8 +6,8 @@
  *
  */
 #include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
-#include <Atom/RHI/BufferView.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/SingleDeviceBufferView.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
 #include <AzCore/Console/IConsole.h>
 
 namespace AZ::RHI
@@ -29,7 +29,7 @@ namespace AZ::RHI
             }
         }
 
-        ResultCode resultCode = ResourcePool::Init(
+        ResultCode resultCode = SingleDeviceResourcePool::Init(
             device, descriptor,
             [this, &device, &descriptor]()
         {
@@ -63,7 +63,7 @@ namespace AZ::RHI
 
     ResultCode SingleDeviceShaderResourceGroupPool::InitGroup(SingleDeviceShaderResourceGroup& group)
     {
-        ResultCode resultCode = ResourcePool::InitResource(&group, [this, &group]() { return InitGroupInternal(group); });
+        ResultCode resultCode = SingleDeviceResourcePool::InitResource(&group, [this, &group]() { return InitGroupInternal(group); });
         if (resultCode == ResultCode::Success)
         {
             const ShaderResourceGroupLayout* layout = GetLayout();
@@ -77,7 +77,7 @@ namespace AZ::RHI
         return resultCode;
     }
 
-    void SingleDeviceShaderResourceGroupPool::ShutdownResourceInternal(Resource& resourceBase)
+    void SingleDeviceShaderResourceGroupPool::ShutdownResourceInternal(SingleDeviceResource& resourceBase)
     {
         SingleDeviceShaderResourceGroup& shaderResourceGroup = static_cast<SingleDeviceShaderResourceGroup&>(resourceBase);
 
@@ -88,7 +88,7 @@ namespace AZ::RHI
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_invalidateRegistryMutex);
 
-            for (const ConstPtr<ImageView>& imageView : shaderResourceGroup.GetData().GetImageGroup())
+            for (const ConstPtr<SingleDeviceImageView>& imageView : shaderResourceGroup.GetData().GetImageGroup())
             {
                 if (imageView)
                 {
@@ -96,7 +96,7 @@ namespace AZ::RHI
                 }
             }
 
-            for (const ConstPtr<BufferView>& bufferView : shaderResourceGroup.GetData().GetBufferGroup())
+            for (const ConstPtr<SingleDeviceBufferView>& bufferView : shaderResourceGroup.GetData().GetBufferGroup())
             {
                 if (bufferView)
                 {
@@ -166,7 +166,7 @@ namespace AZ::RHI
         if (HasImageGroup() || HasBufferGroup())
         {
             // SRG's hold references to views, and views references to resources. Resources can become invalid, either
-            // due to an explicit Shutdown() / Init() event, or an explicit call to RHI::Resource::Invalidate. In either
+            // due to an explicit Shutdown() / Init() event, or an explicit call to RHI::SingleDeviceResource::Invalidate. In either
             // case, the SRG will need to be re-compiled.
             //
             // To facilitate this, we compare the new data with the previous data and compare views. When views are attached
@@ -182,7 +182,7 @@ namespace AZ::RHI
             //
             //  - The locking could be reduced by making the registry lockless (which would be tricky, if not impossible, since it's
             //    a map of maps), or by reducing the granularity of locks (perhaps by having multiple registries).
-            const auto ComputeDiffs = [this, &shaderResourceGroup](const ResourceView* resourceViewOld, const ResourceView* resourceViewNew)
+            const auto ComputeDiffs = [this, &shaderResourceGroup](const SingleDeviceResourceView* resourceViewOld, const SingleDeviceResourceView* resourceViewNew)
             {
                 if (resourceViewOld != resourceViewNew)
                 {
@@ -203,8 +203,8 @@ namespace AZ::RHI
             // Generate diffs for image views.
             if (HasImageGroup())
             {
-                AZStd::span<const ConstPtr<ImageView>> viewGroupOld = shaderResourceGroup.GetData().GetImageGroup();
-                AZStd::span<const ConstPtr<ImageView>> viewGroupNew = groupData.GetImageGroup();
+                AZStd::span<const ConstPtr<SingleDeviceImageView>> viewGroupOld = shaderResourceGroup.GetData().GetImageGroup();
+                AZStd::span<const ConstPtr<SingleDeviceImageView>> viewGroupNew = groupData.GetImageGroup();
                 AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
                 for (size_t i = 0; i < viewGroupOld.size(); ++i)
                 {
@@ -215,8 +215,8 @@ namespace AZ::RHI
             // Generate diffs for buffer views.
             if (HasBufferGroup())
             {
-                AZStd::span<const ConstPtr<BufferView>> viewGroupOld = shaderResourceGroup.GetData().GetBufferGroup();
-                AZStd::span<const ConstPtr<BufferView>> viewGroupNew = groupData.GetBufferGroup();
+                AZStd::span<const ConstPtr<SingleDeviceBufferView>> viewGroupOld = shaderResourceGroup.GetData().GetBufferGroup();
+                AZStd::span<const ConstPtr<SingleDeviceBufferView>> viewGroupNew = groupData.GetBufferGroup();
                 AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
                 for (size_t i = 0; i < viewGroupOld.size(); ++i)
                 {
@@ -285,9 +285,9 @@ namespace AZ::RHI
         for (const RHI::ShaderInputImageDescriptor& shaderInputImage : groupLayout.GetShaderInputListForImages())
         {
             const RHI::ShaderInputImageIndex imageInputIndex(shaderInputIndex);
-            UpdateMaskBasedOnViewHash<RHI::ImageView>(
+            UpdateMaskBasedOnViewHash<RHI::SingleDeviceImageView>(
                 shaderResourceGroup, shaderInputImage.m_name, shaderResourceGroupData.GetImageViewArray(imageInputIndex),
-                ShaderResourceGroupData::ResourceType::ImageView);
+                ShaderResourceGroupData::ResourceType::SingleDeviceImageView);
             ++shaderInputIndex;
         }
 
@@ -296,9 +296,9 @@ namespace AZ::RHI
         for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : groupLayout.GetShaderInputListForBuffers())
         {
             const RHI::ShaderInputBufferIndex bufferInputIndex(shaderInputIndex);
-            UpdateMaskBasedOnViewHash<RHI::BufferView>(
+            UpdateMaskBasedOnViewHash<RHI::SingleDeviceBufferView>(
                 shaderResourceGroup, shaderInputBuffer.m_name, shaderResourceGroupData.GetBufferViewArray(bufferInputIndex),
-                ShaderResourceGroupData::ResourceType::BufferView);
+                ShaderResourceGroupData::ResourceType::SingleDeviceBufferView);
             ++shaderInputIndex;
         }
 
@@ -307,7 +307,7 @@ namespace AZ::RHI
         for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray : groupLayout.GetShaderInputListForImageUnboundedArrays())
         {
             const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(shaderInputIndex);
-            UpdateMaskBasedOnViewHash<RHI::ImageView>(
+            UpdateMaskBasedOnViewHash<RHI::SingleDeviceImageView>(
                 shaderResourceGroup, shaderInputImageUnboundedArray.m_name,
                 shaderResourceGroupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex),
                 ShaderResourceGroupData::ResourceType::ImageViewUnboundedArray);
@@ -319,7 +319,7 @@ namespace AZ::RHI
         for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray : groupLayout.GetShaderInputListForBufferUnboundedArrays())
         {
             const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
-            UpdateMaskBasedOnViewHash<RHI::BufferView>(
+            UpdateMaskBasedOnViewHash<RHI::SingleDeviceBufferView>(
                 shaderResourceGroup, shaderInputBufferUnboundedArray.m_name,
                 shaderResourceGroupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex),
                 ShaderResourceGroupData::ResourceType::BufferViewUnboundedArray);

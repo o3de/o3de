@@ -49,7 +49,7 @@ namespace AZ
             return m_image.get();
         }
 
-        const RHI::ImageView* Image::GetImageView() const
+        const RHI::SingleDeviceImageView* Image::GetImageView() const
         {
             return m_imageView.get();
         }

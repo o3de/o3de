@@ -49,9 +49,9 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::SingleDeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase) override;
 
             // Streaming images are either committed resource or using tiles from heap pages. So there is no fragmentation
             void ComputeFragmentation() const override {}

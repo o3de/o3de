@@ -79,7 +79,7 @@ namespace UnitTest
             imagePool->InitImage(initRequest);
             ASSERT_TRUE(imageA->use_count() == 1);
 
-            RHI::Ptr<RHI::ImageView> imageView;
+            RHI::Ptr<RHI::SingleDeviceImageView> imageView;
             imageView = imageA->GetImageView(RHI::ImageViewDescriptor(RHI::Format::R8G8B8A8_UINT));
             AZ_TEST_ASSERT(imageView->IsStale() == false);
             ASSERT_TRUE(imageView->IsInitialized());
@@ -142,7 +142,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::ImageView> imageViewA;
+        RHI::Ptr<RHI::SingleDeviceImageView> imageViewA;
         
         {
             RHI::Ptr<RHI::SingleDeviceImagePool> imagePool;
@@ -246,7 +246,7 @@ namespace UnitTest
         RHI::Ptr<RHI::Device> m_device;
         RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;
         RHI::Ptr<RHI::SingleDeviceImage> m_image;
-        RHI::Ptr<RHI::ImageView> m_imageView;
+        RHI::Ptr<RHI::SingleDeviceImageView> m_imageView;
     };
 
     TEST_P(ImageBindFlagTests, InitView_ViewIsCreated)

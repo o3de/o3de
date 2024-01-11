@@ -8,21 +8,21 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <Atom/RHI/ResourceView.h>
+#include <Atom/RHI/SingleDeviceResourceView.h>
 
 namespace AZ::RHI
 {
     class SingleDeviceImage;
 
-    //! ImageView contains a platform-specific descriptor mapping to a sub-region of an image resource.
+    //! SingleDeviceImageView contains a platform-specific descriptor mapping to a sub-region of an image resource.
     //! It associates 1-to-1 with a ImageViewDescriptor. Image views map to a subset of image sub-resources
     //! (mip levels / array slices). They can additionally override the base format of the image
-    class ImageView
-        : public ResourceView
+    class SingleDeviceImageView
+        : public SingleDeviceResourceView
     {
     public:
-        AZ_RTTI(ImageView, "{F2BDEE1F-DEFD-4443-9012-A28AED028D7B}", ResourceView);
-        virtual ~ImageView() = default;
+        AZ_RTTI(SingleDeviceImageView, "{F2BDEE1F-DEFD-4443-9012-A28AED028D7B}", SingleDeviceResourceView);
+        virtual ~SingleDeviceImageView() = default;
 
         static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
 

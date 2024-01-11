@@ -114,7 +114,7 @@ namespace AZ
                     RHI::BufferViewDescriptor descriptor =
                         CreateInputViewDescriptor(streamInfo->m_enum, streamInfo->m_elementFormat, streamBufferView);
 
-                    AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
+                    AZ::RHI::Ptr<AZ::RHI::SingleDeviceBufferView> bufferView = RHI::Factory::Get().CreateBufferView();
                     {
                         // Initialize the buffer view
                         AZStd::string bufferViewName = AZStd::string::format(
