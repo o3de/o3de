@@ -971,7 +971,7 @@ namespace AZ
 
         AntiAliasingMode RenderPipeline::GetAAMethodByName(AZStd::string aaMethodName)
         {
-            static AZStd::unordered_map<AZStd::string, AntiAliasingMode> AAMethodsLookup = {
+            const AZStd::unordered_map<AZStd::string, AntiAliasingMode> AAMethodsLookup = {
                 {"MSAA", AntiAliasingMode::MSAA}, {"SMAA", AntiAliasingMode::SMAA}, 
                 {"TAA", AntiAliasingMode::TAA}
             };
@@ -986,7 +986,7 @@ namespace AZ
 
         AZStd::string RenderPipeline::GetAAMethodNameByIndex(AntiAliasingMode aaMethodIndex)
         {
-            static AZStd::unordered_map<AntiAliasingMode, AZStd::string> AAMethodNameLookup = {
+            const AZStd::unordered_map<AntiAliasingMode, AZStd::string> AAMethodNameLookup = {
                 {AntiAliasingMode::MSAA, "MSAA"}, {AntiAliasingMode::SMAA, "SMAA"}, 
                 {AntiAliasingMode::TAA, "TAA"}
             };
@@ -1027,7 +1027,7 @@ namespace AZ
                 return false;
             }
 
-            static AZStd::unordered_map<AntiAliasingMode, AZStd::vector<Name>> AAPassNamesLookup = {
+            const AZStd::unordered_map<AntiAliasingMode, AZStd::vector<Name>> AAPassNamesLookup = {
                 {AntiAliasingMode::SMAA, {Name("SMAA1xApplyLinearHDRColorPass")}}, 
                 {AntiAliasingMode::TAA, {Name("TaaPass"), Name("ContrastAdaptiveSharpeningPass")}}
             };
