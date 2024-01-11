@@ -544,16 +544,21 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
         for ln in test_levelnames:
             combined_seedfiles.append(test_project_path / f'Cache/android/levels' / ln.lower() / (ln.lower() + ".spawnable"))
         
-        mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
-                                              selected_platforms=['android'],
-                                              seedlist_paths=test_seedlists,
-                                              seedfile_paths=combined_seedfiles,
-                                              tools_build_path=test_tools_sdk_path,
-                                              engine_centric=False,
-                                              asset_bundling_path=test_project_path / 'AssetBundling',
-                                              using_installer_sdk=True,
-                                              tool_config='profile',
-                                              max_bundle_size=2048)
+
+        # Because this script uses set for the level names, we have to manually inspect the arguments
+        # Otherwise lists are incorrectly labeled as mismatching
+        _, kwargs = mock_bundle_assets.call_args
+        
+        assert kwargs['ctx'] == mock_ctx
+        assert kwargs['selected_platforms'] == ['android']
+        assert sorted(kwargs['seedlist_paths']) == sorted(test_seedlists)
+        assert sorted(kwargs['seedfile_paths']) == sorted(combined_seedfiles)
+        assert kwargs['tools_build_path'] == test_tools_sdk_path
+        assert kwargs['engine_centric'] == False
+        assert kwargs['asset_bundling_path'] == test_project_path / 'AssetBundling'
+        assert kwargs['using_installer_sdk'] == True
+        assert kwargs['tool_config'] == 'profile'
+        assert kwargs['max_bundle_size'] == 2048
 
 
 @pytest.mark.parametrize("use_sdk", [True,False])
@@ -650,7 +655,7 @@ def test_asset_processor_combinations(tmp_path, use_sdk, should_build_tools_flag
                                                     fail_on_ap_errors=False,
                                                     using_installer_sdk=use_sdk,
                                                     tool_config='profile',
-                                                    selected_platform=['android'],
+                                                    selected_platforms=['android'],
                                                     logger=mock_logger)
                     
             mock_get_asset_processor_path.reset_mock()

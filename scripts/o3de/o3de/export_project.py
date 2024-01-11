@@ -586,7 +586,7 @@ def build_assets(ctx: O3DEScriptExportContext,
                  fail_on_ap_errors: bool,
                  using_installer_sdk: bool = False,
                  tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
-                 selected_platform:str|List[str]|None = None,
+                 selected_platforms: List[str]|None = None,
                  logger: logging.Logger = None) -> int:
     """
     Build the assets for the project
@@ -609,11 +609,9 @@ def build_assets(ctx: O3DEScriptExportContext,
         logger.info(f"Processing assets for {ctx.project_name}")
 
     cmake_build_assets_command = [asset_processor_batch_path, "--project-path", ctx.project_path]
-    if selected_platform:
-        if type(selected_platform) == type([]):
-            cmake_build_assets_command.extend([f'--platforms={",".join(selected_platform)}'])
-        else:
-            cmake_build_assets_command.extend([f'--platforms={selected_platform}'])
+    
+    cmake_build_assets_command.extend([f'--platforms={",".join(selected_platforms)}'])
+    
     ret = process_command(cmake_build_assets_command,
                           cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
@@ -809,7 +807,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     Execute the 'bundle assets' phase of the export
 
     @param ctx:                      Export Context
-    @param selected_platforms:        The desired asset platforms (user can provide one or many)
+    @param selected_platforms:       The desired asset platforms (user can provide one or many)
     @param seedlist_paths:           The list of seedlist files
     @param seedfile_paths:           The list of individual seed files
     @param tools_build_path:         The path to the tools cmake build project
@@ -827,7 +825,6 @@ def bundle_assets(ctx: O3DEScriptExportContext,
 
     platform_flags = []
 
-
     for selected_platform in selected_platforms:
         
         game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
@@ -840,12 +837,10 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                                                                 '--project-path', ctx.project_path,
                                                                 '--allowOverwrites']
         for seed in seedlist_paths:
-            gen_game_asset_list_command.append("--seedListFile")
-            gen_game_asset_list_command.append(str(seed))
+            gen_game_asset_list_command.extend(["--seedListFile", str(seed)])
         
         for seed in seedfile_paths:
-            gen_game_asset_list_command.append("--addSeed")
-            gen_game_asset_list_command.append(str(seed))
+            gen_game_asset_list_command.extend(["--addSeed", str(seed)])
 
         ret = process_command(gen_game_asset_list_command,
                             cwd=ctx.engine_path if engine_centric else ctx.project_path)

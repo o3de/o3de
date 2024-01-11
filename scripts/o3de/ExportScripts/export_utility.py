@@ -22,12 +22,14 @@ import sys
 from typing import List
 
 def process_level_names(ctx, seedfile_paths, level_names, platform):
+    seedfile_set = set(seedfile_paths)
     for level in level_names:
-        seedfile_set = set(seedfile_paths)
         new_level_path = ctx.project_path / f'Cache/{platform}/levels' / level.lower() / (level.lower() + ".spawnable")
-        if new_level_path.is_file() and new_level_path not in seedfile_set:
-            seedfile_paths.append(new_level_path)
+        if new_level_path.is_file():
             seedfile_set.add(new_level_path)
+    
+    seedfile_paths.clear()
+    seedfile_paths.extend([file for  file in seedfile_set])
 
   
 def compute_tools_build_path(ctx, is_installer_sdk, selected_platform, tool_config, tools_build_path, default_base_path, logger=None):
@@ -98,7 +100,7 @@ def build_and_bundle_assets(ctx: exp.O3DEScriptExportContext,
                          fail_on_ap_errors=fail_on_asset_errors,
                          using_installer_sdk=is_installer_sdk,
                          tool_config=tool_config,
-                         selected_platform=asset_platforms,
+                         selected_platforms=asset_platforms,
                          logger=logger)
     
     expected_bundles_path = exp.bundle_assets(ctx=ctx,

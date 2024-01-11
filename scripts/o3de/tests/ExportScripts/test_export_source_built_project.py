@@ -372,17 +372,20 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
         for ln in test_levelnames:
             combined_seedfiles.append(test_project_path / f'Cache/{mock_platform}/levels' / ln.lower() / (ln.lower() + ".spawnable"))
         
-        mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
-                                              selected_platforms=[mock_platform],
-                                              seedlist_paths=test_seedlists,
-                                              seedfile_paths=combined_seedfiles,
-                                              tools_build_path=test_tools_sdk_path,
-                                              engine_centric=False,
-                                              asset_bundling_path=test_o3de_base_path / 'build/asset_bundling',
-                                              using_installer_sdk=True,
-                                              tool_config='profile',
-                                              max_bundle_size=2048)
+        _, kwargs = mock_bundle_assets.call_args
+
         
+        assert kwargs['ctx'] == mock_ctx
+        assert kwargs['selected_platforms'] == [mock_platform]
+        assert sorted(kwargs['seedlist_paths']) == sorted(test_seedlists)
+        assert sorted(kwargs['seedfile_paths']) == sorted(combined_seedfiles)
+        assert kwargs['tools_build_path'] == test_tools_sdk_path
+        assert kwargs['engine_centric'] == False
+        assert kwargs['asset_bundling_path'] == test_o3de_base_path / 'build/asset_bundling'
+        assert kwargs['using_installer_sdk'] == True
+        assert kwargs['tool_config'] == 'profile'
+        assert kwargs['max_bundle_size'] == 2048
+
 
 @pytest.mark.parametrize("is_engine_centric, use_sdk, has_monolithic, use_monolithic", [
     pytest.param(False, True, True, True),
@@ -494,7 +497,7 @@ def test_asset_processor_combinations(tmp_path, is_engine_centric, use_sdk, has_
                                                             fail_on_ap_errors=False,
                                                             using_installer_sdk=use_sdk,
                                                             tool_config='profile',
-                                                            selected_platform=[mock_platform],
+                                                            selected_platforms=[mock_platform],
                                                             logger=mock_logger)
 
                 mock_get_asset_processor_path.reset_mock()
