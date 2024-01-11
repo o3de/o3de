@@ -77,7 +77,7 @@ namespace AZ
                 // create each D3D12_RAYTRACING_INSTANCE_DESC structure
                 for (uint32_t i = 0; i < instances.size(); ++i)
                 {
-                    const RHI::RayTracingTlasInstance& instance = instances[i];
+                    const RHI::SingleDeviceRayTracingTlasInstance& instance = instances[i];
                     RayTracingBlas* blas = static_cast<RayTracingBlas*>(instance.m_blas.get());
             
                     mappedData[i].InstanceID = instance.m_instanceID;

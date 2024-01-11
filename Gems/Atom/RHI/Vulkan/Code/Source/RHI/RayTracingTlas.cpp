@@ -84,7 +84,7 @@ namespace AZ
                 // create each VkAccelerationStructureInstanceKHR structure
                 for (uint32_t i = 0; i < instances.size(); ++i)
                 {
-                    const RHI::RayTracingTlasInstance& instance = instances[i];
+                    const RHI::SingleDeviceRayTracingTlasInstance& instance = instances[i];
             
                     mappedData[i].instanceCustomIndex = instance.m_instanceID;
                     mappedData[i].instanceShaderBindingTableRecordOffset = instance.m_hitGroupIndex;

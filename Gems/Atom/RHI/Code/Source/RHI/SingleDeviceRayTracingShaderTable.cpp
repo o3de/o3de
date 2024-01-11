@@ -16,7 +16,7 @@ namespace AZ::RHI
     {
         for (RayTracingShaderTableRecordList::iterator itHitGroup = m_hitGroupRecords.begin(); itHitGroup != m_hitGroupRecords.end(); ++itHitGroup)
         {
-            RayTracingShaderTableRecord& record = *itHitGroup;
+            SingleDeviceRayTracingShaderTableRecord& record = *itHitGroup;
             if (record.m_key == key)
             {
                 m_hitGroupRecords.erase(itHitGroup);
@@ -56,7 +56,7 @@ namespace AZ::RHI
         return this;
     }
 
-    SingleDeviceRayTracingShaderTableDescriptor* SingleDeviceRayTracingShaderTableDescriptor::HitGroupRecord(const AZ::Name& name, uint32_t key /* = RayTracingShaderTableRecord::InvalidKey */)
+    SingleDeviceRayTracingShaderTableDescriptor* SingleDeviceRayTracingShaderTableDescriptor::HitGroupRecord(const AZ::Name& name, uint32_t key /* = SingleDeviceRayTracingShaderTableRecord::InvalidKey */)
     {
         m_hitGroupRecords.emplace_back();
         m_buildContext = &m_hitGroupRecords.back();

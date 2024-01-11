@@ -138,13 +138,13 @@ namespace AZ::RHI
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Top Level Acceleration Structure (TLAS)
 
-    //! RayTracingTlasInstance
+    //! SingleDeviceRayTracingTlasInstance
     //!
     //! Each TLAS instance entry refers to a SingleDeviceRayTracingBlas, and can contain a transform which
     //! will be applied to all of the geometry entries in the Blas.  It also contains a hitGroupIndex
     //! which is used to index into the SingleDeviceRayTracingShaderTable to determine the hit shader when a
     //! ray hits any geometry in the instance.
-    struct RayTracingTlasInstance
+    struct SingleDeviceRayTracingTlasInstance
     {
         uint32_t m_instanceID = 0;
         uint32_t m_hitGroupIndex = 0;
@@ -154,7 +154,7 @@ namespace AZ::RHI
         bool m_transparent = false;
         RHI::Ptr<RHI::SingleDeviceRayTracingBlas> m_blas;
     };
-    using RayTracingTlasInstanceVector = AZStd::vector<RayTracingTlasInstance>;
+    using RayTracingTlasInstanceVector = AZStd::vector<SingleDeviceRayTracingTlasInstance>;
 
     //! SingleDeviceRayTracingTlasDescriptor
     //!
@@ -204,7 +204,7 @@ namespace AZ::RHI
 
     private:
         RayTracingTlasInstanceVector m_instances;
-        RayTracingTlasInstance* m_buildContext = nullptr;
+        SingleDeviceRayTracingTlasInstance* m_buildContext = nullptr;
 
         // externally created Instances buffer, cannot be combined with other Instances
         RHI::Ptr<RHI::SingleDeviceBuffer> m_instancesBuffer;

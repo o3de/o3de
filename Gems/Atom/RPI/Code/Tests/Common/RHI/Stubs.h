@@ -210,7 +210,7 @@ namespace UnitTest
             void ComputeFragmentation() const override {}
 
         private:
-            AZ::RHI::ResultCode InitImageInternal([[maybe_unused]] const AZ::RHI::StreamingImageInitRequest& request) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitImageInternal([[maybe_unused]] const AZ::RHI::SingleDeviceStreamingImageInitRequest& request) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
             void ShutdownResourceInternal(AZ::RHI::SingleDeviceResource&) override {}
             AZ::RHI::ResultCode ExpandImageInternal(const AZ::RHI::StreamingImageExpandRequest&) override { return AZ::RHI::ResultCode::Success; }

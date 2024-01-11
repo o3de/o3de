@@ -138,7 +138,7 @@ namespace AZ
             const ImageMipChainAsset& mipChainTailAsset = imageAsset.GetTailMipChain();
 
             {
-                RHI::StreamingImageInitRequest initRequest;
+                RHI::SingleDeviceStreamingImageInitRequest initRequest;
                 initRequest.m_image = GetRHIImage();
                 initRequest.m_descriptor = imageAsset.GetImageDescriptor();
                 initRequest.m_tailMipSlices = mipChainTailAsset.GetMipSlices();

@@ -121,7 +121,7 @@ namespace AZ::RHI
                 return IterateObjects<SingleDeviceStreamingImagePool>([&initRequest](auto deviceIndex, auto deviceStreamingImagePool)
                 {
                     initRequest.m_image->m_deviceObjects[deviceIndex] = Factory::Get().CreateImage();
-                    StreamingImageInitRequest streamingImageInitRequest(
+                    SingleDeviceStreamingImageInitRequest streamingImageInitRequest(
                         *initRequest.m_image->GetDeviceImage(deviceIndex), initRequest.m_descriptor, initRequest.m_tailMipSlices);
                     return deviceStreamingImagePool->InitImage(streamingImageInitRequest);
                 });

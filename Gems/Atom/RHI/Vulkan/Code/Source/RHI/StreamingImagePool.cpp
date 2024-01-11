@@ -124,7 +124,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request) 
+        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::SingleDeviceStreamingImageInitRequest& request) 
         {
             auto& image = static_cast<Image&>(*request.m_image);
             auto& device = static_cast<Device&>(GetDevice());

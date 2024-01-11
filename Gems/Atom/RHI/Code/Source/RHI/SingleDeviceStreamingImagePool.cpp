@@ -9,7 +9,7 @@
 
 namespace AZ::RHI
 {
-    bool SingleDeviceStreamingImagePool::ValidateInitRequest(const StreamingImageInitRequest& initRequest) const
+    bool SingleDeviceStreamingImagePool::ValidateInitRequest(const SingleDeviceStreamingImageInitRequest& initRequest) const
     {
         if (Validation::IsEnabled())
         {
@@ -78,7 +78,7 @@ namespace AZ::RHI
         });
     }
 
-    ResultCode SingleDeviceStreamingImagePool::InitImage(const StreamingImageInitRequest& initRequest)
+    ResultCode SingleDeviceStreamingImagePool::InitImage(const SingleDeviceStreamingImageInitRequest& initRequest)
     {
         AZ_PROFILE_FUNCTION(RHI);
 
@@ -188,7 +188,7 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    ResultCode SingleDeviceStreamingImagePool::InitImageInternal(const StreamingImageInitRequest&)
+    ResultCode SingleDeviceStreamingImagePool::InitImageInternal(const SingleDeviceStreamingImageInitRequest&)
     {
         return ResultCode::Unimplemented;
     }

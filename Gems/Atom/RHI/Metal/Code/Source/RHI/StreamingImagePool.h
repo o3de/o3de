@@ -36,7 +36,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::SingleDeviceStreamingImagePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
+            RHI::ResultCode InitImageInternal(const RHI::SingleDeviceStreamingImageInitRequest& request) override;
             RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
             RHI::ResultCode TrimImageInternal(RHI::SingleDeviceImage& image, uint32_t targetMipLevel) override;
             //////////////////////////////////////////////////////////////////////////

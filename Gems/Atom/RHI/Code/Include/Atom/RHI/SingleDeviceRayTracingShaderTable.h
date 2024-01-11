@@ -19,14 +19,14 @@ namespace AZ::RHI
     class SingleDeviceRayTracingBufferPools;
 
     //! Specifies the shader and any local root signature parameters that make up a record in the shader table
-    struct RayTracingShaderTableRecord
+    struct SingleDeviceRayTracingShaderTableRecord
     {
         AZ::Name m_shaderExportName;                                    // name of the shader as described in the pipeline state
         const RHI::SingleDeviceShaderResourceGroup* m_shaderResourceGroup;          // shader resource group for this shader record
         static const uint32_t InvalidKey = static_cast<uint32_t>(-1);
         uint32_t m_key = InvalidKey;                                    // key that can be used to identify this record
     };
-    using RayTracingShaderTableRecordList = AZStd::list<RayTracingShaderTableRecord>;
+    using RayTracingShaderTableRecordList = AZStd::list<SingleDeviceRayTracingShaderTableRecord>;
 
     //! SingleDeviceRayTracingShaderTableDescriptor
     //!
@@ -72,7 +72,7 @@ namespace AZ::RHI
         SingleDeviceRayTracingShaderTableDescriptor* RayGenerationRecord(const AZ::Name& name);
         SingleDeviceRayTracingShaderTableDescriptor* MissRecord(const AZ::Name& name);
         SingleDeviceRayTracingShaderTableDescriptor* CallableRecord(const AZ::Name& name);
-        SingleDeviceRayTracingShaderTableDescriptor* HitGroupRecord(const AZ::Name& name, uint32_t key = RayTracingShaderTableRecord::InvalidKey);
+        SingleDeviceRayTracingShaderTableDescriptor* HitGroupRecord(const AZ::Name& name, uint32_t key = SingleDeviceRayTracingShaderTableRecord::InvalidKey);
         SingleDeviceRayTracingShaderTableDescriptor* ShaderResourceGroup(const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroup);
 
     private:
@@ -83,7 +83,7 @@ namespace AZ::RHI
         RayTracingShaderTableRecordList m_callableRecords;
         RayTracingShaderTableRecordList m_hitGroupRecords;
 
-        RayTracingShaderTableRecord* m_buildContext = nullptr;
+        SingleDeviceRayTracingShaderTableRecord* m_buildContext = nullptr;
     };
 
     //! Shader Table

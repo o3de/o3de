@@ -455,7 +455,7 @@ namespace AZ
             return false;
         }
 
-        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request)
+        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::SingleDeviceStreamingImageInitRequest& request)
         {
             AZ_PROFILE_FUNCTION(RHI);
 

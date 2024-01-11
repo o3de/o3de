@@ -84,7 +84,7 @@ namespace AZ::RHI
         CompleteCallback m_completeCallback;
     };
 
-    using StreamingImageInitRequest = StreamingImageInitRequestTemplate<SingleDeviceImage>;
+    using SingleDeviceStreamingImageInitRequest = StreamingImageInitRequestTemplate<SingleDeviceImage>;
     using StreamingImageExpandRequest = StreamingImageExpandRequestTemplate<SingleDeviceImage>;
 
     class SingleDeviceStreamingImagePool
@@ -100,7 +100,7 @@ namespace AZ::RHI
         ResultCode Init(Device& device, const StreamingImagePoolDescriptor& descriptor);
 
         //! Initializes the backing resources of an image.
-        ResultCode InitImage(const StreamingImageInitRequest& request);
+        ResultCode InitImage(const SingleDeviceStreamingImageInitRequest& request);
 
         //! Expands a streaming image with new mip chain data. The expansion can be performed
         //! asynchronously or synchronously depends on @m_waitForUpload in @StreamingImageExpandRequest. 
@@ -138,7 +138,7 @@ namespace AZ::RHI
         using SingleDeviceResourcePool::Init;
         using SingleDeviceImagePoolBase::InitImage;
 
-        bool ValidateInitRequest(const StreamingImageInitRequest& initRequest) const;
+        bool ValidateInitRequest(const SingleDeviceStreamingImageInitRequest& initRequest) const;
         bool ValidateExpandRequest(const StreamingImageExpandRequest& expandRequest) const;
 
         //////////////////////////////////////////////////////////////////////////
@@ -148,7 +148,7 @@ namespace AZ::RHI
         virtual ResultCode InitInternal(Device& device, const StreamingImagePoolDescriptor& descriptor);
 
         // Called when an image is being initialized on the pool.
-        virtual ResultCode InitImageInternal(const StreamingImageInitRequest& request);
+        virtual ResultCode InitImageInternal(const SingleDeviceStreamingImageInitRequest& request);
 
         // Called when an image mips are being expanded.
         virtual ResultCode ExpandImageInternal(const StreamingImageExpandRequest& request);
