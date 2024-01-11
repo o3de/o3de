@@ -224,7 +224,7 @@ namespace AZ::SerializeContextTools
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, ass.m_assetId);
                 if (!assetPath.empty())
                 {
-        		    rapidjson::Value str(rapidjson::kStringType);
+                    rapidjson::Value str(rapidjson::kStringType);
                     str.SetString(assetPath.c_str(), doc.GetAllocator());
                     scObject.PushBack(AZStd::move(str), doc.GetAllocator());
                 }
