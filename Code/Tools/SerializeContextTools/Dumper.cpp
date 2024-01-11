@@ -7,7 +7,10 @@
  */
 
 #include <Dumper.h> // Moved to the top because AssetSerializer requires include for the SerializeContext
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzFramework/Helpers/AssetHelpers.h>
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/FileIO.h>
@@ -28,7 +31,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <Application.h>
 #include <Utilities.h>
-
+#include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ::SerializeContextTools
 {
@@ -148,6 +151,96 @@ namespace AZ::SerializeContextTools
                 return AZ::IO::PosixInternal::Write(StdoutDescriptor, outputBytes.data(), aznumeric_caster(outputBytes.size()));
             }
         };
+    }
+
+    const char* CleanupRelativePath(const char* path)
+    {
+        if (!path)
+        {
+            AZ_Assert(path, "(SerializeContextTools) - CleanupRelativePath(nullptr)!");
+        }
+        else
+        {
+            while (*path == '.' || *path == '/' || *path == '\\') // remove leading slashes in relative paths
+            {
+                ++path;
+            }
+            AZ_Warning("SerializeContextTools", *path, "CleanupRelativePath(path) Evaluates to empty path!");
+        }
+        return path;
+    }
+
+    bool Dumper::CreateDependencyList(Application& application)
+    {
+        SerializeContext* sc = application.GetSerializeContext();
+        if (!sc)
+        {
+            AZ_Error("SerializeContextTools", false, "No serialize context found.");
+            return false;
+        }
+
+        AZStd::string outputFolder = Utilities::ReadOutputTargetFromCommandLine(application);
+
+        AZ::IO::Path sourceGameFolder;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+        }
+        bool result = true;
+
+        AZStd::vector<AZStd::string> fileList = Utilities::ReadFileListFromCommandLine(application, "files");
+        for (const AZStd::string& filePath : fileList)
+        {
+            AZ::IO::FixedMaxPath outputPath{ AZStd::string_view{ outputFolder } };
+
+            outputPath /= AZ::IO::PathView{ filePath }.Filename();
+            outputPath.Native() += ".json";
+
+            rapidjson::Document doc;
+            rapidjson::Value& root = doc.SetObject();
+            rapidjson::Value scObject;
+            scObject.SetArray();
+
+            IO::SystemFile outputFile;
+            if (!outputFile.Open(outputPath.c_str(), IO::SystemFile::OpenMode::SF_OPEN_CREATE | IO::SystemFile::OpenMode::SF_OPEN_CREATE_PATH |
+                IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY))
+            {
+                AZ_Error("SerializeContextTools", false, "Unable to open file '%s' for writing.", outputPath.c_str());
+                result = false;
+                continue;
+            }
+
+            auto relativePath = CleanupRelativePath(filePath.c_str());
+
+            AZ::Data::AssetId assetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath, AZ::AzTypeInfo<AZ::DynamicSliceAsset>::Uuid(), false);
+
+            AZStd::vector<AZ::Data::AssetInfo> dependencyInfoList;
+            Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> dependenciesResult = Failure(AZStd::string());
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(dependenciesResult, &AZ::Data::AssetCatalogRequestBus::Events::GetAllProductDependencies, assetId);
+            for (const auto& ass : dependenciesResult.GetValue())
+            {
+                AZStd::string assetPath;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, ass.m_assetId);
+                if (!assetPath.empty())
+                {
+                    rapidjson::Value str(rapidjson::kStringType);
+                    str.SetString(assetPath.c_str(), doc.GetAllocator());
+                    scObject.PushBack(AZStd::move(str), doc.GetAllocator());
+                }
+            }
+
+            root.AddMember("assets", AZStd::move(scObject), doc.GetAllocator());
+
+            rapidjson::StringBuffer buffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+            doc.Accept(writer);
+
+            outputFile.Write(buffer.GetString(), buffer.GetSize());
+            outputFile.Close();
+        }
+
+        return result;
     }
 
     bool Dumper::DumpFiles(Application& application)

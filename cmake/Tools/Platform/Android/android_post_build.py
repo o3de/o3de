@@ -141,11 +141,11 @@ def apply_pak_layout(project_root: Path, asset_bundle_folder: str, target_layout
     # Make sure that we have at least the engine_android.pak file
     has_engine_android_pak = False
     for pak_dir_item in src_pak_file_full_path.iterdir():
-        if pak_dir_item.is_file and str(pak_dir_item.name).lower() == f'engine_{ASSET_PLATFORM_KEY}.pak':
+        if pak_dir_item.is_file and str(pak_dir_item.name).lower() == f'static_engine_{ASSET_PLATFORM_KEY}.pak':
             has_engine_android_pak = True
             break
     if not has_engine_android_pak:
-        raise AndroidPostBuildError(f"Unable to located the required 'engine_android.pak' file at location specified at {src_pak_file_full_path}. "
+        raise AndroidPostBuildError(f"Unable to locate the required 'static_engine_android.pak' file at location specified at {src_pak_file_full_path}. "
                                     f"{PAK_FILE_INSTRUCTIONS}")
 
     # Clear out the target folder first
