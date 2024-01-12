@@ -50,8 +50,6 @@ namespace AZ::RHI
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
-        void InvalidateViews() override final;
-
         //! Returns true if the SingleDeviceResourceView is in the cache of all single device buffers
         bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
 

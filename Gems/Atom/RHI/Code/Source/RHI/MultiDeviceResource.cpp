@@ -42,6 +42,15 @@ namespace AZ::RHI
         return m_version == 0;
     }
 
+    void MultiDeviceResource::InvalidateViews()
+    {
+        IterateObjects<SingleDeviceResource>(
+            []([[maybe_unused]] auto deviceIndex, auto deviceResource)
+            {
+                deviceResource->InvalidateViews();
+            });
+    }
+
     void MultiDeviceResource::SetPool(MultiDeviceResourcePool* bufferPool)
     {
         m_mdPool = bufferPool;

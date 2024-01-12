@@ -93,9 +93,6 @@ namespace AZ::RHI
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
-        //! Invalidate all device-specific views by setting off events on all corresponding ResourceInvalidateBusses
-        void InvalidateViews() override final;
-
         //! Returns true if the SingleDeviceResourceView is in the cache of all single device images
         bool IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor);
 
