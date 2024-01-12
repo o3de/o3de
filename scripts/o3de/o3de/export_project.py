@@ -305,11 +305,10 @@ def extract_cmake_custom_args(arg_list: List[str])->tuple:
 
 
 def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path, passthru_args: list) -> int:
-
     if export_script_path.suffix != '.py':
         logging.error(f"Invalid export script type for '{export_script_path}'. Please provide a file path to an existing python script with '.py' extension.")
         return 1
-
+    assert project_path, "For some reason project path is not defined"
     # Validate that the export script being passed in is valid.
     validated_export_script_path = None
     if export_script_path.is_absolute():
@@ -319,6 +318,7 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
     else:
         # If the script is relative, try to match its root path based on the following order of search priorities
         possible_root_paths = [project_path,
+                               project_path / 'ExportScripts',
                                LOCAL_ENGINE_PATH,
                                LOCAL_ENGINE_PATH / 'scripts' / 'o3de',
                                LOCAL_ENGINE_PATH / 'scripts' / 'o3de' / 'ExportScripts']
@@ -380,7 +380,7 @@ def get_project_export_config_from_args(args: argparse) -> (command_utils.O3DECo
     :return:  Tuple of the appropriate config manager object and the project name if this is not a global settings, otherwise None
     """
     logger = logging.getLogger()
-
+    
     is_global = getattr(args, 'global', False)
     project = getattr(args, 'project', None)
 
@@ -474,8 +474,8 @@ def configure_project_export_options(args: argparse) -> int:
 # Argument handling
 def add_parser_args(parser) -> None:
     parser.add_argument('-es', '--export-script', type=pathlib.Path, required=True, help="An external Python script to run")
-    parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
-                        help="Project to export. If not supplied, it will be inferred by the export script.")
+    parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False, default=pathlib.Path(os.getcwd()),
+                        help="Project to export. If not supplied, it will be the current working directory.")
     
     parser.add_argument('-ll', '--log-level', default='ERROR',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
