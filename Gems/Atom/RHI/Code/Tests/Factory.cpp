@@ -8,7 +8,7 @@
 #include <Tests/Factory.h>
 #include <Atom/RHI/DispatchRaysIndirectBuffer.h>
 #include <Atom/RHI/SingleDeviceFence.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/SingleDeviceRayTracingPipelineState.h>
 #include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 #include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>

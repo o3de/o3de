@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Scene.h>

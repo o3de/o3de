@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>

@@ -10,7 +10,7 @@
 
 #include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h>
 #include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Render/DiffuseProbeGrid.h>
 

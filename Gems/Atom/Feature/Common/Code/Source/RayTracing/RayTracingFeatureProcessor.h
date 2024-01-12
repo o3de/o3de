@@ -11,7 +11,7 @@
 #include <RayTracing/RayTracingResourceList.h>
 #include <RayTracing/RayTracingIndexList.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 #include <Atom/RHI/SingleDeviceBufferView.h>
 #include <Atom/RHI/SingleDeviceImageView.h>

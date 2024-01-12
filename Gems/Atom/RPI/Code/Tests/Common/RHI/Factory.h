@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 
 namespace UnitTest
 {

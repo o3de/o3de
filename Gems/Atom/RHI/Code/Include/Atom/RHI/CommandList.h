@@ -14,7 +14,7 @@
 #include <Atom/RHI/SingleDeviceDispatchItem.h>
 #include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/SingleDeviceCopyItem.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/SingleDeviceRayTracingBufferPools.h>
 
 namespace AZ::RHI

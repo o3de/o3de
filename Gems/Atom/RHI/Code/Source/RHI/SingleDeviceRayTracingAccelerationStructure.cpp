@@ -6,7 +6,7 @@
  *
  */
 
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI/SingleDeviceBuffer.h>
 #include <Atom/RHI/Factory.h>
 

@@ -12,7 +12,7 @@
 #include <Atom/RHI/CommandListStates.h>
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/ScopeId.h>

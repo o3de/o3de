@@ -249,7 +249,7 @@ set(FILES
     Source/RHI/MultiDeviceTransientAttachmentPool.cpp
     Include/Atom/RHI/RHIUtils.h
     Source/RHI/RHIUtils.cpp
-    Include/Atom/RHI/RayTracingAccelerationStructure.h
+    Include/Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h
     Include/Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h
     Include/Atom/RHI/SingleDeviceRayTracingPipelineState.h
     Include/Atom/RHI/MultiDeviceRayTracingPipelineState.h
@@ -259,7 +259,7 @@ set(FILES
     Include/Atom/RHI/MultiDeviceRayTracingBufferPools.h
     Include/Atom/RHI/SingleDeviceDispatchRaysItem.h
     Include/Atom/RHI/MultiDeviceDispatchRaysItem.h
-    Source/RHI/RayTracingAccelerationStructure.cpp
+    Source/RHI/SingleDeviceRayTracingAccelerationStructure.cpp
     Source/RHI/MultiDeviceRayTracingAccelerationStructure.cpp
     Source/RHI/SingleDeviceRayTracingPipelineState.cpp
     Source/RHI/MultiDeviceRayTracingPipelineState.cpp

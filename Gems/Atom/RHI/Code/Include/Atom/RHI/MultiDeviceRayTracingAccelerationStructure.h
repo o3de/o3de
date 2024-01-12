@@ -11,7 +11,7 @@
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI/MultiDeviceIndexBufferView.h>
 #include <Atom/RHI/MultiDeviceStreamBufferView.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
+#include <Atom/RHI/SingleDeviceRayTracingAccelerationStructure.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/vector.h>
 
