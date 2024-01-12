@@ -185,6 +185,11 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
                                                                           enable_attribute='engine_centric',
                                                                           disable_attribute='project_centric')
     
+    target_android_project_path = pathlib.Path(args.android_build_path)
+
+    if not target_android_project_path.is_absolute():
+        target_android_project_path = o3de_context.project_path / target_android_project_path
+
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
     else:
@@ -194,7 +199,7 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
 
     try:
         export_source_android_project(ctx=o3de_context,
-                                      target_android_project_path=pathlib.Path(args.android_build_path),
+                                      target_android_project_path=target_android_project_path,
                                       seedlist_paths=args.seedlist_paths,
                                       seedfile_paths=args.seedfile_paths,
                                       level_names=args.level_names,

@@ -308,7 +308,7 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
     if export_script_path.suffix != '.py':
         logging.error(f"Invalid export script type for '{export_script_path}'. Please provide a file path to an existing python script with '.py' extension.")
         return 1
-    assert project_path, "For some reason project path is not defined"
+
     # Validate that the export script being passed in is valid.
     validated_export_script_path = None
     if export_script_path.is_absolute():
@@ -355,7 +355,7 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
     export_process_args, cmake_configure_args, cmake_build_args= extract_cmake_custom_args(passthru_args)
 
     o3de_context = O3DEScriptExportContext(export_script_path=validated_export_script_path,
-                                           project_path=computed_project_path,
+                                           project_path=computed_project_path.resolve(),
                                            engine_path=manifest.get_project_engine_path(computed_project_path),
                                            args=export_process_args,
                                            cmake_additional_configure_args=cmake_configure_args,
