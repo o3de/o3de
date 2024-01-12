@@ -15,10 +15,11 @@ from o3de import android, android_support
 
 import argparse
 import logging
+import os
 import pathlib
 import re
 import sys
-import os
+
 
 from typing import List
 
@@ -221,7 +222,7 @@ if "o3de_context" in globals():
     try:
         if o3de_context is None:
             project_name, project_path = command_utils.resolve_project_name_and_path()
-            export_config = exp.get_export_project_config(project_path=project_name)
+            export_config = exp.get_export_project_config(project_path=project_path)
         else:
             project_path=o3de_context.project_path
             export_config = exp.get_export_project_config(project_path=project_path)
