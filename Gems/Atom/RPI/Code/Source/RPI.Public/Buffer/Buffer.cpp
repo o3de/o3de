@@ -144,14 +144,6 @@ namespace AZ
                     if (m_streamFence)
                     {
                         m_streamFence->Init(m_rhiBufferPool->GetDevice(), RHI::FenceState::Reset);
-                        m_streamFence->WaitOnCpuAsync(
-                            [this]()
-                            {
-                                // Once the uploading to gpu process is done, we shouldn't need to keep the reference of the m_bufferAsset
-                                this->m_pendingUploadMutex.lock();
-                                this->m_bufferAsset.Reset();
-                                this->m_pendingUploadMutex.unlock();
-                            });
                     }
 
                     RHI::BufferDescriptor bufferDescriptor = bufferAsset.GetBufferDescriptor();
@@ -163,10 +155,24 @@ namespace AZ
                     request2.m_sourceData = bufferAsset.GetBuffer().data();
 
                     resultCode = m_rhiBufferPool->StreamBuffer(request2);
+                        
                     if (resultCode != RHI::ResultCode::Success)
                     {
                         AZ_Error("Buffer", false, "Buffer::Init() failed to stream buffer contents to GPU.");
                         return resultCode;
+                    }
+
+                    if (m_streamFence)
+                    {
+                        m_streamFence->WaitOnCpuAsync(
+                            [this]()
+                            {
+                                // Once the uploading to gpu process is done, we shouldn't need to keep the reference of the m_bufferAsset
+                                this->m_pendingUploadMutex.lock();
+                                this->m_bufferAsset.Reset();
+                                this->m_pendingUploadMutex.unlock();
+                            });
+
                     }
                 }
                 
