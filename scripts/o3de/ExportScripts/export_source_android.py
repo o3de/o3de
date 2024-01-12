@@ -141,7 +141,7 @@ def export_source_android_parse_args(o3de_context: exp.O3DEScriptExportContext,
 
     parser.add_argument('--deploy-to-android',action='store_true',help='At completion of build, deploy to a connected android device.')
  
-    parser.add_argument('-B', '--build-dir', type=str, 
+    parser.add_argument('-abp', '--android-build-path', type=str, 
                                           help=f"The location to write the android project scripts to. Default: '{android.DEFAULT_ANDROID_BUILD_FOLDER}'", 
                                           default=android.DEFAULT_ANDROID_BUILD_FOLDER) 
 
@@ -194,7 +194,7 @@ def export_source_android_run_command(o3de_context: exp.O3DEScriptExportContext,
 
     try:
         export_source_android_project(ctx=o3de_context,
-                                      target_android_project_path=pathlib.Path(args.build_dir),
+                                      target_android_project_path=pathlib.Path(args.android_build_path),
                                       seedlist_paths=args.seedlist_paths,
                                       seedfile_paths=args.seedfile_paths,
                                       level_names=args.level_names,
