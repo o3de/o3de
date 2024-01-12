@@ -92,14 +92,6 @@ namespace AZ::RHI
         MultiDeviceResource::Shutdown();
     }
 
-    void MultiDeviceImage::InvalidateViews()
-    {
-        IterateObjects<SingleDeviceImage>([]([[maybe_unused]] auto deviceIndex, auto deviceImage)
-        {
-            deviceImage->InvalidateViews();
-        });
-    }
-
     bool MultiDeviceImage::IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor)
     {
         bool isInResourceCache{true};

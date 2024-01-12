@@ -29,12 +29,4 @@ namespace AZ::RHI
 
         MultiDeviceResource::Shutdown();
     }
-
-    void MultiDeviceQuery::InvalidateViews()
-    {
-        IterateObjects<SingleDeviceQuery>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
-        {
-            deviceQuery->InvalidateViews();
-        });
-    }
 } // namespace AZ::RHI

@@ -60,7 +60,7 @@ namespace AZ::RHI
         //!
         //! Platform back-ends which invalidate GPU-specific data on the resource without an explicit
         //! shutdown / re-initialization will need to call this method explicitly.
-        virtual void InvalidateViews() = 0;
+        void InvalidateViews();
 
     protected:
         MultiDeviceResource() = default;
