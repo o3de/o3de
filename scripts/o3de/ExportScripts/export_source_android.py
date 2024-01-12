@@ -247,5 +247,5 @@ if "o3de_context" in globals():
     args = export_source_android_parse_args(o3de_context, export_config, android_config)
 
     export_source_android_run_command(o3de_context, args, export_config, o3de_logger)
-    o3de_logger.info(f"Finished exporting android project to {args.build_dir}")
+    o3de_logger.info(f"Finished exporting android project to {args.android_build_path}")
     sys.exit(0)
