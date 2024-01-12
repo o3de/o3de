@@ -271,6 +271,9 @@ namespace AZ
                 vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingStorageBufferUpdateAfterBind;
                 vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingPartiallyBound;
                 vulkan12Features.descriptorBindingUpdateUnusedWhilePending = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingUpdateUnusedWhilePending;
+                vulkan12Features.shaderOutputViewportIndex = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputViewportIndex;
+                vulkan12Features.shaderOutputLayer = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputLayer;
+                shaderImageAtomicInt64.pNext = &vulkan12Features;
 
                 accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
                 accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
@@ -1061,7 +1064,6 @@ namespace AZ
 
         void Device::InitFeaturesAndLimits(const PhysicalDevice& physicalDevice)
         {
-            m_features.m_tessellationShader = (m_enabledDeviceFeatures.tessellationShader == VK_TRUE);
             m_features.m_geometryShader = (m_enabledDeviceFeatures.geometryShader == VK_TRUE);
             m_features.m_computeShader = true;
             m_features.m_independentBlend = (m_enabledDeviceFeatures.independentBlend == VK_TRUE);

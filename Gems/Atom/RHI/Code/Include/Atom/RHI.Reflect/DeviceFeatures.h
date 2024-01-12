@@ -20,9 +20,6 @@ namespace AZ::RHI
 {
     struct DeviceFeatures
     {
-        //! Whether the adapter supports tessellation shaders.
-        bool m_tessellationShader;
-
         //! Whether the adapter supports geometry shaders.
         bool m_geometryShader;
 
