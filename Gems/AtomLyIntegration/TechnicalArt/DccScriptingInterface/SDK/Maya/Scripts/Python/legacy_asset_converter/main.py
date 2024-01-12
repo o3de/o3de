@@ -1345,8 +1345,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :param destination_directory: The directory that assets will be saved to in the conversion process
         :return:
         """
-        fbx_files = asset_information.fbxfiles.values()
-        for key, values in fbx_files[0].materials.items():
+        first_key = next(iter(asset_information.fbxfiles))
+        for key, values in asset_information.fbxfiles[first_key].materials.items():
             for k, v in mtl_info.items():
                 if key is v.attributes.Name:
                     if v.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
