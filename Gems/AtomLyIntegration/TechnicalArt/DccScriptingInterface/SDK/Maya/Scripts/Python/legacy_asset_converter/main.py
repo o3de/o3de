@@ -55,7 +55,7 @@ print(_config)
 # init lumberyard Qy/PySide2 access
 # now default settings are extended with PySide2
 # this is an alternative to "from dynaconf import settings" with Qt
-settings = _config.get_config_settings(setup_ly_pyside=True)
+settings = _config.get_config_settings(enable_o3de_pyside2=True)
 
 
 # 3rd Party (we may or do provide)
@@ -578,7 +578,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.initialize_qprocess()
 
         # Get Material Definition Template
-        with open(self.default_material_definition) as json_file:
+        mat_path = Path(__file__).with_name(self.default_material_definition)
+        with open(mat_path) as json_file:
             self.template_lumberyard_material = json.load(json_file)
 
         if os.path.exists(os.path.join(Path.cwd(), 'materialsdb.dat')):
@@ -1261,14 +1262,14 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         Finds the most current version of Maya for use of its standalone python capabilities.
         :return:
         """
-        maya_versions = [int(x.name[-4:]) for x in self.autodesk_directory.iterdir() if x.name.startswith('Maya')]
+        maya_versions = [int(x.name[-4:]) for x in self.autodesk_directory.iterdir() if x.name.startswith('Maya') and x.name[-1].isdigit()]
         if maya_versions:
             target_version = f'Maya{max(maya_versions)}'
             self.create_maya_files_checkbox.setChecked(True)
             return self.autodesk_directory / target_version / 'bin\mayapy.exe'
         else:
             self.create_maya_files_checkbox.setChecked(False)
-            return None
+        return None
 
     def get_section_audit(self, key):
         """
