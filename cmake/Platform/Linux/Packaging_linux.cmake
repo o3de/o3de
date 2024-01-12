@@ -70,3 +70,8 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     )
 
 endif()
+
+set(O3DE_INCLUDE_INSTALL_IN_PACKAGE FALSE CACHE BOOL "Option to copy the contents of the most recent install from CMAKE_INSTALL_PREFIX into CPACK_PACKAGING_INSTALL_PREFIX.  Useful for including a release build in a profile SDK.")
+if(O3DE_INCLUDE_INSTALL_IN_PACKAGE)
+    set(CPACK_INSTALLED_DIRECTORIES "${CMAKE_INSTALL_PREFIX};${CPACK_PACKAGING_INSTALL_PREFIX}")
+endif()
