@@ -26,6 +26,7 @@ ASSET_MODE_PAK     = 'PAK'
 ASSET_MODE_LOOSE   = 'LOOSE'
 SUPPORTED_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE]
 ASSET_PLATFORM_KEY = 'android'
+ASSET_PLATFORM_KEY_LOOSE = 'android_loose'
 
 SUPPORTED_BUILD_CONFIGS = ['debug', 'profile', 'release']
 
@@ -163,7 +164,9 @@ def apply_loose_layout(project_root: Path, target_layout_root: Path) -> None:
     :param target_layout_root:      The target layout destination of the loose assets
     """
 
-    android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY
+    android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY_LOOSE
+    if not android_cache_folder.exists():
+        android_cache_folder = project_root / 'Cache' / ASSET_PLATFORM_KEY
     engine_json_marker = android_cache_folder / 'engine.json'
     if not engine_json_marker.is_file():
         raise AndroidPostBuildError(f"Assets have not been built for this project at ({project_root}) yet. "
