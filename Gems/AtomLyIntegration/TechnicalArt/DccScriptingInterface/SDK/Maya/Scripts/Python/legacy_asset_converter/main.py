@@ -24,7 +24,7 @@
 #  built-ins
 import collections
 from collections import abc
-# import subprocess
+import subprocess
 import logging as _logging
 try:
     import pathlib
@@ -1039,7 +1039,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     fbx_name = key
                     destination_directory = self.set_destination_directory(target_dictionary[constants.FBX_DIRECTORY_NAME])
 
-                    for material_name, texture_set in values['materials'].items():
+                    for material_name, texture_set in values[constants.FBX_MATERIALS].items():
                         checklist = collections.OrderedDict()
                         checklist['fbxname'] = fbx_name
                         checklist['materialname'] = material_name
@@ -1423,7 +1423,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             for key, values in self.materials_db.items():
                 directory_items.append(values[constants.FBX_DIRECTORY_NAME])
             self.asset_directory_combobox.addItems(directory_items)
-            current_directory = section_data.directoryname
+            current_directory = section_data[constants.FBX_DIRECTORY_NAME]
             index = self.asset_directory_combobox.findText(current_directory, QtCore.Qt.MatchFixedString)
             self.asset_directory_combobox.setCurrentIndex(index)
             self.asset_directory_combobox.blockSignals(False)
@@ -1507,12 +1507,13 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             for key, values in self.materials_db.items():
                 if values:
                     try:
+                        values = Box(values)
                         for k, v in values.fbxfiles.items():
                             count_totals.fbxfiles += 1
                             if v[constants.FBX_MAYA_FILE]:
                                 count_totals.mayafiles += 1
-                            if v.materials:
-                                for material_name, material_values in v.materials.items():
+                            if v[constants.FBX_MATERIALS]:
+                                for material_name, material_values in v[constants.FBX_MATERIALS].items():
                                     count_totals.materials += 1
                                     if constants.FBX_TEXTURES in material_values.keys():
                                         for texture_type, texture_path in material_values.textures.items():
@@ -1788,7 +1789,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 for val in fbx_values:
                     material_list = val[constants.FBX_MATERIALS]
                     for material_key, material_values in material_list.items():
-                        for texture_key, texture_path in material_values[FBX_TEXTURES].items():
+                        for texture_key, texture_path in material_values[constants.FBX_TEXTURES].items():
                             if texture_type:
                                 if os.path.exists(texture_path):
                                     try:
@@ -1830,7 +1831,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 for val in fbx_values:
                     material_list = val[constants.FBX_MATERIALS]
                     for material_key, material_values in material_list.items():
-                        for texture_key, texture_path in material_values[FBX_TEXTURES].items():
+                        for texture_key, texture_path in material_values[constants.FBX_TEXTURES].items():
                             if texture_key == texture_type:
                                 if os.path.exists(texture_path):
                                     try:
