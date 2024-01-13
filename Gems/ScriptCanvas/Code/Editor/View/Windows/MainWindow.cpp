@@ -1188,6 +1188,9 @@ namespace ScriptCanvasEditor
         {
             m_tabBar->setCurrentIndex(outTabIndex);
             SetActiveAsset(scriptCanvasAsset);
+
+            EnableOpenDocumentActions(true);
+
             return AZ::Success(outTabIndex);
         }
 
