@@ -78,6 +78,8 @@ for handler in _logging.root.handlers[:]:
 
 module_name = 'legacy_asset_converter.main'
 log_file_path = os.path.join(settings.DCCSI_LOG_PATH, f'{module_name}.log')
+if not os.path.exists(settings.DCCSI_LOG_PATH):
+    os.makedirs(settings.DCCSI_LOG_PATH)
 
 _log_level = int(20)
 _DCCSI_GDEBUG = True
@@ -651,7 +653,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             asset_information.fbxfiles[key] = values
         self.materials_db[index] = asset_information
 
-    def compare_boilerplate_settings(self, property_values, material_template):
+    def compare_boilerplate_settings(self, property_values, material_template, export_file_path):
         """
         Lumberyard material definitions only include settings that deviate from default settings. When converting .mtl
         files to .material files, the script attempts to find all settings that each material previously held and carry
@@ -659,6 +661,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         standard pbr material description, and only includes this information to the definition when it finds a need to
         :param property_values:
         :param material_template:
+        :param export_file_path: The absolute path to the final material file
         :return:
         """
         updated = False
@@ -676,7 +679,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                         if v != value:
                             _LOGGER.info(f'{key}---->> NEW VALUE: {v}')
                             updated = True
-                            target_value = self.format_material_value(v)
+                            target_value = self.format_material_value(v, export_file_path)
                             updated_property_dictionary[key] = target_value
                         else:
                             updated_property_dictionary[key] = value
@@ -687,13 +690,14 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             return updated_property_dictionary
         return None
 
-    def format_material_value(self, value):
+    def format_material_value(self, value, export_file_path):
         """
         In order for the formatting of the information to work properly once converted into a JSON-like material
         definition, information needs to be properly formatted... not all information can be gathered as strings. This
         function reviews the format of the information and makes changes if necessary for the information to carry
         over properly in the definition.
         :param value: The value under review for formatting issues
+        :param export_file_path: The absolute path to the final material file
         :return:
         """
         if isinstance(value, list):
@@ -704,7 +708,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             return converted_list
         elif isinstance(value, str):
             if os.path.isfile(str(value)):
-                target_path = self.get_relative_path(value)
+                target_path = self.get_relative_path_from_material(value, export_file_path)
                 return str(target_path)
             elif value in ['true', 'false']:
                 return str(value)
@@ -810,7 +814,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                             if temp_dict:
                                 comparison_dictionary = material_template['properties'][material_property]
                                 _LOGGER.info(f'ComparisonDictionary: {comparison_dictionary}')
-                                custom_settings = self.compare_boilerplate_settings(temp_dict, comparison_dictionary)
+                                custom_settings = self.compare_boilerplate_settings(temp_dict, comparison_dictionary, os.path.abspath(export_file_path))
                                 _LOGGER.info(f'CustomSettings: {custom_settings}')
                                 _LOGGER.info(f'MaterialProperty: {material_property}')
                                 _LOGGER.info(f'Key: {key}')
@@ -1211,18 +1215,17 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     break
         return image_conversion.get_pbr_textures(mtl_textures, Path(destination_directory), search_path, Path(self.input_directory))
 
-    def get_relative_path(self, full_path):
+    def get_relative_path_from_material(self, texture_file_abs_path, material_abs_path):
         """
         Material definitions use relative paths for file textures- this function takes the full paths of assets and
         converts to the abbreviated relative path format needed for Lumberyard to source the files
-        :param full_path: Full path to the asset
-        :return:
+        :param texture_file_abs_path: Absolute path to the texture file
+        :param material_abs_path: Absolute path to the material file
+        :return: relative path from the material to the texture
         """
-        return_path = Path(full_path)
-        start_directory = 'Objects'
-        path_list = return_path.parts
-        return_path = ('/').join(path_list[path_list.index(start_directory):])
-        return return_path
+        material_dir_abs_path = os.path.dirname(material_abs_path)
+        relative_path = os.path.relpath(texture_file_abs_path, material_dir_abs_path)
+        return relative_path
 
     def get_separator_bar(self):
         """ Convenience function for UI layout element """
