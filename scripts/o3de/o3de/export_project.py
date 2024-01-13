@@ -610,7 +610,8 @@ def build_assets(ctx: O3DEScriptExportContext,
 
     cmake_build_assets_command = [asset_processor_batch_path, "--project-path", ctx.project_path]
     
-    cmake_build_assets_command.extend([f'--platforms={",".join(selected_platforms)}'])
+    if selected_platforms:
+        cmake_build_assets_command.extend([f'--platforms={",".join(selected_platforms)}'])
     
     ret = process_command(cmake_build_assets_command,
                           cwd=ctx.engine_path if engine_centric else ctx.project_path)
@@ -823,8 +824,6 @@ def bundle_assets(ctx: O3DEScriptExportContext,
 
     bundles_path = asset_bundling_path / 'Bundles'
 
-    platform_flags = []
-
     for selected_platform in selected_platforms:
         
         game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
@@ -861,7 +860,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
         # Generate the bundles. We will place it in the project directory for now, since the files need to be copied multiple times (one for each separate launcher distribution)
         gen_game_bundle_command = [asset_bundler_batch_path, "bundles",
                                                             "--maxSize", str(max_bundle_size),
-                                                            *platform_flags,
+                                                            "--platform",  selected_platform,
                                                             '--project-path', ctx.project_path,
                                                             "--allowOverwrites",
                                                             "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
@@ -873,7 +872,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
 
         gen_engine_bundle_command = [asset_bundler_batch_path, "bundles",
                                                             "--maxSize", str(max_bundle_size),
-                                                            *platform_flags,
+                                                            "--platform", selected_platform,
                                                             '--project-path', ctx.project_path,
                                                             "--allowOverwrites",
                                                             "--outputBundlePath", bundles_path / f"engine_{selected_platform}.pak",
