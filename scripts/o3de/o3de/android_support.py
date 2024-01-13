@@ -261,7 +261,7 @@ class AndroidGradlePluginRequirements(object):
         @param java_version:    The version string reported by java (-version)
         @return: None
         """
-        java_version_check = Version(java_version)
+        java_version_check = Version(java_version.split('_')[0])
         if not java_version_check >= self._jdk_version:
             raise AndroidToolError(f"The installed version of java ({java_version_check}) does not meet the minimum version of ({self._jdk_version}) "
                                    f"which is required by the Android Gradle Plugin version ({self._agp_version}). Refer to the android gradle plugin "
@@ -680,7 +680,7 @@ class AndroidSDKManager(object):
                                 capture_output=True,
                                 encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS,
-                                timeout=5)
+                                timeout=30)
         license_not_accepted_match = AndroidSDKManager.LICENSE_NOT_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_not_accepted_match:
             raise AndroidToolError(f"{license_not_accepted_match.group(1)}\n"
