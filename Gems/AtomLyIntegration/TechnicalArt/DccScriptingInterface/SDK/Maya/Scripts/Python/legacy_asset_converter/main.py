@@ -580,8 +580,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.initialize_qprocess()
 
         # Get Material Definition Template
-        mat_path = Path(__file__).with_name(self.default_material_definition)
-        with open(mat_path) as json_file:
+        mat_abs_path = Path(__file__).with_name(self.default_material_definition)
+        with open(mat_abs_path) as json_file:
             self.template_lumberyard_material = json.load(json_file)
 
         if os.path.exists(os.path.join(Path.cwd(), 'materialsdb.dat')):
@@ -927,8 +927,10 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         """
         self.p = QProcess()
         env = [env for env in QtCore.QProcess.systemEnvironment() if not env.startswith('PYTHONPATH=')]
-        env.append(f'MAYA_LOCATION={os.path.dirname(self.mayapy_path)}')
-        env.append(f'PYTHONPATH={os.path.dirname(self.mayapy_path)}')
+        if self.mayapy_path != None: 
+            env.append(f'MAYA_LOCATION={os.path.dirname(self.mayapy_path)}')
+            env.append(f'PYTHONPATH={os.path.dirname(self.mayapy_path)}')
+
         self.p.setEnvironment(env)
         self.p.setProgram(str(self.mayapy_path))
         self.p.setProcessChannelMode(QProcess.SeparateChannels)
@@ -1271,7 +1273,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             self.create_maya_files_checkbox.setChecked(True)
             return self.autodesk_directory / target_version / 'bin\mayapy.exe'
         else:
-            self.create_maya_files_checkbox.setChecked(False)
+            self.create_maya_files_checkbox.setEnabled(False)
         return None
 
     def get_section_audit(self, key):
