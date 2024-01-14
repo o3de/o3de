@@ -214,12 +214,40 @@ namespace AZ::Render
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
         const RHI::MultisampleState& multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
-        DrawLine(AZStd::string::format(
-            "Resolution: %dx%d (%s)",
-            viewportContext->GetViewportSize().m_width,
-            viewportContext->GetViewportSize().m_height,
-            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA"
-        ));
+        AZ::RPI::ScenePtr pScene = viewportContext->GetRenderScene();
+       
+        AZStd::string defaultAA = "MSAA";
+        bool hasAAMethod = false;
+        if (pScene != nullptr)
+        {
+            AZ::RPI::RenderPipelinePtr pPipeline = pScene->GetDefaultRenderPipeline();
+ 
+            AZ::RPI::AntiAliasingMode defaultAAMethod = pPipeline->GetActiveAAMethod();
+            defaultAA = AZ::RPI::RenderPipeline::GetAAMethodNameByIndex(defaultAAMethod);
+            hasAAMethod = (defaultAAMethod != AZ::RPI::AntiAliasingMode::MSAA && defaultAAMethod != AZ::RPI::AntiAliasingMode::Default);
+        }
+        const char* resolutionStr =
+            AZStd::string::format(
+                "Resolution: %dx%d", viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height)
+                .c_str();
+        const char* msaaStr =
+            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA";
+ 
+        if (hasAAMethod)
+        {
+            if (multisampleState.m_samples > 1)
+            {
+                DrawLine(AZStd::string::format("%s (%s + %s)", resolutionStr, defaultAA.c_str(), msaaStr));
+            }
+            else
+            {
+                DrawLine(AZStd::string::format("%s (%s)", resolutionStr, defaultAA.c_str()));
+            }
+        }
+        else
+        {
+            DrawLine(AZStd::string::format("%s (%s)", resolutionStr, msaaStr));
+        }
 
         if(viewportContext->GetCurrentPipeline())   // avoid VR crash on nullptr
         {

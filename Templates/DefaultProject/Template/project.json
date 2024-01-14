@@ -32,6 +32,7 @@
         "ImGui",
         "LandscapeCanvas",
         "LyShine",
+        "MiniAudio",
         "PhysX",
         "PrimitiveAssets",
         "PrefabBuilder",

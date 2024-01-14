@@ -151,6 +151,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomShader.Builders
             Gem::Atom_Component_DebugCamera
             Gem::AtomImGuiTools
+            Gem::AtomRenderOptions.Editor
             Gem::CommonFeaturesAtom.Editor
             Gem::EMotionFX_Atom.Editor
             Gem::ImageProcessingAtom.Editor

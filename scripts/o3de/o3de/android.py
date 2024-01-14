@@ -519,6 +519,8 @@ def add_args(subparsers) -> None:
     #
     android_generate_subparser = subparsers.add_parser(O3DE_COMMAND_GENERATE,
                                                        help='Generate an Android/Gradle project.')
+    android_generate_subparser.add_argument('--settings-asset-bundle-path', type=str, default=android_support.SETTINGS_ASSET_BUNDLE_SUBPATH.key,
+                                            help="The sub-path from the project root to specify where the bundle/pak files will be generated to.")
 
     # Project Name
     android_generate_subparser.add_argument('-p', '--project', type=str,
