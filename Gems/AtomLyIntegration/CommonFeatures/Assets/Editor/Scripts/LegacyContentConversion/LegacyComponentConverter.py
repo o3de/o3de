@@ -64,7 +64,7 @@ GEMS_PATH = None
 
 # Normal imports
 import sys
-import xml.etree.ElementTree
+import xml.etree.ElementTree as ET
 import time
 from zipfile import ZipFile
 import tempfile
@@ -190,7 +190,10 @@ class Component_File(object):
                                 # TODO - we're about to change the tree structure while iterating, which is apparently undefined but appears to work. Might be better to just build up a list of things that need to be modified, then do a second pass to replace the legacy component
                                 # Seems to be okay since we only change or add elements, never remove entirely
                                 componentConverter.convert(child, parent)
-            self.xml._setroot(root)                        
+            self.xml._setroot(root)    
+            # pretty print 
+            ET.indent(self.xml, space='\t')
+
         print("finished parsing {0}".format(self.filename))
 
     def can_be_converted(self):

@@ -218,7 +218,7 @@ def get_asset_catalog_dictionaries(buildPath, projectName):
     relativePathToAssetIdDict[""] = "{00000000-0000-0000-0000-000000000000}:0"
     assetIdToRelativePathDict = {}
     assetUuidToAssetIdsDict = {}
-    assetCatalogPath = os.path.join(projectName, "Cache", "pc", "assetcatalog.xml")
+    assetCatalogPath = os.path.join("Cache", projectName, "pc", projectName, "assetcatalog.xml")
     assetCatalogXml = xml.etree.ElementTree.parse(assetCatalogPath)
     for possibleAssetInfo in assetCatalogXml.getroot().iter('Class'):
         if "name" in possibleAssetInfo.keys() and possibleAssetInfo.get("name") == "AssetInfo":
