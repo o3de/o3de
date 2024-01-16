@@ -1,12 +1,12 @@
 {
-    "gem_name": "PhysXAssets",
+    "gem_name": "PhysXCommon",
     "version": "1.0.0",
-    "display_name": "PhysX Assets",
+    "display_name": "PhysX Common",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Asset",
-    "summary": "The PhysX Asset Gem library of PhysX assets.",
+    "summary": "The PhysX Assets and Common libraries to support PhysX Gems.",
     "canonical_tags": [
         "Gem"
     ],
