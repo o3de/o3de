@@ -6,8 +6,6 @@
 #
 #
 
-add_subdirectory(NumericalMethods)
-
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
@@ -132,7 +130,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneData
                 Legacy::CryCommon
                 Gem::LmbrCentral.Editor
-                Gem::${gem_name}.NumericalMethods
+                Gem::PhysX.NumericalMethods
                 Gem::${gem_name}.Static
                 Gem::CommonFeaturesAtom.Static
         RUNTIME_DEPENDENCIES

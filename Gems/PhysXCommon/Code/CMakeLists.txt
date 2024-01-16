@@ -6,6 +6,4 @@
 #
 #
 
-o3de_gem_setup("PhysXCommon")
-
-add_subdirectory(Code)
+add_subdirectory(NumericalMethods)
