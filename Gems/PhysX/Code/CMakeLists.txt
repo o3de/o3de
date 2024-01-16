@@ -170,17 +170,6 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME ${gem_name}.Mocks HEADERONLY
-        NAMESPACE Gem
-        OUTPUT_NAME ${gem_name}.Mocks.Gem
-        FILES_CMAKE
-            physx_mocks_files.cmake
-        INCLUDE_DIRECTORIES
-            INTERFACE
-                Mocks
-    )
-
-    ly_add_target(
         NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         OUTPUT_NAME ${gem_name}.Tests.Gem
@@ -236,7 +225,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzToolsFrameworkTestCommon
                     AZ::AzManipulatorTestFramework.Static
                     Gem::${gem_name}.Static
-                    Gem::${gem_name}.Mocks
+                    Gem::PhysX.Mocks
                     Gem::${gem_name}.Editor.Static
             RUNTIME_DEPENDENCIES
                 Gem::LmbrCentral.Editor
