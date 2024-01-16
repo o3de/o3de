@@ -432,28 +432,32 @@ namespace AzToolsFramework
             AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
             if (AssetBrowser::Utils::FromMimeData(pData, entries))
             {
-                // Searching all source data entries for a compatible asset
+                // Search all of the entries for a compatible product asset
                 for (const auto entry : entries)
                 {
-                    // If this entry is a product asset then we check it for compatibility first
-                    if (const auto product = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(entry))
+                    if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Product ||
+                        entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
                     {
-                        if (checkAsset(product->GetAssetId(), product->GetAssetType()))
+                        // Support selecting and assigning source and product assets. If the entry is a matching product asset, it will be
+                        // assigned immediately. If it is a source asset entry, enumerate all of the children and assign the first
+                        // compatible product asset.
+                        bool result = false;
+                        entry->VisitDown(
+                            [&](const auto& currentEntry)
+                            {
+                                if (!result)
+                                {
+                                    if (const auto product = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(currentEntry))
+                                    {
+                                        result = checkAsset(product->GetAssetId(), product->GetAssetType());
+                                    }
+                                }
+                                return !result;
+                            });
+
+                        if (result)
                         {
                             return true;
-                        }
-                    }
-                    else
-                    {
-                        // For all other container entry types search all of the child entries for a compatible asset
-                        AZStd::vector<const ProductAssetBrowserEntry*> children;
-                        entry->GetChildren<ProductAssetBrowserEntry>(children);
-                        for (const auto child : children)
-                        {
-                            if (checkAsset(child->GetAssetId(), child->GetAssetType()))
-                            {
-                                return true;
-                            }
                         }
                     }
                 }
@@ -728,7 +732,9 @@ namespace AzToolsFramework
 
     AssetSelectionModel PropertyAssetCtrl::GetAssetSelectionModel()
     {
-        auto selectionModel = AssetSelectionModel::AssetTypesSelection(GetSelectableAssetTypes());
+        const bool multiselect = false;
+        const bool supportSelectingSources = true;
+        auto selectionModel = AssetSelectionModel::AssetTypeSelection(GetSelectableAssetTypes(), multiselect, supportSelectingSources);
         selectionModel.SetTitle(m_title);
         return selectionModel;
     }
@@ -791,13 +797,15 @@ namespace AzToolsFramework
                     if (!assetID.IsValid())
                     {
                         // No Asset Id selected - Open editor and create new asset for them
-                        AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType(), m_componentUuid);
+                        AssetEditor::AssetEditorRequestsBus::Broadcast(
+                            &AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType(), m_componentUuid);
                     }
                     else
                     {
                         // Open the asset with the preferred asset editor
                         bool handled = false;
-                        AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(&AssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetID, handled);
+                        AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
+                            &AssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetID, handled);
                     }
 
                     return;
@@ -842,16 +850,33 @@ namespace AzToolsFramework
         PickAssetSelectionFromDialog(selection, parentWidget());
         if (selection.IsValid())
         {
-            const auto product = azrtti_cast<const ProductAssetBrowserEntry*>(selection.GetResult());
-            auto folder = azrtti_cast<const FolderAssetBrowserEntry*>(selection.GetResult());
-            AZ_Assert(product || folder, "Incorrect entry type selected. Expected product or folder.");
-            if (product)
+            const auto entry = selection.GetResult();
+            if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Product ||
+                entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
             {
-                SetSelectedAssetID(product->GetAssetId());
+                // Support selecting and assigning source and product assets. If the entry is a matching product asset, it will be assigned
+                // immediately. If it is a source asset entry, enumerate all of the children and assign the first compatible product asset.
+                bool result = false;
+                entry->VisitDown(
+                    [&](const auto& currentEntry)
+                    {
+                        if (!result)
+                        {
+                            if (const auto product = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(currentEntry))
+                            {
+                                if (CanAcceptAsset(product->GetAssetId(), product->GetAssetType()))
+                                {
+                                    SetSelectedAssetID(product->GetAssetId());
+                                    result = true;
+                                }
+                            }
+                        }
+                        return !result;
+                    });
             }
-            else if (folder)
+            else if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder)
             {
-                SetFolderSelection(folder->GetRelativePath());
+                SetFolderSelection(entry->GetRelativePath());
                 SetSelectedAssetID(AZ::Data::AssetId());
             }
         }
