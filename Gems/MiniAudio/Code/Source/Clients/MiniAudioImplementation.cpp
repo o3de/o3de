@@ -8,7 +8,8 @@
 
 #include <AzCore/PlatformDef.h>
 
-AZ_PUSH_DISABLE_WARNING(4701, "-Wuninitialized") //  warning C4701: potentially uninitialized local variable 'mid' used in vorbis
+AZ_PUSH_DISABLE_WARNING(4701 4244, "-Wuninitialized") //  warning C4701: potentially uninitialized local variable 'mid' used in vorbis
+                                                      //  warning 4244: '=': conversion from 'int' to 'int8', possible loss of data
 
 extern "C" {
 
