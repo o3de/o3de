@@ -25,16 +25,16 @@
                         ]
                     }
                 },
+                {
+                    "Name": "DepthStencil",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
                 // Input/Outputs
                 {
                     "Name": "InputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
-                },
-                {
-                    "Name": "DepthStencil",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
                 }
             ],
             "ImageAttachments": [
