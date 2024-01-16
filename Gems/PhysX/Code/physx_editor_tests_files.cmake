@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/Module.cpp
     Tests/PhysXTestCommon.cpp
     Tests/PhysXTestCommon.h
     Tests/ColliderScalingTests.cpp

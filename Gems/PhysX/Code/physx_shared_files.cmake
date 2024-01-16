@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Source/Module.cpp
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
 )

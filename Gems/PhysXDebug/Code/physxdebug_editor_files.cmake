@@ -9,7 +9,6 @@
 set(FILES
     Source/EditorSystemComponent.cpp
     Source/EditorSystemComponent.h
-    Source/Module.cpp
     Source/SystemComponent.h
     Source/SystemComponent.cpp
 )

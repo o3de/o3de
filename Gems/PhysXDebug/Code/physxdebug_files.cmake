@@ -8,7 +8,6 @@
 
 set(FILES
     Include/PhysXDebug/PhysXDebugBus.h
-    Source/Module.cpp
     Source/SystemComponent.h
     Source/SystemComponent.cpp
 )
