@@ -335,8 +335,8 @@ namespace AzFramework
         AZ_Assert(ValidateXcbResult(xcbCheckResult), "Failed to set _NET_WM_STATE_FULLSCREEN");
 
         // Also try to disable/enable the compositor if possible. Might help in some cases.
-        const long _NET_WM_BYPASS_COMPOSITOR_HINT_ON = m_fullscreenState ? 1 : 0;
-        SetAtom(m_xcbWindow, _NET_WM_BYPASS_COMPOSITOR, XCB_ATOM_CARDINAL, 32, (char*)&_NET_WM_BYPASS_COMPOSITOR_HINT_ON);
+        const uint32_t _NET_WM_BYPASS_COMPOSITOR_HINT_ON = m_fullscreenState ? 1 : 0;
+        SetAtom(m_xcbWindow, _NET_WM_BYPASS_COMPOSITOR, XCB_ATOM_CARDINAL, 1, (char*)&_NET_WM_BYPASS_COMPOSITOR_HINT_ON);
 
         if (!fullScreenState)
         {
