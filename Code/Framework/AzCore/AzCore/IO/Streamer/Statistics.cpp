@@ -140,7 +140,10 @@ namespace AZ::IO
         [[maybe_unused]] AZStd::string_view name,
         [[maybe_unused]] double value)
     {
-#if defined(CARBONATED)        
+#if defined(CARBONATED)
+        // Asan fix: The original code passed narrow strings to L" " format. In this case %s is interpreted
+        // as a wide string. This resulted in reading the given number of wide characters instead of narrow ones 
+        // what caused respective buffer overrun.
         [[maybe_unused]] AZStd::wstring counterName;
         AZStd::to_wstring(counterName,
             AZStd::string::format("Streamer/%.*s/%.*s (Raw)", aznumeric_cast<int>(owner.size()), owner.data(), aznumeric_cast<int>(name.size()), name.data()).data());
