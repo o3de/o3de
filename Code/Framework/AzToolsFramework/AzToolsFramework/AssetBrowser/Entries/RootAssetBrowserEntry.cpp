@@ -337,8 +337,13 @@ namespace AzToolsFramework
             product->m_visiblePath = cleanedRelative;
             product->SetFullPath((AZ::IO::Path("@products@") / cleanedRelative).LexicallyNormal());
 
+            AZStd::string assetGroupName;
+            AZ::AssetTypeInfoBus::EventResult(
+                assetGroupName, productWithUuidDatabaseEntry.second.m_assetType, &AZ::AssetTypeInfo::GetGroup);
+            product->m_groupName = AzToQtUtf8String(assetGroupName);
+            product->m_groupNameCrc = AZ::Crc32(assetGroupName);
+
             // compute the display data from the above data.
-            // does someone have information about a more friendly name for this type?
             AZStd::string assetTypeName;
             AZ::AssetTypeInfoBus::EventResult(
                 assetTypeName, productWithUuidDatabaseEntry.second.m_assetType, &AZ::AssetTypeInfo::GetAssetTypeDisplayName);

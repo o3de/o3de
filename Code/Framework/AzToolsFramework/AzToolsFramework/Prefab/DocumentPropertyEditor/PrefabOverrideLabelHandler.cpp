@@ -39,7 +39,7 @@ namespace AzToolsFramework::Prefab
         m_overridden = PrefabOverrideLabel::IsOverridden.ExtractFromDomNode(domValue).value_or(false);
 
         // Set up label
-        AZStd::string_view labelText = PrefabOverrideLabel::Text.ExtractFromDomNode(domValue).value_or("");
+        AZStd::string_view labelText = PrefabOverrideLabel::Value.ExtractFromDomNode(domValue).value_or("");
         m_textLabel->setText(QString::fromUtf8(labelText.data(), aznumeric_cast<int>(labelText.size())));
 
         m_textLabel->setProperty(OverriddenPropertyName, QVariant(m_overridden));
