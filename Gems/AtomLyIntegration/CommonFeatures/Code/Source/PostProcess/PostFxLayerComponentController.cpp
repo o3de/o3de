@@ -119,9 +119,12 @@ namespace AZ
             }
 
             // copy cameraToBlendWeight data to settings
-            m_postProcessInterface = m_featureProcessorInterface->GetOrCreateSettingsInterface(m_entityId);
-            m_postProcessInterface->CopyViewToBlendWeightSettings(perViewBlendWeights);
-            m_postProcessInterface->OnConfigChanged();
+            if (m_postProcessInterface)
+            {
+                m_postProcessInterface = m_featureProcessorInterface->GetOrCreateSettingsInterface(m_entityId);
+                m_postProcessInterface->CopyViewToBlendWeightSettings(perViewBlendWeights);
+                m_postProcessInterface->OnConfigChanged();
+            }
         }
 
         void PostFxLayerComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
