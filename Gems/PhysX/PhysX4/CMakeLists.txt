@@ -15,7 +15,7 @@ o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLAT
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
-    set(physx_dependency 3rdParty::PhysX)					# Set the 3P dependency for the PhysX static modules
+    set(physx_dependency 3rdParty::PhysX4)
     set(physx_files ../Code/physx_files.cmake)
     set(physx_module_files physx_module_files.cmake)
     set(physx_shared_files ../Code/physx_shared_files.cmake)

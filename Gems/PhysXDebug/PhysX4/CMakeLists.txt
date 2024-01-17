@@ -19,7 +19,7 @@ o3de_pal_dir(physx_pal_source_dir ${physx_gem_path}/Source/Platform/${PAL_PLATFO
 include(${physx_pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
-    set(physxdebug_dependency		3rdParty::PhysX)
+    set(physxdebug_dependency		3rdParty::PhysX4)
     set(physxdebug_files 			../Code/physxdebug_files.cmake)
     set(physxdebug_module_files 	physxdebug_module_files.cmake)
     set(physxdebug_editor_files 	../Code/physxdebug_editor_files.cmake)
