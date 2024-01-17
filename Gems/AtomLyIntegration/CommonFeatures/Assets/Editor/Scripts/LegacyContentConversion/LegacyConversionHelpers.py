@@ -105,17 +105,21 @@ class Common_Command_Line_Options(object):
         arguments = argv1.split('-')
 
         self.projectName = ""
+        self.assetCatalogOverridePath = ""
         self.includeGems = False
         self.useP4 = False
         self.endsWithStr = ""
         self.isHelp = False        
-        self.helpString = "usage: {0} -project=<project name> -include_gems -ends_with=<filter> -use_p4\n\
+        self.helpString = "usage: {0} -project=<project name> -include_gems -ends_with=<filter> -use_p4 -assetCatalogOverridePath=<path>\n\
             E.g.:\n\
             {1} -project=StarterGame -include_gems\n\
-              -project is required.\n\
+              -project is required. Path is relative\n\
               -include_gems is optional, and by default gems will not be included.\n\
               -ends_with is optional. It could be used to filter for a specific file (--ends_with=default.mtl)\n\
-              -use_p4 is optional. It will use the p4 command line to check out files that are edited in your default changelist".format(argv0, argv0)
+              -use_p4 is optional. It will use the p4 command line to check out files that are edited in your default changelist\n\
+              -assetCatalogOverridePath is optional. It will use asset ids from this file instead of using the current project asset catalog\n\
+               (match via relative asset path to the project root folder)".format(argv0, argv0)
+              
 
         for argument in arguments:
             argument = argument.rstrip(" ")
@@ -125,6 +129,10 @@ class Common_Command_Line_Options(object):
                 projectArgs = argument.split("=")
                 if len(projectArgs) > 1:
                     self.projectName = projectArgs[1]
+            elif argument.startswith("assetCatalogOverridePath"):
+                projectArgs = argument.split("=")
+                if len(projectArgs) > 1:
+                    self.assetCatalogOverridePath = projectArgs[1]
             elif argument == "include_gems":
                 self.includeGems = True
             elif argument == "use_p4":
@@ -204,7 +212,7 @@ class Asset_Catalog_Dictionaries(object):
             return self.relativePathToAssetIdDict[relativePath]
         return ""
 
-def get_asset_catalog_dictionaries(buildPath, projectName):
+def get_asset_catalog_dictionaries(assetCatalogPath):
     """
     This function pre-supposes that you have modified AssetCatalog::SaveRegistry_Impl
     in Code/Tools/AssetProcessor/native/AssetManager/AssetCatalog.cpp
@@ -218,7 +226,6 @@ def get_asset_catalog_dictionaries(buildPath, projectName):
     relativePathToAssetIdDict[""] = "{00000000-0000-0000-0000-000000000000}:0"
     assetIdToRelativePathDict = {}
     assetUuidToAssetIdsDict = {}
-    assetCatalogPath = os.path.join("Cache", projectName, "pc", projectName, "assetcatalog.xml")
     assetCatalogXml = xml.etree.ElementTree.parse(assetCatalogPath)
     for possibleAssetInfo in assetCatalogXml.getroot().iter('Class'):
         if "name" in possibleAssetInfo.keys() and possibleAssetInfo.get("name") == "AssetInfo":
