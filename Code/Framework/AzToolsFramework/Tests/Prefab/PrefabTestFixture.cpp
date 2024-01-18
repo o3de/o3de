@@ -61,6 +61,8 @@ namespace UnitTest
         m_settingsRegistryInterface = AZ::SettingsRegistry::Get();
         EXPECT_TRUE(m_settingsRegistryInterface);
 
+        AzToolsFramework::EditorRequestBus::Handler::BusConnect();
+
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
         GetApplication()->RegisterComponentDescriptor(PrefabNonEditorComponent::CreateDescriptor());
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponentWithUnReflectedTypeMember::CreateDescriptor());

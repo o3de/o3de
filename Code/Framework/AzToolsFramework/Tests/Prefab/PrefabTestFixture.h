@@ -149,6 +149,8 @@ namespace UnitTest
         //! @param entity The entity that components will be added to.
         void AddRequiredEditorComponents(const AzToolsFramework::EntityIdList& entityIds);
 
+        //! EditorRequestBus.
+        //! @{
         void BrowseForAssets([[maybe_unused]] AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override
         {
         }
