@@ -142,10 +142,8 @@ namespace UnitTest
         void Redo();
 
         //! Adds required editor components to entity.
-        //! This function does similar work as CreateEditorRepresentation does. But we use this one to manually add
-        //! editor components when we create a new entity via PrefabTestFixture::CreateEntity() or aznew operator.
-        //! Note: This will add a transform component, so you should not add the transform by yourself before
-        //! and after calling this for the same entity.
+        //! We use this one to manually add editor components when we create a new entity via PrefabTestFixture::CreateEntity() or aznew operator.
+        //! Note: This will add a transform component, so you should not add the transform by yourself before and after calling this for the same entity.
         //! @param entity The entity that components will be added to.
         void AddRequiredEditorComponents(const AzToolsFramework::EntityIdList& entityIds);
 
