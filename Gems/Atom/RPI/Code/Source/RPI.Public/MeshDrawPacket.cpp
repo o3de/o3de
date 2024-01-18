@@ -231,8 +231,14 @@ namespace AZ
 
             drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
             drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex));
-            drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
-            drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
+            drawPacketBuilder.AddShaderResourceGroup(
+                m_objectSrg->GetRHIShaderResourceGroup()
+                    ? m_objectSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()
+                    : nullptr);
+            drawPacketBuilder.AddShaderResourceGroup(
+                m_material->GetRHIShaderResourceGroup()
+                    ? m_material->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()
+                    : nullptr);
 
             // We build the list of used shaders in a local list rather than m_activeShaders so that
             // if DoUpdate() fails it won't modify any member data.
@@ -469,7 +475,7 @@ namespace AZ
             if (m_drawPacket)
             {
                 m_activeShaders = shaderList;
-                m_materialSrg = m_material->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex);
+                m_materialSrg = m_material->GetRHIShaderResourceGroup() ? m_material->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex): nullptr;
                 return true;
             }
             else
