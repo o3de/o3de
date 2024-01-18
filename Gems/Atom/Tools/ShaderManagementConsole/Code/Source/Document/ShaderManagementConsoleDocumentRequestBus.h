@@ -33,8 +33,8 @@ namespace ShaderManagementConsole
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Uuid BusIdType;
 
-        //! Returns the stable id
-        virtual AZ::u32 AddOneVariantRow() = 0;
+        //! Add a new shader variant with a unique stable ID to the variant list
+        virtual void AddOneVariantRow() = 0;
 
         //! Add a batch of variants
         //! The variants don't have to be fully enumerated, only some options may participate

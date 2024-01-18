@@ -10,8 +10,13 @@
 set -o errexit # exit on the first failure encountered
 
 {
+    ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/o3de /usr/local/bin/o3de
+    ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/AssetProcessor /usr/local/bin/o3de.assetprocessor
+    ln -s @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/Editor /usr/local/bin/o3de.editor
+       
     pushd @CPACK_PACKAGING_INSTALL_PREFIX@
     python/get_python.sh
     chown -R $SUDO_USER .
     popd
+
 } &> /dev/null # hide output

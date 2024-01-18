@@ -23,14 +23,14 @@
 
 namespace ShaderManagementConsole
 {
-
-    template< typename BaseWidget >
+    template<typename BaseWidget>
     struct FocusOutConfigurable : public BaseWidget
     {
-        template< typename... Objects >
+        template<typename... Objects>
         FocusOutConfigurable(Objects&&... args)
             : BaseWidget(std::forward<Objects>(args)...)
-        {}
+        {
+        }
 
         void hidePopup() override
         {
@@ -49,6 +49,7 @@ namespace ShaderManagementConsole
         : QTableWidget(parent)
         , m_toolId(toolId)
         , m_documentId(documentId)
+        , m_emptyOptionIcon(":/Icons/emptyoption.svg")
     {
         setEditTriggers(QAbstractItemView::NoEditTriggers);
         setSelectionBehavior(QAbstractItemView::SelectItems);
@@ -56,11 +57,11 @@ namespace ShaderManagementConsole
         verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
         setAlternatingRowColors(true);
+        setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(this, &QTableWidget::customContextMenuRequested, this, &ShaderManagementConsoleTableView::ShowContextMenu);
 
         RebuildTable();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-        this->setContextMenuPolicy(Qt::CustomContextMenu);
-        this->connect(this, &QTableWidget::customContextMenuRequested, this, &ShaderManagementConsoleTableView::ShowContextMenu);
     }
 
     void ShaderManagementConsoleTableView::mousePressEvent(QMouseEvent* e)
@@ -75,24 +76,19 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleTableView::ShowContextMenu(const QPoint& pos)
     {
         QMenu contextMenu(tr("Context menu"), this);
-        QAction* action = new QAction(QString(tr("Add variant")), this);
-        connect(
-            action,
-            &QAction::triggered,
-            this,
+        contextMenu.addAction(
+            tr("Add Variant"),
             [this]()
             {
                 AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
                     m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::BeginEdit);
 
                 ShaderManagementConsoleDocumentRequestBus::Event(
-                    m_documentId,
-                    &ShaderManagementConsoleDocumentRequestBus::Events::AddOneVariantRow);
+                    m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::AddOneVariantRow);
 
                 AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
                     m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::EndEdit);
             });
-        contextMenu.addAction(action);
 
         QMenu* scriptsMenu = contextMenu.addMenu(QObject::tr("Python Scripts"));
         const AZStd::vector<AZStd::string> arguments{ m_documentId.ToString<AZStd::string>(false, true) };
@@ -186,36 +182,36 @@ namespace ShaderManagementConsole
         {
         case Alpha:
             {
-                // Sort descriptors by name
+                // Sort descriptors by name and ascending order
                 AZStd::sort(
                     m_shaderOptionDescriptors.begin(),
                     m_shaderOptionDescriptors.end(),
                     [](const auto& a, const auto& b)
-                    {   //                      small first ('a' first)
+                    {
                         return a.GetName().GetStringView() < b.GetName().GetStringView();
                     });
             }
             break;
         case Rank:
             {
-                // Sort by shader declaration order
+                // Sort descriptors by ascending declaration order
                 AZStd::sort(
                     m_shaderOptionDescriptors.begin(),
                     m_shaderOptionDescriptors.end(),
                     [](const auto& a, const auto& b)
-                    {   //  small first (order 0 is highest)
+                    {
                         return a.GetOrder() < b.GetOrder();
                     });
             }
             break;
         case Cost:
             {
-                // Sort by cost (high score first)
+                // Sort by cost estimate score in descending order
                 AZStd::sort(
                     m_shaderOptionDescriptors.begin(),
                     m_shaderOptionDescriptors.end(),
                     [](const auto& a, const auto& b)
-                    {   //      big first (high score is more important)
+                    {
                         return a.GetCostEstimate() > b.GetCostEstimate();
                     });
             }
@@ -238,8 +234,6 @@ namespace ShaderManagementConsole
         }
         setHorizontalHeaderItem(0, new QTableWidgetItem(""));
 
-        QIcon emptyOptionIcon(":/Icons/emptyoption.svg");
-
         // Fill all the rows with values from each variant
         for (int row = 0; row < rowCount(); ++row)
         {
@@ -254,7 +248,7 @@ namespace ShaderManagementConsole
                 auto* newItem = new QTableWidgetItem(valueName.GetCStr());
                 if (valueName.IsEmpty())
                 {
-                    newItem->setIcon(emptyOptionIcon);
+                    newItem->setIcon(m_emptyOptionIcon);
                     newItem->setToolTip(tr("runtime variable"));
                 }
                 setItem(row, column, newItem);
@@ -314,7 +308,7 @@ namespace ShaderManagementConsole
                 static auto italicFont = QFont(comboBox->fontInfo().family(), comboBox->fontInfo().pointSize(), comboBox->fontInfo().weight(), true);
                 comboBox->addItem("<dynamic>");
                 comboBox->setItemData(0, italicFont, Qt::FontRole);
-                comboBox->setItemIcon(0, QIcon(":/Icons/emptyoption.svg"));
+                comboBox->setItemIcon(0, m_emptyOptionIcon);
                 for (uint32_t valueIndex = valueMin.GetIndex(); valueIndex <= valueMax.GetIndex(); ++valueIndex)
                 {
                     comboBox->addItem(shaderOptionDescriptor.GetValueName(AZ::RPI::ShaderOptionValue{ valueIndex }).GetCStr());
@@ -379,7 +373,7 @@ namespace ShaderManagementConsole
                 if (variantItem->text().isEmpty())
                 {
                     shaderVariant.m_options.erase(AZ::Name{optionItem->text().toUtf8().constData()});
-                    variantItem->setIcon(QIcon(":/Icons/emptyoption.svg"));
+                    variantItem->setIcon(m_emptyOptionIcon);
                     variantItem->setToolTip(tr("runtime variable"));
                 }
                 else
@@ -458,8 +452,9 @@ namespace ShaderManagementConsole
         m_subLayout.addWidget(&m_sortComboBox);
         m_subLayout.addWidget(&m_defragVariants);
         m_subLayout.addStretch();
-        this->addLayout(&m_subLayout);
-        this->addWidget(&m_tableView);
+
+        addLayout(&m_subLayout);
+        addWidget(&m_tableView);
         connect(&m_sortComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int index) {
             m_tableView.SetColumnSortMode(ColumnSortMode(index));
         });
