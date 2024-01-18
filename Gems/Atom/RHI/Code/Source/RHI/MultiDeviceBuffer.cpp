@@ -53,14 +53,6 @@ namespace AZ::RHI
         MultiDeviceResource::Shutdown();
     }
 
-    void MultiDeviceBuffer::InvalidateViews()
-    {
-        IterateObjects<SingleDeviceBuffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
-        {
-            deviceBuffer->InvalidateViews();
-                                           });
-    }
-
     bool MultiDeviceBuffer::IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor)
     {
         bool isInResourceCache{true};
