@@ -61,7 +61,8 @@ namespace AZ
 
         private:
             class MeshLoader
-                : private Data::AssetBus::Handler
+                : private SystemTickBus::Handler
+                , private Data::AssetBus::Handler
                 , private AzFramework::AssetCatalogEventBus::Handler
             {
             public:
@@ -69,6 +70,9 @@ namespace AZ
                 ~MeshLoader();
 
             private:
+                // SystemTickBus::Handler overrides...
+                void OnSystemTick() override;
+
                 // AssetBus::Handler overrides...
                 void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
