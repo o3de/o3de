@@ -409,7 +409,7 @@ namespace AZ
         void MeshComponentController::HandleModelChange(const AZ::Data::Instance<AZ::RPI::Model>& model)
         {
             Data::Asset<RPI::ModelAsset> modelAsset = m_meshFeatureProcessor->GetModelAsset(m_meshHandle);
-            if (model && modelAsset)
+            if (model && modelAsset.IsReady())
             {
                 const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
                 m_configuration.m_modelAsset = modelAsset;
