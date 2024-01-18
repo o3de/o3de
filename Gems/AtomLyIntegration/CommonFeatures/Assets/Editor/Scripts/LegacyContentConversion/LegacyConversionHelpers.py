@@ -101,16 +101,14 @@ class Common_Command_Line_Options(object):
     """
     Some common options/parsing
     """
-    def __init__(self, argv0, argv1):
-        arguments = argv1.split('-')
-
+    def __init__(self, args):
         self.projectName = ""
         self.assetCatalogOverridePath = ""
         self.includeGems = False
         self.useP4 = False
         self.endsWithStr = ""
         self.isHelp = False        
-        self.helpString = "usage: {0} -project=<project name> -include_gems -ends_with=<filter> -use_p4 -assetCatalogOverridePath=<path>\n\
+        self.helpString = "usage: -project=<project name> -include_gems -ends_with=<filter> -use_p4 -assetCatalogOverridePath=<path>\n\
             E.g.:\n\
             {1} -project=StarterGame -include_gems\n\
               -project is required. Path is relative\n\
@@ -118,12 +116,12 @@ class Common_Command_Line_Options(object):
               -ends_with is optional. It could be used to filter for a specific file (--ends_with=default.mtl)\n\
               -use_p4 is optional. It will use the p4 command line to check out files that are edited in your default changelist\n\
               -assetCatalogOverridePath is optional. It will use asset ids from this file instead of using the current project asset catalog\n\
-               (match via relative asset path to the project root folder)".format(argv0, argv0)
+               (match via relative asset path to the project root folder)"
               
 
-        for argument in arguments:
-            argument = argument.rstrip(" ")
-            if argument == "h" or argument == "help" or argv1 == "?":
+        for argument in args:
+            argument = argument.rstrip(" ").lstrip("-")
+            if argument == "h" or argument == "help" or argument == "?":
                 self.isHelp = True
             elif argument.startswith("project"):
                 projectArgs = argument.split("=")

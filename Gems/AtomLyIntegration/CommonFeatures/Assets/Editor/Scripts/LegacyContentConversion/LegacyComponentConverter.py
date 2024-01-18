@@ -286,7 +286,7 @@ convert any compatible legacy components into the equivalent Atom components\n\
 This script will overwrite the original files, and will remove the legacy components\n\
 upon conversion, decimating the previous contents of those components.\n"
 
-    commandLineOptions = Common_Command_Line_Options(sys.argv[0], sys.argv[1])
+    commandLineOptions = Common_Command_Line_Options(sys.argv)
     if commandLineOptions.isHelp:
         print (commandLineOptions.helpString)
         return
