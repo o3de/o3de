@@ -1816,7 +1816,34 @@ namespace AZ::Data
                         }
                     }
                 }
+// Gruber patch begin // AE -- FIXME delay for motion assets, they are blocking, but a request might be not ready yet
+#if defined(CARBONATED) && defined(AZ_PLATFORM_LINUX)
+                if (!jobQueued && (loadingAsset.GetHint().ends_with(".motion") || loadingAsset.GetHint().ends_with(".spawnable")))
+                {
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));  // 2ms is not enough
 
+                    {
+                        AZStd::scoped_lock<AZStd::recursive_mutex> requestLock(m_activeBlockingRequestMutex);
+                        auto newRange = m_activeBlockingRequests.equal_range(assetId);
+
+                        for (auto blockingRequest = newRange.first; blockingRequest != newRange.second; ++blockingRequest)
+                        {
+                            if (blockingRequest->second->QueueAssetLoadJob(loadJob))
+                            {
+                                AZ_Printf("srvdbg", "fixed %s", loadingAsset.GetHint().c_str());
+                                jobQueued = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!jobQueued)
+                    {
+                        AZ_Printf("srvdbg", "NOT fixed %s", loadingAsset.GetHint().c_str());
+                    }
+                }
+#endif
+// Gruber patch end // AE -- FIXME delay for motion assets, they are blocking, but a request might be not ready yet
                 if (!jobQueued)
                 {
                     loadJob->Start();
