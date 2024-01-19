@@ -332,6 +332,8 @@ namespace AZ::Data
         {
             AZ_PROFILE_SCOPE(AzCore, "WaitForAsset - %s", m_assetData.GetHint().c_str());
 
+            AZ_Printf("srvdbg", "b %s", m_assetData.GetHint().c_str());
+
             // Continue to loop until the load completes.  (Most of the time in the loop will be spent in a thread-blocking state)
             while (!m_loadCompleted)
             {
@@ -366,6 +368,8 @@ namespace AZ::Data
             {
                 AssetManager::Instance().DispatchEvents();
             }
+
+            AZ_Printf("srvdbg", "e %s", m_assetData.GetHint().c_str());
         }
 
         void Finish()
