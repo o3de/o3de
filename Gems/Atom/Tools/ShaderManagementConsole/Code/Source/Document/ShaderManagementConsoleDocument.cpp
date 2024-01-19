@@ -65,24 +65,21 @@ namespace ShaderManagementConsole
         ShaderManagementConsoleDocumentRequestBus::Handler::BusDisconnect();
     }
 
-    AZ::u32 ShaderManagementConsoleDocument::AddOneVariantRow()
+    void ShaderManagementConsoleDocument::AddOneVariantRow()
     {
-        auto shaderAssetResult =
-            AZ::RPI::AssetUtils::LoadAsset<AZ::RPI::ShaderAsset>(m_absolutePath,
-                                                                 m_shaderVariantListSourceData.m_shaderFilePath);
-        if (shaderAssetResult)
+        AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
+        // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
+        // by invariant (no row shuffles), last stableId is highest in vector
+        variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
+            ? 1
+            : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
+        m_shaderVariantListSourceData.m_shaderVariants.emplace_back(AZStd::move(variantInfo));
 
-        {
-            AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderAssetResult.GetValue();
-            AZStd::vector<AZ::RPI::ShaderOptionDescriptor> options = shaderAsset->GetShaderOptionGroupLayout()->GetShaderOptions();
-            AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-            variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
-                ? 1  // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
-                : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
-            m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
-            return variantInfo.m_stableId;
-        }
-        return {};
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        m_modified = true;
     }
 
     // Utility used in sparse-variant-set functions
@@ -272,7 +269,7 @@ namespace ShaderManagementConsole
         AZ::u32 idCounter = 1;  // start at 1 (0 is reserved as explained in ShaderVariantTreeAssetCreator)
         for (auto& variantInfo : newSourceData.m_shaderVariants)
         {
-            variantInfo.m_stableId = idCounter++;
+            variantInfo.m_stableId = ++idCounter;
         }
         SetShaderVariantListSourceData(newSourceData);
     }
@@ -636,7 +633,6 @@ namespace ShaderManagementConsole
 
         SetShaderVariantListSourceData(shaderVariantListSourceData);
         m_modified = {};
-
         return OpenSucceeded();
     }
 

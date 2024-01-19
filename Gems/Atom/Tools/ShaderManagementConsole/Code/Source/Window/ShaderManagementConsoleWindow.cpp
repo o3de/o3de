@@ -10,6 +10,7 @@
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -73,7 +74,7 @@ namespace ShaderManagementConsole
     {
         // Get shader file path
         AZ::IO::Path shaderFullPath;
-        AZ::RPI::ShaderVariantListSourceData shaderVariantList = {};
+        AZ::RPI::ShaderVariantListSourceData shaderVariantList{};
         ShaderManagementConsoleDocumentRequestBus::EventResult(
             shaderVariantList,
             documentId,
@@ -164,11 +165,22 @@ namespace ShaderManagementConsole
             });
         m_menuFile->insertAction(m_menuFile->actions().back(), verifyAction);
 
-        QAction* compactAction = new QAction(tr("Run compaction (undoable)"), m_menuFile);
-        QObject::connect(verifyAction, &QAction::triggered, this, [this](){
-            ShaderManagementConsoleDocumentRequestBus::Event(
-                GetCurrentDocumentId(), &ShaderManagementConsoleDocumentRequestBus::Events::DefragmentVariantList);
-        });
+        QAction* compactAction = new QAction(tr("Run Compaction"), m_menuFile);
+        QObject::connect(
+            verifyAction,
+            &QAction::triggered,
+            this,
+            [this]()
+            {
+                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
+                    GetCurrentDocumentId(), &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::BeginEdit);
+
+                ShaderManagementConsoleDocumentRequestBus::Event(
+                    GetCurrentDocumentId(), &ShaderManagementConsoleDocumentRequestBus::Events::DefragmentVariantList);
+
+                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
+                    GetCurrentDocumentId(), &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::EndEdit);
+            });
         m_menuFile->insertAction(m_menuFile->actions().back(), compactAction);
 
         // Add statistics button

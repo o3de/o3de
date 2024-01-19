@@ -44,6 +44,11 @@ namespace AZ
                 {
                     return m_shader == rhs.m_shader && m_azsli == rhs.m_azsli && m_shaderTag == rhs.m_shaderTag;
                 }
+
+                bool operator<(const ShaderTemplate& rhs) const
+                {
+                    return AZStd::tuple(m_shader, m_azsli, m_shaderTag.GetHash()) < AZStd::tuple(rhs.m_shader, rhs.m_azsli, rhs.m_shaderTag.GetHash());
+                }
             };
 
             struct RuntimeControls
