@@ -8,6 +8,14 @@
 
 set(PAL_TRAIT_PHYSX_SUPPORTED TRUE)
 
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+    ly_associate_package(PACKAGE_NAME PhysX-5.1.1-rev3-linux TARGETS PhysX5 PACKAGE_HASH 870a74a1c2432e98b058c9138f81a3a607911067c1278170496f16c325b814db)
+elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+    # TBD
+else()
+    message(FATAL_ERROR "Unsupported linux architecture ${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
         ly_associate_package(PACKAGE_NAME poly2tri-7f0487a-rev1-linux           TARGETS poly2tri PACKAGE_HASH b16eef8f0bc469de0e3056d28d7484cf42659667e39b68b239f0d3a4cbb533d0) 
