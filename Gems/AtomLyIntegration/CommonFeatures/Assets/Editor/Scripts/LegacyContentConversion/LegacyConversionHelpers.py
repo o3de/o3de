@@ -108,9 +108,9 @@ class Common_Command_Line_Options(object):
         self.useP4 = False
         self.endsWithStr = ""
         self.isHelp = False        
-        self.helpString = "usage: -project=<project name> -include_gems -ends_with=<filter> -use_p4 -assetCatalogOverridePath=<path>\n\
+        self.helpString = f"usage: {args[0]} -project=<project name> -include_gems -ends_with=<filter> -use_p4 -assetCatalogOverridePath=<path>\n\
             E.g.:\n\
-            {1} -project=StarterGame -include_gems\n\
+              -project=StarterGame -include_gems\n\
               -project is required. Path is relative\n\
               -include_gems is optional, and by default gems will not be included.\n\
               -ends_with is optional. It could be used to filter for a specific file (--ends_with=default.mtl)\n\

@@ -297,7 +297,6 @@ upon conversion, decimating the previous contents of those components.\n"
     extensionList = [".slice", ".layer", ".ly", ".cry"]
     fileList = get_file_list(commandLineOptions.projectName, commandLineOptions.includeGems, extensionList, BUILD_PATH, GEMS_PATH)
     
-    assetCatalogDictionaries = None
     if commandLineOptions.assetCatalogOverridePath:
         assetCatalogPath = os.path.join(commandLineOptions.assetCatalogOverridePath)
         assetCatalogDictionaries = get_asset_catalog_dictionaries(assetCatalogPath)
