@@ -718,6 +718,7 @@ set(FILES
     Utils/TypeHash.h
     Utils/Utils.cpp
     Utils/Utils.h
+    Utils/LogNotification.h
     variadic.h
     XML/rapidxml.h
     XML/rapidxml_iterators.h

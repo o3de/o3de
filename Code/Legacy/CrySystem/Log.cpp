@@ -25,6 +25,8 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Time/ITime.h>
 
+#include <AzCore/Utils/LogNotification.h>
+
 #ifdef WIN32
 #include <time.h>
 #endif
@@ -68,6 +70,55 @@ namespace LogCVars
 #if defined(SUPPORT_LOG_IDENTER)
 static CLog::LogStringType indentString ("    ");
 #endif
+
+
+class LogNotificationProcessor
+    : public AZ::LogNotification::LogNotificatorBus::Handler
+{
+public:
+    LogNotificationProcessor()
+        : m_log(nullptr)
+    {
+    }
+
+    void SetLog(CLog* log)
+    {
+        if (m_log == nullptr && log != nullptr)
+        {
+            m_log = log;
+            AZ::LogNotification::LogNotificatorBus::Handler::BusConnect();
+        }
+        else if (m_log != nullptr && log == nullptr)
+        {
+            AZ::LogNotification::LogNotificatorBus::Handler::BusDisconnect();
+            m_log = log;
+        }
+        else
+        {
+            m_log = log;
+        }
+    }
+
+    // LogNotificatorBus imnplementation
+
+    void Update() override
+    {
+        if (m_log)
+        {
+            m_log->Update();
+        }
+    }
+
+    static LogNotificationProcessor* GetInstance()
+    {
+        static LogNotificationProcessor processor;
+        return &processor;
+    }
+
+private:
+    CLog* m_log;
+};
+
 
 namespace
 {
@@ -290,6 +341,8 @@ void CLog::UnregisterConsoleVariables()
 //////////////////////////////////////////////////////////////////////////
 void CLog::CloseLogFile()
 {
+    LogNotificationProcessor::GetInstance()->SetLog(nullptr);
+
     m_logFileHandle.Close();
 }
 
@@ -317,6 +370,8 @@ bool CLog::OpenLogFile(const char* filename, AZ::IO::OpenMode mode)
         syslog(LOG_NOTICE, "Failed to open log file [%s], mode [%d]", filename, static_cast<int>(mode));
     }
 #endif
+
+    LogNotificationProcessor::GetInstance()->SetLog(this);
 
     return opened;
 }
