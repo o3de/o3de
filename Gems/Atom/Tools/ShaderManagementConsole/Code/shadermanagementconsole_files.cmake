@@ -26,6 +26,7 @@ set(FILES
     Source/ShaderManagementConsoleApplication.cpp
     Source/ShaderManagementConsoleApplication.h
     Source/ShaderManagementConsoleRequestBus.h
-    ../Scripts/GenerateShaderVariantListForMaterials.py
+    ../Scripts/CreateShaderVariantListDocumentFromShader.py
     ../Scripts/ExpandOptionsFullCombinatorials.py
+    ../Scripts/GenerateShaderVariantListForAllShaders.py
 )
