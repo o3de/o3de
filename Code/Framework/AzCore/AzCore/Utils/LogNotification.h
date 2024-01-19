@@ -8,6 +8,8 @@
 
 #pragma once
 
+// Gruber patch begin // AE -- update log while waiting for assets - the whole file
+
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
 
@@ -34,3 +36,5 @@ namespace AZ
         typedef EBus<LogNotificator> LogNotificatorBus;
     }
 }
+
+// Gruber patch end // AE -- update log while waiting for assets - the whole file

@@ -30,7 +30,11 @@
 #include <cinttypes>
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
+// Gruber patch begin // AE -- update log while waiting for assets
+#if defined(CARBONATED)
 #include <AzCore/Utils/LogNotification.h>
+#endif
+// Gruber patch end // AE -- update log while waiting for assets
 
 // Set this to 1 to enable debug logging for asset loads/unloads
 #define ENABLE_ASSET_DEBUGGING 0
@@ -345,8 +349,12 @@ namespace AZ::Data
                     while (!m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitBetweenDispatchMs)))
                     {
                         AssetManager::Instance().DispatchEvents();
+// Gruber patch begin // AE -- update log while waiting for assets
+#if defined(CARBONATED)
                         // if we are here then it is the main thread, let deliver the log messages
                         AZ::LogNotification::LogNotificatorBus::Broadcast(&AZ::LogNotification::LogNotificatorBus::Events::Update);
+#endif
+// Gruber patch end // AE -- update log while waiting for assets
                     }
                 }
                 else

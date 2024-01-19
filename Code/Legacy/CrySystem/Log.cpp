@@ -25,7 +25,11 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Time/ITime.h>
 
+// Gruber patch begin // AE -- update log while waiting for assets
+#if defined(CARBONATED)
 #include <AzCore/Utils/LogNotification.h>
+#endif
+// Gruber patch end // AE -- update log while waiting for assets
 
 #ifdef WIN32
 #include <time.h>
@@ -71,7 +75,8 @@ namespace LogCVars
 static CLog::LogStringType indentString ("    ");
 #endif
 
-
+// Gruber patch begin // AE -- update log while waiting for assets
+#if defined(CARBONATED)
 class LogNotificationProcessor
     : public AZ::LogNotification::LogNotificatorBus::Handler
 {
@@ -118,6 +123,8 @@ public:
 private:
     CLog* m_log;
 };
+#endif
+// Gruber patch end // AE -- update log while waiting for assets
 
 
 namespace
@@ -341,7 +348,11 @@ void CLog::UnregisterConsoleVariables()
 //////////////////////////////////////////////////////////////////////////
 void CLog::CloseLogFile()
 {
+    // Gruber patch begin // AE -- update log while waiting for assets
+#if defined(CARBONATED)
     LogNotificationProcessor::GetInstance()->SetLog(nullptr);
+#endif
+    // Gruber patch end // AE -- update log while waiting for assets
 
     m_logFileHandle.Close();
 }
@@ -371,7 +382,11 @@ bool CLog::OpenLogFile(const char* filename, AZ::IO::OpenMode mode)
     }
 #endif
 
+    // Gruber patch begin // AE -- update log while waiting for assets
+#if defined(CARBONATED)
     LogNotificationProcessor::GetInstance()->SetLog(this);
+#endif
+    // Gruber patch end // AE -- update log while waiting for assets
 
     return opened;
 }
