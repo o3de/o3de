@@ -13,6 +13,7 @@
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
@@ -600,7 +601,8 @@ namespace AZ::Reflection
                                     groupName = AZStd::string::format("_GROUP[%d]", ++groupCounter);
                                     nodeData.m_groupEntries.insert(groupName);
 
-                                    // Create a dummy group entry that will be used to correctly display all children properties and UI elements.
+                                    // Create a dummy group entry that will be used to correctly display all children properties and UI
+                                    // elements.
                                     AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
                                     UIElement->m_editData = &currElement;
                                     UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
@@ -868,6 +870,7 @@ namespace AZ::Reflection
                 StackEntry& parentData = m_stack.back();
 
                 const AZ::Edit::ElementData* elementEditData = (classElement ? classElement->m_editData : nullptr);
+
                 if (classElement)
                 {
                     // Ensure our instance pointer is resolved and safe to bind to member attributes.
@@ -901,6 +904,7 @@ namespace AZ::Reflection
                     }
 
                     if (!elementEditData && ((classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_BASE_CLASS) == 0) &&
+                        ((classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_DYNAMIC_FIELD) == 0) &&
                         !(parentData.m_classData && parentData.m_classData->m_container))
                     {
                         m_nodeWasSkipped = true;
