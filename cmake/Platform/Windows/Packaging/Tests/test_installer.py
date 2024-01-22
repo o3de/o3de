@@ -96,15 +96,25 @@ def test_compile_project_fixture(test_create_project_fixture, context):
     cmake_path = next(context.cmake_runtime_path.glob('**/cmake.exe'))
     launcher_target = f"{project_name}.GameLauncher"
 
-    # configure
-    result = context.run([str(cmake_path),'-B', str(context.project_build_path), '-S', '.'], cwd=context.project_path)
+    # configure profile
+    result = context.run([str(cmake_path),'-B', str(context.project_build_path_profile), '-S', '.'], cwd=context.project_path)
     assert result.returncode == 0
-    assert (context.project_build_path / f'{project_name}.sln').is_file()
+    assert (context.project_build_path_profile / f'{project_name}.sln').is_file()
 
-    # build profile, release is not yet supported in the current installer
-    result = context.run([str(cmake_path),'--build', str(context.project_build_path), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=context.project_path)
+    # build profile
+    result = context.run([str(cmake_path),'--build', str(context.project_build_path_profile), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=context.project_path)
     assert result.returncode == 0
-    assert (context.project_bin_path / f'{launcher_target}.exe').is_file()
+    assert (context.project_bin_path_profile / f'{launcher_target}.exe').is_file()
+
+    # configure release
+    result = context.run([str(cmake_path),'-B', str(context.project_build_path_release), '-S', '.','-DLY_MONOLITHIC_GAME=1'], cwd=context.project_path)
+    assert result.returncode == 0
+    assert (context.project_build_path_release / f'{project_name}.sln').is_file()
+
+    # build release 
+    result = context.run([str(cmake_path),'--build', str(context.project_build_path_release), '--target', launcher_target, '--config', 'release','--','-m'], cwd=context.project_path)
+    assert result.returncode == 0
+    assert (context.project_bin_path_release / f'{launcher_target}.exe').is_file()
 
 
 @pytest.fixture(scope="session")
@@ -155,8 +165,8 @@ def test_run_launcher_fixture(test_run_asset_processor_batch_fixture, context):
     project_name = Path(context.project_path).name
     launcher_filename = f"{project_name}.GameLauncher.exe"
     try:
-        # run launcher for 2 mins 
-        result = context.run([str(context.project_bin_path / launcher_filename),'--rhi=null'], cwd=context.project_bin_path, timeout=2*60)
+        # run profile launcher for 2 mins 
+        result = context.run([str(context.project_bin_path_profile / launcher_filename),'--rhi=null'], cwd=context.project_bin_path, timeout=2*60)
         assert result.returncode == 0, f"{launcher_filename} failed with exit code {result.returncode}"
     except TimeoutExpired as e:
         # we expect to close the app on timeout ourselves

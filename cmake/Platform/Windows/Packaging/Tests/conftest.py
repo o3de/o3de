@@ -50,8 +50,10 @@ class SessionContext:
 
         self.cmake_runtime_path = self.install_root / 'cmake/runtime'
         self.engine_bin_path = self.install_root / 'bin/Windows/profile/Default'
-        self.project_build_path = self.project_path / 'build/Windows'
-        self.project_bin_path = self.project_build_path / 'bin/profile'
+        self.project_build_path_profile = self.project_path / 'build/Windows'
+        self.project_build_path_release = self.project_path / 'build/Windows_release'
+        self.project_bin_path_profile = self.project_build_path_profile / 'bin/profile'
+        self.project_bin_path_release = self.project_build_path_release / 'bin/release'
 
         # start a log reader thread to print the output to screen
         self.log_reader_shutdown = False
