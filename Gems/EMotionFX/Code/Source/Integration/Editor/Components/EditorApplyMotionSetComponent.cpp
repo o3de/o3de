@@ -64,14 +64,17 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorApplyMotionSetComponent::OnMotionSetAssetSelected)
 #if defined(CARBONATED)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorApplyMotionSetComponent::m_motionSetAssetNames, "Motion set options", "Available motion sets to use for this anim graph instance")
-                            ->Attribute(AZ::Edit::Attributes::StringList, &EditorApplyMotionSetComponent::GetMotionAssetOptionNames)
+                            //->Attribute(AZ::Edit::Attributes::StringList, &EditorApplyMotionSetComponent::GetMotionAssetOptionNames) // Gruber patch // STA : unneeded and crashes serialization due to const &
                             ->Attribute(AZ::Edit::Attributes::ForceAutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->ElementAttribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorApplyMotionSetComponent::m_motionSetAssetMap)
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorApplyMotionSetComponent::m_motionSetAssetMap, "Motion set assets", "Available male / female motion sets to use for this anim graph instance") // Gruber patch // STA : added
+                            //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide) // Gruber patch // STA : crashes serialization
                             ->Attribute(AZ::Edit::Attributes::HideIcon, true)
                             ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::HideAllTheTime | AZ::Edit::SliceFlags::PushWhenHidden)
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false) // Gruber patch // STA : added
+                            ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)// Gruber patch // STA : added
+                            ->ElementAttribute(AZ::Edit::Attributes::ReadOnly, true) // Gruber patch // STA : added
 #else
                         ->DataElement(AZ_CRC("MotionSetName", 0xcf534ea6), &EditorApplyMotionSetComponent::m_activeMotionSetName, "Active motion set", "Motion set to use for this anim graph instance")
                             ->Attribute(AZ_CRC("MotionSetAsset", 0xd4e88984), &EditorApplyMotionSetComponent::GetMotionAsset)
