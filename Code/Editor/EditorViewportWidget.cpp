@@ -76,7 +76,6 @@
 #include "MainWindow.h"
 #include "Objects/DisplayContext.h"
 #include "Objects/ObjectManager.h"
-#include "Objects/SelectionGroup.h"
 #include "ProcessInfo.h"
 #include "Util/fastlib.h"
 #include "ViewManager.h"
@@ -416,7 +415,7 @@ void EditorViewportWidget::Update()
         return;
     }
 
-    if (m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
+    if (m_rcClient.isEmpty())
     {
         return;
     }
@@ -798,21 +797,6 @@ void EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView()
     Camera::EditorCameraSystemRequestBus::Broadcast(&Camera::EditorCameraSystemRequests::CreateCameraEntityFromViewport);
 }
 
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::OnMenuSelectCurrentCamera()
-{
-    CBaseObject* pCameraObject = GetCameraObject();
-
-    if (pCameraObject && !pCameraObject->IsSelected())
-    {
-        GetIEditor()->BeginUndo();
-        IObjectManager* pObjectManager = GetIEditor()->GetObjectManager();
-        pObjectManager->ClearSelection();
-        pObjectManager->SelectObject(pCameraObject);
-        GetIEditor()->AcceptUndo("Select Current Camera");
-    }
-}
-
 void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
 {
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
@@ -1078,12 +1062,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
         action->setEnabled(false);
         action->setToolTip(tr(AZ::ViewportHelpers::TextCantCreateCameraNoLevel));
         menu->setToolTipsVisible(true);
-    }
-
-    if (GetCameraObject())
-    {
-        action = menu->addAction(tr("Select Current Camera"));
-        connect(action, &QAction::triggered, this, &EditorViewportWidget::OnMenuSelectCurrentCamera);
     }
 
     // Add Cameras.
@@ -1553,17 +1531,6 @@ bool EditorViewportWidget::IsBoundsVisible(const AABB&) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::CenterOnSelection()
-{
-    if (!GetIEditor()->GetSelection()->IsEmpty())
-    {
-        // Get selection bounds & center
-        CSelectionGroup* sel = GetIEditor()->GetSelection();
-        AABB selectionBounds = sel->GetBounds();
-        CenterOnAABB(selectionBounds);
-    }
-}
-
 void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
 {
     Vec3 selectionCenter = aabb.GetCenter();
@@ -1839,12 +1806,6 @@ void EditorViewportWidget::SetSelectedCamera()
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::IsSelectedCamera() const
 {
-    CBaseObject* pCameraObject = GetCameraObject();
-    if (pCameraObject && pCameraObject == GetIEditor()->GetSelectedObject())
-    {
-        return true;
-    }
-
     AzToolsFramework::EntityIdList selectedEntityList;
     AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
         selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);

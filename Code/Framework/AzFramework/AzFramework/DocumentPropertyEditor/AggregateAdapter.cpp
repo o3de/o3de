@@ -930,15 +930,21 @@ namespace AZ::DocumentPropertyEditor
                                 typeField->second.GetString() == Attribute::GetTypeName())
                             {
                                 // last chance! Check if it's an invokable Attribute
-                                void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(functionValue[AZ::Attribute::GetInstanceField()]);
                                 AZ::Attribute* attribute =
                                     AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(functionValue[AZ::Attribute::GetAttributeField()]);
 
-                                const bool canInvoke = attribute->IsInvokable() && attribute->CanDomInvoke(message.m_messageParameters);
+                                AZ::Dom::Value instanceAndArgs(AZ::Dom::Type::Array);
+                                instanceAndArgs.ArrayPushBack(functionValue[AZ::Attribute::GetInstanceField()]);
+                                instanceAndArgs.ArrayInsert(
+                                    instanceAndArgs.ArrayEnd(),
+                                    message.m_messageParameters.ArrayBegin(),
+                                    message.m_messageParameters.ArrayEnd());
+
+                                const bool canInvoke = attribute->IsInvokable() && attribute->CanDomInvoke(instanceAndArgs);
                                 AZ_Assert(canInvoke, "message attribute is not invokable!");
                                 if (canInvoke)
                                 {
-                                    result = attribute->DomInvoke(instance, message.m_messageParameters);
+                                    result = attribute->DomInvoke(instanceAndArgs);
                                 }
                             }
                         }

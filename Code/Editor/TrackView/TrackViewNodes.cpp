@@ -45,7 +45,6 @@
 // Editor
 #include "TrackView/TVEventsDialog.h"
 #include "TrackView/TrackViewDialog.h"
-#include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "TrackViewFBXImportPreviewDialog.h"

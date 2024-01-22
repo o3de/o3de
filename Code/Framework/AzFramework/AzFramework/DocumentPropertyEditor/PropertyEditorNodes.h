@@ -116,6 +116,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t index)>("RemoveNotify");
         static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
         static constexpr auto ContainerCanBeModified = AttributeDefinition<bool>("ContainerCanBeModified");
+        static constexpr auto IndexedChildNameLabelOverride = CallbackAttributeDefinition<AZStd::string(size_t index)>("IndexedChildNameLabelOverride");
     };
 
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
@@ -167,7 +168,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto GenericValueList = GenericValueListAttributeDefinition<GenericValueType>("GenericValueList");
 
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
-        static constexpr auto ChangeValidate = CallbackAttributeDefinition<AZ::Outcome<void, AZStd::string>(void*, const AZ::Uuid&)>("ChangeValidate");
+        static constexpr auto ChangeValidate = CallbackAttributeDefinition<AZ::Outcome<void, AZStd::string>(void*, AZ::Uuid)>("ChangeValidate");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
     };
 

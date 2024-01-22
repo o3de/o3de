@@ -18,7 +18,7 @@ if (NOT python_package_name)
 endif()
     
 ly_add_target(
-    NAME EditorPythonBindings.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         editorpythonbindings_common_files.cmake
@@ -45,7 +45,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME EditorPythonBindings.Editor GEM_MODULE
+    NAME ${gem_name}.Editor GEM_MODULE
 
     NAMESPACE Gem
     FILES_CMAKE
@@ -58,19 +58,28 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::EditorPythonBindings.Static
+            Gem::${gem_name}.Static
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/EditorPythonBindingsModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # builders and tools use EditorPythonBindings.Editor
-ly_create_alias(NAME EditorPythonBindings.Builders NAMESPACE Gem TARGETS EditorPythonBindings.Editor)
-ly_create_alias(NAME EditorPythonBindings.Tools    NAMESPACE Gem TARGETS EditorPythonBindings.Editor)
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS ${gem_name}.Editor)
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS ${gem_name}.Editor)
 
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME EditorPythonBindings.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             editorpythonbindings_tests_files.cmake
@@ -85,10 +94,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::EditorPythonBindings.Static
+                Gem::${gem_name}.Static
     )
     ly_add_googletest(
-        NAME Gem::EditorPythonBindings.Tests
+        NAME Gem::${gem_name}.Tests
         COMPONENT TestTools
         LABELS REQUIRES_tiaf
     )

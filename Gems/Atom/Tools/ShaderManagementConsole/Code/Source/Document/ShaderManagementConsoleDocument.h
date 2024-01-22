@@ -48,14 +48,19 @@ namespace ShaderManagementConsole
         bool EndEdit() override;
 
         // ShaderManagementConsoleDocumentRequestBus::Handler overrides...
-        AZ::u32 AddOneVariantRow() override;
+        void AddOneVariantRow() override;
         void AppendSparseVariantSet(
             AZStd::vector<AZ::Name> optionHeaders,
             AZStd::vector<AZ::Name> matrixOfValues) override;
+        void MultiplySparseVariantSet(
+            AZStd::vector<AZ::Name> optionHeaders,
+            AZStd::vector<AZ::Name> matrixOfValues) override;
+        void DefragmentVariantList() override;
         void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) override;
         const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const override;
         size_t GetShaderOptionDescriptorCount() const override;
         const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const override;
+        DocumentVerificationResult Verify() const override;
 
     private:
         // AtomToolsFramework::AtomToolsDocument overrides...

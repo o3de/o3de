@@ -51,7 +51,11 @@ namespace Platform
     // Implemented in each different platform's PAL implementation files, as it differs per platform.
     AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot);
 
+    // Per platform information.
+    AZStd::string GetPythonExecutablePath(const char* engineRoot);
+
 } // namespace Platform
+
 
 #define Py_To_String(obj) pybind11::str(obj).cast<std::string>().c_str()
 #define Py_To_String_Optional(dict, key, default_string) dict.contains(key) ? Py_To_String(dict[key]) : default_string
@@ -235,6 +239,11 @@ namespace RedirectOutput
 
 namespace O3DE::ProjectManager
 {
+    QString GetPythonExecutablePath(const QString& enginePath)
+    {
+        return QString(Platform::GetPythonExecutablePath(enginePath.toUtf8().constData()).c_str());
+    }
+
     PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
         : m_enginePath(enginePath)
     {

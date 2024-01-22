@@ -16,13 +16,12 @@ import stat
 import pathlib
 import re
 import shutil
-import subprocess
+import string
 import sys
 import urllib.request
 from urllib.parse import ParseResult
 import uuid
 import zipfile
-from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
 from o3de import github_utils, git_utils, validation as valid
@@ -781,3 +780,47 @@ def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger 
     except Exception:  # purposefully broad
         process_logger.error("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
 
+
+def load_template_file(template_file_path: pathlib.Path, template_env: dict, read_encoding:str = 'UTF-8', encoding_error_action:str='ignore') -> str:
+    """
+    Helper method to load in a template file and return the processed template based on the input template environment
+    This will also handle '###' tokens to strip out of the final output completely to support things like adding
+    copyrights to the template that is not intended for the output text
+
+    :param template_file_path:  The path to the template file to load
+    :param template_env:        The template environment dictionary for the template file to process
+    :param read_encoding:       The text encoding to use to read from the file
+    :param  encoding_error_action:  The action to take on encoding errors
+    :return:    The processed content from the template file
+    :raises:    FileNotFoundError: If the template file path cannot be found
+    """
+    try:
+        template_file_content = template_file_path.resolve(strict=True).read_text(encoding=read_encoding,
+                                                                                  errors=encoding_error_action)
+        # Filter out all lines that start with '###' before replacement
+        filtered_template_file_content = (str(re.sub('###.*', '', template_file_content)).strip())
+
+        return string.Template(filtered_template_file_content).substitute(template_env)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Invalid file path. Cannot find template file located at {str(template_file_path)}")
+
+
+def remove_link(link:pathlib.PurePath):
+    """
+    Helper function to either remove a symlink, or remove a folder
+    """
+    link = pathlib.PurePath(link)
+    if os.path.isdir(link):
+        try:
+            os.unlink(link)
+        except OSError:
+            # If unlink fails use shutil.rmtree
+            def remove_readonly(func, path, _):
+                # Clear the readonly bit and reattempt the removal
+                os.chmod(path, stat.S_IWRITE)
+                func(path)
+
+            try:
+                shutil.rmtree(link, onerror=remove_readonly)
+            except shutil.Error as shutil_error:
+                raise RuntimeError(f'Error trying remove directory {link}: {shutil_error}', shutil_error.errno)

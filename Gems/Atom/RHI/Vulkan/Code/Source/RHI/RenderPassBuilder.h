@@ -30,6 +30,7 @@ namespace AZ
             AZStd::vector<RHI::ClearValue> m_clearValues;
 
             bool IsValid() const;
+            void SetName(const AZ::Name& name);
         };
 
         //! Utility class that builds a renderpass and a framebuffer from the
@@ -46,6 +47,9 @@ namespace AZ
 
             //! Builds the renderpass and framebuffer from the information collected from the scopes.
             RHI::ResultCode End(RenderPassContext& builtContext);
+
+            //! Returns if the builder has the attachments to build the framebuffer and renderpass.
+            bool CanBuild() const;
 
         private:
             // Adds the subpass dependencies for a resource view that is being used in a subpass.

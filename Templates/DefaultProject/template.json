@@ -23,6 +23,10 @@
             "isTemplated": false
         },
         {
+            "file": ".command_settings",
+            "isTemplated": false
+        },
+        {
             "file": "CMakeLists.txt",
             "isTemplated": true
         },
@@ -143,7 +147,7 @@
             "isTemplated": true
         },
         {
-            "file": "Levels/ExampleLevel/ExampleLevel.prefab",
+            "file": "Levels/DefaultLevel/DefaultLevel.prefab",
             "isTemplated": false
         },
         {
@@ -192,6 +196,10 @@
         },
         {
             "file": "Registry/awscoreconfiguration.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/load_level.setreg",
             "isTemplated": false
         },
         {
@@ -363,15 +371,16 @@
             "isTemplated": false
         },
         {
-            "file": "package.bat",
+            "file": "export.bat",
             "isTemplated": true
         },
         {
-            "file": "package.sh",
-            "isTemplated": true
+            "file": "export.sh",
+            "isTemplated": true,
+            "isExecutable": true
         },
         {
-            "file": "AssetBundling/SeedLists/Example.seed",
+            "file": "AssetBundling/SeedLists/DefaultLevel.seed",
             "isTemplated": false
         },
         {
@@ -440,7 +449,7 @@
             "dir": "Levels"
         },
         {
-            "dir": "Levels/ExampleLevel"
+            "dir": "Levels/DefaultLevel"
         },
         {
             "dir": "Platform"

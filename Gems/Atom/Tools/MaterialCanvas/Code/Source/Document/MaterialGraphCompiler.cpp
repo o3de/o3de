@@ -768,6 +768,10 @@ namespace MaterialCanvas
         {
             return AZStd::string::format("%u", *v ? 1 : 0);
         }
+        if (auto v = AZStd::any_cast<const AZStd::string>(&slotValue))
+        {
+            return *v;
+        }
         return AZStd::string();
     }
 

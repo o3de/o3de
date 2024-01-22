@@ -208,7 +208,6 @@ namespace AzToolsFramework
 
         bool IsEntitySelected(AZ::EntityId entityId) const;
         void SetSelectedEntities(const EntityIdList& entityIds);
-        void DeselectEntities();
         bool SelectDeselect(AZ::EntityId entityId);
         void ChangeSelectedEntity(AZ::EntityId entityId);
 
@@ -258,6 +257,7 @@ namespace AzToolsFramework
         void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
         void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) override;
+        void DeselectEntities() override;
 
         // EditorManipulatorCommandUndoRedoRequestBus overrides ...
         void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;

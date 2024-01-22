@@ -227,6 +227,7 @@ set(FILES
     Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h
     Manipulators/CapsuleManipulatorRequestBus.h
+    Manipulators/CylinderManipulatorRequestBus.h
     Manipulators/EditorVertexSelection.h
     Manipulators/EditorVertexSelection.cpp
     Manipulators/EditorVertexSelectionBus.h
@@ -662,6 +663,10 @@ set(FILES
     ComponentModes/CapsuleComponentMode.cpp
     ComponentModes/CapsuleViewportEdit.h
     ComponentModes/CapsuleViewportEdit.cpp
+    ComponentModes/CylinderComponentMode.cpp 
+    ComponentModes/CylinderComponentMode.h 
+    ComponentModes/CylinderViewportEdit.cpp 
+    ComponentModes/CylinderViewportEdit.h 
     ComponentModes/ShapeComponentModeBus.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.h
     ComponentModes/ShapeTranslationOffsetViewportEdit.cpp

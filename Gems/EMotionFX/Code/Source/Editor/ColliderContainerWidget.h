@@ -15,7 +15,6 @@
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <MCore/Source/Color.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
 #include <AzQtComponents/Components/Widgets/Card.h>

@@ -11,6 +11,7 @@
 #include <PhysX/MathConversion.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/ArticulationJointBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -213,9 +214,10 @@ namespace PhysX
         // If the lead exists but it doesn't have a rigid body then this joint will never get
         // created and therefore we need to warn about the invalid joint setup.
 
-        if (!Physics::RigidBodyRequestBus::FindFirstHandler(m_configuration.m_leadEntity))
+        if (!Physics::RigidBodyRequestBus::FindFirstHandler(m_configuration.m_leadEntity) &&
+            !PhysX::ArticulationJointRequestBus::FindFirstHandler(m_configuration.m_leadEntity))
         {
-            const AZStd::string entityWithoutBodyWarningMsg("Rigid body not found in lead entity associated with joint. "
+            const AZStd::string entityWithoutBodyWarningMsg("Appropriate simulated body not found in lead entity associated with joint. "
                                                             "Joint will not be created.");
             WarnInvalidJointSetup(m_configuration.m_leadEntity, entityWithoutBodyWarningMsg);
         }
@@ -265,7 +267,8 @@ namespace PhysX
             // In the future only body type validation will be needed
             if (!info.m_leadBody ||
                 !(info.m_leadBody->GetNativeType() == NativeTypeIdentifiers::RigidBody ||
-                 info.m_leadBody->GetNativeType() == NativeTypeIdentifiers::RigidBodyStatic))
+                  info.m_leadBody->GetNativeType() == NativeTypeIdentifiers::RigidBodyStatic ||
+                  info.m_leadBody->GetNativeType() == NativeTypeIdentifiers::ArticulationLink))
             {
                 info.m_leadBody = nullptr;
                 const AZStd::string entityWithoutBodyWarningMsg(
@@ -278,7 +281,9 @@ namespace PhysX
             info.m_followerBody, m_configuration.m_followerEntity, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
 
         // The follower body has to be a RigidBody, otherwise it won't be moving anywhere
-        if (!info.m_followerBody || info.m_followerBody->GetNativeType() != NativeTypeIdentifiers::RigidBody)
+        if (!info.m_followerBody ||
+            (info.m_followerBody->GetNativeType() != NativeTypeIdentifiers::RigidBody &&
+             info.m_leadBody->GetNativeType() != NativeTypeIdentifiers::ArticulationLink))
         {
             info.m_followerBody = nullptr;
             const AZStd::string entityWithoutBodyWarningMsg("Rigid body not found in follower entity associated with joint. Please add a rigid body component to the entity.");

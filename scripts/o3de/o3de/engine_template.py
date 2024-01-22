@@ -12,6 +12,7 @@ import logging
 import os
 import pathlib
 import shutil
+import stat
 import sys
 import json
 import uuid
@@ -283,6 +284,9 @@ def _execute_template_json(json_data: dict,
             _transform_copy(in_file, out_file, replacements, keep_license_text)
         else:
             shutil.copy(in_file, out_file)
+        # If the copied file is an executable, make sure the executable flag is enabled
+        if copy_file.get('isExecutable', False):
+            os.chmod(out_file, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR | stat.S_IWGRP | stat.S_IXOTH | stat.S_IXGRP | stat.S_IXUSR)
 
 
 def _execute_restricted_template_json(template_json_data: dict,
@@ -1724,6 +1728,12 @@ def create_project(project_path: pathlib.Path,
     # project name cannot be the same as a restricted platform name
     if project_name in restricted_platforms:
         logger.error(f'Project name cannot be a restricted name. {project_name}')
+        return 1
+
+    # the generic launcher (and the engine, often) are referred to as o3de, so prevent the user from 
+    # accidentally creating a confusing error situation.
+    if project_name.lower() == 'o3de':
+        logger.error(f"Project name cannot be 'o3de' as this is reserved for the generic launcher.")
         return 1
 
     # project restricted name

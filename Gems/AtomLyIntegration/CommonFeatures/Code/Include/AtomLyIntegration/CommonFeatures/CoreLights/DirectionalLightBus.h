@@ -56,6 +56,12 @@ namespace AZ
             //! @param angularDiameter Directional light's angular diameter in degrees.
             virtual void SetAngularDiameter(float angularDiameter) = 0;
 
+            //! Sets whether enable shadow for this light
+            virtual void SetShadowEnabled(bool enable) = 0;
+
+            //! Get shadow enable status for this light
+            virtual bool GetShadowEnabled() const = 0;
+
             //! This gets shadowmap size (width/height).
             //! @return shadowmap size.
             virtual ShadowmapSize GetShadowmapSize() const = 0;
@@ -210,9 +216,11 @@ namespace AZ
             virtual void SetAffectsGIFactor(float affectsGIFactor) = 0;
 
             //! Bind to this event to be notified whenever at least one of the
-            //! configuration properties of the Directional Light Component changes.
-            //! REMARK: This event won't be signaled when the Set*() functions are called
-            //! on a particular directional light, instead, this event will be signaled only
+            //! Returns the lighting channel mask
+            virtual uint32_t GetLightingChannelMask() const = 0;
+
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(uint32_t lightingChannelMask) = 0;
             //! when the user modifies the component properties in the Inspector panel. 
             virtual void BindConfigurationChangedEventHandler(DirectionalLightConfigurationChangedEvent::Handler& configurationChangedHandler) = 0;
         };

@@ -344,9 +344,9 @@ namespace UnitTest
     }
 
     template <typename ComponentType>
-    AZStd::vector<AZ::Component*> GetComponentsForEntity(AZ::Entity* entity)
+    AZ::Entity::ComponentArrayType GetComponentsForEntity(AZ::Entity* entity)
     {
-        AZStd::vector<AZ::Component*> components;
+        AZ::Entity::ComponentArrayType components;
         AzToolsFramework::GetAllComponentsForEntity(entity, components);
 
         auto itr = AZStd::remove_if(components.begin(), components.end(), [](AZ::Component* component) {return AzToolsFramework::GetUnderlyingComponentType(*component) != azrtti_typeid<ComponentType>();});
@@ -850,7 +850,7 @@ namespace UnitTest
         ASSERT_EQ(pendingComponentInfo.m_validComponentsThatAreIncompatible[0], whiteBriefsComponent);
 
         // disable white briefs component, which should resolve heart briefs, and check container counts
-        AzToolsFramework::DisableComponents(whiteBriefsComponent);
+        AzToolsFramework::DisableComponents({ whiteBriefsComponent });
         ASSERT_EQ(1, CountComponentsOnEntity<BlueJeansComponent>(m_entity1));
         ASSERT_EQ(0, CountComponentsOnEntity<WhiteBriefsComponent>(m_entity1));
         ASSERT_EQ(1, CountComponentsOnEntity<HeartBoxersComponent>(m_entity1));
@@ -865,7 +865,7 @@ namespace UnitTest
         ASSERT_EQ(1, m_entity1Counter.GetDisabledCount());
 
         // re-enable white briefs component which is now pending because it's re-added after heart boxers was resolved
-        AzToolsFramework::EnableComponents(whiteBriefsComponent);
+        AzToolsFramework::EnableComponents({ whiteBriefsComponent });
         ASSERT_EQ(1, CountComponentsOnEntity<BlueJeansComponent>(m_entity1));
         ASSERT_EQ(0, CountComponentsOnEntity<WhiteBriefsComponent>(m_entity1));
         ASSERT_EQ(1, CountComponentsOnEntity<HeartBoxersComponent>(m_entity1));
@@ -880,7 +880,7 @@ namespace UnitTest
         ASSERT_EQ(0, m_entity1Counter.GetDisabledCount());
 
         // Try removing pending component (should be uneventful, but it is a branch internally)
-        auto removalOutcome = AzToolsFramework::RemoveComponents(component);
+        auto removalOutcome = AzToolsFramework::RemoveComponents({ component });
         ASSERT_TRUE(removalOutcome.IsSuccess());
         ASSERT_EQ(1, CountComponentsOnEntity<BlueJeansComponent>(m_entity1));
         ASSERT_EQ(1, CountComponentsOnEntity<WhiteBriefsComponent>(m_entity1));
@@ -993,7 +993,7 @@ namespace UnitTest
         ASSERT_EQ(pendingComponentInfo.m_validComponentsThatAreIncompatible[0], hatesSocksComponent);
 
         // Remove HatesSocks from entity 1 to valid the entire entity
-        auto removalOutcome = AzToolsFramework::RemoveComponents(hatesSocksComponent);
+        auto removalOutcome = AzToolsFramework::RemoveComponents({ hatesSocksComponent });
         ASSERT_TRUE(removalOutcome.IsSuccess());
         ASSERT_TRUE((VerifyRemovalValidatedComponents<WoolSocksComponent, LeatherBootsComponent>::OnOutcomeForEntity(removalOutcome, m_entity1)));
     }

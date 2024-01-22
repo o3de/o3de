@@ -213,6 +213,14 @@ namespace AZ
             m_deviceBufferNeedsUpdate = true;
         }
 
+        void CapsuleLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetLightingChannelMask().");
+ 
+            m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
         void CapsuleLightFeatureProcessor::SetCapsuleData(LightHandle handle, const CapsuleLightData& data)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetCapsuleData().");

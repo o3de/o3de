@@ -45,6 +45,15 @@ namespace AZ
             Base::Shutdown();
         }
 
+        void GraphicsPipeline::SetNameInternal(const AZStd::string_view& name)
+        {
+            if (m_renderPass)
+            {
+                m_renderPass->SetName(AZ::Name(name));
+            }
+            Base::SetNameInternal(name);
+        }
+
         RHI::ResultCode GraphicsPipeline::BuildNativePipeline(const Descriptor& descriptor, const PipelineLayout& pipelineLayout)
         {
             AZ_Assert(m_renderPass, "RenderPass is null.");
@@ -114,16 +123,14 @@ namespace AZ
             m_pipelineShaderStageCreateInfos.emplace_back();
             FillPipelineShaderStageCreateInfo(*func, RHI::ShaderStage::Vertex, ShaderSubStage::Default, *m_pipelineShaderStageCreateInfos.rbegin());
 
-            if (GetDevice().GetFeatures().m_tessellationShader)
+            if (GetDevice().GetFeatures().m_geometryShader)
             {
-                func = static_cast<ShaderStageFunction const*>(descriptor.m_tessellationFunction.get());
+                func = static_cast<ShaderStageFunction const*>(descriptor.m_geometryFunction.get());
                 if (func)
                 {
-                    for (uint32_t subStageIndex = 0; subStageIndex < ShaderSubStageCountMax; ++subStageIndex)
-                    {
-                        m_pipelineShaderStageCreateInfos.emplace_back();
-                        FillPipelineShaderStageCreateInfo(*func, RHI::ShaderStage::Tessellation, subStageIndex, *m_pipelineShaderStageCreateInfos.rbegin());
-                    }
+                    m_pipelineShaderStageCreateInfos.emplace_back();
+                    FillPipelineShaderStageCreateInfo(
+                        *func, RHI::ShaderStage::Geometry, ShaderSubStage::Default, *m_pipelineShaderStageCreateInfos.rbegin());
                 }
             }
 

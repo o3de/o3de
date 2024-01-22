@@ -53,6 +53,8 @@ namespace AzToolsFramework
         : QHBoxLayout(parent)
         , m_depth(-1)
     {
+        setContentsMargins(0, 0, 0, 0);
+        setSpacing(0);
     }
 
     void DPELayout::Init(int depth, bool enforceMinWidth, [[maybe_unused]] QWidget* parentWidget)
@@ -501,6 +503,8 @@ namespace AzToolsFramework
                 auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget);
                 if (!handlerInfo.IsNull())
                 {
+                    childWidget->hide();
+                    m_columnLayout->removeWidget(childWidget);
                     DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
                 else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
@@ -655,6 +659,8 @@ namespace AzToolsFramework
             }
             else if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
             {
+                childWidget->hide();
+                m_columnLayout->removeWidget(childWidget);
                 RemoveCachedAttributes(childIndex);
                 if (!newOwner)
                 {
@@ -1000,6 +1006,8 @@ namespace AzToolsFramework
                         // check if this patch has morphed the PropertyHandler into a different type
                         if (handlerId != handlerInfo.handlerId)
                         {
+                            childWidget->hide();
+                            m_columnLayout->removeWidget(childWidget);
                             DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                             m_columnLayout->RemoveSharePriorColumn(childIndex);
 
@@ -1011,6 +1019,7 @@ namespace AzToolsFramework
                         else
                         {
                             // handler is the same, set the existing handler with the new value
+                            RemoveCachedAttributes(childIndex);
                             SetPropertyEditorAttributes(childIndex, valueAtSubPath, childWidget);
                             handlerInfo.handlerInterface->SetValueFromDom(valueAtSubPath);
                         }
@@ -1347,6 +1356,9 @@ namespace AzToolsFramework
     {
         QWidget* scrollSurface = new QWidget(this);
         m_layout = new QVBoxLayout(scrollSurface);
+        m_layout->setContentsMargins(0, 0, 0, 0);
+        m_layout->setSpacing(2);
+
         setWidget(scrollSurface);
         setWidgetResizable(true);
 

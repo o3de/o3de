@@ -107,7 +107,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "StartupTraceHandler.h"
 #include "ToolsConfigPage.h"
-#include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
 #include "WaitProgress.h"
 
@@ -387,8 +386,6 @@ public:
     bool m_bExport = false;
     bool m_bExportTexture = false;
 
-    bool m_bMatEditMode = false;
-
     bool m_bConsoleMode = false;
     bool m_bNullRenderer = false;
     bool m_bDeveloperMode = false;
@@ -429,7 +426,6 @@ public:
             { "exportTexture", m_bExportTexture },
             { "test", m_bTest },
             { "auto_level_load", m_bAutoLoadLevel },
-            { "MatEdit", m_bMatEditMode },
             { "BatchMode", m_bConsoleMode },
             { "NullRenderer", m_bNullRenderer },
             { "devmode", m_bDeveloperMode },
@@ -885,8 +881,6 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
     m_execLineCmd = cmdInfo.m_execLineCmd;
     m_bAutotestMode = cmdInfo.m_bAutotestMode || cmdInfo.m_bConsoleMode;
 
-    m_pEditor->SetMatEditMode(cmdInfo.m_bMatEditMode);
-
     if (m_bExportMode)
     {
         m_exportFile = cmdInfo.m_exportFile;
@@ -967,7 +961,7 @@ bool CCryEditApp::CheckIfAlreadyRunning()
 /////////////////////////////////////////////////////////////////////////////
 bool CCryEditApp::InitGame()
 {
-    if (!m_bPreviewMode && !GetIEditor()->IsInMatEditMode())
+    if (!m_bPreviewMode)
     {
         AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
         Log((QString("project_path = %1").arg(!projectPath.empty() ? projectPath.c_str() : "<not set>")).toUtf8().data());
@@ -1107,7 +1101,6 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
                 doLevelNeedLoading = true;
                 if (gSettings.bShowDashboardAtStartup
                     && !runningPythonScript
-                    && !GetIEditor()->IsInMatEditMode()
                     && !m_bConsoleMode
                     && !m_bSkipWelcomeScreenDialog
                     && !m_bPreviewMode
@@ -1597,9 +1590,7 @@ bool CCryEditApp::InitInstance()
 #ifdef Q_OS_MACOS
     auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionDisabled);
 #else
-    // No need for mainwindow wrapper for MatEdit mode
-    auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(cmdInfo.m_bMatEditMode ? AzQtComponents::WindowDecorationWrapper::OptionDisabled
-        : AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
+    auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
 #endif
     mainWindowWrapper->setGuest(mainWindow);
     HWND mainWindowWrapperHwnd = (HWND)mainWindowWrapper->winId();
@@ -1678,7 +1669,7 @@ bool CCryEditApp::InitInstance()
             AZ::Environment::FindVariable<int>("assertVerbosityLevel").Set(1);
             m_pConsoleDialog->raise();
         }
-        else if (!GetIEditor()->IsInMatEditMode())
+        else
         {
             MainWindow::instance()->show();
             MainWindow::instance()->raise();
@@ -1711,10 +1702,7 @@ bool CCryEditApp::InitInstance()
     }
 
     SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectDisplayName().c_str(), nullptr);
-    if (!GetIEditor()->IsInMatEditMode())
-    {
-        m_pEditor->InitFinished();
-    }
+    m_pEditor->InitFinished();
 
     // Make sure Python is started before we attempt to restore the Editor layout, since the user
     // might have custom view panes in the saved layout that will need to be registered.
@@ -1724,7 +1712,7 @@ bool CCryEditApp::InitInstance()
         editorPythonEventsInterface->StartPython();
     }
 
-    if (!GetIEditor()->IsInMatEditMode() && !GetIEditor()->IsInConsolewMode())
+    if (!GetIEditor()->IsInConsolewMode())
     {
         bool restoreDefaults = !mainWindowWrapper->restoreGeometryFromSettings();
         QtViewPaneManager::instance()->RestoreLayout(restoreDefaults);
@@ -2064,7 +2052,7 @@ int CCryEditApp::ExitInstance(int exitCode)
         }
     }
 
-    if (GetIEditor() && !GetIEditor()->IsInMatEditMode())
+    if (GetIEditor())
     {
         //Nobody seems to know in what case that kind of exit can happen so instrumented to see if it happens at all
         if (m_pEditor)
@@ -2521,12 +2509,6 @@ void CCryEditApp::OnViewSwitchToGameFullScreen()
 {
     ed_previewGameInFullscreen_once = true;
     OnViewSwitchToGame();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateSelected(QAction* action)
-{
-    action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3491,7 +3473,7 @@ void CCryEditApp::AddToRecentFileList(const QString& lpszPathName)
 bool CCryEditApp::IsInRegularEditorMode()
 {
     return !IsInTestMode() && !IsInPreviewMode()
-           && !IsInExportMode() && !IsInConsoleMode() && !IsInLevelLoadTestMode() && !GetIEditor()->IsInMatEditMode();
+           && !IsInExportMode() && !IsInConsoleMode() && !IsInLevelLoadTestMode();
 }
 
 void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, QString sPostTitleStr)
@@ -3798,7 +3780,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         {
             CEditCommandLineInfo cmdInfo;
             if (!cmdInfo.m_bAutotestMode && !cmdInfo.m_bConsoleMode && !cmdInfo.m_bExport && !cmdInfo.m_bExportTexture &&
-                !cmdInfo.m_bNullRenderer && !cmdInfo.m_bMatEditMode && !cmdInfo.m_bTest)
+                !cmdInfo.m_bNullRenderer && !cmdInfo.m_bTest)
             {
                 if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
                 {

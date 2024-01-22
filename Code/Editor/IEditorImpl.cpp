@@ -40,7 +40,6 @@
 
 // Editor
 #include "CryEdit.h"
-#include "Dialogs/ErrorsDlg.h"
 #include "PluginManager.h"
 #include "ViewManager.h"
 #include "DisplaySettings.h"
@@ -53,7 +52,6 @@
 #include "Settings.h"
 #include "Include/IObjectManager.h"
 #include "Include/ISourceControl.h"
-#include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 
 #include "EditorFileMonitor.h"
@@ -108,13 +106,11 @@ CEditorImpl::CEditorImpl()
     , m_pMusicManager(nullptr)
     , m_pErrorReport(nullptr)
     , m_pLasLoadedLevelErrorReport(nullptr)
-    , m_pErrorsDlg(nullptr)
     , m_pSourceControl(nullptr)
     , m_pSelectionTreeManager(nullptr)
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
-    , m_bMatEditMode(false)
     , m_bShowStatusText(true)
     , m_bInitialized(false)
     , m_bExiting(false)
@@ -291,9 +287,7 @@ CEditorImpl::~CEditorImpl()
     SAFE_DELETE(m_pAssetBrowserRequestHandler);
     SAFE_DELETE(m_assetEditorRequestsHandler);
 
-    // Game engine should be among the last things to be destroyed, as it
-    // destroys the engine.
-    SAFE_DELETE(m_pErrorsDlg);
+    // Game engine should be among the last things to be destroyed.
     SAFE_DELETE(m_pLevelIndependentFileMan);
     SAFE_DELETE(m_pGameEngine);
     // The error report must be destroyed after the game, as the engine
@@ -498,7 +492,7 @@ void CEditorImpl::SetDataModified()
 
 void CEditorImpl::SetStatusText(const QString& pszString)
 {
-    if (m_bShowStatusText && !m_bMatEditMode && GetMainStatusBar())
+    if (m_bShowStatusText && GetMainStatusBar())
     {
         GetMainStatusBar()->SetStatusText(pszString);
     }
@@ -596,20 +590,6 @@ void CEditorImpl::DeleteObject(CBaseObject* obj)
     GetObjectManager()->DeleteObject(obj);
 }
 
-CBaseObject* CEditorImpl::GetSelectedObject()
-{
-    if (m_pObjectManager->GetSelection()->GetCount() != 1)
-    {
-        return nullptr;
-    }
-    return m_pObjectManager->GetSelection()->GetObject(0);
-}
-
-void CEditorImpl::SelectObject(CBaseObject* obj)
-{
-    GetObjectManager()->SelectObject(obj);
-}
-
 IObjectManager* CEditorImpl::GetObjectManager()
 {
     return m_pObjectManager;
@@ -634,39 +614,6 @@ CSettingsManager* CEditorImpl::GetSettingsManager()
     }
 
     return m_pSettingsManager;
-}
-
-CSelectionGroup* CEditorImpl::GetSelection()
-{
-    return m_pObjectManager->GetSelection();
-}
-
-int CEditorImpl::ClearSelection()
-{
-    if (GetSelection()->IsEmpty())
-    {
-        return 0;
-    }
-    CUndo undo("Clear Selection");
-    return GetObjectManager()->ClearSelection();
-}
-
-void CEditorImpl::LockSelection(bool bLock)
-{
-    // Selection must be not empty to enable selection lock.
-    if (!GetSelection()->IsEmpty())
-    {
-        m_bSelectionLocked = bLock;
-    }
-    else
-    {
-        m_bSelectionLocked = false;
-    }
-}
-
-bool CEditorImpl::IsSelectionLocked()
-{
-    return m_bSelectionLocked;
 }
 
 CViewManager* CEditorImpl::GetViewManager()
@@ -1338,11 +1285,6 @@ bool CEditorImpl::IsSourceControlConnected()
     return false;
 }
 
-void CEditorImpl::SetMatEditMode(bool bIsMatEditMode)
-{
-    m_bMatEditMode = bIsMatEditMode;
-}
-
 void CEditorImpl::ShowStatusText(bool bEnable)
 {
     m_bShowStatusText = bEnable;
@@ -1385,17 +1327,6 @@ void CEditorImpl::InitFinished()
 void CEditorImpl::ReloadTemplates()
 {
     m_templateRegistry.LoadTemplates("Editor");
-}
-
-void CEditorImpl::AddErrorMessage(const QString& text, const QString& caption)
-{
-    if (!m_pErrorsDlg)
-    {
-        m_pErrorsDlg = new CErrorsDlg(GetEditorMainWindow());
-        m_pErrorsDlg->show();
-    }
-
-    m_pErrorsDlg->AddMessage(text, caption);
 }
 
 void CEditorImpl::CmdPy(IConsoleCmdArgs* pArgs)

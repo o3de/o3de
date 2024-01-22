@@ -17,9 +17,7 @@ namespace AZ::RHI
 {
     class ImageFrameAttachment;
     class MultiDeviceShaderResourceGroup;
-    class ImageView;
     class MultiDeviceImageView;
-    struct ImageViewDescriptor;
 
     //! MultiDeviceImage represents a collection of MultiDeviceImage Subresources, where each subresource comprises a one to three
     //! dimensional grid of pixels. Images are divided into an array of mip-map chains. A mip map chain is
@@ -36,6 +34,7 @@ namespace AZ::RHI
         friend class MultiDeviceImagePool;
         friend class MultiDeviceTransientAttachmentPool;
         friend class MultiDeviceStreamingImagePool;
+        friend class MultiDeviceSwapChain;
 
         using Base = MultiDeviceResource;
 
@@ -96,6 +95,9 @@ namespace AZ::RHI
         //! Invalidate all device-specific views by setting off events on all corresponding ResourceInvalidateBusses
         void InvalidateViews() override final;
 
+        //! Returns true if the ResourceView is in the cache of all single device images
+        bool IsInResourceCache(const ImageViewDescriptor& imageViewDescriptor);
+
     protected:
         virtual void SetDescriptor(const ImageDescriptor& descriptor);
 
@@ -111,12 +113,12 @@ namespace AZ::RHI
     };
 
     //! A MultiDeviceImageView is a light-weight representation of a view onto a multi-device image.
-    //! It holds a raw pointer to a multi-device image as well as an ImageViewDescriptor.
-    //! Using both, single-device ImageViews can be retrieved.
-    class MultiDeviceImageView : public Object
+    //! It holds a raw pointer to a multi-device image as well as an ImageViewDescriptor
+    //! Using both, single-device ImageViews can be retrieved
+    class MultiDeviceImageView : public MultiDeviceResourceView
     {
     public:
-        AZ_RTTI(MultiDeviceImageView, "{C837818B-2A4D-49F2-A37E-349494A9C9B7}", Object);
+        AZ_RTTI(MultiDeviceImageView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", MultiDeviceResourceView);
         virtual ~MultiDeviceImageView() = default;
 
         MultiDeviceImageView(const RHI::MultiDeviceImage* image, ImageViewDescriptor descriptor)
@@ -140,10 +142,25 @@ namespace AZ::RHI
             return m_descriptor;
         }
 
+        const MultiDeviceResource* GetResource() const override
+        {
+            return m_image;
+        }
+
+        const ResourceView* GetDeviceResourceView(int deviceIndex) const override
+        {
+            return GetDeviceImageView(deviceIndex).get();
+        }
+
     private:
         //! A raw pointer to a multi-device image
         const RHI::MultiDeviceImage* m_image;
         //! The corresponding ImageViewDescriptor for this view.
         ImageViewDescriptor m_descriptor;
+        //! ImageView cache
+        //! This cache is necessary as the caller receives raw pointers from the ResourceCache,
+        //! which now, with multi-device objects in use, need to be held in memory as long as
+        //! the multi-device view is held.
+        mutable AZStd::unordered_map<int, Ptr<RHI::ImageView>> m_cache;
     };
 } // namespace AZ::RHI

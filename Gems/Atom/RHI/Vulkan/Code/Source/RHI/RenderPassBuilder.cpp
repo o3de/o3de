@@ -26,6 +26,19 @@ namespace AZ
         {
             return m_framebuffer && m_renderPass;
         }
+
+        void RenderPassContext::SetName(const AZ::Name& name)
+        {
+            if (m_renderPass)
+            {
+                m_renderPass->SetName(name);
+            }
+
+            if (m_framebuffer)
+            {
+                m_framebuffer->SetName(name);
+            }
+        }
         
         RenderPassBuilder::RenderPassBuilder(Device& device, uint32_t subpassesCount)
             : m_device(device)
@@ -38,6 +51,11 @@ namespace AZ
 
         void RenderPassBuilder::AddScopeAttachments(const Scope& scope)
         {
+            if (!scope.UsesRenderpass())
+            {
+                return;
+            }
+
             auto setAttachmentStoreActionFunc = [this](const uint32_t attachmentIndex, const RHI::AttachmentLoadStoreAction& loadStoreAction)
             {
                 auto& attachmentLoadStoreAction = m_renderpassDesc.m_attachments[attachmentIndex].m_loadStoreAction;
@@ -319,6 +337,11 @@ namespace AZ
 
             builtContext.m_clearValues = AZStd::move(m_clearValues);
             return RHI::ResultCode::Success;
+        }
+
+        bool RenderPassBuilder::CanBuild() const
+        {
+            return m_renderpassDesc.m_subpassCount > 0;
         }
 
         void RenderPassBuilder::AddSubpassDependency(uint32_t srcSubpass, uint32_t dstSubpass, const Scope::Barrier& barrier)

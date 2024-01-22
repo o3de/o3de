@@ -138,11 +138,11 @@ namespace AZ
                 RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
                 BindingDependencies& bindingDependencies,
-                RootConstantData& rootConstantData)
+                RootConstantData& rootConstantData,
+                const AZStd::string& tempFolder)
             {
-                AzslCompiler azslc(
-                    azslData
-                        .m_preprocessedFullPath); // set the input file for eventual error messages, but the compiler won't be called on it.
+                AzslCompiler azslc(azslData.m_preprocessedFullPath,  // set the input file for eventual error messages, but the compiler won't be called on it.
+                                   tempFolder);
                 bool allReadSuccess = true;
                 // read: input assembly reflection
                 //       shader resource group reflection
@@ -225,10 +225,6 @@ namespace AZ
                     return RHI::ShaderHardwareStage::Fragment;
                 case RPI::ShaderStageType::Geometry:
                     return RHI::ShaderHardwareStage::Geometry;
-                case RPI::ShaderStageType::TessellationControl:
-                    return RHI::ShaderHardwareStage::TessellationControl;
-                case RPI::ShaderStageType::TessellationEvaluation:
-                    return RHI::ShaderHardwareStage::TessellationEvaluation;
                 case RPI::ShaderStageType::Vertex:
                     return RHI::ShaderHardwareStage::Vertex;
                 case RPI::ShaderStageType::RayTracing:
@@ -660,7 +656,8 @@ namespace AZ
                 const AZStd::string& vertexShaderName,
                 const RPI::ShaderOptionGroupLayout& shaderOptionGroupLayout,
                 const AZStd::string& pathToIaJson,
-                RPI::ShaderInputContract& contract)
+                RPI::ShaderInputContract& contract,
+                const AZStd::string& tempFolder)
             {
                 StructData inputStruct;
                 inputStruct.m_id = "";
@@ -672,7 +669,7 @@ namespace AZ
                     return AssetBuilderSDK::ProcessJobResult_Failed;
                 }
 
-                AzslCompiler azslc(azslData.m_preprocessedFullPath);
+                AzslCompiler azslc(azslData.m_preprocessedFullPath, tempFolder);
                 if (!azslc.ParseIaPopulateStructData(jsonOutcome.GetValue(), vertexShaderName, inputStruct))
                 {
                     AZ_Error(ShaderBuilderUtilityName, false, "Failed to parse input layout\n");
@@ -752,7 +749,8 @@ namespace AZ
                 const AzslData& azslData,
                 const AZStd::string& fragmentShaderName,
                 const AZStd::string& pathToOmJson,
-                RPI::ShaderOutputContract& contract)
+                RPI::ShaderOutputContract& contract,
+                const AZStd::string& tempFolder)
             {
                 StructData outputStruct;
                 outputStruct.m_id = "";
@@ -764,7 +762,7 @@ namespace AZ
                     return AssetBuilderSDK::ProcessJobResult_Failed;
                 }
 
-                AzslCompiler azslc(azslData.m_preprocessedFullPath);
+                AzslCompiler azslc(azslData.m_preprocessedFullPath, tempFolder);
                 if (!azslc.ParseOmPopulateStructData(jsonOutcome.GetValue(), fragmentShaderName, outputStruct))
                 {
                     AZ_Error(ShaderBuilderUtilityName, false, "Failed to parse output layout\n");
@@ -814,7 +812,8 @@ namespace AZ
                 const AZStd::string& pathToIaJson,
                 RPI::ShaderInputContract& shaderInputContract,
                 RPI::ShaderOutputContract& shaderOutputContract,
-                size_t& colorAttachmentCount)
+                size_t& colorAttachmentCount,
+                const AZStd::string& tempFolder)
             {
                 bool success = true;
                 for (const auto& shaderEntryPoint : shaderEntryPoints)
@@ -824,7 +823,7 @@ namespace AZ
 
                     if (shaderStageType == RPI::ShaderStageType::Vertex)
                     {
-                        const bool layoutCreated = CreateShaderInputContract(azslData, shaderEntryName, shaderOptionGroupLayout, pathToIaJson, shaderInputContract);
+                        const bool layoutCreated = CreateShaderInputContract(azslData, shaderEntryName, shaderOptionGroupLayout, pathToIaJson, shaderInputContract, tempFolder);
                         if (!layoutCreated)
                         {
                             success = false;
@@ -838,7 +837,7 @@ namespace AZ
                     if (shaderStageType == RPI::ShaderStageType::Fragment)
                     {
                         const bool layoutCreated =
-                            CreateShaderOutputContract(azslData, shaderEntryName, pathToOmJson, shaderOutputContract);
+                            CreateShaderOutputContract(azslData, shaderEntryName, pathToOmJson, shaderOutputContract, tempFolder);
                         if (!layoutCreated)
                         {
                             success = false;

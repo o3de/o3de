@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
@@ -54,6 +55,8 @@ namespace AZ
             RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
             float m_minimumScreenCoverage = 1.0f / 1080.0f;
             float m_qualityDecayRate = 0.5f;
+
+            AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
         };
 
         class MeshComponentController final
@@ -169,7 +172,7 @@ namespace AZ
             //! equal to the model asset that the model is linked to.
             static bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset);
 
-            void HandleModelChange(Data::Instance<RPI::Model> model);
+            void HandleModelChange(const Data::Instance<RPI::Model>& model);
             void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
             void RegisterModel();
             void UnregisterModel();
@@ -178,6 +181,8 @@ namespace AZ
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
 
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
+
+            void LightingChannelMaskChanged();
 
             Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
@@ -189,12 +194,12 @@ namespace AZ
             //! Cached bus to use to notify RenderGeometry::Intersector the entity/component has changed.
             AzFramework::RenderGeometry::IntersectionNotificationBus::BusPtr m_intersectionNotificationBus;
 
-            MeshFeatureProcessorInterface::ModelChangedEvent::Handler m_changeEventHandler
+            MeshHandleDescriptor::ModelChangedEvent::Handler m_modelChangedEventHandler
             {
-                [&](Data::Instance<RPI::Model> model) { HandleModelChange(model); }
+                [&](const Data::Instance<RPI::Model>& model) { HandleModelChange(model); }
             };
             
-            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
+            MeshHandleDescriptor::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
             {
                 [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }
             };

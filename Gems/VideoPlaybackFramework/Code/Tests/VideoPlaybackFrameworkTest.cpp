@@ -21,7 +21,7 @@ TEST_F(VideoPlaybackFrameworkTest, ComponentsWithComponentApplication)
 {
     AZ::ComponentApplication::Descriptor appDesc;
     appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-    appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
+    appDesc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;
 
     AZ::ComponentApplication app;
     AZ::ComponentApplication::StartupParameters startupParameters;

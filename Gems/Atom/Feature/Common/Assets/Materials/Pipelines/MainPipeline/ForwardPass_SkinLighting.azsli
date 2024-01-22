@@ -36,7 +36,7 @@
 // a mistake of some kind.
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
 #include "../../../Shaders/Materials/Skin/Skin_LightingBrdf.azsli"
-#include "../../../Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli"
+#include "../../../Shaders/Materials/Skin/Skin_LightingEval.azsli"
 
 
 #include "ForwardPassVertexAndPixel.azsli"

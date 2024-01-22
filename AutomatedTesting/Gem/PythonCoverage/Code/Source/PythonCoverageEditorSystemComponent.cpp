@@ -199,7 +199,7 @@ namespace PythonCoverage
 
     AZStd::string CompileParentFolderName(const AZStd::string& parentScriptPath)
     {
-        // Compile a unique folder name based on the aprent script path
+        // Compile a unique folder name based on the parent script path
         auto parentfolder = parentScriptPath;
         AZ::StringFunc::Replace(parentfolder, '/', '_');
         AZ::StringFunc::Replace(parentfolder, '\\', '_');
@@ -249,6 +249,20 @@ namespace PythonCoverage
         m_entityComponents.clear();
         m_scriptPath = filename;
         const auto coverageFile = m_coverageDir / CompileParentFolderName(m_parentScriptPath) / AZStd::string::format("%s.pycoverage", m_testCase.c_str());
+
+#ifdef MAX_PATH
+        if (strlen(coverageFile.c_str()) >= (MAX_PATH - 1))
+        {
+            AZ_Error(
+                LogCallSite,
+                false,
+                "The generated python coverage file path '%s' is too long for the current file system to write. "
+                "Use a shorter folder name or shorten the class name.",
+                coverageFile.c_str());
+            return;
+        }
+#endif
+
         m_coverageFile = coverageFile;
         m_coverageState = CoverageState::Gathering;
     }

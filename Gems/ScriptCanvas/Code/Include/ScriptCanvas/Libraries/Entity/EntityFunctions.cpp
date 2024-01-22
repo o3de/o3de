@@ -11,6 +11,8 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 
+#include <Include/ScriptCanvas/Libraries/Entity/EntityFunctions.generated.h>
+
 namespace ScriptCanvas
 {
     namespace EntityFunctions

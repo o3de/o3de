@@ -33,7 +33,7 @@ if(NOT PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED)
     
     # Create stub modules. Once we support gem loading configuration, we can remove this stubbed targets
     ly_add_target(
-        NAME Atom_RHI_DX12.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+        NAME ${gem_name}.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_dx12_stub_module.cmake
@@ -42,9 +42,18 @@ if(NOT PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED)
                 AZ::AzCore
     )
 
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/Platform/Common/Unimplemented/ModuleStub_Unimplemented.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME Atom_RHI_DX12.Builders GEM_MODULE
+            NAME ${gem_name}.Builders GEM_MODULE
 
             NAMESPACE Gem
             FILES_CMAKE
@@ -82,7 +91,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_RHI_DX12.Reflect STATIC
+    NAME ${gem_name}.Reflect STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_dx12_reflect_common_files.cmake
@@ -100,7 +109,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_RHI_DX12.Private.Static STATIC
+    NAME ${gem_name}.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_dx12_private_common_files.cmake
@@ -118,7 +127,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_RHI.Reflect
-            Gem::Atom_RHI_DX12.Reflect
+            Gem::${gem_name}.Reflect
             Gem::Amd_DX12MA
             3rdParty::d3dx12
             ${AFTERMATH_BUILD_DEPENDENCY}
@@ -129,7 +138,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_RHI_DX12.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_dx12_private_common_shared_files.cmake
@@ -144,13 +153,22 @@ ly_add_target(
             AZ::AzCore
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI.Public
-            Gem::Atom_RHI_DX12.Reflect
-            Gem::Atom_RHI_DX12.Private.Static
+            Gem::${gem_name}.Reflect
+            Gem::${gem_name}.Private.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/RHI/Module.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Atom_RHI_DX12.Builders.Static STATIC
+        NAME ${gem_name}.Builders.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             ${pal_source_dir}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -167,11 +185,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AssetBuilderSDK
                 Gem::Atom_RHI.Reflect
-                Gem::Atom_RHI_DX12.Reflect
+                Gem::${gem_name}.Reflect
     )
 
     ly_add_target(
-        NAME Atom_RHI_DX12.Builders GEM_MODULE
+        NAME ${gem_name}.Builders GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -188,7 +206,16 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RHI.Edit
                 Gem::Atom_RHI.Reflect
                 Gem::Atom_RHI.Public
-                Gem::Atom_RHI_DX12.Reflect
-                Gem::Atom_RHI_DX12.Builders.Static
+                Gem::${gem_name}.Reflect
+                Gem::${gem_name}.Builders.Static
     )
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/RHI.Builders/BuilderModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
 endif()

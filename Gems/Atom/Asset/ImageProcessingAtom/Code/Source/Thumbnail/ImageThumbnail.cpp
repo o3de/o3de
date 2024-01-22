@@ -57,33 +57,30 @@ namespace ImageProcessingAtom
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         }
 
-        void ImageThumbnail::LoadThread()
+        void ImageThumbnail::Load()
         {
             m_state = State::Loading;
-            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::Event(
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
                 AZ::RPI::StreamingImageAsset::RTTI_Type(), &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail,
                 m_key, ImageThumbnailSize);
-
-            // wait for response from thumbnail renderer
-            m_renderWait.acquire();
         }
 
         void ImageThumbnail::ThumbnailRendered(const QPixmap& thumbnailImage)
         {
             m_pixmap = thumbnailImage;
             m_state = State::Ready;
-            m_renderWait.release();
+            QueueThumbnailUpdated();
         }
 
         void ImageThumbnail::ThumbnailFailedToRender()
         {
             m_state = State::Failed;
-            m_renderWait.release();
+            QueueThumbnailUpdated();
         }
 
         void ImageThumbnail::OnCatalogAssetChanged([[maybe_unused]] const AZ::Data::AssetId& assetId)
         {
-            if (m_state == State::Ready && m_assetIds.find(assetId) != m_assetIds.end())
+            if (m_assetIds.contains(assetId) && (m_state == State::Ready || m_state == State::Failed))
             {
                 m_state = State::Unloaded;
                 Load();

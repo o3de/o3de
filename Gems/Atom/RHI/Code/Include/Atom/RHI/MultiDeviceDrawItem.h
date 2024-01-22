@@ -67,7 +67,7 @@ namespace AZ::RHI
             case DrawType::Linear:
                 return DrawArguments(m_linear);
             case DrawType::Indirect:
-                return DrawArguments(m_mdIndirect.GetDeviceIndirectArguments(deviceIndex));
+                return DrawArguments(DrawIndirect{m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_mdIndirect.m_countBufferByteOffset});
             default:
                 return DrawArguments();
             }
@@ -83,78 +83,93 @@ namespace AZ::RHI
 
     class MultiDeviceDrawItem
     {
-    public:
-        MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask)
-            : m_deviceMask{ deviceMask }
-        {
-            auto deviceCount{ RHI::RHISystemInterface::Get()->GetDeviceCount() };
+        friend class MultiDeviceDrawPacketBuilder;
 
-            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
-            {
-                if (CheckBitsAll(AZStd::to_underlying(m_deviceMask), 1u << deviceIndex))
-                {
-                    m_deviceDrawItems.emplace(deviceIndex, DrawItem{});
-                }
-            }
-        }
+    public:
+        MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask);
+
+        MultiDeviceDrawItem(MultiDevice::DeviceMask deviceMask, AZStd::unordered_map<int, DrawItem*>&& deviceDrawItemPtrs);
 
         //! Returns the device-specific DrawItem for the given index
         const DrawItem& GetDeviceDrawItem(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceDrawItem",
-                m_deviceDrawItems.find(deviceIndex) != m_deviceDrawItems.end(),
+                m_deviceDrawItemPtrs.find(deviceIndex) != m_deviceDrawItemPtrs.end(),
                 "No DeviceDrawItem found for device index %d\n",
                 deviceIndex);
 
-            return m_deviceDrawItems.at(deviceIndex);
+            return *m_deviceDrawItemPtrs.at(deviceIndex);
+        }
+
+        bool GetEnabled() const
+        {
+            return m_enabled;
+        }
+
+        void SetEnabled(bool enabled)
+        {
+            m_enabled = enabled;
+
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_enabled = enabled;
+            }
         }
 
         void SetArguments(const MultiDeviceDrawArguments& arguments)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_arguments = arguments.GetDeviceDrawArguments(deviceIndex);
+                drawItem->m_arguments = arguments.GetDeviceDrawArguments(deviceIndex);
+            }
+        }
+
+        void SetIndexedArgumentsInstanceCount(uint32_t instanceCount)
+        {
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
+            {
+                drawItem->m_arguments.m_indexed.m_instanceCount = instanceCount;
             }
         }
 
         void SetStencilRef(uint8_t stencilRef)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_stencilRef = stencilRef;
+                drawItem->m_stencilRef = stencilRef;
             }
         }
 
         void SetPipelineState(const MultiDevicePipelineState* pipelineState)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_pipelineState = pipelineState->GetDevicePipelineState(deviceIndex).get();
+                drawItem->m_pipelineState = pipelineState->GetDevicePipelineState(deviceIndex).get();
             }
         }
 
         //! The index buffer used when drawing with an indexed draw call.
         void SetIndexBufferView(const MultiDeviceIndexBufferView* indexBufferView)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
                 m_deviceIndexBufferView.emplace(deviceIndex, indexBufferView->GetDeviceIndexBufferView(deviceIndex));
             }
 
             // Done extra so memory is not moved around any more during map resize
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_indexBufferView = &m_deviceIndexBufferView[deviceIndex];
+                drawItem->m_indexBufferView = &m_deviceIndexBufferView[deviceIndex];
             }
         }
 
         //! Array of stream buffers to bind (count must match m_streamBufferViewCount).
         void SetStreamBufferViews(const MultiDeviceStreamBufferView* streamBufferViews, uint32_t streamBufferViewCount)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_streamBufferViewCount = static_cast<uint8_t>(streamBufferViewCount);
+                drawItem->m_streamBufferViewCount = static_cast<uint8_t>(streamBufferViewCount);
 
                 auto [it, insertOK]{ m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::vector<StreamBufferView>{}) };
 
@@ -165,16 +180,16 @@ namespace AZ::RHI
                     deviceStreamBufferView.emplace_back(streamBufferViews[i].GetDeviceStreamBufferView(deviceIndex));
                 }
 
-                drawItem.m_streamBufferViews = deviceStreamBufferView.data();
+                drawItem->m_streamBufferViews = deviceStreamBufferView.data();
             }
         }
 
         //! Shader Resource Groups
         void SetShaderResourceGroups(const MultiDeviceShaderResourceGroup* const* shaderResourceGroups, uint32_t shaderResourceGroupCount)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_shaderResourceGroupCount = static_cast<uint8_t>(shaderResourceGroupCount);
+                drawItem->m_shaderResourceGroupCount = static_cast<uint8_t>(shaderResourceGroupCount);
 
                 auto [it, insertOK]{ m_deviceShaderResourceGroups.emplace(
                     deviceIndex, AZStd::vector<ShaderResourceGroup*>(shaderResourceGroupCount)) };
@@ -186,7 +201,7 @@ namespace AZ::RHI
                     deviceShaderResourceGroup[i] = shaderResourceGroups[i]->GetDeviceShaderResourceGroup(deviceIndex).get();
                 }
 
-                drawItem.m_shaderResourceGroups = deviceShaderResourceGroup.data();
+                drawItem->m_shaderResourceGroups = deviceShaderResourceGroup.data();
             }
         }
 
@@ -194,19 +209,19 @@ namespace AZ::RHI
         //! key
         void SetUniqueShaderResourceGroup(const MultiDeviceShaderResourceGroup* uniqueShaderResourceGroup)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_uniqueShaderResourceGroup = uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get();
+                drawItem->m_uniqueShaderResourceGroup = uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get();
             }
         }
 
         //! Array of root constants to bind (count must match m_rootConstantSize).
         void SetRootConstants(const uint8_t* rootConstants, uint8_t rootConstantSize)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_rootConstantSize = rootConstantSize;
-                drawItem.m_rootConstants = rootConstants;
+                drawItem->m_rootConstantSize = rootConstantSize;
+                drawItem->m_rootConstants = rootConstants;
             }
         }
 
@@ -214,10 +229,10 @@ namespace AZ::RHI
         //! after the MultiDeviceDrawItem has been processed.
         void SetScissors(const Scissor* scissors, uint8_t scissorsCount)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_scissorsCount = scissorsCount;
-                drawItem.m_scissors = scissors;
+                drawItem->m_scissorsCount = scissorsCount;
+                drawItem->m_scissors = scissors;
             }
         }
 
@@ -225,17 +240,22 @@ namespace AZ::RHI
         //! after the MultiDeviceDrawItem has been processed.
         void SetViewports(const Viewport* viewports, uint8_t viewportCount)
         {
-            for (auto& [deviceIndex, drawItem] : m_deviceDrawItems)
+            for (auto& [deviceIndex, drawItem] : m_deviceDrawItemPtrs)
             {
-                drawItem.m_viewportsCount = viewportCount;
-                drawItem.m_viewports = viewports;
+                drawItem->m_viewportsCount = viewportCount;
+                drawItem->m_viewports = viewports;
             }
         }
 
     private:
+        bool m_enabled{ true };
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
         //! A map of all device-specific DrawItems, indexed by the device index
         AZStd::unordered_map<int, DrawItem> m_deviceDrawItems;
+        //! A map of pointers to device-specific DrawItems, indexed by the device index
+        //! These pointers may point to m_deviceDrawItems (in case of direct usage of a DrawItem)
+        //! or may point to DrawItems in linear memory (when allocated via a DrawPacket)
+        AZStd::unordered_map<int, DrawItem*> m_deviceDrawItemPtrs;
         //! A map of all device-specific IndexBufferViews, indexed by the device index
         //! This additional cache is needed since device-specific IndexBufferViews are returned as objects
         //! and the device-specific DrawItem holds a pointer to it.
@@ -252,16 +272,6 @@ namespace AZ::RHI
 
     struct MultiDeviceDrawItemProperties
     {
-        MultiDeviceDrawItemProperties() = default;
-
-        MultiDeviceDrawItemProperties(
-            const MultiDeviceDrawItem* item, DrawItemSortKey sortKey = 0, DrawFilterMask filterMask = DrawFilterMaskDefaultValue)
-            : m_mdItem{ item }
-            , m_sortKey{ sortKey }
-            , m_drawFilterMask{ filterMask }
-        {
-        }
-
         bool operator==(const MultiDeviceDrawItemProperties& rhs) const
         {
             return m_mdItem == rhs.m_mdItem && m_sortKey == rhs.m_sortKey && m_depth == rhs.m_depth &&
@@ -283,7 +293,9 @@ namespace AZ::RHI
         {
             AZ_Assert(m_mdItem, "Not initialized with MultiDeviceDrawItem\n");
 
-            return { &m_mdItem->GetDeviceDrawItem(deviceIndex), m_sortKey, m_depth, m_drawFilterMask };
+            DrawItemProperties result{ &m_mdItem->GetDeviceDrawItem(deviceIndex), m_sortKey, m_drawFilterMask, m_depth };
+
+            return result;
         }
 
         //! A pointer to the draw item
@@ -291,11 +303,10 @@ namespace AZ::RHI
         //! A sorting key of this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         DrawItemSortKey m_sortKey = 0;
+        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
+        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
         //! A depth value this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         float m_depth = 0.0f;
-        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
-        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
     };
-
 } // namespace AZ::RHI

@@ -570,7 +570,6 @@ protected:
 private:
     friend class CUndoBaseObject;
     friend class CObjectArchive;
-    friend class CSelectionGroup;
 
     //! Set class description for this object,
     //! Only called once after creation by ObjectManager.

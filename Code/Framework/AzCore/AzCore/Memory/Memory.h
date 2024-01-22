@@ -11,7 +11,7 @@
 #include <AzCore/Memory/Memory_fwd.h>
 #include <AzCore/Memory/AllocatorWrapper.h>
 #include <AzCore/Memory/Config.h>
-#include <AzCore/Memory/SimpleSchemaAllocator.h>
+#include <AzCore/Memory/IAllocator.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/aligned_storage.h>
 

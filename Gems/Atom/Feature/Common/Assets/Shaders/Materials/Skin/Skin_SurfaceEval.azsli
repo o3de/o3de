@@ -39,6 +39,9 @@ option bool o_wrinkleLayers_normal_useTexture4;
 //! Enables a debug mode that colors the different blend weights coming from the vertex color stream.
 option bool o_wrinkleLayers_showBlendMaskValues;
 
+#ifndef ENABLE_TRANSMISSION
+#define ENABLE_TRANSMISSION 1
+#endif
 
 real3 ApplyBaseColorWrinkleMap(bool shouldApply, real3 baseColor, Texture2D map, sampler mapSampler, float2 uv, real factor)
 {
@@ -212,14 +215,21 @@ Surface EvaluateSurface_Skin(
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
     surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
 
+    // ------- Occlusion -------
+    
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture);
+    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture);
+
     // ------- Transmission -------
 
+#if ENABLE_TRANSMISSION
     float2 transmissionUv = uvs[MaterialSrg::m_transmissionThicknessMapUvIndex];
     real4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, real4(MaterialSrg::m_transmissionTintThickness));
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = real4(MaterialSrg::m_transmissionParams);
     surface.transmission.scatterDistance = real3(MaterialSrg::m_scatterDistance);
+#endif
 
     return surface;
 }

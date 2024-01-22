@@ -64,6 +64,13 @@ namespace AZ::RHI
         return this;
     }
 
+    MultiDeviceRayTracingBlasDescriptor* MultiDeviceRayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
+    {
+        AZ_Assert(m_mdBuildContext, "BuildFlags property can only be added to a Geometry entry");
+        m_mdBuildFlags = buildFlags;
+        return this;
+    }
+
     RayTracingTlasDescriptor MultiDeviceRayTracingTlasDescriptor::GetDeviceRayTracingTlasDescriptor(int deviceIndex) const
     {
         AZ_Assert(m_mdInstancesBuffer, "No MultiDeviceBuffer available!\n");
@@ -106,6 +113,13 @@ namespace AZ::RHI
     {
         AZ_Assert(m_mdBuildContext, "InstanceID property can only be added to an Instance entry");
         m_mdBuildContext->m_instanceID = instanceID;
+        return this;
+    }
+
+    MultiDeviceRayTracingTlasDescriptor* MultiDeviceRayTracingTlasDescriptor::InstanceMask(uint32_t instanceMask)
+    {
+        AZ_Assert(m_mdBuildContext, "InstanceMask property can only be added to an Instance entry");
+        m_mdBuildContext->m_instanceMask = instanceMask;
         return this;
     }
 

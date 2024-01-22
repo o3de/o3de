@@ -325,12 +325,12 @@ namespace AZ
         void* bucket_system_alloc();
         void bucket_system_free(void* ptr);
         page* bucket_grow(size_t elemSize, size_t marker);
-        void* bucket_alloc(size_t size);
-        void* bucket_alloc_direct(unsigned bi);
-        void* bucket_realloc(void* ptr, size_t size);
-        void* bucket_realloc_aligned(void* ptr, size_t size, size_t alignment);
-        void bucket_free(void* ptr);
-        void bucket_free_direct(void* ptr, unsigned bi);
+        AllocateAddress bucket_alloc(size_t size);
+        AllocateAddress bucket_alloc_direct(unsigned bi);
+        AllocateAddress bucket_realloc(void* ptr, size_t size);
+        AllocateAddress bucket_realloc_aligned(void* ptr, size_t size, size_t alignment);
+        size_type bucket_free(void* ptr);
+        size_type bucket_free_direct(void* ptr, unsigned bi);
         /// return the block size for the pointer.
         size_t bucket_ptr_size(void* ptr) const;
         size_t bucket_get_max_allocation() const;
@@ -406,7 +406,6 @@ namespace AZ
 
         // helper functions to manipulate block headers
         void split_block(block_header* bl, size_t size);
-        block_header* shift_block(block_header* bl, size_t offs);
         block_header* coalesce_block(block_header* bl);
 
         void* tree_system_alloc(size_t size);
@@ -416,19 +415,17 @@ namespace AZ
         block_header* tree_extract_bucket_page();
         block_header* tree_add_block(void* mem, size_t size);
         block_header* tree_grow(size_t size);
+        block_header* tree_grow_aligned(size_t size, size_t alignment);
         void tree_attach(block_header* bl);
         void tree_detach(block_header* bl);
         void tree_purge_block(block_header* bl);
 
-        void* tree_alloc(size_t size);
-        void* tree_alloc_aligned(size_t size, size_t alignment);
-        void* tree_alloc_bucket_page();
-        void* tree_realloc(void* ptr, size_t size);
-        void* tree_realloc_aligned(void* ptr, size_t size, size_t alignment);
+        AllocateAddress tree_alloc(size_t size);
+        AllocateAddress tree_alloc_aligned(size_t size, size_t alignment);
+        AllocateAddress tree_realloc(void* ptr, size_t size);
+        AllocateAddress tree_realloc_aligned(void* ptr, size_t size, size_t alignment);
         size_t tree_resize(void* ptr, size_t size);
-        void tree_free(void* ptr);
-        void tree_free_bucket_page(
-            void* ptr); // only allocations with tree_alloc_bucket_page should be passed here, we don't have any guards.
+        size_type tree_free(void* ptr);
         size_t tree_ptr_size(void* ptr) const;
         size_t tree_get_max_allocation() const;
         size_t tree_get_unused_memory(bool isPrint) const;
@@ -597,29 +594,29 @@ namespace AZ
         HpAllocator();
         ~HpAllocator() override;
 
-        pointer allocate(size_type byteSize, align_type alignment = 1) override;
-        void deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0) override;
-        pointer reallocate(pointer ptr, size_type newSize, align_type alignment = 1) override;
+        AllocateAddress allocate(size_type byteSize, align_type alignment = 1) override;
+        size_type deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0) override;
+        AllocateAddress reallocate(pointer ptr, size_type newSize, align_type alignment = 1) override;
         size_type get_allocated_size(pointer ptr, align_type alignment = 1) const override;
 
         // allocate memory using DEFAULT_ALIGNMENT
         // size == 0 returns NULL
-        inline void* alloc(size_t size)
+        inline AllocateAddress alloc(size_t size)
         {
             if (size == 0)
             {
-                return nullptr;
+                return AllocateAddress{};
             }
             if (is_small_allocation(size))
             {
                 size = clamp_small_allocation(size);
-                void* ptr = bucket_alloc_direct(bucket_spacing_function(size + MEMORY_GUARD_SIZE));
+                AllocateAddress ptr = bucket_alloc_direct(bucket_spacing_function(size + MEMORY_GUARD_SIZE));
                 debug_add(ptr, size, DEBUG_SOURCE_BUCKETS);
                 return ptr;
             }
             else
             {
-                void* ptr = tree_alloc(size + MEMORY_GUARD_SIZE);
+                AllocateAddress ptr = tree_alloc(size + MEMORY_GUARD_SIZE);
                 debug_add(ptr, size, DEBUG_SOURCE_TREE);
                 return ptr;
             }
@@ -628,7 +625,7 @@ namespace AZ
         // allocate memory with a specific alignment
         // size == 0 returns NULL
         // alignment <= DEFAULT_ALIGNMENT acts as alloc
-        inline void* alloc(size_t size, size_t alignment)
+        inline AllocateAddress alloc(size_t size, size_t alignment)
         {
             HPPA_ASSERT((alignment & (alignment - 1)) == 0);
             if (alignment <= DEFAULT_ALIGNMENT)
@@ -637,18 +634,18 @@ namespace AZ
             }
             if (size == 0)
             {
-                return nullptr;
+                return AllocateAddress{};
             }
             if (is_small_allocation(size) && alignment <= MAX_SMALL_ALLOCATION)
             {
                 size = clamp_small_allocation(size);
-                void* ptr = bucket_alloc_direct(bucket_spacing_function(AZ::SizeAlignUp(size + MEMORY_GUARD_SIZE, alignment)));
+                AllocateAddress ptr = bucket_alloc_direct(bucket_spacing_function(AZ::SizeAlignUp(size + MEMORY_GUARD_SIZE, alignment)));
                 debug_add(ptr, size, DEBUG_SOURCE_BUCKETS);
                 return ptr;
             }
             else
             {
-                void* ptr = tree_alloc_aligned(size + MEMORY_GUARD_SIZE, alignment);
+                AllocateAddress ptr = tree_alloc_aligned(size + MEMORY_GUARD_SIZE, alignment);
                 debug_add(ptr, size, DEBUG_SOURCE_TREE);
                 return ptr;
             }
@@ -657,7 +654,7 @@ namespace AZ
         // realloc the memory block using DEFAULT_ALIGNMENT
         // ptr == NULL acts as alloc
         // size == 0 acts as free
-        void* realloc(void* ptr, size_t size)
+        AllocateAddress realloc(void* ptr, size_t size)
         {
             if (ptr == nullptr)
             {
@@ -666,10 +663,10 @@ namespace AZ
             if (size == 0)
             {
                 free(ptr);
-                return nullptr;
+                return AllocateAddress{};
             }
             debug_check(ptr);
-            void* newPtr = nullptr;
+            AllocateAddress newPtr;
             if (ptr_in_bucket(ptr))
             {
                 if (is_small_allocation(size))
@@ -723,7 +720,7 @@ namespace AZ
         // ptr == NULL acts as alloc
         // size == 0 acts as free
         // alignment <= DEFAULT_ALIGNMENT acts as realloc
-        void* realloc(void* ptr, size_t size, size_t alignment)
+        AllocateAddress realloc(void* ptr, size_t size, size_t alignment)
         {
             HPPA_ASSERT((alignment & (alignment - 1)) == 0);
             if (alignment <= DEFAULT_ALIGNMENT)
@@ -737,14 +734,14 @@ namespace AZ
             if (size == 0)
             {
                 free(ptr);
-                return nullptr;
+                return AllocateAddress{};
             }
             if ((size_t)ptr & (alignment - 1))
             {
-                void* newPtr = alloc(size, alignment);
+                AllocateAddress newPtr = alloc(size, alignment);
                 if (!newPtr)
                 {
-                    return nullptr;
+                    return AllocateAddress{};
                 }
                 size_t count = this->size(ptr);
                 if (count > size)
@@ -756,7 +753,7 @@ namespace AZ
                 return newPtr;
             }
             debug_check(ptr);
-            void* newPtr = nullptr;
+            AllocateAddress newPtr;
             if (ptr_in_bucket(ptr))
             {
                 if (is_small_allocation(size) && alignment <= MAX_SMALL_ALLOCATION)
@@ -876,11 +873,11 @@ namespace AZ
         }
 
         // free the memory block
-        inline void free(void* ptr)
+        inline size_type free(void* ptr)
         {
             if (ptr == nullptr)
             {
-                return;
+                return 0;
             }
             if (ptr_in_bucket(ptr))
             {
@@ -888,15 +885,15 @@ namespace AZ
                 return bucket_free(ptr);
             }
             debug_remove(ptr, DEBUG_UNKNOWN_SIZE, DEBUG_SOURCE_TREE);
-            tree_free(ptr);
+            return tree_free(ptr);
         }
 
         // free the memory block supplying the original size with DEFAULT_ALIGNMENT
-        inline void free(void* ptr, size_t origSize)
+        inline size_type free(void* ptr, size_t origSize)
         {
             if (ptr == nullptr)
             {
-                return;
+                return 0;
             }
             if (is_small_allocation(origSize))
             {
@@ -906,15 +903,15 @@ namespace AZ
                 return bucket_free_direct(ptr, bucket_spacing_function(origSize + MEMORY_GUARD_SIZE));
             }
             debug_remove(ptr, origSize, DEBUG_SOURCE_TREE);
-            tree_free(ptr);
+            return tree_free(ptr);
         }
 
         // free the memory block supplying the original size and alignment
-        inline void free(void* ptr, size_t origSize, size_t oldAlignment)
+        inline size_type free(void* ptr, size_t origSize, size_t oldAlignment)
         {
             if (ptr == nullptr)
             {
-                return;
+                return 0;
             }
             if (is_small_allocation(origSize) && oldAlignment <= MAX_SMALL_ALLOCATION)
             {
@@ -923,7 +920,7 @@ namespace AZ
                 return bucket_free_direct(ptr, bucket_spacing_function(AZ::SizeAlignUp(origSize + MEMORY_GUARD_SIZE, oldAlignment)));
             }
             debug_remove(ptr, origSize, DEBUG_SOURCE_TREE);
-            tree_free(ptr);
+            return tree_free(ptr);
         }
 
         // return all unused memory pages to the OS
@@ -1202,7 +1199,7 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_alloc(size_t size)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_alloc(size_t size)
     {
         HPPA_ASSERT(size <= MAX_SMALL_ALLOCATION);
         unsigned bi = bucket_spacing_function(size);
@@ -1223,17 +1220,17 @@ namespace AZ
             p = bucket_grow(bsize, mBuckets[bi].marker());
             if (!p)
             {
-                return nullptr;
+                return AllocateAddress{};
             }
             mBuckets[bi].add_free_page(p);
         }
         HPPA_ASSERT(p->elem_size() >= size);
         mTotalAllocatedSizeBuckets += p->elem_size();
-        return mBuckets[bi].alloc(p);
+        return AllocateAddress{ mBuckets[bi].alloc(p), p->elem_size() };
     }
 
     template<bool DebugAllocatorEnable>
-    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_alloc_direct(unsigned bi)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_alloc_direct(unsigned bi)
     {
         HPPA_ASSERT(bi < NUM_BUCKETS);
 #ifdef MULTITHREADED
@@ -1250,16 +1247,16 @@ namespace AZ
             p = bucket_grow(bsize, mBuckets[bi].marker());
             if (!p)
             {
-                return nullptr;
+                return AllocateAddress{};
             }
             mBuckets[bi].add_free_page(p);
         }
         mTotalAllocatedSizeBuckets += p->elem_size();
-        return mBuckets[bi].alloc(p);
+        return AllocateAddress(mBuckets[bi].alloc(p), p->elem_size());
     }
 
     template<bool DebugAllocatorEnable>
-    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_realloc(void* ptr, size_t size)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_realloc(void* ptr, size_t size)
     {
         page* p = ptr_get_page(ptr);
         size_t elemSize = p->elem_size();
@@ -1267,12 +1264,12 @@ namespace AZ
         // if (size <= elemSize)
         if (size == elemSize)
         {
-            return ptr;
+            return AllocateAddress{ ptr, size };
         }
-        void* newPtr = bucket_alloc(size);
-        if (!newPtr)
+        AllocateAddress newPtr = bucket_alloc(size);
+        if (newPtr.GetAddress() == nullptr)
         {
-            return nullptr;
+            return AllocateAddress{};
         }
         memcpy(newPtr, ptr, AZStd::GetMin(elemSize - MEMORY_GUARD_SIZE, size - MEMORY_GUARD_SIZE));
         bucket_free(ptr);
@@ -1280,7 +1277,7 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_realloc_aligned(void* ptr, size_t size, size_t alignment)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_realloc_aligned(void* ptr, size_t size, size_t alignment)
     {
         page* p = ptr_get_page(ptr);
         size_t elemSize = p->elem_size();
@@ -1288,12 +1285,12 @@ namespace AZ
         // if (size <= elemSize && (elemSize&(alignment-1))==0)
         if (size == elemSize && (elemSize & (alignment - 1)) == 0)
         {
-            return ptr;
+            return AllocateAddress{ ptr, size };
         }
-        void* newPtr = bucket_alloc_direct(bucket_spacing_function(AZ::SizeAlignUp(size, alignment)));
-        if (!newPtr)
+        AllocateAddress newPtr = bucket_alloc_direct(bucket_spacing_function(AZ::SizeAlignUp(size, alignment)));
+        if (newPtr.GetAddress() == nullptr)
         {
-            return nullptr;
+            return AllocateAddress{};
         }
         memcpy(newPtr, ptr, AZStd::GetMin(elemSize - MEMORY_GUARD_SIZE, size - MEMORY_GUARD_SIZE));
         bucket_free(ptr);
@@ -1301,7 +1298,7 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_free(void* ptr)
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_free(void* ptr) -> size_type
     {
         page* p = ptr_get_page(ptr);
         unsigned bi = p->bucket_index();
@@ -1313,12 +1310,15 @@ namespace AZ
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 #endif
 #endif
-        mTotalAllocatedSizeBuckets -= p->elem_size();
+        size_type allocatedByteCount = p->elem_size();
+        mTotalAllocatedSizeBuckets -= allocatedByteCount;
         mBuckets[bi].free(p, ptr);
+
+        return allocatedByteCount;
     }
 
     template<bool DebugAllocatorEnable>
-    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_free_direct(void* ptr, unsigned bi)
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_free_direct(void* ptr, unsigned bi) -> size_type
     {
         HPPA_ASSERT(bi < NUM_BUCKETS);
         page* p = ptr_get_page(ptr);
@@ -1332,8 +1332,11 @@ namespace AZ
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 #endif
 #endif
-        mTotalAllocatedSizeBuckets -= p->elem_size();
+        size_type allocatedByteCount = p->elem_size();
+        mTotalAllocatedSizeBuckets -= allocatedByteCount;
         mBuckets[bi].free(p, ptr);
+
+        return allocatedByteCount;
     }
 
     template<bool DebugAllocatorEnable>
@@ -1455,26 +1458,6 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::shift_block(block_header* bl, size_t offs) -> block_header*
-    {
-        HPPA_ASSERT(offs > 0);
-        block_header* prev = bl->prev();
-        bl->unlink();
-        bl = (block_header*)((char*)bl + offs);
-        bl->link_after(prev);
-        bl->set_unused();
-
-        // Shifting this block increased the size of the previous block. If
-        // that block is in use, add that extra offset to the total in use
-        // bytes for the tree
-        if (prev->used())
-        {
-            mTotalAllocatedSizeTree += offs;
-        }
-        return bl;
-    }
-
-    template<bool DebugAllocatorEnable>
     auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::coalesce_block(block_header* bl) -> block_header*
     {
         HPPA_ASSERT(!bl->used());
@@ -1554,6 +1537,116 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_grow_aligned(size_t size, size_t alignment) -> block_header*
+    {
+        const size_t sizeWithBlockHeaders = size + 3 * sizeof(block_header); // two fences plus one fake
+
+        // tree_system_alloc() will return an offset that is a multiple of OS_VIRTUAL_PAGE_SIZE which is 64KiB
+        // The following tree_add_block() call will add a dummy block at the beginning of the allocated offset
+        // which has a size of 0 which including the block header would put the offset of the real block header at
+        // a multiple of 16(sizeof block_header) and the actual memory address for use at a multiple of 32
+        //
+        // So tree_system_alloc will return an address of the form (0x10000 * N) where is N some integer
+        // mem_offset = (0x10000 * N) (multiple of 64KiB)
+        //
+        // tree_add_block() then creates a dummy_block of size 0, followed by a real_block of the actual size
+        // dummy_block_header_offset = (0x10000 * N) (multiple of 64KiB and also a multiple of 16 as well)
+        // real_block_header_offset = (0x10000 * N) + 16 (multiple of 16)
+        // real_block_memory_offset = (0x10000 * N) + 32 (multiple of 32)
+        //
+        // This means the return result tree_add_block() is a 32-byte aligned memory address
+        // So any alignment <= 32 doesn't need any additional padding memory to be supplied to tree_system_alloc to work
+
+        // Now if the alignment is 64, then a real_block_memory_offset needs to be adjusted to be a multiple of 64
+        // In order for that to occur another block(a free block) needs to be inserted between the dummy block and the real block
+        // to be at an offset that is a multiple of 64 - sizeof(block_header)
+        // The first candidate for the real block would be to have a block header at offset 48
+        // free_block_header_offset = (0x10000 * N) + 16
+        // free_block_memory_offset = (0x10000 * N) + 32
+        // real_block_header_offset = (0x10000 * N) + 48
+        // real_block_memory_offset = (0x10000 * N) + 64
+        // However there is a problem here where a free block is re-used as a free node in an intrusive_multiset
+        // to make it easier to find the memory allocation free blocks when not in use.
+        // Now because a node in an intrusive_multiset is 40 bytes(see `sizeof free_node`) then this enforces
+        // that the minimum distance between the free_block_header_offset and real_block_header_offset must be
+        // 56 bytes (sizeof(block_header) + sizeof(free_node))
+        // But as can be seen the distance from the `free_block_memory_offset` to the `real_block_header_offset`
+        // is only 16 bytes.
+        // 
+        // So the next candidate for the real block would be to have a block header at offset 112 (128 - sizeof(block_header))
+        // free_block_header_offset = (0x10000 * N) + 112
+        // free_block_memory_offset = (0x10000 * N) + 128
+        // This allow the actual real memory address to be to be 64 byte aligned, while making sure the free block
+        // has enough space(>= 40 bytes) to store a free node
+        //
+        // Now once for alignments >=128, the same amount of padding memory that is used for an alignment of 64 would work
+        // since the free_block_memory_offset would have 80 bytes of space which is greater than the 40 bytes that is required
+        // Ex. alignment=128
+        // free_block_header_offset = (0x10000 * N) + 16
+        // free_block_memory_offset = (0x10000 * N) + 32
+        // real_block_header_offset = (0x10000 * N) + 112
+        // real_block_memory_offset = (0x10000 * N) + 128
+        // Ex. alignment=256
+        // free_block_header_offset = (0x10000 * N) + 16
+        // free_block_memory_offset = (0x10000 * N) + 32
+        // real_block_header_offset = (0x10000 * N) + 244
+        // real_block_memory_offset = (0x10000 * N) + 256
+        //
+        // Now these *_aligned version of functions are only called when the alignment is > DEFAULT_ALIGNMENT (8)
+        // So when the alignment 16 or 32 the `sizeWithBlockHeaders` variable above is sufficient
+        // If the alignment is 64, then `sizeWithBlockHeaders` variable needs to make sure it account for at least an alignment of
+        // `alignment + 2 * sizeof(block header)` which is 96 bytes to allow a free_block to be inserted
+        // before the aligned offset
+        // If the alignment >= 128 , then `sizeWithBlockHeaders` variables needs to account for `alignment - 2 *sizeof(block_header)`
+        size_t sizeWithBlockHeadersAndAlignmentPadding = sizeWithBlockHeaders;
+        if (alignment == 64)
+        {
+            sizeWithBlockHeadersAndAlignmentPadding += alignment + 2 * sizeof(block_header);
+        }
+        else if (alignment > 64)
+        {
+            sizeWithBlockHeadersAndAlignmentPadding += alignment - 2 * sizeof(block_header);
+        }
+
+        const size_t newSize =
+            (sizeWithBlockHeadersAndAlignmentPadding < m_treePageSize)
+            ? AZ::SizeAlignUp(sizeWithBlockHeadersAndAlignmentPadding, m_treePageSize)
+            : sizeWithBlockHeadersAndAlignmentPadding;
+        HPPA_ASSERT(newSize >= sizeWithBlockHeaders);
+
+        if (void* mem = tree_system_alloc(newSize))
+        {
+            constexpr size_t MinRequiredSize = sizeof(block_header) + sizeof(free_node);
+            block_header* newBl = tree_add_block(mem, newSize);
+            // new block memory is only 32-byte aligned at this point
+            size_t alignmentOffs = AZ::PointerAlignUp((char*)newBl->mem(), alignment) - (char*)newBl->mem();
+            if (alignmentOffs > 0 && alignmentOffs < MinRequiredSize)
+            {
+                // Make sure the alignment offset is large enough, that a free block
+                // can be created between the new block and the previous block
+                alignmentOffs = AZ::PointerAlignUp((char*)newBl->mem() + MinRequiredSize, alignment) - (char*)newBl->mem();
+            }
+
+            if (alignmentOffs >= MinRequiredSize)
+            {
+                split_block(newBl, alignmentOffs - sizeof(block_header));
+                tree_attach(newBl);
+                newBl = newBl->next();
+            }
+
+            AZ_Assert(
+                reinterpret_cast<uintptr_t>(newBl->mem()) % alignment == 0,
+                "The allocated memory address %p is not aligned to %zu",
+                newBl->mem(),
+                alignment);
+            AZ_Assert(newBl->size() >= size, "The allocated memory size %zu is less than %zu", newBl->size(), size);
+
+            return newBl;
+        }
+        return nullptr;
+    }
+
+    template<bool DebugAllocatorEnable>
     auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_extract(size_t size) -> block_header*
     {
         // search the tree and get the smallest fitting block
@@ -1571,15 +1664,26 @@ namespace AZ
     template<bool DebugAllocatorEnable>
     auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_extract_aligned(size_t size, size_t alignment) -> block_header*
     {
-        // get the sequence of nodes from size to (size + alignment - 1) including
-        size_t sizeUpper = size + alignment;
+        // get the sequence of nodes from size to (size + sizeof(block_header) + sizeof(free_node) + (alignment - 1)) including
+        constexpr size_t MinRequiredSize = sizeof(block_header) + sizeof(free_node);
+
+        size_t sizeUpper = size + alignment + MinRequiredSize;
         auto bestNode = mFreeTree.lower_bound(size);
         auto lastNode = mFreeTree.upper_bound(sizeUpper);
         while (bestNode != lastNode)
         {
             free_node* node = &*bestNode;
-            size_t alignmentOffs = AZ::PointerAlignUp((char*)node, alignment) - (char*)node;
-            if (node->get_block()->size() >= size + alignmentOffs)
+            block_header* candidateBlock = bestNode->get_block();
+
+            size_t  alignmentOffs = AZ::PointerAlignUp((char*)node, alignment) - (char*)node;
+            if (alignmentOffs > 0 && alignmentOffs < MinRequiredSize)
+            {
+                // Make sure the alignment offset is large enough, that a free block
+                // can be created between the new block and the previous block
+                alignmentOffs = AZ::PointerAlignUp((char*)node + MinRequiredSize, alignment) - (char*)node;
+            }
+            // The alignmentOffs at this point is either 0 or >= sizeof(block_header) + sizeof(free_node)
+            if (candidateBlock->size() >= size + alignmentOffs)
             {
                 break;
             }
@@ -1595,8 +1699,29 @@ namespace AZ
         {
             bestNode = bestNode->next(); // improves removal time
         }
+
+        // Re-query the alignment offset needed to get to a block that is aligned
+        free_node* bestNodeAddress = &*bestNode;
+        size_t alignmentOffs = AZ::PointerAlignUp((char*)bestNodeAddress, alignment) - (char*)bestNodeAddress;
+        if (alignmentOffs > 0 && alignmentOffs < MinRequiredSize)
+        {
+            // Make sure the alignment offset is large enough, that a free block
+            // can be created between the new block and the previous block
+            alignmentOffs = AZ::PointerAlignUp((char*)bestNodeAddress + MinRequiredSize, alignment) - (char*)bestNodeAddress;
+        }
+
         block_header* bestBlock = bestNode->get_block();
         tree_detach(bestBlock);
+
+        // Return an block_header that points to aligned block that can be used
+        // split_block is used to create a free block for the section
+        // between the best block current memory address and the aligned memory address
+        if (alignmentOffs >= MinRequiredSize)
+        {
+            split_block(bestBlock, alignmentOffs - sizeof(block_header));
+            tree_attach(bestBlock);
+            bestBlock = bestBlock->next();
+        }
         return bestBlock;
     }
 
@@ -1649,7 +1774,7 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_alloc(size_t size)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_alloc(size_t size)
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1668,7 +1793,7 @@ namespace AZ
             newBl = tree_grow(size);
             if (!newBl)
             {
-                return nullptr;
+                return AllocateAddress{};
             }
         }
         HPPA_ASSERT(!newBl->used());
@@ -1681,11 +1806,11 @@ namespace AZ
         }
         newBl->set_used();
         mTotalAllocatedSizeTree += newBl->size();
-        return newBl->mem();
+        return AllocateAddress{ newBl->mem(), newBl->size() };
     }
 
     template<bool DebugAllocatorEnable>
-    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_alloc_aligned(size_t size, size_t alignment)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_alloc_aligned(size_t size, size_t alignment)
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1695,29 +1820,26 @@ namespace AZ
             size = sizeof(free_node);
         }
         size = AZ::SizeAlignUp(size, sizeof(block_header));
-        block_header* newBl = tree_extract_aligned(size, alignment);
-        if (!newBl)
+
+        constexpr size_t MinRequiredSize = sizeof(block_header) + sizeof(free_node);
+
+        // The block header + free_node size is the minimum amount
+        // of bytes needed for a block
+        block_header* alignedBlockHeader = tree_extract_aligned(size, alignment);
+        if (alignedBlockHeader == nullptr)
         {
-            newBl = tree_grow(size + alignment);
-            if (!newBl)
+            alignedBlockHeader = tree_grow_aligned(size, alignment);
+            if (alignedBlockHeader == nullptr)
             {
-                return nullptr;
+                return AllocateAddress{};
             }
         }
+
+        block_header* newBl = alignedBlockHeader;
+
         HPPA_ASSERT(newBl && newBl->size() >= size);
-        size_t alignmentOffs = AZ::PointerAlignUp((char*)newBl->mem(), alignment) - (char*)newBl->mem();
-        HPPA_ASSERT(newBl->size() >= size + alignmentOffs);
-        if (alignmentOffs >= sizeof(block_header) + sizeof(free_node))
-        {
-            split_block(newBl, alignmentOffs - sizeof(block_header));
-            tree_attach(newBl);
-            newBl = newBl->next();
-        }
-        else if (alignmentOffs > 0)
-        {
-            newBl = shift_block(newBl, alignmentOffs);
-        }
-        if (newBl->size() >= size + sizeof(block_header) + sizeof(free_node))
+
+        if (newBl->size() >= size + MinRequiredSize)
         {
             split_block(newBl, size);
             tree_attach(newBl->next());
@@ -1725,54 +1847,11 @@ namespace AZ
         newBl->set_used();
         HPPA_ASSERT(((size_t)newBl->mem() & (alignment - 1)) == 0);
         mTotalAllocatedSizeTree += newBl->size();
-        return newBl->mem();
+        return AllocateAddress{ newBl->mem(), newBl->size() };
     }
 
     template<bool DebugAllocatorEnable>
-    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_alloc_bucket_page()
-    {
-#ifdef MULTITHREADED
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
-#endif
-        // We are allocating pool pages m_poolPageSize aligned at m_poolPageSize
-        // what is special is that we are keeping the block_header at the beginning of the
-        // memory and we return the offset pointer.
-        size_t size = m_poolPageSize;
-        size_t alignment = m_poolPageSize;
-        block_header* newBl = tree_extract_bucket_page();
-        if (!newBl)
-        {
-            newBl = tree_grow(size + alignment);
-            if (!newBl)
-            {
-                return nullptr;
-            }
-        }
-        HPPA_ASSERT(newBl && (newBl->size() + sizeof(block_header)) >= size);
-        size_t alignmentOffs = AZ::PointerAlignUp((char*)newBl, alignment) - (char*)newBl;
-        HPPA_ASSERT(newBl->size() + sizeof(block_header) >= size + alignmentOffs);
-        if (alignmentOffs >= sizeof(block_header) + sizeof(free_node))
-        {
-            split_block(newBl, alignmentOffs - sizeof(block_header));
-            tree_attach(newBl);
-            newBl = newBl->next();
-        }
-        else if (alignmentOffs > 0)
-        {
-            newBl = shift_block(newBl, alignmentOffs);
-        }
-        if (newBl->size() >= (size - sizeof(block_header)) + sizeof(block_header) + sizeof(free_node))
-        {
-            split_block(newBl, size - sizeof(block_header));
-            tree_attach(newBl->next());
-        }
-        newBl->set_used();
-        HPPA_ASSERT(((size_t)newBl & (alignment - 1)) == 0);
-        return newBl;
-    }
-
-    template<bool DebugAllocatorEnable>
-    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_realloc(void* ptr, size_t size)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_realloc(void* ptr, size_t size)
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1796,7 +1875,7 @@ namespace AZ
                 mTotalAllocatedSizeTree += bl->size() - blSize;
             }
             HPPA_ASSERT(bl->size() >= size);
-            return ptr;
+            return AllocateAddress{ ptr, bl->size() };
         }
         // check if the following block is free and if it can accommodate the requested size
         block_header* next = bl->next();
@@ -1813,7 +1892,7 @@ namespace AZ
                 tree_attach(bl->next());
             }
             mTotalAllocatedSizeTree += bl->size() - blSize;
-            return ptr;
+            return AllocateAddress{ ptr, bl->size() };
         }
         // check if the previous block can be used to avoid searching
         block_header* prev = bl->prev();
@@ -1840,21 +1919,21 @@ namespace AZ
                 tree_attach(bl->next());
             }
             mTotalAllocatedSizeTree += bl->size() - blSize;
-            return newPtr;
+            return AllocateAddress{ newPtr, bl->size() };
         }
         // fall back to alloc/copy/free
-        void* newPtr = tree_alloc(size);
+        AllocateAddress newPtr = tree_alloc(size);
         if (newPtr)
         {
             memcpy(newPtr, ptr, blSize - MEMORY_GUARD_SIZE);
             tree_free(ptr);
             return newPtr;
         }
-        return nullptr;
+        return AllocateAddress{};
     }
 
     template<bool DebugAllocatorEnable>
-    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_realloc_aligned(void* ptr, size_t size, size_t alignment)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_realloc_aligned(void* ptr, size_t size, size_t alignment)
     {
         HPPA_ASSERT(((size_t)ptr & (alignment - 1)) == 0);
 #ifdef MULTITHREADED
@@ -1878,7 +1957,7 @@ namespace AZ
             }
             mTotalAllocatedSizeTree += bl->size() - blSize;
             HPPA_ASSERT(bl->size() >= size);
-            return ptr;
+            return AllocateAddress{ ptr, bl->size() };
         }
         block_header* next = bl->next();
         size_t nextSize = next->used() ? 0 : next->size() + sizeof(block_header);
@@ -1894,11 +1973,19 @@ namespace AZ
                 tree_attach(bl->next());
             }
             mTotalAllocatedSizeTree += bl->size() - blSize;
-            return ptr;
+            return AllocateAddress{ ptr, bl->size() };
         }
         block_header* prev = bl->prev();
         size_t prevSize = prev->used() ? 0 : prev->size() + sizeof(block_header);
         size_t alignmentOffs = prev->used() ? 0 : AZ::PointerAlignUp((char*)prev->mem(), alignment) - (char*)prev->mem();
+
+        constexpr size_t MinRequiredSize = sizeof(free_node) + sizeof(block_header);
+        if (alignmentOffs > 0 && alignmentOffs < MinRequiredSize)
+        {
+            // Make sure the alignment offset is large enough, that a free block
+            // can be created between the new block and the previous block
+            alignmentOffs = AZ::PointerAlignUp((char*)prev->mem() + MinRequiredSize, alignment) - (char*)prev->mem();
+        }
         if (blSize + prevSize + nextSize >= size + alignmentOffs)
         {
             HPPA_ASSERT(!prev->used());
@@ -1909,37 +1996,33 @@ namespace AZ
                 tree_detach(next);
                 next->unlink();
             }
-            if (alignmentOffs >= sizeof(block_header) + sizeof(free_node))
+            if (alignmentOffs >= MinRequiredSize)
             {
                 split_block(prev, alignmentOffs - sizeof(block_header));
                 tree_attach(prev);
                 prev = prev->next();
-            }
-            else if (alignmentOffs > 0)
-            {
-                prev = shift_block(prev, alignmentOffs);
             }
             bl = prev;
             bl->set_used();
             HPPA_ASSERT(bl->size() >= size && ((size_t)bl->mem() & (alignment - 1)) == 0);
             void* newPtr = bl->mem();
             memmove(newPtr, ptr, blSize - MEMORY_GUARD_SIZE);
-            if (bl->size() >= size + sizeof(block_header) + sizeof(free_node))
+            if (bl->size() >= size + MinRequiredSize)
             {
                 split_block(bl, size);
                 tree_attach(bl->next());
             }
             mTotalAllocatedSizeTree += bl->size() - blSize;
-            return newPtr;
+            return AllocateAddress{ newPtr, bl->size() };
         }
-        void* newPtr = tree_alloc_aligned(size, alignment);
+        AllocateAddress newPtr = tree_alloc_aligned(size, alignment);
         if (newPtr)
         {
             memcpy(newPtr, ptr, blSize - MEMORY_GUARD_SIZE);
             tree_free(ptr);
             return newPtr;
         }
-        return nullptr;
+        return AllocateAddress{};
     }
 
     template<bool DebugAllocatorEnable>
@@ -1986,7 +2069,7 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_free(void* ptr)
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_free(void* ptr) -> size_type
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1994,25 +2077,15 @@ namespace AZ
         block_header* bl = ptr_get_block_header(ptr);
         // This assert detects a double-free of ptr
         HPPA_ASSERT(bl->used());
-        mTotalAllocatedSizeTree -= bl->size();
+        size_type allocatedBytes = bl->size();
+        mTotalAllocatedSizeTree -= allocatedBytes;
         bl->set_unused();
         bl = coalesce_block(bl);
         tree_attach(bl);
+
+        return allocatedBytes;
     }
 
-    template<bool DebugAllocatorEnable>
-    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_free_bucket_page(void* ptr)
-    {
-#ifdef MULTITHREADED
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
-#endif
-        HPPA_ASSERT(AZ::PointerAlignDown(ptr, m_poolPageSize) == ptr);
-        block_header* bl = (block_header*)ptr;
-        HPPA_ASSERT(bl->size() >= m_poolPageSize - sizeof(block_header));
-        bl->set_unused();
-        bl = coalesce_block(bl);
-        tree_attach(bl);
-    }
 
     template<bool DebugAllocatorEnable>
     void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_purge_block(block_header* bl)
@@ -2094,9 +2167,9 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    typename HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::pointer HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::allocate(size_type byteSize, align_type alignment)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::allocate(size_type byteSize, align_type alignment)
     {
-        pointer address = alloc(byteSize, static_cast<size_t>(alignment));
+        AllocateAddress address = alloc(byteSize, static_cast<size_t>(alignment));
         if (address == nullptr)
         {
             purge();
@@ -2106,31 +2179,32 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::deallocate(pointer ptr, size_type byteSize, align_type alignment)
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::deallocate(pointer ptr, size_type byteSize, align_type alignment)
+        -> size_type
     {
         if (ptr == nullptr)
         {
-            return;
+            return 0;
         }
         if (byteSize == 0)
         {
-            free(ptr);
+            return free(ptr);
         }
         else if (alignment == 0)
         {
-            free(ptr, byteSize);
+            return free(ptr, byteSize);
         }
         else
         {
-            free(ptr, byteSize, alignment);
+            return free(ptr, byteSize, alignment);
         }
     }
 
     template<bool DebugAllocatorEnable>
-    typename HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::pointer HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
+    AllocateAddress HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
     {
-        pointer address = realloc(ptr, newSize, static_cast<size_t>(alignment));
-        if (address == nullptr && newSize > 0)
+        AllocateAddress address = realloc(ptr, newSize, static_cast<size_t>(alignment));
+        if (address.GetAddress() == nullptr && newSize > 0)
         {
             purge();
             address = realloc(ptr, newSize, static_cast<size_t>(alignment));
@@ -2139,7 +2213,8 @@ namespace AZ
     }
 
     template<bool DebugAllocatorEnable>
-    typename HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::size_type HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::get_allocated_size(pointer ptr, [[maybe_unused]] align_type alignment) const
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::get_allocated_size(pointer ptr, [[maybe_unused]] align_type alignment) const
+        -> size_type
     {
         return size(ptr);
     }
@@ -2474,16 +2549,9 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::allocate(size_type byteSize, size_type alignment)
-        -> pointer
+    AllocateAddress HphaSchemaBase<DebugAllocator>::allocate(size_type byteSize, size_type alignment)
     {
-        pointer address = m_allocator->alloc(byteSize, alignment);
-        if (address == nullptr)
-        {
-            GarbageCollect();
-            address = m_allocator->alloc(byteSize, alignment);
-        }
-        return address;
+        return m_allocator->allocate(byteSize, alignment);
     }
 
     //=========================================================================
@@ -2491,16 +2559,9 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
-        -> pointer
+    AllocateAddress HphaSchemaBase<DebugAllocator>::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
-        pointer address = m_allocator->realloc(ptr, newSize, newAlignment);
-        if (address == nullptr && newSize > 0)
-        {
-            GarbageCollect();
-            address = m_allocator->realloc(ptr, newSize, newAlignment);
-        }
-        return address;
+        return m_allocator->reallocate(ptr, newSize, newAlignment);
     }
 
     //=========================================================================
@@ -2508,24 +2569,9 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    void HphaSchemaBase<DebugAllocator>::deallocate(pointer ptr, size_type size, size_type alignment)
+    auto HphaSchemaBase<DebugAllocator>::deallocate(pointer ptr, size_type size, size_type alignment) -> size_type
     {
-        if (ptr == nullptr)
-        {
-            return;
-        }
-        if (size == 0)
-        {
-            m_allocator->free(ptr);
-        }
-        else if (alignment == 0)
-        {
-            m_allocator->free(ptr, size);
-        }
-        else
-        {
-            m_allocator->free(ptr, size, alignment);
-        }
+        return m_allocator->deallocate(ptr, size, alignment);
     }
 
     //=========================================================================

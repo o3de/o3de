@@ -70,7 +70,7 @@ namespace AZ::RHI
     {
         namespace Memory
         {
-            constexpr uint64_t StagingBufferBudgetInBytes          = 128ul * 1024 * 1024;
+            constexpr uint64_t StagingBufferBudgetInBytes          = 0u;
             constexpr uint64_t AsyncQueueStagingBufferSizeInBytes  = 4ul   * 1024 * 1024;
             constexpr uint64_t MediumStagingBufferPageSizeInBytes  = 2ul   * 1024 * 1024;
             constexpr uint64_t LargestStagingBufferPageSizeInBytes = 128ul * 1024 * 1024;
@@ -96,8 +96,8 @@ namespace AZ::RHI
         constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(AZStd::numeric_limits<uint32_t>::max()) };
         constexpr DeviceMask DefaultDevice{ 1u };
 
-        constexpr uint32_t DefaultDeviceIndex { 0 };
+        constexpr int DefaultDeviceIndex{ 0 };
     }
 
-    constexpr uint32_t InvalidIndex = AZStd::numeric_limits<uint32_t>::max();
+    constexpr int InvalidIndex = AZStd::numeric_limits<int>::max();
 }

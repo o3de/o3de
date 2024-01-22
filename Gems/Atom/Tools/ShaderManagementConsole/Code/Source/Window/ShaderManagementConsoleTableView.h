@@ -67,6 +67,7 @@ namespace ShaderManagementConsole
         size_t m_shaderVariantCount = {};
         size_t m_shaderOptionCount = {};
         ColumnSortMode m_columnSortMode = Cost;
+        QIcon m_emptyOptionIcon;
     };
 
     class ShaderManagementConsoleContainer : public QVBoxLayout
@@ -80,5 +81,6 @@ namespace ShaderManagementConsole
         QHBoxLayout m_subLayout;
         QLabel m_sortLabel;
         QComboBox m_sortComboBox;
+        QPushButton m_defragVariants;
     };
 } // namespace ShaderManagementConsole

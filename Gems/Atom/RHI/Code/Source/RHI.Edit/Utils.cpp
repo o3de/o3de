@@ -22,6 +22,7 @@
 #include <AzCore/Math/Sha1.h>
 #include <AzCore/Platform.h>
 #include <AzCore/std/time.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -228,9 +229,10 @@ namespace AZ::RHI
     }
 
     bool ExecuteShaderCompiler(const AZStd::string& executablePath,
-                                const AZStd::string& parameters,
-                                const AZStd::string& shaderSourcePathForDebug,
-                                const char* toolNameForLog)
+                               const AZStd::string& parameters,
+                               const AZStd::string& shaderSourcePathForDebug,
+                               const AZStd::string& tempFolder,
+                               const char* toolNameForLog)
     {
         AZStd::string executableAbsolutePath;
         if (AzFramework::StringFunc::Path::IsRelative(executablePath.c_str()))
@@ -368,7 +370,15 @@ namespace AZ::RHI
         profilingEntry.m_executablePath = executablePath;
         profilingEntry.m_parameters = parameters;
         profilingEntry.m_elapsedTimeSeconds = elapsedTimeSeconds;
-        WriteProfilingEntryToLog(shaderSourcePathForDebug, profilingEntry);
+        AZStd::string shaderSourceArg = shaderSourcePathForDebug;
+        AZStd::string shaderSourceFolder;
+        StringFunc::Path::GetFileName(shaderSourceArg.c_str(), shaderSourceFolder);
+        if (StringFunc::Contains(shaderSourceFolder, "Cache"))
+        {
+            AZStd::string shaderFileNameWithMutatedFolder = BuildFileNameWithExtension(shaderSourcePathForDebug, tempFolder, "");
+            shaderSourceArg = shaderFileNameWithMutatedFolder;
+        }
+        WriteProfilingEntryToLog(shaderSourceArg, profilingEntry);
 
         return true;
     }
@@ -403,11 +413,7 @@ namespace AZ::RHI
         case ShaderHardwareStage::Fragment:
             return RHI::ShaderStage::Fragment;
         case ShaderHardwareStage::Geometry:
-            AZ_Assert(false, "RHI currently does not support geometry shaders");
-            return RHI::ShaderStage::Unknown;
-        case ShaderHardwareStage::TessellationControl:
-        case ShaderHardwareStage::TessellationEvaluation:
-            return RHI::ShaderStage::Tessellation;
+            return RHI::ShaderStage::Geometry;
         case ShaderHardwareStage::Vertex:
             return RHI::ShaderStage::Vertex;
         case ShaderHardwareStage::RayTracing:
@@ -480,14 +486,33 @@ namespace AZ::RHI
     }
 
     AZStd::string BuildFileNameWithExtension(const AZStd::string& shaderSourceFile,
-                                                                const AZStd::string& tempFolder,
-                                                                const char* outputExtension)
+                                             const AZStd::string& tempFolder,
+                                             const char* outputExtension)
     {
         AZStd::string outputFile;
         AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), outputFile);
         AzFramework::StringFunc::Path::Join(tempFolder.c_str(), outputFile.c_str(), outputFile);
         AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
         return outputFile;
+    }
+
+    AZStd::string GetDirectXShaderCompilerPath(const char* defaultPathToDxc)
+    {
+        // To quickly test changes to the DXC compiler or as a workaround to the default.
+        static constexpr char DxcOverridePathKey[] = "/O3DE/Atom/DxcOverridePath";
+
+        if (auto setReg = AZ::Interface<SettingsRegistryInterface>::Get())
+        {
+            AZStd::string overridePath;
+            if (setReg->Get(overridePath, DxcOverridePathKey))
+            {
+                AZ_TraceOnce("CustomDxc", "DXC executable override specified, using %s.\n", overridePath.c_str());
+                return overridePath;
+            }
+        }
+
+        AZ_Assert(defaultPathToDxc != nullptr, "Invalid default path to DXC.");
+        return AZStd::string(defaultPathToDxc);
     }
 
     namespace CommandLineArgumentUtils

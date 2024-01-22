@@ -200,7 +200,6 @@ public:
     void OnRenameObj();
     void OnUndo();
     void OnOpenAssetImporter();
-    void OnUpdateSelected(QAction* action);
     void OnEditLevelData();
     void OnFileEditLogFile();
     void OnFileResaveSlices();

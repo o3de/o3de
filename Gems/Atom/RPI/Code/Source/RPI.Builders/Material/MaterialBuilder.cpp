@@ -38,7 +38,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 140; // Switch from XML to binary assets
+            materialBuilderDescriptor.m_version = 141; // Replaced possible dependency utility function with explicit and wildcard job dependencies
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
             materialBuilderDescriptor.m_createJobFunction = AZStd::bind(&MaterialBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -97,16 +97,13 @@ namespace AZ
 
             if (!materialSourceData.m_parentMaterial.empty())
             {
-                const auto& resolvedParentMaterialPath =
-                    AssetUtils::ResolvePathReference(materialSourcePath, materialSourceData.m_parentMaterial);
-
                 // Register dependency on the parent material source file so we can load and use its data to build this material.
-                MaterialBuilderUtils::AddPossibleDependencies(
-                    materialSourcePath,
-                    resolvedParentMaterialPath,
-                    response,
+                MaterialBuilderUtils::AddJobDependency(
                     outputJobDescriptor,
-                    JobKey);
+                    AssetUtils::ResolvePathReference(materialSourcePath, materialSourceData.m_parentMaterial),
+                    JobKey,
+                    {},
+                    { 0 });
             }
 
             // Note that parentMaterialPath may have registered a dependency above, and the parent material reports dependency on the
@@ -136,51 +133,59 @@ namespace AZ
                 // format, then there will be an intermediate .materialtype and there needs to be a dependency on that file instead.
                 if (materialTypeFormat == MaterialTypeSourceData::Format::Direct)
                 {
-                    MaterialBuilderUtils::AddPossibleDependencies(
-                        materialSourcePath,
-                        resolvedMaterialTypePath,
-                        response,
-                        outputJobDescriptor,
-                        MaterialTypeBuilder::FinalStageJobKey);
+                    MaterialBuilderUtils::AddJobDependency(
+                        outputJobDescriptor, resolvedMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 });
+
+                    for (const auto& shader : materialTypeSourceData.GetShaderReferences())
+                    {
+                        MaterialBuilderUtils::AddJobDependency(
+                            outputJobDescriptor,
+                            AssetUtils::ResolvePathReference(resolvedMaterialTypePath, shader.m_shaderFilePath),
+                            "Shader Asset");
+                    }
                 }
                 else if (materialTypeFormat == MaterialTypeSourceData::Format::Abstract)
                 {
-                    MaterialBuilderUtils::AddPossibleDependencies(
-                        materialSourcePath,
-                        resolvedMaterialTypePath,
-                        response,
+                    // Create a dependency on the abstract, pipeline, version of the material type and its products. The pipeline based
+                    // material type builder uses the 'common' asset platform ID because it produces immediate assets. The sub ID filter
+                    // should remain empty to observe all produced intermediate assets.
+                    MaterialBuilderUtils::AddJobDependency(
                         outputJobDescriptor,
+                        resolvedMaterialTypePath,
                         MaterialTypeBuilder::PipelineStageJobKey,
-                        AssetBuilderSDK::JobDependencyType::Order,
-                        {},
                         AssetBuilderSDK::CommonPlatformName);
 
-                    const AZStd::string intermediateMaterialTypePath =
-                        MaterialUtils::PredictIntermediateMaterialTypeSourcePath(materialSourcePath, resolvedMaterialTypePath);
+                    // The abstract, pipeline material type will generate a direct material type as an intermediate source asset. This
+                    // attempts to predict where that source asset will be located in the intermediate asset folder then maps it as a
+                    // product dependency if it exists or a source dependency if it is to be created in the future.
+                    const auto& intermediateMaterialTypePath =
+                        MaterialUtils::PredictIntermediateMaterialTypeSourcePath(resolvedMaterialTypePath);
                     if (!intermediateMaterialTypePath.empty())
                     {
-                        MaterialBuilderUtils::AddPossibleDependencies(
-                            materialSourcePath,
-                            intermediateMaterialTypePath,
-                            response,
-                            outputJobDescriptor,
-                            MaterialTypeBuilder::FinalStageJobKey);
+                        // Add the ordered product dependency for the intermediate material type source file so that the material cannot be
+                        // processed before it's complete
+                        MaterialBuilderUtils::AddJobDependency(
+                            outputJobDescriptor, intermediateMaterialTypePath, MaterialTypeBuilder::FinalStageJobKey, {}, { 0 });
+
+                        // Add a wild card job dependency for any of the shaders generated with the material type so the material will only
+                        // be processed after they are complete
+                        auto& jobDependency = MaterialBuilderUtils::AddJobDependency(
+                            outputJobDescriptor, intermediateMaterialTypePath, "Shader Asset", {}, {}, false);
+                        jobDependency.m_sourceFile.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards;
+                        AZ::StringFunc::Replace(jobDependency.m_sourceFile.m_sourceFileDependencyPath, "_generated.materialtype", "*.shader");
                     }
                 }
             }
 
             // Assign dependencies from image properties
-            for (auto& [propertyId, propertyValue] : materialSourceData.GetPropertyValues())
+            for (const auto& [propertyId, propertyValue] : materialSourceData.GetPropertyValues())
             {
                 AZ_UNUSED(propertyId);
 
                 if (MaterialUtils::LooksLikeImageFileReference(propertyValue))
                 {
                     MaterialBuilderUtils::AddPossibleImageDependencies(
-                        materialSourcePath,
-                        propertyValue.GetValue<AZStd::string>(),
-                        response,
-                        outputJobDescriptor);
+                        materialSourcePath, propertyValue.GetValue<AZStd::string>(), outputJobDescriptor);
                 }
             }
 
@@ -224,7 +229,7 @@ namespace AZ
             AzFramework::StringFunc::Path::ConstructFull(
                 request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), materialSourcePath, true);
 
-            const auto materialSourceDataOutcome = MaterialUtils::LoadMaterialSourceData(materialSourcePath);
+            const auto& materialSourceDataOutcome = MaterialUtils::LoadMaterialSourceData(materialSourcePath);
             if (!materialSourceDataOutcome)
             {
                 AZ_Error(MaterialBuilderName, false, "Failed to load material source data: %s", materialSourcePath.c_str());
@@ -234,7 +239,7 @@ namespace AZ
             const auto& materialSourceData = materialSourceDataOutcome.GetValue();
 
             // Load the material file and create the MaterialAsset object
-            auto materialAssetOutcome = materialSourceData.CreateMaterialAsset(
+            const auto& materialAssetOutcome = materialSourceData.CreateMaterialAsset(
                 Uuid::CreateRandom(), materialSourcePath, ShouldReportMaterialAssetWarningsAsErrors());
             if (!materialAssetOutcome)
             {
@@ -242,7 +247,7 @@ namespace AZ
                 return;
             }
 
-            AZ::Data::Asset<MaterialAsset> materialAsset = materialAssetOutcome.GetValue();
+            const auto& materialAsset = materialAssetOutcome.GetValue();
             if (!materialAsset)
             {
                 // Errors will have been reported above

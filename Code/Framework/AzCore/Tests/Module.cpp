@@ -134,7 +134,7 @@ namespace UnitTest
             // Create application descriptor
             ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-            appDesc.m_recordingMode = Debug::AllocationRecords::RECORD_FULL;
+            appDesc.m_recordingMode = Debug::AllocationRecords::Mode::RECORD_FULL;
 
             // AZCoreTestDLL will load as a dynamic module
             DynamicModuleDescriptor& dynamicModuleDescriptor = appDesc.m_modules.emplace_back();

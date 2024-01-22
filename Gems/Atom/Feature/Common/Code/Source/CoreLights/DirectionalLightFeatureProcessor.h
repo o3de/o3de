@@ -18,6 +18,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <CoreLights/DirectionalLightShadowNotificationBus.h>
 
 namespace AZ
 {
@@ -75,9 +76,9 @@ namespace AZ
             float m_affectsGIFactor = 1.0f;
 
             bool m_affectsGI = true;
+            uint32_t m_lightingChannelMask = 1;
             float m_padding0 = 0.0f;
             float m_padding1 = 0.0f;
-            float m_padding2 = 0.0f;
         };
 
         // [GFX TODO][ATOM-15172] Look into compacting struct DirectionalLightShadowData
@@ -221,6 +222,7 @@ namespace AZ
             void SetRgbIntensity(LightHandle handle, const PhotometricColor<PhotometricUnit::Lux>& lightColor) override;
             void SetDirection(LightHandle handle, const Vector3& lightDirection) override;
             void SetAngularDiameter(LightHandle handle, float angularDiameter) override;
+            void SetShadowEnabled(LightHandle handle, bool enable) override;
             void SetShadowmapSize(LightHandle handle, ShadowmapSize size) override;
             void SetCascadeCount(LightHandle handle, uint16_t cascadeCount) override;
             void SetShadowmapFrustumSplitSchemeRatio(LightHandle handle, float ratio) override;
@@ -248,6 +250,7 @@ namespace AZ
             void SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const { return m_lightBufferHandler.GetBuffer(); }
             uint32_t GetLightCount() const { return m_lightBufferHandler.GetElementCount(); }

@@ -127,6 +127,7 @@ namespace ScriptCanvas
         AZ::JsonDeserializerSettings settings;
         settings.m_serializeContext = serializeContext;
         settings.m_metadata.Create<SerializationListeners>();
+        settings.m_clearContainers = true;
 
         auto loadResult = JSRU::LoadObjectFromStringByType
             ( &(*result.m_graphDataPtr)

@@ -537,8 +537,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
         GetIEditor()->GetDocument()->SetModifiedFlag(false);
         GetIEditor()->GetDocument()->SetModifiedModules(eModifiedNothing);
     }
-    // Close all edit panels.
-    GetIEditor()->ClearSelection();
 
     // force clean up of all deferred deletes, so that we don't have any issues with windows from plugins not being deleted yet
     qApp->sendPostedEvents(nullptr, QEvent::DeferredDelete);

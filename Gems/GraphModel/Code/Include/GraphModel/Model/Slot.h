@@ -66,6 +66,7 @@ namespace GraphModel
         bool operator>(const SlotId& rhs) const;
 
         AZStd::size_t GetHash() const;
+        AZStd::string ToString() const;
 
         SlotName m_name;
         SlotSubId m_subId = 0;

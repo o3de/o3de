@@ -19,8 +19,8 @@ org.gradle.parallel=true
 # there are a large number of sub-projects
 org.gradle.configureondemand=false
 
-# bump the JVM memory limits due to the size of Lumberyard. Defaults: -Xmx1280m -XX:MaxPermSize=256m
-org.gradle.jvmargs=
+# Customize the jvm arguments to control things like memory limits.
+org.gradle.jvmargs=${GRADLE_JVM_ARGS}
 
 # required to use Android X libraries
 android.useAndroidX=true

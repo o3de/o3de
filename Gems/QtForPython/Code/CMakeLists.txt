@@ -18,7 +18,7 @@ if(NOT PAL_TRAIT_BUILD_QTFORPYTHON_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME QtForPython.Editor.Static STATIC
+    NAME ${gem_name}.Editor.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         qtforpython_editor_files.cmake
@@ -42,7 +42,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME QtForPython.Editor GEM_MODULE
+    NAME ${gem_name}.Editor GEM_MODULE
     NAMESPACE Gem
     FILES_CMAKE
         qtforpython_shared_files.cmake
@@ -51,14 +51,23 @@ ly_add_target(
             ${CMAKE_CURRENT_SOURCE_DIR}/Source/Platform/${PAL_PLATFORM_NAME}
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::QtForPython.Editor.Static
+            Gem::${gem_name}.Editor.Static
     RUNTIME_DEPENDENCIES
         3rdParty::pyside2::Tools
         Gem::EditorPythonBindings.Editor
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/QtForPythonModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # the above target is used in both builders like AssetProcessor and Tools like the Editor
 # but is not used in clients or servers
-ly_create_alias(NAME QtForPython.Tools     NAMESPACE Gem TARGETS Gem::QtForPython.Editor)
-ly_create_alias(NAME QtForPython.Builders  NAMESPACE Gem TARGETS Gem::QtForPython.Editor)
+ly_create_alias(NAME ${gem_name}.Tools     NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+ly_create_alias(NAME ${gem_name}.Builders  NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 

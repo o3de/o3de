@@ -536,11 +536,6 @@ void CUiAnimViewSequence::SelectSelectedNodesInViewport()
         }
     }
 #endif
-
-    for (auto iter = entitiesToBeSelected.begin(); iter != entitiesToBeSelected.end(); ++iter)
-    {
-        GetIEditor()->SelectObject(*iter);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

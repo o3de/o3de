@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Utils.h>
 
-#include <MCore/Source/Color.h>
 #include <MCore/Source/LogManager.h>
 
 #include <EMotionFX/Source/EventManager.h>
@@ -75,7 +74,7 @@ namespace EMStudio
 
     //-----------------------------------
 
-    const AZ::u32 MotionEventPresetManager::s_unknownEventColor = MCore::RGBA(193, 195, 196, 255);
+    const AZ::Color MotionEventPresetManager::s_unknownEventColor = AZ::Color::CreateFromRgba(193, 195, 196, 255);
 
     MotionEventPresetManager::MotionEventPresetManager()
         : m_dirtyFlag(false)
@@ -310,7 +309,7 @@ namespace EMStudio
     }
 
     // Check if motion event with this configuration exists and return color.
-    AZ::u32 MotionEventPresetManager::GetEventColor(const EMotionFX::EventDataSet& eventDatas) const
+    AZ::Color MotionEventPresetManager::GetEventColor(const EMotionFX::EventDataSet& eventDatas) const
     {
         for (const MotionEventPreset* preset : m_eventPresets)
         {

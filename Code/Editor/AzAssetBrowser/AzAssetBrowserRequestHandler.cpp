@@ -1301,6 +1301,22 @@ bool AzAssetBrowserRequestHandler::OpenWithOS(const AZStd::string& fullEntryPath
     return openedSuccessfully;
 }
 
+AzAssetBrowserWindow* AzAssetBrowserRequestHandler::FindAzAssetBrowserWindow(QWidget* widgetToStartSearchFrom)
+{
+    AzAssetBrowserWindow* assetBrowserWindow = nullptr;
+    if (widgetToStartSearchFrom)
+    {
+        assetBrowserWindow = FindAzAssetBrowserWindowThatContainsWidget(widgetToStartSearchFrom);
+    }
+
+    if (!assetBrowserWindow)
+    {
+        assetBrowserWindow = AzToolsFramework::GetViewPaneWidget<AzAssetBrowserWindow>(LyViewPane::AssetBrowser);
+    }
+
+    return assetBrowserWindow;
+}
+
 AzAssetBrowserWindow* AzAssetBrowserRequestHandler::FindAzAssetBrowserWindowThatContainsWidget(QWidget* widget)
 {
     AzAssetBrowserWindow* targetAssetBrowserWindow = nullptr;
@@ -1326,24 +1342,16 @@ AzAssetBrowserWindow* AzAssetBrowserRequestHandler::FindAzAssetBrowserWindowThat
 
 void AzAssetBrowserRequestHandler::SelectAsset(QWidget* caller, const AZStd::string& fullFilePath)
 {
-    AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindowThatContainsWidget(caller);
-
-    if (!assetBrowserWindow)
+    if (AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindow(caller))
     {
-        return;
+        assetBrowserWindow->SelectAsset(fullFilePath.c_str(), false);
     }
-
-    assetBrowserWindow->SelectAsset(fullFilePath.c_str(), false);
 }
 
 void AzAssetBrowserRequestHandler::SelectFolderAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFolderPath)
 {
-    AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindowThatContainsWidget(caller);
-
-    if (!assetBrowserWindow)
+    if (AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindow(caller))
     {
-        return;
+        assetBrowserWindow->SelectAsset(fullFolderPath.c_str(), true);
     }
-
-    assetBrowserWindow->SelectAsset(fullFolderPath.c_str(), true);
 }

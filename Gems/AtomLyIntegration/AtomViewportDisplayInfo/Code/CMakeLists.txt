@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME AtomViewportDisplayInfo ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atomviewportdisplayinfo_files.cmake
@@ -25,17 +25,26 @@ ly_add_target(
             Gem::Atom_RPI.Public
 )
 
-ly_create_alias(NAME AtomViewportDisplayInfo.Clients NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
-ly_create_alias(NAME AtomViewportDisplayInfo.Tools NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
-ly_create_alias(NAME AtomViewportDisplayInfo.Servers NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
-ly_create_alias(NAME AtomViewportDisplayInfo.Unified NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Module.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Tools NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME AtomViewportDisplayInfo.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atomviewportdisplayinfo_test_files.cmake
@@ -48,7 +57,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
     )
     ly_add_googletest(
-        NAME Gem::AtomViewportDisplayInfo.Tests
+        NAME Gem::${gem_name}.Tests
         LABELS REQUIRES_tiaf
     )
 endif()

@@ -22,21 +22,40 @@ endif()
 
 # By default, the Settings Registry will apply user and project registry files as overrides in development (non-release) builds,
 # and will ignore all overrides in release builds.
-# This behavior can be overridden by passing -DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=0, 1, 2 or 3 when generating the build files.
+# This behavior can be overridden by passing -DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=0, 1, 2, 3 or 4 when generating the build files.
 # The override can be removed by passing -UALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES when generating the build files.
 set(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES "" CACHE STRING 
 "Forces the Settings Registry development overrides to be used or ignored.
   If unset, development overrides are used in development builds and ignored in release builds.
   0 disables the development overrides in all builds.
   1 = registry overrides are allowed from the command line.
-  2 = registry overrides are allowed from the command line, engine, gem, and project files.
-  3 = registry overrides are allowed from the command line, engine, gem, project, and user files.")
+  2 = registry overrides are allowed from the engine, gem, and project files (not command line).
+  3 = registry overrides are allowed from the command line, engine, gem, and project files.
+  4 = registry overrides are allowed from the command line, engine, gem, project, and user files.")
 
 # If there's a value in ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES, the compiler flag will get set to it.
 # Otherwise, the variable will be empty and no compiler flag will be set, leaving it to the code to decide
 # whether or not to allow the Settings Registry development overrides.
 set(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES_FLAG $<$<NOT:$<STREQUAL:"${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES}","">>:ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES}>)
 
+# If empty, the allocator initialization startup config file will be checked for on startup in development (non-release) builds
+# This behavior can be overridden by passing -DO3DE_STARTUP_CFG_FILE_CHECK_OVERRIDE=0,1 to either prevent/force checking for the startup config file.
+# The override can be removed by reconfiguring with CMake using the -UO3DE_STARTUP_CFG_FILE_CHECK_OVERRIDE option to undefine the cache variable.
+set(O3DE_STARTUP_CFG_FILE_CHECK_OVERRIDE "" CACHE STRING
+"If unset, the default behavior is to check for a startup config file in development builds only.
+  When set to a falsey value(0, FALSE, OFF, etc...), no build configuration will check for a startup config file.
+  When set to any other value all build configurations will check for a startup config file.
+  NOTE: The startup config file is able to initialize O3DE allocator settings using a Windows-style INI file by specifying
+  the path to the file in 1 of 4 locations
+  1. ~/.o3de/Registry/startup.cfg
+  2. <executable-directory>/Registry/startup.cfg
+  3. The value of the O3DE_STARTUP_CFG_FILE environment variable if set
+  4. The value of the --startup-cfg-file command line argument")
+
+# If there's a value in ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES, the compiler flag will get set to it.
+# Otherwise, the variable will be empty and no compiler flag will be set, leaving it to the code to decide
+# whether or not to allow the Settings Registry development overrides.
+set(STARTUP_CFG_FILE_CHECK_OVERRIDE_FLAG $<$<NOT:$<STREQUAL:"${O3DE_STARTUP_CFG_FILE_CHECK_OVERRIDE}","">>:O3DE_STARTUP_CFG_FILE_CHECK_OVERRIDE=$<BOOL:${O3DE_STARTUP_CFG_FILE_CHECK_OVERRIDE}>>)
 
 
 ly_add_target(
@@ -91,6 +110,7 @@ ly_add_source_properties(
         AzCore/Component/ComponentApplication.cpp
     PROPERTY COMPILE_DEFINITIONS
     VALUES ${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES_FLAG}
+        ${STARTUP_CFG_FILE_CHECK_OVERRIDE_FLAG}
 )
 
 # Add the O3DE_STACK_CAPTURE_DEPTH define only to the cpp files for the following allocators

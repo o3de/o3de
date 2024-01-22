@@ -29,7 +29,6 @@
 #include "Include/IObjectManager.h"
 #include "MainWindow.h"
 #include "MathConversion.h"
-#include "Objects/SelectionGroup.h"
 #include "Settings.h"
 #include "UsedResources.h"
 #include "ViewPane.h"
