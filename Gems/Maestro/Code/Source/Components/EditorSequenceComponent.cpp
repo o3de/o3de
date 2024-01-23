@@ -235,6 +235,14 @@ namespace Maestro
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void EditorSequenceComponent::RemoveEntityToAnimate(AZ::EntityId removedEntityId)
     {
+        // Gruber patch begin. LVB. // To avoid annoying warnings
+#if defined(CARBONATED)
+        if (!GetEntity())   
+        {
+            return;
+        }
+#endif
+        // Gruber patch end. LVB.
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), removedEntityId);
 
         // Notify the SequenceAgentComponent that we're disconnecting from it
