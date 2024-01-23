@@ -5,17 +5,17 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
+from PySide2 import QtWidgets
 import azlmbr.asset as asset
 import azlmbr.atom
 import azlmbr.bus
 import azlmbr.math as math
 import azlmbr.name
 import azlmbr.paths
-import azlmbr.shadermanagementconsole
 import azlmbr.shader
-from PySide2 import QtWidgets
+import azlmbr.shadermanagementconsole
 import json
+import os
 
 # Make a copy of shaderVariants, update target option value and return copy, accumulate stableId
 def updateOptionValue(shaderVariants, targetOptionName, targetValue, stableId):
@@ -109,9 +109,14 @@ def create_shadervariantlist_for_shader(filename):
                     # clear the group from spuriously defaulted options by reducing it to a lean set:
                     clearOptions(optionGroup, lambda optName_Query: not shaderItem.MaterialOwnsShaderOption(optName_Query))
                     shaderOptionGroups.append(optionGroup)
-                    
 
         progressDialog.setValue(i)
+
+        # processing events to update UI after progress bar changes
+        QtWidgets.QApplication.processEvents()
+
+        # Allowing the application to process idle events for one frame to update systems and garbage collect graphics resources
+        azlmbr.atomtools.general.idle_wait_frames(1)
         if progressDialog.wasCanceled():
             return
 
