@@ -1836,7 +1836,7 @@ namespace AZ::Data
                 const AZStd::string& assetName = loadingAsset.GetHint();
                 if (!jobQueued && (assetName.ends_with(".motion") || (assetName.ends_with(".spawnable") && assetName.starts_with("levels"))))
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(20));  // 2ms is not enough for local, 10ms might be not enough for cloud server
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));  // 2ms is not enough for local
 
                     {
                         AZStd::scoped_lock<AZStd::recursive_mutex> requestLock(m_activeBlockingRequestMutex);
