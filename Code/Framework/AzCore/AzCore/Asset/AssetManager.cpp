@@ -1833,9 +1833,10 @@ namespace AZ::Data
                 }
 // Gruber patch begin // AE -- FIXME delay for motion assets, they are blocking, but a request might be not ready yet
 #if defined(CARBONATED) && defined(AZ_PLATFORM_LINUX)
-                if (!jobQueued && (loadingAsset.GetHint().ends_with(".motion") || loadingAsset.GetHint().ends_with(".spawnable")))
+                const AZStd::string& assetName = loadingAsset.GetHint();
+                if (!jobQueued && (assetName.ends_with(".motion") || (assetName.ends_with(".spawnable") && assetName.starts_with("levels"))))
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));  // 2ms is not enough
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(20));  // 2ms is not enough for local, 10ms might be not enough for cloud server
 
                     {
                         AZStd::scoped_lock<AZStd::recursive_mutex> requestLock(m_activeBlockingRequestMutex);
