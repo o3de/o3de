@@ -35,6 +35,7 @@
 #include <Atom/Feature/DisplayMapper/OutputTransformPass.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 #include <Atom/Feature/SplashScreen/SplashScreenSettings.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
@@ -150,6 +151,7 @@ namespace AZ
             ModelPreset::Reflect(context);
             RayTracingFeatureProcessor::Reflect(context);
             OcclusionCullingPlaneFeatureProcessor::Reflect(context);
+            LightingChannelConfiguration::Reflect(context);
 
             if (SerializeContext* serialize = azrtti_cast<SerializeContext*>(context))
             {
