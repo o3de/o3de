@@ -572,13 +572,13 @@ namespace AssetUtilities
             bool curValue = true;
             settingsRegistry->Get(curValue, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
                 + "/Fingerprinting/UseFileHashing");
-            AZ_TracePrintf(AssetProcessor::DebugChannel, "UseFileHashing: %s\n", curValue ? "True" : "False");
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "UseFileHashing: %s\n", curValue ? "True" : "False");
             s_fileHashSetting = curValue;
 
             return curValue;
         }
 
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "No UseFileHashing setting found\n");
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "UseFileHashing: Setting not found, using default (True)\n");
         s_fileHashSetting = true;
 
         return *s_fileHashSetting;

@@ -67,6 +67,7 @@ namespace ShaderManagementConsole
         size_t m_shaderVariantCount = {};
         size_t m_shaderOptionCount = {};
         ColumnSortMode m_columnSortMode = Cost;
+        QIcon m_emptyOptionIcon;
     };
 
     class ShaderManagementConsoleContainer : public QVBoxLayout
