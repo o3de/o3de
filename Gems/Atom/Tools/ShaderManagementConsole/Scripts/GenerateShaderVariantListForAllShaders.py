@@ -57,6 +57,12 @@ def main():
         azlmbr.shader.SaveShaderVariantListSourceData(savePath, shaderVariantList)
 
         progressDialog.setValue(i)
+
+        # processing events to update UI after progress bar changes
+        QtWidgets.QApplication.processEvents()
+
+        # Allowing the application to process idle events for one frame to update systems and garbage collect graphics resources
+        azlmbr.atomtools.general.idle_wait_frames(1)
         if progressDialog.wasCanceled():
             return
     progressDialog.close()
