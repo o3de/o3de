@@ -269,7 +269,7 @@ namespace ShaderManagementConsole
         AZ::u32 idCounter = 1;  // start at 1 (0 is reserved as explained in ShaderVariantTreeAssetCreator)
         for (auto& variantInfo : newSourceData.m_shaderVariants)
         {
-            variantInfo.m_stableId = ++idCounter;
+            variantInfo.m_stableId = idCounter++;
         }
         SetShaderVariantListSourceData(newSourceData);
     }

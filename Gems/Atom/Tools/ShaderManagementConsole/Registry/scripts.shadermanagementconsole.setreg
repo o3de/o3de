@@ -8,7 +8,11 @@
             },
             "AssetBrowser": {
                 "ContextMenuScripts": {
-                    "": [ "@gemroot:ShaderManagementConsole@/Scripts/CreateShaderVariantListDocumentFromShader.py" ]
+                    "": [
+                        "@gemroot:ShaderManagementConsole@/Scripts/CreateShaderVariantListDocumentFromShader.py",
+                        "@gemroot:ShaderManagementConsole@/Scripts/CreateShaderVariantListDocumentFromShaderInProjectFolder.py",
+                        "@gemroot:ShaderManagementConsole@/Scripts/CreateShaderVariantListDocumentFromShaderInSameFolder.py"
+                    ]
                 }
             }
         },

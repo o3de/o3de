@@ -5,7 +5,11 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
 import sys
+
+import azlmbr.bus
+import azlmbr.paths
 import GenerateShaderVariantListUtil
 
 def main():
@@ -16,11 +20,17 @@ def main():
         return
 
     inputPath = sys.argv[1]
-    suffix, extension = inputPath.split(".", 1)
+    rootPath, extension = inputPath.split(".", 1)
 
     if extension != "shader":
         print("The input argument for the script is not a valid .shader file")
         return
+
+    if not azlmbr.atomtools.util.IsDocumentPathEditable(inputPath):
+        print("Cannot create shader variant list in same folder as input file")
+        return
+
+    outputPath = rootPath + ".shadervariantlist"
 
     # Create shader variant list document
     documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
@@ -37,8 +47,15 @@ def main():
         GenerateShaderVariantListUtil.create_shadervariantlist_for_shader(inputPath)
     )
 
+    # Save the shader variant list
+    documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
+        azlmbr.bus.Broadcast,
+        'SaveDocumentAsCopy',
+        documentId,
+        outputPath
+    )
+
     print("==== End shader variant script ============================================================")
 
 if __name__ == "__main__":
     main()
-
