@@ -727,10 +727,17 @@ namespace AzToolsFramework
 
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:AddRequiredComponents");
-            for (AZ::Entity* entity : entities)
+
+            // This used to call EditorRequests::CreateEditorRepresentation, which would in turn call AddRequiredComponents.
+            // As such, some tests and benchmarks relied on the fact that AddRequiredComponents would not be triggered when
+            // the SandboxIntegration wasn't instanced. This check maintains the same behavior as before the change.
+            if (AzToolsFramework::EditorRequests::Bus::HasHandlers())
             {
-                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                    &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
+                for (AZ::Entity* entity : entities)
+                {
+                    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                        &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
+                }
             }
         }
 
