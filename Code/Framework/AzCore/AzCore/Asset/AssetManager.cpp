@@ -336,7 +336,11 @@ namespace AZ::Data
         {
             AZ_PROFILE_SCOPE(AzCore, "WaitForAsset - %s", m_assetData.GetHint().c_str());
 
+            // Gruber patch begin // AE -- FIXME track asset blocking requests
+#if defined(CARBONATED)
             AZ_Printf("assetdbg", "b %s", m_assetData.GetHint().c_str());
+#endif
+            // Gruber patch end // AE -- FIXME track asset blocking requests
 
             // Continue to loop until the load completes.  (Most of the time in the loop will be spent in a thread-blocking state)
             while (!m_loadCompleted)
@@ -377,7 +381,11 @@ namespace AZ::Data
                 AssetManager::Instance().DispatchEvents();
             }
 
+            // Gruber patch begin // AE -- FIXME track asset blocking requests
+#if defined(CARBONATED)
             AZ_Printf("assetdbg", "e %s", m_assetData.GetHint().c_str());
+#endif
+            // Gruber patch end // AE -- FIXME track asset blocking requests
         }
 
         void Finish()
