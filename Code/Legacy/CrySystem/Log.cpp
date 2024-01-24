@@ -104,7 +104,7 @@ public:
         }
     }
 
-    // LogNotificatorBus imnplementation
+    // LogNotificatorBus implementation
 
     void Update() override
     {
