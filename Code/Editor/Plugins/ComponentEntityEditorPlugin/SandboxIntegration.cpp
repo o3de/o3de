@@ -1026,6 +1026,13 @@ void SandboxIntegrationManager::SetupSliceContextMenu_Modify(QMenu* menu, const 
     revertAction->setEnabled(canRevert);
 }
 
+void SandboxIntegrationManager::CreateEditorRepresentation(AZ::Entity* entity)
+{
+    // Add required editor components to the entity.
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+        &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
+}
+
 //////////////////////////////////////////////////////////////////////////
 void SandboxIntegrationManager::GoToSelectedOrHighlightedEntitiesInViewports()
 {

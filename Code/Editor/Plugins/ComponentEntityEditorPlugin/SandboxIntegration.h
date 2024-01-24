@@ -142,6 +142,7 @@ private:
     QDockWidget* InstanceViewPane(const char* paneName) override;
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
+    void CreateEditorRepresentation(AZ::Entity* entity) override;
     void CloneSelection(bool& handled) override;
     void DeleteSelectedEntities(bool includeDescendants) override;
     AZ::EntityId CreateNewEntity(AZ::EntityId parentId = AZ::EntityId()) override;

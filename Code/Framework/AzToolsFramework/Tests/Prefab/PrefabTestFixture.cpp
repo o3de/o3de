@@ -61,6 +61,7 @@ namespace UnitTest
         m_settingsRegistryInterface = AZ::SettingsRegistry::Get();
         EXPECT_TRUE(m_settingsRegistryInterface);
 
+        // This is for calling CreateEditorRepresentation that adds required editor components.
         AzToolsFramework::EditorRequestBus::Handler::BusConnect();
 
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
@@ -388,5 +389,18 @@ namespace UnitTest
                 &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
             entity->Activate();
         }
+    }
+
+    // EditorRequestBus
+    void PrefabTestFixture::CreateEditorRepresentation(AZ::Entity* entity)
+    {
+        if (!entity)
+        {
+            EXPECT_TRUE(false) << "Cannot call CreateEditorRepresentation for a null entity.";
+            return;
+        }
+
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
     }
 } // namespace UnitTest

@@ -778,6 +778,9 @@ namespace AzToolsFramework
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
+        /// Adds the components that are required for editor representation to the entity.
+        virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) {}
+
         /// Clone selected entities/slices.
         virtual void CloneSelection(bool& /*handled*/) {}
 

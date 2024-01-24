@@ -126,14 +126,15 @@ namespace UnitTest
         void TearDownEditorFixtureImpl() override;
 
         /*
-         * SliceEditorEntityOwnershipServiceNotificationBus
-         */
+        * SliceEditorEntityOwnershipServiceNotificationBus
+        */
         void OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& ticket) override;
         void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& ticket) override;
 
         /*
         * EditorRequestBus
         */
+        void CreateEditorRepresentation(AZ::Entity* entity) override;
         void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override { AZ_UNUSED(selection); }
 
         /*
