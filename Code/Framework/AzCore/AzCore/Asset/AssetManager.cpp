@@ -30,6 +30,11 @@
 #include <cinttypes>
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
+// Gruber patch begin // AE -- update log while waiting for assets
+#if defined(CARBONATED)
+#include <AzCore/Utils/LogNotification.h>
+#endif
+// Gruber patch end // AE -- update log while waiting for assets
 
 // Set this to 1 to enable debug logging for asset loads/unloads
 #define ENABLE_ASSET_DEBUGGING 0
@@ -331,6 +336,12 @@ namespace AZ::Data
         {
             AZ_PROFILE_SCOPE(AzCore, "WaitForAsset - %s", m_assetData.GetHint().c_str());
 
+            // Gruber patch begin // AE -- FIXME track asset blocking requests
+#if defined(CARBONATED)
+            AZ_Printf("assetdbg", "b %s", m_assetData.GetHint().c_str());
+#endif
+            // Gruber patch end // AE -- FIXME track asset blocking requests
+
             // Continue to loop until the load completes.  (Most of the time in the loop will be spent in a thread-blocking state)
             while (!m_loadCompleted)
             {
@@ -342,6 +353,12 @@ namespace AZ::Data
                     while (!m_waitEvent.try_acquire_for(AZStd::chrono::milliseconds(MaxWaitBetweenDispatchMs)))
                     {
                         AssetManager::Instance().DispatchEvents();
+// Gruber patch begin // AE -- update log while waiting for assets
+#if defined(CARBONATED)
+                        // if we are here then it is the main thread, let deliver the log messages
+                        AZ::LogNotification::LogNotificatorBus::Broadcast(&AZ::LogNotification::LogNotificatorBus::Events::Update);
+#endif
+// Gruber patch end // AE -- update log while waiting for assets
                     }
                 }
                 else
@@ -363,6 +380,12 @@ namespace AZ::Data
             {
                 AssetManager::Instance().DispatchEvents();
             }
+
+            // Gruber patch begin // AE -- FIXME track asset blocking requests
+#if defined(CARBONATED)
+            AZ_Printf("assetdbg", "e %s", m_assetData.GetHint().c_str());
+#endif
+            // Gruber patch end // AE -- FIXME track asset blocking requests
         }
 
         void Finish()
@@ -1816,7 +1839,35 @@ namespace AZ::Data
                         }
                     }
                 }
+// Gruber patch begin // AE -- FIXME delay for motion assets, they are blocking, but a request might be not ready yet
+#if defined(CARBONATED) && defined(AZ_PLATFORM_LINUX)
+                const AZStd::string& assetName = loadingAsset.GetHint();
+                if (!jobQueued && (assetName.ends_with(".motion") || (assetName.ends_with(".spawnable") && assetName.starts_with("levels"))))
+                {
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));  // 2ms is not enough for local
 
+                    {
+                        AZStd::scoped_lock<AZStd::recursive_mutex> requestLock(m_activeBlockingRequestMutex);
+                        auto newRange = m_activeBlockingRequests.equal_range(assetId);
+
+                        for (auto blockingRequest = newRange.first; blockingRequest != newRange.second; ++blockingRequest)
+                        {
+                            if (blockingRequest->second->QueueAssetLoadJob(loadJob))
+                            {
+                                AZ_Printf("assetdbg", "fixed %s", loadingAsset.GetHint().c_str());
+                                jobQueued = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!jobQueued)
+                    {
+                        AZ_Printf("assetdbg", "not fixed %s", loadingAsset.GetHint().c_str());
+                    }
+                }
+#endif
+// Gruber patch end // AE -- FIXME delay for motion assets, they are blocking, but a request might be not ready yet
                 if (!jobQueued)
                 {
                     loadJob->Start();
