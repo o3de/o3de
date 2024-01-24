@@ -137,14 +137,14 @@ SETTINGS_SIGNING_STORE_FILE     = register_setting(key='signconfig.store.file',
 
 SETTINGS_SIGNING_STORE_PASSWORD = register_setting(key='signconfig.store.password',
                                                    description='The password for the key store file',
-                                                   is_password=True)
+                                                   is_password=False)
 
 SETTINGS_SIGNING_KEY_ALIAS      = register_setting(key='signconfig.key.alias',
                                                    description='The key alias withing the key store that idfentifies the signing key')
 
 SETTINGS_SIGNING_KEY_PASSWORD   = register_setting(key='signconfig.key.password',
                                                    description='The password for the key inside the key store referenced by the key alias',
-                                                   is_password=True)
+                                                   is_password=False)
 
 # General O3DE build and deployment options
 SETTINGS_ASSET_MODE             = register_setting(key='asset.mode',
