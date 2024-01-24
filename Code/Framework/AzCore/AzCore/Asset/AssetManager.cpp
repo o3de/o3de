@@ -336,7 +336,7 @@ namespace AZ::Data
         {
             AZ_PROFILE_SCOPE(AzCore, "WaitForAsset - %s", m_assetData.GetHint().c_str());
 
-            AZ_Printf("srvdbg", "b %s", m_assetData.GetHint().c_str());
+            AZ_Printf("assetdbg", "b %s", m_assetData.GetHint().c_str());
 
             // Continue to loop until the load completes.  (Most of the time in the loop will be spent in a thread-blocking state)
             while (!m_loadCompleted)
@@ -377,7 +377,7 @@ namespace AZ::Data
                 AssetManager::Instance().DispatchEvents();
             }
 
-            AZ_Printf("srvdbg", "e %s", m_assetData.GetHint().c_str());
+            AZ_Printf("assetdbg", "e %s", m_assetData.GetHint().c_str());
         }
 
         void Finish()
@@ -1846,7 +1846,7 @@ namespace AZ::Data
                         {
                             if (blockingRequest->second->QueueAssetLoadJob(loadJob))
                             {
-                                AZ_Printf("srvdbg", "fixed %s", loadingAsset.GetHint().c_str());
+                                AZ_Printf("assetdbg", "fixed %s", loadingAsset.GetHint().c_str());
                                 jobQueued = true;
                                 break;
                             }
@@ -1855,7 +1855,7 @@ namespace AZ::Data
 
                     if (!jobQueued)
                     {
-                        AZ_Printf("srvdbg", "NOT fixed %s", loadingAsset.GetHint().c_str());
+                        AZ_Printf("assetdbg", "not fixed %s", loadingAsset.GetHint().c_str());
                     }
                 }
 #endif
