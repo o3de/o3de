@@ -126,8 +126,8 @@ namespace UnitTest
         void TearDownEditorFixtureImpl() override;
 
         /*
-        * SliceEditorEntityOwnershipServiceNotificationBus
-        */
+         * SliceEditorEntityOwnershipServiceNotificationBus
+         */
         void OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& ticket) override;
         void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& ticket) override;
 

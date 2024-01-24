@@ -402,7 +402,7 @@ namespace UnitTest
         AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
 
         entity->Deactivate();
-        AZStd::unique_ptr<AZ::Component> placeholder1{ entity->CreateComponent<PlaceholderEditorComponent>() };
+        AZStd::unique_ptr<AZ::Component> placeholder1{entity->CreateComponent<PlaceholderEditorComponent>()};
         entity->CreateComponent<AnotherPlaceholderEditorComponent>();
         entity->Activate();
 
