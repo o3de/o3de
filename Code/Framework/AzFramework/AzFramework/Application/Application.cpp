@@ -703,11 +703,6 @@ namespace AzFramework
             if (m_settingsRegistry->Get(projectRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
             {
                 fileIoBase->SetAlias("@projectroot@", projectRootPath.c_str());
-                // Gruber patch begin. LVB. // In LY this alias is assigned in "dev\Code\CryEngine\CrySystem\SystemInit.cpp".
-#if defined(CARBONATED)
-                fileIoBase->SetAlias("@assets@", projectRootPath.c_str());
-#endif
-                // Gruber patch end. LVB.
             }
 
             if (AZ::IO::FixedMaxPath exeFolder; m_settingsRegistry->Get(exeFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_BinaryFolder))
@@ -718,6 +713,11 @@ namespace AzFramework
             if (AZ::IO::FixedMaxPath pathAliases; m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
             {
                 fileIoBase->SetAlias("@products@", pathAliases.c_str());
+                // Gruber patch begin - AE // support LY asset folder alias
+#if defined(CARBONATED)
+                fileIoBase->SetAlias("@assets@", pathAliases.c_str());
+#endif
+                // Gruber patch begin - AE // support LY asset folder alias
             }
 
             AZ::IO::FixedMaxPath projectUserPath;
