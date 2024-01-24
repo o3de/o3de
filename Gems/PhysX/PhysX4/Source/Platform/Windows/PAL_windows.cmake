@@ -8,7 +8,7 @@
 
 set(PAL_TRAIT_PHYSX_SUPPORTED TRUE)
 
-ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev8-windows TARGETS PhysX4 PACKAGE_HASH 27c08633ce1dc7a65a2f04ea8c1ff6dfe12d5308cdc0934ea768876fba3533c8)
+ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev8-windows TARGETS PhysX4 PACKAGE_HASH f2bf89213e32674fdf289d9ba7afadf2cdbaf112cafd22e8dc9de7a0f4499c84)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
      ly_associate_package(PACKAGE_NAME poly2tri-7f0487a-rev1-windows TARGETS poly2tri PACKAGE_HASH 5fea2bf294e5130e0654fbfa39f192e6369f3853901dde90bb9b3f3a11edcb1e) 
