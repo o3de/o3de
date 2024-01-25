@@ -467,6 +467,16 @@ namespace AZ
     //! The `AZ_CLASS` is a placeholder macro that is used to substitute `class` template parameters
     //! For non-type template parameters such as `size_t` or `int` the `AZ_AUTO` placeholder can be used
 
+    // Clang on Windows uses the preprocessor in MSVC compatibility mode, which cannot parse the AZ_VA_OPT macro in some instances, but
+    // since the comma after __VA_ARGS__ is removed automatically if __VA_ARGS__ is empty, it does not have to be used.
+    #if defined(AZ_COMPILER_CLANG) && defined(AZ_PLATFORM_WINDOWS)
+    #define AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER(_ComponentClassOrTemplate, _BaseClass, ...) \
+        AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__, _BaseClass)
+    #else
+    #define AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER(_ComponentClassOrTemplate, _BaseClass, ...) \
+        AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__ AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) _BaseClass)
+    #endif
+
     #define AZ_COMPONENT_IMPL_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, _Allocator, ...) \
     AZ_COMPONENT_MACRO_CALL(AZ_TYPE_INFO_WITH_NAME_IMPL, \
         AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)), \
@@ -475,7 +485,7 @@ namespace AZ
         AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
         AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
     ) \
-    AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__ AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) AZ::Component) \
+    AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER(_ComponentClassOrTemplate, AZ::Component, __VA_ARGS__) \
     AZ_COMPONENT_MACRO_CALL(AZ_COMPONENT_BASE_IMPL, \
         AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
         AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
