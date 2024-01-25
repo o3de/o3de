@@ -26,7 +26,6 @@
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #include <Atom/RPI.Edit/Material/LuaMaterialFunctorSourceData.h>
 
-#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
 
 namespace AZ
 {
@@ -57,8 +56,6 @@ namespace AZ
 
                 AZ::Render::EditorLightingPreset::Reflect(context);
                 AZ::Render::EditorModelPreset::Reflect(context);
-
-                AZ::Render::LightingChannelConfiguration::Reflect(context);
             }
         }
 

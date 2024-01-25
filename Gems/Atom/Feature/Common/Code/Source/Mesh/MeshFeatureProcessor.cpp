@@ -1556,16 +1556,15 @@ namespace AZ
         {
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
+            SystemTickBus::Handler::BusDisconnect();
         }
 
-        //! AssetBus::Handler overrides...
-        void ModelDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        void ModelDataInstance::MeshLoader::OnSystemTick()
         {
-            // Update our model asset reference to contain the latest loaded version.
-            m_modelAsset = asset;
+            SystemTickBus::Handler::BusDisconnect();
 
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
-            m_parent->m_originalModelAsset = asset;
+            m_parent->m_originalModelAsset = m_modelAsset;
 
             if (const auto& modelTags = m_modelAsset->GetTags(); !modelTags.empty())
             {
@@ -1631,8 +1630,22 @@ namespace AZ
             else
             {
                 // when running with null renderer, the RPI::Model::FindOrCreate(...) is expected to return nullptr, so suppress this error.
-                AZ_Error("ModelDataInstance::OnAssetReady", RHI::IsNullRHI(), "Failed to create model instance for '%s'", asset.GetHint().c_str());
+                AZ_Error("ModelDataInstance::OnAssetReady", RHI::IsNullRHI(), "Failed to create model instance for '%s'", m_modelAsset.GetHint().c_str());
             }
+        }
+
+        //! AssetBus::Handler overrides...
+        void ModelDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        {
+            // Update our model asset reference to contain the latest loaded version.
+            m_modelAsset = asset;
+
+            // The mesh loader queues the model asset to be loaded then connects to the asset bus. If the asset is already loaded
+            // OnAssetReady will be called before returning from the acquire function. Many callers connect handlers for model change
+            // events. Some of the handlers attempt to access their stored mesh handle member, which will not be up to date if the acquire
+            // function hasn't returned. This postpones sending the event until the next tick, allowing the acquire function to return and
+            // update and he stored mesh handles.
+            SystemTickBus::Handler::BusConnect();
         }
 
         void ModelDataInstance::MeshLoader::OnModelReloaded(Data::Asset<Data::AssetData> asset)

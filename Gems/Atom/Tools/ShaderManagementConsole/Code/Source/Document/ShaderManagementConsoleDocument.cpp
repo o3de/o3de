@@ -65,15 +65,21 @@ namespace ShaderManagementConsole
         ShaderManagementConsoleDocumentRequestBus::Handler::BusDisconnect();
     }
 
-    AZ::u32 ShaderManagementConsoleDocument::AddOneVariantRow()
+    void ShaderManagementConsoleDocument::AddOneVariantRow()
     {
         AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-        AZ::u32 nextStableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
-            ? 1  // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
-            : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;  // by invariant (no row shuffles), last stableId is highest in vector
-        variantInfo.m_stableId = nextStableId;
+        // stable ID start at 1, since 0 is reserved as explained in ShaderVariantTreeAssetCreator
+        // by invariant (no row shuffles), last stableId is highest in vector
+        variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
+            ? 1
+            : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
         m_shaderVariantListSourceData.m_shaderVariants.emplace_back(AZStd::move(variantInfo));
-        return nextStableId;
+
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        m_modified = true;
     }
 
     // Utility used in sparse-variant-set functions
@@ -103,7 +109,7 @@ namespace ShaderManagementConsole
         AZ::RPI::ShaderVariantListSourceData newSourceData{ m_shaderVariantListSourceData };
         AZ::u32 stableId = newSourceData.m_shaderVariants.empty() ? 1 : newSourceData.m_shaderVariants.back().m_stableId + 1;
         // add "line by line"
-        int numLines = matrixOfValues.size() / optionHeaders.size();
+        int numLines = aznumeric_cast<int>(matrixOfValues.size() / optionHeaders.size());
         for (int line = 0; line < numLines; ++line)
         {
             AZ::RPI::ShaderOptionValuesSourceData mapOfOptionNameToValues;
@@ -115,7 +121,7 @@ namespace ShaderManagementConsole
                 auto indexIt = nameToHeaderIndex.find(optionName);
                 if (indexIt != nameToHeaderIndex.end())
                 {
-                    int index = line * optionHeaders.size() + indexIt->second;
+                    int index = aznumeric_cast<int>(line * optionHeaders.size() + indexIt->second);
                     mapOfOptionNameToValues[optionName] = matrixOfValues[index];
                 }
             }
@@ -152,7 +158,7 @@ namespace ShaderManagementConsole
         //                           A   |b   |false
         //                           A   |a   |true
         //                           A   |b   |true
-        int numLines = matrixOfValues.size() / optionHeaders.size();
+        int numLines = aznumeric_cast<int>(matrixOfValues.size() / optionHeaders.size());
         for (int line = 0; line < numLines; ++line)
         {
             for (const AZ::RPI::ShaderVariantListSourceData::VariantInfo& oldVariant : m_shaderVariantListSourceData.m_shaderVariants)
@@ -167,7 +173,7 @@ namespace ShaderManagementConsole
                     if (indexIt != nameToHeaderIndex.end())
                     {
                         // if exists an entry from the arguments, it is prioritized
-                        int index = line * optionHeaders.size() + indexIt->second;
+                        int index = aznumeric_cast<int>(line * optionHeaders.size() + indexIt->second);
                         mapOfOptionNameToValues[optionName] = matrixOfValues[index];
                     }
                     else
@@ -627,7 +633,6 @@ namespace ShaderManagementConsole
 
         SetShaderVariantListSourceData(shaderVariantListSourceData);
         m_modified = {};
-
         return OpenSucceeded();
     }
 

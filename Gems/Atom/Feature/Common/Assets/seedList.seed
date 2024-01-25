@@ -265,6 +265,13 @@
             },
             "platformFlags": 255,
             "pathHint": "passes/splashscreenpassrequest.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{34C75C3F-68EB-5FA7-A2A5-F942D17C0922}"
+            },
+            "platformFlags": 255,
+            "pathHint": "passes/lowendrenderpipeline.azasset"
         }
     ]
 }

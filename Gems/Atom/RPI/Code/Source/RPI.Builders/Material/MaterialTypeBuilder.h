@@ -61,7 +61,7 @@ namespace AZ
                     MaterialTypeSourceData& materialTypeSourceData) const;
 
             private:
-                AZStd::vector<AZStd::string> GetMaterialPipelinePaths() const;
+                AZStd::set<AZStd::string> GetMaterialPipelinePaths() const;
                 AZStd::map<AZ::IO::Path, MaterialPipelineSourceData> LoadMaterialPipelines() const;
                 Name GetMaterialPipelineName(const AZ::IO::Path& materialPipelineFilePath) const;
 
