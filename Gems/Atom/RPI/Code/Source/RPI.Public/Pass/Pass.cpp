@@ -1292,14 +1292,14 @@ namespace AZ
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
-             bool earlyOut = !IsEnabled();
+            bool earlyOut = !IsEnabled();
 
             // Skip if this pass is the root of the pipeline and the pipeline is set to not render
-             if (m_flags.m_isPipelineRoot)
+            if (m_flags.m_isPipelineRoot)
             {
-                 AZ_RPI_PASS_ASSERT(m_pipeline != nullptr, "Pass is flagged as a pipeline root but it's pipeline pointer is invalid while trying to render");
-                 earlyOut = earlyOut || m_pipeline == nullptr || m_pipeline->GetRenderMode() == RenderPipeline::RenderMode::NoRender;
-             }
+                AZ_RPI_PASS_ASSERT(m_pipeline != nullptr, "Pass is flagged as a pipeline root but it's pipeline pointer is invalid while trying to render");
+                earlyOut = earlyOut || m_pipeline == nullptr || m_pipeline->GetRenderMode() == RenderPipeline::RenderMode::NoRender;
+            }
 
             if (earlyOut)
             {
