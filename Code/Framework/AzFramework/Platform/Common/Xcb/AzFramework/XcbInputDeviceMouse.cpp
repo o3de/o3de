@@ -513,7 +513,7 @@ namespace AzFramework
                 // being the first two axes of the device, which for mice, is going to be the normal x and y axes.
 
                 // Anything beyond that is a completely different axis, such as the mouse wheel, z axis, other things
-                // special mice can do.  The
+                // special mice can do.
                 uint32_t *mask = xcb_input_raw_button_press_valuator_mask(mouseMotionEvent);
                 if (!mask)
                 {
