@@ -1188,6 +1188,9 @@ namespace ScriptCanvasEditor
         {
             m_tabBar->setCurrentIndex(outTabIndex);
             SetActiveAsset(scriptCanvasAsset);
+
+            EnableOpenDocumentActions(true);
+
             return AZ::Success(outTabIndex);
         }
 
@@ -1211,6 +1214,9 @@ namespace ScriptCanvasEditor
         GraphCanvas::GraphId graphCanvasGraphId = GetGraphCanvasGraphId(scriptCanvasAsset.Get()->GetScriptCanvasId());
         GraphCanvas::AssetEditorNotificationBus::Event(ScriptCanvasEditor::AssetEditorId, &GraphCanvas::AssetEditorNotifications::OnGraphLoaded, graphCanvasGraphId);
         GeneralAssetNotificationBus::Event(fileAssetId, &GeneralAssetNotifications::OnAssetVisualized);
+
+        EnableOpenDocumentActions(true);
+
         return AZ::Success(outTabIndex);
     }
 

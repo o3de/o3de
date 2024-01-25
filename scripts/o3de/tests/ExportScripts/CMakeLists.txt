@@ -23,3 +23,10 @@ ly_add_pytest(
     TEST_SUITE smoke
     EXCLUDE_TEST_RUN_TARGET_FROM_IDE
 )
+
+ly_add_pytest(
+    NAME o3de_export_source_android
+    PATH ${CMAKE_CURRENT_LIST_DIR}/test_export_source_android.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)

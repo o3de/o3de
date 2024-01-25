@@ -48,7 +48,7 @@ namespace ShaderManagementConsole
         bool EndEdit() override;
 
         // ShaderManagementConsoleDocumentRequestBus::Handler overrides...
-        AZ::u32 AddOneVariantRow() override;
+        void AddOneVariantRow() override;
         void AppendSparseVariantSet(
             AZStd::vector<AZ::Name> optionHeaders,
             AZStd::vector<AZ::Name> matrixOfValues) override;
