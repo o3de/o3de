@@ -181,6 +181,17 @@ namespace AzFramework
         {
             m_isDynamic = value;
         }
+
+        static const char* GetFileFilter()
+        {
+            return "*.prefab";
+        }
+
+        static constexpr AZ::u32 GetAssetSubId()
+        {
+            return 1;
+        }
+
 #endif
 // Gruber patch end. // LVB. // Support dynamic instances
 
