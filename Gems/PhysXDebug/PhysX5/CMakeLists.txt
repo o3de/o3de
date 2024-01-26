@@ -19,14 +19,14 @@ o3de_pal_dir(physx_pal_source_dir ${physx_gem_path}/Source/Platform/${PAL_PLATFO
 include(${physx_pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
-    set(physxdebug_dependency		3rdParty::PhysX5)
-    set(physxdebug_files 			../Code/physxdebug_files.cmake)
-    set(physxdebug_module_files 	physxdebug_module_files.cmake)
-    set(physxdebug_editor_files 	../Code/physxdebug_editor_files.cmake)
+    set(physxdebug_dependency 3rdParty::PhysX5)
+    set(physxdebug_files ../Code/physxdebug_files.cmake)
+    set(physxdebug_module_files physxdebug_module_files.cmake)
+    set(physxdebug_editor_files ../Code/physxdebug_editor_files.cmake)
 else()
-    set(physxdebug_files 			../Code/physxdebug_unsupported_files.cmake)
-    set(physxdebug_module_files 	physxdebug_unsupported_module_files.cmake)
-    set(physxdebug_editor_files 	../Code/physxdebug_unsupported_files.cmake)
+    set(physxdebug_files ../Code/physxdebug_unsupported_files.cmake)
+    set(physxdebug_module_files physxdebug_unsupported_module_files.cmake)
+    set(physxdebug_editor_files ../Code/physxdebug_unsupported_files.cmake)
 endif()
 
 ########################################################################################

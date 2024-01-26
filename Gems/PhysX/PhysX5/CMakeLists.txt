@@ -216,7 +216,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE Gem
             OUTPUT_NAME ${gem_name}.Editor.Tests.Gem
             FILES_CMAKE
-            	${physx_module_files}
+                ${physx_module_files}
                 ../Code/physx_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
