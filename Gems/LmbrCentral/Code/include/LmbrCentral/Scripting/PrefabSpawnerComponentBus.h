@@ -53,10 +53,10 @@ namespace LmbrCentral
         virtual AzFramework::EntitySpawnTicket SpawnPrefab(const AZ::Data::Asset<AzFramework::Spawnable>& prefab) = 0;
 
         //! Spawn the provided prefab at the entity's location with the provided relative offset
-        virtual AzFramework::EntitySpawnTicket SpawnPrefabRelative(const AZ::Data::Asset<AzFramework::Spawnable>& slice, const AZ::Transform& relative) = 0;
+        virtual AzFramework::EntitySpawnTicket SpawnPrefabRelative(const AZ::Data::Asset<AzFramework::Spawnable>& prefab, const AZ::Transform& relative) = 0;
 
-        //! Spawn the provided slice at the specified world transform
-        virtual AzFramework::EntitySpawnTicket SpawnPrefabAbsolute(const AZ::Data::Asset<AzFramework::Spawnable>& slice, const AZ::Transform& world) = 0;
+        //! Spawn the provided prefab at the specified world transform
+        virtual AzFramework::EntitySpawnTicket SpawnPrefabAbsolute(const AZ::Data::Asset<AzFramework::Spawnable>& prefab, const AZ::Transform& world) = 0;
 
         //! Destroy all entities from a spawned prefab.
         //! If the prefab hasn't finished spawning, it is cancelled.
