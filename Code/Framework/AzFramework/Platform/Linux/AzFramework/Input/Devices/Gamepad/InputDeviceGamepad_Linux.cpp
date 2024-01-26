@@ -502,7 +502,14 @@ namespace AzFramework
                             }
                             case ABS_Y:
                             {
-                                m_rawGamepadState.m_thumbStickLeftYState = (currentValue + m_internalState->m_axisLeftOffset) * m_internalState->m_axisLeftScale;
+                                // note that O3DE expects positive Y to mean moving the stick "away from the user",
+                                // ie, moving the stick towards the back of the controller where the triggers are.
+                                // (I am avoiding using the ambiguous term 'up' here).
+                                // libevdev outputs positive Y values when the user is pulling the stick towards them, so we need to invert the value.
+                                // You can see the same kind of inversion happening in Gems/VirtualGamepad/Code/Source/VirtualGamepadThumbStickComponent.cpp
+                                // You do NOT see this same inversion in the windows gamepad file since it uses XInput
+                                // and XInput by default maps positive Y values to mean "away from the user".
+                                m_rawGamepadState.m_thumbStickLeftYState = -1.0f * (currentValue + m_internalState->m_axisLeftOffset) * m_internalState->m_axisLeftScale;
                                 updatedGamepadAxis = true;
                                 break;
                             }
@@ -514,7 +521,7 @@ namespace AzFramework
                             }
                             case ABS_RY:
                             {
-                                m_rawGamepadState.m_thumbStickRightYState = (currentValue + m_internalState->m_axisRightOffset) * m_internalState->m_axisRightScale;
+                                m_rawGamepadState.m_thumbStickRightYState = -1.0f * (currentValue + m_internalState->m_axisRightOffset) * m_internalState->m_axisRightScale;
                                 updatedGamepadAxis = true;
                                 break;
                             }
@@ -559,18 +566,19 @@ namespace AzFramework
                                 {
                                     if (ev.value > 0)
                                     {
-                                        UpdateButtonState(BTN_DPAD_UP_MASK, true);
-                                        UpdateButtonState(BTN_DPAD_DOWN_MASK, false);
+                                        // > 0 actually indicates downwards, not upwards
+                                        UpdateButtonState(BTN_DPAD_DOWN_MASK, true);
+                                        UpdateButtonState(BTN_DPAD_UP_MASK, false);
                                     }
                                     else if (ev.value < 0)
                                     {
-                                        UpdateButtonState(BTN_DPAD_UP_MASK, false);
-                                        UpdateButtonState(BTN_DPAD_DOWN_MASK, true);
+                                        UpdateButtonState(BTN_DPAD_DOWN_MASK, false);
+                                        UpdateButtonState(BTN_DPAD_UP_MASK, true);
                                     }
                                     else
                                     {
-                                        UpdateButtonState(BTN_DPAD_UP_MASK, false);
                                         UpdateButtonState(BTN_DPAD_DOWN_MASK, false);
+                                        UpdateButtonState(BTN_DPAD_UP_MASK, false);
                                     }
                                 }
                                 break;

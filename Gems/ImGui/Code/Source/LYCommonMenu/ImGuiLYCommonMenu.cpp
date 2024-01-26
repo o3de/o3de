@@ -22,6 +22,11 @@
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
 
+// individual menus
+#include "ImGuiLYAssetExplorer.h"
+#include "ImGuiLYCameraMonitor.h"
+#include "ImGuiLYEntityOutliner.h"
+
 namespace ImGui
 {
     // Resolution Widths to recommend for usage for both O3DE Rendering and/or ImGui Rendering
@@ -48,6 +53,7 @@ namespace ImGui
         m_assetExplorer.Initialize();
         m_cameraMonitor.Initialize();
         m_entityOutliner.Initialize();
+        m_inputMonitor.Initialize();
 
         m_deltaTimeHistogram.Init("onTick Delta Time (Milliseconds)", 250, LYImGuiUtils::HistogramContainer::ViewType::Histogram, true, 0.0f, 60.0f);
         AZ::TickBus::Handler::BusConnect();
@@ -60,6 +66,7 @@ namespace ImGui
         ImGuiUpdateListenerBus::Handler::BusDisconnect();
 
         // shutdown sub menu objects
+        m_inputMonitor.Shutdown();
         m_assetExplorer.Shutdown();
         m_cameraMonitor.Shutdown();
         m_entityOutliner.Shutdown();
@@ -270,6 +277,11 @@ namespace ImGui
                 if (ImGui::MenuItem("Camera Monitor"))
                 {
                     m_cameraMonitor.ToggleEnabled();
+                }
+
+                if (ImGui::MenuItem("Input Monitor"))
+                {
+                    m_inputMonitor.ToggleEnabled();
                 }
 
                 // LY Entity Outliner
@@ -732,6 +744,7 @@ namespace ImGui
         // Update sub menus
         m_assetExplorer.ImGuiUpdate();
         m_cameraMonitor.ImGuiUpdate();
+        m_inputMonitor.ImGuiUpdate();
         m_entityOutliner.ImGuiUpdate();
         if (m_showDeltaTimeGraphs)
         {
