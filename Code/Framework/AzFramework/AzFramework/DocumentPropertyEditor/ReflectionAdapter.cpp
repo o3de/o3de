@@ -11,6 +11,7 @@
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
+#include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/PointerObject.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
@@ -117,34 +118,87 @@ namespace AZ::DocumentPropertyEditor
                     return;
                 }
 
-                const AZ::SerializeContext::ClassElement* containerClassElement =
-                    m_container->GetElement(m_container->GetDefaultElementNameCrc());
+                auto containerClassElement = m_container->GetElement(m_container->GetDefaultElementNameCrc());
 
                 // The reserved element is an allocated instance of the IDataContainer's ValueType.
                 // In an associative container, this would be a pair.
                 m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
 
-                auto associativeContainer = m_container->GetAssociativeContainerInterface();
-                if (associativeContainer)
+                if (containerClassElement->m_typeId == AZ::SerializeTypeInfo<AZ::DynamicSerializableField>::GetUuid())
                 {
-                    auto keyTypeAttribute = containerClassElement->FindAttribute(AZ_CRC_CE("KeyType"));
-                    if (keyTypeAttribute)
+                    auto serialContext = impl->m_serializeContext;
+                    // Dynamic serializable fields are capable of wrapping any type. Each one within a container can technically contain
+                    // an entirely different type from the others. We're going to assume that we're getting here via
+                    // ScriptPropertyGenericClassArray and that it strictly uses one type.
+
+                    const AZ::SerializeContext::ClassData* classData =
+                        serialContext->FindClassData(AZ::SerializeTypeInfo<AZ::DynamicSerializableField>::GetUuid());
+                    //auto element = classData->FindAttribute(AZ::Edit::Attributes::DynamicElementType);
+                    ; // <apm> what should this be??
+                        // m_parent->m_classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+                    if (1)//element)
                     {
-                        // Get the key type and send it with the dataAddress in the message, then skip the store
-                        // element below until we get an AddContainerKey message back from the DPE UI
-                        auto* keyTypeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Uuid>*>(keyTypeAttribute);
-                        if (keyTypeData)
+                        // Grab the AttributeMemberFunction used to get the Uuid type of the element wrapped by the DynamicSerializableField
+                        AZ::Edit::Attribute* assetTypeAttribute = classData->FindAttribute(AZ::Edit::Attributes::DynamicElementType);
+                        if (assetTypeAttribute)
                         {
-                            const AZ::TypeId& keyType = keyTypeData->Get(nullptr);
-                            DocumentAdapterPtr reflectionAdapter =
-                                AZStd::make_shared<ReflectionAdapter>(m_reservedElementInstance, keyType);
-                            Nodes::Adapter::QueryKey.InvokeOnDomNode(impl->m_adapter->GetContents(), &reflectionAdapter, path);
-                            return; // key queried; don't store the actual entry until the DPE handles the QueryKey message
+                            // Invoke the function we just grabbed and pull the class data based on that Uuid
+                            AZ::AttributeReader elementTypeIdReader(m_containerInstance, assetTypeAttribute);
+                            AZ::Uuid dynamicClassUuid;
+                            if (elementTypeIdReader.Read<AZ::Uuid>(dynamicClassUuid))
+                            {
+                                const AZ::SerializeContext::ClassData* dynamicClassData = serialContext->FindClassData(dynamicClassUuid);
+
+                                // Construct a new element based on the Uuid we just grabbed and wrap it in a DynamicSerializeableField for
+                                // storage
+                                if (classData && classData->m_factory && dynamicClassData && dynamicClassData->m_factory)
+                                {
+                                    // Reserve entry in the container
+                                    void* dataAddress = m_container->ReserveElement(m_containerInstance, containerClassElement);
+
+                                    // Create DynamicSerializeableField entry
+                                    void* newDataAddress = classData->m_factory->Create(classData->m_name);
+                                    AZ_Assert(newDataAddress, "Faliled to create new element for the continer!");
+
+                                    // Create dynamic element and populate entry with it
+                                    AZ::DynamicSerializableField* dynamicFieldDesc =
+                                        reinterpret_cast<AZ::DynamicSerializableField*>(newDataAddress);
+                                    void* newDynamicData = dynamicClassData->m_factory->Create(dynamicClassData->m_name);
+                                    dynamicFieldDesc->m_data = newDynamicData;
+                                    dynamicFieldDesc->m_typeId = dynamicClassData->m_typeId;
+
+                                    /// Store the entry in the container
+                                    *reinterpret_cast<AZ::DynamicSerializableField*>(dataAddress) = *dynamicFieldDesc;
+                                    m_container->StoreElement(m_containerInstance, dataAddress);
+                                }
+                            }
                         }
                     }
                 }
+                else
+                {
+                    auto associativeContainer = m_container->GetAssociativeContainerInterface();
+                    if (associativeContainer)
+                    {
+                        auto keyTypeAttribute = containerClassElement->FindAttribute(AZ_CRC_CE("KeyType"));
+                        if (keyTypeAttribute)
+                        {
+                            // Get the key type and send it with the dataAddress in the message, then skip the store
+                            // element below until we get an AddContainerKey message back from the DPE UI
+                            auto* keyTypeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Uuid>*>(keyTypeAttribute);
+                            if (keyTypeData)
+                            {
+                                const AZ::TypeId& keyType = keyTypeData->Get(nullptr);
+                                DocumentAdapterPtr reflectionAdapter =
+                                    AZStd::make_shared<ReflectionAdapter>(m_reservedElementInstance, keyType);
+                                Nodes::Adapter::QueryKey.InvokeOnDomNode(impl->m_adapter->GetContents(), &reflectionAdapter, path);
+                                return; // key queried; don't store the actual entry until the DPE handles the QueryKey message
+                            }
+                        }
+                    }
 
-                m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
+                    m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
+                }
                 m_reservedElementInstance = nullptr;
 
                 auto containerNode = GetContainerNode(impl, path);
@@ -222,7 +276,8 @@ namespace AZ::DocumentPropertyEditor
                 {
                     auto parentContainerInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
                     void* parentContainerInstance{};
-                    AZStd::optional<AZ::PointerObject> parentContainerInstanceObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerInstanceValue);
+                    AZStd::optional<AZ::PointerObject> parentContainerInstanceObject =
+                        AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerInstanceValue);
                     if (parentContainerInstanceObject.has_value() && parentContainerInstanceObject->IsValid())
                     {
                         parentContainerInstance = parentContainerInstanceObject->m_address;
@@ -234,7 +289,8 @@ namespace AZ::DocumentPropertyEditor
                     auto containerElementOverrideValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
                     if (containerElementOverrideValue)
                     {
-                        AZStd::optional<AZ::PointerObject> containerElementOverrideObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerElementOverrideValue);
+                        AZStd::optional<AZ::PointerObject> containerElementOverrideObject =
+                            AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerElementOverrideValue);
                         if (containerElementOverrideObject.has_value() && containerElementOverrideObject->IsValid())
                         {
                             instance = containerElementOverrideObject->m_address;
@@ -744,26 +800,28 @@ namespace AZ::DocumentPropertyEditor
             }
 
             if (auto keyValueEntry = AZ::Dom::Utils::ValueToType<AZ::Reflection::LegacyReflectionInternal::KeyEntry>(*keyValueAttribute);
-                keyValueEntry&& keyValueEntry->IsValid())
+                keyValueEntry && keyValueEntry->IsValid())
             {
                 AZ::PointerObject keyValuePointerObject = keyValueEntry->m_keyInstance;
 
-                const AZStd::vector<AZ::Reflection::LegacyReflectionInternal::AttributeData>& keyAttributes = keyValueEntry->m_keyAttributes;
+                const AZStd::vector<AZ::Reflection::LegacyReflectionInternal::AttributeData>& keyAttributes =
+                    keyValueEntry->m_keyAttributes;
 
                 // Create a lambda that can return a lambda that searches the keyAttributes vector for a specific attribute
                 auto FindAttributeCreator = [](AZ::Name group, AZ::Name name)
                 {
                     return [group, name](const AZ::Reflection::LegacyReflectionInternal::AttributeData& attributeData) -> bool
                     {
-                        return group == attributeData.m_group&& name == attributeData.m_name;
+                        return group == attributeData.m_group && name == attributeData.m_name;
                     };
                 };
 
                 AZStd::string_view keyPropertyHandlerName;
                 // First try to search for the Handler attribute to see if a custom property handler has been specified
                 if (auto handlerIt = AZStd::find_if(
-                    keyAttributes.begin(),
-                    keyAttributes.end(), FindAttributeCreator(AZ::Name{}, Reflection::DescriptorAttributes::Handler));
+                        keyAttributes.begin(),
+                        keyAttributes.end(),
+                        FindAttributeCreator(AZ::Name{}, Reflection::DescriptorAttributes::Handler));
                     handlerIt != keyAttributes.end())
                 {
                     const AZ::Dom::Value& handler = handlerIt->m_value;
@@ -778,9 +836,9 @@ namespace AZ::DocumentPropertyEditor
                     // If the Key doesn't have a custom property handler
                     // and it's type is an is represented by an enum use the combo box property handler
                     if (auto enumTypeHandlerIt = AZStd::find_if(
-                        keyAttributes.begin(),
-                        keyAttributes.end(),
-                        FindAttributeCreator(AZ::Name{}, Nodes::PropertyEditor::EnumType.GetName()));
+                            keyAttributes.begin(),
+                            keyAttributes.end(),
+                            FindAttributeCreator(AZ::Name{}, Nodes::PropertyEditor::EnumType.GetName()));
                         enumTypeHandlerIt != keyAttributes.end() && !enumTypeHandlerIt->m_value.IsNull())
                     {
                         keyPropertyHandlerName = Nodes::ComboBox::Name;
