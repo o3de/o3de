@@ -417,6 +417,10 @@ namespace AzFramework
             .WillRepeatedly(testing::Return(2)); // x and y axis
         EXPECT_CALL(m_interface, xcb_input_raw_button_press_axisvalues_raw(testing::Field(&xcb_input_raw_button_press_event_t::time, 0)))
             .WillRepeatedly(testing::Return(axisValues.data())); // x and y axis
+        
+        uint32_t valuatorMask = 0x1 | 0x2; // mouse x and y axis. 
+        EXPECT_CALL(m_interface, xcb_input_raw_button_press_valuator_mask(testing::Field(&xcb_input_raw_button_press_event_t::time, 0)))
+            .WillRepeatedly(testing::Return(&valuatorMask));
 
         m_application.Start();
         InputSystemCursorRequestBus::Event(
@@ -445,6 +449,105 @@ namespace AzFramework
 
         EXPECT_THAT(xMotionChannel->GetState(), Eq(InputChannel::State::Ended));
         EXPECT_THAT(yMotionChannel->GetState(), Eq(InputChannel::State::Ended));
+        EXPECT_THAT(xMotionChannel->GetValue(), FloatEq(0.0f));
+        EXPECT_THAT(yMotionChannel->GetValue(), FloatEq(0.0f));
+    }
+
+
+    TEST_F(XcbInputDeviceMouseTests, MovementInputChannelsUpdateStateFromXcbEvents_MouseWheelDoesNotCountAsXYAxisMovement)
+    {
+        using testing::Each;
+        using testing::Eq;
+        using testing::FloatEq;
+        using testing::NotNull;
+        using testing::Property;
+        using testing::Return;
+
+        // this test is identical to the above except that it changes which axis the event contains to contain
+        // a mouse wheel axis instead of an x and y axis.  If this test passes, it proves that the application can discern
+        // between axis events meant for x and y and those meant for mouse wheel or in fact, other axes the device might have.
+
+        EXPECT_CALL(m_interface, xcb_poll_for_event(&m_connection))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(MakeEvent(xcb_input_raw_motion_event_t{
+                /*response_type=*/XCB_GE_GENERIC,
+                /*extension=*/s_xinputMajorOpcode,
+                /*sequence=*/5,
+                /*length=*/10,
+                /*event_type=*/XCB_INPUT_RAW_MOTION,
+                /*deviceid=*/s_virtualCorePointerId,
+                /*time=*/0, // use the time value to identify each event
+                /*detail=*/XCB_MOTION_NORMAL,
+                /*sourceid=*/s_physicalPointerDeviceId,
+                /*valuators_len=*/2, // number of axes that have values for this event
+                /*flags=*/0,
+                /*pad0[4]=*/{},
+                /*full_sequence=*/5,
+            })))
+            .WillOnce(Return(nullptr))
+            .WillOnce(ReturnMalloc<xcb_generic_event_t>(MakeEvent(xcb_motion_notify_event_t{
+                /*response_type=*/XCB_MOTION_NOTIFY,
+                /*detail=*/XCB_MOTION_NORMAL,
+                /*sequence=*/5,
+                /*time=*/1, // use the time value to identify each event
+                /*root=*/s_rootWindow,
+                /*event=*/127926272,
+                /*child=*/0,
+                /*root_x=*/95,
+                /*root_y=*/1079,
+                /*event_x=*/95,
+                /*event_y=*/20,
+                /*state=*/0,
+                /*same_screen=*/1,
+            })))
+            .WillOnce(Return(nullptr))
+            ;
+
+        AZStd::array axisValues
+        {
+            xcb_input_fp3232_t{ /*.integral=*/ 120, /*.fraction=*/0 }, // wheel motion
+        };
+
+        EXPECT_CALL(m_interface, xcb_input_raw_button_press_axisvalues_length(testing::Field(&xcb_input_raw_button_press_event_t::time, 0)))
+            .WillRepeatedly(testing::Return(1)); // mouse wheel axis only
+        EXPECT_CALL(m_interface, xcb_input_raw_button_press_axisvalues_raw(testing::Field(&xcb_input_raw_button_press_event_t::time, 0)))
+            .WillRepeatedly(testing::Return(axisValues.data())); // wheel axis
+        
+        uint32_t valuatorMask = 0x8; // mouse wheel roll axis
+        EXPECT_CALL(m_interface, xcb_input_raw_button_press_valuator_mask(testing::Field(&xcb_input_raw_button_press_event_t::time, 0)))
+            .WillRepeatedly(testing::Return(&valuatorMask));
+
+        m_application.Start();
+        InputSystemCursorRequestBus::Event(
+            InputDeviceMouse::Id,
+            &InputSystemCursorRequests::SetSystemCursorState,
+            SystemCursorState::ConstrainedAndHidden);
+
+        const InputChannel* xMotionChannel = InputChannelRequests::FindInputChannel(InputDeviceMouse::Movement::X);
+        const InputChannel* yMotionChannel = InputChannelRequests::FindInputChannel(InputDeviceMouse::Movement::Y);
+        ASSERT_TRUE(xMotionChannel);
+        ASSERT_TRUE(yMotionChannel);
+
+        // over here, we expect the mouse x and y axis to be completely unaffected by the wheel axis.
+        // if we ever decide to use the axis events for the wheel then this test will need to update to ensure the wheel
+        // event is accepted.
+        // for now, wheel events come through as BUTTON presses, so are already covered by a different test.
+
+        EXPECT_THAT(xMotionChannel->GetState(), Eq(InputChannel::State::Idle));
+        EXPECT_THAT(yMotionChannel->GetState(), Eq(InputChannel::State::Idle));
+        EXPECT_THAT(xMotionChannel->GetValue(), FloatEq(0.0f));
+        EXPECT_THAT(yMotionChannel->GetValue(), FloatEq(0.0f));
+
+        PumpApplication();
+
+        EXPECT_THAT(xMotionChannel->GetState(), Eq(InputChannel::State::Idle));
+        EXPECT_THAT(yMotionChannel->GetState(), Eq(InputChannel::State::Idle));
+        EXPECT_THAT(xMotionChannel->GetValue(), FloatEq(0.0f));
+        EXPECT_THAT(yMotionChannel->GetValue(), FloatEq(0.0f));
+
+        PumpApplication();
+
+        EXPECT_THAT(xMotionChannel->GetState(), Eq(InputChannel::State::Idle));
+        EXPECT_THAT(yMotionChannel->GetState(), Eq(InputChannel::State::Idle));
         EXPECT_THAT(xMotionChannel->GetValue(), FloatEq(0.0f));
         EXPECT_THAT(yMotionChannel->GetValue(), FloatEq(0.0f));
     }
