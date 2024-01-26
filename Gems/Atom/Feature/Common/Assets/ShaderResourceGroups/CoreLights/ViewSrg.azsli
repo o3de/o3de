@@ -69,7 +69,8 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<SimpleSpotLight> m_simpleSpotLights;
     uint m_simpleSpotLightCount;
-
+    Buffer<uint> m_visibleSimpleSpotLightIndices;
+    uint m_visibleSimpleSpotLightCount;
 
     // Point lights (sphere lights)
 
@@ -87,6 +88,8 @@ partial ShaderResourceGroup ViewSrg
 
     StructuredBuffer<PointLight> m_pointLights;
     uint m_pointLightCount;
+    Buffer<uint> m_visibleSimplePointLightIndices;
+    uint m_visibleSimplePointLightCount;
 
     // Projected Shadows
 
