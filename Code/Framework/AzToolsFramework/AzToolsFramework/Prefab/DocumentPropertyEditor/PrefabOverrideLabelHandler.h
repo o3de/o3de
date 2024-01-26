@@ -15,6 +15,7 @@
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QMenu>
+#include <QSharedPointer>
 #include <QToolButton>
 
 namespace AzToolsFramework::Prefab
@@ -49,10 +50,10 @@ namespace AzToolsFramework::Prefab
 
         QToolButton* m_iconButton;
         AzQtComponents::ElidingLabel* m_textLabel;
-        AZStd::shared_ptr<QIcon> m_overrideIcon;
-        AZStd::shared_ptr<QIcon> m_emptyIcon;
+        QSharedPointer<QIcon> m_overrideIcon;
+        QSharedPointer<QIcon> m_emptyIcon;
 
-        static AZStd::weak_ptr<QIcon> s_sharedOverrideIcon;
-        static AZStd::weak_ptr<QIcon> s_sharedEmptyIcon;
+        static QWeakPointer<QIcon> s_sharedOverrideIcon;
+        static QWeakPointer<QIcon> s_sharedEmptyIcon;
     };
 } // namespace AzToolsFramework::Prefab

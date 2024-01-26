@@ -10,8 +10,8 @@
 
 namespace AzToolsFramework::Prefab
 {
-    AZStd::weak_ptr<QIcon> PrefabOverrideLabelHandler::s_sharedOverrideIcon;
-    AZStd::weak_ptr<QIcon> PrefabOverrideLabelHandler::s_sharedEmptyIcon;
+    QWeakPointer<QIcon> PrefabOverrideLabelHandler::s_sharedOverrideIcon;
+    QWeakPointer<QIcon> PrefabOverrideLabelHandler::s_sharedEmptyIcon;
     constexpr QSize kIconSize(6, 6);
 
     PrefabOverrideLabelHandler::PrefabOverrideLabelHandler()
@@ -23,12 +23,12 @@ namespace AzToolsFramework::Prefab
     {
         if (!m_overrideIcon)
         {
-            m_overrideIcon = AZStd::make_shared<QIcon>(QStringLiteral(":/Entity/entity_modified_as_override.svg"));
+            m_overrideIcon = QSharedPointer<QIcon>(new QIcon(QStringLiteral(":/Entity/entity_modified_as_override.svg")));
             s_sharedOverrideIcon = m_overrideIcon;
         }
         if (!m_emptyIcon)
         {
-            m_emptyIcon = AZStd::make_shared<QIcon>();
+            m_emptyIcon = QSharedPointer<QIcon>(new QIcon);
             s_sharedEmptyIcon = m_emptyIcon;
         }
 
