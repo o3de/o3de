@@ -83,10 +83,10 @@ namespace LmbrCentral
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
-            EditorSpawnerComponent::CreateDescriptor(),
 #if defined(CARBONATED)
             EditorPrefabSpawnerComponent::CreateDescriptor(),
 #endif
+            EditorSpawnerComponent::CreateDescriptor(),
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
             LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),

@@ -30,6 +30,9 @@
 #include "Scripting/TagComponent.h"
 #include "Scripting/SimpleStateComponent.h"
 #include "Scripting/SpawnerComponent.h"
+#if defined(CARBONATED)
+#include "Scripting/PrefabSpawnerComponent.h"
+#endif
 #include "Scripting/LookAtComponent.h"
 #include "Scripting/RandomTimedSpawnerComponent.h"
 #include "Geometry/GeometrySystemComponent.h"
@@ -179,6 +182,9 @@ namespace LmbrCentral
             LmbrCentralAssetBuilderAllocatorComponent::CreateDescriptor(),
             LmbrCentralSystemComponent::CreateDescriptor(),
             SimpleStateComponent::CreateDescriptor(),
+#if defined(CARBONATED)
+            PrefabSpawnerComponent::CreateDescriptor(),
+#endif
             SpawnerComponent::CreateDescriptor(),
             LookAtComponent::CreateDescriptor(),
             TagComponent::CreateDescriptor(),

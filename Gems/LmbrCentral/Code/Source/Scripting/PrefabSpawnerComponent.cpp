@@ -76,6 +76,33 @@ namespace LmbrCentral
                 ->Field("DestroyOnDeactivate", &PrefabSpawnerComponent::m_destroyOnDeactivate)
                 ;
         }
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->EBus<PrefabSpawnerComponentRequestBus>("PrefabSpawnerComponentRequestBus")
+                ->Event("Spawn", &PrefabSpawnerComponentRequestBus::Events::Spawn)
+                ->Event("SpawnRelative", &PrefabSpawnerComponentRequestBus::Events::SpawnRelative)
+                ->Event("SpawnAbsolute", &PrefabSpawnerComponentRequestBus::Events::SpawnAbsolute)
+                ->Event("DestroySpawnedPrefab", &PrefabSpawnerComponentRequestBus::Events::DestroySpawnedPrefab)
+                ->Event("DestroyAllSpawnedPrefabs", &PrefabSpawnerComponentRequestBus::Events::DestroyAllSpawnedPrefabs)
+                ->Event("GetCurrentlySpawnedPrefabs", &PrefabSpawnerComponentRequestBus::Events::GetCurrentlySpawnedPrefabs)
+                ->Event("HasAnyCurrentlySpawnedPrefabs", &PrefabSpawnerComponentRequestBus::Events::HasAnyCurrentlySpawnedPrefabs)
+                ->Event("GetCurrentEntitiesFromSpawnedPrefab", &PrefabSpawnerComponentRequestBus::Events::GetCurrentEntitiesFromSpawnedPrefab)
+                ->Event("GetAllCurrentlySpawnedEntities", &PrefabSpawnerComponentRequestBus::Events::GetAllCurrentlySpawnedEntities)
+                ->Event("SetSpawnablePrefab", &PrefabSpawnerComponentRequestBus::Events::SetSpawnablePrefabByAssetId)
+                ->Event("IsReadyToSpawn", &PrefabSpawnerComponentRequestBus::Events::IsReadyToSpawn);
+
+            behaviorContext->EBus<PrefabSpawnerComponentNotificationBus>("PrefabSpawnerComponentNotificationBus")
+                ->Handler<BehaviorPrefabSpawnerComponentNotificationBusHandler>();
+
+            behaviorContext->Constant("PrefabSpawnerComponentTypeId", BehaviorConstant(PrefabSpawnerComponentTypeId));
+
+            behaviorContext
+                ->Class<PrefabSpawnerConfig>()
+                ->Property("prefabAsset", BehaviorValueProperty(&PrefabSpawnerConfig::m_prefabAsset))
+                ->Property("spawnOnActivate", BehaviorValueProperty(&PrefabSpawnerConfig::m_spawnOnActivate))
+                ->Property("destroyOnDeactivate", BehaviorValueProperty(&PrefabSpawnerConfig::m_destroyOnDeactivate));
+        }
     }
 
     //=========================================================================

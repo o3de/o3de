@@ -36,7 +36,7 @@ namespace LmbrCentral
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<EditorPrefabSpawnerComponent>("Spawner", "The Spawner component allows an entity to spawn a design-time or run-time dynamic prefab (*.spawnable) at the entity's location with an optional offset")
+                editContext->Class<EditorPrefabSpawnerComponent>("Prefab Spawner", "The Spawner component allows an entity to spawn a design-time or run-time dynamic prefab (*.spawnable) at the entity's location with an optional offset")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spawner.svg")
