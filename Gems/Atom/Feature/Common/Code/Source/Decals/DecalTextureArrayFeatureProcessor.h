@@ -139,12 +139,8 @@ namespace AZ
             bool RemoveDecalFromTextureArrays(const DecalLocation decalLocation);
             AZ::Data::AssetId GetMaterialUsedByDecal(const DecalHandle handle) const;
             void PackTexureArrays();
-            // Check if a view is being used by a pipeline that has a GPU culling pass.
-            bool HasGPUCulling(const RPI::ViewPtr& view) const;
             // Cull the decals for a view using the CPU.
             void CullDecals(const RPI::ViewPtr& view);
-            // Get or create a buffer that will be used for visibility when doing CPU culling.
-            GpuBufferHandler& GetOrCreateVisibleBuffer();
             void UpdateBounds(const DecalHandle handle);
 
             MultiIndexedDataVector<DecalData, AZ::Aabb> m_decalData;
