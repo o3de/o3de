@@ -33,7 +33,6 @@ namespace LmbrCentral
         //! Set the spawnable prefab
         virtual void SetSpawnablePrefab(const AZ::Data::Asset<AzFramework::Spawnable>& spawnablePrefabAsset) = 0;
         virtual void SetSpawnablePrefabByAssetId(AZ::Data::AssetId& assetId) = 0;
-		
 
         //! Sets the SpawnOnActivate parameter
         virtual void SetSpawnOnActivate(bool spawnOnActivate) = 0;
@@ -96,7 +95,6 @@ namespace LmbrCentral
 
     using PrefabSpawnerComponentRequestBus = AZ::EBus<PrefabSpawnerComponentRequests>;
 
-
     /*!
      * PrefabSpawnerComponentNotificationBus
      * Events dispatched by the PrefabSpawnerComponent
@@ -126,7 +124,7 @@ namespace LmbrCentral
     };
 
     using PrefabSpawnerComponentNotificationBus = AZ::EBus<PrefabSpawnerComponentNotifications>;
-    
+
     class PrefabSpawnerConfig
         : public AZ::ComponentConfig
     {

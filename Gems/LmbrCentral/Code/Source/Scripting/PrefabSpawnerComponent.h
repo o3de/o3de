@@ -19,7 +19,7 @@ namespace LmbrCentral
     /**
     * PrefabSpawnerComponent
     *
-    * PrefabSpawnerComponent facilitates spawning of a design-time selected or run-time provided "*.dynamicprefab" at an entity's location with an optional offset.
+    * PrefabSpawnerComponent facilitates spawning of a design-time selected or run-time provided prefab ("*.spawnable") at an entity's location with an optional offset.
     */
     class PrefabSpawnerComponent
         : public AZ::Component
