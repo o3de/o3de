@@ -142,6 +142,7 @@ public:
     MOCK_CONST_METHOD4(xcb_input_xi_select_events, xcb_void_cookie_t(xcb_connection_t* c, xcb_window_t window, uint16_t num_mask, const xcb_input_event_mask_t* masks));
     MOCK_CONST_METHOD1(xcb_input_raw_button_press_axisvalues_length, int(const xcb_input_raw_button_press_event_t* R));
     MOCK_CONST_METHOD1(xcb_input_raw_button_press_axisvalues_raw, xcb_input_fp3232_t*(const xcb_input_raw_button_press_event_t* R));
+    MOCK_CONST_METHOD1(xcb_input_raw_button_press_valuator_mask, uint32_t*(const xcb_input_raw_button_press_event_t* R));
 
 private:
     static inline MockXcbInterface* self = nullptr;
