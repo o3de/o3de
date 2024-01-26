@@ -17,6 +17,10 @@
                         "GameObjectCreation":
                         {
                             "Editor info remover": { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                            "Asset platform component remover": 
+                            { 
+                                "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::AssetPlatformComponentRemover" 
+                            },
                             "Prefab catchment": 
                             { 
                                 "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor",
