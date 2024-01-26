@@ -41,7 +41,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spawner.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spawner.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x142a429c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPrefabSpawnerComponent::m_prefabAsset, "Dynamic prefab", "The prefab to spawn")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorPrefabSpawnerComponent::PrefabAssetChanged)
