@@ -1033,26 +1033,6 @@ namespace AZ
             }
         }
 
-        void Pass::UpdateConnectedInputBindings()
-        {
-            for (uint8_t idx : m_inputBindingIndices)
-            {
-                UpdateConnectedBinding(m_attachmentBindings[idx]);
-            }
-            for (uint8_t idx : m_inputOutputBindingIndices)
-            {
-                UpdateConnectedBinding(m_attachmentBindings[idx]);
-            }
-        }
-
-        void Pass::UpdateConnectedOutputBindings()
-        {
-            for (uint8_t idx : m_outputBindingIndices)
-            {
-                UpdateConnectedBinding(m_attachmentBindings[idx]);
-            }
-        }
-
         void Pass::RegisterPipelineGlobalConnections()
         {
             if (!m_pipeline)
@@ -1323,7 +1303,6 @@ namespace AZ
 
             if (earlyOut)
             {
-                UpdateConnectedBindings();
                 return;
             }
 
@@ -1333,7 +1312,6 @@ namespace AZ
 
             m_state = PassState::Rendering;
 
-            UpdateConnectedInputBindings();
             UpdateOwnedAttachments();
 
             CreateTransientAttachments(params.m_frameGraphBuilder->GetAttachmentDatabase());
@@ -1351,8 +1329,6 @@ namespace AZ
 
             // update attachment copy for preview
             UpdateAttachmentCopy(params);
-
-            UpdateConnectedOutputBindings();
         }
 
         void Pass::FrameEnd()

@@ -722,6 +722,7 @@ namespace AZ
             {
                 params.m_viewportState = m_viewport;
                 params.m_scissorState = m_scissor;
+                m_passTree.m_rootPass->UpdateConnectedBindings();
                 m_passTree.m_rootPass->FrameBegin(params);
             }
         }
