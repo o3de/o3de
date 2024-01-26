@@ -182,6 +182,7 @@ namespace AzFramework
             m_isDynamic = value;
         }
 
+        // Used to select files by this mask in PrefabSpawnerComponent
         static const char* GetFileFilter()
         {
             return "*.prefab";

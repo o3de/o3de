@@ -31,7 +31,7 @@ namespace LmbrCentral
         virtual ~PrefabSpawnerComponentRequests() {}
 
         //! Set the spawnable prefab
-		virtual void SetSpawnablePrefab(const AZ::Data::Asset<AzFramework::Spawnable>& spawnablePrefabAsset) = 0;
+        virtual void SetSpawnablePrefab(const AZ::Data::Asset<AzFramework::Spawnable>& spawnablePrefabAsset) = 0;
         virtual void SetSpawnablePrefabByAssetId(AZ::Data::AssetId& assetId) = 0;
 		
 

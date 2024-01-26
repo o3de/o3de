@@ -53,7 +53,7 @@ namespace LmbrCentral
 
         //////////////////////////////////////////////////////////////////////////
         // PrefabSpawnerComponentRequestBus::Handler
-		void SetSpawnablePrefab(const AZ::Data::Asset<AzFramework::Spawnable>& spawnablePrefabAsset) override;
+        void SetSpawnablePrefab(const AZ::Data::Asset<AzFramework::Spawnable>& spawnablePrefabAsset) override;
         void SetSpawnablePrefabByAssetId(AZ::Data::AssetId& assetId) override;
         void SetSpawnOnActivate(bool spawnOnActivate) override;
         bool GetSpawnOnActivate() override;
