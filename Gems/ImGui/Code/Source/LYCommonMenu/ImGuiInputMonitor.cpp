@@ -48,7 +48,8 @@ namespace ImGui
 
     void ImGuiInputMonitor::ImGuiUpdate_DrawMenu()
     {
-        if (ImGui::CollapsingHeader("Input Monitor", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+        using namespace ImGui;
+        if (CollapsingHeader("Input Monitor", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
         {
             using deviceBus = AzFramework::InputDeviceRequestBus;
             using deviceBusEvents = AzFramework::InputDeviceRequestBus::Events;
@@ -71,9 +72,9 @@ namespace ImGui
 
                     if (inputChannelsById.size() == 0)
                     {
-                        ImGui::Text("%s", childText.c_str());
+                        Text("%s", childText.c_str());
                     }
-                    else if (ImGui::TreeNodeEx(childText.c_str(), 0))
+                    else if (TreeNodeEx(childText.c_str(), 0))
                     {
                         AZStd::vector<AzFramework::InputChannelId> channelsSortedByName;
                         for (const auto& inputChannelById : inputChannelsById)
@@ -87,31 +88,46 @@ namespace ImGui
                         
                         AZStd::sort(channelsSortedByName.begin(), channelsSortedByName.end(), sortFn);
 
-                        for (const auto& inputChannelId : channelsSortedByName)
+                        if (BeginTable("InputChannels", 5, ImGuiTableFlags_Borders))
                         {
-                            auto foundChannel = inputChannelsById.find(inputChannelId);
-                            if (foundChannel == inputChannelsById.end())
+                            TableSetupColumn("Channel");
+                            TableSetupColumn("Value");
+                            TableSetupColumn("Delta");
+                            TableSetupColumn("State");
+                            TableSetupColumn("Active");
+                            TableHeadersRow();
+                            for (const auto& inputChannelId : channelsSortedByName)
                             {
-                                continue;
-                            }
+                                auto foundChannel = inputChannelsById.find(inputChannelId);
+                                if (foundChannel == inputChannelsById.end())
+                                {
+                                    continue;
+                                }
 
-                            const AzFramework::InputChannel* channel = foundChannel->second;
+                                const AzFramework::InputChannel* channel = foundChannel->second;
 
-                            // for prettiness sake, sort the channels by name.
-                            if (channel)
-                            {
-                                ImGui::Text("Channel '%s' - Value: %0.4f - Delta %0.4f - State: %s%s%s%s [%s]", 
-                                    channel->GetInputChannelId().GetName(),
-                                    channel->GetValue(),
-                                    channel->GetDelta(),
-                                    channel->IsStateIdle() ? "IDLE" : "",
-                                    channel->IsStateBegan() ? "BEGAN" : "",
-                                    channel->IsStateUpdated() ? "UPDATED" : "",
-                                    channel->IsStateEnded() ? "ENDED" : "",
-                                    channel->IsActive() ? "ACTIVE" : "INACTIVE");
+                                if (channel)
+                                {
+                                    TableNextColumn();
+                                    Text("%s", channel->GetInputChannelId().GetName());
+                                    TableNextColumn();
+                                    Text("%0.4f", channel->GetValue());
+                                    TableNextColumn();
+                                    Text("%0.4f", channel->GetDelta());
+                                    TableNextColumn();
+                                    Text("%s%s%s%s", 
+                                        channel->IsStateIdle() ? "IDLE" : "",
+                                        channel->IsStateBegan() ? "BEGAN" : "",
+                                        channel->IsStateUpdated() ? "UPDATED" : "",
+                                        channel->IsStateEnded() ? "ENDED" : "");
+                                    TableNextColumn();
+                                    Text("%s", channel->IsActive() ? "ACTIVE" : "INACTIVE");
+                                }
                             }
+                            EndTable();
                         }
-                        ImGui::TreePop(); // End Tree
+
+                        TreePop(); // End Tree
                     }
                 }
             }
