@@ -97,8 +97,6 @@ namespace PhysX
         testDir /= "Test.Assets/Gems/PhysX/Code/Tests";
         m_fileIo->SetAlias("@test@", testDir.c_str());
 
-        LoadPhysXLibraryModules();
-
         // Create application and descriptor
         m_application = aznew PhysXApplication;
         AZ::ComponentApplication::Descriptor appDesc;
@@ -156,47 +154,5 @@ namespace PhysX
         m_fileIo.reset();
         m_application->Destroy();
         delete m_application;
-
-        UnloadPhysXLibraryModules();
-
     }
-
-
-    void Environment::LoadPhysXLibraryModules()
-    {
-        
-#if AZ_TRAIT_PHYSX_FORCE_LOAD_MODULES
-        m_physXLibraryModules = AZStd::make_unique<PhysXLibraryModules>();
-
-        // Load PhysX SDK dynamic libraries when running unit tests, otherwise the symbol import will fail in InitializePhysXSdk
-        // Normally this is done in the PhysX Gem's module code, but is not currently done in unit tests.
-        {
-            const AZStd::vector<AZ::OSString> physXModuleNames = { "PhysX", "PhysXCooking", "PhysXFoundation", "PhysXCommon" };
-            for (const auto& physXModuleName : physXModuleNames)
-            {
-                AZ::OSString modulePathName = physXModuleName;
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::ResolveModulePath, modulePathName);
-
-                AZStd::unique_ptr<AZ::DynamicModuleHandle> physXModule = AZ::DynamicModuleHandle::Create(modulePathName.c_str());
-                bool ok = physXModule->Load(false/*isInitializeFunctionRequired*/);
-                AZ_Error("PhysX::Module", ok, "Error loading %s module", physXModuleName.c_str());
-
-                m_physXLibraryModules->push_back(AZStd::move(physXModule));
-            }
-        }
-#endif
-    }
-
-    void Environment::UnloadPhysXLibraryModules()
-    {
-#if AZ_TRAIT_PHYSX_FORCE_LOAD_MODULES
-        // Unload modules in reverse order that were loaded
-        for (auto it = m_physXLibraryModules->rbegin(); it != m_physXLibraryModules->rend(); ++it)
-        {
-            it->reset();
-        }
-        m_physXLibraryModules.reset();
-#endif
-    }
-
 } // namespace PhysX

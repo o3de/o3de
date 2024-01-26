@@ -6,6 +6,3 @@
  *
  */
 #pragma once
-
-#define AZ_TRAIT_PHYSX_FORCE_LOAD_MODULES 0
-

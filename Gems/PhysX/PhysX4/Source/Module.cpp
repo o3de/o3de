@@ -92,27 +92,6 @@ namespace PhysX
                 m_modules.push_back(AZStd::move(sceneCoreModule));
             }
 #endif // defined(PHYSX_EDITOR)
-
-            // Load PhysX SDK dynamic libraries when running on a non-monolithic build.
-            // The PhysX Gem module was linked with the PhysX SDK dynamic libraries, but
-            // some platforms may not detect the dependency when the gem is loaded, so we
-            // may have to load them ourselves.
-#if AZ_TRAIT_PHYSX_FORCE_LOAD_MODULES && !defined(AZ_MONOLITHIC_BUILD)
-            {
-                const AZStd::vector<AZ::OSString> physXModuleNames = { "PhysX", "PhysXCooking", "PhysXFoundation", "PhysXCommon" };
-                for (const auto& physXModuleName : physXModuleNames)
-                {
-                    AZ::OSString modulePathName = physXModuleName;
-                    AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::ResolveModulePath, modulePathName);
-
-                    AZStd::unique_ptr<AZ::DynamicModuleHandle> physXModule = AZ::DynamicModuleHandle::Create(modulePathName.c_str());
-                    bool ok = physXModule->Load(false/*isInitializeFunctionRequired*/);
-                    AZ_Error("PhysX::Module", ok, "Error loading %s module", physXModuleName.c_str());
-
-                    m_modules.push_back(AZStd::move(physXModule));
-                }
-            }
-#endif
         }
 
         void UnloadModules()

@@ -52,9 +52,6 @@ namespace PhysX
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
         AZStd::unique_ptr<AZ::IO::LocalFileIO> m_fileIo;
 
-        void LoadPhysXLibraryModules();
-        void UnloadPhysXLibraryModules();
-
         using PhysXLibraryModules = AZStd::vector<AZStd::unique_ptr<AZ::DynamicModuleHandle>>;
         AZStd::unique_ptr<PhysXLibraryModules> m_physXLibraryModules;
     };
