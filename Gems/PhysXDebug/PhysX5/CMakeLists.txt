@@ -35,7 +35,7 @@ ly_add_target(
     NAMESPACE Gem
     OUTPUT_NAME ${gem_name}.Gem
     FILES_CMAKE
-    	${physxdebug_module_files}
+        ${physxdebug_module_files}
         ${physxdebug_files}
     INCLUDE_DIRECTORIES
         PRIVATE
