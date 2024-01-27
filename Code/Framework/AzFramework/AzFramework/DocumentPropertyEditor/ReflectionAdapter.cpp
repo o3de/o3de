@@ -196,14 +196,15 @@ namespace AZ::DocumentPropertyEditor
         struct ContainerElement
         {
             // For constructing non-container elements
-            ContainerElement(AZ::SerializeContext::IDataContainer* container, void* containerInstance, void* elementInstance)
+            ContainerElement(AZ::SerializeContext::IDataContainer* container, void* containerInstance, size_t elementIndex)
                 : m_container(container)
                 , m_containerInstance(containerInstance)
-                , m_elementInstance(elementInstance)
+                , m_elementIndex(elementIndex)
             {
             }
 
-            static AZStd::unique_ptr<ContainerElement> CreateContainerElement(void* instance, const Reflection::IAttributes& attributes)
+            static AZStd::unique_ptr<ContainerElement> CreateContainerElement(
+                void* instance, size_t elementIndex, const Reflection::IAttributes& attributes)
             {
                 AZ_Assert(instance != nullptr, "Instance was nullptr when attempting to create a ContainerElement");
 
@@ -240,7 +241,7 @@ namespace AZ::DocumentPropertyEditor
                         }
                     }
 
-                    return AZStd::make_unique<ContainerElement>(parentContainer, parentContainerInstance, instance);
+                    return AZStd::make_unique<ContainerElement>(parentContainer, parentContainerInstance, elementIndex);
                 }
 
                 return nullptr;
@@ -285,15 +286,19 @@ namespace AZ::DocumentPropertyEditor
 
             void OnRemoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
-                m_container->RemoveElement(m_containerInstance, m_elementInstance, impl->m_serializeContext);
+                const AZ::SerializeContext::ClassElement* containerClassElement =
+                    m_container->GetElement(m_container->GetDefaultElementNameCrc());
+                auto elementInstance = m_container->GetElementByIndex(m_containerInstance, containerClassElement, m_elementIndex);
+                const bool elementRemoved = m_container->RemoveElement(m_containerInstance, elementInstance, impl->m_serializeContext);
+                AZ_Assert(elementRemoved, "could not remove element!");
                 auto containerNode = GetContainerNode(impl, path);
                 Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
                 impl->m_adapter->NotifyResetDocument();
             }
 
-            void OnMoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path, AZ::s64 containerIndex, bool moveForward)
+            void OnMoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path, bool moveForward)
             {
-                m_container->SwapElements(m_containerInstance, containerIndex, (moveForward ? containerIndex + 1 : containerIndex - 1));
+                m_container->SwapElements(m_containerInstance, m_elementIndex, (moveForward ? m_elementIndex + 1 : m_elementIndex - 1));
                 auto containerNode = GetContainerNode(impl, path);
                 Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
                 impl->m_adapter->NotifyResetDocument();
@@ -301,7 +306,7 @@ namespace AZ::DocumentPropertyEditor
 
             AZ::SerializeContext::IDataContainer* m_container = nullptr;
             void* m_containerInstance = nullptr;
-            void* m_elementInstance = nullptr;
+            size_t m_elementIndex = 0;
         };
 
         struct ContainerEntry
@@ -659,6 +664,9 @@ namespace AZ::DocumentPropertyEditor
             auto parentContainerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
             auto parentContainerInstanceAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
 
+            auto containerIndexAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerIndex);
+            auto containerIndex = (containerIndexAttribute ? containerIndexAttribute->GetInt64() : 0);
+
             AZ::Serialize::IDataContainer* parentContainer{};
             if (parentContainerAttribute && !parentContainerAttribute->IsNull())
             {
@@ -681,13 +689,13 @@ namespace AZ::DocumentPropertyEditor
                 auto containerEntry = m_containers.ValueAtPath(m_builder.GetCurrentPath(), AZ::Dom::PrefixTreeMatch::ExactPath);
                 if (containerEntry)
                 {
-                    containerEntry->m_element = ContainerElement::CreateContainerElement(instance, attributes);
+                    containerEntry->m_element = ContainerElement::CreateContainerElement(instance, containerIndex, attributes);
                 }
                 else
                 {
                     m_containers.SetValue(
                         m_builder.GetCurrentPath(),
-                        ContainerEntry{ nullptr, ContainerElement::CreateContainerElement(instance, attributes) });
+                        ContainerEntry{ nullptr, ContainerElement::CreateContainerElement(instance, containerIndex, attributes) });
                 }
 
                 bool parentCanBeModified = true;
@@ -711,11 +719,6 @@ namespace AZ::DocumentPropertyEditor
                         auto containerSize = static_cast<AZ::s64>(parentContainer->Size(parentContainerInstance));
                         if (containerSize > 1 && parentContainer->IsSequenceContainer())
                         {
-                            auto containerIndexAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerIndex);
-                            AZ_Assert(
-                                containerIndexAttribute && !containerIndexAttribute->IsNull(),
-                                "children of a sequenced container should have a ContainerIndex!");
-                            auto containerIndex = containerIndexAttribute->GetInt64();
                             CreateContainerButton(Nodes::ContainerAction::MoveUp, !containerIndex, isAncestorDisabledValue, containerIndex);
                             CreateContainerButton(
                                 Nodes::ContainerAction::MoveDown,
@@ -1368,10 +1371,8 @@ namespace AZ::DocumentPropertyEditor
                 case ContainerAction::MoveDown:
                     if (containerEntry->m_element)
                     {
-                        auto containerIndex = Nodes::ContainerActionButton::ContainerIndex.ExtractFromDomNode(node);
-                        AZ_Assert(containerIndex.has_value(), "MoveUp and MoveDown actions must have a ContainerIndex!");
                         containerEntry->m_element->OnMoveElement(
-                            m_impl.get(), message.m_messageOrigin, containerIndex.value(), action.value() == ContainerAction::MoveDown);
+                            m_impl.get(), message.m_messageOrigin, action.value() == ContainerAction::MoveDown);
                     }
                     break;
                 }

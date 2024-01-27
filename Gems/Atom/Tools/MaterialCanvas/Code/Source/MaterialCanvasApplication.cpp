@@ -201,6 +201,12 @@ namespace MaterialCanvas
         editData = {};
         editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
         AtomToolsFramework::AddEditDataAttribute(
+            editData, AZ::Edit::Attributes::StringList, AZStd::vector<AZStd::string>{ "", "0", "1", "2", "3", "4" });
+        m_dynamicNodeManager->RegisterEditDataForSetting("materialPropertyMinVectorSize", editData);
+
+        editData = {};
+        editData.m_elementId = AZ::Edit::UIHandlers::ComboBox;
+        AtomToolsFramework::AddEditDataAttribute(
             editData,
             AZ::Edit::Attributes::StringList,
             AZStd::vector<AZStd::string>{ "None", "ShaderInput", "ShaderOption", "ShaderEnabled", "InternalProperty", "" });

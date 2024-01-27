@@ -62,9 +62,10 @@ namespace AzToolsFramework
             connect(actionClear, SIGNAL(triggered()), this, SLOT(Clear()));
             addAction(actionClear);
 
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
-
             connect(m_ptrLogView->selectionModel(), &QItemSelectionModel::currentChanged, this, &AZTracePrintFLogTab::CurrentItemChanged);
+
+            AZ::Debug::TraceMessageBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
         }
 
         void AZTracePrintFLogTab::CurrentItemChanged(const QModelIndex& current, const QModelIndex& /*previous*/)
@@ -161,13 +162,6 @@ namespace AzToolsFramework
                         AZStd::lock_guard<AZStd::mutex> lock(m_bufferedLinesMutex);
                         m_bufferedLines.push(Logging::LogLine(message, window ? window : "", type, QDateTime::currentMSecsSinceEpoch(), userData));
                     }
-
-                    // Connect to the system tick bus here to ensure we're on the right thread for the singleShot call we want to make.
-                    // SystemTickBus's connection, disconnection and dispatch are not mutex protected and should only happen on main 
-                    // thread, so we queue it to be executed on main thread.
-                    AZ::SystemTickBus::QueueFunction([this]() {
-                        this->AZ::SystemTickBus::Handler::BusConnect();
-                    });
                 }
             }
         }
@@ -180,14 +174,13 @@ namespace AzToolsFramework
             {
                 QTimer::singleShot(s_delayBetweenTraceprintfUpdates, this, &AZTracePrintFLogTab::DrainMessages);
             }
-            AZ::SystemTickBus::Handler::BusDisconnect(); // This is safe, because OnSystemTick happens on main thread.
         }
 
         AZTracePrintFLogTab::~AZTracePrintFLogTab()
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-            // qt autodeletes any qt  objects.
+            // qt autodeletes any qt objects.
         }
 
         // we only tick when there's queue to drain.

@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import json
 import os
 import re
+import shutil
 import sys
 
 import azlmbr.bus
@@ -17,10 +18,23 @@ import GenerateShaderVariantListUtil
 
 from PySide2 import QtWidgets
 
-PROJECT_SHADER_VARIANTS_FOLDER = "ShaderVariants"
-
 def main():
+    msgBox = QtWidgets.QMessageBox()
+    msgBox.setIcon(QtWidgets.QMessageBox.Information)
+    msgBox.setWindowTitle("Generate shader variant lists for project")
+    msgBox.setText("This process generates shader variant lists for your project and all active gems. Your project's ShaderVariants folder will be deleted and replaced with new shader variant lists. Make sure that the asset processor has finished processing all shader and material assets before proceeding because they will be used as part of this process. Continue?")
+    msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+    if msgBox.exec() != QtWidgets.QMessageBox.Ok:
+        return
+
     print("==== Begin generating shader variant lists for all shaders ==========")
+
+    projectShaderVariantListFolder = os.path.join(azlmbr.paths.projectroot, "ShaderVariants")
+    projectShaderVariantListFolderTmp = os.path.join(azlmbr.paths.projectroot, "$tmp_ShaderVariants")
+
+    # Remove the temporary shade of variant list folder in case it wasn't cleared last run.
+    if os.path.exists(projectShaderVariantListFolderTmp):
+        shutil.rmtree(projectShaderVariantListFolderTmp)
 
     paths = azlmbr.atomtools.util.GetPathsInSourceFoldersMatchingExtension('shader')
 
@@ -38,18 +52,28 @@ def main():
         relativePath = azlmbr.shadermanagementconsole.ShaderManagementConsoleRequestBus(azlmbr.bus.Broadcast, 'GenerateRelativeSourcePath', path)
 
         pre, ext = os.path.splitext(relativePath)
-        savePath = os.path.join(azlmbr.paths.projectroot, PROJECT_SHADER_VARIANTS_FOLDER, f'{pre}.shadervariantlist')
-
-        # clean previously generated shader variant list file so they don't clash.
-        if os.path.exists(savePath):
-            os.remove(savePath)
-            
+        savePath = os.path.join(projectShaderVariantListFolderTmp, f'{pre}.shadervariantlist')
+           
         azlmbr.shader.SaveShaderVariantListSourceData(savePath, shaderVariantList)
 
         progressDialog.setValue(i)
+
+        # processing events to update UI after progress bar changes
+        QtWidgets.QApplication.processEvents()
+
+        # Allowing the application to process idle events for one frame to update systems and garbage collect graphics resources
+        azlmbr.atomtools.general.idle_wait_frames(1)
         if progressDialog.wasCanceled():
             return
     progressDialog.close()
+
+    # Remove the final shader variant list folder and all of its contents
+    if os.path.exists(projectShaderVariantListFolder):
+        shutil.rmtree(projectShaderVariantListFolder)
+
+    # Rename the temporary shader variant list folder to replace the final one
+    if os.path.exists(projectShaderVariantListFolderTmp):
+        os.rename(projectShaderVariantListFolderTmp, projectShaderVariantListFolder)
 
     print("==== Finish generating shader variant lists for all shaders ==========")
 
