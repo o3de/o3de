@@ -20,6 +20,9 @@
 #include "Scripting/EditorLookAtComponent.h"
 #include "Scripting/EditorRandomTimedSpawnerComponent.h"
 #include "Scripting/EditorSpawnerComponent.h"
+#if defined(CARBONATED)
+#include "Scripting/EditorPrefabSpawnerComponent.h"
+#endif
 #include "Scripting/EditorTagComponent.h"
 
 #include "Editor/EditorCommentComponent.h"
@@ -80,7 +83,10 @@ namespace LmbrCentral
             EditorPolygonPrismShapeComponent::CreateDescriptor(),
             EditorCommentComponent::CreateDescriptor(),
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
-            EditorSpawnerComponent::CreateDescriptor(),            
+#if defined(CARBONATED)
+            EditorPrefabSpawnerComponent::CreateDescriptor(),
+#endif
+            EditorSpawnerComponent::CreateDescriptor(),
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
             LevelBuilder::LevelBuilderComponent::CreateDescriptor(),
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),

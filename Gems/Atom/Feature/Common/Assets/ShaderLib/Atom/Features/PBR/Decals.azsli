@@ -21,7 +21,7 @@
 #include <Atom/RPI/TangentSpace.azsli>
 
 #ifndef ENABLE_DECALS_CAP
-#define ENABLE_DECALS_CAP 20 // Default cap if it was not set by the pipeline. This is only applicable is gpu culling is disabled
+#define ENABLE_DECALS_CAP 20 // Default cap if it was not set by the pipeline. This is only applicable if gpu culling is disabled
 #endif
 
 

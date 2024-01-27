@@ -29,9 +29,12 @@
 #define ENABLE_PHYSICAL_SKY 0
 #define ENABLE_MERGE_FILMIC_TONEMAP 1
 #define ENABLE_DECALS_CAP 5
+#define ENABLE_SIMPLE_SPOTLIGHTS_CAP 5
+#define ENABLE_SIMPLE_POINTLIGHTS_CAP 5
 #define ENABLE_REFLECTIONPROBE_PARALLAXCORRECTION 0
 #define ENABLE_REFLECTIONPROBE_BLENDING 0
 #define ENABLE_SPECULARAA 0
+#define ENABLE_PARALLAX 0
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

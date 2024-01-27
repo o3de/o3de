@@ -66,8 +66,17 @@ namespace AZ
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount()const;
 
+            // SceneNotificationBus::Handler overrides...
+            void OnRenderPipelinePersistentViewChanged(
+                RPI::RenderPipeline* renderPipeline,
+                RPI::PipelineViewTag viewTag,
+                RPI::ViewPtr newView,
+                RPI::ViewPtr previousView) override;
+
         private:
             SimplePointLightFeatureProcessor(const SimplePointLightFeatureProcessor&) = delete;
+            // Cull the lights for a view using the CPU.
+            void CullLights(const RPI::ViewPtr& view);
 
             static constexpr const char* FeatureProcessorName = "SimplePointLightFeatureProcessor";
 
@@ -75,6 +84,13 @@ namespace AZ
             GpuBufferHandler m_lightBufferHandler;
             RHI::Handle<uint32_t> m_lightMeshFlag;
             bool m_deviceBufferNeedsUpdate = false;
+
+            // Handlers to GPU buffer that are being used for CPU culling visibility.
+            AZStd::vector<GpuBufferHandler> m_visiblePointLightsBufferHandlers;
+            // Number of buffers being used for visibility in the current frame.
+            uint32_t m_visiblePointLightsBufferUsedCount = 0;
+            // Views that have a GPU culling pass per render pipeline.
+            AZStd::unordered_set<AZStd::pair<const RPI::RenderPipeline*, const RPI::View*>> m_hasGPUCulling;
 
         };
     } // namespace Render

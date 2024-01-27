@@ -1,4 +1,5 @@
 */Code/Legacy/*
+*/Code/Framework/AzCore/AzCore/Asset/AssetManager.cpp
 */Code/Framework/AzCore/AzCore/Math/Aabb.h
 */Code/Framework/AzCore/AzCore/Math/Color.h
 */Code/Framework/AzCore/AzCore/Math/Crc.h

@@ -10,6 +10,9 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -74,7 +77,6 @@ namespace ShaderManagementConsole
                 ->Event("FindMaterialAssetsUsingShader", &ShaderManagementConsoleRequestBus::Events::FindMaterialAssetsUsingShader)
                 ->Event("GetMaterialInstanceShaderItems", &ShaderManagementConsoleRequestBus::Events::GetMaterialInstanceShaderItems)
                 ->Event("GetAllMaterialAssetIds", &ShaderManagementConsoleRequestBus::Events::GetAllMaterialAssetIds)
-                ->Event("GetFullSourcePathFromRelativeProductPath", &ShaderManagementConsoleRequestBus::Events::GetFullSourcePathFromRelativeProductPath)
                 ->Event("GenerateRelativeSourcePath", &ShaderManagementConsoleRequestBus::Events::GenerateRelativeSourcePath)
                 ->Event("MakeShaderOptionValueFromInt", &ShaderManagementConsoleRequestBus::Events::MakeShaderOptionValueFromInt)
                 ;
@@ -111,39 +113,6 @@ namespace ShaderManagementConsole
 
         m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
         m_window->show();
-
-        using namespace AtomToolsFramework;
-        using namespace AzToolsFramework;
-        m_assetBrowserInteractions->RegisterContextMenuActions(
-            [](const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
-            {
-                return entries.front()->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Source;
-            },
-            [this]([[maybe_unused]] QWidget* caller, QMenu* menu, const AtomToolsAssetBrowserInteractions::AssetBrowserEntryVector& entries)
-            {
-                const auto* entry = entries.empty() ? nullptr : entries.front();
-                if (!entry)
-                {
-                    return;
-                }
-                QFileInfo fileInfo(entry->GetFullPath().c_str());
-                QString extension = fileInfo.completeSuffix();
-                if (extension == "shader")
-                {
-                    AZStd::string savePath = entry->GetFullPath();
-                    AzFramework::StringFunc::Path::ReplaceExtension(savePath, AZ::RPI::ShaderVariantListSourceData::Extension);
-                    menu->addAction(
-                        "Create New Variant List (side by side to source)",
-                        [entry, savePath, this]()
-                        {
-                            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
-                                m_toolId,
-                                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromFilePath,
-                                entry->GetFullPath().c_str(),
-                                savePath);
-                        });
-                }
-             });
     }
 
     void ShaderManagementConsoleApplication::Destroy()
@@ -180,56 +149,27 @@ namespace ShaderManagementConsole
 
     AZStd::vector<AZ::Data::AssetId> ShaderManagementConsoleApplication::FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath)
     {
+        // Find all material types that depend on the input shader file path
+        AZStd::vector<AZStd::string> materialTypeSourcePaths = AtomToolsFramework::GetPathsForAssetSourceDependentsByPath(shaderFilePath);
+        AZStd::erase_if(
+            materialTypeSourcePaths,
+            [](const AZStd::string& path)
+            {
+                return !path.ends_with(AZ::RPI::MaterialTypeSourceData::Extension);
+            });
+
         AzToolsFramework::AssetDatabase::AssetDatabaseConnection assetDatabaseConnection;
         assetDatabaseConnection.OpenDatabase();
 
-        // Find all material types that reference shaderFilePath
-        AZStd::list<AZStd::string> materialTypeSources;
-
-        bool foundSourceInfo = false;
-        AZStd::string watchFolder;
-        AZ::Data::AssetInfo shaderAssetInfo;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            foundSourceInfo,
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
-            shaderFilePath.c_str(),
-            shaderAssetInfo,
-            watchFolder);
-
-        if (!foundSourceInfo)
-        {
-            AZ_Error("FindMaterialAssetsUsingShader", false, "Failed to find source file info %s.", shaderFilePath.c_str());
-            return {};
-        }
-
-        assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
-            shaderAssetInfo.m_assetId.m_guid, shaderAssetInfo.m_relativePath.c_str(), watchFolder.c_str(), AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
-            [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
-            {
-                AZStd::string relativeSourcePath;
-                assetDatabaseConnection.QuerySourceBySourceGuid(
-                    sourceFileDependencyEntry.m_sourceGuid,
-                    [&relativeSourcePath](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
-                    {
-                        relativeSourcePath = entry.m_sourceName;
-                        return false;
-                    });
-
-                if (AzFramework::StringFunc::Path::IsExtension(relativeSourcePath.c_str(), AZ::RPI::MaterialTypeSourceData::Extension))
-                {
-                    materialTypeSources.push_back(relativeSourcePath);
-                }
-                return true;
-            });
-
         // Find all materials that reference any of the material types using this shader
-        AZ::Data::AssetInfo materialTypeSourceAssetInfo;
-        AZStd::list<AzToolsFramework::AssetDatabase::ProductDatabaseEntry> productDependencies;
-        for (const auto& materialTypeSource : materialTypeSources)
+        AZStd::vector<AzToolsFramework::AssetDatabase::ProductDatabaseEntry> productDependencies;
+        for (const auto& materialTypeSourcePath : materialTypeSourcePaths)
         {
             bool result = false;
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo materialTypeSourceAssetInfo;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, materialTypeSource.c_str(),
+                result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, materialTypeSourcePath.c_str(),
                 materialTypeSourceAssetInfo, watchFolder);
             if (result)
             {
@@ -266,23 +206,34 @@ namespace ShaderManagementConsole
     AZStd::vector<AZ::RPI::ShaderCollection::Item> ShaderManagementConsoleApplication::GetMaterialInstanceShaderItems(
         const AZ::Data::AssetId& materialAssetId)
     {
-        auto materialAsset =
-            AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::MaterialAsset>(materialAssetId, AZ::RPI::AssetUtils::TraceLevel::Error);
-        if (!materialAsset.IsReady())
+        const AZ::Data::AssetLoadParameters dontLoadImageAssets{
+            [](const AZ::Data::AssetFilterInfo& filterInfo)
+            {
+                return
+                    filterInfo.m_assetType != AZ::AzTypeInfo<AZ::RPI::StreamingImageAsset>::Uuid() &&
+                    filterInfo.m_assetType != AZ::AzTypeInfo<AZ::RPI::AttachmentImageAsset>::Uuid() &&
+                    filterInfo.m_assetType != AZ::AzTypeInfo<AZ::RPI::ImageAsset>::Uuid();
+            }
+        };
+
+        const auto materialAssetOutcome = AZ::RPI::AssetUtils::LoadAsset<AZ::RPI::MaterialAsset>(
+            materialAssetId, AZ::RPI::AssetUtils::TraceLevel::Error, dontLoadImageAssets);
+        if (!materialAssetOutcome)
         {
             AZ_Error(
                 "ShaderManagementConsole", false, "Failed to load material asset from asset id: %s",
                 materialAssetId.ToFixedString().c_str());
-            return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
+            return {};
         }
 
-        auto materialInstance = AZ::RPI::Material::Create(materialAsset);
+        const auto materialAsset = materialAssetOutcome.GetValue();
+        const auto materialInstance = AZ::RPI::Material::FindOrCreate(materialAsset);
         if (!materialInstance)
         {
             AZ_Error(
                 "ShaderManagementConsole", false, "Failed to create material instance from asset: %s",
                 materialAsset.ToString<AZStd::string>().c_str());
-            return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
+            return {};
         }
 
         AZStd::vector<AZ::RPI::ShaderCollection::Item> shaderItems;
@@ -314,32 +265,6 @@ namespace ShaderManagementConsole
             &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, nullptr);
 
         return assetIds;
-    }
-
-    AZStd::string ShaderManagementConsoleApplication::GetFullSourcePathFromRelativeProductPath(const AZStd::string& relativeProductPath)
-    {
-        AZStd::string fullSourcePath;
-        bool fullPathFound = false;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            fullPathFound,
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath,
-            relativeProductPath,
-            fullSourcePath);
-
-        if (fullPathFound)
-        {
-            return fullSourcePath;
-        }
-        else
-        {
-            AZ_Error(
-                "GetFullSourcePathFromRelativeProductPath",
-                false,
-                "Failed to get full source path for relative product path %s.",
-                relativeProductPath.c_str());
-        }
-
-        return "";
     }
 
     AZStd::string ShaderManagementConsoleApplication::GenerateRelativeSourcePath(const AZStd::string& fullShaderPath)
