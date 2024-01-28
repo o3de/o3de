@@ -8,19 +8,20 @@
 
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
 #include <CoreLights/SpotLightUtils.h>
-
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Color.h>
-
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
-
 #include <Atom/RHI/Factory.h>
-
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Vector3.h>
+#include <numeric>
+
+//! If modified, ensure that r_maxVisibleSpotLights is equal to or lower than ENABLE_SIMPLE_SPOTLIGHTS_CAP which is the limit set by the shader on GPU.
+AZ_CVAR(int, r_maxVisibleSpotLights, -1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of visible spot lights to use when culling is not available. -1 means no limit");
 
 namespace AZ
 {
@@ -58,12 +59,19 @@ namespace AZ
                 m_lightMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableSimpleSpotLights"));
                 m_shadowMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableSimpleSpotLightShadows"));
             }
+            EnableSceneNotification();
         }
 
         void SimpleSpotLightFeatureProcessor::Deactivate()
         {
+            DisableSceneNotification();
             m_lightData.Clear();
             m_lightBufferHandler.Release();
+            for (auto& handler : m_visibleSpotLightsBufferHandlers)
+            {
+                handler.Release();
+            }
+            m_visibleSpotLightsBufferHandlers.clear();
         }
 
         SimpleSpotLightFeatureProcessor::LightHandle SimpleSpotLightFeatureProcessor::AcquireLight()
@@ -168,10 +176,11 @@ namespace AZ
         void SimpleSpotLightFeatureProcessor::Render(const SimpleSpotLightFeatureProcessor::RenderPacket& packet)
         {
             AZ_PROFILE_SCOPE(RPI, "SimpleSpotLightFeatureProcessor: Render");
-
+            m_visibleSpotLightsBufferUsedCount = 0;
             for (const RPI::ViewPtr& view : packet.m_views)
             {
                 m_lightBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
+                CullLights(view);
             }
         }
 
@@ -362,6 +371,79 @@ namespace AZ
         void SimpleSpotLightFeatureProcessor::SetUseCachedShadows(LightHandle handle, bool useCachedShadows)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetUseCachedShadows, useCachedShadows);
+        }
+
+        void SimpleSpotLightFeatureProcessor::OnRenderPipelinePersistentViewChanged(
+            RPI::RenderPipeline* renderPipeline,
+            [[maybe_unused]] RPI::PipelineViewTag viewTag,
+            RPI::ViewPtr newView,
+            RPI::ViewPtr previousView)
+        {
+            Render::LightCommon::CacheGPUCullingPipelineInfo(
+                renderPipeline,
+                newView, previousView, m_hasGPUCulling);
+        }
+
+        void SimpleSpotLightFeatureProcessor::CullLights(const RPI::ViewPtr& view)
+        {
+            if (!AZ::RHI::CheckBitsAll(view->GetUsageFlags(), RPI::View::UsageFlags::UsageCamera) ||
+                Render::LightCommon::HasGPUCulling(GetParentScene(), view, m_hasGPUCulling))
+            {
+                return;
+            }
+
+            const auto& dataVector = m_lightData.GetDataVector<0>();
+            size_t numVisibleLights =
+                r_maxVisibleSpotLights < 0 ? dataVector.size() : AZStd::min(dataVector.size(), static_cast<size_t>(r_maxVisibleSpotLights));
+            AZStd::vector<uint32_t> sortedLights(dataVector.size());
+            // Initialize with all the simple spot light indices
+            std::iota(sortedLights.begin(), sortedLights.end(), 0);
+            // Only sort if we are going to limit the number of visible decals
+            if (numVisibleLights < dataVector.size())
+            {
+                AZ::Vector3 viewPos = view->GetViewToWorldMatrix().GetTranslation();
+                AZStd::sort(
+                    sortedLights.begin(),
+                    sortedLights.end(),
+                    [&dataVector, &viewPos](uint32_t lhs, uint32_t rhs)
+                    {
+                        float d1 = (AZ::Vector3::CreateFromFloat3(dataVector[lhs].m_position.data()) - viewPos).GetLengthSq();
+                        float d2 = (AZ::Vector3::CreateFromFloat3(dataVector[rhs].m_position.data()) - viewPos).GetLengthSq();
+                        return d1 < d2;
+                    });
+            }
+
+            const AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
+            AZStd::vector<uint32_t> visibilityBuffer;
+            visibilityBuffer.reserve(numVisibleLights);
+            for (uint32_t i = 0; i < sortedLights.size() && visibilityBuffer.size() < numVisibleLights; ++i)
+            {
+                uint32_t dataIndex = sortedLights[i];
+                const auto& lightData = dataVector[dataIndex];
+                float radius = LightCommon::GetRadiusFromInvRadiusSquared(abs(lightData.m_invAttenuationRadiusSquared));
+                AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(lightData.m_position.data());
+                
+                // Do the actual culling per light and only add the indices for the visible ones.
+                // We cull based on a sphere around the whole spot light as that is easier and faster and good enough.
+                // This can be improved by doing frustum-frustum and frustum-hemisphere intersection.
+                if (AZ::ShapeIntersection::Overlaps(viewFrustum, AZ::Sphere(position, radius)))
+                {
+                    visibilityBuffer.push_back(dataIndex);
+                }
+            }
+
+            //Create the appropriate buffer handlers for the visibility data
+            Render::LightCommon::UpdateVisibleBuffers(
+                "SimpleSpotLightVisibilityBuffer",
+                "m_visibleSimpleSpotLightIndices",
+                "m_visibleSimpleSpotLightCount",
+                m_visibleSpotLightsBufferUsedCount,
+                m_visibleSpotLightsBufferHandlers);
+
+            // Update buffer and View SRG
+            GpuBufferHandler& bufferHandler = m_visibleSpotLightsBufferHandlers[m_visibleSpotLightsBufferUsedCount++];
+            bufferHandler.UpdateBuffer(visibilityBuffer);
+            bufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
         }
     } // namespace Render
 } // namespace AZ

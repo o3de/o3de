@@ -1,0 +1,98 @@
+{
+    "entries": [
+        {
+            "base": "PrefabSpawnerComponentNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "PrefabSpawner",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "base": "OnSpawnBegin",
+                    "details": {
+                        "name": "On Spawn Begin"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}",
+                            "details": {
+                                "name": "Entity Spawn Ticket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnSpawnEnd",
+                    "details": {
+                        "name": "On Spawn End"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}",
+                            "details": {
+                                "name": "Entity Spawn Ticket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEntitySpawned",
+                    "details": {
+                        "name": "On Entity Spawned"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}",
+                            "details": {
+                                "name": "Entity Spawn Ticket"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnSpawnedPrefabDestroyed",
+                    "details": {
+                        "name": "On Spawned Prefab Destroyed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}",
+                            "details": {
+                                "name": "Entity Spawn Ticket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEntitiesSpawned",
+                    "details": {
+                        "name": "On Entities Spawned"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}",
+                            "details": {
+                                "name": "Entity Spawn Ticket"
+                            }
+                        },
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Entities"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
