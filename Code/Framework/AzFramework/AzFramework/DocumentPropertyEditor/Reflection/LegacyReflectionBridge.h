@@ -51,6 +51,8 @@ namespace AZ::Reflection
         //! the index of the element, if it is a member of a sequenced container
         //! Type: size_t
         extern const Name ContainerIndex;
+        extern const Name ParentInstance;
+        extern const Name ParentClassData;
     } // namespace DescriptorAttributes
 
     AZStd::shared_ptr<AZ::Attribute> WriteDomValueToGenericAttribute(const AZ::Dom::Value& value);
