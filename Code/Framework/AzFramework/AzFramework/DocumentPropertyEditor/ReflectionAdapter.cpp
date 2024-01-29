@@ -36,9 +36,15 @@ namespace AZ::DocumentPropertyEditor
         struct BoundContainer
         {
             // For constructing non-nested containers
-            BoundContainer(AZ::SerializeContext::IDataContainer* container, void* containerInstance)
+            BoundContainer(
+                AZ::SerializeContext::IDataContainer* container,
+                void* containerInstance,
+                void* parentInstance,
+                const AZ::SerializeContext::ClassData* parentClassData)
                 : m_container(container)
                 , m_containerInstance(containerInstance)
+                , m_parentInstance(parentInstance)
+                , m_parentClassData(parentClassData)
             {
             }
 
@@ -58,9 +64,33 @@ namespace AZ::DocumentPropertyEditor
                         container = reinterpret_cast<AZ::Serialize::IDataContainer*>(containerObject->m_address);
                     }
                 }
+
                 if (container != nullptr)
                 {
-                    return AZStd::make_unique<BoundContainer>(container, instance);
+                    void* parentInstance = nullptr;
+                    const AZ::SerializeContext::ClassData* parentClassData = nullptr;
+
+                    if (auto parentInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentInstance);
+                        parentInstanceValue && !parentInstanceValue->IsNull())
+                    {
+                        if (auto parentInstanceObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentInstanceValue);
+                            parentInstanceObject)
+                        {
+                            parentInstance = parentInstanceObject->m_address;
+                        }
+                    }
+
+                    if (auto parentClassDataValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentClassData);
+                        parentClassDataValue && !parentClassDataValue->IsNull())
+                    {
+                        if (auto parentClassDataObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentClassDataValue);
+                            parentClassDataObject && parentClassDataObject->m_typeId == azrtti_typeid<const SerializeContext::ClassData*>())
+                        {
+                            parentClassData = reinterpret_cast<const AZ::SerializeContext::ClassData*>(parentClassDataObject->m_address);
+                        }
+                    }
+
+                    return AZStd::make_unique<BoundContainer>(container, instance, parentInstance, parentClassData);
                 }
                 return nullptr;
             }
@@ -133,17 +163,16 @@ namespace AZ::DocumentPropertyEditor
 
                     const AZ::SerializeContext::ClassData* classData =
                         serialContext->FindClassData(AZ::SerializeTypeInfo<AZ::DynamicSerializableField>::GetUuid());
-                    //auto element = classData->FindAttribute(AZ::Edit::Attributes::DynamicElementType);
-                    ; // <apm> what should this be??
-                        // m_parent->m_classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
-                    if (1)//element)
+                    AZ_Assert(m_parentClassData && m_parentClassData->m_editData, "parentClassData must exist and have valid editData!");
+                    auto element = m_parentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+                    if (element)
                     {
                         // Grab the AttributeMemberFunction used to get the Uuid type of the element wrapped by the DynamicSerializableField
-                        AZ::Edit::Attribute* assetTypeAttribute = classData->FindAttribute(AZ::Edit::Attributes::DynamicElementType);
+                        AZ::Edit::Attribute* assetTypeAttribute = element->FindAttribute(AZ::Edit::Attributes::DynamicElementType);
                         if (assetTypeAttribute)
                         {
                             // Invoke the function we just grabbed and pull the class data based on that Uuid
-                            AZ::AttributeReader elementTypeIdReader(m_containerInstance, assetTypeAttribute);
+                            AZ::AttributeReader elementTypeIdReader(m_parentInstance, assetTypeAttribute);
                             AZ::Uuid dynamicClassUuid;
                             if (elementTypeIdReader.Read<AZ::Uuid>(dynamicClassUuid))
                             {
@@ -239,6 +268,9 @@ namespace AZ::DocumentPropertyEditor
 
             AZ::SerializeContext::IDataContainer* m_container = nullptr;
             void* m_containerInstance = nullptr;
+
+            void* m_parentInstance = nullptr;
+            const AZ::SerializeContext::ClassData* m_parentClassData = nullptr;
 
             // An element instance reserved through the IDataContainer API
             void* m_reservedElementInstance = nullptr;
