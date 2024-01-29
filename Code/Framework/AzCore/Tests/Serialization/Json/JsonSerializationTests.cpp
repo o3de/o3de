@@ -428,10 +428,16 @@ namespace JsonSerializationTests
         m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<TemplatedClass>();
         JsonSerializerMock* mock = reinterpret_cast<JsonSerializerMock*>(
             m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<TemplatedClass>()));
+#if defined(CARBONATED)
+        EXPECT_CALL(*mock, Load(_, _, _, _))
+            .Times(Exactly(1))
+            .WillRepeatedly(Return(
+                Result(m_deserializationSettings->m_reporting, "Test", Tasks::ReadField, Outcomes::Success, SpecialCaseType::None, "")));
+#else
         EXPECT_CALL(*mock, Load(_, _, _, _))
             .Times(Exactly(1))
             .WillRepeatedly(Return(Result(m_deserializationSettings->m_reporting, "Test", Tasks::ReadField, Outcomes::Success, "")));
-
+#endif
         TemplatedClass<int> instance;
         AZ::JsonSerialization::Load(instance, *m_jsonDocument, *m_deserializationSettings);
 
@@ -465,10 +471,16 @@ namespace JsonSerializationTests
         m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<SimpleInheritence>();
         JsonSerializerMock* mock =
             reinterpret_cast<JsonSerializerMock*>(m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<SimpleInheritence>()));
+#if defined(CARBONATED)
+        EXPECT_CALL(*mock, Load(_, _, _, _))
+            .Times(Exactly(1))
+            .WillRepeatedly(Return(
+                Result(m_deserializationSettings->m_reporting, "Test", Tasks::ReadField, Outcomes::Success, SpecialCaseType::None, "")));
+#else
         EXPECT_CALL(*mock, Load(_, _, _, _))
             .Times(Exactly(1))
             .WillRepeatedly(Return(Result(m_deserializationSettings->m_reporting, "Test", Tasks::ReadField, Outcomes::Success, "")));
-
+#endif
         AZStd::unique_ptr<BaseClass> instance;
         ResultCode result = AZ::JsonSerialization::Load(instance, *m_jsonDocument, *m_deserializationSettings);
         EXPECT_NE(Processing::Halted, result.GetProcessing());
@@ -494,10 +506,16 @@ namespace JsonSerializationTests
         m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<TemplatedClass>();
         JsonSerializerMock* mock = reinterpret_cast<JsonSerializerMock*>(
             m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<TemplatedClass>()));
+#if defined(CARBONATED)
+        EXPECT_CALL(*mock, Store(_, _, _, _, _))
+            .Times(Exactly(1))
+            .WillRepeatedly(Return(
+                Result(m_serializationSettings->m_reporting, "Test", Tasks::WriteValue, Outcomes::Success, SpecialCaseType::None, "")));
+#else
         EXPECT_CALL(*mock, Store(_, _, _, _, _))
             .Times(Exactly(1))
             .WillRepeatedly(Return(Result(m_serializationSettings->m_reporting, "Test", Tasks::WriteValue, Outcomes::Success, "")));
-
+#endif
         TemplatedClass<int> instance;
         AZ::JsonSerialization::Store(*m_jsonDocument, m_jsonDocument->GetAllocator(), instance, *m_serializationSettings);
 
