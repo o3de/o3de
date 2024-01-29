@@ -23,13 +23,10 @@ namespace ImGui
 
     void ImGuiInputMonitor::Initialize()
     {
-        // Connect to EBUSes
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void ImGuiInputMonitor::Shutdown()
     {
-        AZ::TickBus::Handler::BusDisconnect();
     }
 
     void ImGuiInputMonitor::ImGuiUpdate()
@@ -132,10 +129,6 @@ namespace ImGui
                 }
             }
         }
-    }
-
-    void ImGuiInputMonitor::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
     }
 } // namespace ImGui
 

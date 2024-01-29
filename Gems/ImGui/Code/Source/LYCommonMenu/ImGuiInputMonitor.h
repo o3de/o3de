@@ -20,7 +20,6 @@ namespace ImGui
     // Just dumps all the known devices, whether they're connected or not, and if they have input channels, what the state of those
     // channels are.
     class ImGuiInputMonitor
-        : public AZ::TickBus::Handler
     {
     public:
         ImGuiInputMonitor();
@@ -33,9 +32,6 @@ namespace ImGui
         // Draw the ImGui Menu
         void ImGuiUpdate();
 
-        // -- AZ::TickBus::Handler Interface ---------------------------------------
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        
         // Toggle the menu on and off
         void ToggleEnabled() { m_enabled = !m_enabled; }
 

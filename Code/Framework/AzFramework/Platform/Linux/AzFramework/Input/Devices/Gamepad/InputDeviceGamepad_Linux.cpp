@@ -130,7 +130,7 @@ namespace GamepadLinuxPrivate
                         int joyIndex = static_cast<int>(strtoul(indexStr.data(), &tokenEnd, 10));
                         // tokenEnd will point to the null terminator if the string was a valid number, since the string should
                         // only contain the number and nothing else.
-                        if ((tokenEnd)&&(*tokenEnd == '\0')&&(joyIndex == index)) 
+                        if ((tokenEnd)&&(*tokenEnd == '\0') && (joyIndex == index)) 
                         {
                             // this is the joystick we're looking for - but we want the event interface, not the joystick symlink
                             // so we need to back to the beginning and get the event interface instead.
@@ -226,7 +226,7 @@ namespace GamepadLinuxPrivate
         return map;
     }
 
-} // namespace
+} // end namespace GamepadLinuxPrivate
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -277,8 +277,8 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceGamepadLinux::SetVibration(float leftMotorSpeedNormalized,
-                                                 float rightMotorSpeedNormalized)
+    void InputDeviceGamepadLinux::SetVibration([[maybe_unused]]float leftMotorSpeedNormalized,
+                                               [[maybe_unused]]float rightMotorSpeedNormalized)
     {
         if (m_isConnected)
         {
