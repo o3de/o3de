@@ -35,6 +35,8 @@ namespace AZ::Reflection
             Name::FromStringLiteral("ParentContainerCanBeModified", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ContainerElementOverride = Name::FromStringLiteral("ContainerElementOverride", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ContainerIndex = Name::FromStringLiteral("ContainerIndex", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentInstance = Name::FromStringLiteral("ParentInstance", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentClassData = Name::FromStringLiteral("ParentClassData", AZ::Interface<AZ::NameDictionary>::Get());
     } // namespace DescriptorAttributes
 
     // attempts to stringify the passed instance; useful for things like maps where the key element should not be user editable
@@ -1535,6 +1537,20 @@ namespace AZ::Reflection
                         { group, DescriptorAttributes::Handler, Dom::Value(handlerName.GetCStr(), false) });
                 }
                 nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::SerializedPath, Dom::Value(nodeData.m_path, true) });
+
+                if (m_stack.size() >= 2)
+                {
+                    StackEntry& parentNode = m_stack[m_stack.size() - 2];
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, DescriptorAttributes::ParentInstance, Dom::Utils::ValueFromType(parentNode.m_instance) });
+
+                    AZ::PointerObject parentClassDataObject;
+                    parentClassDataObject.m_address = const_cast<SerializeContext::ClassData*>(parentNode.m_classData);
+                    parentClassDataObject.m_typeId = azrtti_typeid<const SerializeContext::ClassData*>();
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, DescriptorAttributes::ParentClassData, Dom::Utils::ValueFromType(parentClassDataObject) });
+                }
+
                 if (!nodeData.m_skipLabel && !labelAttributeValue.empty())
                 {
                     // If we allocated a local label buffer we need to make a copy to store the label
