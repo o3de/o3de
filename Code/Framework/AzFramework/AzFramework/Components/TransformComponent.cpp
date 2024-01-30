@@ -844,8 +844,6 @@ namespace AzFramework
         AZ::Vector3 scale = m_worldTM.RetrieveScaleExact();
         return scale;
     }
-#endif
-
     void TransformComponent::SetLocalScale(const AZ::Vector3& /* scale */)
     {
         AZ::Transform newLocalTM = m_localTM;
@@ -860,12 +858,12 @@ namespace AzFramework
 
         SetLocalTM(newLocalTM);
     }
-    
     AZ::Vector3 TransformComponent::GetLocalScale()
     {
         AZ_WarningOnce("TransformComponent", false, "GetLocalScale is deprecated, please use GetLocalUniformScale instead");
         return AZ::Vector3(m_localTM.GetUniformScale());
     }
+#endif
 
     void TransformComponent::SetLocalUniformScale(float scale)
     {
@@ -1484,16 +1482,14 @@ namespace AzFramework
                 ->Event("GetScaleZ", &AZ::TransformBus::Events::GetScaleZ)
                     ->Attribute(AZ::Script::Attributes::Deprecated, true)
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-#endif
                 ->Event("SetLocalScale", &AZ::TransformBus::Events::SetLocalScale)
-#if 0
                 ->Event("SetLocalScaleX", &AZ::TransformBus::Events::SetLocalScaleX)
                 ->Event("SetLocalScaleY", &AZ::TransformBus::Events::SetLocalScaleY)
                 ->Event("SetLocalScaleZ", &AZ::TransformBus::Events::SetLocalScaleZ)
-#endif
+                ->VirtualProperty("Scale", "GetLocalScale", "SetLocalScale")
                 ->Event("GetLocalScale", &AZ::TransformBus::Events::GetLocalScale)
                     ->Attribute("Scale", AZ::Edit::Attributes::PropertyScale)
-                ->VirtualProperty("Scale", "GetLocalScale", "SetLocalScale")
+#endif
                 ->Event("SetLocalUniformScale", &AZ::TransformBus::Events::SetLocalUniformScale)
                 ->Event("GetLocalUniformScale", &AZ::TransformBus::Events::GetLocalUniformScale)
                 ->VirtualProperty("Uniform Scale", "GetLocalUniformScale", "SetLocalUniformScale")

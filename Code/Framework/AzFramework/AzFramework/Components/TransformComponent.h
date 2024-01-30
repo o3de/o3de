@@ -90,7 +90,7 @@ namespace AzFramework
 
         // Scale modifiers
         // Get local scale as vector (deprecated)
-        AZ::Vector3 GetLocalScale() override;
+        // AZ::Vector3 GetLocalScale() override;    // Gruber patch. GetLocalScale is deprecated. Use GetLocalUniformScale
         // Set the uniform scale value in local space.
         void SetLocalUniformScale([[maybe_unused]] float scale) override;
         // Get the uniform scale value in local space.
@@ -198,8 +198,8 @@ namespace AzFramework
 
         AZ::Vector3 GetLocalScale() override;
         AZ::Vector3 GetWorldScale() override;
-#endif
         void SetLocalScale(const AZ::Vector3& scale) override;
+#endif
         //////////////////////////////////////////////////////////////////////////
 
         AZStd::vector<AZ::EntityId> GetChildren() override;
