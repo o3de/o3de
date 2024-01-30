@@ -510,8 +510,11 @@ namespace AzFramework
         // Load the script, find the base table...
         if (LoadInContext())
         {
-#ifndef _RELEASE
+#if defined(_RELEASE)
+            bool isHotReloadEnabled = false;
+#else
             bool isHotReloadEnabled = true;
+#endif
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
                 registry->Get(isHotReloadEnabled, ScriptComponentHotReloadPath);
@@ -521,7 +524,6 @@ namespace AzFramework
             {
                 AZ::Data::AssetBus::Handler::BusConnect(m_script.GetId());
             }
-#endif
 
             // ...create the entity table, find the Activate/Deactivate functions in the script and call them
             CreateEntityTable();
@@ -568,15 +570,12 @@ namespace AzFramework
 
     void ScriptComponent::Deactivate()
     {
-#ifndef _RELEASE
         AZ::Data::AssetBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-#endif // ifndef _RELEASE
 
         DestroyEntityTable();
     }
 
-#ifndef _RELEASE
     void ScriptComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         DestroyEntityTable();
@@ -596,7 +595,6 @@ namespace AzFramework
             CreateEntityTable();
         }
     }
-#endif // ifndef _RELEASE
 
     bool ScriptComponent::LoadInContext()
     {

@@ -10,14 +10,11 @@
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
-
-#ifndef _RELEASE
-#include <AzCore/Component/TickBus.h>
-#endif
 
 namespace AZ
 {
@@ -82,10 +79,8 @@ namespace AzFramework
 
     class ScriptComponent
         : public AZ::Component
-#ifndef _RELEASE
         , private AZ::Data::AssetBus::Handler
         , private AZ::TickBus::Handler
-#endif
     {
         friend class AzToolsFramework::Components::ScriptEditorComponent;        
 
@@ -116,15 +111,11 @@ namespace AzFramework
         void Activate() override;
         void Deactivate() override;
 
-#ifndef _RELEASE
-        // Hot-reloading is currently only supported in non-release builds
-
         // AssetBus
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-#endif // ifndef _RELEASE
 
         /// Loads the script into the context/VM, \returns true if the script is loaded
         bool LoadInContext();
