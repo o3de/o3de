@@ -22,8 +22,6 @@
 #include <Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.h>
 #endif // defined(PHYSX_EDITOR)
 
-#include <PhysX_Traits_Platform.h>
-
 #include <System/PhysXSystem.h>
 #include <System/PhysXCookingParams.h>
 
