@@ -51,7 +51,7 @@ class SessionContext:
         self.cmake_runtime_path = self.install_root / 'cmake/runtime'
         self.engine_bin_path = self.install_root / 'bin/Windows/profile/Default'
         self.project_build_path_profile = self.project_path / 'build/Windows'
-        self.project_build_path_release = self.project_path / 'build/Windows_release'
+        self.project_build_path_release = self.project_path / 'build/Windows_mono'
         self.project_bin_path_profile = self.project_build_path_profile / 'bin/profile'
         self.project_bin_path_release = self.project_build_path_release / 'bin/release'
 

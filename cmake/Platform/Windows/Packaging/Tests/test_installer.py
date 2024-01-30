@@ -96,22 +96,22 @@ def test_compile_project_fixture(test_create_project_fixture, context):
     cmake_path = next(context.cmake_runtime_path.glob('**/cmake.exe'))
     launcher_target = f"{project_name}.GameLauncher"
 
-    # configure profile
+    # configure non-monolithic 
     result = context.run([str(cmake_path),'-B', str(context.project_build_path_profile), '-S', '.'], cwd=context.project_path)
     assert result.returncode == 0
     assert (context.project_build_path_profile / f'{project_name}.sln').is_file()
 
-    # build profile
+    # build profile (non-monolithic)
     result = context.run([str(cmake_path),'--build', str(context.project_build_path_profile), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=context.project_path)
     assert result.returncode == 0
     assert (context.project_bin_path_profile / f'{launcher_target}.exe').is_file()
 
-    # configure release
+    # configure monolithic 
     result = context.run([str(cmake_path),'-B', str(context.project_build_path_release), '-S', '.','-DLY_MONOLITHIC_GAME=1'], cwd=context.project_path)
     assert result.returncode == 0
     assert (context.project_build_path_release / f'{project_name}.sln').is_file()
 
-    # build release 
+    # build release (monolithic)
     result = context.run([str(cmake_path),'--build', str(context.project_build_path_release), '--target', launcher_target, '--config', 'release','--','-m'], cwd=context.project_path)
     assert result.returncode == 0
     assert (context.project_bin_path_release / f'{launcher_target}.exe').is_file()
