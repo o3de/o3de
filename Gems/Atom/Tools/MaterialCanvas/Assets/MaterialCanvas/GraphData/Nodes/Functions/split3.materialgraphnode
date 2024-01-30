@@ -20,8 +20,9 @@
                 "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float3",
                 "settings": {
+                    "materialPropertyMinVectorSize": [ "3" ],
                     "instructions": [
-                        "float3 SLOTNAME = SLOTVALUE;"
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
