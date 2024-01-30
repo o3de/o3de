@@ -19,6 +19,8 @@ extern "C"
     const int O3DEWRAPPER_LIBEVDEV_READ_FLAG_NORMAL = 2;
     const int O3DEWRAPPER_LIBEVDEV_READ_STATUS_SUCCESS = 0;
     struct libevdev;
+    struct input_absinfo;
+    struct input_event;
 }
 
 // this class is meant to be created and destroyed in a shared_ptr so that it can be done once and passed down to many
