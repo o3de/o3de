@@ -510,13 +510,8 @@ namespace AzFramework
         // Load the script, find the base table...
         if (LoadInContext())
         {
-#if defined(_RELEASE)
-            bool isHotReloadEnabled = false;
-#else
+#ifndef _RELEASE
             bool isHotReloadEnabled = true;
-#endif
-
-            // Retrieve new action manager setting
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
                 registry->Get(isHotReloadEnabled, ScriptComponentHotReloadPath);
@@ -526,6 +521,7 @@ namespace AzFramework
             {
                 AZ::Data::AssetBus::Handler::BusConnect(m_script.GetId());
             }
+#endif
 
             // ...create the entity table, find the Activate/Deactivate functions in the script and call them
             CreateEntityTable();
@@ -572,28 +568,35 @@ namespace AzFramework
 
     void ScriptComponent::Deactivate()
     {
+#ifndef _RELEASE
         AZ::Data::AssetBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
+#endif // ifndef _RELEASE
 
         DestroyEntityTable();
     }
 
+#ifndef _RELEASE
     void ScriptComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         DestroyEntityTable();
 
-        // Assign the updated asset on the next tick so we are not holding
-        // on to the old script
-        AZ::TickBus::QueueFunction(
-            [this, asset]()
-            {
-                m_script = asset;
+        m_script = asset;
 
-                if (LoadInContext())
-                {
-                    CreateEntityTable();
-                }
-            });
+        // Load the updated asset on the next tick so we're not holding on to the old script
+        AZ::TickBus::Handler::BusConnect();
     }
+
+    void ScriptComponent::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time)
+    {
+        AZ::TickBus::Handler::BusDisconnect();
+
+        if (LoadInContext())
+        {
+            CreateEntityTable();
+        }
+    }
+#endif // ifndef _RELEASE
 
     bool ScriptComponent::LoadInContext()
     {
