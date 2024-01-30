@@ -47,7 +47,6 @@ namespace PhysX
             // not also aligned, it will crash. This checks makes sure they will be aligned to 16 bytes.
             static_assert(alignof(PhysX::PhysXSystemConfiguration) == 16);
             static_assert(alignof(PhysX::PhysXSystem) == 16);
-            static_assert(alignof(PhysX::Module) == 16);
             
             LoadModules();
 
@@ -107,6 +106,10 @@ namespace PhysX
 
         PhysXSystem m_physXSystem;
     };
+
+    // The PhysX::Module also needs to be 16-byte aligned
+    static_assert(alignof(PhysX::Module) == 16);
+
 } // namespace PhysX
 
 #if defined(O3DE_GEM_NAME)
