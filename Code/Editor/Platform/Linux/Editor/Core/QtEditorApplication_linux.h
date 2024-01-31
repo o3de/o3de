@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #if !defined(Q_MOC_RUN)
 #include <Editor/Core/QtEditorApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
