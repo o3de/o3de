@@ -7,6 +7,9 @@
  */
 #pragma once
 
+#include <linux/input.h>
+#include <linux/input-event-codes.h>
+
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 

@@ -8,9 +8,6 @@
 
 #include <AzCore/PlatformIncl.h>
 
-#include <linux/input.h>
-#include <linux/input-event-codes.h>
-
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/Input/LibEVDevWrapper.h>
