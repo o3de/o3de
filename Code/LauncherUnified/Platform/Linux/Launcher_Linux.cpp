@@ -37,7 +37,7 @@ namespace
 
         for (unsigned int frame = 0; frame < frameCount; ++frame)
         {
-            fprintf(ftrace, "%s", lines[frame]);
+            fprintf(ftrace, "%s\n", lines[frame]);
         }
 
         if (ftrace != stderr)
