@@ -22,7 +22,7 @@ namespace MiniAudio
 
     // placement of this destructor is intentional.  It forces unique_ptr<ma_sound> to declare its destructor here
     // instead of in the header before inclusion of the giant MiniAudioIncludes.h file
-    MiniAudioPlaybackComponentController::~MiniAudioPlaybackComponentController() 
+    MiniAudioPlaybackComponentController::~MiniAudioPlaybackComponentController()
     {
     }
 
@@ -52,6 +52,9 @@ namespace MiniAudio
     void MiniAudioPlaybackComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         m_entityComponentIdPair = entityComponentIdPair;
+
+        m_config.m_innerAngleInRadians = m_config.m_innerAngleInDegrees * AZ::Constants::TwoPi / 360.f;
+        m_config.m_outerAngleInRadians = m_config.m_outerAngleInDegrees * AZ::Constants::TwoPi / 360.f;
 
         MiniAudioPlaybackRequestBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
         OnConfigurationUpdated();
@@ -148,6 +151,98 @@ namespace MiniAudio
         SetSoundAsset(soundAssetRef.GetAsset());
     }
 
+    float MiniAudioPlaybackComponentController::GetInnerAngleInRadians() const
+    {
+        return m_config.m_innerAngleInRadians;
+    }
+
+    void MiniAudioPlaybackComponentController::SetInnerAngleInRadians(const float innerAngleInRadians)
+    {
+        m_config.m_innerAngleInRadians = innerAngleInRadians;
+        OnConfigurationUpdated();
+    }
+
+    float MiniAudioPlaybackComponentController::GetInnerAngleInDegrees() const
+    {
+        return m_config.m_innerAngleInDegrees;
+    }
+
+    void MiniAudioPlaybackComponentController::SetInnerAngleInDegrees(const float innerAngleInDegrees)
+    {
+        m_config.m_innerAngleInDegrees = innerAngleInDegrees;
+        m_config.m_innerAngleInRadians = m_config.m_innerAngleInDegrees * AZ::Constants::TwoPi/360.f;
+        OnConfigurationUpdated();
+    }
+
+    float MiniAudioPlaybackComponentController::GetOuterAngleInRadians() const
+    {
+        return m_config.m_outerAngleInRadians;
+    }
+
+    void MiniAudioPlaybackComponentController::SetOuterAngleInRadians(const float outerAngleInRadians)
+    {
+        m_config.m_outerAngleInRadians = outerAngleInRadians;
+        OnConfigurationUpdated();
+    }
+
+    float MiniAudioPlaybackComponentController::GetOuterAngleInDegrees() const
+    {
+        return m_config.m_outerAngleInDegrees;
+    }
+
+    void MiniAudioPlaybackComponentController::SetOuterAngleInDegrees(const float outerAngleInDegrees)
+    {
+        m_config.m_outerAngleInDegrees = outerAngleInDegrees;
+        m_config.m_outerAngleInRadians = m_config.m_outerAngleInDegrees * AZ::Constants::TwoPi/360.f;
+        OnConfigurationUpdated();
+    }
+
+    float MiniAudioPlaybackComponentController::GetOuterVolume() const
+    {
+        return m_config.m_outerVolume;
+    }
+
+    void MiniAudioPlaybackComponentController::SetOuterVolume(const float outerVolume)
+    {
+        m_config.m_outerVolume = AZ::GetClamp(outerVolume, 0.f, 100.f);
+        OnConfigurationUpdated();
+    }
+
+    bool MiniAudioPlaybackComponentController::GetFixedDirecion() const
+    {
+        return m_config.m_fixedDirection;
+    }
+
+    void MiniAudioPlaybackComponentController::SetFixedDirecion(const bool fixedDirection)
+    {
+        m_config.m_fixedDirection = fixedDirection;
+    }
+
+    float MiniAudioPlaybackComponentController::GetDirectionalAttenuationFactor() const
+    {
+        return ma_sound_get_directional_attenuation_factor(m_sound.get());
+    }
+
+    void MiniAudioPlaybackComponentController::SetDirectionalAttenuationFactor(const float directionalAttenuationFactor)
+    {
+        m_config.m_directionalAttenuationFactor = directionalAttenuationFactor;
+        OnConfigurationUpdated();
+    }
+
+    AZ::Vector3 MiniAudioPlaybackComponentController::GetDirection() const
+    {
+        ma_vec3f direction = ma_sound_get_direction(m_sound.get());
+        return AZ::Vector3(direction.x, direction.y, direction.z);
+    }
+
+    void MiniAudioPlaybackComponentController::SetDirection(const AZ::Vector3 direction)
+    {
+        m_config.m_direction = direction;
+        AZ::Transform worldTm = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        OnWorldTransformChanged(worldTm);
+    }
+
     void MiniAudioPlaybackComponentController::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
@@ -168,6 +263,19 @@ namespace MiniAudio
         if (m_sound)
         {
             ma_sound_set_position(m_sound.get(), world.GetTranslation().GetX(), world.GetTranslation().GetY(), world.GetTranslation().GetZ());
+
+            // Set the forward direction for the sound source
+            AZ::Transform worldTm = AZ::Transform::CreateIdentity();
+            AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+            const AZ::Vector3 forward = worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f));
+            if (!m_config.m_fixedDirection)
+            {
+                ma_sound_set_direction(m_sound.get(), forward.GetX(), forward.GetY(), forward.GetZ());
+            }
+            else
+            {
+                ma_sound_set_direction(m_sound.get(), m_config.m_direction.GetX(), m_config.m_direction.GetY(), m_config.m_direction.GetZ());
+            }
         }
     }
 
@@ -232,6 +340,22 @@ namespace MiniAudio
                     ma_sound_set_min_distance(m_sound.get(), m_config.m_minimumDistance);
                     ma_sound_set_max_distance(m_sound.get(), m_config.m_maximumDistance);
                     ma_sound_set_attenuation_model(m_sound.get(), static_cast<ma_attenuation_model>(m_config.m_attenuationModel));
+                    ma_sound_set_directional_attenuation_factor(m_sound.get(), m_config.m_directionalAttenuationFactor);
+
+                    // Set the forward direction for the sound source
+                    AZ::Transform worldTm = AZ::Transform::CreateIdentity();
+                    AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+                    const AZ::Vector3 forward = worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f));
+                    if (!m_config.m_fixedDirection)
+                    {
+                        ma_sound_set_direction(m_sound.get(), forward.GetX(), forward.GetY(), forward.GetZ());
+                    }
+                    else
+                    {
+                        ma_sound_set_direction(m_sound.get(), m_config.m_direction.GetX(), m_config.m_direction.GetY(), m_config.m_direction.GetZ());
+                    }
+
+                    ma_sound_set_cone(m_sound.get(), m_config.m_innerAngleInRadians, m_config.m_outerAngleInRadians, (m_config.m_outerVolume/100.f));
                 }
 
                 if (m_config.m_autoFollowEntity)

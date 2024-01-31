@@ -46,6 +46,17 @@ namespace MiniAudio
                 ->Attribute(AZ::Script::Attributes::Category, "MiniAudio Listener")
                 ->Event("SetPosition", &MiniAudioListenerRequests::SetPosition)
                 ->Event("SetFollowEntity", &MiniAudioListenerRequests::SetFollowEntity)
+                ->Event("Get Channel Count", &MiniAudioListenerRequests::GetChannelCount)
+                ->Event("Get Inner Cone Angle In Radians", &MiniAudioListenerRequests::GetInnerAngleInRadians)
+                ->Event("Set Inner Cone Angle In Radians", &MiniAudioListenerRequests::SetInnerAngleInRadians)
+                ->Event("Get Inner Cone Angle In Degrees", &MiniAudioListenerRequests::GetInnerAngleInDegrees)
+                ->Event("Set Inner Cone Angle In Degrees", &MiniAudioListenerRequests::SetInnerAngleInDegrees)
+                ->Event("Get Outer Cone Angle In Radians", &MiniAudioListenerRequests::GetOuterAngleInRadians)
+                ->Event("Set Outer Cone Angle In Radians", &MiniAudioListenerRequests::SetOuterAngleInRadians)
+                ->Event("Get Outer Cone Angle In Degrees", &MiniAudioListenerRequests::GetOuterAngleInDegrees)
+                ->Event("Set Outer Cone Angle In Degrees", &MiniAudioListenerRequests::SetOuterAngleInDegrees)
+                ->Event("Get Percent Volume Outside Outer Cone", &MiniAudioListenerRequests::GetOuterVolume)
+                ->Event("Set Percent Volume Outside Outer Cone", &MiniAudioListenerRequests::SetOuterVolume)
                 ;
 
             behaviorContext->Class<MiniAudioListenerComponent>()->RequestBus("MiniAudioListenerRequestBus");

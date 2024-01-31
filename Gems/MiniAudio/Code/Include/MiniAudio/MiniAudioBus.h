@@ -25,15 +25,18 @@ namespace MiniAudio
         virtual ma_engine* GetSoundEngine() = 0;
 
         //! Sets the volume for the entire sound engine.
-        //! @param scale 0 resulting in silence and anything above 1 resulting in amplification 
+        //! @param scale 0 resulting in silence and anything above 1 resulting in amplification
         virtual void SetGlobalVolume(float scale) = 0;
-        
+
         //! @return the current volume set for the whole sound engine
         virtual float GetGlobalVolume() const = 0;
 
         //! Sets the volume for the entire sound engine using decibel scale.
         //! @param decibels gain in decibels
         virtual void SetGlobalVolumeInDecibels(float decibels) = 0;
+
+        //! @return the number of output channels for the sound engine
+        virtual AZ::u32 GetChannelCount() const = 0;
     };
 
     class MiniAudioBusTraits

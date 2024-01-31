@@ -13,7 +13,7 @@
 // warning C4456: declaration of 'z' hides previous local declaration
 // warning C4457: declaration of 'n' hides function parameter
 // warning C4245: '=': conversion from 'int' to 'uint32', signed /unsigned mismatch
-AZ_PUSH_DISABLE_WARNING(4701 4244 4456 4457 4245, "-Wuninitialized") 
+AZ_PUSH_DISABLE_WARNING(4701 4244 4456 4457 4245, "-Wuninitialized")
 
 extern "C" {
 

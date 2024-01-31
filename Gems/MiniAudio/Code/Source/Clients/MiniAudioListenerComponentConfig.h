@@ -27,5 +27,14 @@ namespace MiniAudio
         AZ::EntityId m_followEntity;
 
         AZ::u32 m_listenerIndex = 0;
+
+        //! Inner cone angle
+        float m_innerAngleInRadians = 3.f/5.f * AZ::Constants::TwoPi;
+        float m_innerAngleInDegrees = m_innerAngleInRadians * 360.f/AZ::Constants::TwoPi;
+        //! Outer cone angle
+        float m_outerAngleInRadians = 1.5f * AZ::Constants::Pi;
+        float m_outerAngleInDegrees = m_outerAngleInRadians * 360.f/AZ::Constants::TwoPi;
+        //! Volume outside of outer cone
+        float m_outerVolume = 50.0f;
     };
 } // namespace MiniAudio

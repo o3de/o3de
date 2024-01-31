@@ -57,6 +57,22 @@ namespace MiniAudio
                 ->Event("IsLooping", &MiniAudioPlaybackRequests::IsLooping)
                 ->Event("SetSoundAsset", &MiniAudioPlaybackRequests::SetSoundAssetRef)
                 ->Event("GetSoundAsset", &MiniAudioPlaybackRequests::GetSoundAssetRef)
+                ->Event("Get Inner Cone Angle In Radians", &MiniAudioPlaybackRequests::GetInnerAngleInRadians)
+                ->Event("Set Inner Cone Angle In Radians", &MiniAudioPlaybackRequests::SetInnerAngleInRadians)
+                ->Event("Get Inner Cone Angle In Degrees", &MiniAudioPlaybackRequests::GetInnerAngleInDegrees)
+                ->Event("Set Inner Cone Angle In Degrees", &MiniAudioPlaybackRequests::SetInnerAngleInDegrees)
+                ->Event("Get Outer Cone Angle In Radians", &MiniAudioPlaybackRequests::GetOuterAngleInRadians)
+                ->Event("Set Outer Cone Angle In Radians", &MiniAudioPlaybackRequests::SetOuterAngleInRadians)
+                ->Event("Get Outer Cone Angle In Degrees", &MiniAudioPlaybackRequests::GetOuterAngleInDegrees)
+                ->Event("Set Outer Cone Angle In Degrees", &MiniAudioPlaybackRequests::SetOuterAngleInDegrees)
+                ->Event("Get Percent Volume Outside Outer Cone", &MiniAudioPlaybackRequests::GetOuterVolume)
+                ->Event("Set Percent Volume Outside Outer Cone", &MiniAudioPlaybackRequests::SetOuterVolume)
+                ->Event("Get Fixed Direction", &MiniAudioPlaybackRequests::GetFixedDirecion)
+                ->Event("Set Fixed Direction", &MiniAudioPlaybackRequests::SetFixedDirecion)
+                ->Event("Get Directional Attenuation Factor", &MiniAudioPlaybackRequests::GetDirectionalAttenuationFactor)
+                ->Event("Set Directional Attenuation Factor", &MiniAudioPlaybackRequests::SetDirectionalAttenuationFactor)
+                ->Event("Get Direction", &MiniAudioPlaybackRequests::GetDirection)
+                ->Event("Set Direction", &MiniAudioPlaybackRequests::SetDirection)
             ;
 
             behaviorContext->Class<MiniAudioPlaybackComponentController>()->RequestBus("MiniAudioPlaybackRequestBus");
