@@ -240,7 +240,7 @@ namespace MiniAudio
         m_config.m_direction = direction;
         AZ::Transform worldTm = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        OnWorldTransformChanged(worldTm);
+        ma_sound_set_direction(m_sound.get(), m_config.m_direction.GetX(), m_config.m_direction.GetY(), m_config.m_direction.GetZ());
     }
 
     void MiniAudioPlaybackComponentController::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -265,16 +265,13 @@ namespace MiniAudio
             ma_sound_set_position(m_sound.get(), world.GetTranslation().GetX(), world.GetTranslation().GetY(), world.GetTranslation().GetZ());
 
             // Set the forward direction for the sound source
-            AZ::Transform worldTm = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-            const AZ::Vector3 forward = worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f));
             if (!m_config.m_fixedDirection)
             {
-                ma_sound_set_direction(m_sound.get(), forward.GetX(), forward.GetY(), forward.GetZ());
-            }
-            else
-            {
-                ma_sound_set_direction(m_sound.get(), m_config.m_direction.GetX(), m_config.m_direction.GetY(), m_config.m_direction.GetZ());
+                AZ::Transform worldTm = AZ::Transform::CreateIdentity();
+                AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+                ma_sound_set_direction(m_sound.get(), worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetX(),
+                                                      worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetY(),
+                                                      worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetZ());
             }
         }
     }
@@ -343,12 +340,13 @@ namespace MiniAudio
                     ma_sound_set_directional_attenuation_factor(m_sound.get(), m_config.m_directionalAttenuationFactor);
 
                     // Set the forward direction for the sound source
-                    AZ::Transform worldTm = AZ::Transform::CreateIdentity();
-                    AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-                    const AZ::Vector3 forward = worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f));
                     if (!m_config.m_fixedDirection)
                     {
-                        ma_sound_set_direction(m_sound.get(), forward.GetX(), forward.GetY(), forward.GetZ());
+                        AZ::Transform worldTm = AZ::Transform::CreateIdentity();
+                        AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+                        ma_sound_set_direction(m_sound.get(), worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetX(),
+                                                              worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetY(),
+                                                              worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetZ());
                     }
                     else
                     {
