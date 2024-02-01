@@ -91,8 +91,20 @@ namespace MiniAudio
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_minimumDistance, "Min Distance", "Minimum distance for attenuation.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_maximumDistance, "Max Distance", "Maximum distance for attenuation.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_innerAngleInDegrees, "Inner Cone Angle", "Sets the sound source's inner cone angle in Degrees.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_outerAngleInDegrees, "Outer Cone Angle", "Sets the sound source's outer cone angle in Degrees.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_outerVolume, "Outer Volume", "Sets the volume of the sound source outside of the outer cone.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
 
                     ;
             }

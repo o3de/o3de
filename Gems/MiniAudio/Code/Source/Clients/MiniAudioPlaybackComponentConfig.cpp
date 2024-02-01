@@ -31,20 +31,8 @@ namespace MiniAudio
                 ->Field("Min Distance", &MiniAudioPlaybackComponentConfig::m_minimumDistance)
                 ->Field("Max Distance", &MiniAudioPlaybackComponentConfig::m_maximumDistance)
                 ->Field("Inner Cone Angle", &MiniAudioPlaybackComponentConfig::m_innerAngleInDegrees)
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                 ->Field("Outer Cone Angle", &MiniAudioPlaybackComponentConfig::m_outerAngleInDegrees)
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                 ->Field("Outer Volume", &MiniAudioPlaybackComponentConfig::m_outerVolume)
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                 ;
         }
     }
