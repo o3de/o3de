@@ -64,10 +64,15 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
 
+    default_base_path =  ctx.project_path
+
+    if not tools_build_path:
+        tools_build_path = default_base_path / 'build/tools'
+    elif not tools_build_path.is_absolute():
+        tools_build_path = default_base_path / tools_build_path
+
     tools_build_path_str = str(tools_build_path)
     ios_build_folder_str = str(target_ios_project_path)
-
-    default_base_path =  ctx.project_path
 
     # Resolve (if possible) and validate any provided seedlist files
     validated_seedslist_paths = exp.validate_project_artifact_paths(project_path=ctx.project_path,

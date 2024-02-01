@@ -10,6 +10,7 @@ import pytest
 import pathlib
 from unittest.mock import patch, create_autospec, MagicMock, Mock, PropertyMock
 from o3de.export_project import O3DEScriptExportContext
+from o3de.command_utils import O3DEConfig
 import o3de.export_project as exp
 import shutil
 import logging
@@ -269,3 +270,369 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
                                   logger=mock_logger)
                 mock_export_func.reset_mock()
 
+
+@pytest.mark.parametrize("should_build_tools_flag", [True,False])
+def test_build_tool_combinations(tmp_path, should_build_tools_flag):
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+
+    test_o3de_base_path = test_project_path
+    test_relative_base_path = pathlib.PurePath('this/is/relative')
+    test_absolute_base_path  = tmp_path / "other"
+
+    assert test_absolute_base_path.is_absolute()
+
+    mock_logger = create_autospec(logging.Logger)
+    test_output_path = tmp_path / "output"
+
+    mock_config = create_autospec(O3DEConfig)
+    
+    expect_toolchain_build_called = should_build_tools_flag
+
+    with patch('o3de.manifest.is_sdk_engine', return_value=False) as mock_is_sdk_engine,\
+         patch('o3de.export_project.validate_project_artifact_paths', return_value=[]) as mock_validate_project_artifacts,\
+         patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
+         patch('o3de.export_project.build_export_toolchain') as mock_build_export_toolchain,\
+         patch('o3de.export_project.build_game_targets') as mock_build_game_targets,\
+         patch('o3de.export_project.get_asset_processor_batch_path') as mock_get_asset_processor_path,\
+         patch('o3de.export_project.build_assets') as mock_build_assets,\
+         patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
+         patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
+         patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+         patch('pathlib.Path.is_dir', return_value=True),\
+         patch('shutil.make_archive'),\
+         patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
+        
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+        for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
+
+            if base_path:
+                test_tools_build_path = (base_path / "build" / 'tools') 
+
+                if test_tools_build_path.is_absolute():
+                    test_tools_build_path.mkdir(parents=True)
+                    
+            else:
+                test_tools_build_path = None
+
+            buildconf = 'release'
+        
+            exp_ios.export_ios_xcode_project(mock_ctx,
+                            test_output_path,
+                            [],
+                            [],
+                            [],
+                            should_build_tools = should_build_tools_flag,
+                            should_build_all_assets = True,
+                            build_config = buildconf,
+                            tool_config = 'profile',
+                            tools_build_path = test_tools_build_path,
+                            max_bundle_size = 2048,
+                            fail_on_asset_errors = False,
+                            logger=mock_logger)
+                
+            if expect_toolchain_build_called:
+                if not test_tools_build_path:
+                    test_tools_build_path = test_o3de_base_path / 'build/tools'
+                elif not test_tools_build_path.is_absolute():
+                    test_tools_build_path  = test_o3de_base_path / test_tools_build_path
+
+                arg_gen_list = mock_process_command.call_args_list[0][0][0]
+
+                assert arg_gen_list[0] == 'cmake'
+                assert arg_gen_list[1] == '-B'
+                assert arg_gen_list[2] == str(test_tools_build_path)
+                assert arg_gen_list[3] == '-G'
+                assert arg_gen_list[4] == 'Xcode'
+            
+            mock_process_command.reset_mock()
+            mock_build_export_toolchain.reset_mock()
+
+
+@pytest.mark.parametrize("should_build_tools_flag", [True,False])
+def test_asset_bundler_combinations(tmp_path, should_build_tools_flag):
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+
+
+    test_o3de_base_path = test_project_path
+    test_relative_base_path = pathlib.PurePath('this/is/relative')
+    test_absolute_base_path  = tmp_path / "other"
+
+    assert test_absolute_base_path.is_absolute()
+
+    mock_logger = create_autospec(logging.Logger)
+    test_output_path = tmp_path / "output"
+
+    mock_config = create_autospec(O3DEConfig)
+    
+    with patch('o3de.export_project.validate_project_artifact_paths', return_value=[]) as mock_validate_project_artifacts,\
+         patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
+         patch('o3de.export_project.build_export_toolchain') as mock_build_export_toolchain,\
+         patch('o3de.export_project.build_game_targets') as mock_build_game_targets,\
+         patch('o3de.export_project.get_asset_processor_batch_path') as mock_get_asset_processor_path,\
+         patch('o3de.export_project.build_assets') as mock_build_assets,\
+         patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
+         patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
+         patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+         patch('pathlib.Path.is_dir', return_value=True),\
+         patch('shutil.make_archive'),\
+         patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
+        
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+        for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
+
+            test_tools_build_path = None if not base_path else (base_path / "build" / "tools") 
+
+
+            if test_tools_build_path and test_tools_build_path.is_absolute():
+                test_tools_build_path.mkdir(exist_ok=True, parents=True)
+
+            buildconf = 'release'
+        
+            exp_ios.export_ios_xcode_project(mock_ctx,
+                            test_output_path,
+                            [],
+                            [],
+                            [],
+                            should_build_tools = should_build_tools_flag,
+                            should_build_all_assets = True,
+                            build_config = buildconf,
+                            tool_config = 'profile',
+                            tools_build_path = test_tools_build_path,
+                            max_bundle_size = 2048,
+                            fail_on_asset_errors = False,
+                            logger=mock_logger)
+                
+            selected_tools_build_path = test_tools_build_path 
+
+            if not selected_tools_build_path:
+                selected_tools_build_path = test_o3de_base_path / 'build/tools'
+            
+            if not selected_tools_build_path.is_absolute():
+                selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
+            
+            mock_bundle_assets.assert_called_once_with(ctx=mock_ctx,
+                                                    selected_platforms=['ios'],
+                                                    seedlist_paths=[],
+                                                    seedfile_paths=[],
+                                                    tools_build_path=selected_tools_build_path,
+                                                    engine_centric=False,
+                                                    asset_bundling_path=test_project_path/'AssetBundling',
+                                                    using_installer_sdk=False,
+                                                    tool_config='profile',
+                                                    max_bundle_size=2048)
+                    
+            mock_get_asset_bundler_path.reset_mock()
+            mock_bundle_assets.reset_mock()
+            mock_build_export_toolchain.reset_mock()
+
+
+@pytest.mark.parametrize("test_seedlists, test_seedfiles, test_levelnames",[
+    pytest.param([],[],[]),
+
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[pathlib.PurePath("/test1/test.seed")],[]),
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[pathlib.PurePath("/test1/test.seed")],["main"]),
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[],["main"]),
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[],["MAIN"]),
+    pytest.param([pathlib.PurePath("/test/test.seedlist")],[],["main",'second'])
+])
+def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfiles, test_levelnames):
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+
+    test_o3de_base_path = test_project_path
+    test_relative_base_path = pathlib.PurePath('this/is/relative')
+    test_absolute_base_path  = tmp_path / "other"
+
+    assert test_absolute_base_path.is_absolute()
+
+    test_output_path = tmp_path / "output"
+    
+    mock_logger = create_autospec(logging.Logger)
+
+    mock_config = create_autospec(O3DEConfig)
+    
+    with patch('o3de.manifest.is_sdk_engine', return_value=True) as mock_is_sdk_engine,\
+         patch('o3de.export_project.has_monolithic_artifacts', return_value=True) as mock_has_mono_artifacts,\
+         patch('o3de.export_project.get_platform_installer_folder_name', return_value="Windows") as mock_platform_folder_name,\
+         patch('o3de.export_project.validate_project_artifact_paths', return_value=test_seedlists) as mock_validate_project_artifacts,\
+         patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
+         patch('o3de.export_project.build_export_toolchain') as mock_build_export_toolchain,\
+         patch('o3de.export_project.build_game_targets') as mock_build_game_targets,\
+         patch('o3de.export_project.get_asset_processor_batch_path') as mock_get_asset_processor_path,\
+         patch('o3de.export_project.build_assets') as mock_build_assets,\
+         patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
+         patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+         patch('shutil.make_archive'),\
+         patch('argparse.ArgumentParser.parse_args'),\
+         patch('pathlib.Path.is_file'),\
+         patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
+        
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+
+        exp_ios.export_ios_xcode_project(mock_ctx,
+                                test_output_path,
+                                test_seedlists,
+                                test_seedfiles,
+                                test_levelnames,
+                                True,
+                                True,
+                                'profile',
+                                'profile',
+                                None,
+                                2048,
+                                False,
+                                logger=mock_logger)
+        
+        combined_seedfiles = test_seedfiles 
+        for ln in test_levelnames:
+            combined_seedfiles.append(test_project_path / f'Cache/ios/levels' / ln.lower() / (ln.lower() + ".spawnable"))
+        
+
+        # Because this script uses set for the level names, we have to manually inspect the arguments
+        # Otherwise lists are incorrectly labeled as mismatching
+        _, kwargs = mock_bundle_assets.call_args
+        
+        assert kwargs['ctx'] == mock_ctx
+        assert kwargs['selected_platforms'] == ['ios']
+        assert sorted(kwargs['seedlist_paths']) == sorted(test_seedlists)
+        assert sorted(kwargs['seedfile_paths']) == sorted(combined_seedfiles)
+        assert kwargs['tools_build_path'] == test_o3de_base_path / 'build/tools'
+        assert kwargs['engine_centric'] == False
+        assert kwargs['asset_bundling_path'] == test_project_path / 'AssetBundling'
+        assert kwargs['using_installer_sdk'] == False
+        assert kwargs['tool_config'] == 'profile'
+        assert kwargs['max_bundle_size'] == 2048
+
+
+@pytest.mark.parametrize("should_build_tools_flag", [True,False])
+def test_asset_processor_combinations(tmp_path, should_build_tools_flag):
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+
+    is_engine_centric=False
+
+    test_o3de_base_path = test_project_path 
+    test_relative_base_path = pathlib.PurePath('this/is/relative')
+    test_absolute_base_path  = tmp_path / "other"
+
+    assert test_absolute_base_path.is_absolute()
+
+    mock_logger = create_autospec(logging.Logger)
+    test_output_path = tmp_path / "output"
+
+    mock_config = create_autospec(O3DEConfig)
+    
+    with patch('o3de.export_project.validate_project_artifact_paths', return_value=[]) as mock_validate_project_artifacts,\
+         patch('o3de.export_project.kill_existing_processes') as mock_kill_processes,\
+         patch('o3de.export_project.build_export_toolchain') as mock_build_export_toolchain,\
+         patch('o3de.export_project.build_game_targets') as mock_build_game_targets,\
+         patch('o3de.export_project.get_asset_processor_batch_path') as mock_get_asset_processor_path,\
+         patch('o3de.export_project.build_assets') as mock_build_assets,\
+         patch('o3de.export_project.get_asset_bundler_batch_path') as mock_get_asset_bundler_path,\
+         patch('o3de.export_project.bundle_assets') as mock_bundle_assets,\
+         patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
+         patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
+         patch('shutil.make_archive'),\
+         patch('pathlib.Path.is_dir', return_value=True),\
+         patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
+        
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.project_name = test_project_name
+        for base_path in [None, test_o3de_base_path, test_absolute_base_path, test_relative_base_path]:
+
+            test_tools_build_path = None if not base_path else (base_path / "build" / "tools") 
+
+            if test_tools_build_path and test_tools_build_path.is_absolute():
+                test_tools_build_path.mkdir(exist_ok=True, parents=True)
+
+            buildconf = 'release'
+
+            
+            exp_ios.export_ios_xcode_project(mock_ctx,
+                            test_output_path,
+                            [],
+                            [],
+                            [],
+                            should_build_tools = should_build_tools_flag,
+                            should_build_all_assets = True,
+                            build_config = buildconf,
+                            tool_config = 'profile',
+                            tools_build_path = test_tools_build_path,
+                            max_bundle_size = 2048,
+                            fail_on_asset_errors = False,
+                            logger=mock_logger)
+                
+            selected_tools_build_path = test_tools_build_path 
+
+            if not selected_tools_build_path:
+                selected_tools_build_path = test_o3de_base_path / 'build/tools'
+            
+            if not selected_tools_build_path.is_absolute():
+                selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
+            
+            mock_get_asset_processor_path.assert_called_once_with(tools_build_path=selected_tools_build_path,
+                                                                    using_installer_sdk=False,
+                                                                    tool_config='profile',
+                                                                    required=True)
+                
+            mock_build_assets.assert_called_once_with(ctx=mock_ctx,
+                                                    tools_build_path=selected_tools_build_path,
+                                                    engine_centric=False,
+                                                    fail_on_ap_errors=False,
+                                                    using_installer_sdk=False,
+                                                    tool_config='profile',
+                                                    selected_platforms=['ios'],
+                                                    logger=mock_logger)
+                    
+            mock_get_asset_processor_path.reset_mock()
+            mock_build_assets.reset_mock()
+
+            # now test when we skip asset building
+            
+            exp_ios.export_ios_xcode_project(mock_ctx,
+                            test_output_path,
+                            [],
+                            [],
+                            [],
+                            should_build_tools = should_build_tools_flag,
+                            should_build_all_assets = False,
+                            build_config = buildconf,
+                            tool_config = 'profile',
+                            tools_build_path = test_tools_build_path,
+                            max_bundle_size = 2048,
+                            fail_on_asset_errors = False,
+                            logger=mock_logger)
+                
+            selected_tools_build_path = test_tools_build_path
+
+            if not selected_tools_build_path:
+                selected_tools_build_path = test_o3de_base_path / 'build/tools'
+            
+            if not selected_tools_build_path.is_absolute():
+                selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
+            
+            mock_get_asset_processor_path.assert_not_called()
+            mock_build_assets.assert_not_called()
+                    
+            mock_get_asset_processor_path.reset_mock()
+            mock_build_assets.reset_mock()
