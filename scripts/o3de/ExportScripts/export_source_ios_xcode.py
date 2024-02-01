@@ -10,16 +10,29 @@ import argparse
 import logging
 import os
 import sys
+import shutil
 
 import o3de.export_project as exp
+import export_utility as eutil
 import o3de.command_utils as command_utils
 import pathlib
 
+ASSET_PLATFORM = 'ios'
+
+from typing import List
+
 def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
-                             tools_build_folder: pathlib.Path,
-                             ios_build_folder: pathlib.Path,
-                             should_build_tools:bool = True,
-                             skip_asset_processing: bool = False,
+                             target_ios_project_path: pathlib.Path,
+                             seedlist_paths: List[pathlib.Path],
+                             seedfile_paths: List[pathlib.Path],
+                             level_names: List[str],
+                             should_build_tools:bool,
+                             should_build_all_assets: bool,
+                             build_config,
+                             tool_config,
+                             tools_build_path: pathlib.Path,
+                             max_bundle_size: int,
+                             fail_on_asset_errors: bool,
                              logger: logging.Logger|None = None):
     """
     This function serves as an initial exporter for project to the iOS platform. The steps in this code will generate
@@ -32,7 +45,7 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
     Instructions to handle iOS projects in Xcode will be provided soon. This export function is currently experimental.
 
     :param ctx:                                     The O3DE Script context provided by the export-command
-    :param tools_build_folder:                      Optional build path to build the tools. (see default_tools_path below)
+    :param tools_build_path:                        Optional build path to build the tools. (see default_tools_path below)
     :param ios_build_folder:                        The base output path of the generated Xcode Project file for iOS
     :param should_build_tools:                      Option to build the export process dependent tools (AssetProcessor, AssetBundlerBatch, and dependencies)
     :param should_build_all_assets:                 Option to process all the assets for the game
@@ -44,21 +57,35 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
 
-    tools_build_folder_str = str(tools_build_folder)
-    ios_build_folder_str = str(ios_build_folder)
+    tools_build_path_str = str(tools_build_path)
+    ios_build_folder_str = str(target_ios_project_path)
+
+    default_base_path =  ctx.project_path
+
+    # Resolve (if possible) and validate any provided seedlist files
+    validated_seedslist_paths = exp.validate_project_artifact_paths(project_path=ctx.project_path,
+                                                                    artifact_paths=seedlist_paths)
+    
+    # Preprocess the seed file paths in case there are any wildcard patterns to use
+    preprocessed_seedfile_paths = exp.preprocess_seed_path_list(project_path=ctx.project_path,
+                                                                paths=seedfile_paths)
+    
+    eutil.process_level_names(ctx, preprocessed_seedfile_paths, level_names, ASSET_PLATFORM)
 
     # Optionally build the toolchain needed to process the assets
+    # note: For now, I am keeping the tool building logic restricted on iOS, b/c atm it's unreliable for most configurations besides this one
     if should_build_tools:
-        exp.process_command(["cmake", "-B", tools_build_folder_str, '-G', "Xcode"], cwd=ctx.project_path)
+        exp.process_command(["cmake", "-B", tools_build_path_str, '-G', "Xcode"], cwd=ctx.project_path)
 
-        exp.process_command(["cmake", "--build", tools_build_folder_str, "--target", "AssetProcessorBatch", "AssetBundlerBatch", "--config", "profile"],
+        exp.process_command(["cmake", "--build", tools_build_path_str, "--target", "Editor", "AssetProcessor", "AssetBundler","AssetProcessorBatch", "AssetBundlerBatch", "--config", "profile"],
                     cwd=ctx.project_path)
         
     # Optionally process the assets
-    if not skip_asset_processing:
-        asset_processor_batch_path = exp.get_asset_processor_batch_path(tools_build_folder, required=True)
-        exp.process_command([ str(asset_processor_batch_path), '--platforms=ios',
-                        '--project-path', ctx.project_path ], cwd=ctx.project_path)
+    eutil.build_and_bundle_assets(ctx, should_build_all_assets, tools_build_path, False, 
+                                  tool_config, False, fail_on_asset_errors,
+                                  [ASSET_PLATFORM], validated_seedslist_paths, preprocessed_seedfile_paths, 
+                                  ctx.project_path/'AssetBundling', max_bundle_size,
+                                  logger)
 
     # Generate the Xcode project file for the O3DE project
     cmake_toolchain_path = ctx.engine_path / 'cmake/Platform/iOS/Toolchain_ios.cmake'
@@ -69,6 +96,26 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
 
     logger.info(f"Xcode project file should be generated now. Please check {ios_build_folder_str}")
 
+    xcode_build_common_args = ['xcodebuild', '-project', str(target_ios_project_path / f'{ctx.project_name}.xcodeproj'),
+                        '-scheme', f'{ctx.project_name}.GameLauncher', '-configuration', build_config, '-sdk',
+                        'iphoneos', '-allowProvisioningUpdates']
+
+    exp.process_command(xcode_build_common_args + ['clean'], cwd=ctx.project_path)
+    
+    exp.process_command(xcode_build_common_args + ['build'], cwd=ctx.project_path)
+    
+    # Note: This workaround enables the creation of an IPA file, even if xcode archive doesn't work, but will require manual upload
+    payload_path = target_ios_project_path / 'bin'/ build_config /'Payload'
+    payload_path_str = str(payload_path)
+    exp.process_command(['mkdir', payload_path_str], cwd=ctx.project_path)
+    exp.process_command(['cp', '-r', str(target_ios_project_path / 'bin'/ build_config / f'{ctx.project_name}.GameLauncher.app'), 
+                        str( payload_path / f'{ctx.project_name}.GameLauncher.app')], cwd=ctx.project_path)
+    
+    shutil.make_archive(payload_path, 'zip', root_dir=(payload_path.parent.resolve()))
+    ipa_path_str = str(target_ios_project_path / 'bin'/ build_config /f'{ctx.project_name}.GameLauncher.ipa')
+    exp.process_command(['mv', str(payload_path)+".zip", ipa_path_str])
+
+    logger.info(f"iOS IPA file should be generated now. Please check {ipa_path_str}")
 
 
 # This code is only run by the 'export-project' O3DE CLI command
@@ -98,33 +145,12 @@ if "o3de_context" in globals():
                     add_help=False
         )
 
-        parser.add_argument(exp.CUSTOM_SCRIPT_HELP_ARGUMENT, default=False, action='store_true', help='Show this help message and exit.')
-
-        export_config.add_boolean_argument(parser=parser,
-                                           key=exp.SETTINGS_OPTION_BUILD_TOOLS.key,
-                                           enable_override_arg=['-bt', '--build-tools'],
-                                           enable_override_desc="Enable the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
-                                                                "The tools will be built into the location specified by the '--tools-build-path' argument",
-                                           disable_override_arg=['-sbt', '--skip-build-tools'],
-                                           disable_override_desc="Skip the building of the O3DE toolchain executables (AssetBundlerBatch, AssetProcessorBatch) as part of the export process. "
-                                                                 "The tools must be already available at the location specified by the '--tools-build-path' argument.")
-
-        default_build_tools_path = export_config.get_value(exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.key, exp.SETTINGS_DEFAULT_BUILD_TOOLS_PATH.default)
-        parser.add_argument('-tbp', '--tools-build-path', type=pathlib.Path, default=pathlib.Path(default_build_tools_path),
-                            help=f'Designates where the build files for the O3DE toolchain are generated. If not specified, default is {default_build_tools_path}')
+        eutil.create_common_export_params_and_config(parser, export_config)
 
         default_ios_path = export_config.get_value(exp.SETTINGS_DEFAULT_IOS_BUILD_PATH.key, exp.SETTINGS_DEFAULT_IOS_BUILD_PATH.default)
         parser.add_argument('-ibp', '--ios-build-path', type=pathlib.Path, default=pathlib.Path(default_ios_path),
                             help=f'Designates where the build files for the O3DE toolchain are generated. If not specified, default is {default_ios_path}')
 
-        export_config.add_boolean_argument(parser=parser,
-                                           key=exp.SETTINGS_OPTION_BUILD_ASSETS.key,
-                                           enable_override_arg=['-assets', '--should-build-assets'],
-                                           enable_override_desc='Build and update all iOS assets before bundling.',
-                                           disable_override_arg=['-noassets', '--skip-build-assets'],
-                                           disable_override_desc='Skip building of iOS assets and use assets that were already built.')
-
-        parser.add_argument('-q', '--quiet', action='store_true', help='Suppresses logging information unless an error occurs.')
         if o3de_context is None:
             parser.print_help()
             exit(0)
@@ -152,10 +178,17 @@ if "o3de_context" in globals():
         o3de_logger.setLevel(logging.ERROR)
     try:
         export_ios_xcode_project(ctx=o3de_context,
-                                 tools_build_folder=args.tools_build_path,
-                                 ios_build_folder=args.ios_build_path,
+                                 target_ios_project_path=args.ios_build_path,
+                                 seedlist_paths=args.seedlist_paths,
+                                 seedfile_paths=args.seedfile_paths,
+                                 level_names=args.level_names,
                                  should_build_tools=option_build_tools,
-                                 skip_asset_processing=not option_build_assets,
+                                 should_build_all_assets=option_build_assets,
+                                 build_config=args.config,
+                                 tool_config=args.tool_config,
+                                 tools_build_path=args.tools_build_path,
+                                 max_bundle_size=args.max_bundle_size,
+                                 fail_on_asset_errors=args.fail_on_asset_errors,
                                  logger=o3de_logger)
     except exp.ExportProjectError as err:
         print(err)
