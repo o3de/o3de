@@ -1,8 +1,0 @@
-<RCC>
-  <qresource prefix="/Icons">
-      <file alias="SliceFavorite_Icon_Favorite">resources/SliceFavorite_Icon_Favorite.png</file>
-      <file alias="SliceFavorite_Icon_DynamicFavorite">resources/SliceFavorite_Icon_DynamicFavorite.png</file>
-      <file alias="SliceFavorite_Icon_Folder">resources/SliceFavorite_Icon_Folder.png</file>
-      <file alias="SliceFavorite_Icon_Manage">resources/SliceFavorite_Icon_Manage.png</file>
-  </qresource>
-</RCC>

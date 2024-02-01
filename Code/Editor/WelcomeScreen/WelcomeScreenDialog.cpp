@@ -220,16 +220,10 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
 
                     if (fullPath.contains(gamePath))
                     {
-                        if (gSettings.prefabSystem)
-                        {
-                            QIcon icon;
-                            icon.addFile(QString::fromUtf8(":/Level/level.svg"), QSize(), QIcon::Normal, QIcon::Off);
-                            ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(icon, name));
-                        }
-                        else
-                        {
-                            ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(name));
-                        }
+                        QIcon icon;
+                        icon.addFile(QString::fromUtf8(":/Level/level.svg"), QSize(), QIcon::Normal, QIcon::Off);
+                        ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(icon, name));
+
                         QFileInfo file(recentFile);
                         QDateTime dateTime = file.lastModified();
                         QString date = QLocale::system().toString(dateTime.date(), QLocale::ShortFormat) + " " +

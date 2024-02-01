@@ -884,8 +884,6 @@ namespace AzToolsFramework
         /// Returns the world-space position under the center of the render viewport.
         virtual AZ::Vector3 GetWorldPositionAtViewportCenter() { return AZ::Vector3::CreateZero(); }
 
-        virtual void InstantiateSliceFromAssetId(const AZ::Data::AssetId& /*assetId*/) {}
-
         /// Clears current redo stack
         virtual void ClearRedoStack() {}
     };

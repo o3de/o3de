@@ -91,19 +91,11 @@ private:
         bool m_stickDuplicate;
     };
 
-    struct SliceSettings
-    {
-        AZ_TYPE_INFO(SliceSettings, "{8505CCC1-874C-4389-B51A-B9E5FF70CFDA}")
-
-        bool m_slicesDynamicByDefault;
-    };
-
     GeneralSettings m_generalSettings;
     LevelSaveSettings m_levelSaveSettings;
     Messaging m_messaging;
     Undo m_undo;
     DeepSelection m_deepSelection;
-    SliceSettings m_sliceSettings;
     QIcon m_icon;
 };
 

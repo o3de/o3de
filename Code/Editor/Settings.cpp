@@ -572,9 +572,6 @@ void SEditorSettings::Save(bool isEditorClosing)
 
     // --- Settings Registry values
 
-    // Prefab System UI
-    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
-
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
@@ -591,10 +588,6 @@ void SEditorSettings::Load()
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     levelSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
-
-    // Load from Settings Registry
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     const int settingsVersion = s_editorSettings()->value(QStringLiteral("Settings/EditorSettingsVersion"), 0).toInt();
 

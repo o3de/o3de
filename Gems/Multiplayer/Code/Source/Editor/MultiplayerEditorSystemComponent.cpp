@@ -384,9 +384,7 @@ namespace Multiplayer
         const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (!prefabEditorEntityOwnershipInterface)
         {
-            bool prefabSystemEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            AZ_Error("MultiplayerEditor", !prefabSystemEnabled, "PrefabEditorEntityOwnershipInterface unavailable but prefabs are enabled");
+            AZ_Error("MultiplayerEditor", false, "PrefabEditorEntityOwnershipInterface unavailable!");
             return;
         }
         
@@ -784,13 +782,8 @@ namespace Multiplayer
                         AZ::EntityId selectedEntityId = selectedEntities.front();
                         bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
                         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-                        bool prefabSystemEnabled = false;
-                        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-                        if (!prefabSystemEnabled ||
-                            (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) &&
-                             !selectedEntityIsReadOnly))
+                        if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
                         {
                             ContextMenu_NewMultiplayerEntity(selectedEntityId, AZ::Vector3::CreateZero());
                         }
@@ -815,14 +808,8 @@ namespace Multiplayer
                         AZ::EntityId selectedEntityId = selectedEntities.front();
                         bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
                         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-                        bool prefabSystemEnabled = false;
-                        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-                        return (
-                            !prefabSystemEnabled ||
-                            (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) &&
-                             !selectedEntityIsReadOnly));
+                        return (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly);
                     }
 
                     return false;

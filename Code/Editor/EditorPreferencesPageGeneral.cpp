@@ -60,20 +60,13 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Field("DeepSelectionRange", &DeepSelection::m_deepSelectionRange)
         ->Field("StickDuplicate", &DeepSelection::m_stickDuplicate);
 
-    serialize.Class<SliceSettings>()
-        ->Version(1)
-        ->Field("DynamicByDefault", &SliceSettings::m_slicesDynamicByDefault);
-
     serialize.Class<CEditorPreferencesPage_General>()
         ->Version(1)
         ->Field("General Settings", &CEditorPreferencesPage_General::m_generalSettings)
         ->Field("Prefab Save Settings", &CEditorPreferencesPage_General::m_levelSaveSettings)
         ->Field("Messaging", &CEditorPreferencesPage_General::m_messaging)
         ->Field("Undo", &CEditorPreferencesPage_General::m_undo)
-        ->Field("Deep Selection", &CEditorPreferencesPage_General::m_deepSelection)
-        ->Field("Slice Settings", &CEditorPreferencesPage_General::m_sliceSettings);
-
-
+        ->Field("Deep Selection", &CEditorPreferencesPage_General::m_deepSelection);
 
     AZ::EditContext* editContext = serialize.GetEditContext();
     if (editContext)
@@ -119,9 +112,6 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 1000.0f);
 
-        editContext->Class<SliceSettings>("Slices", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SliceSettings::m_slicesDynamicByDefault, "New Slices Dynamic By Default", "When creating slices, they will be set to dynamic by default");
-
         editContext->Class<CEditorPreferencesPage_General>("General Editor Preferences", "Class for handling General Editor Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
@@ -129,8 +119,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Prefab Save Settings", "File>Save")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_messaging, "Messaging", "Messaging")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_deepSelection, "Selection", "Selection")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_sliceSettings, "Slices", "Slice Settings");
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_deepSelection, "Selection", "Selection");
     }
 }
 
@@ -183,9 +172,6 @@ void CEditorPreferencesPage_General::OnApply()
     //deep selection
     gSettings.deepSelectionSettings.fRange = m_deepSelection.m_deepSelectionRange;
     gSettings.deepSelectionSettings.bStickDuplicate = m_deepSelection.m_stickDuplicate;
-
-    //slices
-    gSettings.sliceSettings.dynamicByDefault = m_sliceSettings.m_slicesDynamicByDefault;
 }
 
 void CEditorPreferencesPage_General::InitializeSettings()
@@ -217,7 +203,4 @@ void CEditorPreferencesPage_General::InitializeSettings()
     //deep selection
     m_deepSelection.m_deepSelectionRange = gSettings.deepSelectionSettings.fRange;
     m_deepSelection.m_stickDuplicate = gSettings.deepSelectionSettings.bStickDuplicate;
-
-    //slices
-    m_sliceSettings.m_slicesDynamicByDefault = gSettings.sliceSettings.dynamicByDefault;
 }

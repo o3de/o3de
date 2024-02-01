@@ -102,18 +102,8 @@ namespace AzFramework
         /// Returns true if Editor Mode Feedback is enabled
         virtual bool IsEditorModeFeedbackEnabled() const { return false; }
 
-        /// Returns true if Prefab System is enabled, false if Legacy Slice System is enabled
-        virtual bool IsPrefabSystemEnabled() const { return true; }
-
         /// Returns true if the additional work in progress Prefab features are enabled, false otherwise
         virtual bool ArePrefabWipFeaturesEnabled() const { return false; }
-
-        /// Sets whether or not the Prefab System should be enabled.  The application will need to be restarted when this changes
-        virtual void SetPrefabSystemEnabled([[maybe_unused]] bool enable) {}
-
-        /// Returns true if Prefab System is enabled for use with levels, false if legacy level system is enabled (level.pak)
-        /// @deprecated Use 'IsPrefabSystemEnabled' instead
-        virtual bool IsPrefabSystemForLevelsEnabled() const { return false; }
 
         /// Returns true if code should assert when the Legacy Slice System is used
         virtual bool ShouldAssertForLegacySlicesUsage() const { return false; }

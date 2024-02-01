@@ -300,61 +300,6 @@ namespace AzToolsFramework
             IdToEntityMapping& assetEntityIdtoAssetEntityMapping,
             IdToInstanceAddressMapping& assetEntityIdtoInstanceAddressMapping);
 
-        /** 
-         * Defines a callback for PopulateFindSliceMenu. This assists in bridging module boundaries. If the AssetBrowser isn't open when PopulateFindSliceMenu
-         * is called, then it should be opened. This can only be done from a Sandbox module. PopulateFindSliceMenu is in AzToolsFramework and not Sandbox so it can
-         * share logic with similar menus, like the quick push menu.
-         */ 
-        typedef void(*SliceSelectedCallback)();
-
-        /**
-        * Populates two QMenus: one with sub-menu to select slices associated to the passed in entity list in the asset browser and one with a list of parents of the current entity.
-        * \param outerMenu The menu used as the parent for the go to slice menu.
-        * \param selectedEntity The Entity to use to populate menus with. If this has more than one entry, no menus will be created.
-        * \param sliceSelectedCallback Callback for when a slice is selected, run before the asset selection. This allows this functionality to bridge module
-        *                              boundaries. SliceUtilities is in AzToolsFramework, but the AssetBrowser largely exists in Sandbox.
-        */
-        void PopulateSliceSubMenus(QMenu& outerMenu, const AzToolsFramework::EntityIdList& inputEntities, SliceSelectedCallback sliceSelectedCallback, SliceSelectedCallback sliceRelationshipViewCallback);
-
-        /**
-        * Creates and popluates a menu item associted with the passed in entity.
-        * \param selectedEntity The Entity to use to populate the go to slice menu with.
-        * \param ancestor slice root ancestor to associate with this item
-        * \param menu pointer to menu to add this menu item to.
-        * \param indentation amount of whitespace to place in front of this item.
-        * \param icon image to display for this menu item.
-        * \param tooltip text to display when hovering over item
-        * \param sliceAssetId [out] sliceAssetId of the passed in ancestor.
-        */
-        QWidgetAction* MakeSliceMenuItem(const AZ::EntityId& selectedEntity, const AZ::SliceComponent::Ancestor& ancestor, QMenu* menu, int indentation, const QPixmap icon, QString tooltip, AZ::Data::AssetId& sliceAssetId);
-
-        /**
-         * Populates a QMenu with a sub-menu to select slices associated to the passed in entity list in the asset browser.
-         * \param outerMenu The menu used as the parent for the go to slice menu.
-         * \param selectedEntity The Entity to use to populate the go to slice menu with. 
-         * \param sliceSelectedCallback Callback for when a slice is selected, run before the asset selection. This allows this functionality to bridge module
-         *                              boundaries. SliceUtilities is in AzToolsFramework, but the AssetBrowser largely exists in Sandbox.
-         */
-        void PopulateFindSliceMenu(QMenu& outerMenu, const AZ::EntityId& selectedEntity, const AZ::SliceComponent::EntityAncestorList& ancestors, SliceSelectedCallback sliceSelectedCallback);
-
-        /**
-        * Populates a QMenu with a sub-menu to select slices associated to the passed in entity list in the slice relationship view.
-        * \param outerMenu The menu used as the parent for the go to slice menu.
-        * \param selectedEntity The Entity to use to populate the go to slice menu with.
-        * \param sliceSelectedCallback Callback for when a slice is selected, run before the asset selection. This allows this functionality to bridge module
-        *                              boundaries. SliceUtilities is in AzToolsFramework, but the AssetBrowser largely exists in Sandbox.
-        */
-        void PopulateSliceRelationshipViewMenu(QMenu& outerMenu, const AZ::EntityId& selectedEntity, const AZ::SliceComponent::EntityAncestorList& ancestors, SliceSelectedCallback sliceSelectedCallback);
-
-        /**
-        * Populates a QMenu with a sub-menu to reassign a slices root ancestor to a new base, this operation directly affects the slice asset file
-        * \param outerMenu The menu used as the parent for the go to slice menu.
-        * \param selectedEntities The entities selected and used to populate the menu
-        * \param selectedTransformHierarchyEntities The selected entities and all of their children
-        * \param headerText Optional header text
-        */
-        void PopulateDetachMenu(QMenu& outerMenu, const AzToolsFramework::EntityIdList& selectedEntities, const AzToolsFramework::EntityIdSet& selectedTransformHierarchyEntities, const AZStd::string& headerText = "Detach");
-
         /**
         * Save slice overrides using the hot key.
         * \param inputEntities list of entities whose overrides need to be pushed.

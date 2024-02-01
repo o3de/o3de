@@ -36,105 +36,30 @@ namespace LegacyLevelSystem
 static constexpr const char* ArchiveExtension = ".pak";
 
 //////////////////////////////////////////////////////////////////////////
+
+// TODO - Remove this function altogether?
 bool CLevelInfo::OpenLevelPak()
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    // The prefab system doesn't use level.pak
-    if (usePrefabSystemForLevels)
-    {
-        return false;
-    }
-
-    AZ::IO::Path levelPak(m_levelPath);
-    levelPak /= "level.pak";
-    AZ::IO::FixedMaxPathString fullLevelPakPath;
-    bool bOk = gEnv->pCryPak->OpenPack(levelPak.Native(), nullptr, &fullLevelPakPath, false);
-    m_levelPakFullPath.assign(fullLevelPakPath.c_str(), fullLevelPakPath.size());
-    return bOk;
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+// TODO - Remove this function altogether?
 void CLevelInfo::CloseLevelPak()
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    // The prefab system doesn't use level.pak
-    if (usePrefabSystemForLevels)
-    {
-        return;
-    }
-
-    if (!m_levelPakFullPath.empty())
-    {
-        gEnv->pCryPak->ClosePack(m_levelPakFullPath.c_str());
-        m_levelPakFullPath.clear();
-    }
+    return;
 }
 
 //////////////////////////////////////////////////////////////////////////
+
+// TODO - Remove this function altogether?
 bool CLevelInfo::ReadInfo()
 {
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     // Set up a default game type for legacy code.
     m_defaultGameTypeName = "mission0";
 
-    if (usePrefabSystemForLevels)
-    {
-        return true;
-    }
-
-
-    AZStd::string levelPath(m_levelPath);
-    AZStd::string xmlFile(levelPath);
-    xmlFile += "/levelinfo.xml";
-    XmlNodeRef rootNode = GetISystem()->LoadXmlFromFile(xmlFile.c_str());
-
-    if (rootNode)
-    {
-        AZStd::string dataFile(levelPath);
-        dataFile += "/leveldataaction.xml";
-        XmlNodeRef dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
-        if (!dataNode)
-        {
-            dataFile = levelPath + "/leveldata.xml";
-            dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
-        }
-
-        if (dataNode)
-        {
-            XmlNodeRef gameTypesNode = dataNode->findChild("Missions");
-
-            if ((gameTypesNode != 0) && (gameTypesNode->getChildCount() > 0))
-            {
-                m_defaultGameTypeName.clear();
-
-                for (int i = 0; i < gameTypesNode->getChildCount(); i++)
-                {
-                    XmlNodeRef gameTypeNode = gameTypesNode->getChild(i);
-
-                    if (gameTypeNode->isTag("Mission"))
-                    {
-                        const char* gameTypeName = gameTypeNode->getAttr("Name");
-
-                        if (gameTypeName)
-                        {
-                            m_defaultGameTypeName = gameTypeName;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return rootNode != 0;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -416,8 +416,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SLevelSaveSettings levelSaveSettings;
 
-    bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
-
 private:
     void SaveValue(const char* sSection, const char* sKey, int value);
     void SaveValue(const char* sSection, const char* sKey, const QColor& value);

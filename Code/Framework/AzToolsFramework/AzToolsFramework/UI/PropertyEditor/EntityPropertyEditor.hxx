@@ -332,9 +332,6 @@ namespace AzToolsFramework
         // \param outAddress output parameter to be populated with the adjusted node address.
         void CalculateAndAdjustNodeAddress(const InstanceDataNode& componentFieldNode, AddressRootType rootType, InstanceDataNode::Address& outAddress) const;
 
-        // Custom function for comparing values of InstanceDataNodes
-        bool InstanceNodeValueHasNoPushableChange(const InstanceDataNode* sourceNode, const InstanceDataNode* targetNode);
-
         // Custom function for determining whether InstanceDataNodes are read-only
         bool QueryInstanceDataNodeReadOnlyStatus(const InstanceDataNode* node);
         bool QueryInstanceDataNodeReadOnlySetStatus(const InstanceDataNode* node);
@@ -645,7 +642,6 @@ namespace AzToolsFramework
         // Prefab interfaces
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
-        bool m_prefabsAreEnabled = false;
 
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
         bool m_selectionContainsReadOnlyEntity = false;

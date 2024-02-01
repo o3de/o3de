@@ -15,7 +15,6 @@ ly_add_target(
     NAMESPACE Legacy
     OUTPUT_SUBDIRECTORY EditorPlugins
     AUTOMOC
-    AUTOUIC
     AUTORCC
     FILES_CMAKE
         componententityeditorplugin_files.cmake

@@ -309,14 +309,6 @@ set(FILES
     Slice/SliceCompilation.cpp
     Slice/SliceTransaction.cpp
     Slice/SliceTransaction.h
-    Slice/SliceDependencyBrowserComponent.h
-    Slice/SliceDependencyBrowserComponent.cpp
-    Slice/SliceDependencyBrowserBus.h
-    Slice/SliceRelationshipNode.h
-    Slice/SliceRelationshipNode.cpp
-    Slice/SliceRequestBus.h
-    Slice/SliceRequestComponent.h
-    Slice/SliceRequestComponent.cpp
     Slice/SliceMetadataEntityContextBus.h
     Slice/SliceMetadataEntityContextComponent.h
     Slice/SliceMetadataEntityContextComponent.cpp
@@ -544,14 +536,6 @@ set(FILES
     UI/PropertyEditor/ThumbnailPropertyCtrl.cpp
     UI/Slice/SlicePushWidget.cpp
     UI/Slice/SlicePushWidget.hxx
-    UI/Slice/SliceOverridesNotificationWindow.cpp
-    UI/Slice/SliceOverridesNotificationWindow.hxx
-    UI/Slice/SliceOverridesNotificationWindowManager.cpp
-    UI/Slice/SliceOverridesNotificationWindowManager.hxx
-    UI/Slice/NotificationWindow.ui
-    UI/Slice/Constants.h
-    UI/Slice/SliceRelationshipWidget.cpp
-    UI/Slice/SliceRelationshipWidget.hxx
     UI/UICore/AspectRatioAwarePixmapWidget.hxx
     UI/UICore/AspectRatioAwarePixmapWidget.cpp
     UI/UICore/ClickableLabel.hxx

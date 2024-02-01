@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/EntityOutliner">
-        <file>EntityOutliner.qss</file>
-    </qresource>
-</RCC>

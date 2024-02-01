@@ -25,6 +25,7 @@ namespace UnitTest
     {
     }
 
+    // TODO - We can probably remove this now
     bool PrefabTestToolsApplication::IsPrefabSystemEnabled() const
     {
         // Make sure our prefab tests always run with prefabs enabled

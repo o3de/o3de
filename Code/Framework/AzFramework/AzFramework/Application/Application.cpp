@@ -769,16 +769,6 @@ namespace AzFramework
         return value;
     }
 
-    bool Application::IsPrefabSystemEnabled() const
-    {
-        bool value = true;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(value, ApplicationInternal::s_prefabSystemKey);
-        }
-        return value;
-    }
-
     bool Application::ArePrefabWipFeaturesEnabled() const
     {
         bool value = false;
@@ -787,20 +777,6 @@ namespace AzFramework
             registry->Get(value, ApplicationInternal::s_prefabWipSystemKey);
         }
         return value;
-    }
-
-    void Application::SetPrefabSystemEnabled(bool enable)
-    {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(ApplicationInternal::s_prefabSystemKey, enable);
-        }
-    }
-
-    bool Application::IsPrefabSystemForLevelsEnabled() const
-    {
-        AZ_Warning("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, please use 'IsPrefabSystemEnabled' instead.");
-        return IsPrefabSystemEnabled();
     }
 
     bool Application::ShouldAssertForLegacySlicesUsage() const

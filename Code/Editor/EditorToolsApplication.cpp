@@ -259,18 +259,7 @@ namespace EditorInternal
 
     const char* EditorToolsApplication::GetLevelExtension() const
     {
-        bool prefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (!prefabSystemEnabled)
-        {
-            return ".ly";
-        }
-        else
-        {
-            return ".prefab";
-        }
+        return ".prefab";
     }
 
     const char* EditorToolsApplication::GetOldCryLevelExtension() const

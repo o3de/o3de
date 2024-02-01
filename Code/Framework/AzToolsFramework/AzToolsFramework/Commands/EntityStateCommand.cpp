@@ -20,7 +20,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
-#include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
+//#include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 #include "PreemptiveUndoCache.h"
 
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -143,24 +143,8 @@ namespace AzToolsFramework
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityID);
         EntityStateCommandNotificationBus::Event(m_entityID, &EntityStateCommandNotificationBus::Events::PreRestore);
 
-        bool isSliceMetadataEntity = false;
-        SliceMetadataEntityContextRequestBus::BroadcastResult(isSliceMetadataEntity, &SliceMetadataEntityContextRequestBus::Events::IsSliceMetadataEntity, m_entityID);
         AZ::ObjectStream::InplaceLoadRootInfoCB inplaceLoadRootInfoCB;
-        if (isSliceMetadataEntity)
-        {
-            // Instead of deleting the entity, dtor it which will remove and disconnect it entirely
-            entity->~Entity();
-            
-            // placement new to default the entity
-            entity = new(entity) AZ::Entity();
 
-            // Set up a callback so we in-place load over this entity instead of creating it new
-            inplaceLoadRootInfoCB = [entity](void** rootAddress, const AZ::SerializeContext::ClassData** /*classData*/, const AZ::Uuid& /*classId*/, AZ::SerializeContext* /*context*/)
-            {
-                *rootAddress = entity;
-            };
-        }
-        else
         {
             // Normal entities will be deleted and loaded anew
             //AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::DeleteEntity, m_entityID);
@@ -185,7 +169,7 @@ namespace AzToolsFramework
             }
             else
             {
-                if (!m_entityContextId.IsNull() && !isSliceMetadataEntity)
+                if (!m_entityContextId.IsNull())
                 {
                     AzFramework::EntityContextRequestBus::Event(
                         m_entityContextId, &AzFramework::EntityContextRequestBus::Events::AddEntity, entity);

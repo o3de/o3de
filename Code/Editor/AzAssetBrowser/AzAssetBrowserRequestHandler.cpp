@@ -49,7 +49,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // AzQtComponents
@@ -343,18 +342,6 @@ namespace AzAssetBrowserRequestHandlerPrivate
                         {
                             editorComponent->SetPrimaryAsset(product->GetAssetId());
                         }
-                    }
-
-                    bool isPrefabSystemEnabled = false;
-                    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                        isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-                    if (!isPrefabSystemEnabled)
-                    {
-                        // Prepare undo command last so it captures the final state of the entity.
-                        EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(newEntity->GetId()));
-                        command->Capture(newEntity);
-                        command->SetParent(undo.GetUndoBatch());
                     }
 
                     ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, newEntity->GetId());
@@ -712,35 +699,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
             AZStd::vector<const ProductAssetBrowserEntry*> products;
             entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
-
-            // slice source files need to react by adding additional menu items, regardless of status of compile or presence of products.
-            if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str(), false))
-            {
-                AzToolsFramework::SliceUtilities::CreateSliceAssetContextMenu(menu, fullFilePath);
-
-                // SliceUtilities is in AZToolsFramework and can't open viewports, so add the relationship view open command here.
-                if (!products.empty())
-                {
-                    const ProductAssetBrowserEntry* productEntry = products[0];
-                    menu->addAction(
-                        "Open in Slice Relationship View",
-                        [productEntry]()
-                        {
-                            QtViewPaneManager::instance()->OpenPane(LyViewPane::SliceRelationships);
-
-                            const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(productEntry);
-
-                            AzToolsFramework::SliceRelationshipRequestBus::Broadcast(
-                                &AzToolsFramework::SliceRelationshipRequests::OnSliceRelationshipViewRequested, product->GetAssetId());
-                        });
-                }
-            }
-            else if (AzFramework::StringFunc::Equal(
-                         extension.c_str(), AzToolsFramework::Layers::EditorLayerComponent::GetLayerExtensionWithDot().c_str(), false))
-            {
-                QString levelPath = Path::GetPath(GetIEditor()->GetDocument()->GetActivePathName());
-                AzToolsFramework::Layers::EditorLayerComponent::CreateLayerAssetContextMenu(menu, fullFilePath, levelPath);
-            }
 
             if (!products.empty() || (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
             {
