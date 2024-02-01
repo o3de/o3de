@@ -1427,23 +1427,13 @@ namespace AzToolsFramework
         }
     }
 
+    // TODO - Remove unused argument?
     bool EditorEntityModel::EditorEntityModelEntry::DoesEntityHierarchyOverrideState(
-        EntityInHierarchyConditionFunction stateCheckFunction) const
+        EntityInHierarchyConditionFunction /* stateCheckFunction */) const
     {
         AZ::EntityId currentId = GetId();
         while (currentId.IsValid())
         {
-            bool layer = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                layer, currentId,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            // Only layers in the hierarchy override the states checked for here.
-            if (layer && stateCheckFunction(currentId))
-            {
-                return true;
-            }
-
             AZ::EntityId parentId;
             AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
                 parentId, currentId, &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetParent);
@@ -1454,18 +1444,10 @@ namespace AzToolsFramework
         return false;
     }
 
+    // TODO - Verify if this is still necessary.
     bool EditorEntityModel::EditorEntityModelEntry::DoesEntityHierarchyOverrideVisibility() const
     {
-        return DoesEntityHierarchyOverrideState(
-            [](const AZ::EntityId hierarchyEntity)
-            {
-                bool isHierarchyEntityVisible = true;
-                AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                    isHierarchyEntityVisible, hierarchyEntity,
-                    &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::AreLayerChildrenVisible);
-
-                return !isHierarchyEntityVisible;
-            });
+        return false;
     }
 
     bool EditorEntityModel::EditorEntityModelEntry::DoesEntityHierarchyOverrideLock() const

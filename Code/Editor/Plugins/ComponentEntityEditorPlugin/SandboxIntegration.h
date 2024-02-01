@@ -22,9 +22,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/UI/Layer/LayerUiHandler.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
@@ -99,7 +97,6 @@ class SandboxIntegrationManager
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
-    , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
     , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 {
 public:
@@ -115,10 +112,6 @@ private:
     // AzToolsFramework::ToolsApplicationEvents::Bus::Handler overrides
     void OnBeginUndo(const char* label) override;
     void OnEndUndo(const char* label, bool changed) override;
-    void EntityParentChanged(
-        AZ::EntityId entityId,
-        AZ::EntityId newParentId,
-        AZ::EntityId oldParentId) override;
     void OnSaveLevel() override;
     //////////////////////////////////////////////////////////////////////////
 
@@ -225,15 +218,10 @@ private:
     // Listens for Cry Undo System events.
     void UndoStackFlushed() override;
 
-    // EditorLayerRequestBus...
-    void OnLayerComponentActivated(AZ::EntityId entityId) override;
-    void OnLayerComponentDeactivated(AZ::EntityId entityId) override;
-
 private:
     void GetEntitiesInSlices(const AzToolsFramework::EntityIdList& selectedEntities, AZ::u32& entitiesInSlices, AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sliceInstances);
 
     void GoToEntitiesInViewports(const AzToolsFramework::EntityIdList& entityIds);
-
     bool CanGoToEntityOrChildren(const AZ::EntityId& entityId) const;
 
     // This struct exists to help handle the error case where slice assets are 
@@ -277,10 +265,6 @@ private:
     AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
     AzToolsFramework::EditorEntityAPI* m_editorEntityAPI = nullptr;
     AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
-
-    // TODO - Remove this and the class itself.
-    // Overrides UI styling and behavior for Layer Entities
-    AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;
 };
 
 //////////////////////////////////////////////////////////////////////////

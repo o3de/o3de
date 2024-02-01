@@ -31,7 +31,6 @@
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 
 // Editor
@@ -778,12 +777,6 @@ bool CCryEditDoc::OnSaveDocument(const QString& lpszPathName)
 
 bool CCryEditDoc::BeforeSaveDocument(const QString& lpszPathName, TSaveDocContext& context)
 {
-    // Don't save level data if any conflict exists
-    if (HasLayerNameConflicts())
-    {
-        return false;
-    }
-
     // Restore directory to root.
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 
@@ -802,35 +795,6 @@ bool CCryEditDoc::BeforeSaveDocument(const QString& lpszPathName, TSaveDocContex
 
     context.bSaved = bSaved;
     return true;
-}
-
-bool CCryEditDoc::HasLayerNameConflicts() const
-{
-    AZStd::vector<AZ::Entity*> editorEntities;
-    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-        &AzToolsFramework::EditorEntityContextRequestBus::Events::GetLooseEditorEntities,
-        editorEntities);
-
-    AZStd::unordered_map<AZStd::string, int> nameConflictMapping;
-    for (AZ::Entity* entity : editorEntities)
-    {
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-            entity->GetId(),
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::UpdateLayerNameConflictMapping,
-            nameConflictMapping);
-    }
-
-    if (!nameConflictMapping.empty())
-    {
-        AzToolsFramework::Layers::NameConflictWarning* nameConflictWarning = new AzToolsFramework::Layers::NameConflictWarning(
-            MainWindow::instance(),
-            nameConflictMapping);
-        nameConflictWarning->exec();
-
-        return true;
-    }
-
-    return false;
 }
 
 bool CCryEditDoc::DoSaveDocument(const QString& filename, TSaveDocContext& context)

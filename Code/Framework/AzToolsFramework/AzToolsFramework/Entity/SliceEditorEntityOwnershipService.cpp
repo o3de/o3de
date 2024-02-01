@@ -20,7 +20,6 @@
 #include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
@@ -869,24 +868,6 @@ namespace AzToolsFramework
                     entity->Activate();
                 }
             }
-            // we need to check for locked layers and re-apply the lock to their children.
-            // This needs to be in a separate loop as we need to be sure all the entities are activated.
-            for (AZ::Entity* entity : entities)
-            {
-                AZ::EntityId entityId = entity->GetId();
-                bool locked = false;
-                EditorLockComponentRequestBus::EventResult(locked, entityId, &EditorLockComponentRequests::GetLocked);
-                if (locked)
-                {
-                    bool isLayer = false;
-                    Layers::EditorLayerComponentRequestBus::EventResult(
-                        isLayer, entityId, &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-                    if (isLayer)
-                    {
-                        SetEntityLockState(entityId, true);
-                    }
-                }
-            }
         }
     }
 
@@ -943,23 +924,9 @@ namespace AzToolsFramework
         EntityList entities = newRootSlice->GetNewEntities();
         AZ::SliceComponent::SliceAssetToSliceInstancePtrs layerSliceInstances;
 
-        // Collect all of the layers by names, so duplicates can be found.
-        // Layer name collision is handled here instead of in the layer component because none of these entities are connected to buses yet.
-        using EntityAndLayerComponent = AZStd::pair<AZ::Entity*, Layers::EditorLayerComponent*>;
-        AZStd::unordered_map<AZStd::string, AZStd::vector<EntityAndLayerComponent>> layerNameToLayerComponents;
-
         AZStd::unordered_map<AZ::EntityId, AZ::Entity*> uniqueEntities;
         for (AZ::Entity* entity : entities)
         {
-            // The entities just loaded from the layer aren't going to be connected to any buses yet,
-            // check for the layer component directly.
-            Layers::EditorLayerComponent* layerComponent = entity->FindComponent<Layers::EditorLayerComponent>();
-
-            if (layerComponent)
-            {
-                layerNameToLayerComponents[layerComponent->GetCachedLayerBaseFileName()].push_back(EntityAndLayerComponent(entity, layerComponent));
-            }
-
             AZStd::unordered_map<AZ::EntityId, AZ::Entity*>::iterator existingEntity = uniqueEntities.find(entity->GetId());
             if (existingEntity != uniqueEntities.end())
             {
@@ -979,23 +946,6 @@ namespace AzToolsFramework
             }
         }
 
-        for (auto& layersIterator : layerNameToLayerComponents)
-        {
-            if (layersIterator.second.size() > 1)
-            {
-                AZ_Error("Layers", false, "There is more than one layer with the name %s at the same hierarchy level. Rename these layers and try again.", layersIterator.first.c_str());
-            }
-            else
-            {
-                // Only load layers that have no collisions with other layer names.
-                Layers::EditorLayerComponent* layerComponent(layersIterator.second[0].second);
-                Layers::LayerResult layerReadResult =
-                    layerComponent->ReadLayer(levelPakFile, layerSliceInstances, uniqueEntities);
-
-                layerReadResult.MessageResult();
-            }
-        }
-
         EntityList uniqueEntityList;
         for (const auto& uniqueEntity : uniqueEntities)
         {
@@ -1008,17 +958,6 @@ namespace AzToolsFramework
         AZStd::unordered_set<const AZ::SliceComponent::SliceInstance*> instances;
         newRootSlice->AddSliceInstances(layerSliceInstances, instances);
         newRootSlice->ReplaceEntities(uniqueEntityList);
-
-        // Clean up layer data after adding the information to the slice, so it isn't lost.
-        for (auto& layersIterator : layerNameToLayerComponents)
-        {
-            if (layersIterator.second.size() == 1)
-            {
-                // Only load layers that have no collisions with other layer names.
-                Layers::EditorLayerComponent* layerComponent(layersIterator.second[0].second);
-                layerComponent->CleanupLoadedLayer();
-            }
-        }
 
         // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
         // (load asset) -> (notify) -> (init) -> (activate)

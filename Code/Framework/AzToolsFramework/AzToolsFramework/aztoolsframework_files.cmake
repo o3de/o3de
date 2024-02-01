@@ -351,11 +351,6 @@ set(FILES
     ToolsComponents/EditorEntityIconComponent.h
     ToolsComponents/EditorEntityIconComponent.cpp
     ToolsComponents/EditorEntityIconComponentBus.h
-    ToolsComponents/EditorLayerComponent.h
-    ToolsComponents/EditorLayerComponent.cpp
-    ToolsComponents/EditorLayerComponentBus.h
-    ToolsComponents/LayerResult.cpp
-    ToolsComponents/LayerResult.h
     ToolsComponents/EditorLockComponent.cpp
     ToolsComponents/EditorLockComponent.h
     ToolsComponents/EditorLockComponentBus.h
@@ -423,8 +418,6 @@ set(FILES
     UI/DPEDebugViewer/DPEDebugWindow.cpp
     UI/DPEDebugViewer/DPEDebugWindow.h
     UI/DPEDebugViewer/DPEDebugWindow.ui
-    UI/Layer/AddToLayerMenu.cpp
-    UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h
     UI/Logging/LogEntry.h
     UI/Logging/LogEntry.cpp
@@ -454,8 +447,6 @@ set(FILES
     UI/ComponentPalette/ComponentPaletteModel.cpp
     UI/ComponentPalette/ComponentPaletteUtil.hxx
     UI/ComponentPalette/ComponentPaletteUtil.cpp
-    UI/Layer/NameConflictWarning.hxx
-    UI/Layer/NameConflictWarning.cpp
     UI/PropertyEditor/EntityPropertyEditor.ui
     UI/PropertyEditor/ComponentEditor.hxx
     UI/PropertyEditor/ComponentEditor.cpp
@@ -960,8 +951,6 @@ set(FILES
     UI/EditorEntityUi/EditorEntityUiHandlerBase.cpp
     UI/EditorEntityUi/EditorEntityUiSystemComponent.h
     UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
-    UI/Layer/LayerUiHandler.h
-    UI/Layer/LayerUiHandler.cpp
     UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h
     UI/Prefab/LevelRootUiHandler.h
     UI/Prefab/LevelRootUiHandler.cpp

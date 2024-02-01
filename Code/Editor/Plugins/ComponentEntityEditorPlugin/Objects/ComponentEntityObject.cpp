@@ -25,7 +25,6 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -375,14 +374,14 @@ bool CComponentEntityObject::SetPos(const Vec3& pos, int flags)
 
     bool lockTransformOnUserInput = isAzEditorTransformLocked && (flags & eObjectUpdateFlags_UserInput);
 
-    if (IsLayer() || lockTransformOnUserInput)
+    if (lockTransformOnUserInput)
     {
         return false;
     }
     if ((flags & eObjectUpdateFlags_MoveTool) || (flags & eObjectUpdateFlags_UserInput))
     {
         // If we have a parent also in the selection set, don't allow the move tool to manipulate our position.
-        if (IsNonLayerAncestorSelected())
+        if (IsAncestorSelected())
         {
             return false;
         }
@@ -399,14 +398,14 @@ bool CComponentEntityObject::SetRotation(const Quat& rotate, int flags)
 
     bool lockTransformOnUserInput = isAzEditorTransformLocked && (flags & eObjectUpdateFlags_UserInput);
 
-    if (IsLayer() || lockTransformOnUserInput)
+    if (lockTransformOnUserInput)
     {
         return false;
     }
     if (flags & eObjectUpdateFlags_UserInput)
     {
         // If we have a parent also in the selection set, don't allow the rotate tool to manipulate our position.
-        if (IsNonLayerAncestorSelected())
+        if (IsAncestorSelected())
         {
             return false;
         }
@@ -423,14 +422,15 @@ bool CComponentEntityObject::SetScale(const Vec3& scale, int flags)
 
     bool lockTransformOnUserInput = isAzEditorTransformLocked && (flags & eObjectUpdateFlags_UserInput);
 
-    if (IsLayer() || lockTransformOnUserInput)
+    if (lockTransformOnUserInput)
     {
         return false;
     }
+
     if ((flags & eObjectUpdateFlags_ScaleTool) || (flags & eObjectUpdateFlags_UserInput))
     {
         // If we have a parent also in the selection set, don't allow the scale tool to manipulate our position.
-        if (IsNonLayerAncestorSelected())
+        if (IsAncestorSelected())
         {
             return false;
         }
@@ -439,7 +439,7 @@ bool CComponentEntityObject::SetScale(const Vec3& scale, int flags)
     return CEntityObject::SetScale(scale, flags);
 }
 
-bool CComponentEntityObject::IsNonLayerAncestorSelected() const
+bool CComponentEntityObject::IsAncestorSelected() const
 {
     AZ::EntityId parentId;
     AZ::TransformBus::EventResult(parentId, m_entityId, &AZ::TransformBus::Events::GetParentId);
@@ -448,15 +448,7 @@ bool CComponentEntityObject::IsNonLayerAncestorSelected() const
         CComponentEntityObject* parentObject = CComponentEntityObject::FindObjectForEntity(parentId);
         if (parentObject && parentObject->IsSelected())
         {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                isLayerEntity,
-                parentObject->GetAssociatedEntityId(),
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-            if (!isLayerEntity)
-            {
-                return true;
-            }
+            return true;
         }
 
         AZ::EntityId currentParentId = parentId;
@@ -465,16 +457,6 @@ bool CComponentEntityObject::IsNonLayerAncestorSelected() const
     }
 
     return false;
-}
-
-bool CComponentEntityObject::IsLayer() const
-{
-    bool isLayerEntity = false;
-    AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-        isLayerEntity,
-        m_entityId,
-        &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-    return isLayerEntity;
 }
 
 bool CComponentEntityObject::IsAncestorIconDrawingAtSameLocation() const
@@ -738,23 +720,12 @@ bool CComponentEntityObject::IsSelectable() const
 
 void CComponentEntityObject::SetWorldPos(const Vec3& pos, int flags)
 {
-    // Layers, by design, are not supposed to be moveable. Layers are intended to just be a grouping
-    // mechanism to allow teams to cleanly split their level into working zones, and a moveable position
-    // complicates that behavior more than it helps.
-    // Unfortunately component entity objects have a position under the hood, so prevent layers from moving here.
-    bool isLayerEntity = false;
-    AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-        isLayerEntity,
-        m_entityId,
-        &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
     bool isAzEditorTransformLocked = false;
     AzToolsFramework::Components::TransformComponentMessages::Bus::EventResult(isAzEditorTransformLocked, m_entityId,
         &AzToolsFramework::Components::TransformComponentMessages::IsTransformLocked);
 
     bool lockTransformOnUserInput = isAzEditorTransformLocked && (flags & eObjectUpdateFlags_UserInput);
-
-    if (isLayerEntity || lockTransformOnUserInput)
+    if (lockTransformOnUserInput)
     {
         return;
     }

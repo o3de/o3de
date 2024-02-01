@@ -145,11 +145,8 @@ protected:
 
     void DeleteThis() override { delete this; };
 
-    bool IsNonLayerAncestorSelected() const;
-    bool IsLayer() const;
-
+    bool IsAncestorSelected() const;
     bool IsAncestorIconDrawingAtSameLocation() const;
-
     bool IsDescendantSelectedAtSameLocation() const;
 
     void SetupEntityIcon();

@@ -17,8 +17,6 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
-
 namespace AZ
 {
     class Entity;
