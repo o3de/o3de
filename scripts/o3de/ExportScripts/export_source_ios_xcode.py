@@ -99,12 +99,19 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
                                   ctx.project_path/'AssetBundling', max_bundle_size,
                                   logger)
 
+    if should_build_all_assets:
+        if (ctx.project_path / 'AssetBundling/Bundles').is_dir():
+            (ctx.project_path / 'Pak' / f'{ctx.project_name}_ios_paks').mkdir(parents=True)
+            exp.process_command(['cp', '-r', str(ctx.project_path / 'AssetBundling/Bundles/engine_ios.pak'), 
+                            str( ctx.project_path / 'Pak' / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
+            exp.process_command(['cp', '-r', str(ctx.project_path / 'AssetBundling/Bundles/game_ios.pak'), 
+                            str( ctx.project_path / 'Pak' / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
+
     # Generate the Xcode project file for the O3DE project
     cmake_toolchain_path = ctx.engine_path / 'cmake/Platform/iOS/Toolchain_ios.cmake'
 
     exp.process_command(['cmake', '-B', ios_build_folder_str, '-G', "Xcode", f'-DCMAKE_TOOLCHAIN_FILE={str(cmake_toolchain_path)}', '-DLY_MONOLITHIC_GAME=1'],
                     cwd= ctx.project_path)
-
 
     logger.info(f"Xcode project file should be generated now. Please check {ios_build_folder_str}")
 
