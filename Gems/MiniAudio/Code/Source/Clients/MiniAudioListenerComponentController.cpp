@@ -65,7 +65,7 @@ namespace MiniAudio
         return m_config;
     }
 
-    void MiniAudioListenerComponentController::SetFollowEntity(const AZ::EntityId followEntity)
+    void MiniAudioListenerComponentController::SetFollowEntity(const AZ::EntityId& followEntity)
     {
         m_config.m_followEntity = followEntity;
         OnConfigurationUpdated();
@@ -81,7 +81,7 @@ namespace MiniAudio
         return m_config.m_innerAngleInRadians;
     }
 
-    void MiniAudioListenerComponentController::SetInnerAngleInRadians(const float innerAngleInRadians)
+    void MiniAudioListenerComponentController::SetInnerAngleInRadians(const float& innerAngleInRadians)
     {
         m_config.m_innerAngleInRadians = innerAngleInRadians;
         OnConfigurationUpdated();
@@ -92,7 +92,7 @@ namespace MiniAudio
         return m_config.m_innerAngleInDegrees;
     }
 
-    void MiniAudioListenerComponentController::SetInnerAngleInDegrees(const float innerAngleInDegrees)
+    void MiniAudioListenerComponentController::SetInnerAngleInDegrees(const float& innerAngleInDegrees)
     {
         m_config.m_innerAngleInDegrees = innerAngleInDegrees;
         m_config.m_innerAngleInRadians = m_config.m_innerAngleInDegrees * AZ::Constants::TwoPi/360.f;
@@ -104,7 +104,7 @@ namespace MiniAudio
         return m_config.m_outerAngleInRadians;
     }
 
-    void MiniAudioListenerComponentController::SetOuterAngleInRadians(const float outerAngleInRadians)
+    void MiniAudioListenerComponentController::SetOuterAngleInRadians(const float& outerAngleInRadians)
     {
         m_config.m_outerAngleInRadians = outerAngleInRadians;
         OnConfigurationUpdated();
@@ -115,7 +115,7 @@ namespace MiniAudio
         return m_config.m_outerAngleInDegrees;
     }
 
-    void MiniAudioListenerComponentController::SetOuterAngleInDegrees(const float outerAngleInDegrees)
+    void MiniAudioListenerComponentController::SetOuterAngleInDegrees(const float& outerAngleInDegrees)
     {
         m_config.m_outerAngleInDegrees = outerAngleInDegrees;
         m_config.m_outerAngleInRadians = m_config.m_outerAngleInDegrees * AZ::Constants::TwoPi/360.f;
@@ -127,7 +127,7 @@ namespace MiniAudio
         return m_config.m_outerVolume;
     }
 
-    void MiniAudioListenerComponentController::SetOuterVolume(const float outerVolume)
+    void MiniAudioListenerComponentController::SetOuterVolume(const float& outerVolume)
     {
         m_config.m_outerVolume = AZ::GetClamp(outerVolume, 0.f, 100.f);
         OnConfigurationUpdated();

@@ -53,21 +53,21 @@ namespace MiniAudio
         SoundAssetRef GetSoundAssetRef() const override;
         void SetSoundAssetRef(const SoundAssetRef& soundAssetRef) override;
         float GetInnerAngleInRadians() const override;
-        void SetInnerAngleInRadians(const float innerAngleInRadians) override;
+        void SetInnerAngleInRadians(const float& innerAngleInRadians) override;
         float GetInnerAngleInDegrees() const override;
-        void SetInnerAngleInDegrees(const float innerAngleInDegrees) override;
+        void SetInnerAngleInDegrees(const float& innerAngleInDegrees) override;
         float GetOuterAngleInRadians() const override;
-        void SetOuterAngleInRadians(const float outerAngleInRadians) override;
+        void SetOuterAngleInRadians(const float& outerAngleInRadians) override;
         float GetOuterAngleInDegrees() const override;
-        void SetOuterAngleInDegrees(const float outerAngleInDegrees) override;
+        void SetOuterAngleInDegrees(const float& outerAngleInDegrees) override;
         float GetOuterVolume() const override;
-        void SetOuterVolume(const float outerVolume) override;
+        void SetOuterVolume(const float& outerVolume) override;
         bool GetFixedDirecion() const override;
-        void SetFixedDirecion(const bool fixedDirection) override;
+        void SetFixedDirecion(const bool& fixedDirection) override;
         float GetDirectionalAttenuationFactor() const override;
-        void SetDirectionalAttenuationFactor(const float directionalAttenuationFactor) override;
+        void SetDirectionalAttenuationFactor(const float& directionalAttenuationFactor) override;
         AZ::Vector3 GetDirection() const override;
-        void SetDirection(const AZ::Vector3 direction) override;
+        void SetDirection(const AZ::Vector3& direction) override;
 
         // MultiHandler
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
