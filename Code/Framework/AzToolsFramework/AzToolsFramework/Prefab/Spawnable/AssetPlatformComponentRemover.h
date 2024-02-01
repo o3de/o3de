@@ -51,56 +51,15 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         static void Reflect(AZ::ReflectContext* context);
 
      protected:
-        static void GetEntitiesFromInstance(AzToolsFramework::Prefab::Instance& instance, EntityList& hierarchyEntities);
-
-        static bool ReadComponentAttribute(
-            AZ::Component* component,
-            AZ::Edit::Attribute* attribute,
-            AZStd::vector<AZ::Crc32>& attributeTags);
-
-        void SetEditorOnlyEntityHandlerFromCandidates(const EntityList& entities);
-
-        bool HasValidEditorOnlyHandler() const;
-
-        void ClearEditorOnlyEntityIds();
-
-        void AddEntityIdIfEditorOnly(AZ::Entity* entity);
-
-        using RemoveEditorOnlyEntitiesResult = AZ::Outcome<void, AZStd::string>;
-        RemoveEditorOnlyEntitiesResult RemoveEditorOnlyEntities(EntityList& entities);
-
-        using ExportEntityResult = AZ::Outcome<AZStd::unique_ptr<AZ::Entity>, AZStd::string>;
-        ExportEntityResult ExportEntity(AZ::Entity* sourceEntity, PrefabProcessorContext& context);
-
-        using ResolveExportedComponentResult = AZ::Outcome<AZ::ExportedComponent, AZStd::string>;
-        ResolveExportedComponentResult ResolveExportedComponent(
-            AZ::ExportedComponent& component, PrefabProcessorContext& prefabProcessorContext);
-
-        using ShouldExportResult = AZ::Outcome<bool, AZStd::string>;
-        ShouldExportResult ShouldExportComponent(
-            AZ::Component* component,
-            PrefabProcessorContext& prefabProcessorContext) const;
-
-        using BuildGameEntityResult = AZ::Outcome<void, AZStd::string>;
-        BuildGameEntityResult BuildGameEntity(
-            AzToolsFramework::Components::EditorComponentBase* editorComponent,
-            AZ::Entity* sourceEntity,
-            AZ::Entity* exportEntity
-        );
-
-        using ExportComponentResult = AZ::Outcome<void, AZStd::string>;
-        ExportComponentResult ExportComponent(
-            AZ::Component* component,
-            PrefabProcessorContext& prefabProcessorContext,
-            AZ::Entity* sourceEntity,
-            AZ::Entity* exportEntity);
-
         AZ::SerializeContext* m_serializeContext{ nullptr };
         EditorOnlyEntityHandler* m_editorOnlyEntityHandler{ nullptr };
         EditorOnlyEntityHandlers m_editorOnlyEntityHandlerCandidates{
             aznew WorldEditorOnlyEntityHandler(),
             aznew UiEditorOnlyEntityHandler() };
-        ComponentRequirementsValidator m_componentRequirementsValidator;
         EntityIdSet m_editorOnlyEntityIds;
+
+     private:
+       //AZStd::map<AZStd::string, AZStd::set<AZ::Uuid>> m_platformTagRemovedComponents;
+
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
