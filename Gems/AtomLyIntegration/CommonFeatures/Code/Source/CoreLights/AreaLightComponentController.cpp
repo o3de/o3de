@@ -134,12 +134,7 @@ namespace AZ::Render
     }
 
     void AreaLightComponentController::Activate(EntityId entityId)
-    {       
-        AZ::ApplicationTypeQuery appType;
-        ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-        if (appType.IsHeadless())
-            return;
-
+    {
         m_entityId = entityId;
         
         // Used to determine which features are supported.
@@ -161,11 +156,6 @@ namespace AZ::Render
 
     void AreaLightComponentController::Deactivate()
     {
-        AZ::ApplicationTypeQuery appType;
-        ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-        if (appType.IsHeadless())
-            return;
-        
         AreaLightRequestBus::Handler::BusDisconnect(m_entityId);
         m_lightShapeDelegate.reset();
     }
