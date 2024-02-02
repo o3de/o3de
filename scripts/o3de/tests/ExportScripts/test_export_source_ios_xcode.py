@@ -302,6 +302,7 @@ def test_build_tool_combinations(tmp_path, should_build_tools_flag):
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory,\
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
          patch('pathlib.Path.is_dir', return_value=True),\
+         patch('pathlib.Path.mkdir'),\
          patch('shutil.make_archive'),\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
@@ -384,6 +385,7 @@ def test_asset_bundler_combinations(tmp_path, should_build_tools_flag):
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
          patch('pathlib.Path.is_dir', return_value=True),\
          patch('shutil.make_archive'),\
+         patch('pathlib.Path.mkdir'),\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -478,6 +480,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
          patch('shutil.make_archive'),\
          patch('argparse.ArgumentParser.parse_args'),\
+         patch('pathlib.Path.mkdir'),\
          patch('pathlib.Path.is_file'),\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
         
@@ -552,6 +555,7 @@ def test_asset_processor_combinations(tmp_path, should_build_tools_flag):
          patch('o3de.export_project.process_command', return_value=0) as mock_process_command,\
          patch('shutil.make_archive'),\
          patch('pathlib.Path.is_dir', return_value=True),\
+         patch('pathlib.Path.mkdir'),\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
