@@ -7,7 +7,7 @@
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
     "type": "Tool",
-    "summary": "The PhysX5 Debug Gem provides debugging functionality and visualizations for NVIDIA PhysX in Open 3D Engine.",
+    "summary": "The PhysX5 Debug Gem, in conjunction with the PhysX5 Gem, provides debugging functionality and visualizations for NVIDIA PhysX in Open 3D Engine.",
     "canonical_tags": [
         "Gem"
     ],

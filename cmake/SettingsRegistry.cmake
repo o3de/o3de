@@ -173,7 +173,7 @@ function(o3de_get_gem_root_from_target output_gem_root output_gem_name gem_targe
 
     # the o3de_find_ancestor_gem_root looks up the nearest gem root path
     # at or above the current directory visited by cmake
-    o3de_find_ancestor_gem_root(gem_source_dir gem_name "${gem_source_dir}")
+    o3de_find_ancestor_gem_root(gem_source_dir gem_name gem_provided_service "${gem_source_dir}")
 
     # Set the gem module root output directory to the location with the gem.json file within it or
     # the supplied gem_target SOURCE_DIR location if no gem.json file was found
@@ -287,6 +287,7 @@ function(ly_delayed_generate_settings_registry)
         # Fill out the gem_setreg_objects variable with the json fields for each gem
         unset(gem_setreg_objects)
         ly_populate_gem_objects(gem_load_dependencies_json "${all_gem_dependencies}")
+        
 
         string(REPLACE "." "_" escaped_target ${target})
         string(JOIN "." specialization_name ${prefix} ${escaped_target})

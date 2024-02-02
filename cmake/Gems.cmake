@@ -59,7 +59,7 @@ define_property(TARGET PROPERTY LY_PROJECT_NAME
 macro(o3de_gem_setup default_gem_name)
     # Query the gem name from the gem.json file if possible
     # otherwise fallback to using the default gem name argument
-    o3de_find_ancestor_gem_root(gem_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
+    o3de_find_ancestor_gem_root(gem_path gem_name gem_provided_unique_service "${CMAKE_CURRENT_SOURCE_DIR}")
     if (NOT gem_name)
         set(gem_name "${default_gem_name}")
     endif()
@@ -67,6 +67,11 @@ macro(o3de_gem_setup default_gem_name)
     # Fallback to using the current source CMakeLists.txt directory as the gem root path
     if (NOT gem_path)
         set(gem_path ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
+
+    # Track any (optional) provided unique service that this gem provides
+    if (gem_provided_unique_service)
+        set_property(GLOBAL PROPERTY LY_GEM_PROVIDED_SERVICE_"${gem_name}" "${gem_provided_unique_service}")
     endif()
 
     set(gem_json ${gem_path}/gem.json)
@@ -85,7 +90,8 @@ endmacro()
 # \arg:source_dir(FILEPATH) - Filepath to walk upwards from to locate a gem.json
 # \return:output_gem_module_root - The directory containing the nearest gem.json
 # \return:output_gem_name - The name of the gem read from the gem.json
-function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name source_dir)
+# \return:output_gem_provided_unique_service - The name of the provided service for the gem if any
+function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name output_gem_provided_unique_service source_dir)
     unset(${output_gem_module_root} PARENT_SCOPE)
 
     if(source_dir)
@@ -110,6 +116,9 @@ function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name sour
         # Update source_dir if the gem root path exists
         set(source_dir ${candidate_gem_path})
         o3de_read_json_key(gem_name ${candidate_gem_json_path} "gem_name")
+
+        unset(gem_provided_service)
+        o3de_read_optional_json_key(gem_provided_service ${candidate_gem_json_path} "provided_unique_service")
     endif()
 
     # Set the gem module root output directory to the location with the gem.json file within it or
@@ -120,6 +129,11 @@ function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name sour
     if(gem_name)
         set(${output_gem_name} ${gem_name} PARENT_SCOPE)
     endif()
+
+    if (gem_provided_service)
+        set(${output_gem_provided_unique_service} ${gem_provided_service} PARENT_SCOPE)
+    endif()
+
 endfunction()
 
 # o3de_add_variant_dependencies_for_gem_dependencies
@@ -515,5 +529,32 @@ function(ly_enable_gems_delayed)
                     GEM_DEPENDENCIES ${gem_dependencies})
             endforeach()
         endforeach()
+
+        # Make sure that there are no targets that have dependencies on multiple gems that provide the same unique service
+        foreach(project ${enable_gem_projects})
+
+            # Skip __NOPROJECT__ since the gems won't be loaded anyways
+            if (project STREQUAL "__NOPROJECT__")
+                continue()
+            endif()
+
+            # Get the enabled gems for ${project} and track any unique service
+            get_property(enabled_gems_for_project GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project}")
+            unset(identified_unique_services)
+            foreach(dep_gem ${enabled_gems_for_project})
+                get_property(gem_provided_unique_service GLOBAL PROPERTY LY_GEM_PROVIDED_SERVICE_"${dep_gem}")
+                if (gem_provided_unique_service)
+                    get_property(servicing_gem GLOBAL PROPERTY unique_service_"${project}"_"${gem_provided_unique_service}")
+                    if ((servicing_gem) AND (NOT "${dep_gem}" STREQUAL "${servicing_gem}"))
+                        message(FATAL_ERROR "Target '${project}' detected conflicting gems that provide the same service '${gem_provided_unique_service}': "
+                                            "${dep_gem}, ${servicing_gem}. Disable one of these gems or any gem that has a dependency for one of these "
+                                             "gems to continue.")
+                    else()
+                        set_property(GLOBAL PROPERTY unique_service_"${project}"_"${gem_provided_unique_service}" ${dep_gem})
+                    endif()
+                endif()
+            endforeach()
+        endforeach()
+
     endforeach()
 endfunction()

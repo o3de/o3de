@@ -6,7 +6,7 @@
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
-    "summary": "The PhysX4 Gem provides physics simulation with NVIDIA PhysX including static and dynamic rigid body simulation, force regions, ragdolls, and dynamic PhysX joints.",
+    "summary": "The PhysX4 Gem provides physics simulation with NVIDIA PhysX including static and dynamic rigid body simulation, force regions, ragdolls, and dynamic PhysX joints. This Gem is based on version 4 of the <a href='https://developer.nvidia.com/physx-sdk'>NVIDIA PhysX SDK</a>, and is not compatible with the PhysX5 Gem.",
     "canonical_tags": [
         "Gem"
     ],
@@ -22,5 +22,6 @@
         "PhysXCommon",
         "LmbrCentral",
         "CommonFeaturesAtom"
-    ]
+    ],
+    "provided_unique_service": "Physics"
 }
