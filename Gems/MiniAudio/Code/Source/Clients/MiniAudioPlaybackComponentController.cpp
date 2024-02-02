@@ -12,6 +12,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
 
+#include "AzCore/Math/MathUtils.h"
 #include "MiniAudioIncludes.h"
 
 namespace MiniAudio
@@ -53,8 +54,8 @@ namespace MiniAudio
     {
         m_entityComponentIdPair = entityComponentIdPair;
 
-        m_config.m_innerAngleInRadians = m_config.m_innerAngleInDegrees * AZ::Constants::TwoPi / 360.f;
-        m_config.m_outerAngleInRadians = m_config.m_outerAngleInDegrees * AZ::Constants::TwoPi / 360.f;
+        m_config.m_innerAngleInRadians = AZ::DegToRad(m_config.m_innerAngleInDegrees);
+        m_config.m_outerAngleInRadians = AZ::DegToRad(m_config.m_outerAngleInDegrees);
 
         MiniAudioPlaybackRequestBus::Handler::BusConnect(m_entityComponentIdPair.GetEntityId());
         OnConfigurationUpdated();
@@ -159,6 +160,7 @@ namespace MiniAudio
     void MiniAudioPlaybackComponentController::SetInnerAngleInRadians(const float& innerAngleInRadians)
     {
         m_config.m_innerAngleInRadians = innerAngleInRadians;
+        m_config.m_innerAngleInDegrees = AZ::RadToDeg(m_config.m_innerAngleInRadians);
         OnConfigurationUpdated();
     }
 
@@ -170,7 +172,7 @@ namespace MiniAudio
     void MiniAudioPlaybackComponentController::SetInnerAngleInDegrees(const float& innerAngleInDegrees)
     {
         m_config.m_innerAngleInDegrees = innerAngleInDegrees;
-        m_config.m_innerAngleInRadians = m_config.m_innerAngleInDegrees * AZ::Constants::TwoPi/360.f;
+        m_config.m_innerAngleInRadians = AZ::DegToRad(m_config.m_innerAngleInDegrees);
         OnConfigurationUpdated();
     }
 
@@ -182,6 +184,7 @@ namespace MiniAudio
     void MiniAudioPlaybackComponentController::SetOuterAngleInRadians(const float& outerAngleInRadians)
     {
         m_config.m_outerAngleInRadians = outerAngleInRadians;
+        m_config.m_outerAngleInDegrees = AZ::RadToDeg(m_config.m_outerAngleInRadians);
         OnConfigurationUpdated();
     }
 
@@ -193,7 +196,7 @@ namespace MiniAudio
     void MiniAudioPlaybackComponentController::SetOuterAngleInDegrees(const float& outerAngleInDegrees)
     {
         m_config.m_outerAngleInDegrees = outerAngleInDegrees;
-        m_config.m_outerAngleInRadians = m_config.m_outerAngleInDegrees * AZ::Constants::TwoPi/360.f;
+        m_config.m_outerAngleInRadians = AZ::DegToRad(m_config.m_outerAngleInDegrees);
         OnConfigurationUpdated();
     }
 
