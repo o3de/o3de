@@ -135,14 +135,12 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
         else:
             # Validation steps based on the asset mode
             if asset_mode == ASSET_MODE_PAK:
-
-                # iOS layout verification must point to the bundles folder 
                 if platform_name_lower == 'ios':
-                    project_asset_path /= 'AssetBundling/Bundles'
+                    project_asset_path = pathlib.Path(project_path) / 'AssetBundling/Bundles'
 
                 # Validate that we have pak files
                 project_paks = project_asset_path.glob("*.pak")
-                pak_count = len(project_paks)
+                pak_count = len(list(project_paks))
 
                 if pak_count == 0:
                     warning_count += _warn("No pak files found for PAK mode deployment")
