@@ -22,7 +22,7 @@ namespace AZ::RHI
 
     void MultiDeviceQuery::Shutdown()
     {
-        IterateObjects<Query>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
+        IterateObjects<SingleDeviceQuery>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
         {
             deviceQuery->Shutdown();
         });
@@ -32,7 +32,7 @@ namespace AZ::RHI
 
     void MultiDeviceQuery::InvalidateViews()
     {
-        IterateObjects<Query>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
+        IterateObjects<SingleDeviceQuery>([]([[maybe_unused]] auto deviceIndex, auto deviceQuery)
         {
             deviceQuery->InvalidateViews();
         });

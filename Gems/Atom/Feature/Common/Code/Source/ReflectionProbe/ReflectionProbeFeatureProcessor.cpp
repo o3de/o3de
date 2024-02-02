@@ -16,7 +16,7 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/RenderCommon.h>
 
@@ -616,7 +616,7 @@ namespace AZ
             m_boxStreamLayout = layoutBuilder.End();
 
             // create index buffer
-            AZ::RHI::BufferInitRequest request;
+            AZ::RHI::SingleDeviceBufferInitRequest request;
             m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
@@ -625,7 +625,7 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create index buffer view
-            AZ::RHI::IndexBufferView indexBufferView =
+            AZ::RHI::SingleDeviceIndexBufferView indexBufferView =
             {
                 *m_boxIndexBuffer,
                 0,
@@ -644,7 +644,7 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create position buffer view
-            RHI::StreamBufferView positionBufferView =
+            RHI::SingleDeviceStreamBufferView positionBufferView =
             {
                 *m_boxPositionBuffer,
                 0,

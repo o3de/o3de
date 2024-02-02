@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI/MultiDevicePipelineState.h>
-#include <Atom/RHI/RayTracingPipelineState.h>
+#include <Atom/RHI/SingleDeviceRayTracingPipelineState.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
@@ -43,8 +43,8 @@ namespace AZ::RHI
         MultiDeviceRayTracingPipelineStateDescriptor() = default;
         ~MultiDeviceRayTracingPipelineStateDescriptor() = default;
 
-        //! Returns the device-specific RayTracingPipelineStateDescriptor for the given index
-        RayTracingPipelineStateDescriptor GetDeviceRayTracingPipelineStateDescriptor(int deviceIndex) const;
+        //! Returns the device-specific SingleDeviceRayTracingPipelineStateDescriptor for the given index
+        SingleDeviceRayTracingPipelineStateDescriptor GetDeviceRayTracingPipelineStateDescriptor(int deviceIndex) const;
 
         //! Accessors
         const RayTracingConfiguration& GetConfiguration() const
@@ -96,7 +96,7 @@ namespace AZ::RHI
 
     private:
         const RHI::MultiDevicePipelineState* m_mdPipelineState = nullptr;
-        RayTracingPipelineStateDescriptor m_descriptor;
+        SingleDeviceRayTracingPipelineStateDescriptor m_descriptor;
     };
 
     //! Defines the shaders, hit groups, and other parameters required for ray tracing operations across multiple devices.

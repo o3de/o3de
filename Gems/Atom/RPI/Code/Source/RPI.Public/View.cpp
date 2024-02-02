@@ -98,7 +98,7 @@ namespace AZ
             m_passesByDrawList = nullptr;
         }
 
-        RHI::ShaderResourceGroup* View::GetRHIShaderResourceGroup() const
+        RHI::SingleDeviceShaderResourceGroup* View::GetRHIShaderResourceGroup() const
         {
             return m_shaderResourceGroup->GetRHIShaderResourceGroup();
         }
@@ -108,13 +108,13 @@ namespace AZ
             return m_shaderResourceGroup;
         }
 
-        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, float depth)
+        void View::AddDrawPacket(const RHI::SingleDeviceDrawPacket* drawPacket, float depth)
         {
             // This function is thread safe since DrawListContent has storage per thread for draw item data.
             m_drawListContext.AddDrawPacket(drawPacket, depth);
         }        
 
-        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition)
+        void View::AddDrawPacket(const RHI::SingleDeviceDrawPacket* drawPacket, const Vector3& worldPosition)
         {
             Vector3 cameraToObject = worldPosition - m_position;
             float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
@@ -134,7 +134,7 @@ namespace AZ
             AddVisibleObject(userData, depth);
         }
 
-        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
+        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::SingleDeviceDrawItemProperties& drawItemProperties)
         {
             m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
         }

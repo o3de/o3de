@@ -42,7 +42,7 @@ namespace AZ
             return aznew PipelineLibrary;
         }
 
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::PipelineLibraryDescriptor& descriptor)
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::SingleDevicePipelineLibraryDescriptor& descriptor)
         {
             Device& device = static_cast<Device&>(deviceBase);
             ID3D12DeviceX* dx12Device = device.GetDevice();
@@ -215,7 +215,7 @@ namespace AZ
 #endif
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> pipelineLibraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::SingleDevicePipelineLibrary* const> pipelineLibraries)
         {
             if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
                 RHI::Factory::Get().IsPixModuleLoaded())
@@ -226,7 +226,7 @@ namespace AZ
 
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            for (const RHI::PipelineLibrary* libraryBase : pipelineLibraries)
+            for (const RHI::SingleDevicePipelineLibrary* libraryBase : pipelineLibraries)
             {
                 const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
                 for (const auto& pipelineStateEntry : library->m_pipelineStates)

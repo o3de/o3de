@@ -9,7 +9,7 @@
 #include <CoreLights/LightCullingRemap.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>

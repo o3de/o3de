@@ -34,14 +34,14 @@ namespace AZ
             BufferPoolResolver(Device& device, const RHI::BufferPoolDescriptor& descriptor);
 
             ///Get a pointer to write a content to upload to GPU.
-            void* MapBuffer(const RHI::BufferMapRequest& request);
+            void* MapBuffer(const RHI::SingleDeviceBufferMapRequest& request);
 
             //////////////////////////////////////////////////////////////////////
             ///ResourcePoolResolver
             void Compile() override;
             void Resolve(CommandList& commandList) const override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::Resource& resource) override;
+            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////
 
         private:

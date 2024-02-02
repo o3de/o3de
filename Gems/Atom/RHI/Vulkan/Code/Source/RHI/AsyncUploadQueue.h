@@ -8,9 +8,9 @@
 #pragma once
 
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/Fence.h>
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
+#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <Atom/RHI/AsyncWorkQueue.h>
@@ -58,8 +58,8 @@ namespace AZ
             RHI::ResultCode Init(const Descriptor& descriptor);
             void Shutdown();
 
-            RHI::AsyncWorkHandle QueueUpload(const RHI::BufferStreamRequest& request);
-            RHI::AsyncWorkHandle QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
+            RHI::AsyncWorkHandle QueueUpload(const RHI::SingleDeviceBufferStreamRequest& request);
+            RHI::AsyncWorkHandle QueueUpload(const RHI::SingleDeviceStreamingImageExpandRequest& request, uint32_t residentMip);
 
             void WaitForUpload(const RHI::AsyncWorkHandle& workHandle);
 
@@ -85,7 +85,7 @@ namespace AZ
 
 
             void EmmitPrologueMemoryBarrier(const Buffer& buffer, size_t offset, size_t size);
-            void EmmitPrologueMemoryBarrier(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
+            void EmmitPrologueMemoryBarrier(const RHI::SingleDeviceStreamingImageExpandRequest& request, uint32_t residentMip);
 
             void EmmitEpilogueMemoryBarrier(
                 CommandList& commandList,
@@ -95,7 +95,7 @@ namespace AZ
 
             void EmmitEpilogueMemoryBarrier(
                 CommandList& commandList,
-                const RHI::StreamingImageExpandRequest& request,
+                const RHI::SingleDeviceStreamingImageExpandRequest& request,
                 uint32_t residentMip);
 
             // Handles the end of the upload. This includes emitting the epilogue barriers and doing any
@@ -107,7 +107,7 @@ namespace AZ
                 const AZStd::vector<Fence*> fencesToSignal,
                 Args&& ...args);
             
-            RHI::AsyncWorkHandle CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::Fence::SignalCallback callback = nullptr);
+            RHI::AsyncWorkHandle CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::SingleDeviceFence::SignalCallback callback = nullptr);
             void ProcessCallback(const RHI::AsyncWorkHandle& handle);
 
             Descriptor m_descriptor;

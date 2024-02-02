@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/StreamingImagePoolDescriptor.h>
 #include <Atom/RHI/MultiDeviceImage.h>
 #include <Atom/RHI/MultiDeviceImagePoolBase.h>
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
 
 #include <AzCore/std/containers/span.h>
 
@@ -55,7 +55,7 @@ namespace AZ
             //! User could provide such a callback function which releases some resources from the pool
             //! If some resources are released, the function may return true.
             //! If nothing is released, the function should return false.
-            using LowMemoryCallback = StreamingImagePool::LowMemoryCallback;
+            using LowMemoryCallback = SingleDeviceStreamingImagePool::LowMemoryCallback;
             void SetLowMemoryCallback(LowMemoryCallback callback);
 
             //! Set memory budget for all device pools

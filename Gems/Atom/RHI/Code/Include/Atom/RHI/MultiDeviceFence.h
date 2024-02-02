@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/SingleDeviceFence.h>
 #include <Atom/RHI/MultiDeviceObject.h>
 
 namespace AZ::RHI
@@ -26,7 +26,7 @@ namespace AZ::RHI
 
         //! Initializes the multi-device fence using the provided deviceMask.
         //! It creates on device-specific fence for each bit set in the deviceMask and
-        //! passes on the initial FenceState to each Fence
+        //! passes on the initial FenceState to each SingleDeviceFence
         ResultCode Init(MultiDevice::DeviceMask deviceMask, FenceState initialState);
 
         //! Waits on m_waitThread and shuts down all device-specific fences.

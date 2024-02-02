@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Pass/ParentPass.h>

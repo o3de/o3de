@@ -9,7 +9,7 @@
 
 #include <Atom/RHI/CommandQueue.h>
 #include <Atom/RHI/Object.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 #include <RHI/CommandList.h>
 #include <RHI/Semaphore.h>
 #include <RHI/Queue.h>

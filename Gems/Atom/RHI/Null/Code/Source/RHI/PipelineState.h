@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 
 namespace AZ
 {
     namespace Null
     {
         class PipelineState final
-            : public RHI::PipelineState
+            : public RHI::SingleDevicePipelineState
         {
         public:
             AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
@@ -25,10 +25,10 @@ namespace AZ
             PipelineState() = default;
             
             //////////////////////////////////////////////////////////////////////////
-            // RHI::PipelineState
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForDraw& descriptor, [[maybe_unused]] RHI::PipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForDispatch& descriptor, [[maybe_unused]] RHI::PipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForRayTracing& descriptor, [[maybe_unused]] RHI::PipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
+            // RHI::SingleDevicePipelineState
+            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForDraw& descriptor, [[maybe_unused]] RHI::SingleDevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForDispatch& descriptor, [[maybe_unused]] RHI::SingleDevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& device, [[maybe_unused]] const RHI::PipelineStateDescriptorForRayTracing& descriptor, [[maybe_unused]] RHI::SingleDevicePipelineLibrary* pipelineLibrary) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
             //////////////////////////////////////////////////////////////////////////
         };

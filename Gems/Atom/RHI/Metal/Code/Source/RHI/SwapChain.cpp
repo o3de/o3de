@@ -136,7 +136,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        void SwapChain::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void SwapChain::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             Image& image = static_cast<Image&>(resourceBase);
             image.m_memoryView = {};

@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/SingleDeviceBufferPoolBase.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/SingleDeviceSwapChain.h>
 
 #include <Atom/RHI.Reflect/BufferScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
@@ -22,9 +22,9 @@
 
 namespace AZ::RHI
 {
-    class ResourcePool;
-    class QueryPool;
-    class Fence;
+    class SingleDeviceResourcePool;
+    class SingleDeviceQueryPool;
+    class SingleDeviceFence;
     struct Interval;
 
     //! This interface exposes FrameGraph functionality to non-RHI systems (like the RPI).
@@ -182,7 +182,7 @@ namespace AZ::RHI
         //! @param type The type of query pool attachment.
         //! @param access How the attachment is accessed by the scope.
         ResultCode UseQueryPool(
-            Ptr<QueryPool> queryPool,
+            Ptr<SingleDeviceQueryPool> queryPool,
             const RHI::Interval& interval,
             QueryPoolScopeAttachmentType type,
             ScopeAttachmentAccess access)
@@ -204,7 +204,7 @@ namespace AZ::RHI
         }
             
         //! Requests that the provided fence be signaled after the scope has completed.
-        void SignalFence(Fence& fence)
+        void SignalFence(SingleDeviceFence& fence)
         {
             m_frameGraph.SignalFence(fence);
         }

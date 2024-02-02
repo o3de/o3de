@@ -29,7 +29,7 @@ namespace AZ
 
             ImagePool* m_pool = nullptr;
 
-            RHI::ResultCode UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred)
+            RHI::ResultCode UpdateImage(const RHI::SingleDeviceImageUpdateRequest& request, size_t& bytesTransferred)
             {
                 AZ_PROFILE_FUNCTION(RHI);
 
@@ -61,7 +61,7 @@ namespace AZ
 
                 // Build a subresource packet which contains the staging data and target image location to copy into.
                 const RHI::ImageDescriptor& imageDescriptor = image->GetDescriptor();
-                const RHI::ImageSubresourceLayout& sourceSubresourceLayout = request.m_sourceSubresourceLayout;
+                const RHI::SingleDeviceImageSubresourceLayout& sourceSubresourceLayout = request.m_sourceSubresourceLayout;
                 const uint32_t stagingRowPitch = RHI::AlignUp(sourceSubresourceLayout.m_bytesPerRow, DX12_TEXTURE_DATA_PITCH_ALIGNMENT);
                 const uint32_t stagingSlicePitch = stagingRowPitch * sourceSubresourceLayout.m_rowCount;
 
@@ -195,7 +195,7 @@ namespace AZ
                 list.erase(AZStd::remove_if(list.begin(), list.end(), predicate), list.end());
             }
 
-            void OnResourceShutdown(const RHI::Resource& resource) override
+            void OnResourceShutdown(const RHI::SingleDeviceResource& resource) override
             {
                 const Image& image = static_cast<const Image&>(resource);
                 if (!image.m_pendingResolves)
@@ -269,7 +269,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode ImagePool::InitImageInternal(const RHI::ImageInitRequest& request)
+        RHI::ResultCode ImagePool::InitImageInternal(const RHI::SingleDeviceImageInitRequest& request)
         {
             Device& device = GetDevice();
 
@@ -312,7 +312,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode ImagePool::UpdateImageContentsInternal(const RHI::ImageUpdateRequest& request)
+        RHI::ResultCode ImagePool::UpdateImageContentsInternal(const RHI::SingleDeviceImageUpdateRequest& request)
         {
             size_t bytesTransferred = 0;
             RHI::ResultCode resultCode = GetResolver()->UpdateImage(request, bytesTransferred);
@@ -323,7 +323,7 @@ namespace AZ
             return resultCode;
         }
 
-        void ImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ImagePool::ShutdownResourceInternal(RHI::SingleDeviceResource& resourceBase)
         {
             if (auto* resolver = GetResolver())
             {

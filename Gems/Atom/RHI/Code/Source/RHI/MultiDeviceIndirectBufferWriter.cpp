@@ -283,7 +283,7 @@ namespace AZ::RHI
                 currentSequenceIndex = deviceCurrentSequenceIndex;
             }
 
-            AZ_Assert(deviceCurrentSequenceIndex == currentSequenceIndex, "Device IndirectBufferWriter CurrentSequenceIndex do not match");
+            AZ_Assert(deviceCurrentSequenceIndex == currentSequenceIndex, "Device SingleDeviceIndirectBufferWriter CurrentSequenceIndex do not match");
         }
 
         return currentSequenceIndex;

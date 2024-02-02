@@ -39,17 +39,17 @@ namespace AZ
             return m_image->IsInitialized();
         }
 
-        RHI::Image* Image::GetRHIImage()
+        RHI::SingleDeviceImage* Image::GetRHIImage()
         {
             return m_image.get();
         }
 
-        const RHI::Image* Image::GetRHIImage() const
+        const RHI::SingleDeviceImage* Image::GetRHIImage() const
         {
             return m_image.get();
         }
 
-        const RHI::ImageView* Image::GetImageView() const
+        const RHI::SingleDeviceImageView* Image::GetImageView() const
         {
             return m_imageView.get();
         }
@@ -64,9 +64,9 @@ namespace AZ
             return m_image->GetDescriptor().m_mipLevels;
         }
 
-        RHI::ResultCode Image::UpdateImageContents(const RHI::ImageUpdateRequest& request)
+        RHI::ResultCode Image::UpdateImageContents(const RHI::SingleDeviceImageUpdateRequest& request)
         {
-            RHI::ImagePool* imagePool = azrtti_cast<RHI::ImagePool*> (m_image->GetPool());
+            RHI::SingleDeviceImagePool* imagePool = azrtti_cast<RHI::SingleDeviceImagePool*> (m_image->GetPool());
             return imagePool->UpdateImageContents(request);
         }     
     }

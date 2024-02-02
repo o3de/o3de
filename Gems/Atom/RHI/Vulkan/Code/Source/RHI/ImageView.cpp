@@ -55,7 +55,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
+        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::SingleDeviceResource& resourceBase)
         {
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);

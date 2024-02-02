@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/IndirectBufferSignature.h>
+#include <Atom/RHI/SingleDeviceIndirectBufferSignature.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
@@ -18,9 +18,9 @@ namespace AZ
         //! Vulkan doesn't have an object that represents a signature, so this class doesn't
         //! create any platform objects. We use it to expose the strides of the indirect commands.
         class IndirectBufferSignature final
-            : public RHI::IndirectBufferSignature
+            : public RHI::SingleDeviceIndirectBufferSignature
         {
-            using Base = RHI::IndirectBufferSignature;
+            using Base = RHI::SingleDeviceIndirectBufferSignature;
         public:
             AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::ThreadPoolAllocator);
             AZ_RTTI(IndirectBufferSignature, "{29CAB46E-351D-4BC1-A93B-B16EA0496645}", Base);
@@ -31,8 +31,8 @@ namespace AZ
             IndirectBufferSignature() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::IndirectBufferSignature
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::IndirectBufferSignatureDescriptor& descriptor) override;
+            // RHI::SingleDeviceIndirectBufferSignature
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SingleDeviceIndirectBufferSignatureDescriptor& descriptor) override;
             uint32_t GetByteStrideInternal() const override;
             uint32_t GetOffsetInternal(RHI::IndirectCommandIndex index) const override;
             void ShutdownInternal() override;

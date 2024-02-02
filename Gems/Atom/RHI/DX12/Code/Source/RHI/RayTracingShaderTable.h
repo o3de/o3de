@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -19,7 +19,7 @@ namespace AZ
         class Buffer;
 
         class RayTracingShaderTable final
-            : public RHI::RayTracingShaderTable
+            : public RHI::SingleDeviceRayTracingShaderTable
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator);
@@ -53,7 +53,7 @@ namespace AZ
 #ifdef AZ_DX12_DXR_SUPPORT
             uint32_t FindLargestRecordSize(const RHI::RayTracingShaderTableRecordList& recordList);
             RHI::Ptr<Buffer> BuildTable(RHI::Device& deviceBase,
-                                        const RHI::RayTracingBufferPools& bufferPools,
+                                        const RHI::SingleDeviceRayTracingBufferPools& bufferPools,
                                         const RHI::RayTracingShaderTableRecordList& recordList,
                                         uint32_t shaderRecordSize,
                                         AZStd::wstring shaderTableName,
@@ -61,7 +61,7 @@ namespace AZ
 #endif
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::RayTracingShaderTable
+            // RHI::SingleDeviceRayTracingShaderTable
             RHI::ResultCode BuildInternal() override;
             //////////////////////////////////////////////////////////////////////////
 

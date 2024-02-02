@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 #include <Atom/RHI/MultiDeviceImage.h>
 #include <Atom/RHI/MultiDeviceImagePoolBase.h>
 

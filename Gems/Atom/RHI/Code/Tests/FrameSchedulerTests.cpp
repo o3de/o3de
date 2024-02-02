@@ -20,13 +20,13 @@ namespace UnitTest
     struct ImportedImage
     {
         RHI::AttachmentId m_id;
-        RHI::Ptr<RHI::Image> m_image;
+        RHI::Ptr<RHI::SingleDeviceImage> m_image;
     };
 
     struct ImportedBuffer
     {
         RHI::AttachmentId m_id;
-        RHI::Ptr<RHI::Buffer> m_buffer;
+        RHI::Ptr<RHI::SingleDeviceBuffer> m_buffer;
     };
 
     struct TransientImage
@@ -169,14 +169,14 @@ namespace UnitTest
 
             for (uint32_t i = 0; i < ImportedBufferCount; ++i)
             {
-                RHI::Ptr<RHI::Buffer> buffer;
+                RHI::Ptr<RHI::SingleDeviceBuffer> buffer;
                 buffer = RHI::Factory::Get().CreateBuffer();
 
                 RHI::BufferDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
                 desc.m_byteCount = BufferSize;
 
-                RHI::BufferInitRequest request;
+                RHI::SingleDeviceBufferInitRequest request;
                 request.m_descriptor = desc;
                 request.m_buffer = buffer.get();
                 m_state->m_bufferPool->InitBuffer(request);
@@ -195,7 +195,7 @@ namespace UnitTest
 
             for (uint32_t i = 0; i < ImportedImageCount; ++i)
             {
-                RHI::Ptr<RHI::Image> image;
+                RHI::Ptr<RHI::SingleDeviceImage> image;
                 image = RHI::Factory::Get().CreateImage();
 
                 RHI::ImageDescriptor desc = RHI::ImageDescriptor::Create2D(
@@ -204,7 +204,7 @@ namespace UnitTest
                     ImageSize,
                     RHI::Format::R8G8B8A8_UNORM);
 
-                RHI::ImageInitRequest request;
+                RHI::SingleDeviceImageInitRequest request;
                 request.m_descriptor = desc;
                 request.m_image = image.get();
                 m_state->m_imagePool->InitImage(request);
@@ -414,8 +414,8 @@ namespace UnitTest
 
         struct State
         {
-            RHI::Ptr<RHI::BufferPool> m_bufferPool;
-            RHI::Ptr<RHI::ImagePool> m_imagePool;
+            RHI::Ptr<RHI::SingleDeviceBufferPool> m_bufferPool;
+            RHI::Ptr<RHI::SingleDeviceImagePool> m_imagePool;
             ImportedImage m_imageAttachments[ImportedImageCount];
             ImportedBuffer m_bufferAttachments[ImportedBufferCount];
             AZStd::vector<AZStd::unique_ptr<ScopeProducer>> m_producers;

@@ -156,7 +156,7 @@ namespace AZ
             m_scissorState = scissor;
         }
 
-        void ShadowmapPass::SetClearShadowDrawPacket(AZ::RHI::ConstPtr<RHI::DrawPacket> clearShadowDrawPacket)
+        void ShadowmapPass::SetClearShadowDrawPacket(AZ::RHI::ConstPtr<RHI::SingleDeviceDrawPacket> clearShadowDrawPacket)
         {
             m_clearShadowDrawPacket = clearShadowDrawPacket;
             m_clearShadowDrawItemProperties = clearShadowDrawPacket->GetDrawItemProperties(0);

@@ -10,9 +10,9 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/SingleDeviceImage.h>
+#include <Atom/RHI/SingleDeviceImageView.h>
+#include <Atom/RHI/SingleDeviceImagePool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -38,13 +38,13 @@ namespace AZ
             bool IsInitialized() const;
 
             //! Returns the mutable GPU image instance initialized at asset load time.
-            RHI::Image* GetRHIImage();
+            RHI::SingleDeviceImage* GetRHIImage();
 
             //! Returns the immutable GPU image instance initialized at asset load time.
-            const RHI::Image* GetRHIImage() const;
+            const RHI::SingleDeviceImage* GetRHIImage() const;
 
             //! Returns the default image view instance, mapping the full (resident) image.
-            const RHI::ImageView* GetImageView() const;
+            const RHI::SingleDeviceImageView* GetImageView() const;
 
             //! Returns the image descriptor which contains some image information
             const RHI::ImageDescriptor& GetDescriptor() const;
@@ -53,17 +53,17 @@ namespace AZ
             uint16_t GetMipLevelCount();
                         
             //! Updates content of a single sub-resource in the image from the CPU.
-            virtual RHI::ResultCode UpdateImageContents(const RHI::ImageUpdateRequest& request);
+            virtual RHI::ResultCode UpdateImageContents(const RHI::SingleDeviceImageUpdateRequest& request);
             
         protected:
             // This is a base class for a derived instance variant.
             Image();
 
             // The RHI image instance is created at load time. It contains the resident set of mip levels.
-            RHI::Ptr<RHI::Image> m_image;
+            RHI::Ptr<RHI::SingleDeviceImage> m_image;
 
             // The default view instance mapping the full resident set of the image mip levels and array slices.
-            RHI::Ptr<RHI::ImageView> m_imageView;
+            RHI::Ptr<RHI::SingleDeviceImageView> m_imageView;
         };
     }
 }
