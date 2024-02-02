@@ -70,6 +70,7 @@ namespace AZ
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             const uint32_t imageDimension = 8;
+            const RHI::Format depthFormat = device.GetNearestSupportedFormat(RHI::Format::D16_UNORM, RHI::FormatCapabilities::DepthStencil);
 
             // fill out the different options for the types of image null descriptors
             {
@@ -101,6 +102,16 @@ namespace AZ
                     256,
                     RHI::Format::R32G32B32A32_FLOAT);
                 desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            }
+            {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::Depth2D)];
+                desc.m_name = "NULL_DESCRIPTOR_DEPTH_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2D(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    imageDimension,
+                    depthFormat);
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             }
             {
                 auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::MultiSampleGeneral2D)];
@@ -148,6 +159,17 @@ namespace AZ
                 desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
             }
             {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::DepthArray2D)];
+                desc.m_name = "NULL_DESCRIPTOR_DEPTH_ARRAY_2D";
+                desc.m_descriptor = RHI::ImageDescriptor::Create2DArray(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    imageDimension,
+                    1,
+                    depthFormat);
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            {
                 auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::GeneralCube)];
                 desc.m_name = "NULL_DESCRIPTOR_GENERAL_CUBE";
                 desc.m_descriptor = RHI::ImageDescriptor::CreateCubemap(
@@ -174,6 +196,15 @@ namespace AZ
                 desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
             }
             {
+                auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::DepthCube)];
+                desc.m_name = "NULL_DESCRIPTOR_DEPTH_CUBE";
+                desc.m_descriptor = RHI::ImageDescriptor::CreateCubemap(
+                    RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite,
+                    imageDimension,
+                    depthFormat);
+                desc.m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            {
                 auto& desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::ReadOnly3D)];
                 desc = m_imageNullDescriptors[static_cast<uint32_t>(ImageTypes::General3D)];
                 desc.m_name = "NULL_DESCRIPTOR_NULL_DESCRIPTOR_READONLY_3DREADONLY_CUBE";
@@ -186,7 +217,6 @@ namespace AZ
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
             barrier.subresourceRange.baseArrayLayer = 0;
@@ -215,13 +245,27 @@ namespace AZ
                     ImageComponentMapping::Swizzle::Zero,
                     ImageComponentMapping::Swizzle::One);
 
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
                 switch (type)
                 {
+                    case NullDescriptorManager::ImageTypes::Depth2D:
+                        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                        break;
+                    case NullDescriptorManager::ImageTypes::DepthArray2D:
+                        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                        [[fallthrough]];
                     case NullDescriptorManager::ImageTypes::GeneralArray2D:
                     case NullDescriptorManager::ImageTypes::ReadOnlyArray2D:
                     case NullDescriptorManager::ImageTypes::StorageArray2D:
                         viewDesc.m_isArray = true;
                         break;
+                    case NullDescriptorManager::ImageTypes::DepthCube:
+                        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                        [[fallthrough]];
                     case NullDescriptorManager::ImageTypes::GeneralCube:
                     case NullDescriptorManager::ImageTypes::ReadOnlyCube:
                         viewDesc.m_isCubemap = true;
@@ -301,7 +345,8 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        VkDescriptorImageInfo NullDescriptorManager::GetDescriptorImageInfo(RHI::ShaderInputImageType imageType, bool storageImage) const
+        VkDescriptorImageInfo NullDescriptorManager::GetDescriptorImageInfo(
+            RHI::ShaderInputImageType imageType, bool storageImage, bool usesDepthFormat) const
         {
             if (imageType == RHI::ShaderInputImageType::Image2D)
             {
@@ -311,7 +356,7 @@ namespace AZ
                 }
                 else
                 {
-                    return GetImage(ImageTypes::ReadOnly2D);
+                    return usesDepthFormat ? GetImage(ImageTypes::Depth2D) : GetImage(ImageTypes::ReadOnly2D);
                 }
             }
             else if (imageType == RHI::ShaderInputImageType::Image2DArray)
@@ -322,7 +367,7 @@ namespace AZ
                 }
                 else
                 {
-                    return GetImage(ImageTypes::ReadOnlyArray2D);
+                    return usesDepthFormat ? GetImage(ImageTypes::DepthArray2D) : GetImage(ImageTypes::ReadOnlyArray2D);
                 }
             }
             else if (imageType == RHI::ShaderInputImageType::Image2DMultisample)
@@ -344,7 +389,7 @@ namespace AZ
                 }
                 else
                 {
-                    return GetImage(ImageTypes::ReadOnlyCube);
+                    return usesDepthFormat ? GetImage(ImageTypes::DepthCube) : GetImage(ImageTypes::ReadOnlyCube);
                 }
             }
             else if (imageType == RHI::ShaderInputImageType::Image3D)
