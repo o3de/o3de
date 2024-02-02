@@ -263,5 +263,8 @@ xcb_input_fp3232_t* xcb_input_raw_button_press_axisvalues_raw(const xcb_input_ra
 {
     return MockXcbInterface::Instance()->xcb_input_raw_button_press_axisvalues_raw(R);
 }
-
+uint32_t* xcb_input_raw_button_press_valuator_mask (const xcb_input_raw_button_press_event_t *R)
+{
+    return MockXcbInterface::Instance()->xcb_input_raw_button_press_valuator_mask(R);
+}
 }

@@ -269,6 +269,11 @@ namespace PhysX
         PHYSX_SCENE_READ_LOCK(GetScene());
 
         physx::PxTransform pose = m_pxShape->getLocalPose();
+        if (m_pxShape->getGeometryType() == physx::PxGeometryType::eCAPSULE)
+        {
+            physx::PxQuat PxTolyRotation(-AZ::Constants::HalfPi, physx::PxVec3(0.0f, 1.0f, 0.0f));
+            pose.q *= PxTolyRotation;
+        }
         return { PxMathConvert(pose.p), PxMathConvert(pose.q) };
     }
 
