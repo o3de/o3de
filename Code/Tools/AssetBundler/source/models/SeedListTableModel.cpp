@@ -14,7 +14,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
+#include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogManager.h>
 
 #include <QFont>
 
@@ -66,7 +66,8 @@ namespace AssetBundler
         AZ::Data::AssetInfo assetInfo;
         QString platformList;
         const auto& enabledPlatforms = AzToolsFramework::PlatformAddressedAssetCatalogManager::GetEnabledPlatforms();
-        AZ_Error(AssetBundler::AppWindowName, !enabledPlatforms.empty(), "Unable to find any enabled asset platforms. Please verify the Asset Processor has run and generated assets successfully.");
+        [[maybe_unused]] const bool hasEnabledPlatforms = !enabledPlatforms.empty();
+        AZ_Error(AssetBundler::AppWindowName, hasEnabledPlatforms, "Unable to find any enabled asset platforms. Please verify the Asset Processor has run and generated assets successfully.");
 
         [[maybe_unused]] bool missingAssets = false;
 
