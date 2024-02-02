@@ -28,10 +28,10 @@ from itertools import product
 
 
 @pytest.mark.parametrize("skip_assets_flag, should_build_tools_flag, expect_get_asset_path, expect_process_command_count", [
-    pytest.param(True, True, False, 8),
-    pytest.param(True, False, False, 6),
-    pytest.param(False, True, True, 8),
-    pytest.param(False, False, True, 6)
+    pytest.param(True, True, False, 5),
+    pytest.param(True, False, False, 5),
+    pytest.param(False, True, True, 5),
+    pytest.param(False, False, True, 5)
 ])
 def test_asset_and_build_combinations(tmp_path, skip_assets_flag, should_build_tools_flag, expect_get_asset_path, expect_process_command_count):
     test_project_name = "TestProject"
@@ -48,8 +48,10 @@ def test_asset_and_build_combinations(tmp_path, skip_assets_flag, should_build_t
          patch('export_utility.process_level_names'),\
          patch('export_utility.build_and_bundle_assets'),\
          patch('o3de.export_project.validate_project_artifact_paths'),\
+         patch('o3de.export_project.build_export_toolchain'),\
          patch('o3de.export_project.preprocess_seed_path_list'),\
          patch('shutil.make_archive'),\
+         patch('pathlib.Path.is_file', return_value=True),\
          patch('o3de.export_project.get_asset_processor_batch_path')  as mock_asset_processor_path:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -168,6 +170,7 @@ def test_export_standalone_single(tmpdir, dum_fail_asset_err, dum_build_tools, d
          patch('o3de.export_project.validate_project_artifact_paths'),\
          patch('o3de.export_project.preprocess_seed_path_list'),\
          patch('shutil.make_archive'),\
+         patch('pathlib.Path.is_file', return_value=True),\
          patch('export_source_ios_xcode.export_ios_xcode_project') as mock_export_func:
         
         mock_get_o3de_folder.return_value = pathlib.Path(tmpdir.join('.o3de').realpath())
@@ -304,6 +307,7 @@ def test_build_tool_combinations(tmp_path, should_build_tools_flag):
          patch('pathlib.Path.is_dir', return_value=True),\
          patch('pathlib.Path.mkdir'),\
          patch('shutil.make_archive'),\
+         patch('pathlib.Path.is_file', return_value=True),\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -343,13 +347,11 @@ def test_build_tool_combinations(tmp_path, should_build_tools_flag):
                 elif not test_tools_build_path.is_absolute():
                     test_tools_build_path  = test_o3de_base_path / test_tools_build_path
 
-                arg_gen_list = mock_process_command.call_args_list[0][0][0]
-
-                assert arg_gen_list[0] == 'cmake'
-                assert arg_gen_list[1] == '-B'
-                assert arg_gen_list[2] == str(test_tools_build_path)
-                assert arg_gen_list[3] == '-G'
-                assert arg_gen_list[4] == 'Xcode'
+                mock_build_export_toolchain.assert_called_once_with(ctx=mock_ctx,
+                                   tools_build_path=test_tools_build_path,
+                                   engine_centric=False,
+                                   tool_config='profile',
+                                   logger=mock_logger)
             
             mock_process_command.reset_mock()
             mock_build_export_toolchain.reset_mock()
@@ -386,6 +388,7 @@ def test_asset_bundler_combinations(tmp_path, should_build_tools_flag):
          patch('pathlib.Path.is_dir', return_value=True),\
          patch('shutil.make_archive'),\
          patch('pathlib.Path.mkdir'),\
+         patch('pathlib.Path.is_file', return_value=True),\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -481,7 +484,7 @@ def test_asset_bundler_seed_combinations(tmp_path, test_seedlists, test_seedfile
          patch('shutil.make_archive'),\
          patch('argparse.ArgumentParser.parse_args'),\
          patch('pathlib.Path.mkdir'),\
-         patch('pathlib.Path.is_file'),\
+         patch('pathlib.Path.is_file', return_value=True),\
          patch('o3de.export_project.setup_launcher_layout_directory') as mock_setup_launcher_layout_directory:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -556,6 +559,7 @@ def test_asset_processor_combinations(tmp_path, should_build_tools_flag):
          patch('shutil.make_archive'),\
          patch('pathlib.Path.is_dir', return_value=True),\
          patch('pathlib.Path.mkdir'),\
+         patch('pathlib.Path.is_file', return_value=True),\
          patch('logging.getLogger', return_value=mock_logger) as mock_get_logger:
         
         mock_ctx = create_autospec(O3DEScriptExportContext)
@@ -626,14 +630,6 @@ def test_asset_processor_combinations(tmp_path, should_build_tools_flag):
                             max_bundle_size = 2048,
                             fail_on_asset_errors = False,
                             logger=mock_logger)
-                
-            selected_tools_build_path = test_tools_build_path
-
-            if not selected_tools_build_path:
-                selected_tools_build_path = test_o3de_base_path / 'build/tools'
-            
-            if not selected_tools_build_path.is_absolute():
-                selected_tools_build_path = test_o3de_base_path / selected_tools_build_path
             
             mock_get_asset_processor_path.assert_not_called()
             mock_build_assets.assert_not_called()

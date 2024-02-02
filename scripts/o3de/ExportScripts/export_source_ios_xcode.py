@@ -85,12 +85,7 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
     eutil.process_level_names(ctx, preprocessed_seedfile_paths, level_names, ASSET_PLATFORM)
 
     # Optionally build the toolchain needed to process the assets
-    # note: For now, I am keeping the tool building logic restricted on iOS, b/c atm it's unreliable for most configurations besides this one
-    if should_build_tools:
-        exp.process_command(["cmake", "-B", tools_build_path_str, '-G', "Xcode"], cwd=ctx.project_path)
-
-        exp.process_command(["cmake", "--build", tools_build_path_str, "--target", "Editor", "AssetProcessor", "AssetBundler","AssetProcessorBatch", "AssetBundlerBatch", "--config", "profile"],
-                    cwd=ctx.project_path)
+    eutil.handle_tools(ctx, should_build_tools, False, tool_config, ASSET_PLATFORM, tools_build_path, default_base_path, False, logger)
         
     # Optionally process the assets
     eutil.build_and_bundle_assets(ctx, should_build_all_assets, tools_build_path, False, 
@@ -100,12 +95,14 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
                                   logger)
 
     if should_build_all_assets:
-        if (ctx.project_path / 'AssetBundling/Bundles').is_dir():
-            (ctx.project_path / 'Pak' / f'{ctx.project_name}_ios_paks').mkdir(parents=True)
-            exp.process_command(['cp', '-r', str(ctx.project_path / 'AssetBundling/Bundles/engine_ios.pak'), 
-                            str( ctx.project_path / 'Pak' / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
-            exp.process_command(['cp', '-r', str(ctx.project_path / 'AssetBundling/Bundles/game_ios.pak'), 
-                            str( ctx.project_path / 'Pak' / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
+        bundling_path = ctx.project_path / 'AssetBundling/Bundles'
+        pak_path = ctx.project_path / 'Pak'
+        if bundling_path.is_dir():
+            (pak_path / f'{ctx.project_name}_ios_paks').mkdir(parents=True)
+            exp.process_command(['cp', '-r', str(bundling_path / 'engine_ios.pak'), 
+                            str( pak_path / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
+            exp.process_command(['cp', '-r', str(bundling_path / 'game_ios.pak'), 
+                            str( pak_path / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
 
     # Generate the Xcode project file for the O3DE project
     cmake_toolchain_path = ctx.engine_path / 'cmake/Platform/iOS/Toolchain_ios.cmake'
@@ -119,6 +116,8 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
                         '-scheme', f'{ctx.project_name}.GameLauncher', '-configuration', build_config, '-sdk',
                         'iphoneos', '-allowProvisioningUpdates']
 
+    # Note: Clean must happen first, because Xcode does not properly handle stale symlinks from previous build failures.
+    #   Once that is resolved, we can remove this line
     exp.process_command(xcode_build_common_args + ['clean'], cwd=ctx.project_path)
     
     exp.process_command(xcode_build_common_args + ['build'], cwd=ctx.project_path)
@@ -126,16 +125,19 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
     # Note: This workaround enables the creation of an IPA file, even if xcode archive doesn't work, but will require manual upload
     logger.info(f"Creating IPA file for {ctx.project_name}")
     payload_path = target_ios_project_path / 'bin'/ build_config /'Payload'
-    payload_path_str = str(payload_path)
-    exp.process_command(['mkdir', payload_path_str], cwd=ctx.project_path)
+    payload_path.mkdir(parents=True)
     exp.process_command(['cp', '-r', str(target_ios_project_path / 'bin'/ build_config / f'{ctx.project_name}.GameLauncher.app'), 
                         str( payload_path / f'{ctx.project_name}.GameLauncher.app')], cwd=ctx.project_path)
     
     shutil.make_archive(payload_path, 'zip', root_dir=(payload_path.parent.resolve()))
-    ipa_path_str = str(target_ios_project_path / 'bin'/ build_config /f'{ctx.project_name}.GameLauncher.ipa')
+    ipa_path = target_ios_project_path / 'bin'/ build_config /f'{ctx.project_name}.GameLauncher.ipa'
+    ipa_path_str = str(ipa_path)
     exp.process_command(['mv', str(payload_path)+".zip", ipa_path_str])
 
-    logger.info(f"iOS IPA file should be generated now. Please check {ipa_path_str}")
+    if ipa_path.is_file():
+        logger.info(f"iOS IPA file should be generated now. Please check {ipa_path_str}")
+    else:
+        raise exp.ExportProjectError("iOS IPA generation has failed")
 
 
 def export_source_ios_parse_args(o3de_context: exp.O3DEScriptExportContext, export_config: command_utils.O3DEConfig):
@@ -216,7 +218,6 @@ if "o3de_context" in globals():
             export_config = exp.get_export_project_config(project_path=o3de_context.project_path)
     except command_utils.O3DEConfigError:
         o3de_logger.debug(f"No project detected at {os.getcwd()}, default settings from global config.")
-        project_name = None
         export_config = exp.get_export_project_config(project_path=None)
 
     
