@@ -46,22 +46,22 @@ namespace MiniAudio
                 ->Attribute(AZ::Script::Attributes::Module, "MiniAudio")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
 
-            AZ::BehaviorParameterOverrides GetInnerConeAngleInRadiansParam = {"Get Inner Cone Angle In Radians", "Get Inner Cone Angle In Radians"};
-            AZ::BehaviorParameterOverrides SetInnerConeAngleInRadiansParam = {"Set Inner Cone Angle In Radians", "Set Inner Cone Angle In Radians"};
-            AZ::BehaviorParameterOverrides GetInnerConeAngleInDegreesParam = {"Get Inner Cone Angle In Degrees", "Get Inner Cone Angle In Degrees"};
-            AZ::BehaviorParameterOverrides SetInnerConeAngleInDegreesParam = {"Set Inner Cone Angle In Degrees", "Set Inner Cone Angle In Degrees"};
-            AZ::BehaviorParameterOverrides GetOuterConeAngleInRadiansParam = {"Get Outer Cone Angle In Radians", "Get Outer Cone Angle In Radians"};
-            AZ::BehaviorParameterOverrides SetOuterConeAngleInRadiansParam = {"Set Outer Cone Angle In Radians", "Set Outer Cone Angle In Radians"};
-            AZ::BehaviorParameterOverrides GetOuterConeAngleInDegreesParam = {"Get Outer Cone Angle In Degrees", "Get Outer Cone Angle In Degrees"};
-            AZ::BehaviorParameterOverrides SetOuterConeAngleInDegreesParam = {"Set Outer Cone Angle In Degrees", "Set Outer Cone Angle In Degrees"};
-            AZ::BehaviorParameterOverrides GetOuterVolumeParam = {"Get Percent Volume Outside Outer Cone", "Get Percent Volume Outside Outer Cone"};
-            AZ::BehaviorParameterOverrides SetOuterVolumeParam = {"Set Percent Volume Outside Outer Cone", "Set Percent Volume Outside Outer Cone"};
-            AZ::BehaviorParameterOverrides GetFixedDirectionParam = {"Get Fixed Direction", "Get Whether Direction Is Fixed"};
-            AZ::BehaviorParameterOverrides SetFixedDirectionParam = {"Set Fixed Direction", "Set Whether Direction Is Fixed"};
-            AZ::BehaviorParameterOverrides GetDirectionalAttenuationFactorParam = {"Get Directional Attenuation Factor", "Get Directional Attenuation Factor"};
-            AZ::BehaviorParameterOverrides SetDirectionalAttenuationFactorParam = {"Set Directional Attenuation Factor", "Set Directional Attenuation Factor"};
-            AZ::BehaviorParameterOverrides GetDirectionParam = {"Get Direction", "Get Playback Direction"};
-            AZ::BehaviorParameterOverrides SetDirectionParam = {"Set Direction", "Set Playback Direction"};
+            AZ::BehaviorParameterOverrides GetInnerConeAngleInRadiansParam = {"Inner Cone Angle In Radians", "Get Inner Cone Angle In Radians"};
+            AZ::BehaviorParameterOverrides SetInnerConeAngleInRadiansParam = {"Inner Cone Angle In Radians", "Set Inner Cone Angle In Radians"};
+            AZ::BehaviorParameterOverrides GetInnerConeAngleInDegreesParam = {"Inner Cone Angle In Degrees", "Get Inner Cone Angle In Degrees"};
+            AZ::BehaviorParameterOverrides SetInnerConeAngleInDegreesParam = {"Inner Cone Angle In Degrees", "Set Inner Cone Angle In Degrees"};
+            AZ::BehaviorParameterOverrides GetOuterConeAngleInRadiansParam = {"Outer Cone Angle In Radians", "Get Outer Cone Angle In Radians"};
+            AZ::BehaviorParameterOverrides SetOuterConeAngleInRadiansParam = {"Outer Cone Angle In Radians", "Set Outer Cone Angle In Radians"};
+            AZ::BehaviorParameterOverrides GetOuterConeAngleInDegreesParam = {"Outer Cone Angle In Degrees", "Get Outer Cone Angle In Degrees"};
+            AZ::BehaviorParameterOverrides SetOuterConeAngleInDegreesParam = {"Outer Cone Angle In Degrees", "Set Outer Cone Angle In Degrees"};
+            AZ::BehaviorParameterOverrides GetOuterVolumeParam = {"Outer Volume", "Get Percent Volume Outside Outer Cone"};
+            AZ::BehaviorParameterOverrides SetOuterVolumeParam = {"Outer Volume", "Set Percent Volume Outside Outer Cone"};
+            AZ::BehaviorParameterOverrides GetFixedDirectionParam = {"Fixed Direction", "Get Whether Direction Is Fixed"};
+            AZ::BehaviorParameterOverrides SetFixedDirectionParam = {"Fixed Direction", "Set Whether Direction Is Fixed"};
+            AZ::BehaviorParameterOverrides GetDirectionalAttenuationFactorParam = {"Directional Attenuation Factor", "Get Directional Attenuation Factor"};
+            AZ::BehaviorParameterOverrides SetDirectionalAttenuationFactorParam = {"Directional Attenuation Factor", "Set Directional Attenuation Factor"};
+            AZ::BehaviorParameterOverrides GetDirectionParam = {"Direction", "Get Playback Direction"};
+            AZ::BehaviorParameterOverrides SetDirectionParam = {"Direction", "Set Playback Direction"};
             behaviorContext->EBus<MiniAudioPlaybackRequestBus>("MiniAudioPlaybackRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "audio")

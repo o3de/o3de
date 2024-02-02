@@ -40,23 +40,24 @@ namespace MiniAudio
                 ->Attribute(AZ::Script::Attributes::Module, "MiniAudio")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
 
-            AZ::BehaviorParameterOverrides GetInnerConeAngleInRadiansParam = {"Get Inner Cone Angle In Radians", "Get Inner Cone Angle In Radians"};
-            AZ::BehaviorParameterOverrides SetInnerConeAngleInRadiansParam = {"Set Inner Cone Angle In Radians", "Set Inner Cone Angle In Radians"};
-            AZ::BehaviorParameterOverrides GetInnerConeAngleInDegreesParam = {"Get Inner Cone Angle In Degrees", "Get Inner Cone Angle In Degrees"};
-            AZ::BehaviorParameterOverrides SetInnerConeAngleInDegreesParam = {"Set Inner Cone Angle In Degrees", "Set Inner Cone Angle In Degrees"};
-            AZ::BehaviorParameterOverrides GetOuterConeAngleInRadiansParam = {"Get Outer Cone Angle In Radians", "Get Outer Cone Angle In Radians"};
-            AZ::BehaviorParameterOverrides SetOuterConeAngleInRadiansParam = {"Set Outer Cone Angle In Radians", "Set Outer Cone Angle In Radians"};
-            AZ::BehaviorParameterOverrides GetOuterConeAngleInDegreesParam = {"Get Outer Cone Angle In Degrees", "Get Outer Cone Angle In Degrees"};
-            AZ::BehaviorParameterOverrides SetOuterConeAngleInDegreesParam = {"Set Outer Cone Angle In Degrees", "Set Outer Cone Angle In Degrees"};
-            AZ::BehaviorParameterOverrides GetOuterVolumeParam = {"Get Percent Volume Outside Outer Cone", "Get Percent Volume Outside Outer Cone"};
-            AZ::BehaviorParameterOverrides SetOuterVolumeParam = {"Set Percent Volume Outside Outer Cone", "Set Percent Volume Outside Outer Cone"};
+            AZ::BehaviorParameterOverrides GetChannelCountParam = {"Channel Count", "Get Channel Count"};
+            AZ::BehaviorParameterOverrides GetInnerConeAngleInRadiansParam = {"Inner Cone Angle In Radians", "Get Inner Cone Angle In Radians"};
+            AZ::BehaviorParameterOverrides SetInnerConeAngleInRadiansParam = {"Inner Cone Angle In Radians", "Set Inner Cone Angle In Radians"};
+            AZ::BehaviorParameterOverrides GetInnerConeAngleInDegreesParam = {"Inner Cone Angle In Degrees", "Get Inner Cone Angle In Degrees"};
+            AZ::BehaviorParameterOverrides SetInnerConeAngleInDegreesParam = {"Inner Cone Angle In Degrees", "Set Inner Cone Angle In Degrees"};
+            AZ::BehaviorParameterOverrides GetOuterConeAngleInRadiansParam = {"Outer Cone Angle In Radians", "Get Outer Cone Angle In Radians"};
+            AZ::BehaviorParameterOverrides SetOuterConeAngleInRadiansParam = {"Outer Cone Angle In Radians", "Set Outer Cone Angle In Radians"};
+            AZ::BehaviorParameterOverrides GetOuterConeAngleInDegreesParam = {"Outer Cone Angle In Degrees", "Get Outer Cone Angle In Degrees"};
+            AZ::BehaviorParameterOverrides SetOuterConeAngleInDegreesParam = {"Outer Cone Angle In Degrees", "Set Outer Cone Angle In Degrees"};
+            AZ::BehaviorParameterOverrides GetOuterVolumeParam = {"Outer Volume", "Get Percent Volume Outside Outer Cone"};
+            AZ::BehaviorParameterOverrides SetOuterVolumeParam = {"Outer Volume", "Set Percent Volume Outside Outer Cone"};
             behaviorContext->EBus<MiniAudioListenerRequestBus>("MiniAudioListenerRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "audio")
                 ->Attribute(AZ::Script::Attributes::Category, "MiniAudio Listener")
                 ->Event("SetPosition", &MiniAudioListenerRequests::SetPosition)
                 ->Event("SetFollowEntity", &MiniAudioListenerRequests::SetFollowEntity)
-                ->Event("GetChannelCount", &MiniAudioListenerRequests::GetChannelCount)
+                ->Event("GetChannelCount", &MiniAudioListenerRequests::GetChannelCount, {GetChannelCountParam})
                 ->Event("GetInnerConeAngleInRadians", &MiniAudioListenerRequests::GetInnerAngleInRadians, {GetInnerConeAngleInRadiansParam})
                 ->Event("SetInnerConeAngleInRadians", &MiniAudioListenerRequests::SetInnerAngleInRadians, {SetInnerConeAngleInRadiansParam})
                 ->Event("GetInnerConeAngleInDegrees", &MiniAudioListenerRequests::GetInnerAngleInDegrees, {GetInnerConeAngleInDegreesParam})
