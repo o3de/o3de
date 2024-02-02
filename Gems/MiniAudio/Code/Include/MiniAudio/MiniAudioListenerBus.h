@@ -24,15 +24,15 @@ namespace MiniAudio
 
         //! Cone controls for directional attenuation
         virtual float GetInnerAngleInRadians() const = 0;
-        virtual void SetInnerAngleInRadians(const float& innerAngleInRadians) = 0;
+        virtual void SetInnerAngleInRadians(float innerAngleInRadians) = 0;
         virtual float GetInnerAngleInDegrees() const = 0;
-        virtual void SetInnerAngleInDegrees(const float& innerAngleInDegrees) = 0;
+        virtual void SetInnerAngleInDegrees(float innerAngleInDegrees) = 0;
         virtual float GetOuterAngleInRadians() const = 0;
-        virtual void SetOuterAngleInRadians(const float& outerAngleInRadians) = 0;
+        virtual void SetOuterAngleInRadians(float outerAngleInRadians) = 0;
         virtual float GetOuterAngleInDegrees() const = 0;
-        virtual void SetOuterAngleInDegrees(const float& outerAngleInDegrees) = 0;
+        virtual void SetOuterAngleInDegrees(float outerAngleInDegrees) = 0;
         virtual float GetOuterVolume() const = 0;
-        virtual void SetOuterVolume(const float& outerVolume) = 0;
+        virtual void SetOuterVolume(float outerVolume) = 0;
     };
 
     using MiniAudioListenerRequestBus = AZ::EBus<MiniAudioListenerRequests>;

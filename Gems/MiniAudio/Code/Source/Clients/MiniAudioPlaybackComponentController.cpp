@@ -157,7 +157,7 @@ namespace MiniAudio
         return m_config.m_innerAngleInRadians;
     }
 
-    void MiniAudioPlaybackComponentController::SetInnerAngleInRadians(const float& innerAngleInRadians)
+    void MiniAudioPlaybackComponentController::SetInnerAngleInRadians(float innerAngleInRadians)
     {
         m_config.m_innerAngleInRadians = innerAngleInRadians;
         m_config.m_innerAngleInDegrees = AZ::RadToDeg(m_config.m_innerAngleInRadians);
@@ -169,7 +169,7 @@ namespace MiniAudio
         return m_config.m_innerAngleInDegrees;
     }
 
-    void MiniAudioPlaybackComponentController::SetInnerAngleInDegrees(const float& innerAngleInDegrees)
+    void MiniAudioPlaybackComponentController::SetInnerAngleInDegrees(float innerAngleInDegrees)
     {
         m_config.m_innerAngleInDegrees = innerAngleInDegrees;
         m_config.m_innerAngleInRadians = AZ::DegToRad(m_config.m_innerAngleInDegrees);
@@ -181,7 +181,7 @@ namespace MiniAudio
         return m_config.m_outerAngleInRadians;
     }
 
-    void MiniAudioPlaybackComponentController::SetOuterAngleInRadians(const float& outerAngleInRadians)
+    void MiniAudioPlaybackComponentController::SetOuterAngleInRadians(float outerAngleInRadians)
     {
         m_config.m_outerAngleInRadians = outerAngleInRadians;
         m_config.m_outerAngleInDegrees = AZ::RadToDeg(m_config.m_outerAngleInRadians);
@@ -193,7 +193,7 @@ namespace MiniAudio
         return m_config.m_outerAngleInDegrees;
     }
 
-    void MiniAudioPlaybackComponentController::SetOuterAngleInDegrees(const float& outerAngleInDegrees)
+    void MiniAudioPlaybackComponentController::SetOuterAngleInDegrees(float outerAngleInDegrees)
     {
         m_config.m_outerAngleInDegrees = outerAngleInDegrees;
         m_config.m_outerAngleInRadians = AZ::DegToRad(m_config.m_outerAngleInDegrees);
@@ -205,7 +205,7 @@ namespace MiniAudio
         return m_config.m_outerVolume;
     }
 
-    void MiniAudioPlaybackComponentController::SetOuterVolume(const float& outerVolume)
+    void MiniAudioPlaybackComponentController::SetOuterVolume(float outerVolume)
     {
         m_config.m_outerVolume = AZ::GetClamp(outerVolume, 0.f, 100.f);
         OnConfigurationUpdated();
@@ -216,7 +216,7 @@ namespace MiniAudio
         return m_config.m_fixedDirection;
     }
 
-    void MiniAudioPlaybackComponentController::SetFixedDirecion(const bool& fixedDirection)
+    void MiniAudioPlaybackComponentController::SetFixedDirecion(bool fixedDirection)
     {
         m_config.m_fixedDirection = fixedDirection;
     }
@@ -226,7 +226,7 @@ namespace MiniAudio
         return ma_sound_get_directional_attenuation_factor(m_sound.get());
     }
 
-    void MiniAudioPlaybackComponentController::SetDirectionalAttenuationFactor(const float& directionalAttenuationFactor)
+    void MiniAudioPlaybackComponentController::SetDirectionalAttenuationFactor(float directionalAttenuationFactor)
     {
         m_config.m_directionalAttenuationFactor = directionalAttenuationFactor;
         OnConfigurationUpdated();

@@ -82,7 +82,7 @@ namespace MiniAudio
         return m_config.m_innerAngleInRadians;
     }
 
-    void MiniAudioListenerComponentController::SetInnerAngleInRadians(const float& innerAngleInRadians)
+    void MiniAudioListenerComponentController::SetInnerAngleInRadians(float innerAngleInRadians)
     {
         m_config.m_innerAngleInRadians = innerAngleInRadians;
         m_config.m_innerAngleInDegrees = AZ::RadToDeg(m_config.m_innerAngleInRadians);
@@ -94,7 +94,7 @@ namespace MiniAudio
         return m_config.m_innerAngleInDegrees;
     }
 
-    void MiniAudioListenerComponentController::SetInnerAngleInDegrees(const float& innerAngleInDegrees)
+    void MiniAudioListenerComponentController::SetInnerAngleInDegrees(float innerAngleInDegrees)
     {
         m_config.m_innerAngleInDegrees = innerAngleInDegrees;
         m_config.m_innerAngleInRadians = AZ::DegToRad(m_config.m_innerAngleInDegrees);
@@ -106,7 +106,7 @@ namespace MiniAudio
         return m_config.m_outerAngleInRadians;
     }
 
-    void MiniAudioListenerComponentController::SetOuterAngleInRadians(const float& outerAngleInRadians)
+    void MiniAudioListenerComponentController::SetOuterAngleInRadians(float outerAngleInRadians)
     {
         m_config.m_outerAngleInRadians = outerAngleInRadians;
         m_config.m_outerAngleInDegrees = AZ::RadToDeg(m_config.m_outerAngleInRadians);
@@ -118,7 +118,7 @@ namespace MiniAudio
         return m_config.m_outerAngleInDegrees;
     }
 
-    void MiniAudioListenerComponentController::SetOuterAngleInDegrees(const float& outerAngleInDegrees)
+    void MiniAudioListenerComponentController::SetOuterAngleInDegrees(float outerAngleInDegrees)
     {
         m_config.m_outerAngleInDegrees = outerAngleInDegrees;
         m_config.m_outerAngleInRadians = AZ::DegToRad(m_config.m_outerAngleInDegrees);
@@ -130,7 +130,7 @@ namespace MiniAudio
         return m_config.m_outerVolume;
     }
 
-    void MiniAudioListenerComponentController::SetOuterVolume(const float& outerVolume)
+    void MiniAudioListenerComponentController::SetOuterVolume(float outerVolume)
     {
         m_config.m_outerVolume = AZ::GetClamp(outerVolume, 0.f, 100.f);
         OnConfigurationUpdated();

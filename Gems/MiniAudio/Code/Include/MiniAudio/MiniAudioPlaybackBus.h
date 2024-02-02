@@ -35,19 +35,19 @@ namespace MiniAudio
 
         //! Cone controls for directional attenuation
         virtual float GetInnerAngleInRadians() const = 0;
-        virtual void SetInnerAngleInRadians(const float& innerAngleInRadians) = 0;
+        virtual void SetInnerAngleInRadians(float innerAngleInRadians) = 0;
         virtual float GetInnerAngleInDegrees() const = 0;
-        virtual void SetInnerAngleInDegrees(const float& innerAngleInDegrees) = 0;
+        virtual void SetInnerAngleInDegrees(float innerAngleInDegrees) = 0;
         virtual float GetOuterAngleInRadians() const = 0;
-        virtual void SetOuterAngleInRadians(const float& outerAngleInRadians) = 0;
+        virtual void SetOuterAngleInRadians(float outerAngleInRadians) = 0;
         virtual float GetOuterAngleInDegrees() const = 0;
-        virtual void SetOuterAngleInDegrees(const float& outerAngleInDegrees) = 0;
+        virtual void SetOuterAngleInDegrees(float outerAngleInDegrees) = 0;
         virtual float GetOuterVolume() const = 0;
-        virtual void SetOuterVolume(const float& outerVolume) = 0;
+        virtual void SetOuterVolume(float outerVolume) = 0;
         virtual bool GetFixedDirecion() const = 0;
-        virtual void SetFixedDirecion(const bool& fixedDirection) = 0;
+        virtual void SetFixedDirecion(bool fixedDirection) = 0;
         virtual float GetDirectionalAttenuationFactor() const = 0;
-        virtual void SetDirectionalAttenuationFactor(const float& directionalAttenuationFactor) = 0;
+        virtual void SetDirectionalAttenuationFactor(float directionalAttenuationFactor) = 0;
         virtual AZ::Vector3 GetDirection() const = 0;
         virtual void SetDirection(const AZ::Vector3& direction) = 0;
     };
