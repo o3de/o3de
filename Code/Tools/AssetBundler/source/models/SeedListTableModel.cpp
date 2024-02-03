@@ -158,8 +158,14 @@ namespace AssetBundler
             AZ_Error(AssetBundler::AppWindowName, false, "Unable to find additional Seed info");
             return false;
         }
+
+        auto visiblePlatforms = platforms;
+#ifndef AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
+        // don't include restricted platforms when they are not enabled
+        visiblePlatforms &= AzFramework::PlatformFlags::UnrestrictedPlatforms;
+#endif
         additionalSeedInfo->second->m_platformList =
-            QString(AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platforms).c_str());
+            QString(AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(visiblePlatforms).c_str());
 
         SetHasUnsavedChanges(true);
 
@@ -176,13 +182,18 @@ namespace AssetBundler
         AZStd::pair<AZ::Data::AssetId, AzFramework::PlatformFlags> addSeedsResult =
             m_seedListManager->AddSeedAssetForValidPlatforms(seedRelativePath, platforms);
 
-        if (!addSeedsResult.first.IsValid() || addSeedsResult.second == AzFramework::PlatformFlags::Platform_NONE)
+        AzFramework::PlatformFlags validPlatforms = addSeedsResult.second;
+        if (!addSeedsResult.first.IsValid() || validPlatforms == AzFramework::PlatformFlags::Platform_NONE)
         {
             // Error has already been thrown
             return false;
         }
 
-        QString platformList = QString(AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(addSeedsResult.second).c_str());
+#ifndef AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
+        // don't include restricted platforms when they are not enabled
+        validPlatforms &= AzFramework::PlatformFlags::UnrestrictedPlatforms;
+#endif
+        QString platformList = QString(AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(validPlatforms).c_str());
 
         int lastRowIndex = AZStd::max(rowCount() - 1, 0);
         beginInsertRows(QModelIndex(), lastRowIndex, lastRowIndex);
