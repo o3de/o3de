@@ -640,7 +640,7 @@ namespace AzToolsFramework
         // with an InputChannel* such as in m_channels, it would not do the extra things that
         // InputChannelDigitalWithSharedModifierKeyStates needs to do, such as capture modifier key states, before it calls base
         // UpdateState.  Instead, keyboard key channels have to be cast into their actual type, and then ProcessRawInputEvent
-        // must be called instead (which itself then calls UpdateState() after doing its special modifier handling.
+        // must be called instead, which itself then calls UpdateState() after doing its special modifier handling.
 
         for (auto key : m_keyMappings)
         {
@@ -659,9 +659,10 @@ namespace AzToolsFramework
             // If resetting the input device changed the channel state, submit it to the mapped channel list for processing.
             if (channelData.second->IsActive())
             {
-                // note that keyboard keys will generally be active here, because of the above loop that specifically resets
-                // all the key mappings using the concrete InputChannelDigitalWithSharedModifierKeyStates function, which then
-                // calls UpdateState itself.
+                // Note that the keyboard keys will have already transitioned from whatever state they are in 
+                // to the "Ended" or "Idle" state (if they were already "Ended"), due to the above loop.  
+                // This call here, ssuming they were not already idle, will transition them further into the Idle state
+                // and thus we can expect NotifyUpdateChannelIfNotIdle here not to operate on keyboard keys due to that.
                 channelData.second->UpdateState(false);
                 NotifyUpdateChannelIfNotIdle(channelData.second, event);
             }
