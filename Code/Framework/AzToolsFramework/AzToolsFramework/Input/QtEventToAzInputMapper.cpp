@@ -634,7 +634,7 @@ namespace AzToolsFramework
 
     void QtEventToAzInputMapper::ClearInputChannels(QEvent* event)
     {
-        // not ethat UpdateState() is not a virtual function in InputChannel,
+        // note that UpdateState() is not a virtual function in InputChannel,
         // Keyboard channels are instances of InputChannelDigitalWithSharedModifierKeyStates derived from DigitalChannel
         // which itself derives from InputChannel.  Since this is not a virtual function, if we were to call it directly
         // with an InputChannel* such as in m_channels, it would not do the extra things that
