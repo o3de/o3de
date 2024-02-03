@@ -9,23 +9,11 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Outcome/Outcome.h>
-#include <AzToolsFramework/Entity/EntityTypes.h>
-#include <AzToolsFramework/Prefab/Instance/Instance.h>
-#include <AzToolsFramework/Prefab/Spawnable/ComponentRequirementsValidator.h>
-#include <AzToolsFramework/Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h>
-#include <AzToolsFramework/Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.h>
-#include <AzToolsFramework/Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessor.h>
 
 namespace AZ
 {
     class ReflectContext;
-}
-
-namespace AzToolsFramework::Components
-{
-    class EditorComponentBase;
 }
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
@@ -38,28 +26,12 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::AssetPlatformComponentRemover,
             "{25D9A8A6-908F-4B26-A752-EBAF7DC074F8}", PrefabProcessor);
 
-        ~AssetPlatformComponentRemover() override;
-
-        void Process(PrefabProcessorContext& prefabProcessorContext) override;
-
-        using RemoveComponentBasedOnAssetPlatformResult = AZ::Outcome<void, AZStd::string>;
-        RemoveComponentBasedOnAssetPlatformResult RemoveComponentBasedOnAssetPlatform(
-            PrefabDocument& prefab,
-            AZ::SerializeContext* serializeContext,
-            PrefabProcessorContext& prefabProcessorContext);
-
         static void Reflect(AZ::ReflectContext* context);
 
-     protected:
-        AZ::SerializeContext* m_serializeContext{ nullptr };
-        EditorOnlyEntityHandler* m_editorOnlyEntityHandler{ nullptr };
-        EditorOnlyEntityHandlers m_editorOnlyEntityHandlerCandidates{
-            aznew WorldEditorOnlyEntityHandler(),
-            aznew UiEditorOnlyEntityHandler() };
-        EntityIdSet m_editorOnlyEntityIds;
+        void Process(PrefabProcessorContext& prefabProcessorContext) override;
+        void RemoveComponentsBasedOnAssetPlatform(PrefabDocument& prefab, const AZStd::set<AZ::Uuid>& exludedComponents);
 
      private:
-       //AZStd::map<AZStd::string, AZStd::set<AZ::Uuid>> m_platformTagRemovedComponents;
-
+        AZStd::map<AZStd::string, AZStd::set<AZ::Uuid>> m_platformExcludedComponents;
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

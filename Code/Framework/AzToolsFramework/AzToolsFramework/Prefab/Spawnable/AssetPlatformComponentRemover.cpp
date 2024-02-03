@@ -6,28 +6,24 @@
  *
  */
 
-#include <AzCore/Component/ComponentExport.h>
+#include <AzToolsFramework/Prefab/Spawnable/AssetPlatformComponentRemover.h>
+
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/ranges/ranges_algorithm.h>
-#include <AzCore/std/ranges/transform_view.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/std/string/string_view.h>
-#include <AzToolsFramework/Prefab/Instance/Instance.h>
-#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/Spawnable/AssetPlatformComponentRemover.h>
-#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
 
-#pragma optimize("",off)
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    AssetPlatformComponentRemover::~AssetPlatformComponentRemover()
+    void AssetPlatformComponentRemover::Reflect(AZ::ReflectContext* context)
     {
-        for (auto* handler : m_editorOnlyEntityHandlerCandidates)
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            delete handler;
+            serializeContext->Class<AssetPlatformComponentRemover, PrefabProcessor>()
+                ->Version(1)
+                ->Field("PlatformExcludedComponents", &AssetPlatformComponentRemover::m_platformExcludedComponents)
+                ;
         }
     }
 
@@ -41,79 +37,50 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             return;
         }
 
-        prefabProcessorContext.ListPrefabs(
-            [this, &serializeContext, &prefabProcessorContext](PrefabDocument& prefab)
+        AZ::PlatformTagSet platformTags = prefabProcessorContext.GetPlatformTags();
+        AZStd::set<AZ::Uuid> excludedComponents;
+        for (const auto& platforms : m_platformExcludedComponents)
+        {
+            if (platformTags.contains(AZ::Crc32(platforms.first)))
             {
-                auto result = RemoveComponentBasedOnAssetPlatform(prefab, serializeContext, prefabProcessorContext);
-                if (!result)
-                {
-                    AZ_Error(
-                        "Prefab", false, "Converting to runtime Prefab '%s' failed, Error: %s .", prefab.GetName().c_str(),
-                        result.GetError().c_str());
-                    return;
-                } 
+                excludedComponents.insert_range(platforms.second);
+            }
+        }
+
+        if (excludedComponents.empty())
+        {
+            return;
+        }
+        
+        prefabProcessorContext.ListPrefabs(
+            [this, &excludedComponents](PrefabDocument& prefab)
+            {
+                RemoveComponentsBasedOnAssetPlatform(prefab, excludedComponents);
             });
     }
 
-    void AssetPlatformComponentRemover::Reflect(AZ::ReflectContext* context)
+    void AssetPlatformComponentRemover::RemoveComponentsBasedOnAssetPlatform(PrefabDocument& prefab, const AZStd::set<AZ::Uuid>& exludedComponents)
     {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+        if (exludedComponents.empty())
         {
-            serializeContext->Class<AssetPlatformComponentRemover, PrefabProcessor>()->Version(1);
+            return;
         }
-    }
 
-
-    AssetPlatformComponentRemover::RemoveComponentBasedOnAssetPlatformResult AssetPlatformComponentRemover::RemoveComponentBasedOnAssetPlatform(
-        PrefabDocument& prefab,
-        AZ::SerializeContext* serializeContext,
-        PrefabProcessorContext& prefabProcessorContext)
-    {
-        // replace entities of instance with exported ones.
-        AZ::PlatformTagSet platformTags = prefabProcessorContext.GetPlatformTags();
         prefab.GetInstance().GetAllEntitiesInHierarchy(
-            [&platformTags, &serializeContext](AZStd::unique_ptr<AZ::Entity>& entity)
+            [&exludedComponents](AZStd::unique_ptr<AZ::Entity>& entity)
             {
-                platformTags;
-                serializeContext;
-
                 AZStd::vector<AZ::Component*> components = entity->GetComponents();
                 for (auto component = components.rbegin(); component != components.rend(); ++component)
                 {
-                    component;
+                    if (exludedComponents.contains((*component)->GetUnderlyingComponentType()))
+                    {
+                        entity->RemoveComponent(*component);
+                        delete *component;
+                    }
                 }
-
-                //for (AZ::Component* component : removedComponents)
-                //{
-                //    entity->RemoveComponent(component);
-                //    delete component;
-                //}
-
-
-
-                //if (AZ::Component* meshComponent = entity->FindComponent(AZ::Uuid("{C7801FA8-3E82-4D40-B039-4854F1892FDE}")))
-                //{
-                //    entity->RemoveComponent(meshComponent);
-                //    delete meshComponent;
-                //}
-
-                //if (AZ::Component* materialComponent = entity->FindComponent(AZ::Uuid("{E5A56D7F-C63E-4080-BF62-01326AC60982}")))
-                //{
-                //    entity->RemoveComponent(materialComponent);
-                //    delete materialComponent;
-                //}
-
-                //if (AZ::Component* terrainMacroMaterialComponent = entity->FindComponent(AZ::Uuid("{F82379FB-E2AE-4F75-A6F4-1AE5F5DA42E8}")))
-                //{
-                //    entity->RemoveComponent(terrainMacroMaterialComponent);
-                //    delete terrainMacroMaterialComponent;
-                //}
 
                 return true;
             }
         );
-
-        return AZ::Success();
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
-#pragma optimize("", on)
