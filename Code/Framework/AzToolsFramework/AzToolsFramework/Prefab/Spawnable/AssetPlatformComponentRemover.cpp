@@ -12,7 +12,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
-#include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
+
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {

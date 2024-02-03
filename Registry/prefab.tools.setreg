@@ -22,7 +22,10 @@
                                 "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::AssetPlatformComponentRemover",
                                 "PlatformExcludedComponents":
                                 {
-                                    "server": [ "{C7801FA8-3E82-4D40-B039-4854F1892FDE}", "{E5A56D7F-C63E-4080-BF62-01326AC60982}", "{F82379FB-E2AE-4F75-A6F4-1AE5F5DA42E8}" ]
+                                    "server": [ "{C7801FA8-3E82-4D40-B039-4854F1892FDE}",  // MeshComponent
+                                                "{E5A56D7F-C63E-4080-BF62-01326AC60982}",  // MaterialComponent
+                                                "{F82379FB-E2AE-4F75-A6F4-1AE5F5DA42E8}"  // TerrainMacroMaterialComponent
+                                              ]
                                 }
                             },
                             "Prefab catchment": 
