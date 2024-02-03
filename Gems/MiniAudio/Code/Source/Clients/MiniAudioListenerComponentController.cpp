@@ -157,8 +157,8 @@ namespace MiniAudio
         {
             ma_engine_listener_set_position(engine, m_config.m_listenerIndex, world.GetTranslation().GetX(), world.GetTranslation().GetY(), world.GetTranslation().GetZ());
 
-            const AZ::Vector3 forward = world.TransformVector(AZ::Vector3::CreateAxisY(1.f));
-            const AZ::Vector3 up = world.TransformVector(AZ::Vector3::CreateAxisZ(1.f));
+            const AZ::Vector3 forward = world.GetBasisY();
+            const AZ::Vector3 up = world.GetBasisZ();
             ma_engine_listener_set_direction(engine, m_config.m_listenerIndex, forward.GetX(), forward.GetY(), forward.GetZ());
 
             ma_engine_listener_set_world_up(engine, m_config.m_listenerIndex, up.GetX(), up.GetY(), up.GetZ());

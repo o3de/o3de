@@ -241,8 +241,6 @@ namespace MiniAudio
     void MiniAudioPlaybackComponentController::SetDirection(const AZ::Vector3& direction)
     {
         m_config.m_direction = direction;
-        AZ::Transform worldTm = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         ma_sound_set_direction(m_sound.get(), m_config.m_direction.GetX(), m_config.m_direction.GetY(), m_config.m_direction.GetZ());
     }
 
@@ -272,9 +270,7 @@ namespace MiniAudio
             {
                 AZ::Transform worldTm = AZ::Transform::CreateIdentity();
                 AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-                ma_sound_set_direction(m_sound.get(), worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetX(),
-                                                      worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetY(),
-                                                      worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetZ());
+                ma_sound_set_direction(m_sound.get(), worldTm.GetBasisY().GetX(), worldTm.GetBasisY().GetY(), worldTm.GetBasisY().GetZ());
             }
         }
     }
@@ -347,9 +343,7 @@ namespace MiniAudio
                     {
                         AZ::Transform worldTm = AZ::Transform::CreateIdentity();
                         AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-                        ma_sound_set_direction(m_sound.get(), worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetX(),
-                                                              worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetY(),
-                                                              worldTm.TransformVector(AZ::Vector3::CreateAxisY(1.f)).GetZ());
+                        ma_sound_set_direction(m_sound.get(), worldTm.GetBasisY().GetX(), worldTm.GetBasisY().GetY(), worldTm.GetBasisY().GetZ());
                     }
                     else
                     {
