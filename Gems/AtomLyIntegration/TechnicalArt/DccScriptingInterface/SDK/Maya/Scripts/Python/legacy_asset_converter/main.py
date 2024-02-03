@@ -79,7 +79,7 @@ for handler in _logging.root.handlers[:]:
 module_name = 'legacy_asset_converter.main'
 log_file_path = os.path.join(settings.DCCSI_LOG_PATH, f'{module_name}.log')
 if not os.path.exists(settings.DCCSI_LOG_PATH):
-    os.makedirs(settings.DCCSI_LOG_PATH)
+    os.makedirs(settings.DCCSI_LOG_PATH, exist_ok=True)
 
 _log_level = int(20)
 _DCCSI_GDEBUG = True
@@ -581,7 +581,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
 
         # Get Material Definition Template
         mat_abs_path = Path(__file__).with_name(self.default_material_definition)
-        with open(mat_abs_path) as json_file:
+        with mat_abs_path.open() as json_file:
             self.template_lumberyard_material = json.load(json_file)
 
         if os.path.exists(os.path.join(Path.cwd(), 'materialsdb.dat')):
