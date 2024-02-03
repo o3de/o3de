@@ -94,20 +94,22 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
                                   ctx.project_path/'AssetBundling', max_bundle_size,
                                   logger)
 
-    if should_build_all_assets:
-        bundling_path = ctx.project_path / 'AssetBundling/Bundles'
-        pak_path = ctx.project_path / 'Pak'
-        if bundling_path.is_dir():
-            (pak_path / f'{ctx.project_name}_ios_paks').mkdir(parents=True)
-            exp.process_command(['cp', '-r', str(bundling_path / 'engine_ios.pak'), 
-                            str( pak_path / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
-            exp.process_command(['cp', '-r', str(bundling_path / 'game_ios.pak'), 
-                            str( pak_path / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
+    bundling_path = ctx.project_path / 'AssetBundling/Bundles'
+
+    # if should_build_all_assets:  
+        # pak_path = ctx.project_path / 'Pak'
+        # if bundling_path.is_dir():
+        #     (pak_path / f'{ctx.project_name}_ios_paks').mkdir(parents=True)
+        #     exp.process_command(['cp', '-r', str(bundling_path / 'engine_ios.pak'), 
+        #                     str( pak_path / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
+        #     exp.process_command(['cp', '-r', str(bundling_path / 'game_ios.pak'), 
+        #                     str( pak_path / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
 
     # Generate the Xcode project file for the O3DE project
     cmake_toolchain_path = ctx.engine_path / 'cmake/Platform/iOS/Toolchain_ios.cmake'
 
-    exp.process_command(['cmake', '-B', ios_build_folder_str, '-G', "Xcode", f'-DCMAKE_TOOLCHAIN_FILE={str(cmake_toolchain_path)}', '-DLY_MONOLITHIC_GAME=1'],
+    exp.process_command(['cmake', '-B', ios_build_folder_str, '-G', "Xcode",
+                        f'-DCMAKE_TOOLCHAIN_FILE={str(cmake_toolchain_path)}', '-DLY_MONOLITHIC_GAME=1'],
                     cwd= ctx.project_path)
 
     logger.info(f"Xcode project file should be generated now. Please check {ios_build_folder_str}")
