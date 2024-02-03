@@ -96,15 +96,6 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
 
     bundling_path = ctx.project_path / 'AssetBundling/Bundles'
 
-    # if should_build_all_assets:  
-        # pak_path = ctx.project_path / 'Pak'
-        # if bundling_path.is_dir():
-        #     (pak_path / f'{ctx.project_name}_ios_paks').mkdir(parents=True)
-        #     exp.process_command(['cp', '-r', str(bundling_path / 'engine_ios.pak'), 
-        #                     str( pak_path / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
-        #     exp.process_command(['cp', '-r', str(bundling_path / 'game_ios.pak'), 
-        #                     str( pak_path / f'{ctx.project_name}_ios_paks')], cwd=ctx.project_path)
-
     # Generate the Xcode project file for the O3DE project
     cmake_toolchain_path = ctx.engine_path / 'cmake/Platform/iOS/Toolchain_ios.cmake'
 
@@ -137,7 +128,7 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
     exp.process_command(['mv', str(payload_path)+".zip", ipa_path_str])
 
     if ipa_path.is_file():
-        logger.info(f"iOS IPA file should be generated now. Please check {ipa_path_str}")
+        logger.info(f"iOS IPA file generated at {ipa_path_str}")
     else:
         raise exp.ExportProjectError("iOS IPA generation has failed")
 
