@@ -8,6 +8,7 @@ Helper classes for legacy conversion scripts
 """
 
 import os
+import platform
 import xml.etree.ElementTree
 
 class Stats_Collector(object):
@@ -282,6 +283,12 @@ def get_uuid_from_assetId(assetId):
 def get_subid_from_assetId(assetId):
     separatorIndex = assetId.find(":") + 1
     return assetId[separatorIndex:]
+
+def get_default_asset_platform():
+    host_platform_to_asset_platform_map = { 'windows': 'pc',
+                                            'linux':   'linux',
+                                            'darwin':  'mac' }
+    return host_platform_to_asset_platform_map.get(platform.system().lower(), "")
 
 class Component_Converter(object):
     """

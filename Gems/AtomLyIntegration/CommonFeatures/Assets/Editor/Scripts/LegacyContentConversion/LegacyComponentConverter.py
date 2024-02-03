@@ -298,10 +298,10 @@ upon conversion, decimating the previous contents of those components.\n"
     fileList = get_file_list(commandLineOptions.projectName, commandLineOptions.includeGems, extensionList, BUILD_PATH, GEMS_PATH)
     
     if commandLineOptions.assetCatalogOverridePath:
-        assetCatalogPath = os.path.join(commandLineOptions.assetCatalogOverridePath)
+        assetCatalogPath = commandLineOptions.assetCatalogOverridePath
         assetCatalogDictionaries = get_asset_catalog_dictionaries(assetCatalogPath)
     else:
-        assetCatalogPath = os.path.join("Cache", commandLineOptions.projectName, "pc", commandLineOptions.projectName, "assetcatalog.xml")
+        assetCatalogPath = os.path.join("Cache", commandLineOptions.projectName, get_default_asset_platform(), commandLineOptions.projectName, "assetcatalog.xml")
         assetCatalogDictionaries = get_asset_catalog_dictionaries(assetCatalogPath)
         
     # Create a log file to store converted component file filenames
