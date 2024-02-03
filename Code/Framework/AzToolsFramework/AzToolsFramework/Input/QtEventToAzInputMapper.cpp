@@ -661,7 +661,7 @@ namespace AzToolsFramework
             {
                 // Note that the keyboard keys will have already transitioned from whatever state they are in 
                 // to the "Ended" or "Idle" state (if they were already "Ended"), due to the above loop.  
-                // This call here, ssuming they were not already idle, will transition them further into the Idle state
+                // This call here, assuming they were not already idle, will transition them further into the Idle state
                 // and thus we can expect NotifyUpdateChannelIfNotIdle here not to operate on keyboard keys due to that.
                 channelData.second->UpdateState(false);
                 NotifyUpdateChannelIfNotIdle(channelData.second, event);
@@ -697,3 +697,4 @@ namespace AzToolsFramework
         }
     }
 } // namespace AzToolsFramework
+g
