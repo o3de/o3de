@@ -59,7 +59,7 @@ define_property(TARGET PROPERTY LY_PROJECT_NAME
 macro(o3de_gem_setup default_gem_name)
     # Query the gem name from the gem.json file if possible
     # otherwise fallback to using the default gem name argument
-    o3de_find_ancestor_gem_root(gem_path gem_name gem_provided_unique_service "${CMAKE_CURRENT_SOURCE_DIR}")
+    o3de_find_ancestor_gem_root(gem_path gem_name "${CMAKE_CURRENT_SOURCE_DIR}")
     if (NOT gem_name)
         set(gem_name "${default_gem_name}")
     endif()
@@ -67,11 +67,6 @@ macro(o3de_gem_setup default_gem_name)
     # Fallback to using the current source CMakeLists.txt directory as the gem root path
     if (NOT gem_path)
         set(gem_path ${CMAKE_CURRENT_SOURCE_DIR})
-    endif()
-
-    # Track any (optional) provided unique service that this gem provides
-    if (gem_provided_unique_service)
-        set_property(GLOBAL PROPERTY LY_GEM_PROVIDED_SERVICE_"${gem_name}" "${gem_provided_unique_service}")
     endif()
 
     set(gem_json ${gem_path}/gem.json)
@@ -90,10 +85,9 @@ endmacro()
 # \arg:source_dir(FILEPATH) - Filepath to walk upwards from to locate a gem.json
 # \return:output_gem_module_root - The directory containing the nearest gem.json
 # \return:output_gem_name - The name of the gem read from the gem.json
-# \return:output_gem_provided_unique_service - The name of the provided service for the gem if any
-function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name output_gem_provided_unique_service source_dir)
+function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name source_dir)
     unset(${output_gem_module_root} PARENT_SCOPE)
-
+    
     if(source_dir)
         set(candidate_gem_path ${source_dir})
         # Locate the root of the gem by finding the gem.json location
@@ -131,7 +125,8 @@ function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name outp
     endif()
 
     if (gem_provided_service)
-        set(${output_gem_provided_unique_service} ${gem_provided_service} PARENT_SCOPE)
+        # Track any (optional) provided unique service that this gem provides
+        set_property(GLOBAL PROPERTY LY_GEM_PROVIDED_SERVICE_"${gem_name}" "${gem_provided_unique_service}")
     endif()
 
 endfunction()
