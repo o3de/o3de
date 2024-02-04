@@ -304,7 +304,7 @@ namespace AZ::DocumentPropertyEditor
                     // create entry
                     void* newDataAddress = classData->m_factory->Create(classData->m_name);
 
-                    AZ_Assert(newDataAddress, "Faliled to create new element for the continer!");
+                    AZ_Assert(newDataAddress, "Faliled to create new element for the container!");
                     // cast to base type (if needed)
                     void* basePtr = serialContext->DownCast(
                         newDataAddress,
