@@ -522,7 +522,7 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
         project_gem_requirements.add(GemRequirement(dep_name, dep_version_specifier))
 
         # Track all the identified unique service providers and the gems that provide it
-        gem_spec_list = all_gem_json_data[dep_name]
+        gem_spec_list = all_gem_json_data.get(dep_name, [])
         for gem_spec in gem_spec_list:
             provided_unique_service = gem_spec.get('provided_unique_service', None)
             if provided_unique_service:
