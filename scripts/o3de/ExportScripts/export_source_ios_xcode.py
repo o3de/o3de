@@ -99,6 +99,10 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
     # Generate the Xcode project file for the O3DE project
     cmake_toolchain_path = ctx.engine_path / 'cmake/Platform/iOS/Toolchain_ios.cmake'
 
+    # Make sure app icon resource exists before proceeding with build
+    exp.process_command(['cp', '-r', str(ctx.project_path / 'Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset'), 
+                        str( ctx.project_path / f'Resources/Platform/iOS/Images.xcassets/{ctx.project_name}AppIcon.appiconset')], cwd=ctx.project_path)
+
     exp.process_command(['cmake', '-B', ios_build_folder_str, '-G', "Xcode",
                         f'-DCMAKE_TOOLCHAIN_FILE={str(cmake_toolchain_path)}', '-DLY_MONOLITHIC_GAME=1'],
                     cwd= ctx.project_path)
