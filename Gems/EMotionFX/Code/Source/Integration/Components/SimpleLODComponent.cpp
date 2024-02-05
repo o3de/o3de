@@ -169,6 +169,13 @@ namespace EMotionFX
 
         void SimpleLODComponent::Deactivate()
         {
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsHeadless())
+            {
+                return;
+            }
+
             AZ::TickBus::Handler::BusDisconnect();
             ActorComponentNotificationBus::Handler::BusDisconnect();
 
