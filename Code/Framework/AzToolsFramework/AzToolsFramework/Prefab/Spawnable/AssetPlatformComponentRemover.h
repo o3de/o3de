@@ -22,7 +22,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     //! For example, a headless server shouldn't need to load a mesh or material asset,
     //!   so remove any MeshComponents from the server asset spawnable.
     //! Excluded components are defined inside of Registry/prefab.tools.setreg
-
     class AssetPlatformComponentRemover
         : public PrefabProcessor
     {
