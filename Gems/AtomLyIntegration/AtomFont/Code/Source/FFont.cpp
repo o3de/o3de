@@ -42,7 +42,6 @@
 #include <AzCore/Interface/Interface.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceDrawPacket.h>
 #include <Atom/RHI/MultiDeviceImagePool.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>

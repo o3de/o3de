@@ -27,9 +27,7 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/MultiDeviceImage.h>
-#include <Atom/RHI/SingleDeviceIndexBufferView.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
-#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>

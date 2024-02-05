@@ -12,7 +12,7 @@
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
-#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/Console.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
@@ -258,29 +258,23 @@ namespace AZ
 
             ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
-            RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
+            RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
             drawPacketBuilder.Begin(nullptr);
 
             drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
-            drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView.GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex));
-            drawPacketBuilder.AddShaderResourceGroup(
-                m_objectSrg->GetRHIShaderResourceGroup()
-                    ? m_objectSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()
-                    : nullptr);
-            drawPacketBuilder.AddShaderResourceGroup(
-                m_material->GetRHIShaderResourceGroup()
-                    ? m_material->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()
-                    : nullptr);
+            drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView  );
+            drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
+            drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
             // We build the list of used shaders in a local list rather than m_activeShaders so that
             // if DoUpdate() fails it won't modify any member data.
             MeshDrawPacket::ShaderList shaderList;
             shaderList.reserve(m_activeShaders.size());
 
-            // We have to keep a list of these outside the loops that collect all the shaders because the SingleDeviceDrawPacketBuilder
-            // keeps pointers to StreamBufferViews until SingleDeviceDrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
+            // We have to keep a list of these outside the loops that collect all the shaders because the MultiDeviceDrawPacketBuilder
+            // keeps pointers to StreamBufferViews until MultiDeviceDrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
             // that the memory won't be relocated when new entries are added.
-            AZStd::fixed_vector<ModelLod::TempStreamBufferViewList, RHI::SingleDeviceDrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
+            AZStd::fixed_vector<ModelLod::StreamBufferViewList, RHI::MultiDeviceDrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
 
             // The root constants are shared by all draw items in the draw packet. We must populate them with default values.
             // The draw packet builder needs to know where the data is coming from during appendShader, but it's not actually read
@@ -456,15 +450,15 @@ namespace AZ
                         m_material->GetAsset().ToString<AZStd::string>().c_str());
                 }
 
-                RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
+                RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
-                drawRequest.m_pipelineState = pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                drawRequest.m_pipelineState = pipelineState;
                 drawRequest.m_streamBufferViews = streamBufferViews;
                 drawRequest.m_stencilRef = m_stencilRef;
                 drawRequest.m_sortKey = m_sortKey;
                 if (drawSrg)
                 {
-                    drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
+                    drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
                     // Hold on to a reference to the drawSrg so the refcount doesn't drop to zero
                     m_perDrawSrgs.push_back(drawSrg);
                 }
@@ -498,9 +492,9 @@ namespace AZ
                 {
                     if (shaderItem.IsEnabled())
                     {
-                        if (shaderList.size() == RHI::SingleDeviceDrawPacketBuilder::DrawItemCountMax)
+                        if (shaderList.size() == RHI::MultiDeviceDrawPacketBuilder::DrawItemCountMax)
                         {
-                            AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::SingleDeviceDrawPacketBuilder::DrawItemCountMax);
+                            AZ_Error("MeshDrawPacket", false, "Material has more than the limit of %d active shader items.", RHI::MultiDeviceDrawPacketBuilder::DrawItemCountMax);
                             return false;
                         }
 

@@ -222,19 +222,17 @@ namespace UnitTest
             EXPECT_EQ(drawPacket.get(), nullptr);
         }
 
-        //! Add these tests once DrawListContext takes MultiDeviceDrawPackets
-        /*
         void DrawListContextFilter()
         {
             AZ::SimpleLcgRandom random(s_randomSeed);
             MultiDeviceDrawPacketData drawPacketData(random);
 
             RHI::MultiDeviceDrawPacketBuilder builder(LocalDeviceMask);
-            const auto drawPacket = drawPacketData.Build(builder);
+            auto drawPacket = drawPacketData.Build(builder);
 
             RHI::DrawListContext drawListContext;
             drawListContext.Init(RHI::DrawListMask{}.set());
-            drawListContext.AddDrawPacket(drawPacket);
+            drawListContext.AddDrawPacket(drawPacket.get());
 
             for (size_t i = 0; i < drawPacket->GetDrawItemCount(); ++i)
             {
@@ -278,14 +276,14 @@ namespace UnitTest
         void DrawListContextNullFilter()
         {
             AZ::SimpleLcgRandom random(s_randomSeed);
-            DrawPacketData drawPacketData(random);
+            MultiDeviceDrawPacketData drawPacketData(random);
 
-            RHI::SingleDeviceDrawPacketBuilder builder;
-            const RHI::SingleDeviceDrawPacket* drawPacket = drawPacketData.Build(builder);
+            RHI::MultiDeviceDrawPacketBuilder builder{RHI::MultiDevice::DefaultDevice};
+            auto drawPacket = drawPacketData.Build(builder);
 
             RHI::DrawListContext drawListContext;
             drawListContext.Init(RHI::DrawListMask{}); // Mask set to not contain any draw lists.
-            drawListContext.AddDrawPacket(drawPacket);
+            drawListContext.AddDrawPacket(drawPacket.get());
             drawListContext.FinalizeLists();
 
             for (size_t i = 0; i < drawPacket->GetDrawItemCount(); ++i)
@@ -296,10 +294,7 @@ namespace UnitTest
             }
 
             drawListContext.Shutdown();
-
-            delete drawPacket;
         }
-        */
 
         void DrawPacketClone()
         {
@@ -580,8 +575,6 @@ namespace UnitTest
         DrawPacketBuildClearBuildNull();
     }
 
-    //! Add these tests once DrawListContext takes MultiDeviceDrawPackets
-    /*
     TEST_F(MultiDeviceDrawPacketTest, DrawListContextFilter)
     {
         DrawListContextFilter();
@@ -591,7 +584,6 @@ namespace UnitTest
     {
         DrawListContextNullFilter();
     }
-    */
 
     TEST_F(MultiDeviceDrawPacketTest, DrawPacketClone)
     {

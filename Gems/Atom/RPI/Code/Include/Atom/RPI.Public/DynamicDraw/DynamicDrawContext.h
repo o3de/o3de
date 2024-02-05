@@ -237,7 +237,7 @@ namespace AZ
             // Data for draw item
             Ptr<PipelineStateForDraw> m_pipelineState;
             Data::Instance<ShaderResourceGroup> m_srgPerContext;
-            RHI::SingleDeviceShaderResourceGroup* m_srgGroups[1]; // array for draw item's srg groups
+            RHI::MultiDeviceShaderResourceGroup* m_srgGroups[1]; // array for draw item's srg groups
             uint32_t m_perVertexDataSize = 0;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
             bool m_hasShaderVariantKeyFallbackEntry = false;
@@ -266,8 +266,8 @@ namespace AZ
             RHI::DrawFilterMask m_drawFilter = RHI::DrawFilterMaskDefaultValue;
 
             // Cached draw data
-            AZStd::vector<RHI::SingleDeviceStreamBufferView> m_cachedStreamBufferViews;
-            AZStd::vector<RHI::SingleDeviceIndexBufferView> m_cachedIndexBufferViews;
+            AZStd::vector<RHI::MultiDeviceStreamBufferView> m_cachedStreamBufferViews;
+            AZStd::vector<RHI::MultiDeviceIndexBufferView> m_cachedIndexBufferViews;
             AZStd::vector<Data::Instance<ShaderResourceGroup>> m_cachedDrawSrg;
 
             uint32_t m_nextDrawSrgIdx = 0;
@@ -277,7 +277,7 @@ namespace AZ
             static const BufferViewIndexType InvalidIndex = static_cast<BufferViewIndexType>(-1);
             struct DrawItemInfo
             {
-                RHI::SingleDeviceDrawItem m_drawItem;
+                RHI::MultiDeviceDrawItem m_drawItem;
                 RHI::DrawItemSortKey m_sortKey = 0;
                 BufferViewIndexType m_vertexBufferViewIndex = InvalidIndex;
                 BufferViewIndexType m_indexBufferViewIndex = InvalidIndex;

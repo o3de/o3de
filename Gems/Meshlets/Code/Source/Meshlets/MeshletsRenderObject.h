@@ -17,10 +17,7 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RHI/SingleDeviceStreamBufferView.h>
-
-#include <Atom/RPI.Public/MeshDrawPacket.h>
-#include <Atom/RPI.Public/Model/Model.h>
+#include <Atom/RPI.MultiDeviceStreamBufferViewclude <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
@@ -72,11 +69,11 @@ namespace AZ
             //! Render pass data
             Data::Instance<RPI::ShaderResourceGroup> RenderObjectSrg;     // Per object render data - includes instanceId and vertex buffers
             AZStd::vector<SrgBufferDescriptor> RenderBuffersDescriptors;
-            RHI::SingleDeviceIndexBufferView IndexBufferView;
+            RHI::MultiDeviceIndexBufferView IndexBufferView;
             AZStd::vector<Data::Instance<RHI::MultiDeviceBufferView>> RenderBuffersViews;
             AZStd::vector <Data::Instance<RPI::Buffer>> RenderBuffers;    // stand alone non shared buffers
 
-            const RHI::SingleDeviceDrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure
+            const RHI::MultiDeviceDrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure
         };
         using ModelLodDataArray = AZStd::vector<MeshRenderData*>;    // MeshRenderData per mesh in the Lod
 
@@ -151,7 +148,7 @@ namespace AZ
             uint32_t CreateMeshletsRenderObject(const RPI::ModelLodAsset::Mesh& meshAsset, MeshRenderData &meshRenderData);
 
 
-            bool BuildDrawPacket( RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest& drawRequest, MeshRenderData& meshRenderData);
+            bool BuildDrawPacket( RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest& drawRequest, MeshRenderData& meshRenderData);
 
             bool CreateAndBindRenderBuffers(MeshRenderData &meshRenderData);
 

@@ -585,7 +585,7 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::SingleDeviceIndexBufferView(*m_indexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
+                m_indexBufferView = RHI::MultiDeviceIndexBufferView(*m_indexBuffer, 0, indexBufferSize, RHI::IndexFormat::Uint32 );
 
                 return true;
             }
@@ -1106,9 +1106,9 @@ namespace AZ
                 return updatedCB;
             }
 
-            bool HairRenderObject::BuildDrawPacket(RPI::Shader* geometryShader, RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest& drawRequest)
+            bool HairRenderObject::BuildDrawPacket(RPI::Shader* geometryShader, RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest& drawRequest)
             {
-                RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
+                RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
                 RHI::DrawIndexed drawIndexed;
 
                 uint32_t numPrimsToRender = m_TotalIndices;
@@ -1145,11 +1145,11 @@ namespace AZ
                     return false;
                 }
                 // No need to compile the simSrg since it was compiled already by the Compute pass this frame
-                drawPacketBuilder.AddShaderResourceGroup(renderMaterialSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
-                drawPacketBuilder.AddShaderResourceGroup(simSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
+                drawPacketBuilder.AddShaderResourceGroup(renderMaterialSrg->GetRHIShaderResourceGroup());
+                drawPacketBuilder.AddShaderResourceGroup(simSrg->GetRHIShaderResourceGroup());
                 drawPacketBuilder.AddDrawItem(drawRequest);
 
-                const RHI::SingleDeviceDrawPacket* drawPacket = drawPacketBuilder.End();
+                auto drawPacket = drawPacketBuilder.End();
                 if (!drawPacket)
                 {
                     AZ_Error("Hair Gem", false, "Failed to build the hair DrawPacket.");
@@ -1160,7 +1160,6 @@ namespace AZ
                 auto iter = m_geometryDrawPackets.find(geometryShader);
                 if (iter != m_geometryDrawPackets.end())
                 {
-                    delete iter->second;
                     iter->second = drawPacket;
                 }
                 else
@@ -1171,14 +1170,14 @@ namespace AZ
                 return true;
             }
 
-            const RHI::SingleDeviceDrawPacket* HairRenderObject::GetGeometrylDrawPacket(RPI::Shader* geometryShader)
+            const RHI::MultiDeviceDrawPacket* HairRenderObject::GetGeometrylDrawPacket(RPI::Shader* geometryShader)
             {
                 auto iter = m_geometryDrawPackets.find(geometryShader);
                 if (iter == m_geometryDrawPackets.end())
                 {
                     return nullptr;
                 }
-                return iter->second;
+                return iter->second.get();
             }
 
             const RHI::SingleDeviceDispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)

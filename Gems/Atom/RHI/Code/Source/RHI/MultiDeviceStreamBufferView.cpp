@@ -52,7 +52,7 @@ namespace AZ::RHI
         return m_byteStride;
     }
 
-    bool ValidateStreamBufferViews(
+    bool  ValidateStreamBufferViews(
         const RHI::InputStreamLayout& inputStreamLayout, AZStd::span<const RHI::MultiDeviceStreamBufferView> streamBufferViews)
     {
         bool ok = true;

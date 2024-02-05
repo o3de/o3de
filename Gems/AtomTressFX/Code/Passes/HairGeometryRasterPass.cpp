@@ -186,9 +186,9 @@ namespace AZ
                     return false;
                 }
 
-                RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
+                RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
                 drawRequest.m_listTag = m_drawListTag;
-                drawRequest.m_pipelineState = m_pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                drawRequest.m_pipelineState = m_pipelineState;
 //                drawRequest.m_streamBufferViews =  // no explicit vertex buffer.  shader is using the srg buffers
                 drawRequest.m_stencilRef = 0;
                 drawRequest.m_sortKey = 0;
@@ -214,7 +214,7 @@ namespace AZ
 
                 for (auto& renderObject : hairRenderObjects)
                 {
-                    const RHI::SingleDeviceDrawPacket* drawPacket = renderObject->GetGeometrylDrawPacket(m_shader.get());
+                    const RHI::MultiDeviceDrawPacket* drawPacket = renderObject->GetGeometrylDrawPacket(m_shader.get());
                     if (!drawPacket)
                     {   // might not be an error - the object might have just been added and the DrawPacket is
                         // scheduled to be built when the render frame begins

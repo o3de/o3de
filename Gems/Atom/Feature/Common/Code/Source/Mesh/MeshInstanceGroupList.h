@@ -29,7 +29,7 @@ namespace AZ::Render
 
         // We modify the original draw packet each frame with a new instance count and a new root constant offset
         // The instance count and offset varies per view, so we keep one modifiable copy of the draw packet for each view
-        AZStd::vector<RHI::Ptr<RHI::SingleDeviceDrawPacket>> m_perViewDrawPackets;
+        AZStd::vector<RHI::Ptr<RHI::MultiDeviceDrawPacket>> m_perViewDrawPackets;
 
         // All draw items in a draw packet share the same root constant layout
         uint32_t m_drawRootConstantOffset = 0;

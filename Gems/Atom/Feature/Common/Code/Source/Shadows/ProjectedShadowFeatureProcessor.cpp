@@ -11,7 +11,7 @@
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <Math/GaussianMathFilter.h>
-#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -773,13 +773,13 @@ namespace AZ::Render
             return;
         }
 
-        RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
+        RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(RHI::DrawLinear(1, 0, 3, 0));
 
-        RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
+        RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
         drawRequest.m_listTag = m_clearShadowShader->GetDrawListTag();
-        drawRequest.m_pipelineState = pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+        drawRequest.m_pipelineState = pipelineState;
         drawRequest.m_sortKey = AZStd::numeric_limits<RHI::DrawItemSortKey>::min();
 
         drawPacketBuilder.AddDrawItem(drawRequest);
