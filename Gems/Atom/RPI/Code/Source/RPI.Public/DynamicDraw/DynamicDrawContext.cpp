@@ -130,7 +130,7 @@ namespace AZ
             {
                 m_srgPerContext = AZ::RPI::ShaderResourceGroup::Create(
                     m_shader->GetAsset(), m_shader->GetSupervariantIndex(), Name { PerContextSrgName });
-                m_srgGroups[0] = m_srgPerContext->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
+                m_srgGroups[0] = m_srgPerContext->GetRHIShaderResourceGroup();
             }
 
             // Save per draw srg asset which can be used to create draw srg later
@@ -494,23 +494,22 @@ namespace AZ
                 return;
             }
 
-            DrawItemInfo drawItemInfo;
-            RHI::SingleDeviceDrawItem& drawItem = drawItemInfo.m_drawItem;
+            DrawItemInfo drawItemInfo{{RHI::MultiDevice::AllDevices}};
+            RHI::MultiDeviceDrawItem& drawItem = drawItemInfo.m_drawItem;
 
             // Draw argument
             RHI::DrawIndexed drawIndexed;
             drawIndexed.m_indexCount = indexCount;
             drawIndexed.m_instanceCount = 1;
-            drawItem.m_arguments = drawIndexed;
+            drawItem.SetArguments(drawIndexed);
 
             // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+            drawItem.SetPipelineState(GetCurrentPipelineState());
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
             vertexBuffer->Write(vertexData, vertexDataSize);
             m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
-            drawItem.m_streamBufferViewCount = 1;
             drawItemInfo.m_vertexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedStreamBufferViews.size() - 1);
 
             // Write data to index buffer and set up index buffer view for DrawItem
@@ -521,32 +520,29 @@ namespace AZ
             // Setup per context srg if it exists
             if (m_srgPerContext)
             {
-                drawItem.m_shaderResourceGroupCount = 1;
-                drawItem.m_shaderResourceGroups = m_srgGroups;
+                drawItem.SetShaderResourceGroups(m_srgGroups, 1);
             }
 
             // Setup per draw srg
             if (drawSrg)
             {
-                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
+                drawItem.SetUniqueShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
             }
 
             // Set scissor per draw if scissor is enabled.
             if (m_useScissor)
             {
-                drawItem.m_scissorsCount = 1;
-                drawItem.m_scissors = &m_scissor;
+                drawItem.SetScissors(&m_scissor, 1);
             }
 
             // Set viewport per draw if viewport is enabled.
             if (m_useViewport)
             {
-                drawItem.m_viewportsCount = 1;
-                drawItem.m_viewports = &m_viewport;
+                drawItem.SetViewports(&m_viewport, 1);
             }
 
             // Set stencil reference. Used when stencil is enabled.
-            drawItem.m_stencilRef = m_stencilRef;
+            drawItem.SetStencilRef(m_stencilRef);
 
             drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(AZStd::move(drawItemInfo));
@@ -588,50 +584,46 @@ namespace AZ
                 return;
             }
 
-            DrawItemInfo drawItemInfo;
-            RHI::SingleDeviceDrawItem& drawItem = drawItemInfo.m_drawItem;
+            DrawItemInfo drawItemInfo{{RHI::MultiDevice::AllDevices}};
+            RHI::MultiDeviceDrawItem& drawItem = drawItemInfo.m_drawItem;
 
             // Draw argument
             RHI::DrawLinear drawLinear;
             drawLinear.m_instanceCount = 1;
             drawLinear.m_vertexCount = vertexCount;
-            drawItem.m_arguments = drawLinear;
+            drawItem.SetArguments(drawLinear);
 
             // Get RHI pipeline state from cached RHI pipeline states based on current draw state options
-            drawItem.m_pipelineState = GetCurrentPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+            drawItem.SetPipelineState(GetCurrentPipelineState());
 
             // Write data to vertex buffer and set up stream buffer views for DrawItem
             // The stream buffer view need to be cached before the frame is end
             vertexBuffer->Write(vertexData, vertexDataSize);
             m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
-            drawItem.m_streamBufferViewCount = 1;
             drawItemInfo.m_vertexBufferViewIndex = uint32_t(m_cachedStreamBufferViews.size() - 1);
 
             // Setup per context srg if it exists
             if (m_srgPerContext)
             {
-                drawItem.m_shaderResourceGroupCount = 1;
-                drawItem.m_shaderResourceGroups = m_srgGroups;
+                drawItem.SetShaderResourceGroups(m_srgGroups, 1);
             }
 
             // Setup per draw srg
             if (drawSrg)
             {
-                drawItem.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
+                drawItem.SetUniqueShaderResourceGroup(drawSrg->GetRHIShaderResourceGroup());
             }
 
             // Set scissor per draw if scissor is enabled.
             if (m_useScissor)
             {
-                drawItem.m_scissorsCount = 1;
-                drawItem.m_scissors = &m_scissor;
+                drawItem.SetScissors(&m_scissor, 1);
             }
 
             // Set viewport per draw if viewport is enabled.
             if (m_useViewport)
             {
-                drawItem.m_viewportsCount = 1;
-                drawItem.m_viewports = &m_viewport;
+                drawItem.SetViewports(&m_viewport, 1);
             }
 
             drawItemInfo.m_sortKey = m_sortKey++;
@@ -721,17 +713,17 @@ namespace AZ
             {
                 if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
                 {
-                    drawItemInfo.m_drawItem.m_indexBufferView = &m_cachedIndexBufferViews[drawItemInfo.m_indexBufferViewIndex];
+                    drawItemInfo.m_drawItem.SetIndexBufferView(&m_cachedIndexBufferViews[drawItemInfo.m_indexBufferViewIndex]);
                 }
 
                 if (drawItemInfo.m_vertexBufferViewIndex != InvalidIndex)
                 {
-                    drawItemInfo.m_drawItem.m_streamBufferViews = &m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex];
+                    drawItemInfo.m_drawItem.SetStreamBufferViews(&m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex], 1);
                 }
 
-                RHI::SingleDeviceDrawItemProperties drawItemProperties;
+                RHI::MultiDeviceDrawItemProperties drawItemProperties;
                 drawItemProperties.m_sortKey = drawItemInfo.m_sortKey;
-                drawItemProperties.m_item = &drawItemInfo.m_drawItem;
+                drawItemProperties.m_mdItem = &drawItemInfo.m_drawItem;
                 drawItemProperties.m_drawFilterMask = m_drawFilter;
                 m_cachedDrawList.emplace_back(drawItemProperties);
             }

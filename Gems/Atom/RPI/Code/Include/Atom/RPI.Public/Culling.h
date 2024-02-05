@@ -98,7 +98,7 @@ namespace AZ
                 {
                     float m_screenCoverageMin = 0.0f;
                     float m_screenCoverageMax = 1.0f;
-                    AZStd::vector<const RHI::SingleDeviceDrawPacket*> m_drawPackets;
+                    AZStd::vector<const RHI::MultiDeviceDrawPacket*> m_drawPackets;
                     void* m_visibleObjectUserData = nullptr;
                 };
 

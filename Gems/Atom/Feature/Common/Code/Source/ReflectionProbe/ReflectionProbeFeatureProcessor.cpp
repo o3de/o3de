@@ -623,9 +623,9 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create index buffer view
-            AZ::RHI::SingleDeviceIndexBufferView indexBufferView =
+            AZ::RHI::MultiDeviceIndexBufferView indexBufferView =
             {
-                *m_boxIndexBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
+                *m_boxIndexBuffer,
                 0,
                 sizeof(indices),
                 AZ::RHI::IndexFormat::Uint16,
@@ -642,9 +642,9 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", result == RHI::ResultCode::Success, "Failed to initialize box index buffer - error [%d]", result);
 
             // create position buffer view
-            RHI::SingleDeviceStreamBufferView positionBufferView =
+            RHI::MultiDeviceStreamBufferView positionBufferView =
             {
-                *m_boxPositionBuffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
+                *m_boxPositionBuffer,
                 0,
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
                 sizeof(Position),

@@ -67,15 +67,15 @@ namespace AZ::Render
         void UpdateBackgroundClearColor();
 
         //! build a draw packet to draw the star mesh
-        RHI::ConstPtr<RHI::SingleDeviceDrawPacket> BuildDrawPacket(
+        RHI::ConstPtr<RHI::MultiDeviceDrawPacket> BuildDrawPacket(
             const Data::Instance<RPI::ShaderResourceGroup>& srg,
             const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
             const RHI::DrawListTag& drawListTag,
-            const AZStd::span<const RHI::SingleDeviceStreamBufferView>& streamBufferViews,
+            const AZStd::span<const RHI::MultiDeviceStreamBufferView>& streamBufferViews,
             uint32_t vertexCount);
 
         RPI::Ptr<RPI::PipelineStateForDraw> m_meshPipelineState;
-        AZStd::array<AZ::RHI::SingleDeviceStreamBufferView, 1> m_meshStreamBufferViews;
+        AZStd::array<AZ::RHI::MultiDeviceStreamBufferView, 1> m_meshStreamBufferViews;
 
         Data::Instance<RPI::ShaderResourceGroup> m_drawSrg = nullptr;
         Data::Instance<RPI::Shader> m_shader = nullptr;
@@ -85,7 +85,7 @@ namespace AZ::Render
 
         Data::Instance<RPI::Buffer> m_starsVertexBuffer = nullptr;
         RHI::DrawListTag m_drawListTag;
-        RHI::ConstPtr<RHI::SingleDeviceDrawPacket> m_drawPacket;
+        RHI::ConstPtr<RHI::MultiDeviceDrawPacket> m_drawPacket;
 
         bool m_updateShaderConstants = false;
         AZ::Matrix3x3 m_orientation = AZ::Matrix3x3::CreateIdentity();
