@@ -29,14 +29,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     void AssetPlatformComponentRemover::Process(PrefabProcessorContext& prefabProcessorContext)
     {
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        if (!serializeContext)
-        {
-            AZ_Assert(serializeContext, "Failed to retrieve serialize context.");
-            return;
-        }
-
         AZ::PlatformTagSet platformTags = prefabProcessorContext.GetPlatformTags();
         AZStd::set<AZ::Uuid> excludedComponents;
         for (const auto& platforms : m_platformExcludedComponents)
@@ -49,6 +41,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         if (excludedComponents.empty())
         {
+            // No need to remove any components.
             return;
         }
         
@@ -63,12 +56,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         if (exludedComponents.empty())
         {
+            // No need to remove any components.
             return;
         }
 
         prefab.GetInstance().GetAllEntitiesInHierarchy(
             [&exludedComponents](AZStd::unique_ptr<AZ::Entity>& entity)
             {
+                // Loop over an entity's components backwards and pop-off components that shouldn't exist.
                 AZStd::vector<AZ::Component*> components = entity->GetComponents();
                 for (auto component = components.rbegin(); component != components.rend(); ++component)
                 {

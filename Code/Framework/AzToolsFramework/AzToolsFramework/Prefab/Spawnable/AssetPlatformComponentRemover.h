@@ -18,6 +18,11 @@ namespace AZ
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
+    //! A prefab processor for removing a spawnable's components based on asset tags.
+    //! For example, a headless server shouldn't need to load a mesh or material asset,
+    //!   so remove any MeshComponents from the server asset spawnable.
+    //! Excluded components are defined inside of Registry/prefab.tools.setreg
+
     class AssetPlatformComponentRemover
         : public PrefabProcessor
     {
