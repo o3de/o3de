@@ -90,7 +90,13 @@ namespace MiniAudio
     void MiniAudioSystemComponent::Activate()
     {
         m_engine = AZStd::make_unique<ma_engine>();
-        const ma_result result = ma_engine_init(nullptr, m_engine.get());
+
+        ma_engine_config engineConfig = ma_engine_config_init();
+
+        // The number of audio output channels cannot be dynamically changed during runtime yet.
+        // The engine configuration setting is done here for future reference.
+        engineConfig.channels = m_channelCount;
+        const ma_result result = ma_engine_init(&engineConfig, m_engine.get());
         if (result != MA_SUCCESS)
         {
             AZ_Error("MiniAudio", false, "Failed to initialize audio engine, error %d", result);
@@ -134,5 +140,10 @@ namespace MiniAudio
     {
         m_globalVolume = ma_volume_db_to_linear(decibels);
         SetGlobalVolume(m_globalVolume);
+    }
+
+    AZ::u32 MiniAudioSystemComponent::GetChannelCount() const
+    {
+        return ma_engine_get_channels(m_engine.get());
     }
 } // namespace MiniAudio

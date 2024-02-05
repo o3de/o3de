@@ -1,0 +1,537 @@
+{
+    "entries": [
+        {
+            "base": "MiniAudioPlaybackRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Mini Audio Playback Request Bus"
+            },
+            "methods": [
+                {
+                    "base": "GetOuterConeAngleInRadians",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Outer Cone Angle In Radians"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Outer Cone Angle In Radians is invoked"
+                    },
+                    "details": {
+                        "name": "Get Outer Cone Angle In Radians",
+                        "tooltip": "Get Outer Cone Angle In Radians"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFixedDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fixed Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fixed Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fixed Direction",
+                        "tooltip": "Get Fixed Direction"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFixedDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fixed Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fixed Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fixed Direction",
+                        "tooltip": "Set Fixed Direction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Fixed Direction",
+                                "tooltip": "Set Whether Direction Is Fixed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetDirectionalAttenuationFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Directional Attenuation Factor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Directional Attenuation Factor is invoked"
+                    },
+                    "details": {
+                        "name": "Set Directional Attenuation Factor",
+                        "tooltip": "Set Directional Attenuation Factor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Directional Attenuation Factor",
+                                "tooltip": "Set Directional Attenuation Factor"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetInnerConeAngleInDegrees",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Inner Cone Angle In Degrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Inner Cone Angle In Degrees is invoked"
+                    },
+                    "details": {
+                        "name": "Get Inner Cone Angle In Degrees",
+                        "tooltip": "Get Inner Cone Angle In Degrees"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOuterVolume",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Outer Volume"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Outer Volume is invoked"
+                    },
+                    "details": {
+                        "name": "Get Outer Volume",
+                        "tooltip": "Get Percent Volume Outside Outer Cone"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDirectionalAttenuationFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Directional Attenuation Factor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Directional Attenuation Factor is invoked"
+                    },
+                    "details": {
+                        "name": "Get Directional Attenuation Factor",
+                        "tooltip": "Get Directional Attenuation Factor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetSoundAsset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sound Asset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sound Asset is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sound Asset",
+                        "tooltip": "Get Sound Asset"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{1EDBA837-5590-4F2C-A61C-9001EB18505B}",
+                            "details": {
+                                "name": "Sound Asset Ref",
+                                "tooltip": "A wrapper around MiniAudio SoundAsset to be used as a variable in Script Canvas."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Get Direction",
+                        "tooltip": "Get Direction"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector 3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLooping",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Looping"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Looping is invoked"
+                    },
+                    "details": {
+                        "name": "Set Looping",
+                        "tooltip": "Set Looping"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetInnerConeAngleInRadians",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Inner Cone Angle In Radians"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Inner Cone Angle In Radians is invoked"
+                    },
+                    "details": {
+                        "name": "Set Inner Cone Angle In Radians",
+                        "tooltip": "Set Inner Cone Angle In Radians"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Inner Cone Angle In Radians",
+                                "tooltip": "Set Inner Cone Angle In Radians"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetVolume",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Volume"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Volume is invoked"
+                    },
+                    "details": {
+                        "name": "Set Volume",
+                        "tooltip": "Set Volume"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSoundAsset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sound Asset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sound Asset is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sound Asset",
+                        "tooltip": "Set Sound Asset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{1EDBA837-5590-4F2C-A61C-9001EB18505B}",
+                            "details": {
+                                "name": "Sound Asset Ref",
+                                "tooltip": "A wrapper around MiniAudio SoundAsset to be used as a variable in Script Canvas."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetInnerConeAngleInRadians",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Inner Cone Angle In Radians"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Inner Cone Angle In Radians is invoked"
+                    },
+                    "details": {
+                        "name": "Get Inner Cone Angle In Radians",
+                        "tooltip": "Get Inner Cone Angle In Radians"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetInnerConeAngleInDegrees",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Inner Cone Angle In Degrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Inner Cone Angle In Degrees is invoked"
+                    },
+                    "details": {
+                        "name": "Set Inner Cone Angle In Degrees",
+                        "tooltip": "Set Inner Cone Angle In Degrees"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Inner Cone Angle In Degrees",
+                                "tooltip": "Set Inner Cone Angle In Degrees"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOuterConeAngleInRadians",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Outer Cone Angle In Radians"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Outer Cone Angle In Radians is invoked"
+                    },
+                    "details": {
+                        "name": "Set Outer Cone Angle In Radians",
+                        "tooltip": "Set Outer Cone Angle In Radians"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Outer Cone Angle In Radians",
+                                "tooltip": "Set Outer Cone Angle In Radians"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOuterConeAngleInDegrees",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Outer Cone Angle In Degrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Outer Cone Angle In Degrees is invoked"
+                    },
+                    "details": {
+                        "name": "Get Outer Cone Angle In Degrees",
+                        "tooltip": "Get Outer Cone Angle In Degrees"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOuterVolume",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Outer Volume"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Outer Volume is invoked"
+                    },
+                    "details": {
+                        "name": "Set Outer Volume",
+                        "tooltip": "Set Percent Volume Outside Outer Cone"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Outer Volume",
+                                "tooltip": "Set Percent Volume Outside Outer Cone"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Stop",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Stop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Stop is invoked"
+                    },
+                    "details": {
+                        "name": "Stop",
+                        "tooltip": "Stop"
+                    }
+                },
+                {
+                    "base": "SetOuterConeAngleInDegrees",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Outer Cone Angle In Degrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Outer Cone Angle In Degrees is invoked"
+                    },
+                    "details": {
+                        "name": "Set Outer Cone Angle In Degrees",
+                        "tooltip": "Set Outer Cone Angle In Degrees"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Outer Cone Angle In Degrees",
+                                "tooltip": "Set Outer Cone Angle In Degrees"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Set Direction",
+                        "tooltip": "Set Direction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction",
+                                "tooltip": "Set Playback Direction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Play",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Play"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Play is invoked"
+                    },
+                    "details": {
+                        "name": "Play",
+                        "tooltip": "Play"
+                    }
+                },
+                {
+                    "base": "IsLooping",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Looping"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Looping is invoked"
+                    },
+                    "details": {
+                        "name": "Is Looping",
+                        "tooltip": "Is Looping"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
