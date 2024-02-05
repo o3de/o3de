@@ -73,6 +73,8 @@ namespace AZ::RHI
     //!
     class RayTracingPipelineStateDescriptor final
     {
+        friend class MultiDeviceRayTracingPipelineStateDescriptor;
+
     public:
         RayTracingPipelineStateDescriptor() = default;
         ~RayTracingPipelineStateDescriptor() = default;
