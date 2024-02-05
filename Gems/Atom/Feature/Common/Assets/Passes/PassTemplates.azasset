@@ -549,6 +549,10 @@
                 "Path": "Passes/MultiViewTransparentParent.pass"
             },
             {
+                "Name": "MobileDeferredFogPassTemplate",
+                "Path": "Passes/Mobile/DeferredFog.pass"
+            },
+            {
                 "Name": "MobileForwardPassTemplate",
                 "Path": "Passes/Mobile/Forward.pass"
             },
