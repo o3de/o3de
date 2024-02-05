@@ -13,7 +13,7 @@
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 
 #include <Atom/RHI/SingleDevicePipelineState.h>
-#include <Atom/RHI/SingleDeviceStreamBufferView.h>
+#include <Atom/RHI/MultiDeviceStreamBufferView.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -171,7 +171,7 @@ namespace AZ
 
             AZStd::unordered_map<Data::Instance<RPI::StreamingImage>, uint32_t> m_userTextures;
             Data::Instance<RPI::Buffer> m_instanceBuffer;
-            RHI::SingleDeviceStreamBufferView m_instanceBufferView;
+            RHI::MultiDeviceStreamBufferView m_instanceBufferView;
 
             // cache the font text id
             void* m_imguiFontTexId = nullptr;

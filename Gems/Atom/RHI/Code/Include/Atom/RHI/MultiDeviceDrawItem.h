@@ -260,7 +260,7 @@ namespace AZ::RHI
         AZStd::unordered_map<int, SingleDeviceDrawItem> m_deviceDrawItems;
         //! A map of pointers to device-specific DrawItems, indexed by the device index
         //! These pointers may point to m_deviceDrawItems (in case of direct usage of a SingleDeviceDrawItem)
-        //! or may point to DrawItems in linear memory (when allocated via a SingleDeviceDrawPacket)
+        //! or may point to DrawItems in linear memory (when allocated via a MultiDeviceDrawPacket)
         AZStd::unordered_map<int, SingleDeviceDrawItem*> m_deviceDrawItemPtrs;
         //! A map of all device-specific IndexBufferViews, indexed by the device index
         //! This additional cache is needed since device-specific IndexBufferViews are returned as objects

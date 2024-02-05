@@ -290,11 +290,11 @@ namespace Terrain
 
     }
 
-    AZ::RHI::SingleDeviceStreamBufferView TerrainMeshManager::CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
+    AZ::RHI::MultiDeviceStreamBufferView TerrainMeshManager::CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
     {
         return
         {
-            *buffer->GetRHIBuffer()->GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex),
+            *buffer->GetRHIBuffer(),
             offset,
             aznumeric_cast<uint32_t>(buffer->GetBufferSize()),
             buffer->GetBufferViewDescriptor().m_elementSize
@@ -303,13 +303,13 @@ namespace Terrain
 
     void TerrainMeshManager::BuildDrawPacket(Sector& sector)
     {
-        AZ::RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
+        AZ::RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{AZ::RHI::MultiDevice::AllDevices};
         uint32_t indexCount = m_indexBuffer->GetBufferViewDescriptor().m_elementCount;
         drawPacketBuilder.Begin(nullptr);
         drawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, indexCount, 0));
         drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
-        drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(AZ::RHI::MultiDevice::DefaultDeviceIndex).get());
-        drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(AZ::RHI::MultiDevice::DefaultDeviceIndex).get());
+        drawPacketBuilder.AddShaderResourceGroup(sector.m_srg->GetRHIShaderResourceGroup());
+        drawPacketBuilder.AddShaderResourceGroup(m_materialInstance->GetRHIShaderResourceGroup());
 
         sector.m_perDrawSrgs.clear();
 
@@ -317,9 +317,9 @@ namespace Terrain
         {
             AZ::Data::Instance<AZ::RPI::Shader>& shader = drawData.m_shader;
 
-            AZ::RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
+            AZ::RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
             drawRequest.m_listTag = drawData.m_drawListTag;
-            drawRequest.m_pipelineState = drawData.m_pipelineState->GetDevicePipelineState(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
+            drawRequest.m_pipelineState = drawData.m_pipelineState;
             drawRequest.m_streamBufferViews = sector.m_streamBufferViews;
             drawRequest.m_stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
 
@@ -344,13 +344,13 @@ namespace Terrain
 
             if (drawSrg)
             {
-                drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(AZ::RHI::MultiDevice::DefaultDeviceIndex).get();
+                drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
                 sector.m_perDrawSrgs.push_back(drawSrg);
             }
             drawPacketBuilder.AddDrawItem(drawRequest);
         }
 
-        AZ::RHI::SingleDeviceDrawPacketBuilder commonQuadrantDrawPacketBuilder = drawPacketBuilder; // Copy of the draw packet builder to use later.
+        AZ::RHI::MultiDeviceDrawPacketBuilder commonQuadrantDrawPacketBuilder = drawPacketBuilder; // Copy of the draw packet builder to use later.
         sector.m_rhiDrawPacket = drawPacketBuilder.End();
 
         // Generate draw packets for each of the quadrants so they can be used to fill in places where the previous LOD didn't draw.
@@ -359,7 +359,7 @@ namespace Terrain
         uint32_t lowerLodIndexCount = indexCount / 4;
         for (uint32_t i = 0; i < 4; ++i)
         {
-            AZ::RHI::SingleDeviceDrawPacketBuilder quadrantDrawPacketBuilder = commonQuadrantDrawPacketBuilder;
+            AZ::RHI::MultiDeviceDrawPacketBuilder quadrantDrawPacketBuilder = commonQuadrantDrawPacketBuilder;
             quadrantDrawPacketBuilder.SetDrawArguments(AZ::RHI::DrawIndexed(1, 0, 0, lowerLodIndexCount, lowerLodIndexCount * i));
             sector.m_rhiDrawPacketQuadrant[i] = quadrantDrawPacketBuilder.End();
         }
@@ -459,7 +459,7 @@ namespace Terrain
         // Create all the sectors with uninitialized SRGs. The SRGs will be updated later by CheckLodGridsForUpdate().
         m_indexBufferView =
         {
-            *m_indexBuffer->GetRHIBuffer()->GetDeviceBuffer(AZ::RHI::MultiDevice::DefaultDeviceIndex),
+            *m_indexBuffer->GetRHIBuffer(),
             0,
             aznumeric_cast<uint32_t>(m_indexBuffer->GetBufferSize()),
             AZ::RHI::IndexFormat::Uint16

@@ -12,7 +12,7 @@
 #include <AzCore/Math/Vector3.h>
 
 #include <Atom/RHI/SingleDeviceBufferView.h>
-#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
 
 // Hair specific
 #include <TressFX/AMD_TressFX.h>
@@ -185,9 +185,9 @@ namespace AZ
                     AMD::TressFXSimulationSettings* simSettings, AMD::TressFXRenderingSettings* renderSettings
                 );
 
-                bool BuildDrawPacket(RPI::Shader* geometryShader, RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest& drawRequest);
+                bool BuildDrawPacket(RPI::Shader* geometryShader, RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest& drawRequest);
 
-                const RHI::SingleDeviceDrawPacket* GetGeometrylDrawPacket(RPI::Shader* geometryShader);
+                const RHI::MultiDeviceDrawPacket* GetGeometrylDrawPacket(RPI::Shader* geometryShader);
 
                 //! Creates and fill the dispatch item associated with the compute shader
                 bool BuildDispatchItem(RPI::Shader* computeShader, DispatchLevel dispatchLevel);
@@ -316,7 +316,7 @@ namespace AZ
                 Data::Instance<RPI::Shader> m_geometryRasterShader = nullptr;
 
                 //! DrawPacket for the multi object geometry raster pass.
-                AZStd::unordered_map<RPI::Shader*, const RHI::SingleDeviceDrawPacket*>  m_geometryDrawPackets;
+                AZStd::unordered_map<RPI::Shader*, RHI::ConstPtr<RHI::MultiDeviceDrawPacket>>  m_geometryDrawPackets;
 
                 float m_frameDeltaTime = 0.02;
 
@@ -381,7 +381,7 @@ namespace AZ
  
                 //! Index buffer for the render pass via draw calls - naming was kept
                 Data::Instance<RHI::MultiDeviceBuffer> m_indexBuffer;
-                RHI::SingleDeviceIndexBufferView m_indexBufferView;
+                RHI::MultiDeviceIndexBufferView m_indexBufferView;
                 //-------------------------------------------------------------------
 
                 AZStd::mutex m_mutex;

@@ -348,84 +348,6 @@ namespace UnitTest
             EXPECT_EQ(drawPacket, nullptr);
         }
 
-        void DrawListContextFilter()
-        {
-            AZ::SimpleLcgRandom random(s_randomSeed);
-            DrawPacketData drawPacketData(random);
-
-            RHI::SingleDeviceDrawPacketBuilder builder;
-            const RHI::SingleDeviceDrawPacket* drawPacket = drawPacketData.Build(builder);
-
-            RHI::DrawListContext drawListContext;
-            drawListContext.Init(RHI::DrawListMask{}.set());
-            drawListContext.AddDrawPacket(drawPacket);
-
-            for (size_t i = 0; i < drawPacket->GetDrawItemCount(); ++i)
-            {
-                RHI::DrawListTag tag = drawPacket->GetDrawListTag(i);
-
-                RHI::DrawListView drawList = drawListContext.GetList(tag);
-                EXPECT_TRUE(drawList.empty());
-            }
-
-            drawListContext.FinalizeLists();
-
-            RHI::DrawListsByTag listsByTag;
-            for (size_t i = 0; i < drawPacket->GetDrawItemCount(); ++i)
-            {
-                RHI::DrawListTag tag = drawPacket->GetDrawListTag(i);
-
-                listsByTag[tag.GetIndex()].push_back(drawPacket->GetDrawItemProperties(i));
-            }
-
-            size_t tagIndex = 0;
-            for (auto& drawList : listsByTag)
-            {
-                SortDrawList(drawList, RHI::DrawListSortType::KeyThenDepth);
-
-                RHI::DrawListTag tag(tagIndex);
-
-                RHI::DrawListView drawListView = drawListContext.GetList(tag);
-                EXPECT_EQ(drawListView.size(), drawList.size());
-
-                for (size_t i = 0; i < drawList.size(); ++i)
-                {
-                    EXPECT_EQ(drawList[i], drawListView[i]);
-                }
-
-                tagIndex++;
-            }
-
-            drawListContext.Shutdown();
-
-            delete drawPacket;
-        }
-
-        void DrawListContextNullFilter()
-        {
-            AZ::SimpleLcgRandom random(s_randomSeed);
-            DrawPacketData drawPacketData(random);
-
-            RHI::SingleDeviceDrawPacketBuilder builder;
-            const RHI::SingleDeviceDrawPacket* drawPacket = drawPacketData.Build(builder);
-
-            RHI::DrawListContext drawListContext;
-            drawListContext.Init(RHI::DrawListMask{}); // Mask set to not contain any draw lists.
-            drawListContext.AddDrawPacket(drawPacket);
-            drawListContext.FinalizeLists();
-
-            for (size_t i = 0; i < drawPacket->GetDrawItemCount(); ++i)
-            {
-                RHI::DrawListTag tag = drawPacket->GetDrawListTag(i);
-                RHI::DrawListView drawList = drawListContext.GetList(tag);
-                EXPECT_TRUE(drawList.empty());
-            }
-
-            drawListContext.Shutdown();
-
-            delete drawPacket;
-        }
-
         void DrawPacketClone()
         {
             AZ::SimpleLcgRandom random(s_randomSeed);
@@ -686,16 +608,6 @@ namespace UnitTest
     TEST_F(DrawPacketTest, DrawPacketBuildClearBuildNull)
     {
         DrawPacketBuildClearBuildNull();
-    }
-
-    TEST_F(DrawPacketTest, DrawListContextFilter)
-    {
-        DrawListContextFilter();
-    }
-
-    TEST_F(DrawPacketTest, DrawListContextNullFilter)
-    {
-        DrawListContextNullFilter();
     }
 
     TEST_F(DrawPacketTest, DrawPacketClone)

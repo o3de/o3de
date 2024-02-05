@@ -131,20 +131,20 @@ namespace AZ
             return allocatedBuffer;
         }
 
-        RHI::SingleDeviceIndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
+        RHI::MultiDeviceIndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
         {
-            return RHI::SingleDeviceIndexBufferView(
-                *m_ringBuffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
+            return RHI::MultiDeviceIndexBufferView(
+                *m_ringBuffer->GetRHIBuffer(),
                 GetBufferAddressOffset(dynamicBuffer),
                 dynamicBuffer->m_size,
                 format
             );
         }
 
-        RHI::SingleDeviceStreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
+        RHI::MultiDeviceStreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
         {
-            return RHI::SingleDeviceStreamBufferView(
-                *m_ringBuffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
+            return RHI::MultiDeviceStreamBufferView(
+                *m_ringBuffer->GetRHIBuffer(),
                 GetBufferAddressOffset(dynamicBuffer),
                 dynamicBuffer->m_size,
                 strideByteCount
