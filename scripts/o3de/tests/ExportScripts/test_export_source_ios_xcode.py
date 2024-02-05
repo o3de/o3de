@@ -28,10 +28,10 @@ from itertools import product
 
 
 @pytest.mark.parametrize("skip_assets_flag, should_build_tools_flag, expect_get_asset_path, expect_process_command_count", [
-    pytest.param(True, True, False, 5),
-    pytest.param(True, False, False, 5),
-    pytest.param(False, True, True, 5),
-    pytest.param(False, False, True, 5)
+    pytest.param(True, True, False, 6),
+    pytest.param(True, False, False, 6),
+    pytest.param(False, True, True, 6),
+    pytest.param(False, False, True, 6)
 ])
 def test_asset_and_build_combinations(tmp_path, skip_assets_flag, should_build_tools_flag, expect_get_asset_path, expect_process_command_count):
     test_project_name = "TestProject"
