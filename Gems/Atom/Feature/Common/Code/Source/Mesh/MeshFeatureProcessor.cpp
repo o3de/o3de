@@ -748,12 +748,12 @@ namespace AZ
             {
                 // Since there is only one task that will operate both on this view index and on the bucket with this instance group,
                 // there is no need to lock here.
-                RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
+                RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
                 instanceGroup.m_perViewDrawPackets[viewIndex] = drawPacketBuilder.Clone(instanceGroup.m_drawPacket.GetRHIDrawPacket());
             }
 
             // Now that we have a valid cloned draw packet, update it with the latest offset + count
-            RHI::Ptr<RHI::SingleDeviceDrawPacket> clonedDrawPacket = instanceGroup.m_perViewDrawPackets[viewIndex];
+            RHI::Ptr<RHI::MultiDeviceDrawPacket> clonedDrawPacket = instanceGroup.m_perViewDrawPackets[viewIndex];
 
             // Set the instance data offset
             AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceGroupBeginIndex), sizeof(uint32_t) };
@@ -1006,7 +1006,7 @@ namespace AZ
             {
                 for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
                 {
-                    RHI::SingleDeviceDrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
+                    RHI::MultiDeviceDrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
 
                     if (drawPacket != nullptr)
                     {
@@ -1017,7 +1017,7 @@ namespace AZ
                             // Ensure that the draw item belongs to the specified tag
                             if (drawPacket->GetDrawListTag(idx) == drawListTag)
                             {
-                                drawPacket->GetDrawItem(idx)->m_enabled = enabled;
+                                drawPacket->GetDrawItem(idx)->SetEnabled(enabled);
                             }
                         }
                     }
@@ -1038,7 +1038,7 @@ namespace AZ
                 u32 drawPacketCounter = 0;
                 for (AZ::RPI::MeshDrawPacket& meshDrawPacket : drawPacketList)
                 {
-                    RHI::SingleDeviceDrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
+                    RHI::MultiDeviceDrawPacket* drawPacket = meshDrawPacket.GetRHIDrawPacket();
                     if (drawPacket)
                     {
                         size_t numDrawItems = drawPacket->GetDrawItemCount();
@@ -1046,10 +1046,10 @@ namespace AZ
 
                         for (size_t drawItemIdx = 0; drawItemIdx < numDrawItems; ++drawItemIdx)
                         {
-                            RHI::SingleDeviceDrawItem* drawItem = drawPacket->GetDrawItem(drawItemIdx);
+                            RHI::MultiDeviceDrawItem* drawItem = drawPacket->GetDrawItem(drawItemIdx);
                             RHI::DrawListTag tag = drawPacket->GetDrawListTag(drawItemIdx);
                             stringOutput += AZStd::string::format("Item %zu | ", drawItemIdx);
-                            stringOutput += drawItem->m_enabled ? "Enabled  | " : "Disabled | ";
+                            stringOutput += drawItem->GetEnabled() ? "Enabled  | " : "Disabled | ";
                             stringOutput += AZStd::string::format("%s Tag\n", RHI::GetDrawListName(tag).GetCStr());
                         }
 
@@ -2754,7 +2754,7 @@ namespace AZ
                     for (const RPI::MeshDrawPacket& drawPacket : drawPacketList)
                     {
                         // If mesh instancing is disabled, get the draw packets directly from this ModelDataInstance
-                        const RHI::SingleDeviceDrawPacket* rhiDrawPacket = drawPacket.GetRHIDrawPacket();
+                        const RHI::MultiDeviceDrawPacket* rhiDrawPacket = drawPacket.GetRHIDrawPacket();
 
                         if (rhiDrawPacket)
                         {
@@ -2771,7 +2771,7 @@ namespace AZ
                     for (const ModelDataInstance::PostCullingInstanceData& postCullingData : postCullingInstanceDataList)
                     {
                         // If mesh instancing is enabled, get the draw packet from the MeshInstanceManager
-                        const RHI::SingleDeviceDrawPacket* rhiDrawPacket = postCullingData.m_instanceGroupHandle->m_drawPacket.GetRHIDrawPacket();
+                        const RHI::MultiDeviceDrawPacket* rhiDrawPacket = postCullingData.m_instanceGroupHandle->m_drawPacket.GetRHIDrawPacket();
 
                         if (rhiDrawPacket)
                         {

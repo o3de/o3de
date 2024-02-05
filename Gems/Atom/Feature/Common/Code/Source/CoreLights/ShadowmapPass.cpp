@@ -156,7 +156,7 @@ namespace AZ
             m_scissorState = scissor;
         }
 
-        void ShadowmapPass::SetClearShadowDrawPacket(AZ::RHI::ConstPtr<RHI::SingleDeviceDrawPacket> clearShadowDrawPacket)
+        void ShadowmapPass::SetClearShadowDrawPacket(AZ::RHI::ConstPtr<RHI::MultiDeviceDrawPacket> clearShadowDrawPacket)
         {
             m_clearShadowDrawPacket = clearShadowDrawPacket;
             m_clearShadowDrawItemProperties = clearShadowDrawPacket->GetDrawItemProperties(0);
@@ -201,7 +201,7 @@ namespace AZ
                 if (startIndex == 0)
                 {
                     RHI::CommandList* commandList = context.GetCommandList();
-                    commandList->Submit(*m_clearShadowDrawPacket->GetDrawItemProperties(0).m_item, 0);
+                    commandList->Submit(m_clearShadowDrawPacket->GetDrawItemProperties(0).m_mdItem->GetDeviceDrawItem(RHI::MultiDevice::DefaultDeviceIndex), 0);
                 }
                 else
                 {

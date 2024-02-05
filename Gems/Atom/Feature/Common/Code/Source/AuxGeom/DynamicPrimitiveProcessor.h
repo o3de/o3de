@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceIndexBufferView.h>
-#include <Atom/RHI/SingleDeviceStreamBufferView.h>
+#include <Atom/RHI/MultiDeviceIndexBufferView.h>
+#include <Atom/RHI/MultiDeviceStreamBufferView.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
 #include <Atom/RHI/DrawList.h>
 
@@ -26,7 +26,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class SingleDeviceDrawPacketBuilder;
+        class MultiDeviceDrawPacketBuilder;
     }
 
     namespace RPI
@@ -75,18 +75,18 @@ namespace AZ
 
         private: // types
 
-            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::SingleDeviceStreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
+            using StreamBufferViewsForAllStreams = AZStd::fixed_vector<AZ::RHI::MultiDeviceStreamBufferView, AZ::RHI::Limits::Pipeline::StreamCountMax>;
 
             struct DynamicBufferGroup
             {
                 //! The view into the index buffer
-                AZ::RHI::SingleDeviceIndexBufferView m_indexBufferView;
+                AZ::RHI::MultiDeviceIndexBufferView m_indexBufferView;
 
                 //! The stream views into the vertex buffer (we only have one in our case)
                 StreamBufferViewsForAllStreams m_streamBufferViews;
             };
 
-            using DrawPackets = AZStd::vector<AZStd::unique_ptr<const RHI::SingleDeviceDrawPacket>>;
+            using DrawPackets = AZStd::vector<AZ::RHI::ConstPtr<RHI::MultiDeviceDrawPacket>>;
 
             struct ShaderData
             {
@@ -111,13 +111,13 @@ namespace AZ
         private: // functions
 
             //!Uses the given drawPacketBuilder to build a draw packet with given data and returns it
-            const RHI::SingleDeviceDrawPacket* BuildDrawPacketForDynamicPrimitive(
+            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> BuildDrawPacketForDynamicPrimitive(
                 DynamicBufferGroup& group,
                 const RPI::Ptr<RPI::PipelineStateForDraw>& pipelineState,
                 Data::Instance<RPI::ShaderResourceGroup> srg,
                 uint32_t indexCount,
                 uint32_t indexOffset,
-                RHI::SingleDeviceDrawPacketBuilder& drawPacketBuilder,
+                RHI::MultiDeviceDrawPacketBuilder& drawPacketBuilder,
                 RHI::DrawItemSortKey sortKey = 0);
 
             // Update a dynamic index buffer, given the data from draw requests

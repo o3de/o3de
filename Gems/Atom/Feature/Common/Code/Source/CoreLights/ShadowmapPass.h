@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Size.h>
-#include <Atom/RHI/SingleDeviceDrawPacket.h>
+#include <Atom/RHI/MultiDeviceDrawPacket.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 
@@ -63,7 +63,7 @@ namespace AZ
             void SetViewportScissor(const RHI::Viewport& viewport, const RHI::Scissor& scissor);
 
             //! Sets the draw packet used for clearing a shadow viewport.
-            void SetClearShadowDrawPacket(RHI::ConstPtr<RHI::SingleDeviceDrawPacket> clearShadowDrawPacket);
+            void SetClearShadowDrawPacket(AZ::RHI::ConstPtr<AZ::RHI::MultiDeviceDrawPacket> clearShadowDrawPacket);
 
         private:
             ShadowmapPass() = delete;
@@ -83,8 +83,8 @@ namespace AZ
             // Gets the number of expected draws, taking into account if this shadow is static.
             uint32_t GetNumDraws() const;
 
-            RHI::ConstPtr<RHI::SingleDeviceDrawPacket> m_clearShadowDrawPacket;
-            RHI::SingleDeviceDrawItemProperties m_clearShadowDrawItemProperties;
+            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> m_clearShadowDrawPacket;
+            RHI::MultiDeviceDrawItemProperties m_clearShadowDrawItemProperties;
             RHI::Handle<uint32_t> m_casterMovedBit;
             uint16_t m_arraySlice = 0;
             bool m_clearEnabled = true;

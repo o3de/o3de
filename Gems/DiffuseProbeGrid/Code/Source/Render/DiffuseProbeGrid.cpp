@@ -83,7 +83,7 @@ namespace AZ
                         // the sort key changed, rebuild draw packets
                         m_sortKey = sortKey;
 
-                        RHI::SingleDeviceDrawPacketBuilder drawPacketBuilder;
+                        RHI::MultiDeviceDrawPacketBuilder drawPacketBuilder{RHI::MultiDevice::AllDevices};
 
                         RHI::DrawIndexed drawIndexed;
                         drawIndexed.m_indexCount = aznumeric_cast<uint32_t>(m_renderData->m_boxIndexCount);
@@ -93,11 +93,11 @@ namespace AZ
                         drawPacketBuilder.Begin(nullptr);
                         drawPacketBuilder.SetDrawArguments(drawIndexed);
                         drawPacketBuilder.SetIndexBufferView(m_renderData->m_boxIndexBufferView);
-                        drawPacketBuilder.AddShaderResourceGroup(m_renderObjectSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
+                        drawPacketBuilder.AddShaderResourceGroup(m_renderObjectSrg->GetRHIShaderResourceGroup());
 
-                        RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest drawRequest;
+                        RHI::MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest drawRequest;
                         drawRequest.m_listTag = m_renderData->m_drawListTag;
-                        drawRequest.m_pipelineState = m_renderData->m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                        drawRequest.m_pipelineState = m_renderData->m_pipelineState->GetRHIPipelineState();
                         drawRequest.m_streamBufferViews = m_renderData->m_boxPositionBufferView;
                         drawRequest.m_sortKey = m_sortKey;
                         drawPacketBuilder.AddDrawItem(drawRequest);

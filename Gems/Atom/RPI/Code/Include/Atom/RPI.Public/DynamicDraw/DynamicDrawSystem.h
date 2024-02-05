@@ -34,8 +34,8 @@ namespace AZ
             RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext() override;
             RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment) override;
             void DrawGeometry(Data::Instance<Material> material, const GeometryData& geometry, ScenePtr scene) override;
-            void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::SingleDeviceDrawPacket> drawPacket) override;
-            void AddDrawPacket(Scene* scene, ConstPtr<RHI::SingleDeviceDrawPacket> drawPacket) override;
+            void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::MultiDeviceDrawPacket> drawPacket) override;
+            void AddDrawPacket(Scene* scene, ConstPtr<RHI::MultiDeviceDrawPacket> drawPacket) override;
             AZStd::vector<RHI::DrawListView> GetDrawListsForPass(const RasterPass* pass) override;
 
             // Submit draw data for selected scene and pipeline
@@ -53,7 +53,7 @@ namespace AZ
             AZStd::list<RHI::Ptr<DynamicDrawContext>> m_dynamicDrawContexts;
 
             AZStd::mutex m_mutexDrawPackets;
-            AZStd::map<Scene*, AZStd::vector<ConstPtr<const RHI::SingleDeviceDrawPacket>>> m_drawPackets;
+            AZStd::map<Scene*, AZStd::vector<ConstPtr<const RHI::MultiDeviceDrawPacket>>> m_drawPackets;
         };
     }
 }
