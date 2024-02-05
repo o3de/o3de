@@ -7,7 +7,6 @@
  */
 
 #include <PhysXTestEnvironment.h>
-#include <PhysX_Traits_Platform.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
