@@ -14,11 +14,16 @@
 
 namespace PhysX
 {
+
+#if !defined(PHYSX_SETREG_GEM_NAME)
+    #error "Missing required PHYSX_SETREG_GEM_NAME definition"
+#endif //!defined(PHYSX_SETREG_GEM_NAME)
+
     PhysXSettingsRegistryManager::PhysXSettingsRegistryManager()
     {
-        m_settingsRegistryPath = AZStd::string::format("%s/Gems/PhysX/PhysXSystemConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-        m_defaultSceneConfigSettingsRegistryPath = AZStd::string::format("%s/Gems/PhysX/DefaultSceneConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-        m_debugSettingsRegistryPath = AZStd::string::format("%s/Gems/PhysX/Debug/PhysXDebugConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
+        m_settingsRegistryPath = AZStd::string::format("%s/Gems/" PHYSX_SETREG_GEM_NAME "/PhysXSystemConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
+        m_defaultSceneConfigSettingsRegistryPath = AZStd::string::format("%s/Gems/" PHYSX_SETREG_GEM_NAME "/DefaultSceneConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
+        m_debugSettingsRegistryPath = AZStd::string::format("%s/Gems/" PHYSX_SETREG_GEM_NAME "/Debug/PhysXDebugConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
     }
 
     AZStd::optional<PhysXSystemConfiguration> PhysXSettingsRegistryManager::LoadSystemConfiguration() const

@@ -35,6 +35,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             PHYSX_ENABLE_MULTI_THREADING
+            PHYSX_SETREG_GEM_NAME="PhysX"
             $<$<NOT:$<CONFIG:release>>:AZ_PHYSICS_DEBUG_ENABLED>
     INCLUDE_DIRECTORIES
         PUBLIC
