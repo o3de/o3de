@@ -49,9 +49,6 @@ namespace AZ::RHI
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
-        //! Invalidate all views by setting off events on all device-specific ResourceInvalidateBusses
-        void InvalidateViews() override final;
-
     private:
         MultiDeviceShaderResourceGroupData m_mdData;
 
