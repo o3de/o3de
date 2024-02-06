@@ -24,8 +24,8 @@ namespace AzToolsFramework
         : QTextEdit(parent)
         , m_textChanged(false)
     {
-        setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Maximum);
         setMinimumHeight(PropertyQTConstant_DefaultHeight * 3);
+        setMaximumHeight(PropertyQTConstant_DefaultHeight * 10);
 
         connect(this, &GrowTextEdit::textChanged, this, [this]()
         {
@@ -66,7 +66,7 @@ namespace AzToolsFramework
     {
         QSize sizeHint = QTextEdit::sizeHint();
         QSize documentSize = document()->size().toSize();
-        sizeHint.setHeight(documentSize.height() + s_padding);
+        sizeHint.setHeight(AZStd::min(PropertyQTConstant_DefaultHeight * 10, documentSize.height() + s_padding));
         return sizeHint;
     }
 
