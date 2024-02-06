@@ -55,6 +55,21 @@ namespace MiniAudio
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioListenerComponentConfig::m_followEntity, "Follow Entity", "The listener will follow the position and orientation of the specified entity.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioListenerComponentConfig::m_listenerIndex, "Listener Index", "MiniAudio listener index to control.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioListenerComponentConfig::m_innerAngleInDegrees, "Inner Cone Angle", "Sets the listener's inner cone angle in Degrees.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioListenerComponentConfig::m_outerAngleInDegrees, "Outer Cone Angle", "Sets the listener's outer cone angle in Degrees.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioListenerComponentConfig::m_outerVolume, "Outer Volume", "Sets the volume of the listener outside of the outer cone.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
                     ;
             }
         }

@@ -10,14 +10,21 @@ set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-linux-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.tar.gz")
 set(CPACK_CMAKE_PACKAGE_HASH "dc73115520d13bb64202383d3df52bc3d6bbb8422ecc5b2c05f803491cb215b0")
 
+set(O3DE_INCLUDE_INSTALL_IN_PACKAGE FALSE CACHE BOOL "Option to copy the contents of the most recent install from CMAKE_INSTALL_PREFIX into CPACK_PACKAGING_INSTALL_PREFIX.  Useful for including a release build in a profile SDK.")
+
 if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
 
     set(CPACK_GENERATOR External)
     set(CPACK_EXTERNAL_ENABLE_STAGING YES)
     set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging_Snapcraft.cmake")
     set(CPACK_MONOLITHIC_INSTALL 1)
-
     set(CPACK_PACKAGING_INSTALL_PREFIX "/${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
+
+    if(O3DE_INCLUDE_INSTALL_IN_PACKAGE)
+        # Snap uses the external packaging script folder so just copy the files
+        # into the destination root
+        set(CPACK_INSTALLED_DIRECTORIES "${CMAKE_INSTALL_PREFIX};.")
+    endif()
 
 elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
 
@@ -69,4 +76,9 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postrm
     )
 
+    if(O3DE_INCLUDE_INSTALL_IN_PACKAGE)
+        set(CPACK_INSTALLED_DIRECTORIES "${CMAKE_INSTALL_PREFIX};${CPACK_PACKAGING_INSTALL_PREFIX}")
+    endif()
+
 endif()
+
