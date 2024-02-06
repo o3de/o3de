@@ -9,6 +9,7 @@
 
 #include <AzCore/PlatformDef.h>
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -145,6 +146,13 @@ namespace EMotionFX
 
         void SimpleLODComponent::Activate()
         {
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsHeadless())
+            {
+                return;
+            }
+
             ActorComponentNotificationBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
 
@@ -161,6 +169,13 @@ namespace EMotionFX
 
         void SimpleLODComponent::Deactivate()
         {
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsHeadless())
+            {
+                return;
+            }
+
             AZ::TickBus::Handler::BusDisconnect();
             ActorComponentNotificationBus::Handler::BusDisconnect();
 
@@ -224,6 +239,11 @@ namespace EMotionFX
 
                 AZ::RPI::ViewportContextPtr defaultViewportContext =
                     viewportContextManager->GetViewportContextByName(viewportContextManager->GetDefaultViewportContextName());
+                if (!defaultViewportContext)
+                {
+                    return;
+                }
+
                 const float distance = worldPos.GetDistance(defaultViewportContext->GetCameraTransform().GetTranslation());
                 const size_t requestedLod = GetLodByDistance(configuration.m_lodDistances, distance);
                 actorInstance->SetLODLevel(requestedLod);
