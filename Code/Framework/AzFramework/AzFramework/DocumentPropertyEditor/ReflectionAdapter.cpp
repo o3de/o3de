@@ -141,6 +141,15 @@ namespace AZ::DocumentPropertyEditor
                 impl->m_adapter->NotifyResetDocument();
             }
 
+            void StoreReservedInstance(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
+            {
+                m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
+                auto containerNode = GetContainerNode(impl, path);
+                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
+                impl->m_adapter->NotifyResetDocument();
+                m_reservedElementInstance = nullptr;
+            }
+
             void OnAddElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
                 if (m_container->IsFixedCapacity() && m_container->Size(m_containerInstance) >= m_container->Capacity(m_containerInstance))
@@ -148,15 +157,36 @@ namespace AZ::DocumentPropertyEditor
                     return;
                 }
 
+                auto serialContext = impl->m_serializeContext;
                 auto containerClassElement = m_container->GetElement(m_container->GetDefaultElementNameCrc());
 
-                // The reserved element is an allocated instance of the IDataContainer's ValueType.
-                // In an associative container, this would be a pair.
-                m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
-
-                if (containerClassElement->m_typeId == AZ::SerializeTypeInfo<AZ::DynamicSerializableField>::GetUuid())
+                if (containerClassElement->m_flags & AZ::SerializeContext::ClassElement::FLG_POINTER)
                 {
-                    auto serialContext = impl->m_serializeContext;
+                    const AZ::Uuid& baseTypeId =
+                        containerClassElement->m_azRtti ? containerClassElement->m_azRtti->GetTypeId() : AZ::AzTypeInfo<int>::Uuid();
+
+                    auto derivedClasses = AZStd::make_shared<AZStd::vector<const AZ::SerializeContext::ClassData*>>();
+                    serialContext->EnumerateDerived(
+                        [&derivedClasses](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid& /*knownType*/) -> bool
+                        {
+                            derivedClasses->push_back(classData);
+                            return true;
+                        },
+                        containerClassElement->m_typeId,
+                        baseTypeId);
+
+                    if (derivedClasses->size() == 1)
+                    {
+                        // there's just one, do it directly
+                        OnAddSubclassToContainer(impl, derivedClasses->front(), path);
+                    }
+                    else
+                    {
+                        Nodes::Adapter::QuerySubclass.InvokeOnDomNode(impl->m_adapter->GetContents(), &derivedClasses, path);
+                    }
+                }
+                else if (containerClassElement->m_typeId == AZ::SerializeTypeInfo<AZ::DynamicSerializableField>::GetUuid())
+                {
                     // Dynamic serializable fields are capable of wrapping any type. Each one within a container can technically contain
                     // an entirely different type from the others. We're going to assume that we're getting here via
                     // ScriptPropertyGenericClassArray and that it strictly uses one type.
@@ -183,7 +213,7 @@ namespace AZ::DocumentPropertyEditor
                                 if (classData && classData->m_factory && dynamicClassData && dynamicClassData->m_factory)
                                 {
                                     // Reserve entry in the container
-                                    void* dataAddress = m_container->ReserveElement(m_containerInstance, containerClassElement);
+                                    m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
 
                                     // Create DynamicSerializeableField entry
                                     void* newDataAddress = classData->m_factory->Create(classData->m_name);
@@ -197,8 +227,8 @@ namespace AZ::DocumentPropertyEditor
                                     dynamicFieldDesc->m_typeId = dynamicClassData->m_typeId;
 
                                     /// Store the entry in the container
-                                    *reinterpret_cast<AZ::DynamicSerializableField*>(dataAddress) = *dynamicFieldDesc;
-                                    m_container->StoreElement(m_containerInstance, dataAddress);
+                                    *reinterpret_cast<AZ::DynamicSerializableField*>(m_reservedElementInstance) = *dynamicFieldDesc;
+                                    StoreReservedInstance(impl, path);
                                 }
                             }
                         }
@@ -206,6 +236,10 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else
                 {
+                    // The reserved element is an allocated instance of the IDataContainer's ValueType.
+                    // In an associative container, this would be a pair.
+                    m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
+
                     auto associativeContainer = m_container->GetAssociativeContainerInterface();
                     if (associativeContainer)
                     {
@@ -221,18 +255,14 @@ namespace AZ::DocumentPropertyEditor
                                 DocumentAdapterPtr reflectionAdapter =
                                     AZStd::make_shared<ReflectionAdapter>(m_reservedElementInstance, keyType);
                                 Nodes::Adapter::QueryKey.InvokeOnDomNode(impl->m_adapter->GetContents(), &reflectionAdapter, path);
-                                return; // key queried; don't store the actual entry until the DPE handles the QueryKey message
                             }
                         }
                     }
-
-                    m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
+                    else
+                    {
+                        StoreReservedInstance(impl, path);
+                    }
                 }
-                m_reservedElementInstance = nullptr;
-
-                auto containerNode = GetContainerNode(impl, path);
-                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
-                impl->m_adapter->NotifyResetDocument();
             }
 
             void OnAddElementToAssociativeContainer(
@@ -251,12 +281,7 @@ namespace AZ::DocumentPropertyEditor
                     associativeContainer->SetElementKey(m_reservedElementInstance, keyInstance);
                 }
 
-                m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
-                m_reservedElementInstance = nullptr;
-
-                auto containerNode = GetContainerNode(impl, containerPath);
-                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
-                impl->m_adapter->NotifyResetDocument();
+                StoreReservedInstance(impl, containerPath);
             };
 
             void RejectAssociativeContainerKey(ReflectionAdapterReflectionImpl* impl)
@@ -265,6 +290,37 @@ namespace AZ::DocumentPropertyEditor
                 m_container->FreeReservedElement(m_containerInstance, m_reservedElementInstance, impl->m_serializeContext);
                 m_reservedElementInstance = nullptr;
             };
+
+            void OnAddSubclassToContainer(
+                ReflectionAdapterReflectionImpl* impl, const AZ::SerializeContext::ClassData* classData, AZ::Dom::Path path)
+            {
+                if (classData && classData->m_factory)
+                {
+                    auto serialContext = impl->m_serializeContext;
+                    auto containerClassElement = m_container->GetElement(m_container->GetDefaultElementNameCrc());
+
+                    // reserve entry in the container
+                    m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
+                    // create entry
+                    void* newDataAddress = classData->m_factory->Create(classData->m_name);
+
+                    AZ_Assert(newDataAddress, "Faliled to create new element for the container!");
+                    // cast to base type (if needed)
+                    void* basePtr = serialContext->DownCast(
+                        newDataAddress,
+                        classData->m_typeId,
+                        containerClassElement->m_typeId,
+                        classData->m_azRtti,
+                        containerClassElement->m_azRtti);
+                    AZ_Assert(
+                        basePtr != nullptr,
+                        "Can't cast container element %s to %s, make sure classes are registered in the system and not generics!",
+                        classData->m_name,
+                        containerClassElement->m_name);
+                    *reinterpret_cast<void**>(m_reservedElementInstance) = basePtr; // store the pointer in the class
+                    StoreReservedInstance(impl, path);
+                }
+            }
 
             AZ::SerializeContext::IDataContainer* m_container = nullptr;
             void* m_containerInstance = nullptr;
@@ -377,7 +433,7 @@ namespace AZ::DocumentPropertyEditor
                 const AZ::SerializeContext::ClassElement* containerClassElement =
                     m_container->GetElement(m_container->GetDefaultElementNameCrc());
                 auto elementInstance = m_container->GetElementByIndex(m_containerInstance, containerClassElement, m_elementIndex);
-                const bool elementRemoved = m_container->RemoveElement(m_containerInstance, elementInstance, impl->m_serializeContext);
+                [[maybe_unused]] const bool elementRemoved = m_container->RemoveElement(m_containerInstance, elementInstance, impl->m_serializeContext);
                 AZ_Assert(elementRemoved, "could not remove element!");
                 auto containerNode = GetContainerNode(impl, path);
                 Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
@@ -1255,6 +1311,8 @@ namespace AZ::DocumentPropertyEditor
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::RejectContainerKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::SetNodeDisabled);
+        m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::QuerySubclass);
+        m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerSubclass);
         m_impl->m_onChangedCallbacks.Clear();
         m_impl->m_containers.Clear();
         if (m_instance != nullptr)
@@ -1487,6 +1545,15 @@ namespace AZ::DocumentPropertyEditor
             }
         };
 
+        auto addContainerSubclass = [&](const AZ::SerializeContext::ClassData* subClass, AZ::Dom::Path containerPath)
+        {
+            auto containerEntry = m_impl->m_containers.ValueAtPath(containerPath, AZ::Dom::PrefixTreeMatch::ParentsOnly);
+            if (containerEntry->m_container)
+            {
+                containerEntry->m_container->OnAddSubclassToContainer(m_impl.get(), subClass, containerPath);
+            }
+        };
+
         auto handleTreeUpdate = [&](Nodes::PropertyRefreshLevel)
         {
             // For now just trigger a soft reset but the end goal is to handle granular updates.
@@ -1506,6 +1573,8 @@ namespace AZ::DocumentPropertyEditor
             Nodes::Adapter::AddContainerKey,
             addKeyToContainer,
             Nodes::Adapter::RejectContainerKey,
-            rejectKeyToContainer);
+            rejectKeyToContainer,
+            Nodes::Adapter::AddContainerSubclass,
+            addContainerSubclass);
     }
 } // namespace AZ::DocumentPropertyEditor

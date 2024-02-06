@@ -699,14 +699,20 @@ namespace AzToolsFramework
     const AZStd::string& AssetSeedManager::GetReadablePlatformList(const AzFramework::SeedInfo& seed)
     {
         using namespace AzFramework;
-        auto readablePlatformListIter = m_platformFlagsToReadablePlatformList.find(seed.m_platformFlags);
+
+        PlatformFlags visiblePlatforms = seed.m_platformFlags;
+#ifndef AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
+        // don't include restricted platforms when they are not enabled
+        visiblePlatforms &= PlatformFlags::UnrestrictedPlatforms;
+#endif
+        auto readablePlatformListIter = m_platformFlagsToReadablePlatformList.find(visiblePlatforms);
         if (readablePlatformListIter != m_platformFlagsToReadablePlatformList.end())
         {
             return readablePlatformListIter->second;
         }
 
-        m_platformFlagsToReadablePlatformList[seed.m_platformFlags] = PlatformHelper::GetCommaSeparatedPlatformList(seed.m_platformFlags);
-        return m_platformFlagsToReadablePlatformList.at(seed.m_platformFlags);
+        m_platformFlagsToReadablePlatformList[visiblePlatforms] = PlatformHelper::GetCommaSeparatedPlatformList(visiblePlatforms);
+        return m_platformFlagsToReadablePlatformList.at(visiblePlatforms);
     }
 
     void AssetSeedManager::Reflect(AZ::ReflectContext* context)

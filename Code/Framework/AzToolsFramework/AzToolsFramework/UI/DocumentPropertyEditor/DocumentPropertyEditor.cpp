@@ -9,6 +9,7 @@
 
 #include <QCheckBox>
 #include <QDialog>
+#include <QInputDialog>
 #include <QLineEdit>
 #include <QSignalBlocker>
 #include <QTimer>
@@ -1762,7 +1763,62 @@ namespace AzToolsFramework
             }
         };
 
-        message.Match(AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey, showKeyQueryDialog);
+        auto showQuerySubclassDialog =
+            [&](AZStd::shared_ptr<AZStd::vector<const AZ::SerializeContext::ClassData*>>* sharedListPointer, AZ::Dom::Path containerPath)
+        {
+            auto sharedList(*sharedListPointer);
+            if (sharedList->empty())
+            {
+                QMessageBox::warning(
+                    this,
+                    QString::fromUtf8("Add derived class"),
+                    QString::fromUtf8("No suitable derived classes found!"),
+                    QMessageBox::Ok,
+                    QMessageBox::Ok);
+            }
+            else
+            {
+                const AZ::SerializeContext::ClassData* selectedClass = nullptr;
+                QStringList derivedClassNames;
+                for (auto& derivedClass : *sharedList)
+                {
+                    const char* derivedClassName = derivedClass->m_editData ? derivedClass->m_editData->m_name : derivedClass->m_name;
+                    derivedClassNames.push_back(derivedClassName);
+                }
+
+                QString item;
+                QInputDialog dialog(this);
+                dialog.setWindowTitle(QObject::tr("Class to create"));
+                dialog.setLabelText(QObject::tr("Classes"));
+                dialog.setComboBoxItems(derivedClassNames);
+                dialog.setTextValue(derivedClassNames.value(0));
+                dialog.setComboBoxEditable(false);
+                bool ok = dialog.exec();
+                if (ok)
+                {
+                    auto selectedClassName = dialog.textValue().toUtf8();
+                    for (size_t index = 0; index < sharedList->size() && !selectedClass; ++index)
+                    {
+                        auto& currentClass = (*sharedList)[index];
+                        if (selectedClassName == (currentClass->m_editData ? currentClass->m_editData->m_name : currentClass->m_name))
+                        {
+                            selectedClass = currentClass;
+                        }
+                    }
+                }
+                if (selectedClass)
+                {
+                    AZ::DocumentPropertyEditor::Nodes::Adapter::AddContainerSubclass.InvokeOnDomNode(
+                        m_adapter->GetContents(), selectedClass, containerPath);
+                }
+            }
+        };
+
+        message.Match(
+            AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey,
+            showKeyQueryDialog,
+            AZ::DocumentPropertyEditor::Nodes::Adapter::QuerySubclass,
+            showQuerySubclassDialog);
     }
 
     void DocumentPropertyEditor::RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
