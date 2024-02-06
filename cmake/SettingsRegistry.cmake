@@ -287,7 +287,6 @@ function(ly_delayed_generate_settings_registry)
         # Fill out the gem_setreg_objects variable with the json fields for each gem
         unset(gem_setreg_objects)
         ly_populate_gem_objects(gem_load_dependencies_json "${all_gem_dependencies}")
-        
 
         string(REPLACE "." "_" escaped_target ${target})
         string(JOIN "." specialization_name ${prefix} ${escaped_target})
