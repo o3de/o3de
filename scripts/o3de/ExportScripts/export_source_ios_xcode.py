@@ -99,9 +99,13 @@ def export_ios_xcode_project(ctx: exp.O3DEScriptExportContext,
     # Generate the Xcode project file for the O3DE project
     cmake_toolchain_path = ctx.engine_path / 'cmake/Platform/iOS/Toolchain_ios.cmake'
 
-    # Make sure app icon resource exists before proceeding with build
-    exp.process_command(['cp', '-r', str(ctx.project_path / 'Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset'), 
-                        str( ctx.project_path / f'Resources/Platform/iOS/Images.xcassets/{ctx.project_name}AppIcon.appiconset')], cwd=ctx.project_path)
+    # Check that the correct app resources folder exists before exporting IPA
+    expected_appicon_path = ctx.project_path / f'Resources/Platform/iOS/Images.xcassets/{ctx.project_name}AppIcon.appiconset'
+    legacy_appicon_path = ctx.project_path / 'Resources/Platform/iOS/Images.xcassets/AppIcon.appiconset'
+    if not expected_appicon_path.exists():
+        if legacy_appicon_path.exists():
+            logger.error(f"The Legacy AppIcon resource path exists here: {legacy_appicon_path}\n Please rename it to the following:{expected_appicon_path}")
+        raise exp.ExportProjectError(f"Could not find expected AppIcon path for this project! {str(expected_appicon_path)}")
 
     exp.process_command(['cmake', '-B', ios_build_folder_str, '-G', "Xcode",
                         f'-DCMAKE_TOOLCHAIN_FILE={str(cmake_toolchain_path)}', '-DLY_MONOLITHIC_GAME=1'],
