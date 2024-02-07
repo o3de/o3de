@@ -64,6 +64,7 @@ ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject*
     : ApplicationManager(argc, argv, parent, AZStd::move(componentAppSettings))
 {
     qRegisterMetaType<AZ::u32>("AZ::u32");
+    qRegisterMetaType<AZ::u32>("AZ::s64");
     qRegisterMetaType<AZ::Uuid>("AZ::Uuid");
 }
 
