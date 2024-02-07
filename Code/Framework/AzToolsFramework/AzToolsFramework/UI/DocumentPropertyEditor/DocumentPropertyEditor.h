@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Instance/InstancePool.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
@@ -53,9 +54,7 @@ namespace AzToolsFramework
         void SetExpanded(bool expanded);
         bool IsExpanded() const;
 
-        void AddSharePriorColumn(size_t previousIndex, size_t widgetIndex);
-        void RemoveSharePriorColumn(size_t widgetIndex);
-        int SharedWidgetCount();
+        void SetAsStartOfNewColumn(size_t widgetIndex);
 
         // QLayout overrides
         void invalidate() override;
@@ -77,9 +76,8 @@ namespace AzToolsFramework
         bool m_expanded = true;
         QCheckBox* m_expanderWidget = nullptr;
 
-        //! Vector containing vectors of widgets, where each vector represents a unique shared column group.
-        //! Each widget in a vector will be a widget that belongs to that shared column group.
-        AZStd::vector<AZStd::vector<size_t>> m_sharePriorColumn;
+        // Contains the indices of all widgets that start a new column.
+        AZStd::unordered_set<size_t> m_columnStarts;
 
     private:
         // These cached sizes must be mutable since they are set inside of an overidden const function

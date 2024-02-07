@@ -18,6 +18,7 @@ namespace AzToolsFramework
         ContainerActionButtonHandler();
 
         void SetValueFromDom(const AZ::Dom::Value& node) override;
+        virtual bool ResetToDefaults() override;
 
         static constexpr const AZStd::string_view GetHandlerName()
         {

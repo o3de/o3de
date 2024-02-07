@@ -1801,7 +1801,7 @@ namespace AZ::Reflection
         if (serializeContext == nullptr)
         {
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            AZ_Assert(serializeContext != nullptr, "Unable to retreive a SerializeContext");
+            AZ_Assert(serializeContext != nullptr, "Unable to retrieve a SerializeContext");
         }
 
         LegacyReflectionInternal::InstanceVisitor helper(visitor, instance, typeId, serializeContext);

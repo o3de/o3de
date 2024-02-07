@@ -29,30 +29,43 @@ namespace AzToolsFramework
         using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
         using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
 
+        auto oldAction = m_action;
         m_action = ContainerActionButton::Action.ExtractFromDomNode(node).value_or(ContainerAction::AddElement);
-        switch (m_action)
+
+        if (m_action != oldAction)
         {
-        case ContainerAction::AddElement:
-            setIcon(s_iconAdd);
-            setToolTip("Add new child element");
-            break;
-        case ContainerAction::RemoveElement:
-            setIcon(s_iconRemove);
-            setToolTip(tr("Remove this element"));
-            break;
-        case ContainerAction::Clear:
-            setIcon(s_iconClear);
-            setToolTip(tr("Remove all elements"));
-            break;
-        case ContainerAction::MoveUp:
-            setIcon(s_iconUp);
-            setToolTip(tr("move this element up"));
-            break;
-        case ContainerAction::MoveDown:
-            setIcon(s_iconDown);
-            setToolTip(tr("move this element down"));
-            break;
+            switch (m_action)
+            {
+            case ContainerAction::None:
+                AZ_Error("DPE", false, "ContainerActionButtonHandler::SetValueFromDom passed invalid action!");
+                break;
+            case ContainerAction::AddElement:
+                setIcon(s_iconAdd);
+                setToolTip("Add new child element");
+                break;
+            case ContainerAction::RemoveElement:
+                setIcon(s_iconRemove);
+                setToolTip(tr("Remove this element"));
+                break;
+            case ContainerAction::Clear:
+                setIcon(s_iconClear);
+                setToolTip(tr("Remove all elements"));
+                break;
+            case ContainerAction::MoveUp:
+                setIcon(s_iconUp);
+                setToolTip(tr("move this element up"));
+                break;
+            case ContainerAction::MoveDown:
+                setIcon(s_iconDown);
+                setToolTip(tr("move this element down"));
+                break;
+            }
         }
+    }
+
+    bool ContainerActionButtonHandler::ResetToDefaults()
+    {
+        return GenericButtonHandler::ResetToDefaults();
     }
 
     void ContainerActionButtonHandler::OnClicked()

@@ -90,7 +90,7 @@ namespace AZ::Reflection::LegacyReflectionInternal
     {
         AZ_TYPE_INFO(KeyEntry, "{718537E1-DFF5-4662-AB86-1D5C0C8A0768}");
 
-        //! Stores the address and type ID of an associative contaienr key
+        //! Stores the address and type ID of an associative container key
         AZ::PointerObject m_keyInstance;
         //! Stores the attributes of a single associative container element key
         AZStd::vector<AttributeData> m_keyAttributes;
