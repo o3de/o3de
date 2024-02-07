@@ -230,7 +230,8 @@ namespace AZ
                 platformCodes.emplace_back(PlatformCodeNameJasper);
                 break;
             case PlatformId::SERVER:
-                // Server is not a hardware platform
+                // For 'server' we default to the host
+                platformCodes.emplace_back(AZ_TRAIT_OS_PLATFORM_CODENAME);
                 break;
             default:
                 AZ_Assert(false, "Unsupported Platform ID: %i", platformId);
