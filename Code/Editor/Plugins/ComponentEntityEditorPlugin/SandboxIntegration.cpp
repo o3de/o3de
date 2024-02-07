@@ -29,6 +29,7 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
@@ -68,7 +69,6 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
-#include "Objects/ComponentEntityObject.h"
 #include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
 
@@ -84,6 +84,7 @@
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/EditorViewportCamera.h>
 #include <Editor/Util/PathUtil.h>
+#include <Editor/Objects/EntityObject.h>
 #include "CryEdit.h"
 #include "Undo/Undo.h"
 
@@ -451,51 +452,9 @@ void SandboxIntegrationManager::ClosePinnedInspector(AzToolsFramework::EntityPro
 
 void SandboxIntegrationManager::CreateEditorRepresentation(AZ::Entity* entity)
 {
-    IEditor* editor = GetIEditor();
-
-    if (CComponentEntityObject* existingObject = CComponentEntityObject::FindObjectForEntity(entity->GetId()))
-    {
-        // Refresh sandbox object if one already exists for this AZ::EntityId.
-        existingObject->AssignEntity(entity, false);
-        return;
-    }
-
-    CBaseObjectPtr object = editor->NewObject("ComponentEntity", "", entity->GetName().c_str(), 0.f, 0.f, 0.f, false);
-
-    if (object)
-    {
-        static_cast<CComponentEntityObject*>(object.get())->AssignEntity(entity);
-
-        // If this object type was hidden by category, re-display it.
-        int hideMask = editor->GetDisplaySettings()->GetObjectHideMask();
-        hideMask = hideMask & ~(object->GetType());
-        editor->GetDisplaySettings()->SetObjectHideMask(hideMask);
-    }
-}
-
-bool SandboxIntegrationManager::DestroyEditorRepresentation(AZ::EntityId entityId, bool deleteAZEntity)
-{
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-    IEditor* editor = GetIEditor();
-    if (editor->GetObjectManager())
-    {
-        CEntityObject* object = nullptr;
-        AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
-            object, entityId, &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
-
-        if (object && (object->GetType() == OBJTYPE_AZENTITY))
-        {
-            static_cast<CComponentEntityObject*>(object)->AssignEntity(nullptr, deleteAZEntity);
-            {
-                AZ_PROFILE_SCOPE(AzToolsFramework, "SandboxIntegrationManager::DestroyEditorRepresentation:ObjManagerDeleteObject");
-                editor->GetObjectManager()->DeleteObject(object);
-            }
-            return true;
-        }
-    }
-
-    return false;
+    // Add required editor components to the entity.
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+        &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *entity);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -713,12 +672,6 @@ void SandboxIntegrationManager::OnPrepareForContextReset()
     objects.reserve(128);
     IObjectManager* objectManager = GetIEditor()->GetObjectManager();
     objectManager->FindObjectsOfType(OBJTYPE_AZENTITY, objects);
-    for (CBaseObject* object : objects)
-    {
-        CComponentEntityObject* componentEntity = static_cast<CComponentEntityObject*>(object);
-        componentEntity->AssignEntity(nullptr, false);
-        objectManager->DeleteObject(componentEntity);
-    }
 }
 
 void SandboxIntegrationManager::OnSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)

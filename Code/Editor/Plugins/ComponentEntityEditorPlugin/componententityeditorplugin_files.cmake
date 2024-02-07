@@ -21,6 +21,4 @@ set(FILES
     UI/AssetCatalogModel.h
     UI/AssetCatalogModel.cpp
     UI/ComponentPalette/ComponentPaletteSettings.h
-    Objects/ComponentEntityObject.h
-    Objects/ComponentEntityObject.cpp
 )

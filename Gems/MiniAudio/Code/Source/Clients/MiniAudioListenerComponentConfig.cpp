@@ -20,6 +20,9 @@ namespace MiniAudio
                 ->Version(1)
                 ->Field("Follow Entity", &MiniAudioListenerComponentConfig::m_followEntity)
                 ->Field("Listener Index", &MiniAudioListenerComponentConfig::m_listenerIndex)
+                ->Field("Inner Cone Angle", &MiniAudioListenerComponentConfig::m_innerAngleInDegrees)
+                ->Field("Outer Cone Angle", &MiniAudioListenerComponentConfig::m_outerAngleInDegrees)
+                ->Field("Outer Volume", &MiniAudioListenerComponentConfig::m_outerVolume)
                 ;
         }
     }

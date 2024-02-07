@@ -135,8 +135,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "EditorToolsApplication.h"
 
-#include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
-
 #include <AzToolsFramework/Undo/UndoSystem.h>
 
 

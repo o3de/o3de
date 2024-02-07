@@ -109,6 +109,13 @@ namespace AZ
 
         void CoreLightsSystemComponent::Activate()
         {
+            AZ::ApplicationTypeQuery appType;
+            ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsHeadless())
+            {
+                return;
+            }
+
             m_ltcCommonInterface.reset(aznew LtcCommon());
 
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SimplePointLightFeatureProcessor, SimplePointLightFeatureProcessorInterface>();
