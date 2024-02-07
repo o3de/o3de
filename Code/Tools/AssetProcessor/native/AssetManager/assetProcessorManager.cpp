@@ -3524,9 +3524,6 @@ namespace AssetProcessor
         }
 
         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Received %i files from the scanner.  Assessing...\n", static_cast<int>(filePaths.size()));
-        AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
-        WarmUpFileCache(filePaths);
-        AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
 
         [[maybe_unused]] int processedFileCount = 0;
 
@@ -3581,6 +3578,11 @@ namespace AssetProcessor
     {
         m_scannerFiles = filePaths;
 
+        AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
+        WarmUpFileCache(filePaths);
+        AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
+
+        Q_EMIT FileCacheIsReady();
         CheckReadyToAssessScanFiles();
     }
 

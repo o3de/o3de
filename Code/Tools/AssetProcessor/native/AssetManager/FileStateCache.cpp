@@ -9,20 +9,28 @@
 #include "FileStateCache.h"
 #include "native/utilities/assetUtils.h"
 #include <AssetProcessor_Traits_Platform.h>
+#include <AzToolsFramework/Asset/AssetUtils.h>
 
 #include <QDir>
 
 namespace AssetProcessor
 {
-
+    // Note that the file state cache operates on the assumption that it is automatically loaded and kept
+    // up to date by the file scanner (initially) and the file watcher (thereafter).  This is why all these
+    // functions do not check the physical device for the file state, but rather rely on the cache.
     bool FileStateCache::GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const
     {
+        AZ_Assert(!m_fileInfoMap.empty(), "FileStateCache::GetFileInfo called before cache is initialized!");
+
         LockGuardType scopeLock(m_mapMutex);
         auto itr = m_fileInfoMap.find(PathToKey(absolutePath));
 
         if (itr != m_fileInfoMap.end())
         {
-            *foundFileInfo = itr.value();
+            if (foundFileInfo)
+            {
+                *foundFileInfo = itr.value();
+            }
             return true;
         }
 
@@ -32,9 +40,8 @@ namespace AssetProcessor
     bool FileStateCache::Exists(const QString& absolutePath) const
     {
         LockGuardType scopeLock(m_mapMutex);
-        auto itr = m_fileInfoMap.find(PathToKey(absolutePath));
-
-        return itr != m_fileInfoMap.end();
+        AZ_Assert(!m_fileInfoMap.empty(), "FileStateCache::Exists called before cache is initialized!");
+        return GetFileInfo(absolutePath, nullptr);
     }
 
     void FileStateCache::WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash)
@@ -56,6 +63,7 @@ namespace AssetProcessor
 
     bool FileStateCache::GetHash(const QString& absolutePath, FileHash* foundHash)
     {
+        AZ_Assert(!m_fileInfoMap.empty(), "FileStateCache::Exists called before cache is initialized!");
         LockGuardType scopeLock(m_mapMutex);
         auto fileInfoItr = m_fileInfoMap.find(PathToKey(absolutePath));
 
@@ -174,10 +182,12 @@ namespace AssetProcessor
 
         QString normalized = AssetUtilities::NormalizeFilePath(absolutePath);
 
-        if constexpr (!ASSETPROCESSOR_TRAIT_CASE_SENSITIVE_FILESYSTEM)
-        {
-            normalized = normalized.toLower();
-        }
+        // Its possible for this API to be called on a case sensitive and case-insensitive file system for files
+        // with the wrong case.  For example, a source asset might have another source asset listed in its dependency json
+        // but with incorrect case.  If it were to call "Exists" or "GetFileInfo" with the wrong case, it would fail even
+        // though the file actually does exist, and its a case insensitive system.  The API contract for this class demands
+        // that it act as if case-insensitive, so the map MUST be lowercase.
+        normalized = normalized.toLower();
 
         m_keyCache[absolutePath] = normalized;
         return normalized;
@@ -208,13 +218,37 @@ namespace AssetProcessor
 
     bool FileStatePassthrough::GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const
     {
-        QFileInfo fileInfo(absolutePath);
-
-        if (fileInfo.exists())
+        if (QFileInfo fileInfo(absolutePath); fileInfo.exists())
         {
-            *foundFileInfo = FileStateInfo(fileInfo.absoluteFilePath(), fileInfo.lastModified(), fileInfo.size(), fileInfo.isDir());
-
+            if (foundFileInfo)
+            {
+                *foundFileInfo = FileStateInfo(fileInfo.absoluteFilePath(), fileInfo.lastModified(), fileInfo.size(), fileInfo.isDir());
+            }
             return true;
+        }
+        
+        if constexpr (ASSETPROCESSOR_TRAIT_CASE_SENSITIVE_FILESYSTEM)
+        {
+            // The above is done as a quick initial result, if the file exists, great, no need to do anything further.
+
+            // However, its quite possible that the input absolute path has the wrong case.  On case-sensitive operating systems
+            // we need to actually check if the case needs fixing...
+            AZStd::string correctedPath = absolutePath.toUtf8().constData();
+            AZStd::string rootPath = AZ::IO::PathView(correctedPath).RootPath().Native();
+            correctedPath = correctedPath.substr(rootPath.size());
+            if (AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.c_str(), correctedPath, true))
+            {
+                QString reassembledPath = QString::fromUtf8( (AZ::IO::Path(rootPath) / correctedPath).Native().c_str());
+                QFileInfo correctedFileInfo(reassembledPath);
+                if (correctedFileInfo.exists())
+                {
+                    if (foundFileInfo)
+                    {
+                        *foundFileInfo = FileStateInfo(correctedFileInfo.absoluteFilePath(), correctedFileInfo.lastModified(), correctedFileInfo.size(), correctedFileInfo.isDir());
+                    }
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -222,17 +256,18 @@ namespace AssetProcessor
 
     bool FileStatePassthrough::Exists(const QString& absolutePath) const
     {
-        return QFile(absolutePath).exists();
+        return GetFileInfo(absolutePath, nullptr);
     }
 
     bool FileStatePassthrough::GetHash(const QString& absolutePath, FileHash* foundHash)
     {
-        if(!Exists(absolutePath))
+        FileStateInfo fileInfo;
+        if(!GetFileInfo(absolutePath, &fileInfo))
         {
             return false;
         }
 
-        *foundHash = AssetUtilities::GetFileHash(absolutePath.toUtf8().constData(), true);
+        *foundHash = AssetUtilities::GetFileHash(fileInfo.m_absolutePath.toUtf8().constData(), true);
 
         return true;
     }

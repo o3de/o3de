@@ -1363,29 +1363,43 @@ namespace AssetUtilities
         return productName.toLower();
     }
 
-    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot)
+    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot, bool checkEntirePath /* = true*/)
     {
         // normalize the input string:
         relativePathFromRoot = NormalizeFilePath(relativePathFromRoot);
 
-#if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_MAC)
-        // these operating systems use File Systems which are generally not case sensitive, and so we can make this function "early out" a lot faster.
-        // by quickly determining the case where it does not exist at all.  Without this assumption, it can be hundreds of times slower.
-        bool exists = false;
+        // the File State Cache is itself case-insensitive on all operating systems an is warmed up as the application starts
+        // from a quick iteration of all files that exist, before any real logic is created.  It is safe to check
+        // it for the existence of a file and early out to save time.
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
         if (fileStateInterface)
         {
-            exists = fileStateInterface->Exists(QDir(rootPath).absoluteFilePath(relativePathFromRoot));
+            AssetProcessor::FileStateInfo fsInfo;
+            // use AZ::IO::Path here to combine the strings.  Qt will otherwise potentially make assumptions about the 
+            // working directory and give weird results that differ depending on the operating system.
+            AZ::IO::Path fullPath = AZ::IO::Path(rootPath.toUtf8().constData()) / relativePathFromRoot.toUtf8().constData();
+            if (!fileStateInterface->GetFileInfo(QString::fromUtf8(fullPath.c_str()), &fsInfo))
+            {
+                return false;  // file does not exist according to the cache, which itself, is case insensitive.
+            }
+            // fsInfo contains the absolute path, but we need to update only the relative path part.
+            if (!rootPath.isEmpty()) // rootpath could be empty and relativePathFromRoot could be a full path
+            {   
+                // to get here, length of rootpath will be at LEAST one.
+                relativePathFromRoot = fsInfo.m_absolutePath.mid(rootPath.length() + 1);
+            }
+            else
+            {
+                 relativePathFromRoot = fsInfo.m_absolutePath;
+            }
+            return true;
         }
-
-        if (!exists)
-        {
-            return false;
-        }
-#endif
-
+       
+        // If we get here, there is no cache, and we fall back on the actual update to correct case logic.
+        // The reason we have to do this is that it could be possible that the file has a different
+        // case than expected, so it won't "exist" on disk with that exact name.
         AZStd::string relPathFromRoot = relativePathFromRoot.toUtf8().constData();
-        if(AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.toUtf8().constData(), relPathFromRoot))
+        if(AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.toUtf8().constData(), relPathFromRoot, checkEntirePath))
         {
             relativePathFromRoot = QString::fromUtf8(relPathFromRoot.c_str(), aznumeric_cast<int>(relPathFromRoot.size()));
             return true;

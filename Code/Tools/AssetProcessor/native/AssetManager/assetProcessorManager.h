@@ -309,6 +309,8 @@ namespace AssetProcessor
         //! Fired when a previously-delayed file has begun processing.
         void ProcessingResumed(QString filePath);
 
+        void FileCacheIsReady();
+
     public Q_SLOTS:
         void AssetProcessed(JobEntry jobEntry, AssetBuilderSDK::ProcessJobResponse response);
         void AssetProcessed_Impl();
