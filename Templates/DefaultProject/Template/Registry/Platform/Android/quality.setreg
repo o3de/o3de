@@ -1,0 +1,67 @@
+{
+    "O3DE": {
+        "Quality": {
+            // Android platform specific quality setting overrides go in this file 
+            "Groups": {
+                "q_general": {
+                    "Default": 1 // override the default level for this platform to be medium
+                },
+                "q_graphics": {
+                    "Default": 1, // override the default level for this platform to be medium
+                    "Settings": {
+                        // Setting overrides can be specified using an array to assign values to
+                        // quality levels. For example if you have 4 quality levels:
+                        // "<cvar>": [<low setting>, <medium setting>, <high setting>, <veryhigh setting>]
+                        // "r_skinnedMeshInstanceMemoryPoolSize": [64, 96, 128, 256] 
+                        // Or you can use a single value for all levels, for example:
+                        // "r_skinnedMeshInstanceMemoryPoolSize": 96 
+                        "r_renderScale": [0.7, 0.8, 0.9, 1.0]
+                    }
+                },
+                "q_shadows": {
+                    "Settings": {
+                        // Shadows console variable setting overrides go here
+                    }
+                }
+                // Additional custom quality groups overrides go here. 
+            },
+            "Devices": {
+                // Device rules for this platform go here 
+                // Device rule groups can have whatever name makes sense to you
+                "DeviceRulesLow": {
+                    "Rules": {
+                        // Device rules are regular expressions
+                        // Rule matching Pixel 3 - 6 
+                        "DeviceModelLow": { "DeviceModel": "^Pixel [3-6]\D*$" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level to low
+                        "q_general": 0 
+                        // For example, to change a specific setting
+                        // "r_skinnedMeshInstanceMemoryPoolSize":  64
+                    }
+                },
+                "DeviceRulesHigh": {
+                    "Rules": {
+                        // Device rules are regular expressions, only one of these rules needs to match
+                        // Rule matching Pixel 8
+                        "PixelModelsHigh": { "DeviceModel": "^Pixel 8\D*$" },
+                        // Rule matching Galaxy S23 models
+                        "GalaxyS23Models": { "DeviceModel": "^(SC-51D|SCG19|SM-S911.*)$" },
+                        "GalaxyS23FEModels": { "DeviceModel": "^SM-S71.*$" },
+                        "GalaxyS23UltraModels": { "DeviceModel": "^(SC-52D|SCG20|SM-S918.*)$" },
+                        "GalaxyS23PlusModels": { "DeviceModel": "^SM-S916.*$" }
+                    },
+                    "Settings": {
+                        // Device cvar quality overrides go here for this rule
+                        // Change the general quality level for the device to high
+                        "q_general": 2 
+                        // For example, to change a specific setting
+                        // "r_skinnedMeshInstanceMemoryPoolSize":  64
+                    }
+                }
+            }
+        }
+    }
+}
