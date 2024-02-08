@@ -207,6 +207,18 @@
             "isTemplated": false
         },
         {
+            "file": "Registry/quality.client.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/quality.server.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/quality.headless.setreg",
+            "isTemplated": false
+        },
+        {
             "file": "Registry/Platform/Android/quality.setreg",
             "isTemplated": false
         },
