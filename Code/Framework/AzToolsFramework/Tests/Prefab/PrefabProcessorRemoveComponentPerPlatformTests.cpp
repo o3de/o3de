@@ -18,8 +18,12 @@ namespace UnitTest
 {
     constexpr AZ::Uuid Uuid_RemoveThisComponent("{6E29CD1C-D2CF-4763-80E1-F45FFA439A6A}");
     constexpr AZ::Uuid Uuid_ServerComponent("{9218A873-1525-4278-AC07-17AD6A6B8374}");
+    constexpr AZ::Uuid Uuid_DependentComponent("{95421870-F6FD-44D2-AA5F-AF85FD977F75}");
+    const AZStd::set<AZ::Uuid> ExcludedComponents = { Uuid_RemoveThisComponent };
+
     const char* PlatformTag = "platform_1";
-    const char* EntityName = "Entity1";
+    const char* EntityName = "entity_1";
+    const AZ::Crc32 ComponentService = AZ_CRC("good_service");
 
     class ServerComponent : public AZ::Component
     {
@@ -48,13 +52,39 @@ namespace UnitTest
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<RemoveThisComponent, AZ::Component>()->Version(1);
-            }        }
+            }
+        }
 
         RemoveThisComponent() = default;
         void Activate() override {}
         void Deactivate() override {}
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        {
+            provided.push_back(ComponentService);
+        }
     };
 
+    class DependentComponent : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT(DependentComponent, Uuid_DependentComponent);
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<DependentComponent, AZ::Component>()->Version(1);
+            }
+        }
+
+        DependentComponent() = default;
+        void Activate() override {}
+        void Deactivate() override {}
+
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        {
+            required.push_back(ComponentService);
+        }
+    };
 
     class PrefabProcessingTestFixture : public ::testing::Test
     {
@@ -65,14 +95,11 @@ namespace UnitTest
             m_application.get()->Start(AzFramework::Application::Descriptor());
             m_application.get()->RegisterComponentDescriptor(ServerComponent::CreateDescriptor());
             m_application.get()->RegisterComponentDescriptor(RemoveThisComponent::CreateDescriptor());
+            m_application.get()->RegisterComponentDescriptor(DependentComponent::CreateDescriptor());
 
-
-            using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext;
-
-            // Create a prefab
-            AZStd::vector<AZ::Entity*> entities;
-            entities.emplace_back(CreateSourceEntity(EntityName, AZ::Transform::CreateIdentity()));
-            ConvertEntitiesToPrefab(entities, m_prefabDom, "test/my_prefab");
+            AZStd::map<AZStd::string, AZStd::set<AZ::Uuid>> platformExcludedComponents;
+            platformExcludedComponents.emplace(PlatformTag, ExcludedComponents);
+            m_processor.m_platformExcludedComponents = platformExcludedComponents;
         }
 
         void TearDown() override
@@ -83,60 +110,56 @@ namespace UnitTest
             m_application.reset();
         }
 
-        static void ConvertEntitiesToPrefab(const AZStd::vector<AZ::Entity*>& entities, AzToolsFramework::Prefab::PrefabDom& prefabDom, AZ::IO::PathView filePath)
+        static void ConvertEntitiesToPrefab(const AZStd::vector<AZ::Entity*>& entities, AzToolsFramework::Prefab::PrefabDom& prefabDom)
         {
             auto* prefabSystem = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
-            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(prefabSystem->CreatePrefab(entities, {}, filePath));
+            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(prefabSystem->CreatePrefab(entities, {}, "test/my_prefab"));
             ASSERT_TRUE(sourceInstance);
 
             auto& prefabTemplateDom = prefabSystem->FindTemplateDom(sourceInstance->GetTemplateId());
             prefabDom.CopyFrom(prefabTemplateDom, prefabDom.GetAllocator());
         }
 
-        static AZ::Entity* CreateSourceEntity(const char* name, const AZ::Transform& tm, AZ::Entity* parent = nullptr)
+        static AZ::Entity* CreateSourceEntity(const char* name, AZStd::vector<AZ::Uuid> components, AZ::Entity* parent = nullptr)
         {
             AZ::Entity* entity = aznew AZ::Entity(name);
             auto* transformComponent = entity->CreateComponent<AzFramework::TransformComponent>();
-
             if (parent)
             {
                 transformComponent->SetParent(parent->GetId());
-                transformComponent->SetLocalTM(tm);
-            }
-            else
-            {
-                transformComponent->SetWorldTM(tm);
             }
 
-            entity->CreateComponent<RemoveThisComponent>();
-            entity->CreateComponent<ServerComponent>();
+            for (auto componentUUID : components)
+            {
+                entity->CreateComponent(componentUUID);
+            }
+
             entity->Init();
             entity->Activate();
             return entity;
         }
 
         AZStd::unique_ptr<AzToolsFramework::ToolsApplication> m_application = {};
-        AzToolsFramework::Prefab::PrefabDom m_prefabDom;
+        AzToolsFramework::Prefab::PrefabConversionUtils::AssetPlatformComponentRemover m_processor;
     };
 
-    TEST_F(PrefabProcessingTestFixture, PrefabProcessorRemoveComponentPerPlatform_SingleEntity)
+    TEST_F(PrefabProcessingTestFixture, PrefabProcessorRemoveComponentPerPlatform_RemoveSingleComponent)
     {
         using namespace AzToolsFramework::Prefab::PrefabConversionUtils;
 
         // Add the prefab into the Prefab Processor Context
-        const AZStd::string prefabName = "testPrefab";
         PrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
         prefabProcessorContext.SetPlatformTags({ AZ::Crc32(PlatformTag) });
 
-        PrefabDocument document(prefabName);
-        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(m_prefabDom)));
-        prefabProcessorContext.AddPrefab(AZStd::move(document));
+        // Create a prefab
+        PrefabDocument document("testPrefab");
+        AzToolsFramework::Prefab::PrefabDom prefabDom;
+        AZStd::vector<AZ::Entity*> entities;
+        entities.emplace_back(CreateSourceEntity(EntityName, {Uuid_RemoveThisComponent, Uuid_ServerComponent}));
+        ConvertEntitiesToPrefab(entities, prefabDom);
 
-        // Request PrefabProcessor to process the prefab
-        AssetPlatformComponentRemover processor;
-        AZStd::map<AZStd::string, AZStd::set<AZ::Uuid>> platformExcludedComponents;
-        AZStd::set<AZ::Uuid> excludedComponents = { Uuid_RemoveThisComponent };
-        platformExcludedComponents.emplace(PlatformTag, excludedComponents);
+        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(prefabDom)));
+        prefabProcessorContext.AddPrefab(AZStd::move(document));
 
         // Validate the component exists before processing and removed afterward
         prefabProcessorContext.ListPrefabs(
@@ -157,11 +180,11 @@ namespace UnitTest
         );
 
         // Process Prefab
-        processor.m_platformExcludedComponents = platformExcludedComponents;
-        processor.Process(prefabProcessorContext);
+        m_processor.Process(prefabProcessorContext);
         ASSERT_TRUE(prefabProcessorContext.HasPrefabs());
+        ASSERT_TRUE(prefabProcessorContext.HasCompletedSuccessfully());
 
-        // Validate the component is removed
+        // Validate 1 component is removed
         prefabProcessorContext.ListPrefabs(
             [](PrefabDocument& prefab) -> void
             {
@@ -178,5 +201,30 @@ namespace UnitTest
                 );
             }
         );
+    }
+
+    TEST_F(PrefabProcessingTestFixture, PrefabProcessorRemoveComponentPerPlatform_ComponentDependencyError)
+    {
+        using namespace AzToolsFramework::Prefab::PrefabConversionUtils;
+
+        // Add the prefab into the Prefab Processor Context
+        PrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
+        prefabProcessorContext.SetPlatformTags({ AZ::Crc32(PlatformTag) });
+
+        // Create a prefab
+        PrefabDocument document("testPrefab");
+        AzToolsFramework::Prefab::PrefabDom prefabDom;
+        AZStd::vector<AZ::Entity*> entities;
+        entities.emplace_back(CreateSourceEntity(EntityName, { Uuid_RemoveThisComponent, Uuid_ServerComponent, Uuid_DependentComponent }));
+        ConvertEntitiesToPrefab(entities, prefabDom);
+
+        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(prefabDom)));
+        prefabProcessorContext.AddPrefab(AZStd::move(document));
+
+        // Process Prefab
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_processor.Process(prefabProcessorContext);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1); //< Expect 1 error due to missing a component dependency
+        ASSERT_FALSE(prefabProcessorContext.HasCompletedSuccessfully());
     }
 } // namespace UnitTest

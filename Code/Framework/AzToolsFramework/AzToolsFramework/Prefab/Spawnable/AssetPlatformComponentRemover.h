@@ -16,6 +16,12 @@ namespace AZ
     class ReflectContext;
 }
 
+// Predefinition for unit test friend class
+namespace UnitTest
+{
+    class PrefabProcessingTestFixture;
+}
+
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     //! A prefab processor for removing a spawnable's components based on asset tags.
@@ -25,6 +31,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     class AssetPlatformComponentRemover
         : public PrefabProcessor
     {
+        friend class UnitTest::PrefabProcessingTestFixture;
+
     public:
         AZ_CLASS_ALLOCATOR(AssetPlatformComponentRemover, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::AssetPlatformComponentRemover,
@@ -33,9 +41,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         static void Reflect(AZ::ReflectContext* context);
 
         void Process(PrefabProcessorContext& prefabProcessorContext) override;
-        void RemoveComponentsBasedOnAssetPlatform(PrefabDocument& prefab, const AZStd::set<AZ::Uuid>& exludedComponents);
 
-     private:
+    private:
         AZStd::map<AZStd::string, AZStd::set<AZ::Uuid>> m_platformExcludedComponents;
     };
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

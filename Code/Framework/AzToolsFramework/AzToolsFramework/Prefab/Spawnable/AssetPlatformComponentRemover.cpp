@@ -44,38 +44,47 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             // No need to remove any components.
             return;
         }
-        
+
+        // Iterate over every entity, in every prefab
         prefabProcessorContext.ListPrefabs(
-            [this, &excludedComponents](PrefabDocument& prefab)
+            [&prefabProcessorContext, &excludedComponents](PrefabDocument& prefab) -> void
             {
-                RemoveComponentsBasedOnAssetPlatform(prefab, excludedComponents);
-            });
-    }
-
-    void AssetPlatformComponentRemover::RemoveComponentsBasedOnAssetPlatform(PrefabDocument& prefab, const AZStd::set<AZ::Uuid>& exludedComponents)
-    {
-        if (exludedComponents.empty())
-        {
-            // No need to remove any components.
-            return;
-        }
-
-        prefab.GetInstance().GetAllEntitiesInHierarchy(
-            [&exludedComponents](AZStd::unique_ptr<AZ::Entity>& entity)
-            {
-                // Loop over an entity's components backwards and pop-off components that shouldn't exist.
-                AZStd::vector<AZ::Component*> components = entity->GetComponents();
-                for (auto component = components.rbegin(); component != components.rend(); ++component)
-                {
-                    if (exludedComponents.contains((*component)->GetUnderlyingComponentType()))
+                prefab.GetInstance().GetAllEntitiesInHierarchy(
+                    [&prefab, &prefabProcessorContext, &excludedComponents](AZStd::unique_ptr<AZ::Entity>& entity) -> bool
                     {
-                        entity->RemoveComponent(*component);
-                        delete *component;
-                    }
-                }
+                        // Loop over an entity's components backwards and pop-off components that shouldn't exist.
+                        AZStd::vector<AZ::Component*> components = entity->GetComponents();
+                        const int oldComponentCount = components.size();
+                        for (int i = oldComponentCount - 1; i >= 0; --i)
+                        {
+                            AZ::Component* component = components[i];
+                            if (excludedComponents.contains(component->GetUnderlyingComponentType()))
+                            {
+                                entity->RemoveComponent(component);
+                                delete component;
+                            }
+                        }
 
-                return true;
-            }
-        );
+                        // Make sure we didn't remove any components that another component dependends on
+                        if (oldComponentCount != entity->GetComponents().size())
+                        {
+                            if (entity->EvaluateDependencies() == AZ::Entity::DependencySortResult::MissingRequiredService)
+                            {
+                                AZ_Error( "AssetPlatformComponentRemover", false,
+                                    "Processing prefab '%s' failed! Removing components on entity '%s' has broken component "
+                                    "dependency. Make sure you also remove any dependent components. If dependent component is actually required, "
+                                    "then keep the provider. Please update Amazon/Tools/Prefab/Processing/PlatformExcludedComponents settings registry (.setreg).",
+                                    prefab.GetName().c_str(),
+                                    entity->GetName().c_str()
+                                );
+
+                                prefabProcessorContext.ErrorEncountered();
+                            }
+                        }
+
+                        // continue iterating over entities...
+                        return true;
+                    });
+            });
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
