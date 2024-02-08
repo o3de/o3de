@@ -17,7 +17,7 @@
 namespace UnitTest
 {
     constexpr AZ::Uuid Uuid_RemoveThisComponent("{6E29CD1C-D2CF-4763-80E1-F45FFA439A6A}");
-    constexpr AZ::Uuid Uuid_ServerComponent("{9218A873-1525-4278-AC07-17AD6A6B8374}");
+    constexpr AZ::Uuid Uuid_KeepThisComponent("{9218A873-1525-4278-AC07-17AD6A6B8374}");
     constexpr AZ::Uuid Uuid_DependentComponent("{95421870-F6FD-44D2-AA5F-AF85FD977F75}");
     const AZStd::set<AZ::Uuid> ExcludedComponents = { Uuid_RemoveThisComponent };
 
@@ -25,19 +25,19 @@ namespace UnitTest
     const char* EntityName = "entity_1";
     const AZ::Crc32 ComponentService = AZ_CRC("good_service");
 
-    class ServerComponent : public AZ::Component
+    class KeepThisComponent : public AZ::Component
     {
     public:
-        AZ_COMPONENT(ServerComponent, Uuid_ServerComponent);
+        AZ_COMPONENT(KeepThisComponent, Uuid_KeepThisComponent);
         static void Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<ServerComponent, AZ::Component>()->Version(1);
+                serializeContext->Class<KeepThisComponent, AZ::Component>()->Version(1);
             }
         }
 
-        ServerComponent() = default;
+        KeepThisComponent() = default;
         void Activate() override {}
         void Deactivate() override {}
     };
@@ -93,7 +93,7 @@ namespace UnitTest
         {
             m_application.reset(aznew AzToolsFramework::ToolsApplication());
             m_application.get()->Start(AzFramework::Application::Descriptor());
-            m_application.get()->RegisterComponentDescriptor(ServerComponent::CreateDescriptor());
+            m_application.get()->RegisterComponentDescriptor(KeepThisComponent::CreateDescriptor());
             m_application.get()->RegisterComponentDescriptor(RemoveThisComponent::CreateDescriptor());
             m_application.get()->RegisterComponentDescriptor(DependentComponent::CreateDescriptor());
 
@@ -155,7 +155,7 @@ namespace UnitTest
         PrefabDocument document("testPrefab");
         AzToolsFramework::Prefab::PrefabDom prefabDom;
         AZStd::vector<AZ::Entity*> entities;
-        entities.emplace_back(CreateSourceEntity(EntityName, {Uuid_RemoveThisComponent, Uuid_ServerComponent}));
+        entities.emplace_back(CreateSourceEntity(EntityName, { Uuid_RemoveThisComponent, Uuid_KeepThisComponent }));
         ConvertEntitiesToPrefab(entities, prefabDom);
 
         ASSERT_TRUE(document.SetPrefabDom(AZStd::move(prefabDom)));
@@ -171,7 +171,7 @@ namespace UnitTest
                         if (entity->GetName() == EntityName)
                         {
                             EXPECT_NE(entity->FindComponent(Uuid_RemoveThisComponent), nullptr);
-                            EXPECT_NE(entity->FindComponent(Uuid_ServerComponent), nullptr);
+                            EXPECT_NE(entity->FindComponent(Uuid_KeepThisComponent), nullptr);
                         }
                         return true;
                     }
@@ -194,7 +194,7 @@ namespace UnitTest
                         if (entity->GetName() == EntityName)
                         {
                             EXPECT_EQ(entity->FindComponent(Uuid_RemoveThisComponent), nullptr);
-                            EXPECT_NE(entity->FindComponent(Uuid_ServerComponent), nullptr);
+                            EXPECT_NE(entity->FindComponent(Uuid_KeepThisComponent), nullptr);
                         }
                         return true;
                     }
@@ -215,7 +215,7 @@ namespace UnitTest
         PrefabDocument document("testPrefab");
         AzToolsFramework::Prefab::PrefabDom prefabDom;
         AZStd::vector<AZ::Entity*> entities;
-        entities.emplace_back(CreateSourceEntity(EntityName, { Uuid_RemoveThisComponent, Uuid_ServerComponent, Uuid_DependentComponent }));
+        entities.emplace_back(CreateSourceEntity(EntityName, { Uuid_RemoveThisComponent, Uuid_KeepThisComponent, Uuid_DependentComponent }));
         ConvertEntitiesToPrefab(entities, prefabDom);
 
         ASSERT_TRUE(document.SetPrefabDom(AZStd::move(prefabDom)));
