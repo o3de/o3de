@@ -42,7 +42,7 @@ ly_add_target(
     FILES_CMAKE
         miniaudio_private_files.cmake
         ${pal_dir}/miniaudio_private_files.cmake
-        PLATFORM_INCLUDE_FILES
+    PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
