@@ -15,6 +15,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
+#include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogManager.h>
 
 #include <QFont>
 
