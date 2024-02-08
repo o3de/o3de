@@ -1,0 +1,26 @@
+{
+    "gem_name": "PhysXDebug",
+    "version": "2.0.0",
+    "display_name": "PhysX4 Debug",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Tool",
+    "summary": "The PhysX4 Debug Gem, in conjunction with the PhysX4 Gem, provides debugging functionality and visualizations for NVIDIA PhysX in Open 3D Engine.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Physics",
+        "Simulation",
+        "Debug"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/physics/nvidia/physx-debug/",
+    "dependencies": [
+        "PhysX",
+        "ImGui"
+    ]
+}
