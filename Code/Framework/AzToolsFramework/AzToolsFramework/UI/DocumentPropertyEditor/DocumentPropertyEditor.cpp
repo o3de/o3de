@@ -338,7 +338,7 @@ namespace AzToolsFramework
                 }
             }
 
-            // If the current widget is the first widget of a column, create the shared column layour and add widgets to it.
+            // If the current widget is the first widget of a column, create the shared column layout and add widgets to it.
             // First widget always creates a column.
             if (m_columnStarts.contains(domIndex) || isFirstColumn)
             {
