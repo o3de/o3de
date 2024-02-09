@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/set.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessor.h>
 
 namespace AZ
