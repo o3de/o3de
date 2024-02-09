@@ -1884,6 +1884,8 @@ def create_project(project_path: pathlib.Path,
                     logger.error(f'Failed to register the restricted {project_restricted_path}.')
                     return 1
 
+    print(f'Project created at {project_path}')
+
     # Register the project with the either o3de_manifest.json or engine.json
     # and set the project.json "engine" field to match the
     # engine.json "engine_name" field
@@ -2325,6 +2327,8 @@ def create_gem(gem_path: pathlib.Path,
                     logger.error(f'Failed to register the restricted {gem_restricted_path}.')
                     return 1
 
+    print(f'Gem created at {gem_path}')
+
     # Register the gem with the either o3de_manifest.json, engine.json or project.json based on the gem path
     return register.register(gem_path=gem_path) if not no_register else 0
 
@@ -2392,6 +2396,9 @@ def create_repo(repo_path: pathlib.Path,
 
     # create repo.json file
     _execute_template_json(template_json_data, repo_path, template_path, replacements)
+
+    print(f'Repo created at {repo_path}')
+
     return register.register(repo_uri=repo_path.as_posix(), force_register_with_o3de_manifest=True) if not no_register else 0
 
 def _run_create_template(args: argparse) -> int:

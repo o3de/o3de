@@ -1,0 +1,56 @@
+{
+    "O3DE": {
+        "Quality": {
+            // NOTE: All text on a line following // are comments and ignored by the JSON parser.
+            // This makes it possible to include your favorite ASCII art in your .setreg files.
+            //
+            // Base quality settings for every platform go in this file.
+            // Platform specific overrides can be found in Registry/Platform/<platform>/quality.setreg
+            // e.g. iOS overrides go in Registry/Platform/iOS/quality.setreg
+            "Groups": {
+                // Each quality setting key (q_general, q_graphics etc.) is accessible as a CVAR 
+                // at runtime.  You can change a quality group level at runtime in the console 
+                // using the key and new level you want to use.  For example, to change the 
+                // q_general level to 3 at runtime, you can run the following console command:
+                //   q_general 3
+                "q_general": {
+                    "Description" : "Default quality group. 0 : Low, 1 : Medium, 2 : High, 3 : VeryHigh",
+                    "Levels": [ "Low", "Medium", "High", "VeryHigh" ],
+                    "Default": 3,
+                    "Settings": {
+                        "q_graphics": [ 0, 1, 2, 3 ] // map q_general levels 1 to 1 with graphics levels
+                    }
+                },
+                "q_graphics": {
+                    "Description": "Graphics quality settings.  0 : Low, 1 : Medium, 2 : High, 3 : VeryHigh",
+                    "Levels": [ "Low", "Medium", "High", "VeryHigh" ],
+                    "Default": 3,
+                    "Settings": {
+                        "q_shadows": [ 0, 1, 2, 3 ],
+                        // Settings can be specified using an array to assign values to
+                        // quality levels. For example if you have 4 quality levels:
+                        // "<cvar>": [<low setting>, <medium setting>, <high setting>, <veryhigh setting>]
+                        // "r_skinnedMeshInstanceMemoryPoolSize": [64, 96, 128, 256] 
+                        // Or you can use a single value for all levels, for example:
+                        // "r_skinnedMeshInstanceMemoryPoolSize": 96 
+                        // Example of how to enable mesh instancing:
+                        // "r_meshInstancingEnabled": true,
+                        // "r_meshInstancingEnabledForTransparentObjects": true
+                    }
+                },
+                "q_shadows": {
+                    "Description": "Shadow quality settings.  0 : Low, 1 : Medium, 2 : High, 3 : VeryHigh",
+                    "Levels": [ "Low", "Medium", "High", "VeryHigh" ],
+                    "Settings": {
+                        // Shadows console variable settings go here for example:
+                        // The amount of meters to extrude the Obb towards light 
+                        // direction when doing camera frustum overlap tests
+                        // "r_shadowCascadeExtrusionAmount": [10, -1, -1, -1]
+                    }
+                }
+                // Additional custom quality groups can be defined as desired,
+                // preferably with a 'q_' prefix.
+            }
+        }
+    }
+}
