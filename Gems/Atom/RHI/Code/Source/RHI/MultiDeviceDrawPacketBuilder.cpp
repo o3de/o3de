@@ -212,7 +212,7 @@ namespace AZ::RHI
             AZStd::unordered_map<int, SingleDeviceDrawItem*> deviceDrawItemPtrs;
             for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
             {
-                deviceDrawItemPtrs.emplace(deviceIndex, m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex]->GetDrawItem(0));
+                deviceDrawItemPtrs.emplace(deviceIndex, m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex]->GetDrawItem(i));
             }
             m_drawPacketInFlight->m_drawItems.emplace_back(MultiDeviceDrawItem{ m_deviceMask, AZStd::move(deviceDrawItemPtrs) });
         }
