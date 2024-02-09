@@ -18,46 +18,62 @@ namespace AzToolsFramework
 
     void ContainerActionButtonHandler::SetValueFromDom(const AZ::Dom::Value& node)
     {
-        GenericButtonHandler::SetValueFromDom(node);
 
-        static QIcon s_iconAdd(QStringLiteral(":/stylesheet/img/UI20/add-16.svg"));
-        static QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
-        static QIcon s_iconClear(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
-        static QIcon s_iconUp(QStringLiteral(":/stylesheet/img/indicator-arrow-up.svg"));
-        static QIcon s_iconDown(QStringLiteral(":/stylesheet/img/indicator-arrow-down.svg"));
+        static const QIcon s_iconAdd(QStringLiteral(":/stylesheet/img/UI20/add-16.svg"));
+        static const QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
+        static const QIcon s_iconClear(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
+        static const QIcon s_iconUp(QStringLiteral(":/stylesheet/img/indicator-arrow-up.svg"));
+        static const QIcon s_iconDown(QStringLiteral(":/stylesheet/img/indicator-arrow-down.svg"));
 
         using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
         using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
 
+        GenericButtonHandler::SetValueFromDom(node);
+
         auto oldAction = m_action;
         m_action = ContainerActionButton::Action.ExtractFromDomNode(node).value_or(ContainerAction::AddElement);
 
-        if (m_action != oldAction)
+        if (m_action == oldAction)
         {
-            switch (m_action)
+            return;
+        }
+
+        switch (m_action)
+        {
+        case ContainerAction::AddElement:
             {
-            case ContainerAction::None:
-                AZ_Error("DPE", false, "ContainerActionButtonHandler::SetValueFromDom passed invalid action!");
-                break;
-            case ContainerAction::AddElement:
                 setIcon(s_iconAdd);
                 setToolTip("Add new child element");
                 break;
-            case ContainerAction::RemoveElement:
+            }
+        case ContainerAction::RemoveElement:
+            {
                 setIcon(s_iconRemove);
                 setToolTip(tr("Remove this element"));
                 break;
-            case ContainerAction::Clear:
+            }
+        case ContainerAction::Clear:
+            {
                 setIcon(s_iconClear);
                 setToolTip(tr("Remove all elements"));
                 break;
-            case ContainerAction::MoveUp:
+            }
+        case ContainerAction::MoveUp:
+            {
                 setIcon(s_iconUp);
                 setToolTip(tr("move this element up"));
                 break;
-            case ContainerAction::MoveDown:
+            }
+        case ContainerAction::MoveDown:
+            {
                 setIcon(s_iconDown);
                 setToolTip(tr("move this element down"));
+                break;
+            }
+        case ContainerAction::None:
+        default:
+            {
+                AZ_Error("DPE", false, "ContainerActionButtonHandler::SetValueFromDom passed invalid action!");
                 break;
             }
         }
