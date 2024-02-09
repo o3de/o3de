@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/Spawnable/AssetPlatformComponentRemover.h>
+#include "AssetPlatformComponentRemover.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/ReflectContext.h>

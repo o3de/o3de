@@ -39,6 +39,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             "{25D9A8A6-908F-4B26-A752-EBAF7DC074F8}", PrefabProcessor);
 
         static void Reflect(AZ::ReflectContext* context);
+        ~AssetPlatformComponentRemover() override = default;
 
         void Process(PrefabProcessorContext& prefabProcessorContext) override;
 
