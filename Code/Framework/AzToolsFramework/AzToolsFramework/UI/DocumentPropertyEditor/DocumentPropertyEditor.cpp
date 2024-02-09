@@ -196,6 +196,41 @@ namespace AzToolsFramework
         return { (m_enforceMinWidth ? cumulativeWidth : 0), minimumHeight };
     }
 
+    void DPELayout::CloseColumn(
+        QHBoxLayout* currentColumnLayout,
+        QRect& itemGeometry,
+        int& currentColumnCount,
+        const int columnWidth,
+        bool allWidgetsUnstretched,
+        bool startSpacer,
+        bool endSpacer
+    )
+    {
+        // if all widgets in this shared column take up only their minimum width, set the appropriate alignment with spacers
+        if (allWidgetsUnstretched)
+        {
+            if (startSpacer)
+            {
+                currentColumnLayout->insertSpacerItem(0, new QSpacerItem(columnWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+            }
+            if (endSpacer)
+            {
+                currentColumnLayout->addSpacerItem(new QSpacerItem(columnWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+            }
+        }
+
+        // Correctly set the geometry based on the column.
+        if (currentColumnCount > 0)
+        {
+            itemGeometry.setLeft(itemGeometry.right() + 1);
+            itemGeometry.setRight(itemGeometry.left() + columnWidth);
+        }
+        currentColumnLayout->setGeometry(itemGeometry);
+
+        // Count completed columns.
+        ++currentColumnCount;
+    }
+
     void DPELayout::setGeometry(const QRect& rect)
     {
         QLayout::setGeometry(rect);
@@ -310,34 +345,15 @@ namespace AzToolsFramework
                 // Close previous column.
                 if (!isFirstColumn)
                 {
-                    // if all widgets in this shared column take up only their minimum width, set the appropriate alignment with spacers
-                    if (currentColumnNonStretchedWidgetsCount == currentColumnWidgetsCount)
-                    {
-                        QSpacerItem* spacer = new QSpacerItem(columnWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
-                        if (startSpacer)
-                        {
-                            currentColumnLayout->insertSpacerItem(0, spacer);
-                        }
-                        if (endSpacer)
-                        {
-                            currentColumnLayout->addSpacerItem(spacer);
-                        }
-                    }
-
-                    // Correctly set the geometry based on the column.
-                    if (currentColumnCount == 0)
-                    {
-                        currentColumnLayout->setGeometry(itemGeometry);
-                    }
-                    else
-                    {
-                        itemGeometry.setLeft(itemGeometry.right() + 1);
-                        itemGeometry.setRight(itemGeometry.left() + columnWidth);
-                        currentColumnLayout->setGeometry(itemGeometry);
-                    }
-
-                    // Count completed columns.
-                    ++currentColumnCount;
+                    CloseColumn(
+                        currentColumnLayout,
+                        itemGeometry,
+                        currentColumnCount,
+                        columnWidth,
+                        (currentColumnNonStretchedWidgetsCount == currentColumnWidgetsCount),
+                        startSpacer,
+                        endSpacer
+                    );
                 }
 
                 // Create new column.
@@ -370,38 +386,15 @@ namespace AzToolsFramework
         }
 
         // Close the last column
-        // TODO - Avoid repeated code...
-        // TODO - Check for edge cases of already closed column just in case...
-        {
-            // if all widgets in this shared column take up only their minimum width, set the appropriate alignment with spacers
-            if (currentColumnNonStretchedWidgetsCount == currentColumnWidgetsCount)
-            {
-                QSpacerItem* spacer = new QSpacerItem(columnWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
-                if (startSpacer)
-                {
-                    currentColumnLayout->insertSpacerItem(0, spacer);
-                }
-                if (endSpacer)
-                {
-                    currentColumnLayout->addSpacerItem(spacer);
-                }
-            }
-
-            // Correctly set the geometry based on the column.
-            if (currentColumnCount == 0)
-            {
-                currentColumnLayout->setGeometry(itemGeometry);
-            }
-            else
-            {
-                itemGeometry.setLeft(itemGeometry.right() + 1);
-                itemGeometry.setRight(itemGeometry.left() + columnWidth);
-                currentColumnLayout->setGeometry(itemGeometry);
-            }
-
-            // Count completed columns.
-            ++currentColumnCount;
-        }
+        CloseColumn(
+            currentColumnLayout,
+            itemGeometry,
+            currentColumnCount,
+            columnWidth,
+            (currentColumnNonStretchedWidgetsCount == currentColumnWidgetsCount),
+            startSpacer,
+            endSpacer
+        );
     }
 
     Qt::Orientations DPELayout::expandingDirections() const
@@ -942,8 +935,6 @@ namespace AzToolsFramework
                             childWidget->hide();
                             m_columnLayout->removeWidget(childWidget);
                             DocumentPropertyEditor::ReleaseHandler(handlerInfo);
-                            // TODO - Check if we still need something here!
-                            //m_columnLayout->RemoveSharePriorColumn(childIndex);
 
                             // Replace the existing handler widget with one appropriate for the new type
                             auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
