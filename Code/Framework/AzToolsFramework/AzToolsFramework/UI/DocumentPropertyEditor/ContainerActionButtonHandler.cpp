@@ -43,7 +43,7 @@ namespace AzToolsFramework
         case ContainerAction::AddElement:
             {
                 setIcon(s_iconAdd);
-                setToolTip("Add new child element");
+                setToolTip(tr("Add new child element"));
                 break;
             }
         case ContainerAction::RemoveElement:
