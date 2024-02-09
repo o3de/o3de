@@ -46,6 +46,10 @@ namespace MiniAudio
                 ->Attribute(AZ::Script::Attributes::Module, "MiniAudio")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
 
+            AZ::BehaviorParameterOverrides GetVolumeParam = {"Volume", "Get Percent Volume"};
+            AZ::BehaviorParameterOverrides SetVolumeParam = {"Volume", "Set Percent Volume"};
+            AZ::BehaviorParameterOverrides GetVolumeDecibelsParam = {"Volume Decibels", "Get Decibels Volume"};
+            AZ::BehaviorParameterOverrides SetVolumeDecibelsParam = {"Volume Decibels", "Set Decibels Volume"};
             AZ::BehaviorParameterOverrides GetInnerConeAngleInRadiansParam = {"Inner Cone Angle In Radians", "Get Inner Cone Angle In Radians"};
             AZ::BehaviorParameterOverrides SetInnerConeAngleInRadiansParam = {"Inner Cone Angle In Radians", "Set Inner Cone Angle In Radians"};
             AZ::BehaviorParameterOverrides GetInnerConeAngleInDegreesParam = {"Inner Cone Angle In Degrees", "Get Inner Cone Angle In Degrees"};
@@ -56,6 +60,8 @@ namespace MiniAudio
             AZ::BehaviorParameterOverrides SetOuterConeAngleInDegreesParam = {"Outer Cone Angle In Degrees", "Set Outer Cone Angle In Degrees"};
             AZ::BehaviorParameterOverrides GetOuterVolumeParam = {"Outer Volume", "Get Percent Volume Outside Outer Cone"};
             AZ::BehaviorParameterOverrides SetOuterVolumeParam = {"Outer Volume", "Set Percent Volume Outside Outer Cone"};
+            AZ::BehaviorParameterOverrides GetOuterVolumeDecibelsParam = {"Outer Volume Decibels", "Get Decibels Volume Outside Outer Cone"};
+            AZ::BehaviorParameterOverrides SetOuterVolumeDecibelsParam = {"Outer Volume Decibels", "Set Decibels Volume Outside Outer Cone"};
             AZ::BehaviorParameterOverrides GetFixedDirectionParam = {"Fixed Direction", "Get Whether Direction Is Fixed"};
             AZ::BehaviorParameterOverrides SetFixedDirectionParam = {"Fixed Direction", "Set Whether Direction Is Fixed"};
             AZ::BehaviorParameterOverrides GetDirectionalAttenuationFactorParam = {"Directional Attenuation Factor", "Get Directional Attenuation Factor"};
@@ -68,11 +74,14 @@ namespace MiniAudio
                 ->Attribute(AZ::Script::Attributes::Category, "MiniAudio Playback")
                 ->Event("Play", &MiniAudioPlaybackRequests::Play)
                 ->Event("Stop", &MiniAudioPlaybackRequests::Stop)
-                ->Event("SetVolume", &MiniAudioPlaybackRequests::SetVolume)
                 ->Event("SetLooping", &MiniAudioPlaybackRequests::SetLooping)
                 ->Event("IsLooping", &MiniAudioPlaybackRequests::IsLooping)
-                ->Event("SetSoundAsset", &MiniAudioPlaybackRequests::SetSoundAssetRef)
                 ->Event("GetSoundAsset", &MiniAudioPlaybackRequests::GetSoundAssetRef)
+                ->Event("SetSoundAsset", &MiniAudioPlaybackRequests::SetSoundAssetRef)
+                ->Event("GetVolumePercentage", &MiniAudioPlaybackRequests::GetVolumePercentage, {GetVolumeParam})
+                ->Event("SetVolumePercentage", &MiniAudioPlaybackRequests::SetVolumePercentage, {SetVolumeParam})
+                ->Event("GetVolumeDecibels", &MiniAudioPlaybackRequests::GetVolumeDecibels, {GetVolumeDecibelsParam})
+                ->Event("SetVolumeDecibels", &MiniAudioPlaybackRequests::SetVolumeDecibels, {SetVolumeDecibelsParam})
                 ->Event("GetInnerConeAngleInRadians", &MiniAudioPlaybackRequests::GetInnerAngleInRadians, {GetInnerConeAngleInRadiansParam})
                 ->Event("SetInnerConeAngleInRadians", &MiniAudioPlaybackRequests::SetInnerAngleInRadians, {SetInnerConeAngleInRadiansParam})
                 ->Event("GetInnerConeAngleInDegrees", &MiniAudioPlaybackRequests::GetInnerAngleInDegrees, {GetInnerConeAngleInDegreesParam})
@@ -81,8 +90,10 @@ namespace MiniAudio
                 ->Event("SetOuterConeAngleInRadians", &MiniAudioPlaybackRequests::SetOuterAngleInRadians, {SetOuterConeAngleInRadiansParam})
                 ->Event("GetOuterConeAngleInDegrees", &MiniAudioPlaybackRequests::GetOuterAngleInDegrees, {GetOuterConeAngleInDegreesParam})
                 ->Event("SetOuterConeAngleInDegrees", &MiniAudioPlaybackRequests::SetOuterAngleInDegrees, {SetOuterConeAngleInDegreesParam})
-                ->Event("GetOuterVolume", &MiniAudioPlaybackRequests::GetOuterVolume, {GetOuterVolumeParam})
-                ->Event("SetOuterVolume", &MiniAudioPlaybackRequests::SetOuterVolume, {SetOuterVolumeParam})
+                ->Event("GetOuterVolumePercentage", &MiniAudioPlaybackRequests::GetOuterVolumePercentage, {GetOuterVolumeParam})
+                ->Event("SetOuterVolumePercentage", &MiniAudioPlaybackRequests::SetOuterVolumePercentage, {SetOuterVolumeParam})
+                ->Event("GetOuterVolumeDecibels", &MiniAudioPlaybackRequests::GetOuterVolumeDecibels, {GetOuterVolumeDecibelsParam})
+                ->Event("SetOuterVolumeDecibels", &MiniAudioPlaybackRequests::SetOuterVolumeDecibels, {SetOuterVolumeDecibelsParam})
                 ->Event("GetFixedDirection", &MiniAudioPlaybackRequests::GetFixedDirecion, {GetFixedDirectionParam})
                 ->Event("SetFixedDirection", &MiniAudioPlaybackRequests::SetFixedDirecion, {SetFixedDirectionParam})
                 ->Event("GetDirectionalAttenuationFactor", &MiniAudioPlaybackRequests::GetDirectionalAttenuationFactor, {GetDirectionalAttenuationFactorParam})

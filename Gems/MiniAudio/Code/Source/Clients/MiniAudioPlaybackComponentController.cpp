@@ -99,11 +99,31 @@ namespace MiniAudio
         }
     }
 
-    void MiniAudioPlaybackComponentController::SetVolume(float volume)
+    float MiniAudioPlaybackComponentController::GetVolumePercentage() const
     {
+        return ma_sound_get_volume(m_sound.get());
+    }
+
+    void MiniAudioPlaybackComponentController::SetVolumePercentage(float volume)
+    {
+        m_config.m_volume = AZ::GetClamp(volume, 0.f, 100.f);
         if (m_sound)
         {
-            ma_sound_set_volume(m_sound.get(), volume);
+            ma_sound_set_volume(m_sound.get(), (m_config.m_volume/100.f));
+        }
+    }
+
+    float MiniAudioPlaybackComponentController::GetVolumeDecibels() const
+    {
+        return ma_volume_linear_to_db(ma_sound_get_volume(m_sound.get()));
+    }
+
+    void MiniAudioPlaybackComponentController::SetVolumeDecibels(float volumeDecibels)
+    {
+        m_config.m_volume = ma_volume_db_to_linear(volumeDecibels)*100.f;
+        if (m_sound)
+        {
+            ma_sound_set_volume(m_sound.get(), (m_config.m_volume/100.f));
         }
     }
 
@@ -200,14 +220,25 @@ namespace MiniAudio
         OnConfigurationUpdated();
     }
 
-    float MiniAudioPlaybackComponentController::GetOuterVolume() const
+    float MiniAudioPlaybackComponentController::GetOuterVolumePercentage() const
     {
         return m_config.m_outerVolume;
     }
 
-    void MiniAudioPlaybackComponentController::SetOuterVolume(float outerVolume)
+    void MiniAudioPlaybackComponentController::SetOuterVolumePercentage(float outerVolume)
     {
         m_config.m_outerVolume = AZ::GetClamp(outerVolume, 0.f, 100.f);
+        OnConfigurationUpdated();
+    }
+
+    float MiniAudioPlaybackComponentController::GetOuterVolumeDecibels() const
+    {
+        return ma_volume_linear_to_db(m_config.m_outerVolume/100.f);
+    }
+
+    void MiniAudioPlaybackComponentController::SetOuterVolumeDecibels(float outerVolumeDecibels)
+    {
+        m_config.m_outerVolume = ma_volume_db_to_linear(outerVolumeDecibels)*100.f;
         OnConfigurationUpdated();
     }
 
@@ -327,7 +358,7 @@ namespace MiniAudio
                     return;
                 }
 
-                ma_sound_set_volume(m_sound.get(), m_config.m_volume);
+                ma_sound_set_volume(m_sound.get(), (m_config.m_volume/100.f));
                 ma_sound_set_looping(m_sound.get(), m_config.m_loop);
 
                 ma_sound_set_spatialization_enabled(m_sound.get(), m_config.m_enableSpatialization);

@@ -70,9 +70,11 @@ namespace MiniAudio
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_autoplayOnActivate, "Autoplay", "Plays the sound on activation of the component.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_loop, "Loop", "Loops the sound.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_volume, "Volume", "The volume of the sound when played.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                    ->Attribute(AZ::Edit::Attributes::SoftMax, 10.f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_volume, "Volume", "The volume of the sound when played, as a percentage.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_autoFollowEntity, "Auto-follow",
                         "The sound's position is updated to match the entity's position.")
@@ -100,7 +102,7 @@ namespace MiniAudio
                         ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_outerVolume, "Outer Volume", "Sets the volume of the sound source outside of the outer cone.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_outerVolume, "Outer Volume", "Sets the volume of the sound source outside of the outer cone, as a percentage.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
@@ -147,7 +149,7 @@ namespace MiniAudio
 
     AZ::Crc32 EditorMiniAudioPlaybackComponent::OnVolumeChanged()
     {
-        m_controller.SetVolume(m_controller.GetConfiguration().m_volume);
+        m_controller.SetVolumePercentage(m_controller.GetConfiguration().m_volume/100.f);
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 } // namespace MiniAudio

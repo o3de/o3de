@@ -66,6 +66,28 @@ namespace MiniAudio
         return m_config;
     }
 
+    float MiniAudioListenerComponentController::GetGlobalVolumePercentage() const
+    {
+        return MiniAudioInterface::Get()->GetGlobalVolume()*100.f;
+    }
+
+    void MiniAudioListenerComponentController::SetGlobalVolumePercentage(float globalVolume)
+    {
+        m_config.m_globalVolume = globalVolume;
+        MiniAudioInterface::Get()->SetGlobalVolume(m_config.m_globalVolume/100.f);
+    }
+
+    float MiniAudioListenerComponentController::GetGlobalVolumeDecibels() const
+    {
+        return ma_volume_linear_to_db(MiniAudioInterface::Get()->GetGlobalVolume());
+    }
+
+    void MiniAudioListenerComponentController::SetGlobalVolumeDecibels(float globalVolumeDecibels)
+    {
+        m_config.m_globalVolume = ma_volume_db_to_linear(globalVolumeDecibels)*100.f;
+        MiniAudioInterface::Get()->SetGlobalVolume(m_config.m_globalVolume/100.f);
+    }
+
     void MiniAudioListenerComponentController::SetFollowEntity(const AZ::EntityId& followEntity)
     {
         m_config.m_followEntity = followEntity;
@@ -125,14 +147,25 @@ namespace MiniAudio
         OnConfigurationUpdated();
     }
 
-    float MiniAudioListenerComponentController::GetOuterVolume() const
+    float MiniAudioListenerComponentController::GetOuterVolumePercentage() const
     {
         return m_config.m_outerVolume;
     }
 
-    void MiniAudioListenerComponentController::SetOuterVolume(float outerVolume)
+    void MiniAudioListenerComponentController::SetOuterVolumePercentage(float outerVolume)
     {
         m_config.m_outerVolume = AZ::GetClamp(outerVolume, 0.f, 100.f);
+        OnConfigurationUpdated();
+    }
+
+    float MiniAudioListenerComponentController::GetOuterVolumeDecibels() const
+    {
+        return ma_volume_linear_to_db(m_config.m_outerVolume/100.f);
+    }
+
+    void MiniAudioListenerComponentController::SetOuterVolumeDecibels(float outerVolumeDecibels)
+    {
+        m_config.m_outerVolume = ma_volume_db_to_linear(outerVolumeDecibels)*100.f;
         OnConfigurationUpdated();
     }
 
@@ -183,6 +216,7 @@ namespace MiniAudio
 
         if (ma_engine* engine = MiniAudioInterface::Get()->GetSoundEngine())
         {
+            MiniAudioInterface::Get()->SetGlobalVolume(m_config.m_globalVolume/100.f);
             ma_engine_listener_set_cone(engine, m_config.m_listenerIndex, m_config.m_innerAngleInRadians, m_config.m_outerAngleInRadians, (m_config.m_outerVolume/100.f));
         }
     }

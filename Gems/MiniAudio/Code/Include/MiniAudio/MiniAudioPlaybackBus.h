@@ -22,7 +22,10 @@ namespace MiniAudio
 
         virtual void Play() = 0;
         virtual void Stop() = 0;
-        virtual void SetVolume(float volume) = 0;
+        virtual void SetVolumePercentage(float volume) = 0;
+        virtual float GetVolumePercentage() const = 0;
+        virtual void SetVolumeDecibels(float volumeDecibels) = 0;
+        virtual float GetVolumeDecibels() const = 0;
         virtual void SetLooping(bool loop) = 0;
         virtual bool IsLooping() const = 0;
         virtual void SetSoundAsset(AZ::Data::Asset<SoundAsset> soundAsset) = 0;
@@ -42,8 +45,10 @@ namespace MiniAudio
         virtual void SetOuterAngleInRadians(float outerAngleInRadians) = 0;
         virtual float GetOuterAngleInDegrees() const = 0;
         virtual void SetOuterAngleInDegrees(float outerAngleInDegrees) = 0;
-        virtual float GetOuterVolume() const = 0;
-        virtual void SetOuterVolume(float outerVolume) = 0;
+        virtual float GetOuterVolumePercentage() const = 0;
+        virtual void SetOuterVolumePercentage(float outerVolume) = 0;
+        virtual float GetOuterVolumeDecibels() const = 0;
+        virtual void SetOuterVolumeDecibels(float outerVolumeDecibels) = 0;
         virtual bool GetFixedDirecion() const = 0;
         virtual void SetFixedDirecion(bool fixedDirection) = 0;
         virtual float GetDirectionalAttenuationFactor() const = 0;
