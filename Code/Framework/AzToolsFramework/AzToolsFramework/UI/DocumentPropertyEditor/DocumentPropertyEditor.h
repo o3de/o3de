@@ -80,6 +80,16 @@ namespace AzToolsFramework
         AZStd::unordered_set<size_t> m_columnStarts;
 
     private:
+        void CloseColumn(
+            QHBoxLayout* currentColumnLayout,
+            QRect& itemGeometry,
+            int& currentColumnCount,
+            const int columnWidth,
+            bool allWidgetsUnstretched,
+            bool startSpacer,
+            bool endSpacer
+        );
+
         // These cached sizes must be mutable since they are set inside of an overidden const function
         mutable QSize m_cachedLayoutSize;
         mutable QSize m_cachedMinLayoutSize;
