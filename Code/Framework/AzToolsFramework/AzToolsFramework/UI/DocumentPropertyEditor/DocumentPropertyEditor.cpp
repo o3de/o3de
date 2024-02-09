@@ -733,8 +733,6 @@ namespace AzToolsFramework
     {
         if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Move)
         {
-            AZ_TracePrintf("HandleOperationAtPath", "PatchOperation::Type::Move");
-
             /* For a move operation, note that source and/or destination widgets might not exist due to collapsed nodes.
              * if both source and destination location exist, move the existing widget
              * if source exists but not destination, it's a remove
@@ -851,14 +849,12 @@ namespace AzToolsFramework
                 if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Remove ||
                     domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
                 {
-                    AZ_TracePrintf("HandleOperationAtPath", "PatchOperation::Type::Remove");
                     RemoveChildAt(childIndex);
                 }
 
                 if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace ||
                     domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
                 {
-                    AZ_TracePrintf("HandleOperationAtPath", "PatchOperation::Type::Add");
                     AddChildFromDomValue(domOperation.GetValue(), childIndex);
                 }
             }
