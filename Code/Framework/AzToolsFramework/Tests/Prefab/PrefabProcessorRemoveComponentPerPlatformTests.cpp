@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -86,7 +87,8 @@ namespace UnitTest
         }
     };
 
-    class PrefabProcessingTestFixture : public ::testing::Test
+    class PrefabProcessingTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
