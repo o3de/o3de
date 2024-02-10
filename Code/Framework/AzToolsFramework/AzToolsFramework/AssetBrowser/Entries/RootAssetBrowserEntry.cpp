@@ -22,6 +22,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
@@ -32,6 +33,11 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        inline QString AzToQtUtf8String(AZStd::string_view str)
+        {
+            return QString::fromUtf8(str.data(), static_cast<int>(str.size()));
+        }
+
         RootAssetBrowserEntry::RootAssetBrowserEntry()
             : AssetBrowserEntry()
         {
@@ -111,7 +117,7 @@ namespace AzToolsFramework
                     return;
                 }
 
-                scanFolder = CreateFolders(scanFolderDetailsIt->second.c_str(), this, true);
+                scanFolder = CreateFolders(scanFolderDetailsIt->second, this, true);
                 entryCache->m_scanFolderIdMap[fileDatabaseEntry.m_scanFolderPK] = scanFolder;
             }
             else
@@ -146,7 +152,7 @@ namespace AzToolsFramework
                 auto source = aznew SourceAssetBrowserEntry();
                 source->m_name = absoluteFilePath.Filename().Native();
                 source->m_fileId = fileDatabaseEntry.m_fileID;
-                source->m_displayName = QString::fromUtf8(source->m_name.c_str());
+                source->m_displayName = AzToQtUtf8String(source->m_name);
                 source->m_scanFolderId = fileDatabaseEntry.m_scanFolderPK;
                 source->m_extension = absoluteFilePath.Extension().Native();
                 source->m_diskSize = AZ::IO::SystemFile::Length(absoluteFilePath.c_str());
@@ -320,6 +326,7 @@ namespace AzToolsFramework
             AZ::IO::Path pathFromDatabase(productWithUuidDatabaseEntry.second.m_productName.c_str());
             AZ::IO::PathView cleanedRelative = pathFromDatabase.RelativePath();
             AZ::IO::FixedMaxPath storageForLexicallyRelative{};
+
             // remove the first element from the path if you can:
             if (!cleanedRelative.empty())
             {
@@ -329,25 +336,23 @@ namespace AzToolsFramework
             product->m_relativePath = cleanedRelative;
             product->m_visiblePath = cleanedRelative;
             product->SetFullPath((AZ::IO::Path("@products@") / cleanedRelative).LexicallyNormal());
+
+            AZStd::string assetGroupName;
+            AZ::AssetTypeInfoBus::EventResult(
+                assetGroupName, productWithUuidDatabaseEntry.second.m_assetType, &AZ::AssetTypeInfo::GetGroup);
+            product->m_groupName = AzToQtUtf8String(assetGroupName);
+            product->m_groupNameCrc = AZ::Crc32(assetGroupName);
+
             // compute the display data from the above data.
-            // does someone have information about a more friendly name for this type?
             AZStd::string assetTypeName;
             AZ::AssetTypeInfoBus::EventResult(
                 assetTypeName, productWithUuidDatabaseEntry.second.m_assetType, &AZ::AssetTypeInfo::GetAssetTypeDisplayName);
 
-            AZStd::string displayName;
-            if (!assetTypeName.empty())
-            {
-                // someone has more friendly data - use the friendly name
-                displayName = AZStd::string::format("%s (%s)", productName.c_str(), assetTypeName.c_str());
-            }
-            else
-            {
-                // just use the product name (with extension)
-                displayName = product->m_name; 
-            }
-            product->m_displayName = QString::fromUtf8(displayName.c_str());
-            product->m_displayPath = QString::fromUtf8(AZ::IO::Path(cleanedRelative.ParentPath()).c_str());
+            // Create a display name for the product that includes the asset type name, if it is available.
+            product->m_displayName = AzToQtUtf8String(
+                !assetTypeName.empty() ? AZStd::string::format("%s (%s)", productName.c_str(), assetTypeName.c_str()) : product->m_name);
+
+            product->m_displayPath = AzToQtUtf8String(AZ::IO::Path(cleanedRelative.ParentPath()).Native());
             entryCache->m_productAssetIdMap[assetId] = product;
 
             if (needsAdd)
@@ -362,15 +367,14 @@ namespace AzToolsFramework
         void RootAssetBrowserEntry::RemoveProduct(const AZ::Data::AssetId& assetId) const
         {
             auto entryCache = EntryCache::GetInstance();
-            const auto itProduct = entryCache->m_productAssetIdMap.find(assetId);
-            if (itProduct == entryCache->m_productAssetIdMap.end())
+            if (const auto itProduct = entryCache->m_productAssetIdMap.find(assetId); itProduct != entryCache->m_productAssetIdMap.end())
             {
-                return;
+                if (auto parent = itProduct->second->GetParent())
+                {
+                    parent->RemoveChild(itProduct->second);
+                }
             }
-            if (auto parent = itProduct->second->GetParent())
-            {
-                parent->RemoveChild(itProduct->second);
-            }
+
         }
 
         AssetBrowserEntry* RootAssetBrowserEntry::GetNearestAncestor(AZ::IO::PathView absolutePathView, AssetBrowserEntry* parent,
@@ -420,19 +424,16 @@ namespace AzToolsFramework
         {
             auto it = AZStd::find_if(parent->m_children.begin(), parent->m_children.end(), [folderName](AssetBrowserEntry* entry)
             {
-                if (!azrtti_istypeof<FolderAssetBrowserEntry*>(entry))
-                {
-                    return false;
-                }
-                return AZ::IO::PathView(entry->m_name) == AZ::IO::PathView(folderName);
+                return azrtti_istypeof<FolderAssetBrowserEntry*>(entry) && AZ::IO::PathView(entry->m_name) == AZ::IO::PathView(folderName);
             });
             if (it != parent->m_children.end())
             {
                 return azrtti_cast<FolderAssetBrowserEntry*>(*it);
             }
-            const auto folder = aznew FolderAssetBrowserEntry();
+
+            auto folder = aznew FolderAssetBrowserEntry();
             folder->m_name = folderName;
-            folder->m_displayName = QString::fromUtf8(folderName.data(), aznumeric_caster(folderName.size()));
+            folder->m_displayName = AzToQtUtf8String(folderName);
             folder->m_isScanFolder = isScanFolder;
             parent->AddChild(folder);
             folder->m_isGemFolder = m_gemNames.contains(folder->GetFullPath());
@@ -473,7 +474,7 @@ namespace AzToolsFramework
             }
 
             // create all missing folders
-            auto proximateToPath = absolutePathView.IsRelativeTo(parent->m_fullPath)
+            const auto proximateToPath = absolutePathView.IsRelativeTo(parent->m_fullPath)
                 ? absolutePathView.LexicallyProximate(parent->m_fullPath)
                 : AZ::IO::FixedMaxPath(absolutePathView);
 
@@ -483,7 +484,7 @@ namespace AzToolsFramework
                 constructor = constructor / scanFolderSegment;
                 // if this is the final segment, and we are in a scan folder, this represents the actual scan folder.
                 bool isTheScanFolder = isScanFolder && (constructor == proximateToPath);
-                parent = CreateFolder(scanFolderSegment.c_str(), parent, isTheScanFolder);
+                parent = CreateFolder(scanFolderSegment.Native(), parent, isTheScanFolder);
             }
 
             return parent;

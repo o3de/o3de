@@ -59,3 +59,9 @@ void AddSampleContribution(
 
     specularAcc += GetSpecularLighting(surface, lightingData, intensityRgb, posToLightSampleDir);
 }
+
+bool IsSameLightChannel(uint channelA, uint channelB)
+{
+    uint bitResult = channelA & channelB;
+    return bitResult;
+}

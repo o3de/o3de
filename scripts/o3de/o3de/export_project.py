@@ -18,14 +18,21 @@ import psutil
 import shutil
 import subprocess
 
-from o3de import manifest, utils
+from o3de import command_utils, manifest, utils
 from typing import List
 from enum import IntEnum
 
 LOCAL_ENGINE_PATH  = pathlib.Path(__file__).parent.parent.parent.parent
 
+PROJECT_EXPORT_SETTINGS_FILE = '.command_settings'
+PROJECT_EXPORT_SECTION_NAME = 'export_project'
+
+
 # Account for some windows-specific attributes
-CURRENT_PLATFORM = platform.system().lower()
+CURRENT_PLATFORM_NAME_WITH_CASE = platform.system()  # used to find the Installer binaries folder.
+CURRENT_PLATFORM = CURRENT_PLATFORM_NAME_WITH_CASE.lower()
+
+ALL_AVAILABLE_ARCHIVE_FORMATS = ["none"] + [name for name, description in shutil.get_archive_formats()]
 
 if CURRENT_PLATFORM == 'windows':
     EXECUTABLE_EXTENSION = '.exe'
@@ -187,7 +194,7 @@ class LauncherType(IntEnum):
     GAME = 1
     SERVER = 2
     UNIFIED = 4
-    HEADLESS = 8
+    HEADLESS_SERVER = 8
 
 # Helper API
 def get_default_asset_platform():
@@ -198,11 +205,16 @@ def get_default_asset_platform():
 
 def get_platform_installer_folder_name(selected_platform=None):
     if not selected_platform:
-        selected_platform = CURRENT_PLATFORM
+        selected_platform = get_default_asset_platform()
     host_platform_to_installer_name_map = {'pc': 'Windows',
                                            'linux': 'Linux',
                                            'mac': 'Mac'}
     return host_platform_to_installer_name_map.get(selected_platform, "")
+
+def has_monolithic_artifacts(context: O3DEScriptExportContext):
+    monolithic_artifacts = glob.glob(f'cmake/Platform/{get_platform_installer_folder_name()}/Monolithic/ConfigurationTypes_*.cmake',
+                                    root_dir=context.engine_path)
+    return len(monolithic_artifacts) > 0
 
 def process_command(args: list,
                     cwd: pathlib.Path = None,
@@ -293,7 +305,6 @@ def extract_cmake_custom_args(arg_list: List[str])->tuple:
 
 
 def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path, passthru_args: list) -> int:
-
     if export_script_path.suffix != '.py':
         logging.error(f"Invalid export script type for '{export_script_path}'. Please provide a file path to an existing python script with '.py' extension.")
         return 1
@@ -307,6 +318,7 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
     else:
         # If the script is relative, try to match its root path based on the following order of search priorities
         possible_root_paths = [project_path,
+                               project_path / 'ExportScripts',
                                LOCAL_ENGINE_PATH,
                                LOCAL_ENGINE_PATH / 'scripts' / 'o3de',
                                LOCAL_ENGINE_PATH / 'scripts' / 'o3de' / 'ExportScripts']
@@ -343,7 +355,7 @@ def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path,
     export_process_args, cmake_configure_args, cmake_build_args= extract_cmake_custom_args(passthru_args)
 
     o3de_context = O3DEScriptExportContext(export_script_path=validated_export_script_path,
-                                           project_path=computed_project_path,
+                                           project_path=computed_project_path.resolve(),
                                            engine_path=manifest.get_project_engine_path(computed_project_path),
                                            args=export_process_args,
                                            cmake_additional_configure_args=cmake_configure_args,
@@ -359,11 +371,111 @@ def _run_export_script(args: argparse, passthru_args: list) -> int:
     return _export_script(args.export_script, args.project_path, passthru_args)
 
 
+def get_project_export_config_from_args(args: argparse) -> (command_utils.O3DEConfig, str):
+    """
+    Resolve and create the appropriate O3DE config object based on whether operation is based on the global
+    settings or a project specific setting
+
+    :param args:    The args object to parse
+    :return:  Tuple of the appropriate config manager object and the project name if this is not a global settings, otherwise None
+    """
+    logger = logging.getLogger()
+    
+    is_global = getattr(args, 'global', False)
+    project = getattr(args, 'project', None)
+
+    if is_global:
+        if project:
+            logger.warning(f"Both --global and --project ({project}) arguments were provided. The --project argument will "
+                            "be ignored and the execution of this command will be based on the global settings.")
+        project_export_config = get_export_project_config(project_path=None)
+        project_name = None
+    elif not project:
+        try:
+            project_name, project_path = command_utils.resolve_project_name_and_path()
+        except command_utils.O3DEConfigError:
+            project_name = None
+            project_path = None
+        if project_name:
+            logger.info(f"The execution of this command will be based on the currently detected project ({project_name}).")
+            project_export_config = get_export_project_config(project_path=project_path)
+        else:
+            logger.info("The execution of this command will be based on the global settings.")
+            project_export_config = get_export_project_config(project_path=None)
+    else:
+        project_path = pathlib.Path(project)
+        if project_path.is_dir():
+            # If '--project' was set to a project path, then resolve the project path and name
+            project_name, project_path = command_utils.resolve_project_name_and_path(project_path)
+
+        else:
+            project_name = project
+
+            # If '--project' was not a project path, check to see if its a registered project by its name
+            project_path = manifest.get_registered(project_name=project_name)
+            if not project_path:
+                raise command_utils.O3DEConfigError(f"Unable to resolve project named '{project_name}'. "
+                                                    f"Make sure it is registered with O3DE.")
+
+        logger.info(f"The execution of this command will be based on project ({project_name}).")
+        project_export_config = get_export_project_config(project_path=project_path)
+
+    return project_export_config, project_name
+
+
+def list_project_export_config(export_config: command_utils.O3DEConfig) -> None:
+    """
+    Print to stdout the current settings for export that will be applied to the project export scripts
+
+    :param export_config: The export configuration to look up the configured settings
+    """
+
+    all_settings = export_config.get_all_values()
+
+    print("\nO3DE Project Export settings:\n")
+
+    for item, value, source in all_settings:
+        if not value:
+            continue
+        print(f"{'* ' if source else '  '}{item} = {value}")
+
+    if not export_config.is_global:
+        print(f"\n* Settings that are specific to {export_config.project_name}. Use the --global argument to see only the global settings.")
+
+
+def configure_project_export_options(args: argparse) -> int:
+    """
+    Configure the project-export settings for the project export scripts
+
+    :param args:    The args from the arg parser to determine the actions
+    :return: The result code to return back
+    """
+    logger = logging.getLogger()
+
+    try:
+        project_export_config, _ = get_project_export_config_from_args(args)
+
+        if args.list:
+            list_project_export_config(project_export_config)
+        if args.set_value:
+            project_export_config.set_config_value_from_expression(args.set_value)
+        if args.clear_value:
+            project_export_config.set_config_value(key=args.clear_value,
+                                                   value='',
+                                                   validate_value=False)
+            logger.info(f"Setting '{args.clear_value}' cleared.")
+
+    except command_utils.O3DEConfigError as err:
+        logger.error(str(err))
+        return 1
+    else:
+        return 0
+
 # Argument handling
 def add_parser_args(parser) -> None:
     parser.add_argument('-es', '--export-script', type=pathlib.Path, required=True, help="An external Python script to run")
-    parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
-                        help="Project to export. If not supplied, it will be inferred by the export script.")
+    parser.add_argument('-pp', '--project-path', type=pathlib.Path, required=False, default=pathlib.Path(os.getcwd()),
+                        help="Project to export. If not supplied, it will be the current working directory.")
     
     parser.add_argument('-ll', '--log-level', default='ERROR',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
@@ -373,6 +485,53 @@ def add_parser_args(parser) -> None:
     
 
 def add_args(subparsers) -> None:
+
+    # Read from the export config if possible to try to display default values
+    try:
+        project_name, project_path = command_utils.resolve_project_name_and_path()
+        export_config = get_export_project_config(project_path=project_path)
+    except command_utils.O3DEConfigError:
+        project_name = None
+        export_config = get_export_project_config(project_path=None)
+
+    #
+    # Configure the subparser for 'export-project-configure'
+    #
+
+    # Generate the epilog string to describe the settings that can be configured
+    epilog_lines = ['Configure the default values that control the project export scripts for O3DE.',
+                    'The default settings that can be set are:',
+                    '']
+    max_key_len = 0
+    for setting in export_config.setting_descriptions:
+        max_key_len = max(len(setting.key), max_key_len)
+    max_key_len += 4
+    for setting in export_config.setting_descriptions:
+        setting_line = f"{'* ' if setting.is_password else '  '}{setting.key: <{max_key_len}} {setting.description}"
+        epilog_lines.append(setting_line)
+
+    epilog = '\n'.join(epilog_lines)
+    export_configure_subparser = subparsers.add_parser("export-project-configure",
+                                                        help='Configure the default values for the export project scripts.',
+                                                        epilog=epilog,
+                                                        formatter_class=argparse.RawTextHelpFormatter)
+
+    export_configure_subparser.add_argument('--global', default=False, action='store_true',
+                                             help='Used with the configure command, specify whether the settings are project local or global.')
+    export_configure_subparser.add_argument('-p', '--project', type=str, required=False,
+                                             help="The name of the registered project to configure the settings for. This value is ignored if '--global' was specified."
+                                                  "Note: If both '--global' and '-p/--project' is not specified, the script will attempt to deduce the project from the "
+                                                  "current working directory if possible")
+    export_configure_subparser.add_argument('-l', '--list', default=False, action='store_true',
+                                             help='Display the current project export settings. ')
+    export_configure_subparser.add_argument('--set-value', type=str, required=False,
+                                             help='Set the value for an project export setting, using the format <argument>=<value>. For example: \'max.size=2048\'',
+                                             metavar='VALUE')
+    export_configure_subparser.add_argument('--clear-value', type=str, required=False,
+                                             help='Clear a previously configured setting.',
+                                             metavar='VALUE')
+    export_configure_subparser.set_defaults(func=configure_project_export_options)
+
     export_subparser = subparsers.add_parser('export-project')
     add_parser_args(export_subparser)
 
@@ -427,6 +586,7 @@ def build_assets(ctx: O3DEScriptExportContext,
                  fail_on_ap_errors: bool,
                  using_installer_sdk: bool = False,
                  tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
+                 selected_platforms: List[str]|None = None,
                  logger: logging.Logger = None) -> int:
     """
     Build the assets for the project
@@ -449,6 +609,10 @@ def build_assets(ctx: O3DEScriptExportContext,
         logger.info(f"Processing assets for {ctx.project_name}")
 
     cmake_build_assets_command = [asset_processor_batch_path, "--project-path", ctx.project_path]
+    
+    if selected_platforms:
+        cmake_build_assets_command.extend([f'--platforms={",".join(selected_platforms)}'])
+    
     ret = process_command(cmake_build_assets_command,
                           cwd=ctx.engine_path if engine_centric else ctx.project_path)
     if ret != 0:
@@ -544,6 +708,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        launcher_types: int,
                        allow_registry_overrides: bool,
                        tool_config: str = PREREQUISITE_TOOL_BUILD_CONFIG,
+                       monolithic_build:bool = True,
                        logger: logging.Logger = None) -> None:
     """
     Build the launchers for the project (game, server, unified, headless)
@@ -552,6 +717,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     @param build_config:                The build config to build (profile or release)
     @param game_build_path:             The cmake build folder target
     @engine_centric:                    Option to generate/build an engine-centric workflow
+    @monolithic_build:                  Option to build as one executable (smaller) or to use individual dll/shared libraries instead (larger)
     @additional_cmake_configure_options:List of additional configure arguments to pass to cmake during the cmake project generation process
     @param launcher_types:              The launcher type options (bit mask from the LauncherType enum) to specify which launcher types to build
     @param allow_registry_overrides:    Custom Flag argument for 'DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES' to pass down to the project generation
@@ -566,7 +732,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     should_build_game_launcher = (launcher_types & LauncherType.GAME) == LauncherType.GAME
     should_build_server_launcher = (launcher_types & LauncherType.SERVER) == LauncherType.SERVER
     should_build_unified_launcher = (launcher_types & LauncherType.UNIFIED) == LauncherType.UNIFIED
-    should_build_headless_server_launcher = (launcher_types & LauncherType.HEADLESS) == LauncherType.HEADLESS
+    should_build_headless_server_launcher = (launcher_types & LauncherType.HEADLESS_SERVER) == LauncherType.HEADLESS_SERVER
 
 
     if not (should_build_server_launcher or should_build_game_launcher or should_build_unified_launcher or should_build_headless_server_launcher):
@@ -589,10 +755,13 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     if ctx.cmake_additional_configure_args:
         cmake_configure_command.extend(ctx.cmake_additional_configure_args)
 
-    cmake_configure_command.extend(["-DLY_MONOLITHIC_GAME=1",
-                                    f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"])
+    cmake_configure_command.extend([
+            f"-DLY_MONOLITHIC_GAME={'0' if not monolithic_build else '1'}",
+            f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"
+        ])
+
     if logger:
-        logger.info(f"Generating (monolithic) project the build folder for project {ctx.project_name}")
+        logger.info(f"Generating {'monolithic' if monolithic_build else 'non-monolithic'} build folder for project {ctx.project_name}")
     ret = process_command(cmake_configure_command)
     if ret != 0:
         raise ExportProjectError(f"Error generating projects for project {ctx.project_name}.")
@@ -626,7 +795,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
 
 
 def bundle_assets(ctx: O3DEScriptExportContext,
-                  selected_platform: str,
+                  selected_platforms: List[str],
                   seedlist_paths: List[pathlib.Path],
                   seedfile_paths: List[pathlib.Path],
                   tools_build_path: pathlib.Path,
@@ -639,7 +808,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     Execute the 'bundle assets' phase of the export
 
     @param ctx:                      Export Context
-    @param selected_platform:        The desired asset platform
+    @param selected_platforms:       The desired asset platforms (user can provide one or many)
     @param seedlist_paths:           The list of seedlist files
     @param seedfile_paths:           The list of individual seed files
     @param tools_build_path:         The path to the tools cmake build project
@@ -653,64 +822,65 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, using_installer_sdk, tool_config=tool_config, required=True)
     asset_list_path = asset_bundling_path / 'AssetLists'
 
-    game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
-    engine_asset_list_path = asset_list_path / f'engine_{selected_platform}.assetlist'
     bundles_path = asset_bundling_path / 'Bundles'
 
-    # Generate the asset lists for the project
-    gen_game_asset_list_command = [asset_bundler_batch_path, 'assetLists',
-                                                             '--assetListFile', game_asset_list_path,
-                                                             '--platform', selected_platform,
-                                                             '--project-path', ctx.project_path,
-                                                             '--allowOverwrites']
-    for seed in seedlist_paths:
-        gen_game_asset_list_command.append("--seedListFile")
-        gen_game_asset_list_command.append(str(seed))
+    for selected_platform in selected_platforms:
+        
+        game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
+        engine_asset_list_path = asset_list_path / f'engine_{selected_platform}.assetlist'
     
-    for seed in seedfile_paths:
-        gen_game_asset_list_command.append("--addSeed")
-        gen_game_asset_list_command.append(str(seed))
+        # Generate the asset lists for the project
+        gen_game_asset_list_command = [asset_bundler_batch_path, 'assetLists',
+                                                                '--assetListFile', game_asset_list_path,
+                                                                '--platform', selected_platform,
+                                                                '--project-path', ctx.project_path,
+                                                                '--allowOverwrites']
+        for seed in seedlist_paths:
+            gen_game_asset_list_command.extend(["--seedListFile", str(seed)])
+        
+        for seed in seedfile_paths:
+            gen_game_asset_list_command.extend(["--addSeed", str(seed)])
 
-    ret = process_command(gen_game_asset_list_command,
-                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
-    if ret != 0:
-        raise RuntimeError(f"Error generating game assets lists for {game_asset_list_path}")
+        ret = process_command(gen_game_asset_list_command,
+                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+        if ret != 0:
+            raise RuntimeError(f"Error generating game assets lists for {game_asset_list_path}")
 
-    gen_engine_asset_list_command = [asset_bundler_batch_path, "assetLists",
-                                                               "--assetListFile", engine_asset_list_path,
-                                                               "--platform", selected_platform,
-                                                               '--project-path', ctx.project_path,
-                                                               "--allowOverwrites",
-                                                               "--addDefaultSeedListFiles"]
-    ret = process_command(gen_engine_asset_list_command,
-                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
-    if ret != 0:
-        raise RuntimeError(f"Error generating engine assets lists for {engine_asset_list_path}")
+        gen_engine_asset_list_command = [asset_bundler_batch_path, "assetLists",
+                                                                "--assetListFile", engine_asset_list_path,
+                                                                '--platform', selected_platform,
+                                                                '--project-path', ctx.project_path,
+                                                                "--allowOverwrites",
+                                                                "--addDefaultSeedListFiles"]
+        ret = process_command(gen_engine_asset_list_command,
+                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+        if ret != 0:
+            raise RuntimeError(f"Error generating engine assets lists for {engine_asset_list_path}")
 
-    # Generate the bundles. We will place it in the project directory for now, since the files need to be copied multiple times (one for each separate launcher distribution)
-    gen_game_bundle_command = [asset_bundler_batch_path, "bundles",
-                                                         "--maxSize", str(max_bundle_size),
-                                                         "--platform", selected_platform,
-                                                         '--project-path', ctx.project_path,
-                                                         "--allowOverwrites",
-                                                         "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
-                                                         "--assetListFile", game_asset_list_path]
-    ret = process_command(gen_game_bundle_command,
-                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
-    if ret != 0:
-        raise RuntimeError(f"Error generating game bundle for {bundles_path / f'game_{selected_platform}.pak'}")
+        # Generate the bundles. We will place it in the project directory for now, since the files need to be copied multiple times (one for each separate launcher distribution)
+        gen_game_bundle_command = [asset_bundler_batch_path, "bundles",
+                                                            "--maxSize", str(max_bundle_size),
+                                                            "--platform",  selected_platform,
+                                                            '--project-path', ctx.project_path,
+                                                            "--allowOverwrites",
+                                                            "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
+                                                            "--assetListFile", game_asset_list_path]
+        ret = process_command(gen_game_bundle_command,
+                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+        if ret != 0:
+            raise RuntimeError(f"Error generating game bundle for {bundles_path / f'game_{selected_platform}.pak'}")
 
-    gen_engine_bundle_command = [asset_bundler_batch_path, "bundles",
-                                                           "--maxSize", str(max_bundle_size),
-                                                           "--platform", selected_platform,
-                                                           '--project-path', ctx.project_path,
-                                                           "--allowOverwrites",
-                                                           "--outputBundlePath", bundles_path / f"engine_{selected_platform}.pak",
-                                                           "--assetListFile", engine_asset_list_path]
-    ret = process_command(gen_engine_bundle_command,
-                          cwd=ctx.engine_path if engine_centric else ctx.project_path)
-    if ret != 0:
-        raise RuntimeError(f"Error generating engine bundle for {bundles_path / f'game_{selected_platform}.pak'}")
+        gen_engine_bundle_command = [asset_bundler_batch_path, "bundles",
+                                                            "--maxSize", str(max_bundle_size),
+                                                            "--platform", selected_platform,
+                                                            '--project-path', ctx.project_path,
+                                                            "--allowOverwrites",
+                                                            "--outputBundlePath", bundles_path / f"engine_{selected_platform}.pak",
+                                                            "--assetListFile", engine_asset_list_path]
+        ret = process_command(gen_engine_bundle_command,
+                            cwd=ctx.engine_path if engine_centric else ctx.project_path)
+        if ret != 0:
+            raise RuntimeError(f"Error generating engine bundle for {bundles_path / f'game_{selected_platform}.pak'}")
 
     return bundles_path
 
@@ -794,12 +964,53 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
     
     with open(export_layout.output_path / 'project.json', 'w') as project_json_file:
         json.dump({"project_name": project_name}, project_json_file, ensure_ascii=True)
+    
+    if build_config == 'profile':
+        # This file is intended to be included in exported projects to prevent the asset processor from
+        # launching from the exported location. If you want to launch the asset processor anyways from an exported project,
+        # delete the copy of this file in the `Registry` subfolder found in the exported location.
+
+        setregpatch_file = pathlib.Path(__file__).parent.parent / 'ExportScripts/IgnoreAssetProcessor.profile.setregpatch'
+        (export_layout.output_path / 'Registry').mkdir(exist_ok=True) 
+        shutil.copy(setregpatch_file, export_layout.output_path / 'Registry')
+
 
     # Optionally compress the layout directory into an archive if the user requests
     if archive_output_format != "none":
         if logger:
             logger.info(f"Archiving output directory {export_layout.output_path} (this may take a while)...")
         shutil.make_archive(export_layout.output_path, archive_output_format, root_dir=export_layout.output_path)
+
+
+def preprocess_seed_path_list(project_path: pathlib.Path,
+                              paths: List[pathlib.Path]) -> List[pathlib.Path]:
+    """
+    For seed-related paths, do a preprocessing on the files to expand out any file wildcard patterns and expand them
+    out into the result list. Note that only the '*' wildcard is supported for this operation, and it will not
+    search for the patterns recursively
+
+    @param project_path:    The base project path to use as the base for non-absolute paths
+    :param paths:           The list of paths to preprocess any wildcard '*' patterns
+    :return:    The list of processed paths with any wildcard patterns evaluated
+    """
+    preprocessed_path_list = []
+    for input_path in paths:
+        if '*' in str(input_path):
+
+            # Determine if we need to add the project path base to a relative path or not
+            if input_path.is_absolute():
+                glob_results = glob.glob(str(input_path))
+            else:
+                absolute_input_path = project_path / input_path
+                glob_results = glob.glob(str(absolute_input_path))
+
+            for glob_result in glob_results:
+                glob_path_result = pathlib.Path(glob_result)
+                if glob_path_result not in preprocessed_path_list:
+                    preprocessed_path_list.append(glob_path_result)
+        else:
+            preprocessed_path_list.append(input_path)
+    return preprocessed_path_list
 
 
 def validate_project_artifact_paths(project_path: pathlib.Path,
@@ -815,7 +1026,11 @@ def validate_project_artifact_paths(project_path: pathlib.Path,
     @return: List of validate project artifact files, all absolute paths and verified to exist
     """
     validated_project_artifact_paths = []
-    for input_artifact_path in artifact_paths:
+
+    preprocessed_artifact_paths = preprocess_seed_path_list(project_path=project_path,
+                                                            paths=artifact_paths)
+
+    for input_artifact_path in preprocessed_artifact_paths:
         validated_artifact_path = None
         if input_artifact_path.is_file():
             validated_artifact_path = input_artifact_path
@@ -828,3 +1043,173 @@ def validate_project_artifact_paths(project_path: pathlib.Path,
         else:
             validated_project_artifact_paths.append(validated_artifact_path)
     return validated_project_artifact_paths
+
+
+SUPPORTED_EXPORT_PROJECT_SETTINGS = []
+
+
+def register_setting(key: str, description: str, default: str = None, is_password: bool = False, is_boolean: bool = False, restricted_regex: str = None, restricted_regex_description: str = None) -> command_utils.SettingsDescription:
+    """
+    Register a new settings description for project export
+
+    :param key:             The settings key used for configuration storage
+    :param description:     The description of this setting value
+    :param default:         The default value for the setting
+    :param is_password:     Flag indicating that this is a password setting
+    :param is_boolean:      Flag indicating that this is a boolean setting
+    :param restricted_regex:  (Optional) Validation regex to restrict the possible value
+    :param restricted_regex_description:  Description of the validation regex
+    :return: The new settings description
+    """
+
+    global SUPPORTED_EXPORT_PROJECT_SETTINGS
+
+    new_setting = command_utils.SettingsDescription(key=key,
+                                                    description=description,
+                                                    default=default,
+                                                    is_password=is_password,
+                                                    is_boolean=is_boolean,
+                                                    restricted_regex=restricted_regex,
+                                                    restricted_regex_description=restricted_regex_description)
+    SUPPORTED_EXPORT_PROJECT_SETTINGS.append(new_setting)
+
+    return new_setting
+
+
+BUILD_CONFIG_DEBUG = 'debug'
+BUILD_CONFIG_PROFILE = 'profile'
+BUILD_CONFIG_RELEASE = 'release'
+
+SETTINGS_PROJECT_BUILD_CONFIG     = register_setting(key='project.build.config',
+                                                     description='The CMake build configuration to use when building project binaries.',
+                                                     default=BUILD_CONFIG_PROFILE,
+                                                     restricted_regex=f'({BUILD_CONFIG_PROFILE}|{BUILD_CONFIG_RELEASE})',
+                                                     restricted_regex_description=f'Valid values are {BUILD_CONFIG_PROFILE} and {BUILD_CONFIG_RELEASE}')
+
+SETTINGS_TOOL_BUILD_CONFIG        = register_setting(key='tool.build.config',
+                                                     description='The CMake build configuration to use when building tool binaries.',
+                                                     default=BUILD_CONFIG_PROFILE,
+                                                     restricted_regex=f'({BUILD_CONFIG_PROFILE}|{BUILD_CONFIG_RELEASE})',
+                                                     restricted_regex_description=f'Valid values are {BUILD_CONFIG_PROFILE} and {BUILD_CONFIG_RELEASE}')
+
+ARCHIVE_FORMAT_NONE = 'none'
+ARCHIVE_FORMAT_ZIP = 'zip'
+ARCHIVE_FORMAT_GZIP = 'gzip'
+ARCHIVE_FORMAT_BZ2 = 'bz2'
+ARCHIVE_FORMAT_XZ = 'xz'
+
+SETTINGS_ARCHIVE_OUTPUT_FORMAT    = register_setting(key='archive.output.format',
+                                                     description=f"The output compression option to use to archive the output. '{ARCHIVE_FORMAT_NONE}' to skip creating an archive.",
+                                                     default=ARCHIVE_FORMAT_NONE,
+                                                     restricted_regex=f'({ARCHIVE_FORMAT_NONE}|{ARCHIVE_FORMAT_ZIP}|{ARCHIVE_FORMAT_GZIP}|{ARCHIVE_FORMAT_BZ2}|{ARCHIVE_FORMAT_XZ})',
+                                                     restricted_regex_description=f'Valid values are : {ARCHIVE_FORMAT_NONE}, {ARCHIVE_FORMAT_ZIP}, {ARCHIVE_FORMAT_GZIP}, {ARCHIVE_FORMAT_BZ2}, and {ARCHIVE_FORMAT_XZ}')
+
+SETTINGS_OPTION_BUILD_ASSETS      = register_setting(key='option.build.assets',
+                                                     description='The option to build all the assets for the bundle when running the export.',
+                                                     is_boolean=True,
+                                                     default='False')
+
+SETTINGS_OPTION_FAIL_ON_ASSET_ERR = register_setting(key='option.fail.on.asset.errors',
+                                                     description='Option to fail the project export process on any failed asset during asset building.',
+                                                     is_boolean=True,
+                                                     default='False')
+
+SETTINGS_SEED_LIST_PATHS          = register_setting(key='seedlist.paths',
+                                                     description='List of seed list paths (relative to the project folder) used for asset bundling. Multiple paths are separated by semi-colon (;).',
+                                                     default='')
+SETTINGS_SEED_FILE_PATHS          = register_setting(key='seedfile.paths',
+                                                     description='List of seed file paths (relative to the project folder) used for asset bundling. Multiple paths are separated by semi-colon (;).',
+                                                     default='')
+SETTINGS_DEFAULT_LEVEL_NAMES      = register_setting(key='default.level.names',
+                                                     description='List of level names to use for exporting. This will look in the {project path}/Levels folder to fetch the prefabs. Multiple level names are separated by semi-colon (;).',
+                                                     default='')
+
+SETTINGS_ADDITIONAL_GAME_PROJECT_FILE_PATTERN = register_setting(key='additional.game.project.file.pattern.to.copy',
+                                                                 description='List of file patterns to use filter files in the project directory to include in the exported game project. Multiple file patterns are separated by semi-colon (;).',
+                                                                 default='')
+SETTINGS_ADDITIONAL_SERVER_PROJECT_FILE_PATTERN = register_setting(key='additional.server.project.file.pattern.to.copy',
+                                                                   description='List of file patterns to use filter files in the project directory to include in the exported server project. Multiple file patterns are separated by semi-colon (;).',
+                                                                   default='')
+SETTINGS_ADDITIONAL_PROJECT_FILE_PATTERN = register_setting(key='additional.project.file.pattern.to.copy',
+                                                            description='List of file patterns to use filter files in the project directory to include in the exported game and server projects. Multiple file patterns are separated by semi-colon (;).',
+                                                            default='')
+
+SETTINGS_OPTION_BUILD_TOOLS       = register_setting(key='option.build.tools',
+                                                     description='The option to build O3DE toolchain executables. This will build AssetBundlerBatch and AssetProcessorBatch.',
+                                                     is_boolean=True,
+                                                     default='False')
+
+SETTINGS_DEFAULT_ANDROID_BUILD_PATH = register_setting(key='default.android.build.path',
+                                                       description='Designates where the android build files are generated.',
+                                                       default='build/game_android')
+
+SETTINGS_DEFAULT_IOS_BUILD_PATH = register_setting(key='default.ios.build.path',
+                                                   description='Designates where the iOS build files are generated.',
+                                                   default='build/game_ios')
+
+SETTINGS_OPTION_ALLOW_REGISTRY_OVERRIDES = register_setting(key='option.allow.registry.overrides',
+                                                            description='When configuring cmake builds, this determines if the script allows for overriding registry settings from external sources.',
+                                                            is_boolean=True,
+                                                            default='False')
+
+SETTINGS_DEFAULT_BUILD_TOOLS_PATH = register_setting(key='default.build.tools.path',
+                                                     description='Designates where the build files for the O3DE toolchain are generated.',
+                                                     default='build/tools')
+
+SETTINGS_DEFAULT_LAUNCHER_TOOLS_PATH = register_setting(key='default.launcher.build.path',
+                                                        description='Designates where the launcher build files (Game/Server/Unified) are generated.',
+                                                        default='build/launcher')
+
+SETTINGS_DEFAULT_ASSET_BUNDLING_PATH = register_setting(key='asset.bundling.path',
+                                                        description='Designates where the artifacts from the asset bundling process will be written to before creation of the package.',
+                                                        default='build/asset_bundling')
+
+SETTINGS_MAX_BUNDLE_SIZE = register_setting(key='max.size',
+                                            description='The maximum size of a given asset bundle.',
+                                            default="2048",
+                                            restricted_regex=f'([0-9]+)',
+                                            restricted_regex_description=f'Value must be a whole number.')
+
+SETTINGS_OPTION_BUILD_GAME_LAUNCHER  = register_setting(key='option.build.game.launcher',
+                                                        description='The option to build an exported game launcher.',
+                                                        is_boolean=True,
+                                                        default='True')
+
+SETTINGS_OPTION_BUILD_SERVER_LAUNCHER = register_setting(key='option.build.server.launcher',
+                                                         description='The option to build an exported server launcher.',
+                                                         is_boolean=True,
+                                                         default='True')
+
+SETTINGS_OPTION_BUILD_HEADLESS_SERVER_LAUNCHER = register_setting(key='option.build.headless.server.launcher',
+                                                                  description='The option to build an exported headless server launcher.',
+                                                                  is_boolean=True,
+                                                                  default='False')
+
+SETTINGS_OPTION_BUILD_UNIFIED_SERVER_LAUNCHER = register_setting(key='option.build.unified.launcher',
+                                                                 description='The option to build an exported unified launcher.',
+                                                                 is_boolean=True,
+                                                                 default='True')
+
+SETTINGS_OPTION_ENGINE_CENTRIC = register_setting(key='option.engine.centric',
+                                                  description='Option use the engine-centric work flow to export the project.',
+                                                  is_boolean=True,
+                                                  default='False')
+
+SETTINGS_OPTION_BUILD_MONOLITHICALLY = register_setting(key='option.build.monolithic',
+                                                        description='The option to build the launchers monolithically vs non-monolithically.',
+                                                        is_boolean=True,
+                                                        default='True')
+
+def get_export_project_config(project_path: pathlib.Path or None) -> command_utils.O3DEConfig:
+    """
+    Create a project export configuration a project. If a project name is provided, then attempt to look for the project and use its
+    project-specific settings (if any) as an overlay to the global settings. If the project name is None, then return a project export
+    configuration object that only represents the global setting
+
+    :param project_path:    The path to the registered O3DE project to look for its project-specific setting. If None, only use the global settings.
+    :return: The project export configuration object
+    """
+    return command_utils.O3DEConfig(project_path=project_path,
+                                    settings_filename=PROJECT_EXPORT_SETTINGS_FILE,
+                                    settings_section_name=PROJECT_EXPORT_SECTION_NAME,
+                                    settings_description_list=SUPPORTED_EXPORT_PROJECT_SETTINGS)

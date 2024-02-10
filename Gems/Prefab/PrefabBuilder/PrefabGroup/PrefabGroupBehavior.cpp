@@ -126,7 +126,7 @@ namespace AZ::SceneAPI::Behaviors
 
     void PrefabGroupBehavior::ExportEventHandler::GetCategoryAssignments(CategoryRegistrationList& categories, const Containers::Scene&)
     {
-        categories.emplace_back("Procedural Prefab", SceneData::PrefabGroup::TYPEINFO_Uuid());
+        categories.emplace_back("Procedural Prefab", SceneData::PrefabGroup::TYPEINFO_Uuid(), s_prefabGroupPreferredTabOrder);
     }
 
     Events::ProcessingResult PrefabGroupBehavior::ExportEventHandler::UpdateSceneForPrefabGroup(

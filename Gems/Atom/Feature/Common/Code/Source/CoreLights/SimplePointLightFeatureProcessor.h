@@ -39,9 +39,10 @@ namespace AZ
                 float m_affectsGIFactor = 1.0f;
 
                 bool m_affectsGI = true;
+                uint32_t m_lightingChannelMask = 1;
                 float m_padding0 = 0.0f;
                 float m_padding1 = 0.0f;
-                float m_padding2 = 0.0f;
+
             };
 
             SimplePointLightFeatureProcessor();
@@ -62,6 +63,7 @@ namespace AZ
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
+            void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount()const;

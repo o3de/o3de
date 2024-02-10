@@ -7,7 +7,7 @@
             "assetId": {
                 "guid": "{3C004E81-244A-51C1-B3BB-50EFFD1373C9}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "passes/mainrenderpipeline.azasset"
         }
     ]

@@ -57,8 +57,10 @@ namespace AzToolsFramework
             : Thumbnail(key)
         {}
 
-        void ProductThumbnail::LoadThread() 
+        void ProductThumbnail::Load() 
         {
+            m_state = State::Loading;
+
             auto productKey = azrtti_cast<const ProductThumbnailKey*>(m_key.data());
             AZ_Assert(productKey, "Incorrect key type, excpected ProductThumbnailKey");
 
@@ -96,6 +98,7 @@ namespace AzToolsFramework
 
             m_pixmap.load(iconPath);
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
+            QueueThumbnailUpdated();
         }
 
         //////////////////////////////////////////////////////////////////////////

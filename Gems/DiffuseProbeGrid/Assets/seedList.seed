@@ -77,28 +77,28 @@
             "assetId": {
                 "guid": "{E1A185DF-DC80-58B1-B77B-CE8BEDB61D3B}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "passes/diffuseprobegridupdatepassrequest.azasset"
         },
         {
             "assetId": {
                 "guid": "{522C32A8-CB02-51CE-B450-C4B8E38C084D}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "passes/diffuseprobegridrenderpassrequest.azasset"
         },
         {
             "assetId": {
                 "guid": "{B428ED95-3E5F-50D5-98A7-A2AECEAA1898}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "passes/diffuseprobegridvisualizationpassrequest.azasset"
         },
         {
             "assetId": {
                 "guid": "{A6F9D127-D963-5D78-B19F-A31E73C5C2B5}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "passes/diffuseprobegridtemplates.azasset"
         },
         {
@@ -126,7 +126,7 @@
             "assetId": {
                 "guid": "{82253586-BC83-5289-8E14-4DF83E7032D2}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "passes/diffuseprobegridscreenspacereflectionsquerypassrequest.azasset"
         },
         {
@@ -140,7 +140,7 @@
             "assetId": {
                 "guid": "{8BC56BD7-1477-5396-A410-D8A36D4DDB25}"
             },
-            "platformFlags": 3,
+            "platformFlags": 255,
             "pathHint": "passes/diffuseprobegridpreparepassrequest.azasset"
         }
     ]

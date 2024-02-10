@@ -10,6 +10,7 @@
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -27,6 +28,7 @@
 #include <QUrl>
 #include <QWindow>
 #include <QMessageBox>
+#include <QMenuBar>
 
 namespace ShaderManagementConsole
 {
@@ -72,7 +74,7 @@ namespace ShaderManagementConsole
     {
         // Get shader file path
         AZ::IO::Path shaderFullPath;
-        AZ::RPI::ShaderVariantListSourceData shaderVariantList = {};
+        AZ::RPI::ShaderVariantListSourceData shaderVariantList{};
         ShaderManagementConsoleDocumentRequestBus::EventResult(
             shaderVariantList,
             documentId,
@@ -119,9 +121,67 @@ namespace ShaderManagementConsole
         return result.Native();
     }
 
+    void ShaderManagementConsoleWindow::ErrorMessageBoxesForDocumentVerification(const DocumentVerificationResult& verification)
+    {
+        if (verification.m_hasRedundantVariants)
+        {
+            QMessageBox::critical(
+                this, tr("QC fail"), tr("Some variants are redundant. Use the recompaction feature before saving."), QMessageBox::Ok);
+        }
+        if (verification.m_hasRootLike)
+        {
+            QMessageBox::critical(
+                this,
+                tr("QC fail"),
+                tr("Variant with id %1 is root-like (all options dynamic). Remove it or use recompaction feature before saving.")
+                    .arg(verification.m_rootLikeStableId),
+                QMessageBox::Ok);
+        }
+        if (verification.m_hasStableIdJump)
+        {
+            QMessageBox::critical(
+                this,
+                tr("QC fail"),
+                tr("Stable id %1 isn't compact. Use the recompaction feature before saving.").arg(verification.faultyId),
+                QMessageBox::Ok);
+        }
+    }
+
     void ShaderManagementConsoleWindow::CreateMenus(QMenuBar* menuBar)
     {
         Base::CreateMenus(menuBar);
+
+        QAction* verifyAction = new QAction(tr("Verify Variantlist invariants"), m_menuFile);
+        QObject::connect(verifyAction, &QAction::triggered, this, [this](){
+            DocumentVerificationResult verification;
+            ShaderManagementConsoleDocumentRequestBus::EventResult(
+                verification, GetCurrentDocumentId(), &ShaderManagementConsoleDocumentRequestBus::Events::Verify);
+            ErrorMessageBoxesForDocumentVerification(verification);
+            if (verification.AllGood())
+            {
+                QMessageBox::information(
+                    this, tr("QC pass"), tr("All good"), QMessageBox::Ok);
+            }
+            });
+        m_menuFile->insertAction(m_menuFile->actions().back(), verifyAction);
+
+        QAction* compactAction = new QAction(tr("Run Compaction"), m_menuFile);
+        QObject::connect(
+            verifyAction,
+            &QAction::triggered,
+            this,
+            [this]()
+            {
+                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
+                    GetCurrentDocumentId(), &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::BeginEdit);
+
+                ShaderManagementConsoleDocumentRequestBus::Event(
+                    GetCurrentDocumentId(), &ShaderManagementConsoleDocumentRequestBus::Events::DefragmentVariantList);
+
+                AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
+                    GetCurrentDocumentId(), &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::EndEdit);
+            });
+        m_menuFile->insertAction(m_menuFile->actions().back(), compactAction);
 
         // Add statistics button
         QAction* action = new QAction(tr("Generate Shader Variant Statistics..."), m_menuFile);

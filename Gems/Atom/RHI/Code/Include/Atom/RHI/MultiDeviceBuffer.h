@@ -50,7 +50,8 @@ namespace AZ::RHI
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 
-        void InvalidateViews() override final;
+        //! Returns true if the ResourceView is in the cache of all single device buffers
+        bool IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor);
 
     protected:
         void SetDescriptor(const BufferDescriptor& descriptor);
@@ -63,12 +64,12 @@ namespace AZ::RHI
     };
 
     //! A MultiDeviceBufferView is a light-weight representation of a view onto a multi-device buffer.
-    //! It holds a raw pointer to a multi-device buffer as well as a BufferViewDescriptor object.
-    //! Using both, single-device BufferViews can be retrieved.
-    class MultiDeviceBufferView : public Object
+    //! It holds a raw pointer to a multi-device buffer as well as a BufferViewDescriptor
+    //! Using both, single-device BufferViews can be retrieved
+    class MultiDeviceBufferView : public MultiDeviceResourceView
     {
     public:
-        AZ_RTTI(MultiDeviceBufferView, "{CD764967-6AC1-4B9D-9573-498FA61F8F84}", Object);
+        AZ_RTTI(MultiDeviceBufferView, "{AB366B8F-F1B7-45C6-A0D8-475D4834FAD2}", MultiDeviceResourceView);
         virtual ~MultiDeviceBufferView() = default;
 
         MultiDeviceBufferView(const RHI::MultiDeviceBuffer* buffer, BufferViewDescriptor descriptor)
@@ -83,7 +84,7 @@ namespace AZ::RHI
         //! Return the contained multi-device buffer
         const RHI::MultiDeviceBuffer* GetBuffer() const
         {
-            return m_buffer;
+            return m_buffer.get();
         }
 
         //! Return the contained BufferViewDescriptor
@@ -92,10 +93,25 @@ namespace AZ::RHI
             return m_descriptor;
         }
 
+        const MultiDeviceResource* GetResource() const override
+        {
+            return m_buffer.get();
+        }
+
+        const ResourceView* GetDeviceResourceView(int deviceIndex) const override
+        {
+            return GetDeviceBufferView(deviceIndex).get();
+        }
+
     private:
         //! A raw pointer to a multi-device buffer
-        const RHI::MultiDeviceBuffer* m_buffer;
+        ConstPtr<RHI::MultiDeviceBuffer> m_buffer;
         //! The corresponding BufferViewDescriptor for this view.
         BufferViewDescriptor m_descriptor;
+        //! BufferView cache
+        //! This cache is necessary as the caller receives raw pointers from the ResourceCache, 
+        //! which now, with multi-device objects in use, need to be held in memory as long as
+        //! the multi-device view is held.
+        mutable AZStd::unordered_map<int, Ptr<RHI::BufferView>> m_cache;
     };
 } // namespace AZ::RHI

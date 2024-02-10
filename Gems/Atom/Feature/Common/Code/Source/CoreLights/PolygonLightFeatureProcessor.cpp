@@ -224,6 +224,14 @@ namespace AZ::Render
         m_deviceBufferNeedsUpdate = true;
     }
 
+    void PolygonLightFeatureProcessor::SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask)
+    {
+        AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PolygonLightFeatureProcessor::SetLightingChannelMask().");
+
+        m_lightData.GetData<0>(handle.GetIndex()).m_lightingChannelMask = lightingChannelMask;
+        m_deviceBufferNeedsUpdate = true;
+    }   
+
     void PolygonLightFeatureProcessor::SetPolygonPoints(LightHandle handle, const Vector3* vertices, const uint32_t vertexCount, const Vector3& direction)
     {
         AZ_Warning("PolygonLightFeatureProcessor", vertexCount <= MaxPolygonPoints, "Too many polygon points on polygon light. Only using the first %lu vertices.", MaxPolygonPoints);

@@ -22,4 +22,8 @@ set(FILES
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
     AzFramework/Input/User/LocalUserId_Platform.h
     ../Common/Default/AzFramework/Input/User/LocalUserId_Default.h
+    AzFramework/Input/LibEVDevWrapper.h
+    AzFramework/Input/LibEVDevWrapper.cpp
+    AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Linux.cpp
+    AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Linux.h
 )

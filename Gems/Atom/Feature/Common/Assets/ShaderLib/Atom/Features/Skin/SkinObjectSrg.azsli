@@ -50,4 +50,5 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     TextureCube m_reflectionProbeCubeMap;
 
     MATERIAL_PIPELINE_OBJECT_SRG_MEMBERS
+    uint m_lightingChannelMask;
 }

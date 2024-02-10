@@ -225,8 +225,15 @@ namespace MaterialCanvas
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart",
                   "Create Untitled Graph Document On Start",
-                  "Create a default, untitled graph document when Material Canvas starts",
-                  true) });
+                  "Create a default, untitled graph document when Material Canvas starts.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/QueueGraphCompileIntervalMs",
+                  "Queue Graph Compile Interval Ms",
+                  "The delay (in milliseconds) before the graph is recompiled after changes.",
+                  aznumeric_cast<AZ::s64>(500),
+                  aznumeric_cast<AZ::s64>(0),
+                  aznumeric_cast<AZ::s64>(1000)) });
 
         inspector->AddGroup(
             m_materialCanvasCompileSettingsGroup->m_name,
@@ -253,23 +260,9 @@ namespace MaterialCanvas
         Base::OnSettingsDialogClosed();
     }
 
-    AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const
+    AZStd::string MaterialCanvasMainWindow::GetHelpUrl() const
     {
-        return R"(<html><head/><body>
-            <p><h3><u>Shader Build Settings</u></h3></p>
-            <p>Shaders, materials, and other assets will be generated as changes are applied to the graph.
-            The viewport will update and display the generated materials and shaders once they have been
-            compiled by the Asset Processor. This can take a few seconds. Compilation times and preview
-            responsiveness can be improved by enabling the Minimal Shader Build settings in the Tools->Settings
-            menu. Changing the settings will require restarting Material Canvas and the Asset Processor.</p>
-            <p><h3><u>Camera Controls</u></h3></p>
-            <p><b>LMB</b> - rotate camera</p>
-            <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>
-            <p><b>MMB</b> - pan camera on its xy plane</p>
-            <p><b>Alt+RMB</b> or <b>LMB+RMB</b> - dolly camera on its z axis</p>
-            <p><b>Ctrl+LMB</b> - rotate model</p>
-            <p><b>Shift+LMB</b> - rotate environment</p>
-            </body></html>)";
+        return "https://docs.o3de.org/docs/atom-guide/look-dev/tools/material-canvas/";
     }
 } // namespace MaterialCanvas
 

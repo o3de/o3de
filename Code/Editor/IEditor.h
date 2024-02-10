@@ -33,7 +33,6 @@ struct QMetaObject;
 
 class CBaseObject;
 class CCryEditDoc;
-class CSelectionGroup;
 class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
@@ -450,8 +449,6 @@ struct IEditor
     virtual bool IsInConsolewMode() = 0;
     //! return true if editor is running the level load tests mode.
     virtual bool IsInLevelLoadTestMode() = 0;
-    //! Return true if Editor runs in the material editing mode.
-    virtual bool IsInMatEditMode() = 0;
     //! Enable/Disable updates of editor.
     virtual void EnableUpdate(bool enable) = 0;
     virtual SFileVersion GetFileVersion() = 0;
@@ -463,17 +460,6 @@ struct IEditor
     virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
     //! Delete object
     virtual void DeleteObject(CBaseObject* obj) = 0;
-    //! Get current selection group
-    virtual CSelectionGroup* GetSelection() = 0;
-    virtual CBaseObject* GetSelectedObject() = 0;
-    virtual int ClearSelection() = 0;
-    //! Select object
-    virtual void SelectObject(CBaseObject* obj) = 0;
-    //! Lock current objects selection
-    //! While selection locked, other objects cannot be selected or unselected
-    virtual void LockSelection(bool bLock) = 0;
-    //! Check if selection is currently locked
-    virtual bool IsSelectionLocked() = 0;
     //! Get access to object manager.
     virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;

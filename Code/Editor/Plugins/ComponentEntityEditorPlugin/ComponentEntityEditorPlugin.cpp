@@ -27,14 +27,11 @@
 #include <AzToolsFramework/UI/Slice/SliceRelationshipWidget.hxx>
 
 #include "SandboxIntegration.h"
-#include "Objects/ComponentEntityObject.h"
-
 
 namespace ComponentEntityEditorPluginInternal
 {
     void RegisterSandboxObjects()
     {
-        GetIEditor()->GetClassFactory()->RegisterClass(new CTemplateObjectClassDesc<CComponentEntityObject>("ComponentEntity", "", "", OBJTYPE_AZENTITY, 201, "*.entity"));
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);

@@ -74,6 +74,12 @@ namespace AZ::RHI
         return result;
     }
 
+    //! Returns the path to the DirectXShaderCompiler (also known as DXC) executable.
+    //! If the user has not provided a customized executable path
+    //! in the Settings Registry, then @defaultPathToDxc is returned.
+    //! @param defaultPathToDxc Default path for the current platform. Can not be nullptr.
+    AZStd::string GetDirectXShaderCompilerPath(const char* defaultPathToDxc);
+
     //! Runs a shader compiler executable with specific parameters.
     //! Returns true it compiled the shader without errors.
     //! Returns false otherwise and with compilation errors messages.

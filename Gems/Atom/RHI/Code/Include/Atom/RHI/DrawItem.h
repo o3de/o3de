@@ -112,9 +112,9 @@ namespace AZ::RHI
 
     // A DrawItem corresponds to one draw of one mesh in one pass. Multiple draw items are bundled
     // in a DrawPacket, which corresponds to multiple draws of one mesh in multiple passes.
-    // NOTE: Do NOT use default member initialization here, as DrawItems are bulk allocated for
-    // DrawPackets and their memory aliased in DrawPacketBuilder. If you want to specify default values,
-    // do so in the DrawPacketBuilder::End() function (see DrawPacketBuilder.cpp)
+    // NOTE: Do not rely solely on default member initialization here, as DrawItems are bulk allocated for
+    // DrawPackets and their memory aliased in DrawPacketBuilder. Any default values should also be specified
+    // in the DrawPacketBuilder::End() function (see DrawPacketBuilder.cpp)
     struct DrawItem
     {
         DrawItem() = default;
@@ -132,9 +132,13 @@ namespace AZ::RHI
         {
             struct
             {
-                bool m_enabled : 1;    // Whether the Draw Item should render
+                // NOTE: If you add or update any of these flags, please update the default value of m_allFlags
+                // so that your added flags are initialized properly. Also update the default value specified in
+                // the DrawPacketBuilder::End() function (see DrawPacketBuilder.cpp). See comment above.
+
+                bool m_enabled : 1;     // Whether the Draw Item should render
             };
-            uint8_t m_allFlags = 1;
+            uint8_t m_allFlags = 1;     //< Update default value if you add flags. Also update in DrawPacketBuilder::End()
         };
 
         const PipelineState* m_pipelineState = nullptr;
@@ -173,15 +177,6 @@ namespace AZ::RHI
 
     struct DrawItemProperties
     {
-        DrawItemProperties() = default;
-
-        DrawItemProperties(const DrawItem* item, DrawItemSortKey sortKey = 0, DrawFilterMask filterMask = DrawFilterMaskDefaultValue)
-            : m_item{item}
-            , m_sortKey{sortKey}
-            , m_drawFilterMask{filterMask}
-        {
-        }
-
         bool operator==(const DrawItemProperties& rhs) const
         {
             return m_item == rhs.m_item &&
@@ -204,12 +199,12 @@ namespace AZ::RHI
         //! A pointer to the draw item
         const DrawItem* m_item = nullptr;
         //! A sorting key of this draw item which is used for sorting draw items in DrawList
-        // Check RHI::SortDrawList() function for detail
+        //! Check RHI::SortDrawList() function for detail
         DrawItemSortKey m_sortKey = 0;
+        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
+        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
         //! A depth value this draw item which is used for sorting draw items in DrawList
         //! Check RHI::SortDrawList() function for detail
         float m_depth = 0.0f;
-        //! A filter mask which helps decide whether to submit this draw item to a Scope's command list or not
-        DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
     };
 }

@@ -47,7 +47,7 @@ namespace AZ
 
                 bool SceneHasMeshGroup(const Containers::Scene& scene) const;
 
-                static const int s_meshGroupPreferredTabOrder;
+                static constexpr int s_meshGroupPreferredTabOrder{ 0 };
             };
         } // Behaviors
     } // SceneAPI

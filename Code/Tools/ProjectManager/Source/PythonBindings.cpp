@@ -9,7 +9,6 @@
 #include <PythonBindings.h>
 
 #include <ProjectManagerDefs.h>
-
 #include <osdefs.h> // for DELIM
 
 // Qt defines slots, which interferes with the use here.
@@ -52,6 +51,7 @@ namespace Platform
         return false;
     }
 } // namespace Platform
+
 
 #define Py_To_String(obj) pybind11::str(obj).cast<std::string>().c_str()
 #define Py_To_String_Optional(dict, key, default_string) dict.contains(key) ? Py_To_String(dict[key]) : default_string

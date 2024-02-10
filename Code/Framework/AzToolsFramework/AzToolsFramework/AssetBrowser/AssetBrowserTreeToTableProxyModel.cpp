@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTreeToTableProxyModel.h>
-#include <AzCore/std/functional.h>
+
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/std/functional.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTreeToTableProxyModel.h>
 
 namespace AzToolsFramework
 {
@@ -105,86 +106,128 @@ namespace AzToolsFramework
         {
             beginResetModel();
 
-            if (sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (sourceModelPtr)
             {
-                disconnect(sourceModel(), nullptr, this, nullptr);
+                disconnect(sourceModelPtr, nullptr, this, nullptr);
             }
 
             QAbstractProxyModel::setSourceModel(model);
             if (model)
             {
-                connect(model, &QAbstractItemModel::rowsAboutToBeInserted, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsAboutToBeInserted,
+                    this,
                     [this](const QModelIndex& parent, int start, int end)
                     {
                         RowsAboutToBeInserted(parent, start, end);
                     });
 
-                connect(model, &QAbstractItemModel::rowsInserted, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsInserted,
+                    this,
                     [this](const QModelIndex& parent, int start, int end)
                     {
                         RowsInserted(parent, start, end);
                     });
 
-                connect(model, &QAbstractItemModel::rowsAboutToBeRemoved, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsAboutToBeRemoved,
+                    this,
                     [this](const QModelIndex& parent, int start, int end)
                     {
                         RowsAboutToBeRemoved(parent, start, end);
                     });
 
-                connect(model, &QAbstractItemModel::rowsRemoved, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsRemoved,
+                    this,
                     [this](const QModelIndex& parent, int start)
                     {
                         RowsRemoved(parent, start);
                     });
 
-                connect(model, &QAbstractItemModel::rowsAboutToBeMoved, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsAboutToBeMoved,
+                    this,
                     [this]()
                     {
                         LayoutChanged();
                     });
 
-                connect(model, &QAbstractItemModel::rowsMoved, this,
-                    [this](const QModelIndex& srcParent, int srcStart, [[maybe_unused]]int srcEnd, const QModelIndex& destParent, int destStart)
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsMoved,
+                    this,
+                    [this](
+                        const QModelIndex& srcParent,
+                        int srcStart,
+                        [[maybe_unused]] int srcEnd,
+                        const QModelIndex& destParent,
+                        int destStart)
                     {
                         RowsMoved(srcParent, srcStart, destParent, destStart);
                     });
 
-                connect(model, &QAbstractItemModel::modelAboutToBeReset, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::modelAboutToBeReset,
+                    this,
                     [this]()
                     {
                         beginResetModel();
                     });
 
-                connect(model, &QAbstractItemModel::modelReset, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::modelReset,
+                    this,
                     [this]()
                     {
                         ModelReset();
                     });
 
-                connect(model, &QAbstractItemModel::dataChanged, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::dataChanged,
+                    this,
                     [this](const QModelIndex& topLeft, const QModelIndex& bottomRight)
                     {
                         DataChanged(topLeft, bottomRight);
                     });
 
-                connect(model, &QAbstractItemModel::layoutAboutToBeChanged, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::layoutAboutToBeChanged,
+                    this,
                     [this]()
                     {
                         LayoutAboutToBeChanged();
                     });
 
-                connect(model, &QAbstractItemModel::layoutChanged, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::layoutChanged,
+                    this,
                     [this]()
                     {
                         LayoutChanged();
                     });
 
-                connect(model, &QObject::destroyed, this,
+                connect(
+                    model,
+                    &QObject::destroyed,
+                    this,
                     [this]()
                     {
                         resetInternalData();
                     });
-             }
+            }
 
             resetInternalData();
             if (model && model->hasChildren())
@@ -196,12 +239,13 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserTreeToTableProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
         {
-            if (!sourceModel() || columnCount() <= section)
+            auto sourceModelPtr = sourceModel();
+            if (!sourceModelPtr || columnCount() <= section)
             {
                 return QVariant();
             }
 
-            return sourceModel()->headerData(section, orientation, role);
+            return sourceModelPtr->headerData(section, orientation, role);
         }
 
         QModelIndex AssetBrowserTreeToTableProxyModel::parent([[maybe_unused]] const QModelIndex& index) const
@@ -221,29 +265,33 @@ namespace AzToolsFramework
                 return;
             }
 
-            QModelIndex localParent = mapFromSource(parent);
+            const QModelIndex localParent = mapFromSource(parent);
             emit dataChanged(localParent, localParent);
-            for (int i = 0; i < sourceModel()->rowCount(parent); ++i)
+
+            auto sourceModelPtr = sourceModel();
+            const int rowCount = sourceModelPtr->rowCount(parent);
+            for (int i = 0; i < rowCount; ++i)
             {
-                DataChangedAllSiblings(sourceModel()->index(i, 0, parent));
+                DataChangedAllSiblings(sourceModelPtr->index(i, 0, parent));
             }
         }
 
         void AssetBrowserTreeToTableProxyModel::RowsAboutToBeInserted(const QModelIndex& parent, int start, int end)
         {
-            if (!sourceModel()->hasChildren(parent))
+            auto sourceModelPtr = sourceModel();
+            if (!sourceModelPtr->hasChildren(parent))
             {
-                AZ_Assert(sourceModel()->rowCount(parent) == 0, "Row alredy has children");
+                AZ_Assert(sourceModelPtr->rowCount(parent) == 0, "Row alredy has children");
                 return;
             }
 
             int proxyStart = -1;
 
-            const int rowCount = sourceModel()->rowCount(parent);
+            const int rowCount = sourceModelPtr->rowCount(parent);
 
             if (rowCount > start)
             {
-                const QModelIndex newStart = sourceModel()->index(start, 0, parent);
+                const QModelIndex newStart = sourceModelPtr->index(start, 0, parent);
                 proxyStart = mapFromSource(newStart).row();
             }
             else if (rowCount == 0)
@@ -253,10 +301,10 @@ namespace AzToolsFramework
             else
             {
                 static const int column = 0;
-                QModelIndex idx = sourceModel()->index(rowCount - 1, column, parent);
-                while (sourceModel()->hasChildren(idx) && sourceModel()->rowCount(idx) > 0)
+                QModelIndex idx = sourceModelPtr->index(rowCount - 1, column, parent);
+                while (sourceModelPtr->hasChildren(idx) && sourceModelPtr->rowCount(idx) > 0)
                 {
-                    idx = sourceModel()->index(sourceModel()->rowCount(idx) - 1, column, idx);
+                    idx = sourceModelPtr->index(sourceModelPtr->rowCount(idx) - 1, column, idx);
                 }
                 proxyStart = mapFromSource(idx).row() + 1;
             }
@@ -268,9 +316,10 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeToTableProxyModel::RowsInserted(const QModelIndex& parent, int start, int end)
         {
-            AZ_Assert(sourceModel()->index(start, 0, parent).isValid(), "Index invalid");
+            auto sourceModelPtr = sourceModel();
+            AZ_Assert(sourceModelPtr->index(start, 0, parent).isValid(), "Index invalid");
 
-            const int rowCount = sourceModel()->rowCount(parent);
+            const int rowCount = sourceModelPtr->rowCount(parent);
             const int span = end - start + 1;
 
             if (rowCount == span)
@@ -284,7 +333,7 @@ namespace AzToolsFramework
                 ProcessParents();
                 if (start > 0)
                 {
-                    DataChangedAllSiblings(sourceModel()->index(start - 1, 0, parent));
+                    DataChangedAllSiblings(sourceModelPtr->index(start - 1, 0, parent));
                 }
                 return;
             }
@@ -298,18 +347,18 @@ namespace AzToolsFramework
 
             if (rowCount == end + 1)
             {
-                const QModelIndex oldIndex = sourceModel()->index(rowCount - 1 - span, column, parent);
+                const QModelIndex oldIndex = sourceModelPtr->index(rowCount - 1 - span, column, parent);
                 AZ_Assert(m_map.TreeContains(oldIndex), "Tree does not contain index");
 
-                const QModelIndex newIndex = sourceModel()->index(rowCount - 1, column, parent);
+                const QModelIndex newIndex = sourceModelPtr->index(rowCount - 1, column, parent);
 
                 QModelIndex indexAbove = oldIndex;
 
                 if (start > 0)
                 {
-                    while (sourceModel()->hasChildren(indexAbove))
+                    while (sourceModelPtr->hasChildren(indexAbove))
                     {
-                        indexAbove = sourceModel()->index(sourceModel()->rowCount(indexAbove) - 1, column, indexAbove);
+                        indexAbove = sourceModelPtr->index(sourceModelPtr->rowCount(indexAbove) - 1, column, indexAbove);
                     }
                 }
 
@@ -324,9 +373,9 @@ namespace AzToolsFramework
 
             for (int row = start; row <= end; ++row)
             {
-                const QModelIndex idx = sourceModel()->index(row, column, parent);
+                const QModelIndex idx = sourceModelPtr->index(row, column, parent);
 
-                if (sourceModel()->hasChildren(idx) && sourceModel()->rowCount(idx) > 0)
+                if (sourceModelPtr->hasChildren(idx) && sourceModelPtr->rowCount(idx) > 0)
                 {
                     m_parents.append(idx);
                 }
@@ -344,7 +393,7 @@ namespace AzToolsFramework
 
             if (start > 0)
             {
-                DataChangedAllSiblings(sourceModel()->index(start - 1, 0, parent));
+                DataChangedAllSiblings(sourceModelPtr->index(start - 1, 0, parent));
             }
         }
 
@@ -353,25 +402,22 @@ namespace AzToolsFramework
             m_rowCount = 0;
             m_map.Clear();
             m_parents.clear();
-
             m_parents.append(QModelIndex());
 
             m_processing = true;
-            while (!m_parents.isEmpty())
-            {
-                ProcessParents();
-            }
+            ProcessParents();
             m_processing = false;
         }
 
         int AssetBrowserTreeToTableProxyModel::columnCount(const QModelIndex& parent) const
         {
-            if (parent.isValid() || !sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (parent.isValid() || !sourceModelPtr)
             {
                 return 0;
             }
 
-            return sourceModel()->columnCount();
+            return sourceModelPtr->columnCount();
         }
 
         void AssetBrowserTreeToTableProxyModel::UpdateInternalIndices(int start, int offset)
@@ -384,7 +430,7 @@ namespace AzToolsFramework
             {
                 updates.insert(it.key() + offset, *it);
             }
-              
+
             const QHash<int, QPersistentModelIndex>::const_iterator end2 = updates.constEnd();
 
             for (QHash<int, QPersistentModelIndex>::const_iterator it = updates.constBegin(); it != end2; ++it)
@@ -395,13 +441,14 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeToTableProxyModel::RowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
         {
-            const int proxyStart = mapFromSource(sourceModel()->index(start, 0, parent)).row();
+            auto sourceModelPtr = sourceModel();
+            const int proxyStart = mapFromSource(sourceModelPtr->index(start, 0, parent)).row();
 
             constexpr int column{ 0 };
-            QModelIndex idx = sourceModel()->index(end, column, parent);
-            while (sourceModel()->hasChildren(idx) && sourceModel()->rowCount(idx) > 0)
+            QModelIndex idx = sourceModelPtr->index(end, column, parent);
+            while (sourceModelPtr->hasChildren(idx) && sourceModelPtr->rowCount(idx) > 0)
             {
-                idx = sourceModel()->index(sourceModel()->rowCount(idx) - 1, column, idx);
+                idx = sourceModelPtr->index(sourceModelPtr->rowCount(idx) - 1, column, idx);
             }
             const int proxyEnd = mapFromSource(idx).row();
 
@@ -413,9 +460,10 @@ namespace AzToolsFramework
         QModelIndex AssetBrowserTreeToTableProxyModel::GetFirstDeepest(QAbstractItemModel* model, const QModelIndex& parent, int& count)
         {
             constexpr int column{ 0 };
-            for (int row = 0; row < model->rowCount(parent); ++row)
+            const int rowCount = model->rowCount(parent);
+            for (int row = 0; row < rowCount; ++row)
             {
-                count++;
+                ++count;
                 const QModelIndex child = model->index(row, column, parent);
                 AZ_Assert(child.isValid(), "Child is invalid");
                 if (model->hasChildren(child))
@@ -423,13 +471,14 @@ namespace AzToolsFramework
                     return GetFirstDeepest(model, child, count);
                 }
             }
-            return model->index(model->rowCount(parent) - 1, column, parent);
-        }
 
+            return model->index(rowCount - 1, column, parent);
+        }
 
         void AssetBrowserTreeToTableProxyModel::RowsRemoved(const QModelIndex& parent, int start)
         {
-            const int rowCount = sourceModel()->rowCount(parent);
+            auto sourceModelPtr = sourceModel();
+            const int rowCount = sourceModelPtr->rowCount(parent);
 
             const int proxyStart = m_removePair.first;
             const int proxyEnd = m_removePair.second;
@@ -467,34 +516,34 @@ namespace AzToolsFramework
                 }
                 if (start > 0)
                 {
-                    DataChangedAllSiblings(sourceModel()->index(start - 1, 0, parent));
+                    DataChangedAllSiblings(sourceModelPtr->index(start - 1, 0, parent));
                 }
                 return;
             }
 
             constexpr int column = 0;
-            const QModelIndex newEnd = sourceModel()->index(rowCount - 1, column, parent);
+            const QModelIndex newEnd = sourceModelPtr->index(rowCount - 1, column, parent);
             if (m_map.Empty())
             {
                 m_map.Insert(newEnd, newEnd.row());
                 endRemoveRows();
                 if (start > 0)
                 {
-                    DataChangedAllSiblings(sourceModel()->index(start - 1, 0, parent));
+                    DataChangedAllSiblings(sourceModelPtr->index(start - 1, 0, parent));
                 }
                 return;
             }
-            if (sourceModel()->hasChildren(newEnd))
+            if (sourceModelPtr->hasChildren(newEnd))
             {
                 int count = 0;
-                const QModelIndex firstDeepest = GetFirstDeepest(sourceModel(), newEnd, count);
+                const QModelIndex firstDeepest = GetFirstDeepest(sourceModelPtr, newEnd, count);
                 const int firstDeepestProxy = m_map.TreeToTable(firstDeepest);
 
                 m_map.Insert(newEnd, firstDeepestProxy - count);
                 endRemoveRows();
                 if (start > 0)
                 {
-                    DataChangedAllSiblings(sourceModel()->index(start - 1, 0, parent));
+                    DataChangedAllSiblings(sourceModelPtr->index(start - 1, 0, parent));
                 }
                 return;
             }
@@ -505,8 +554,8 @@ namespace AzToolsFramework
 
                 for (int row = newEnd.row(); row >= 0; --row)
                 {
-                    const QModelIndex newEndSibling = sourceModel()->index(row, column, parent);
-                    if (!sourceModel()->hasChildren(newEndSibling))
+                    const QModelIndex newEndSibling = sourceModelPtr->index(row, column, parent);
+                    if (!sourceModelPtr->hasChildren(newEndSibling))
                     {
                         ++proxyRow;
                     }
@@ -519,7 +568,7 @@ namespace AzToolsFramework
                 endRemoveRows();
                 if (start > 0)
                 {
-                    DataChangedAllSiblings(sourceModel()->index(start - 1, 0, parent));
+                    DataChangedAllSiblings(sourceModelPtr->index(start - 1, 0, parent));
                 }
                 return;
             }
@@ -536,7 +585,7 @@ namespace AzToolsFramework
                 endRemoveRows();
                 if (start > 0)
                 {
-                    DataChangedAllSiblings(sourceModel()->index(start - 1, 0, parent));
+                    DataChangedAllSiblings(sourceModelPtr->index(start - 1, 0, parent));
                 }
                 return;
             }
@@ -554,7 +603,7 @@ namespace AzToolsFramework
                     endRemoveRows();
                     if (start > 0)
                     {
-                        DataChangedAllSiblings(sourceModel()->index(start - 1, 0, parent));
+                        DataChangedAllSiblings(sourceModelPtr->index(start - 1, 0, parent));
                     }
                     return;
                 }
@@ -603,7 +652,7 @@ namespace AzToolsFramework
 
             if (start > 0)
             {
-                DataChangedAllSiblings(sourceModel()->index(start - 1, 0, parent));
+                DataChangedAllSiblings(sourceModelPtr->index(start - 1, 0, parent));
             }
         }
 
@@ -612,10 +661,11 @@ namespace AzToolsFramework
         {
             LayoutChanged();
 
+            auto sourceModelPtr = sourceModel();
             const QModelIndex index1 = mapFromSource(srcParent);
             const QModelIndex index2 = mapFromSource(destParent);
-            const QModelIndex lastIndex1 = mapFromSource(sourceModel()->index(sourceModel()->rowCount(srcParent) - 1, 0, srcParent));
-            const QModelIndex lastIndex2 = mapFromSource(sourceModel()->index(sourceModel()->rowCount(destParent) - 1, 0, destParent));
+            const QModelIndex lastIndex1 = mapFromSource(sourceModelPtr->index(sourceModelPtr->rowCount(srcParent) - 1, 0, srcParent));
+            const QModelIndex lastIndex2 = mapFromSource(sourceModelPtr->index(sourceModelPtr->rowCount(destParent) - 1, 0, destParent));
             emit dataChanged(index1, lastIndex1);
             if (index1 != index2)
             {
@@ -624,18 +674,19 @@ namespace AzToolsFramework
 
             if (srcStart > 0)
             {
-                DataChangedAllSiblings(sourceModel()->index(srcStart - 1, 0, srcParent));
+                DataChangedAllSiblings(sourceModelPtr->index(srcStart - 1, 0, srcParent));
             }
             if (destStart > 0)
             {
-                DataChangedAllSiblings(sourceModel()->index(destStart - 1, 0, destParent));
+                DataChangedAllSiblings(sourceModelPtr->index(destStart - 1, 0, destParent));
             }
         }
 
         void AssetBrowserTreeToTableProxyModel::ModelReset()
         {
             resetInternalData();
-            if (sourceModel()->hasChildren() && sourceModel()->rowCount() > 0)
+            auto sourceModelPtr = sourceModel();
+            if (sourceModelPtr->hasChildren() && sourceModelPtr->rowCount() > 0)
             {
                 m_parents.append(QModelIndex());
                 ProcessParents();
@@ -686,6 +737,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeToTableProxyModel::DataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
         {
+            auto sourceModelPtr = sourceModel();
             if (!topLeft.isValid() || !bottomRight.isValid())
             {
                 return;
@@ -695,10 +747,9 @@ namespace AzToolsFramework
 
             for (int i = topRow; i <= bottomRow; ++i)
             {
-                const QModelIndex sourceTopLeft = sourceModel()->index(i, topLeft.column(), topLeft.parent());
-
+                const QModelIndex sourceTopLeft = sourceModelPtr->index(i, topLeft.column(), topLeft.parent());
                 const QModelIndex proxyTopLeft = mapFromSource(sourceTopLeft);
-                const QModelIndex sourceBottomRight = sourceModel()->index(i, bottomRight.column(), bottomRight.parent());
+                const QModelIndex sourceBottomRight = sourceModelPtr->index(i, bottomRight.column(), bottomRight.parent());
                 const QModelIndex proxyBottomRight = mapFromSource(sourceBottomRight);
                 emit dataChanged(proxyTopLeft, proxyBottomRight);
             }
@@ -706,7 +757,8 @@ namespace AzToolsFramework
 
         QModelIndex AssetBrowserTreeToTableProxyModel::mapFromSource(const QModelIndex& sourceIndex) const
         {
-            if (!sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (!sourceModelPtr)
             {
                 return QModelIndex();
             }
@@ -764,7 +816,8 @@ namespace AzToolsFramework
 
         QModelIndex AssetBrowserTreeToTableProxyModel::mapToSource(const QModelIndex& proxyIndex) const
         {
-            if (m_map.Empty() || !proxyIndex.isValid() || !sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (m_map.Empty() || !proxyIndex.isValid() || !sourceModelPtr)
             {
                 return QModelIndex();
             }
@@ -808,23 +861,25 @@ namespace AzToolsFramework
 
         Qt::ItemFlags AssetBrowserTreeToTableProxyModel::flags(const QModelIndex& index) const
         {
-            if (!index.isValid() || !sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (!index.isValid() || !sourceModelPtr)
             {
                 return QAbstractProxyModel::flags(index);
             }
 
             const QModelIndex srcIndex = mapToSource(index);
-            return sourceModel()->flags(srcIndex);
+            return sourceModelPtr->flags(srcIndex);
         }
 
         int AssetBrowserTreeToTableProxyModel::rowCount(const QModelIndex& parent) const
         {
-            if (m_parents.contains(parent) || parent.isValid() || !sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (m_parents.contains(parent) || parent.isValid() || !sourceModelPtr)
             {
                 return 0;
             }
 
-            if (m_map.Empty() && sourceModel()->hasChildren())
+            if (m_map.Empty() && sourceModelPtr->hasChildren())
             {
                 const_cast<AssetBrowserTreeToTableProxyModel*>(this)->RefreshMap();
             }
@@ -833,14 +888,15 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserTreeToTableProxyModel::data(const QModelIndex& index, int role) const
         {
-            if (!sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (!sourceModelPtr)
             {
                 return QVariant();
             }
 
             if (!index.isValid())
             {
-                return sourceModel()->data(index, role);
+                return sourceModelPtr->data(index, role);
             }
 
             QModelIndex sourceIndex = mapToSource(index);
@@ -848,31 +904,27 @@ namespace AzToolsFramework
                 return sourceIndex.data(role);
             }
         }
-  
+
         void AssetBrowserTreeToTableProxyModel::ProcessParents()
         {
-            const QPersistentModelIndexList::iterator begin = m_parents.begin();
-            const QPersistentModelIndexList::iterator end = m_parents.end();
-
-            QPersistentModelIndexList newPendingParents;
-
-            for (QPersistentModelIndexList::iterator it = begin; it != end && it != m_parents.end();)
+            auto sourceModelPtr = sourceModel();
+            while (!m_parents.isEmpty())
             {
-                const QModelIndex sourceParent = *it;
+                const QModelIndex sourceParent = m_parents.front();
+                m_parents.pop_front();
+
                 if (!sourceParent.isValid() && m_rowCount > 0)
                 {
-                    it = m_parents.erase(it);
                     continue;
                 }
 
-                const int rowCount = sourceModel()->rowCount(sourceParent);
-
+                const int rowCount = sourceModelPtr->rowCount(sourceParent);
                 if (rowCount == 0)
                 {
-                    it = m_parents.erase(it);
                     continue;
                 }
-                const QPersistentModelIndex sourceIndex = sourceModel()->index(rowCount - 1, 0, sourceParent);
+
+                const QPersistentModelIndex sourceIndex = sourceModelPtr->index(rowCount - 1, 0, sourceParent);
                 const QModelIndex proxyParent = mapFromSource(sourceParent);
                 const int proxyEndRow = proxyParent.row() + rowCount;
                 const int proxyStartRow = proxyEndRow - rowCount + 1;
@@ -884,7 +936,6 @@ namespace AzToolsFramework
 
                 UpdateInternalIndices(proxyStartRow, rowCount);
                 m_map.Insert(sourceIndex, proxyEndRow);
-                it = m_parents.erase(it);
                 m_rowCount += rowCount;
 
                 if (!m_processing)
@@ -895,22 +946,16 @@ namespace AzToolsFramework
                 for (int sourceRow = 0; sourceRow < rowCount; ++sourceRow)
                 {
                     static const int column = 0;
-                    const QModelIndex child = sourceModel()->index(sourceRow, column, sourceParent);
+                    const QModelIndex child = sourceModelPtr->index(sourceRow, column, sourceParent);
                     AZ_Assert(child.isValid(), "Child isn't valid");
 
-                    if (sourceModel()->hasChildren(child) && sourceModel()->rowCount(child) > 0)
+                    if (sourceModelPtr->hasChildren(child) && sourceModelPtr->rowCount(child) > 0)
                     {
-                        newPendingParents.append(child);
+                        m_parents.append(child);
                     }
                 }
             }
-            m_parents += newPendingParents;
-            if (!m_parents.isEmpty())
-            {
-                ProcessParents();
-            }
         }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

@@ -74,15 +74,6 @@ namespace ExporterLib
     }
 
 
-    void CopyColor(const MCore::RGBAColor& from, EMotionFX::FileFormat::FileColor& to)
-    {
-        to.m_r = from.m_r;
-        to.m_g = from.m_g;
-        to.m_b = from.m_b;
-        to.m_a = from.m_a;
-    }
-
-
     void ConvertUnsignedInt(uint32* value, MCore::Endian::EEndianType targetEndianType)
     {
         MCore::Endian::ConvertUnsignedInt32(value, EXPLIB_PLATFORM_ENDIAN, targetEndianType);
@@ -92,7 +83,6 @@ namespace ExporterLib
     {
         MCore::Endian::ConvertUnsignedInt64(value, EXPLIB_PLATFORM_ENDIAN, targetEndianType);
     }
-
 
     void ConvertInt(int* value, MCore::Endian::EEndianType targetEndianType)
     {
@@ -187,16 +177,6 @@ namespace ExporterLib
         MCore::Endian::ConvertUnsignedInt32(&value->m_numParamStrings,      EXPLIB_PLATFORM_ENDIAN, targetEndianType);
         MCore::Endian::ConvertUnsignedInt32(&value->m_numMirrorTypeStrings, EXPLIB_PLATFORM_ENDIAN, targetEndianType);
     }
-
-
-    void ConvertRGBAColor(MCore::RGBAColor* value, MCore::Endian::EEndianType targetEndianType)
-    {
-        MCore::Endian::ConvertFloat(&value->m_r, EXPLIB_PLATFORM_ENDIAN, targetEndianType);
-        MCore::Endian::ConvertFloat(&value->m_g, EXPLIB_PLATFORM_ENDIAN, targetEndianType);
-        MCore::Endian::ConvertFloat(&value->m_b, EXPLIB_PLATFORM_ENDIAN, targetEndianType);
-        MCore::Endian::ConvertFloat(&value->m_a, EXPLIB_PLATFORM_ENDIAN, targetEndianType);
-    }
-
 
     void ConvertVector3(AZ::PackedVector3f* value, MCore::Endian::EEndianType targetEndianType)
     {

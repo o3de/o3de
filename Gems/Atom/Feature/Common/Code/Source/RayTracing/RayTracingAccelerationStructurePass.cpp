@@ -244,6 +244,7 @@ namespace AZ
                     for (auto submeshIndex = 0; submeshIndex < blasInstance.second.m_subMeshes.size(); ++submeshIndex)
                     {
                         auto& submeshBlasInstance = blasInstance.second.m_subMeshes[submeshIndex];
+                        changedBlasList.push_back(submeshBlasInstance.m_blas.get());
                         if (blasInstance.second.m_blasBuilt == false)
                         {
                             // Always build the BLAS, if it has not previously been built
@@ -266,7 +267,6 @@ namespace AZ
                             // Fall back to building the BLAS in any case
                             context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas);
                         }
-                        changedBlasList.push_back(submeshBlasInstance.m_blas.get());
                     }
 
                     blasInstance.second.m_blasBuilt = true;

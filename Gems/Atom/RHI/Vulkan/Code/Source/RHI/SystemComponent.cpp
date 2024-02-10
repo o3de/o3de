@@ -26,7 +26,6 @@
 #include <RHI/ImageView.h>
 #include <RHI/IndirectBufferWriter.h>
 #include <RHI/IndirectBufferSignature.h>
-#include <RHI/FrameGraphExecuteGroup.h>
 #include <RHI/FrameGraphExecuter.h>
 #include <RHI/PipelineLibrary.h>
 #include <RHI/PipelineState.h>

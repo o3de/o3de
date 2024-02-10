@@ -466,17 +466,20 @@ class GemDependencyProvider(AbstractProvider):
     def get_dependencies(self, candidate):
         return candidate.requirements
 
-def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json_data:dict, include_optional=False) -> bool:
+def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json_data:dict, include_optional=False) -> tuple:
     # Start with the engine candidate using a version of 0.0.0 for any
     # engine that has no version field (older engine)
     candidates = [
         EngineCandidate(engine_json_data.get('engine_name'), engine_json_data.get('version','0.0.0'), [], engine_json_data)
-    ] 
+    ]
+
+    provided_unique_service_gem_map = {}
 
     # Add all gem candidates and their requirements
     for gem_name, gem_versions_json_data in all_gem_json_data.items():
         for gem_json_data in gem_versions_json_data:
-            requirements = [] 
+
+            requirements = []
 
             # If the version field exists but is empty use '0.0.0'
             # This gives us a preference for gems with version fields
@@ -518,8 +521,15 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
             dep_version_specifier = SpecifierSet(dep_version_specifier)
         project_gem_requirements.add(GemRequirement(dep_name, dep_version_specifier))
 
+        # Track all the identified unique service providers and the gems that provide it
+        gem_spec_list = all_gem_json_data.get(dep_name, [])
+        for gem_spec in gem_spec_list:
+            provided_unique_service = gem_spec.get('provided_unique_service', None)
+            if provided_unique_service:
+                provided_unique_service_gem_map.setdefault(provided_unique_service, []).append(gem_spec.get('display_name',gem_name))
+
     result_mapping = None
-    errors = None
+    errors = set()
 
     # the resolver uses a single "round" to try and pin a single dependency
     # so we need at least enough rounds as we have gems in the dependency tree
@@ -535,10 +545,9 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
     except InconsistentCandidate as e:
         # An error exists in our dependency resolver provider
         # need to fix find_matches() and/or is_satisfied_by().
-        errors = set([f'An error exists in the dependency resolver provider resulting in an inconsistent candidate {e.candidate} with criterion {e.criterion}'])
+        errors.add(f'An error exists in the dependency resolver provider resulting in an inconsistent candidate {e.candidate} with criterion {e.criterion}')
     except ResolutionImpossible as e:
         reason = 'The following dependency requirements could not be satisfied:'
-        errors = set()
         for cause in e.causes:
             reason += '\n'
             if isinstance(cause.requirement, EngineRequirement):
@@ -547,6 +556,13 @@ def resolve_gem_dependencies(gem_names:list, all_gem_json_data:dict, engine_json
                 # If cause.parent isn't set it's a project gem dependency
                 reason += cause.requirement.failure_reason(cause.parent if cause.parent else 'The project')
 
-        errors.add(reason) 
+        errors.add(reason)
+
+    # Finally, check if there are multiple gems enabled that provide duplicate unique services
+    for unique_service, gem_provider_list in provided_unique_service_gem_map.items():
+        if len(gem_provider_list) > 1:
+            errors.add(f"Multiple gems enabled ({', '.join(gem_provider_list)}) that provide the "
+                       f"same unique service '{unique_service}' detected. This will cause failures "
+                       f"during Gem loading and initialization.")
 
     return result_mapping, errors

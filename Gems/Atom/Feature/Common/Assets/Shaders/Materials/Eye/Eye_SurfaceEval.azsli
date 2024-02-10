@@ -18,6 +18,10 @@
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/RPI/Math.azsli>
 
+#ifndef ENABLE_TRANSMISSION
+#define ENABLE_TRANSMISSION 1
+#endif
+
 // Control whether to use the new algorithm where all the distances are normalized
 // in a space where the Eye Mesh Radius is 0.5.
 // This macro was created for test and compare purposes between the old algorithm
@@ -150,6 +154,9 @@ Surface EvaluateSurface_Eye(
 #endif
 
     real2 irisRefractionUv = real2(uvs[MaterialSrg::m_iris_m_baseColorMapUvIndex]) + refractionUVOffset;
+    real2 irisUvCenterOffset = irisRefractionUv - real2(0.5, 0.5);
+    irisUvCenterOffset *= MaterialSrg::m_irisUvScale;
+    irisRefractionUv = real2(0.5, 0.5) + irisUvCenterOffset;
 
     //--------------------- Base Color ----------------------
 
@@ -200,14 +207,21 @@ Surface EvaluateSurface_Eye(
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
     surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
 
+    // ------- Occlusion -------
+    
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture);
+    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture);
+
     // ------- Transmission -------
 
+#if ENABLE_TRANSMISSION
     real2 transmissionUv = uvs[MaterialSrg::m_transmissionThicknessMapUvIndex];
     real4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, real4(MaterialSrg::m_transmissionTintThickness));
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
     surface.transmission.transmissionParams = real4(MaterialSrg::m_transmissionParams);
     surface.transmission.scatterDistance = real3(MaterialSrg::m_scatterDistance);
+#endif
 
     return surface;
 }

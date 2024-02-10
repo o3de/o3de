@@ -75,6 +75,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> GetProjectBuildPath(const QString& projectPath);
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath);
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& enginePath);
+        QString GetPythonExecutablePath(const QString& enginePath);
 
         QString GetDefaultProjectPath();
         QString GetDefaultTemplatePath();

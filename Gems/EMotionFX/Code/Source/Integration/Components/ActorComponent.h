@@ -24,6 +24,8 @@
 #include <Integration/ActorComponentBus.h>
 #include <Integration/Rendering/RenderActorInstance.h>
 
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
+
 #include <EMotionFX/Source/ActorBus.h>
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
 
@@ -95,6 +97,8 @@ namespace EMotionFX
                 BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
 
                 bool m_excludeFromReflectionCubeMaps = true;
+
+                AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
 
                 static void Reflect(AZ::ReflectContext* context);
             };

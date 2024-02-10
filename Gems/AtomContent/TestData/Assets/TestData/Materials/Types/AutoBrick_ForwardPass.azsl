@@ -198,7 +198,7 @@ ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 
     // Light iterator
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear, ViewSrg::m_worldPosition.xyz);
 
     // Shadow
     lightingData.diffuseAmbientOcclusion = 1.0f - surfaceDepth * AutoBrickSrg::m_aoFactor;

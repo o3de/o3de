@@ -90,17 +90,17 @@ namespace AZ
 
         void CoreLightsSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("CoreLightsService", 0x91932ef6));
+            provided.push_back(AZ_CRC_CE("CoreLightsService"));
         }
 
         void CoreLightsSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("CoreLightsService", 0x91932ef6));
+            incompatible.push_back(AZ_CRC_CE("CoreLightsService"));
         }
 
         void CoreLightsSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+            required.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void CoreLightsSystemComponent::Init()
@@ -109,6 +109,15 @@ namespace AZ
 
         void CoreLightsSystemComponent::Activate()
         {
+            AZ::ApplicationTypeQuery appType;
+            ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            if (appType.IsHeadless())
+            {
+                return;
+            }
+
+            m_ltcCommonInterface.reset(aznew LtcCommon());
+
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SimplePointLightFeatureProcessor, SimplePointLightFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SimpleSpotLightFeatureProcessor, SimpleSpotLightFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<PointLightFeatureProcessor, PointLightFeatureProcessorInterface>();
@@ -132,6 +141,7 @@ namespace AZ
 
         void CoreLightsSystemComponent::Deactivate()
         {
+            m_ltcCommonInterface.reset();
         }
     } // namespace Render
 } // namespace AZ

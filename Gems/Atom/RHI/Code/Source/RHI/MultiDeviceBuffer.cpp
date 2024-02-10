@@ -53,17 +53,31 @@ namespace AZ::RHI
         MultiDeviceResource::Shutdown();
     }
 
-    void MultiDeviceBuffer::InvalidateViews()
+    bool MultiDeviceBuffer::IsInResourceCache(const BufferViewDescriptor& bufferViewDescriptor)
     {
-        IterateObjects<Buffer>([]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
+        bool isInResourceCache{true};
+        IterateObjects<Buffer>([&isInResourceCache, &bufferViewDescriptor]([[maybe_unused]] auto deviceIndex, auto deviceBuffer)
         {
-            deviceBuffer->InvalidateViews();
+            isInResourceCache &= deviceBuffer->IsInResourceCache(bufferViewDescriptor);
         });
+        return isInResourceCache;
     }
 
     //! Given a device index, return the corresponding BufferView for the selected device
     const RHI::Ptr<RHI::BufferView> MultiDeviceBufferView::GetDeviceBufferView(int deviceIndex) const
     {
-        return m_buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(m_descriptor);
+        auto iterator{ m_cache.find(deviceIndex) };
+        if (iterator == m_cache.end())
+        {
+            //! Buffer view is not yet in the cache
+            auto [new_iterator, inserted]{ m_cache.insert(
+                AZStd::make_pair(deviceIndex, m_buffer->GetDeviceBuffer(deviceIndex)->GetBufferView(m_descriptor))) };
+            if (inserted)
+            {
+                return new_iterator->second;
+            }
+        }
+
+        return iterator->second;
     }
 } // namespace AZ::RHI

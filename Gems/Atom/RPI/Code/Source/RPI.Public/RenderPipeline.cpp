@@ -172,10 +172,12 @@ namespace AZ
             pipeline->m_nameId = desc.m_name.data();
             pipeline->m_materialPipelineTagName = Name{desc.m_materialPipelineTag};
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
+            pipeline->m_activeAAMethod = GetAAMethodByName(desc.m_defaultAAMethod);
             pipeline->m_passTree.m_rootPass->SetRenderPipeline(pipeline);
             pipeline->m_passTree.m_rootPass->m_flags.m_isPipelineRoot = true;
             pipeline->m_passTree.m_rootPass->ManualPipelineBuildAndInitialize();
-
+            
+            pipeline->SetActiveAAMethod(desc.m_defaultAAMethod);
             pipeline->UpdateViewportScissor();
         }
 
@@ -624,6 +626,8 @@ namespace AZ
                     newRoot->DebugPrint();
 #endif
                 }
+                
+                SetAAMethod(this, m_activeAAMethod);
             }
 
             // Build and initialize any queued passes
@@ -651,9 +655,7 @@ namespace AZ
                         SceneRequestBus::Event(m_scene->GetId(), &SceneRequest::PipelineStateLookupNeedsRebuild);
                     }
                 }
-                                
                 UpdateViewportScissor();
-
                 // Reset change flags
                 m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
 
@@ -720,6 +722,7 @@ namespace AZ
             {
                 params.m_viewportState = m_viewport;
                 params.m_scissorState = m_scissor;
+                m_passTree.m_rootPass->UpdateConnectedBindings();
                 m_passTree.m_rootPass->FrameBegin(params);
             }
         }
@@ -947,6 +950,96 @@ namespace AZ
         ViewType RenderPipeline::GetViewType() const
         {
             return m_viewType;
+        }
+
+        // ---------------------------- Anti-aliasing
+
+        bool RenderPipeline::SetActiveAAMethod(AZStd::string aaMethodName)
+        {
+            AntiAliasingMode antiAliasingMode = GetAAMethodByName(aaMethodName);
+            if (antiAliasingMode == AntiAliasingMode::Default)
+            {
+                return false;
+            }
+            m_activeAAMethod = antiAliasingMode;
+            return SetAAMethod(this, m_activeAAMethod);
+        }
+
+        AntiAliasingMode RenderPipeline::GetActiveAAMethod()
+        {
+            return m_activeAAMethod;
+        }
+
+        AntiAliasingMode RenderPipeline::GetAAMethodByName(AZStd::string aaMethodName)
+        {
+            const AZStd::unordered_map<AZStd::string, AntiAliasingMode> AAMethodsLookup = {
+                {"MSAA", AntiAliasingMode::MSAA}, {"SMAA", AntiAliasingMode::SMAA}, 
+                {"TAA", AntiAliasingMode::TAA}
+            };
+ 
+            auto findIt = AAMethodsLookup.find(aaMethodName);
+            if (findIt != AAMethodsLookup.end())
+            {
+                return findIt->second;
+            }
+            return AntiAliasingMode::Default;
+        }        
+
+        AZStd::string RenderPipeline::GetAAMethodNameByIndex(AntiAliasingMode aaMethodIndex)
+        {
+            const AZStd::unordered_map<AntiAliasingMode, AZStd::string> AAMethodNameLookup = {
+                {AntiAliasingMode::MSAA, "MSAA"}, {AntiAliasingMode::SMAA, "SMAA"}, 
+                {AntiAliasingMode::TAA, "TAA"}
+            };
+ 
+            auto findIt = AAMethodNameLookup.find(aaMethodIndex);
+            if (findIt != AAMethodNameLookup.end())
+            {
+                return findIt->second;
+            }
+            return "MSAA";
+        }
+
+        bool RenderPipeline::EnablePass(RenderPipeline* pipeline, Name& passName, bool enable)
+        {
+            PassFilter passFilter = PassFilter::CreateWithPassName(passName, pipeline);
+            Ptr<Pass> aaPass = PassSystemInterface::Get()->FindFirstPass(passFilter);
+            if (!aaPass)
+            {
+                return false;
+            }
+            if (aaPass->IsEnabled() != enable)
+            {
+                aaPass->SetEnabled(enable);
+            }
+            return true;
+        }
+
+        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AZStd::string aaMethodName)
+        {
+            AntiAliasingMode antiAliasingMode = GetAAMethodByName(aaMethodName);
+            return SetAAMethod(pipeline, antiAliasingMode);
+        }
+
+        bool RenderPipeline::SetAAMethod(RenderPipeline* pipeline, AntiAliasingMode antiAliasingMode)
+        {
+            if (antiAliasingMode == AntiAliasingMode::Default)
+            {
+                return false;
+            }
+
+            const AZStd::unordered_map<AntiAliasingMode, AZStd::vector<Name>> AAPassNamesLookup = {
+                {AntiAliasingMode::SMAA, {Name("SMAA1xApplyLinearHDRColorPass")}}, 
+                {AntiAliasingMode::TAA, {Name("TaaPass"), Name("ContrastAdaptiveSharpeningPass")}}
+            };
+
+            for (auto& aaPassMap : AAPassNamesLookup)
+            {
+                AZStd::for_each(aaPassMap.second.begin(), aaPassMap.second.end(), [&pipeline, &aaPassMap, &antiAliasingMode](Name passName){
+                    EnablePass(pipeline, passName, aaPassMap.first == antiAliasingMode);
+                });
+            }
+            return true;
         }
     }
 }

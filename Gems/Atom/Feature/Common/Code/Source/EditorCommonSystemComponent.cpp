@@ -26,6 +26,7 @@
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #include <Atom/RPI.Edit/Material/LuaMaterialFunctorSourceData.h>
 
+
 namespace AZ
 {
     namespace Render

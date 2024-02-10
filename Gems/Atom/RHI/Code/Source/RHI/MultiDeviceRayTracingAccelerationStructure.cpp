@@ -64,6 +64,13 @@ namespace AZ::RHI
         return this;
     }
 
+    MultiDeviceRayTracingBlasDescriptor* MultiDeviceRayTracingBlasDescriptor::BuildFlags(const RHI::RayTracingAccelerationStructureBuildFlags &buildFlags)
+    {
+        AZ_Assert(m_mdBuildContext, "BuildFlags property can only be added to a Geometry entry");
+        m_mdBuildFlags = buildFlags;
+        return this;
+    }
+
     RayTracingTlasDescriptor MultiDeviceRayTracingTlasDescriptor::GetDeviceRayTracingTlasDescriptor(int deviceIndex) const
     {
         AZ_Assert(m_mdInstancesBuffer, "No MultiDeviceBuffer available!\n");
@@ -106,6 +113,13 @@ namespace AZ::RHI
     {
         AZ_Assert(m_mdBuildContext, "InstanceID property can only be added to an Instance entry");
         m_mdBuildContext->m_instanceID = instanceID;
+        return this;
+    }
+
+    MultiDeviceRayTracingTlasDescriptor* MultiDeviceRayTracingTlasDescriptor::InstanceMask(uint32_t instanceMask)
+    {
+        AZ_Assert(m_mdBuildContext, "InstanceMask property can only be added to an Instance entry");
+        m_mdBuildContext->m_instanceMask = instanceMask;
         return this;
     }
 
@@ -220,22 +234,19 @@ namespace AZ::RHI
         const MultiDeviceRayTracingBufferPools& rayTracingBufferPools)
     {
         m_mdDescriptor = *descriptor;
-        ResultCode resultCode{ ResultCode::Success };
 
         MultiDeviceObject::Init(deviceMask);
 
-        IterateObjects<RayTracingTlas>(
-            [this, &resultCode, &descriptor, &rayTracingBufferPools](int deviceIndex, auto deviceRayTracingTlas)
+        ResultCode resultCode = IterateObjects<RayTracingTlas>(
+            [this, &descriptor, &rayTracingBufferPools](int deviceIndex, auto deviceRayTracingTlas)
             {
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
                 this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingTlas();
 
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingTlasDescriptor(deviceIndex) };
 
-                resultCode = deviceRayTracingTlas->CreateBuffers(
+                return deviceRayTracingTlas->CreateBuffers(
                     *device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
-
-                return resultCode == ResultCode::Success;
             });
 
         if (resultCode != ResultCode::Success)

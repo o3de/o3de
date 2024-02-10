@@ -29,6 +29,8 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        class DependentAssetTreeWidgetItem;
+
         class AssetBrowserEntityInspectorWidget
             : public QWidget
             , public AssetBrowserPreviewRequestBus::Handler
@@ -57,7 +59,7 @@ namespace AzToolsFramework
             // Create an incoming or outgoing dependency QTreeWidgetItem for each valid AssetId
             void CreateProductDependencyTree(const AZStd::set<AZ::Data::AssetId> dependencyUuids, bool isOutgoing);
             // Adds the name and icon of an asset browser entry under a QTreeWidgetItem
-            void AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem);
+            void AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, DependentAssetTreeWidgetItem* headerItem);
             // Processses the source asset and populates the FBX settings
             void HandleSourceAsset(const AssetBrowserEntry* entry, const SourceAssetBrowserEntry* sourceEntry);
             // Processes the product asset
