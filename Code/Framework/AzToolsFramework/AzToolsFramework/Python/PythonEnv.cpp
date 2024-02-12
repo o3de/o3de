@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/tokenize.h>
 #include <AzCore/Settings/ConfigParser.h>
 #include <AzCore/Utils/Utils.h>
@@ -29,8 +30,13 @@ namespace AzToolsFramework
     {
         AZStd::string GetPythonVenvPath(AZStd::string_view engineRoot)
         {
+            // Perform the same hash calculation as cmake/CalculateEnginePathId.cmake
             AZStd::string enginePath = AZ::IO::FixedMaxPath(engineRoot).StringAsPosix();
             enginePath += '/';
+
+            // Lower-Case
+            AZStd::to_lower(enginePath.begin(), enginePath.end());
+
             AZ::Sha1 hasher;
             AZ::u32 digest[5];
             hasher.ProcessBytes(reinterpret_cast<const AZStd::byte*>(enginePath.c_str()), enginePath.length());

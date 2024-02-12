@@ -18,10 +18,7 @@ endif()
 set(PATH_TO_HASH ${CMAKE_ARGV3})
 cmake_path(NORMAL_PATH PATH_TO_HASH)
 
-if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-    # If this is windows, further normalize the path by making it all lower-case since windows is case-insensitive for its path
-    string(TOLOWER ${PATH_TO_HASH} PATH_TO_HASH)
-endif()
+string(TOLOWER ${PATH_TO_HASH} PATH_TO_HASH)
 
 # Sanity check to make sure this is the path to the engine
 set(ENGINE_SANITY_CHECK_FILE "${PATH_TO_HASH}/engine.json")
