@@ -645,6 +645,36 @@ namespace AzQtComponents
             emit colorChanged(m_state->rgb());
         }
 
+        void ColorController::setHSV(float hue, float saturation, float value)
+        {
+            const bool hChanged = !qFuzzyCompare(hue, hsvHue());
+            const bool sChanged = !qFuzzyCompare(saturation, hsvSaturation());
+            const bool vChanged = !qFuzzyCompare(value, this->value());
+            if (hChanged || sChanged || vChanged)
+            {
+                const ColorState previousColor = *m_state;
+                m_state->setHsv(hue, saturation, value);
+                validate();
+
+                if (hChanged)
+                {
+                    emit hsvHueChanged(hsvHue());
+                }
+                if (sChanged)
+                {
+                    emit hsvSaturationChanged(hsvSaturation());
+                }
+                if (vChanged)
+                {
+                    emit valueChanged(this->value());
+                }
+
+                emitRgbaChangedSignals(previousColor);
+                emitHslChangedSignals(previousColor);
+                emit colorChanged(m_state->rgb());
+            }
+        }
+
         void ColorController::setAlpha(float alpha)
         {
             if (qFuzzyCompare(alpha, this->alpha()))
