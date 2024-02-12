@@ -18,6 +18,11 @@ endif()
 set(PATH_TO_HASH ${CMAKE_ARGV3})
 cmake_path(NORMAL_PATH PATH_TO_HASH)
 
+if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    # If this is windows, further normalize the path by making it all lower-case since windows is case-insensitive for its path
+    string(TOLOWER ${PATH_TO_HASH} PATH_TO_HASH)
+endif()
+
 # Sanity check to make sure this is the path to the engine
 set(ENGINE_SANITY_CHECK_FILE "${PATH_TO_HASH}/engine.json")
 if (NOT EXISTS "${ENGINE_SANITY_CHECK_FILE}")
@@ -27,6 +32,7 @@ endif()
 # Calculate the path id based on the first 9 characters of the SHA1 hash of the normalized path
 string(SHA1 ENGINE_SOURCE_PATH_HASH "${PATH_TO_HASH}")
 string(SUBSTRING ${ENGINE_SOURCE_PATH_HASH} 0 8 ENGINE_SOURCE_PATH_ID)
+
 # Note: using 'message(STATUS ..' will print to STDOUT, but will always include a double hyphen '--'. Instead we will 
 # use the cmake echo command directly to do this
 execute_process(COMMAND ${CMAKE_COMMAND} -E echo ${ENGINE_SOURCE_PATH_ID})
