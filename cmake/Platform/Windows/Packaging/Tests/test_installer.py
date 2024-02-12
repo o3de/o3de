@@ -21,7 +21,7 @@ Alternately, the installer-uri can be an s3 or web URL. For example:
 
 """
 import pytest
-import json
+import shutil
 from pathlib import Path
 from subprocess import TimeoutExpired
 from o3de import manifest
@@ -82,6 +82,12 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
 def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
     """ o3de.bat CLI creates a project. """
     o3de_path = context.install_root / 'scripts/o3de.bat'
+
+    if context.project_path.is_dir():
+        # remove the project folder in case a previous run didn't clean up correctly
+        print(f"Removing {context.project_path}")
+        shutil.rmtree(context.project_path, ignore_errors=True)
+
     result = context.run([str(o3de_path),'create-project','--project-path', str(context.project_path)])
     assert result.returncode == 0, f"o3de.bat failed to create a project with exit code {result.returncode}"
 

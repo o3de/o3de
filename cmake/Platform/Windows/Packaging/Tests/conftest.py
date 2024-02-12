@@ -18,7 +18,6 @@ import urllib.request
 from pathlib import Path, PurePath
 from subprocess import run, list2cmdline
 from tempfile import NamedTemporaryFile, mkdtemp
-from time import sleep
 
 
 def pytest_addoption(parser):
