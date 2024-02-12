@@ -296,28 +296,6 @@
                     ]
                 },
                 {
-                    "base": "SetQualityDecayRate",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke SetQualityDecayRate"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after SetQualityDecayRate is invoked"
-                    },
-                    "details": {
-                        "name": "Set Quality Decay Rate"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
                     "base": "GetQualityDecayRate",
                     "entry": {
                         "name": "In",
