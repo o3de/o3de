@@ -98,23 +98,23 @@ def test_compile_project_fixture(test_create_project_fixture, context):
 
     # configure non-monolithic 
     result = context.run([str(cmake_path),'-B', str(context.project_build_path_profile), '-S', '.'], cwd=context.project_path)
-    assert result.returncode == 0
-    assert (context.project_build_path_profile / f'{project_name}.sln').is_file()
+    assert result.returncode == 0, 'Failed to configure the test project non-monolithic build'
+    assert (context.project_build_path_profile / f'{project_name}.sln').is_file(), 'No project solution file was created'
 
     # build profile (non-monolithic)
     result = context.run([str(cmake_path),'--build', str(context.project_build_path_profile), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=context.project_path)
-    assert result.returncode == 0
-    assert (context.project_bin_path_profile / f'{launcher_target}.exe').is_file()
+    assert result.returncode == 0, 'Failed to build the test project profile non-monolithic  Launcher and Editor targets'
+    assert (context.project_bin_path_profile / f'{launcher_target}.exe').is_file(), 'No test project binary was created'
 
     # configure monolithic 
     result = context.run([str(cmake_path),'-B', str(context.project_build_path_release), '-S', '.','-DLY_MONOLITHIC_GAME=1'], cwd=context.project_path)
-    assert result.returncode == 0
-    assert (context.project_build_path_release / f'{project_name}.sln').is_file()
+    assert result.returncode == 0, 'Failed to configure the test project monolithic build'
+    assert (context.project_build_path_release / f'{project_name}.sln').is_file(), 'No project solution file was created'
 
     # build release (monolithic)
     result = context.run([str(cmake_path),'--build', str(context.project_build_path_release), '--target', launcher_target, '--config', 'release','--','-m'], cwd=context.project_path)
-    assert result.returncode == 0
-    assert (context.project_bin_path_release / f'{launcher_target}.exe').is_file()
+    assert result.returncode == 0, 'Failed to build the test project monolithic release Launcher target'
+    assert (context.project_bin_path_release / f'{launcher_target}.exe').is_file(), 'No test project binary was created'
 
 
 @pytest.fixture(scope="session")
@@ -166,7 +166,7 @@ def test_run_launcher_fixture(test_run_asset_processor_batch_fixture, context):
     launcher_filename = f"{project_name}.GameLauncher.exe"
     try:
         # run profile launcher for 2 mins 
-        result = context.run([str(context.project_bin_path_profile / launcher_filename),'--rhi=null'], cwd=context.project_bin_path, timeout=2*60)
+        result = context.run([str(context.project_bin_path_profile / launcher_filename),'--rhi=null'], cwd=context.project_bin_path_profile, timeout=2*60)
         assert result.returncode == 0, f"{launcher_filename} failed with exit code {result.returncode}"
     except TimeoutExpired as e:
         # we expect to close the app on timeout ourselves
