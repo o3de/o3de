@@ -419,9 +419,8 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     connect(m_currentColorController, &Internal::ColorController::hsvHueChanged, m_colorGrid, &ColorGrid::setHue);
     connect(m_currentColorController, &Internal::ColorController::hsvSaturationChanged, m_colorGrid, &ColorGrid::setSaturation);
     connect(m_currentColorController, &Internal::ColorController::valueChanged, m_colorGrid, &ColorGrid::setValue);
-    connect(m_colorGrid, &ColorGrid::hueChanged, m_currentColorController, &Internal::ColorController::setHsvHue);
-    connect(m_colorGrid, &ColorGrid::saturationChanged, m_currentColorController, &Internal::ColorController::setHsvSaturation);
-    connect(m_colorGrid, &ColorGrid::valueChanged, m_currentColorController, &Internal::ColorController::setValue);
+    connect(m_colorGrid, &ColorGrid::hsvChanged, m_currentColorController, &Internal::ColorController::setHSV);
+
     connect(m_colorGrid, &ColorGrid::gridPressed, this, &ColorPicker::beginDynamicColorChange);
     connect(m_colorGrid, &ColorGrid::gridReleased, this, &ColorPicker::endDynamicColorChange);
 
