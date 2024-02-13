@@ -73,7 +73,7 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Outer Volume Decibels",
-                                "tooltip": "Set Decibels Volume Outside Outer Cone"
+                                "tooltip": "Set Volume Decibels Outside Outer Cone"
                             }
                         }
                     ]
@@ -143,7 +143,7 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Global Volume Decibels",
-                                "tooltip": "Set Decibels Global Volume"
+                                "tooltip": "Set Global Volume Decibels"
                             }
                         }
                     ]
@@ -190,7 +190,7 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Outer Volume",
-                                "tooltip": "Set Percent Volume Outside Outer Cone"
+                                "tooltip": "Set Volume Percent Outside Outer Cone"
                             }
                         }
                     ]
@@ -214,7 +214,7 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Global Volume",
-                                "tooltip": "Set Percent Global Volume"
+                                "tooltip": "Set Global Volume Percent"
                             }
                         }
                     ]

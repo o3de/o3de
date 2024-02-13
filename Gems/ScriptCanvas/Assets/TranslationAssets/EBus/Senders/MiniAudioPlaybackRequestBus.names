@@ -50,7 +50,7 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Outer Volume",
-                                "tooltip": "Set Percent Volume Outside Outer Cone"
+                                "tooltip": "Set Volume Percent Outside Outer Cone"
                             }
                         }
                     ]
@@ -97,7 +97,7 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Volume",
-                                "tooltip": "Set Percent Volume"
+                                "tooltip": "Set Volume Percent"
                             }
                         }
                     ]
@@ -121,7 +121,7 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Volume Decibels",
-                                "tooltip": "Set Decibels Volume"
+                                "tooltip": "Set Volume Decibels"
                             }
                         }
                     ]
@@ -191,7 +191,7 @@
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
                                 "name": "Fixed Direction",
-                                "tooltip": "Set Whether Direction Is Fixed"
+                                "tooltip": "Set whether Direction is fixed"
                             }
                         }
                     ]
@@ -427,7 +427,7 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Outer Volume Decibels",
-                                "tooltip": "Set Decibels Volume Outside Outer Cone"
+                                "tooltip": "Set Volume Decibels Outside Outer Cone"
                             }
                         }
                     ]
