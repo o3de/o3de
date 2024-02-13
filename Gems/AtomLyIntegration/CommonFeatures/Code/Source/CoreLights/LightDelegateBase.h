@@ -64,6 +64,8 @@ namespace AZ
             void SetAffectsGI([[maybe_unused]] bool affectsGI) override {}
             void SetAffectsGIFactor([[maybe_unused]] float affectsGIFactor) override {}
 
+            void SetGoboTexture([[maybe_unused]] AZ::Data::Instance<AZ::RPI::Image> goboTexture) override {}
+
         protected:
             void InitBase(EntityId entityId);
 

@@ -44,6 +44,7 @@ namespace AZ::Render
         void SetEsmExponent(float exponent) override;
         void SetNormalShadowBias(float bias) override;
         void SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode) override;
+        void SetGoboTexture(AZ::Data::Instance<AZ::RPI::Image> goboTexture) override;
 
     private:
         void HandleShapeChanged() override;
