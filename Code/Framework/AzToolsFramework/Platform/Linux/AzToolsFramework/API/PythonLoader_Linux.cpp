@@ -38,8 +38,10 @@ namespace AzToolsFramework::EmbeddedPython
 
     AZ::IO::FixedMaxPath PythonLoader::GetPythonHomePath(AZStd::string_view engineRoot)
     {
+        AZ::IO::FixedMaxPath thirdPartyFolder = GetDefault3rdPartyPath(true);
+
         // On Linux, the executable folder is $PYTHONHOME/bin, so move up one folder to determine $PYTHONHOME
-        AZ::IO::FixedMaxPath pythonHomePath = PythonLoader::GetPythonExecutablePath(engineRoot).ParentPath();
+        AZ::IO::FixedMaxPath pythonHomePath = PythonLoader::GetPythonExecutablePath(thirdPartyFolder, engineRoot).ParentPath();
         return pythonHomePath;
     }
 } // namespace AzToolsFramework::EmbeddedPython
