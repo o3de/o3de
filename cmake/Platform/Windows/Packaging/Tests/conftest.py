@@ -17,7 +17,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path, PurePath
 from subprocess import run, list2cmdline
-from tempfile import NamedTemporaryFile, mkdtemp
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 
 def pytest_addoption(parser):
@@ -46,6 +46,11 @@ class SessionContext:
         self.installer_path = self._get_local_installer_path(request.config.getoption("--installer-uri"))
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
         self.project_path = Path(request.config.getoption("--project-path")).resolve()
+
+        # use a temp folder inside the project path to avoid issues where we cannot
+        # clean up or remove the actual project folder
+        with TemporaryDirectory(dir=self.project_path) as tmp_project_dir:
+            self.project_path = Path(tmp_project_dir).resolve()
 
         self.cmake_runtime_path = self.install_root / 'cmake/runtime'
         self.engine_bin_path = self.install_root / 'bin/Windows/profile/Default'
