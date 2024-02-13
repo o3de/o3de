@@ -70,7 +70,7 @@ namespace MiniAudio
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_autoplayOnActivate, "Autoplay", "Plays the sound on activation of the component.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_loop, "Loop", "Loops the sound.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_volume, "Volume", "The volume of the sound when played, as a percentage.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MiniAudioPlaybackComponentConfig::m_volume, "Volume", "The volume of the sound when played, as a percentage.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
@@ -102,7 +102,7 @@ namespace MiniAudio
                         ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioPlaybackComponentConfig::m_outerVolume, "Outer Volume", "Sets the volume of the sound source outside of the outer cone, as a percentage.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MiniAudioPlaybackComponentConfig::m_outerVolume, "Outer Volume", "Sets the volume of the sound source outside of the outer cone, as a percentage.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
