@@ -54,7 +54,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                     {
                         // Loop over an entity's components backwards and pop-off components that shouldn't exist.
                         AZStd::vector<AZ::Component*> components = entity->GetComponents();
-                        const int oldComponentCount = components.size();
+                        const int oldComponentCount = aznumeric_cast<int>(components.size());
                         for (int i = oldComponentCount - 1; i >= 0; --i)
                         {
                             AZ::Component* component = components[i];

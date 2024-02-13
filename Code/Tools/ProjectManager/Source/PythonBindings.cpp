@@ -27,7 +27,7 @@
 #include <AzCore/std/numeric.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/sort.h>
-#include <AzToolsFramework/Python/PythonEnv.h>
+#include <AzToolsFramework/API/PythonLoader.h>
 
 
 #include <QDir>
@@ -285,7 +285,7 @@ namespace O3DE::ProjectManager
         m_pythonStarted = false;
 
         // set PYTHON_HOME
-        AZStd::string pyBasePath = AzToolsFramework::Python::GetPythonHomePath(m_enginePath.c_str());
+        AZStd::string pyBasePath = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonHomePath(m_enginePath.StringAsPosix()).StringAsPosix();
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
             AZ_Error("python", false, "Python home path does not exist: %s", pyBasePath.c_str());
@@ -321,8 +321,11 @@ namespace O3DE::ProjectManager
             // Add custom site packages after initializing the interpreter above.  Calling Py_SetPath before initialization
             // alters the behavior of the initializer to not compute default search paths. See
             // https://docs.python.org/3/c-api/init.html#c.Py_SetPath
+
+            AZ::IO::FixedMaxPath thirdPartyFolder = AzToolsFramework::EmbeddedPython::PythonLoader::GetDefault3rdPartyPath(false);
+
             AZStd::vector<AZStd::string> extendedPaths;
-            AzToolsFramework::Python::ReadPythonEggLinkPaths(m_enginePath.c_str(), extendedPaths);
+            AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(thirdPartyFolder, m_enginePath.c_str(), extendedPaths);
             if (extendedPaths.size())
             {
                 ExtendSysPath(extendedPaths);
