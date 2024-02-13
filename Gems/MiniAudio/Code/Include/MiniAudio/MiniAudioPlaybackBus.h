@@ -22,14 +22,16 @@ namespace MiniAudio
 
         virtual void Play() = 0;
         virtual void Stop() = 0;
-        virtual void SetVolumePercentage(float volume) = 0;
-        virtual float GetVolumePercentage() const = 0;
-        virtual void SetVolumeDecibels(float volumeDecibels) = 0;
-        virtual float GetVolumeDecibels() const = 0;
         virtual void SetLooping(bool loop) = 0;
         virtual bool IsLooping() const = 0;
         virtual void SetSoundAsset(AZ::Data::Asset<SoundAsset> soundAsset) = 0;
         virtual AZ::Data::Asset<SoundAsset> GetSoundAsset() const = 0;
+
+        //! Volume controls
+        virtual void SetVolumePercentage(float volume) = 0;
+        virtual float GetVolumePercentage() const = 0;
+        virtual void SetVolumeDecibels(float volumeDecibels) = 0;
+        virtual float GetVolumeDecibels() const = 0;
 
         //! Custom setter for scripting
         virtual void SetSoundAssetRef(const SoundAssetRef& soundAssetRef) = 0;

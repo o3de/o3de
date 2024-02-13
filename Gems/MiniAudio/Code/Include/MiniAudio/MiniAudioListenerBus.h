@@ -22,11 +22,13 @@ namespace MiniAudio
         virtual void SetPosition(const AZ::Vector3& position) = 0;
         virtual AZ::u32 GetChannelCount() const = 0;
 
-        //! Cone controls for directional attenuation
+        //! Global volume controls
         virtual float GetGlobalVolumePercentage() const = 0;
         virtual void SetGlobalVolumePercentage(float globalVolume) = 0;
         virtual float GetGlobalVolumeDecibels() const = 0;
         virtual void SetGlobalVolumeDecibels(float globalVolumeDecibels) = 0;
+
+        //! Cone controls for directional attenuation
         virtual float GetInnerAngleInRadians() const = 0;
         virtual void SetInnerAngleInRadians(float innerAngleInRadians) = 0;
         virtual float GetInnerAngleInDegrees() const = 0;
