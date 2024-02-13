@@ -67,6 +67,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzQtComponents
+            AZ::AzToolsFramework
             AZ::ProjectManager.Static
 )
 

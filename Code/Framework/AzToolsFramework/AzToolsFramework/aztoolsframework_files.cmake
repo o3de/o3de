@@ -90,6 +90,7 @@ set(FILES
     API/EntityCompositionNotificationBus.h
     API/EditorViewportIconDisplayInterface.h
     API/PythonLoader.h
+	API/PythonLoader.cpp
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     Application/Ticker.h
@@ -1001,8 +1002,6 @@ set(FILES
     UI/Notifications/ToastNotificationsView.cpp
     UI/Notifications/ToastNotificationsView.h
     UI/Notifications/ToastBus.h
-    Python/PythonEnv.cpp
-    Python/PythonEnv.h
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
     PythonTerminal/ScriptHelpDialog.ui

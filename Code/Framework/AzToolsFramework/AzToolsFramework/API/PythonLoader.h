@@ -7,6 +7,10 @@
  */
 
 #pragma once
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/string/string_view.h>
 
 namespace AzToolsFramework::EmbeddedPython
 {
@@ -18,8 +22,43 @@ namespace AzToolsFramework::EmbeddedPython
         PythonLoader();
         ~PythonLoader();
 
+        //! Calculate the python home (PYTHONHOME) based on the engine root
+        //! @param engineRoot The path to the engine root to locate the python home
+        //! @return The path of the python home path
+        static AZ::IO::FixedMaxPath GetPythonHomePath(AZStd::string_view engineRoot);
+
+        //! Collect the paths from all the egg-link files found in the python home
+        //! paths used by the engine
+        //! @param engineRoot The path to the engine root to locate the python home
+        //! @param resultPaths The list of paths to discovered when searching through python home
+        static void ReadPythonEggLinkPaths(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot, AZStd::vector<AZStd::string>& resultPaths);
+
+        //! Get the default 3rd Party folder path.
+        //! @return The path of the 3rd Party root path
+        static AZ::IO::FixedMaxPath GetDefault3rdPartyPath(bool createOnDemand);
+
+        //! Calculate the path to the engine's python virtual environment used for
+        //! python home (PYTHONHOME) based on the engine root
+        //! @param engineRoot The path to the engine root to locate the python venv path
+        //! @return The path of the python venv path
+        static AZ::IO::FixedMaxPath GetPythonVenvPath(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot);
+
+        //! Calculate the path to the where the python executable resides in. Note that this
+        //! is not always the same path as the python home path
+        //! @param engineRoot The path to the engine root to locate the python executable path
+        //! @return The path of the python venv path
+        static AZ::IO::FixedMaxPath GetPythonExecutablePath(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot);
+
     private:
+
+        //! Load the platform-specific required modules that are needed by embedded python applications
+        void LoadRequiredModules();
+
+        //! Unload the platform-specific required modules that were loaded previously
+        void UnloadRequiredModules();
+
         [[maybe_unused]] void* m_embeddedLibPythonHandle{ nullptr };
+
     };
 
 } // namespace AzToolsFramework::EmbeddedPython

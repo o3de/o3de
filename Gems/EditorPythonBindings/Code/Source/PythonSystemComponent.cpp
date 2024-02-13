@@ -40,7 +40,7 @@
 
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
-#include <AzToolsFramework/Python/PythonEnv.h>
+#include <AzToolsFramework/API/PythonLoader.h>
 
 // this is called the first time a Python script contains "import azlmbr"
 PYBIND11_EMBEDDED_MODULE(azlmbr, m)
@@ -497,7 +497,8 @@ namespace EditorPythonBindings
         //   5 - user(dev)
 
         // 1 - The python venv site-packages
-        AzToolsFramework::Python::ReadPythonEggLinkPaths(AZ::Utils::GetEnginePath().c_str(), pythonPathStack);
+        AZ::IO::FixedMaxPath thirdPartyFolder = AzToolsFramework::EmbeddedPython::PythonLoader::GetDefault3rdPartyPath(false);
+        AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(thirdPartyFolder, AZ::Utils::GetEnginePath().c_str(), pythonPathStack);
 
         // 2 - engine
         AZ::IO::FixedMaxPath engineRoot;
@@ -559,7 +560,7 @@ namespace EditorPythonBindings
         AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
         // set PYTHON_HOME
-        AZStd::string pyBasePath = AzToolsFramework::Python::GetPythonHomePath(engineRoot.c_str());
+        AZStd::string pyBasePath = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonHomePath(engineRoot.c_str()).StringAsPosix();
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
             AZ_Warning("python", false, "Python home path must exist! path:%s", pyBasePath.c_str());

@@ -25,7 +25,6 @@ namespace O3DE::ProjectManager
         : public PythonBindingsInterface::Registrar
     {
     public:
-        PythonBindings() = default;
         PythonBindings(const AZ::IO::PathView& enginePath);
         ~PythonBindings() override;
 

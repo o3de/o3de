@@ -13,9 +13,7 @@
 
 namespace AzToolsFramework::EmbeddedPython
 {
-
-
-    PythonLoader::PythonLoader()
+    void PythonLoader::LoadRequiredModules()
     {
         // PYTHON_SHARED_LIBRARY_PATH must be defined in the build scripts and referencing the path to the python shared library
         #if !defined(PYTHON_SHARED_LIBRARY_PATH)
@@ -30,12 +28,18 @@ namespace AzToolsFramework::EmbeddedPython
         }
     }
 
-    PythonLoader::~PythonLoader()
+    void PythonLoader::UnloadRequiredModules()
     {
         if (m_embeddedLibPythonHandle)
         {
             dlclose(m_embeddedLibPythonHandle);
         }
     }
-    
+
+    AZ::IO::FixedMaxPath PythonLoader::GetPythonHomePath(AZStd::string_view engineRoot)
+    {
+        // On Linux, the executable folder is $PYTHONHOME/bin, so move up one folder to determine $PYTHONHOME
+        AZ::IO::FixedMaxPath pythonHomePath = PythonLoader::GetPythonExecutablePath(engineRoot).ParentPath();
+        return pythonHomePath;
+    }
 } // namespace AzToolsFramework::EmbeddedPython
