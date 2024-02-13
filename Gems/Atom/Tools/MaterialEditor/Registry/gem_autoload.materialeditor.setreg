@@ -262,6 +262,20 @@
                     }
                 }
             },
+            "PhysX5": {
+                "Targets": {
+                    "PhysX5.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PhysX5Debug": {
+                "Targets": {
+                    "PhysX5Debug.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
             "NvCloth": {
                 "Targets": {
                     "NvCloth.Editor": {

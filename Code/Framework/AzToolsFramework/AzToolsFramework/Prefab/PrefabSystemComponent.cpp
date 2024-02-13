@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/Spawnable/AssetPlatformComponentRemover.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorInfoRemover.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
@@ -68,6 +69,7 @@ namespace AzToolsFramework
             Instance::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabConversionPipeline::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
+            AzToolsFramework::Prefab::PrefabConversionUtils::AssetPlatformComponentRemover::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
             PrefabPublicNotificationHandler::Reflect(context);
@@ -1263,7 +1265,7 @@ namespace AzToolsFramework
             {
                 removed = templateIterator->second.RemoveLink(linkId);
 
-                //remove link
+                // Remove link
                 PrefabDomValueReference templateInstancesRef = templateIterator->second.GetInstancesValue();
                 if (templateInstancesRef == AZStd::nullopt)
                 {
@@ -1274,7 +1276,9 @@ namespace AzToolsFramework
                 removed = templateInstancesRef->get().RemoveMember(link.GetInstanceName().c_str())
                     ? removed : false;
 
-                if (removed)
+                // If removing all templates, we should not make any unnecessary updates for the linked instance DOMs.
+                // It is because doing such updates might cause some unexpected prefab patch warnings.
+                if (removed && !m_removingAllTemplates)
                 {
                     templateIterator->second.MarkAsDirty(true);
                     PropagateTemplateChanges(targetTemplateId);

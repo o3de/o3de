@@ -99,7 +99,6 @@ namespace AZ
             m_passSystem.Init();
             m_featureProcessorFactory.Init();
             m_querySystem.Init(m_descriptor.m_gpuQuerySystemDescriptor);
-            InitXRSystem();
 
             Interface<RPISystemInterface>::Register(this);
 
@@ -285,6 +284,11 @@ namespace AZ
 
         void RPISystem::InitXRSystem()
         {
+            // The creation of an XR Session requires an asset that defines
+            // the action bindings for the application. This means the asset catalog
+            // must be available before creating the XR Session.
+            AZ_Assert(m_systemAssetsInitialized, "IntXRSystem should not be called before the asset system is ready.");
+
             if (!m_xrSystem)
             {
                 return;
@@ -441,6 +445,10 @@ namespace AZ
 
             m_systemAssetsInitialized = true;
             AZ_TracePrintf("RPI system", "System assets initialized\n");
+
+            // Now that the asset system is up and running, we can safely initialize
+            // the XR System and the XR Session.
+            InitXRSystem();
         }
 
         bool RPISystem::IsInitialized() const
