@@ -10,7 +10,9 @@
 
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <AtomCore/Instance/Instance.h>
 #include <AzCore/Component/TransformBus.h>
+
 
 namespace AzFramework
 {
@@ -23,6 +25,11 @@ namespace AZ
     class Transform;
     class Aabb;
 
+    namespace RPI
+    {
+        class Image;
+    }
+    
     namespace Render
     {
         //! Delegate for managing light shape specific functionality in the AreaLightComponentController.
@@ -59,6 +66,9 @@ namespace AZ
                 const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const = 0;
             //! Turns the visibility of this light on/off.
             virtual void SetVisibility(bool visibility) = 0;
+
+            // gobo
+            virtual void SetGoboTexture(AZ::Data::Instance<AZ::RPI::Image> goboTexture) = 0;
 
             // Shutters
 

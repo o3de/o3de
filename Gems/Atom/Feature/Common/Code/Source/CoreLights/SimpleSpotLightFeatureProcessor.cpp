@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Vector3.h>
 #include <numeric>
 
@@ -85,6 +86,7 @@ namespace AZ
             else
             {
                 m_deviceBufferNeedsUpdate = true;
+                m_goboArrayChanged = true;
                 return LightHandle(id);
             }
         }
@@ -100,6 +102,7 @@ namespace AZ
                 }
                 m_lightData.RemoveIndex(handle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
+                m_goboArrayChanged = true;
                 handle.Reset();
                 return true;
             }
@@ -141,35 +144,76 @@ namespace AZ
 
             if (m_deviceBufferNeedsUpdate)
             {
+                if (m_goboArrayChanged)
+                {
+                    // collect all gobo textures and assign index for each spot light
+                    AZStd::unordered_map<AZ::Data::Instance<AZ::RPI::Image>, int> gobosTextures;
+
+                    for (int32_t idx = 0; idx < m_lightData.GetDataCount(); idx++)
+                    {
+                        auto& lightData = m_lightData.GetData<0>(idx);
+                        auto image = m_lightData.GetData<1>(idx).m_goboTexture;
+                        if (image)
+                        {
+                            if (gobosTextures.find(image) == gobosTextures.end())
+                            {
+                                gobosTextures[image] = aznumeric_cast<int>(gobosTextures.size());
+                            }
+                            lightData.m_goboTextureIndex = gobosTextures[image];
+                        }
+                        else
+                        {
+                            lightData.m_goboTextureIndex = MaxGoboTextureCount;
+                        }
+                    }
+                
+                    m_goboTextures.clear();
+                    int32_t currentIdx = 0;
+                    // add gobo textures to the vector. Limit the max gobo texture count.
+                    for (auto& item : gobosTextures)
+                    {
+                        if (currentIdx >= MaxGoboTextureCount)
+                        {
+                            AZ_WarningOnce("SimpleSpotLight", false, "There are more than %d (MaxGoboTextureCount) gobo textures used in the level.", MaxGoboTextureCount);
+                            break;
+                        }
+                        m_goboTextures.push_back(item.first);
+                        currentIdx++;
+                    }
+
+                    m_goboArrayChanged = false;
+                }
+
                 m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
             }
 
             if (r_enablePerMeshShaderOptionFlags)
             {
-                // Helper lambdas
-                auto indexHasShadow = [&](LightHandle::IndexType index) -> bool
-                {
-                    SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(m_lightData.GetData<0>(index).m_shadowIndex);
-                    return shadowId.IsValid();
-                };
+                const uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
+                const uint32_t lightOnly = m_lightMeshFlag.GetIndex();
 
-                // Filter lambdas
-                auto hasShadow = [&](const MeshCommon::BoundsVariant& bounds) -> bool
-                {
-                    return indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
-                };
-                auto noShadow = [&](const MeshCommon::BoundsVariant& bounds) -> bool
-                {
-                    return !indexHasShadow(m_lightData.GetIndexForData<1>(&bounds));
-                };
+                AZStd::vector<MeshCommon::BoundsVariant> lightsWithShadow;
+                AZStd::vector<MeshCommon::BoundsVariant> lightsWithoutShadow;
 
-                // Mark meshes that have point lights without shadow using only the light flag.
-                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex(), noShadow);
+                for (int32_t idx = 0; idx < m_lightData.GetDataCount(); idx++)
+                {
+                    const auto& lightData = m_lightData.GetData<0>(idx);
+                    const auto& extraData = m_lightData.GetData<1>(idx);
 
-                // Mark meshes that have point lights with shadow using a combination of light and shadow flags.
-                uint32_t lightAndShadow = m_lightMeshFlag.GetIndex() | m_shadowMeshFlag.GetIndex();
-                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), lightAndShadow, hasShadow);
+                    SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(lightData.m_shadowIndex);
+                    if (shadowId.IsValid())
+                    {
+                        lightsWithShadow.push_back(extraData.m_boundsVariant);
+                    }
+                    else
+                    {
+                        lightsWithoutShadow.push_back(extraData.m_boundsVariant);
+                    }
+                }
+
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(lightsWithoutShadow), lightOnly);
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(lightsWithShadow), lightAndShadow);
             }
         }
 
@@ -177,9 +221,14 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "SimpleSpotLightFeatureProcessor: Render");
             m_visibleSpotLightsBufferUsedCount = 0;
+
             for (const RPI::ViewPtr& view : packet.m_views)
             {
                 m_lightBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
+                if (m_goboTextures.size())
+                {
+                    view->GetShaderResourceGroup()->SetImageArray(m_goboTexturesIndex, AZStd::span(m_goboTextures.begin(), m_goboTextures.end()));
+                }
                 CullLights(view);
             }
         }
@@ -198,25 +247,26 @@ namespace AZ
             m_deviceBufferNeedsUpdate = true;
         }
 
-        void SimpleSpotLightFeatureProcessor::SetPosition(LightHandle handle, const AZ::Vector3& lightPosition)
+        void SimpleSpotLightFeatureProcessor::SetTransform(LightHandle handle, const AZ::Transform& transform)
         {
-            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetPosition().");
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetTransform().");
 
-            AZStd::array<float, 3>& position = m_lightData.GetData<0>(handle.GetIndex()).m_position;
-            lightPosition.StoreToFloat3(position.data());
+            m_lightData.GetData<1>(handle.GetIndex()).m_transform = transform;
+
+            auto newDirection = transform.GetBasisZ();
+            auto newPosition = transform.GetTranslation();
+
+            auto& lightData = m_lightData.GetData<0>(handle.GetIndex());
+
+            AZStd::array<float, 3>& direction = lightData.m_direction;
+            newDirection.GetNormalized().StoreToFloat3(direction.data());
+            AZStd::array<float, 3>& position = lightData.m_position;
+            newPosition.StoreToFloat3(position.data());
+
             UpdateBounds(handle);
             UpdateShadow(handle);
-            m_deviceBufferNeedsUpdate = true;
-        }
-        
-        void SimpleSpotLightFeatureProcessor::SetDirection(LightHandle handle, const AZ::Vector3& lightDirection)
-        {
-            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimpleSpotLightFeatureProcessor::SetDirection().");
+            UpdateViewProjectionMatrix(handle);
 
-            AZStd::array<float, 3>& direction = m_lightData.GetData<0>(handle.GetIndex()).m_direction;
-            lightDirection.GetNormalized().StoreToFloat3(direction.data());
-            UpdateBounds(handle);
-            UpdateShadow(handle);
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -224,7 +274,9 @@ namespace AZ
         {
             auto& light = m_lightData.GetData<0>(handle.GetIndex());
             SpotLightUtils::ValidateAndSetConeAngles(light, innerRadians, outerRadians);
+
             UpdateShadow(handle);
+            UpdateViewProjectionMatrix(handle);
 
             m_deviceBufferNeedsUpdate = true;
         }
@@ -238,6 +290,7 @@ namespace AZ
             light.m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
 
             UpdateBounds(handle);
+            UpdateViewProjectionMatrix(handle);
 
             // Update the shadow near far planes if necessary
             SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(light.m_shadowIndex);
@@ -262,6 +315,13 @@ namespace AZ
 
             m_lightData.GetData<0>(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
+        }
+
+        void SimpleSpotLightFeatureProcessor::SetGoboTexture(LightHandle handle, AZ::Data::Instance<AZ::RPI::Image> goboTexture)
+        {
+            m_lightData.GetData<1>(handle.GetIndex()).m_goboTexture = goboTexture;
+            m_deviceBufferNeedsUpdate = true;
+            m_goboArrayChanged = true;
         }
 
         void SimpleSpotLightFeatureProcessor::SetShadowsEnabled(LightHandle handle, bool enabled)
@@ -311,7 +371,23 @@ namespace AZ
         void SimpleSpotLightFeatureProcessor::UpdateBounds(LightHandle handle)
         {
             const SimpleSpotLightData& data = m_lightData.GetData<0>(handle.GetIndex());
-            m_lightData.GetData<1>(handle.GetIndex()) = SpotLightUtils::BuildBounds(data);            
+            m_lightData.GetData<1>(handle.GetIndex()).m_boundsVariant = SpotLightUtils::BuildBounds(data);
+        }
+
+        void SimpleSpotLightFeatureProcessor::UpdateViewProjectionMatrix(LightHandle handle)
+        {
+            auto& lightData = m_lightData.GetData<0>(handle.GetIndex());
+
+            AZ::Matrix4x4 viewToClipMatrix;
+            float halfFov = acosf(lightData.m_cosOuterConeAngle);
+            float attenuationRadius = LightCommon::GetRadiusFromInvRadiusSquared(lightData.m_invAttenuationRadiusSquared);
+            attenuationRadius = AZStd::max(0.02f, attenuationRadius);
+            MakePerspectiveFovMatrixRH(viewToClipMatrix, halfFov * 2.0f, 1.0f, 0.01f, attenuationRadius, false);
+
+            auto& extraData = m_lightData.GetData<1>(handle.GetIndex());
+            AZ::Matrix4x4 worldMatrix = AZ::Matrix4x4::CreateFromTransform(extraData.m_transform).GetInverseFast();
+            AZ::Matrix4x4 worldToClip = viewToClipMatrix * worldMatrix;
+            worldToClip.StoreToRowMajorFloat16(lightData.m_viewProjectionMatrix.data());
         }
 
         void SimpleSpotLightFeatureProcessor::UpdateShadow(LightHandle handle)
