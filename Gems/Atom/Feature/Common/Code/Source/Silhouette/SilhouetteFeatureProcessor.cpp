@@ -116,7 +116,7 @@ namespace AZ::Render
         }
 
         // the silhouette passes are already added in another render pipeline
-        if (m_renderPipeline)
+        if (m_renderPipeline && m_renderPipeline != renderPipeline)
         {
             return;
         }
