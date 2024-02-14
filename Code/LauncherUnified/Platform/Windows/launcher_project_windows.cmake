@@ -19,8 +19,16 @@ endif()
 
 set(SPLASH_FILE ${project_real_path}/Resources/Splash.bmp)
 if(NOT EXISTS ${SPLASH_FILE})
+    # Try in project Gem
+    set(SPLASH_FILE ${project_real_path}/Gem/Resources/Splash.bmp)
+endif()
+if(NOT EXISTS ${SPLASH_FILE})
     # Try legacy splash
     set(SPLASH_FILE ${project_real_path}/Resources/LegacyLogoLauncher.bmp)
+endif()
+if(NOT EXISTS ${SPLASH_FILE})
+    # Try in Gem
+    set(SPLASH_FILE ${project_real_path}/Gem/Resources/LegacyLogoLauncher.bmp)
 endif()
 
 if(EXISTS ${ICON_FILE} OR EXISTS ${SPLASH_FILE})
