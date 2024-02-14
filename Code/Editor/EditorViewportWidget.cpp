@@ -74,6 +74,7 @@
 #include "Include/IObjectManager.h"
 #include "LayoutWnd.h"
 #include "MainWindow.h"
+#include "Objects/EntityObject.h"
 #include "Objects/DisplayContext.h"
 #include "Objects/ObjectManager.h"
 #include "ProcessInfo.h"
@@ -81,9 +82,6 @@
 #include "ViewManager.h"
 #include "ViewPane.h"
 #include "ViewportManipulatorController.h"
-
-// ComponentEntityEditorPlugin
-#include <Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h>
 
 // Atom
 #include <Atom/RPI.Public/RenderPipeline.h>

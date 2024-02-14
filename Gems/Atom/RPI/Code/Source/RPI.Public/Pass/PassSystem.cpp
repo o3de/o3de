@@ -224,6 +224,7 @@ namespace AZ
             {
                 pipeline->PassSystemFrameBegin(params);
             }
+            m_passesWithoutPipeline.m_rootPass->UpdateConnectedBindings();
             m_passesWithoutPipeline.m_rootPass->FrameBegin(params);
         }
 

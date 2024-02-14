@@ -15,14 +15,12 @@ def main():
         print("The script requires a .shader file as input argument")
         return
 
-    filename = sys.argv[1]
-    suffix, extension = filename.split(".", 1)
+    inputPath = sys.argv[1]
+    suffix, extension = inputPath.split(".", 1)
 
     if extension != "shader":
         print("The input argument for the script is not a valid .shader file")
         return
-
-    shaderVariantList = GenerateShaderVariantListUtil.create_shadervariantlist_for_shader(filename)
 
     # Create shader variant list document
     documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
@@ -30,14 +28,15 @@ def main():
         'CreateDocumentFromTypeName',
         'Shader Variant List'
     )
+
     # Update shader variant list
     azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
         azlmbr.bus.Event,
         'SetShaderVariantListSourceData',
         documentId,
-        shaderVariantList
+        GenerateShaderVariantListUtil.create_shadervariantlist_for_shader(inputPath)
     )
-    
+
     print("==== End shader variant script ============================================================")
 
 if __name__ == "__main__":

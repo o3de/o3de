@@ -18,8 +18,21 @@ namespace MiniAudio
     public:
         ~MiniAudioListenerRequests() override = default;
 
-        virtual void SetFollowEntity(AZ::EntityId followEntity) = 0;
+        virtual void SetFollowEntity(const AZ::EntityId& followEntity) = 0;
         virtual void SetPosition(const AZ::Vector3& position) = 0;
+        virtual AZ::u32 GetChannelCount() const = 0;
+
+        //! Cone controls for directional attenuation
+        virtual float GetInnerAngleInRadians() const = 0;
+        virtual void SetInnerAngleInRadians(float innerAngleInRadians) = 0;
+        virtual float GetInnerAngleInDegrees() const = 0;
+        virtual void SetInnerAngleInDegrees(float innerAngleInDegrees) = 0;
+        virtual float GetOuterAngleInRadians() const = 0;
+        virtual void SetOuterAngleInRadians(float outerAngleInRadians) = 0;
+        virtual float GetOuterAngleInDegrees() const = 0;
+        virtual void SetOuterAngleInDegrees(float outerAngleInDegrees) = 0;
+        virtual float GetOuterVolume() const = 0;
+        virtual void SetOuterVolume(float outerVolume) = 0;
     };
 
     using MiniAudioListenerRequestBus = AZ::EBus<MiniAudioListenerRequests>;

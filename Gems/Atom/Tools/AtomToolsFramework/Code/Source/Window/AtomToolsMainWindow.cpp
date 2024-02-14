@@ -60,7 +60,7 @@ namespace AtomToolsFramework
         AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea);
         SetDockWidgetVisible("Python Terminal", false);
 
-        m_logPanel = new AzToolsFramework::LogPanel::TracePrintFLogPanel(this);
+        m_logPanel = new AzToolsFramework::LogPanel::StyledTracePrintFLogPanel(this);
         m_logPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Log", "", ""));
         AddDockWidget("Logging", m_logPanel, Qt::BottomDockWidgetArea);
         SetDockWidgetVisible("Logging", false);

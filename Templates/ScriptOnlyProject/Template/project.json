@@ -38,6 +38,7 @@
         "ScriptEvents",
         "StartingPointInput",
         "TextureAtlas",
-        "WhiteBox"
+        "WhiteBox",
+        "RemoteTools"
     ]
 }

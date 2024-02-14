@@ -72,7 +72,6 @@ class CToolsApplicationUndoLink;
 
 class QMenu;
 class QWidget;
-class CComponentEntityObject;
 
 namespace AzToolsFramework
 {
@@ -144,7 +143,6 @@ private:
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
     void CreateEditorRepresentation(AZ::Entity* entity) override;
-    bool DestroyEditorRepresentation(AZ::EntityId entityId, bool deleteAZEntity) override;
     void CloneSelection(bool& handled) override;
     void DeleteSelectedEntities(bool includeDescendants) override;
     AZ::EntityId CreateNewEntity(AZ::EntityId parentId = AZ::EntityId()) override;

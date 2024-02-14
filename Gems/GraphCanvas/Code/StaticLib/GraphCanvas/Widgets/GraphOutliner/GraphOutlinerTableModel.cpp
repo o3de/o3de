@@ -107,7 +107,7 @@ namespace GraphCanvas
         auto nodeIter = AZStd::find<AZStd::vector<AZ::EntityId>::iterator, AZ::EntityId>(m_nodes.begin(), m_nodes.end(), nodeId);
         if (nodeIter != m_nodes.end())
         {
-            int row = nodeIter - m_nodes.begin();
+            int row = aznumeric_cast<int>(nodeIter - m_nodes.begin());
             beginRemoveRows(QModelIndex(), row, row);
             m_nodes.erase(nodeIter);
             m_nodeNames.erase(nodeId);
