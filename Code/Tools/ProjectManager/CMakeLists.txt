@@ -95,6 +95,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFrameworkTestShared
                 AZ::AzQtComponents
                 AZ::ProjectManager.Static
+                AZ::AzToolsFramework
     )
 
     ly_add_googletest(
