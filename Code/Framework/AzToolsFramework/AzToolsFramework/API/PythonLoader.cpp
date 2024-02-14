@@ -83,7 +83,7 @@ namespace AzToolsFramework::EmbeddedPython
     {
         // Get the python venv path
         AZ::IO::FixedMaxPath pythonVenvSitePackages =
-            AZ::IO::FixedMaxPath(PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot)) / "Lib" / "site-packages";
+            AZ::IO::FixedMaxPath(PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot)) / LY_PYTHON_SITE_PACKAGE_SUBPATH;
 
         resultPaths.emplace_back(pythonVenvSitePackages.LexicallyNormal().Native());
 

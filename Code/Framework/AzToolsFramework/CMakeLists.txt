@@ -33,6 +33,7 @@ ly_add_target(
         PRIVATE
             $<$<CONFIG:debug>:ENABLE_UNDOCACHE_CONSISTENCY_CHECKS>
             LY_3RDPARTY_PATH="${LY_3RDPARTY_PATH}"
+            LY_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}"
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::SQLite

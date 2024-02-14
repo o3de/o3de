@@ -6,18 +6,16 @@
 *
 */
 
-#include <shlobj.h>
-#include <tchar.h>
-
 #include <AzToolsFramework/API/PythonLoader.h>
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/std/string/conversions.h>
-
 #include <AzFramework/IO/LocalFileIO.h>
 
+#include <shlobj.h>
+#include <tchar.h>
 
 namespace AzToolsFramework::EmbeddedPython
 {
@@ -35,7 +33,7 @@ namespace AzToolsFramework::EmbeddedPython
     {
         AZ::IO::FixedMaxPath thirdPartyEnvPathPath;
 
-        // First check if the `LY_3RD_PARTY_PATH` is set in the environment
+        // First check if `LY_3RDPARTY_PATH` is explicitly set in the environment
         size_t envBufferSize{ 0 };
         getenv_s(&envBufferSize, nullptr, 0, "LY_3RDPARTY_PATH");
         if (envBufferSize > 0)
@@ -53,6 +51,8 @@ namespace AzToolsFramework::EmbeddedPython
         }
         else
         {
+            // If not, the generate the default 3rdParty path location which is based on the current user's 
+            // profile path.
             WCHAR userProfilePath[AZ::IO::MaxPathLength] = { '\0' };
             HRESULT result = SHGetFolderPathW(NULL, CSIDL_PROFILE | CSIDL_FLAG_CREATE, NULL, 0, userProfilePath);
             AZ_Assert(SUCCEEDED(result), "Unable to determine profile path needed for the 3rd folder");
@@ -71,9 +71,7 @@ namespace AzToolsFramework::EmbeddedPython
         {
             auto createPathResult = AZ::IO::FileIOBase::GetInstance()->CreatePath(thirdPartyPathString.c_str());
             AZ_Assert(createPathResult, "Unable to create missing 3rd Party Folder '%s'", thirdPartyPathString.c_str())
-
         }
-
         return thirdPartyEnvPathPath;
     }
 
