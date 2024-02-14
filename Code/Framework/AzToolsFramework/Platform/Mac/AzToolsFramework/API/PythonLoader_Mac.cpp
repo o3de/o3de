@@ -8,14 +8,12 @@
 
 #include <AzToolsFramework/API/PythonLoader.h>
 
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/std/string/conversions.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/string/string_view.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
-#include <shlobj.h>
-#include <tchar.h>
+#include <pwd.h>
+#include <dlfcn.h>
 
 namespace AzToolsFramework::EmbeddedPython
 {

@@ -302,9 +302,6 @@ namespace O3DE::ProjectManager
         AZ_TracePrintf("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
         AZ_TracePrintf("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
 
-
-        
-
         PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
 
         try
@@ -330,7 +327,6 @@ namespace O3DE::ProjectManager
             {
                 ExtendSysPath(extendedPaths);
             }
-
 
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);

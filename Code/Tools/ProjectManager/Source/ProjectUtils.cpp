@@ -727,7 +727,6 @@ namespace O3DE::ProjectManager
             return QString(libPath.String().c_str());
         }
 
-
         QString GetDefaultProjectPath()
         {
             QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);

@@ -20,7 +20,6 @@
 #include <AzCore/Settings/ConfigParser.h>
 #include <AzCore/Utils/Utils.h>
 
-
 namespace AzToolsFramework::EmbeddedPython
 {
     PythonLoader::PythonLoader()
@@ -36,16 +35,19 @@ namespace AzToolsFramework::EmbeddedPython
     AZ::IO::FixedMaxPath PythonLoader::GetPythonVenvPath(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot)
     {
         // Perform the same hash calculation as cmake/CalculateEnginePathId.cmake
+
+        // Prepare the engine path the same way as cmake/CalculateEnginePathId.cmake
         AZStd::string enginePath = AZ::IO::FixedMaxPath(engineRoot).StringAsPosix();
         enginePath += '/';
-
-        // Lower-Case
         AZStd::to_lower(enginePath.begin(), enginePath.end());
 
+        // Perform a SHA1 hash on the prepared engine path
         AZ::Sha1 hasher;
         AZ::u32 digest[5];
-        hasher.ProcessBytes(reinterpret_cast<const AZStd::byte*>(enginePath.c_str()), enginePath.length());
+        hasher.ProcessBytes(AZStd::as_bytes(AZStd::span(enginePath)));
         hasher.GetDigest(digest);
+
+        // Construct the path to where the python venv based on the engine path should be located
         AZ::IO::FixedMaxPath libPath = thirdPartyRoot;
         libPath /= AZ::IO::FixedMaxPathString::format("venv/%x", digest[0]);
         libPath = libPath.LexicallyNormal();
@@ -85,6 +87,7 @@ namespace AzToolsFramework::EmbeddedPython
         AZ::IO::FixedMaxPath pythonVenvSitePackages =
             AZ::IO::FixedMaxPath(PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot)) / LY_PYTHON_SITE_PACKAGE_SUBPATH;
 
+        // Always add the site-packages folder from the virtual environment into the path list
         resultPaths.emplace_back(pythonVenvSitePackages.LexicallyNormal().Native());
 
         // pybind11 does not resolve any .egg-link files, so any packages that there pip-installed into the venv as egg-links

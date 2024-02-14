@@ -18,9 +18,6 @@ ly_add_target(
     PLATFORM_INCLUDE_FILES
         Source/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/editorpythonbindings_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
-    COMPILE_DEFINITIONS
-        PRIVATE
-            LY_3RDPARTY_PATH="${LY_3RDPARTY_PATH}"
     INCLUDE_DIRECTORIES
         PRIVATE
             .

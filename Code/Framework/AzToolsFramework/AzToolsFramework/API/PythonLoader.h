@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -29,6 +29,7 @@ namespace AzToolsFramework::EmbeddedPython
 
         //! Collect the paths from all the egg-link files found in the python home
         //! paths used by the engine
+        //! @param thirdPartyRoot The root location of the O3DE 3rdParty folder
         //! @param engineRoot The path to the engine root to locate the python home
         //! @param resultPaths The list of paths to discovered when searching through python home
         static void ReadPythonEggLinkPaths(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot, AZStd::vector<AZStd::string>& resultPaths);
@@ -39,13 +40,16 @@ namespace AzToolsFramework::EmbeddedPython
 
         //! Calculate the path to the engine's python virtual environment used for
         //! python home (PYTHONHOME) based on the engine root
+        //! @param thirdPartyRoot The root location of the O3DE 3rdParty folder
         //! @param engineRoot The path to the engine root to locate the python venv path
         //! @return The path of the python venv path
         static AZ::IO::FixedMaxPath GetPythonVenvPath(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot);
 
         //! Calculate the path to the where the python executable resides in. Note that this
         //! is not always the same path as the python home path
-        //! @param engineRoot The path to the engine root to locate the python executable path
+        //! @param thirdPartyRoot The root location of the O3DE 3rdParty folder
+        //! @param engineRoot The path to the engine root to
+        //! locate the python executable path
         //! @return The path of the python venv path
         static AZ::IO::FixedMaxPath GetPythonExecutablePath(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot);
 
@@ -60,5 +64,4 @@ namespace AzToolsFramework::EmbeddedPython
         [[maybe_unused]] void* m_embeddedLibPythonHandle{ nullptr };
 
     };
-
 } // namespace AzToolsFramework::EmbeddedPython

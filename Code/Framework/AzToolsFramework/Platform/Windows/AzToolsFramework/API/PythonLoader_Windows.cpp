@@ -43,11 +43,9 @@ namespace AzToolsFramework::EmbeddedPython
                 "The environment variable for 'LY_3RDPARTY_PATH' must not exceed the max path length of %ld",
                 AZ::IO::MaxPathLength);
 
-            char* envBuffer = new char[envBufferSize];
+            char envBuffer[AZ::IO::MaxPathLength] = {'\0'};
             getenv_s(&envBufferSize, envBuffer, envBufferSize, "LY_3RDPARTY_PATH");
-            
             thirdPartyEnvPathPath = AZ::IO::FixedMaxPath(envBuffer);
-            delete[] envBuffer;
         }
         else
         {

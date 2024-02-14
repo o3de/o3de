@@ -14,7 +14,6 @@
 #include <PythonBindings.h>
 #include <Settings.h>
 #include <ProjectManagerWindow.h>
-
 #endif
 
 namespace AZ
