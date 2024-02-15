@@ -81,6 +81,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
+        COMPILE_DEFINITIONS
+            PRIVATE
+                LY_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}"
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzTestShared

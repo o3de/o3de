@@ -78,7 +78,7 @@ namespace UnitTest
     TEST_F(AzToolsFrameworkPythonLoaderFixture, TestReadPythonEggLinkPaths_Valid)
     {
         // Prepare the test folder and create dummy egg-link files
-        AZ::IO::FixedMaxPath testRelativeSiteLIbsPath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv" / s_testEnginePathHashId / "Lib" / "site-packages";
+        AZ::IO::FixedMaxPath testRelativeSiteLIbsPath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv" / s_testEnginePathHashId / LY_PYTHON_SITE_PACKAGE_SUBPATH;
         AZ::IO::FixedMaxPath testFullSiteLIbsPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / testRelativeSiteLIbsPath;
         AZ::IO::FileIOBase::GetInstance()->CreatePath(testFullSiteLIbsPath.String().c_str());
 
@@ -91,7 +91,7 @@ namespace UnitTest
 
         for (size_t i = 0; i < testEggLinkPathCount; ++i)
         {
-            AZStd::string testEggFileName = AZStd::string::format("test-%d.egg-link", i);
+            AZStd::string testEggFileName = AZStd::string::format("test-%d.egg-link", static_cast<int>(i));
             const char* lineBreak = ((i % 2) == 0) ? "\n" : "\r\n";
             AZStd::string testEggFileContent = AZStd::string::format("%s%s.", testEggLinkPaths[i], lineBreak);
             expectedResults.emplace_back(AZStd::string(testEggLinkPaths[i]));
