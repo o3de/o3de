@@ -10,7 +10,7 @@
         "Stencil" :
         {
             "Enable" : true,
-            "ReadMask" : "0x40",
+            "ReadMask" : "0x40", // Needs to match BlockSilhouettes in RenderCommon.h
             "WriteMask" : "0x0",
             "FrontFace" :
             {

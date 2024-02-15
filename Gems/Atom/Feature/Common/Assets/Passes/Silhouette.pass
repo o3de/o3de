@@ -17,7 +17,7 @@
                     "ShaderInputName": "m_silhouettes",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
-                }                 
+                }
             ],
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
