@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/UI/PropertyEditor/LabelHandler.h>
+#include <QSignalBlocker>
 
 namespace AzToolsFramework
 {
@@ -23,6 +24,12 @@ namespace AzToolsFramework
         return label;
     }
 
+    bool LabelHandler::ResetGUIToDefaults(QLabel* GUI)
+    {
+        GUI->setText(QString());
+        return true;
+    }
+
     AZ::u32 LabelHandler::GetHandlerName() const
     {
         return AZ::Edit::UIHandlers::Label;
@@ -35,9 +42,8 @@ namespace AzToolsFramework
             AZStd::string valueText;
             if (attrValue->Read<AZStd::string>(valueText))
             {
-                GUI->blockSignals(true);
+                QSignalBlocker blocker(GUI);
                 GUI->setText(valueText.c_str());
-                GUI->blockSignals(false);
             }
             else
             {
