@@ -1,0 +1,83 @@
+{
+    "values": [
+        {
+            "$type": "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup",
+            "id": "{00A5B041-B87D-5DAD-B51D-05F6CAC27DEF}",
+            "name": "Shaderball",
+            "NodeSelectionList": {
+                "unselectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.ShaderBall_1m",
+                    "RootNode.ShaderBall_1m.InlayRings",
+                    "RootNode.ShaderBall_1m.InlayRings.RingLeft",
+                    "RootNode.ShaderBall_1m.InlayRings.RingRight",
+                    "RootNode.ShaderBall_1m.InnerPortion",
+                    "RootNode.ShaderBall_1m.InnerPortion.HubCap",
+                    "RootNode.ShaderBall_1m.InnerPortion.InnerSphere",
+                    "RootNode.ShaderBall_1m.MainSphere",
+                    "RootNode.ShaderBall_1m.MainSphere.Inside",
+                    "RootNode.ShaderBall_1m.MainSphere.LeftHub",
+                    "RootNode.ShaderBall_1m.MainSphere.MainOuterSphere",
+                    "RootNode.ShaderBall_1m.MainSphere.RightHub",
+                    "RootNode.ShaderBall_1m.MaterialBase",
+                    "RootNode.ShaderBall_1m.MaterialBase.BottomCap",
+                    "RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff",
+                    "RootNode.ShaderBall_1m.MaterialBase.InnerCone",
+                    "RootNode.ShaderBall_1m.MaterialBase.InnerCushion",
+                    "RootNode.ShaderBall_1m.MaterialBase.InnerPost",
+                    "RootNode.ShaderBall_1m.MaterialBase.Inset",
+                    "RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff"
+                ]
+            },
+            "PhysicsMaterialSlots": {
+                "Slots": [
+                    {
+                        "Name": "Entire object"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "Shaderball",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.ShaderBall_1m",
+                    "RootNode.ShaderBall_1m.InlayRings",
+                    "RootNode.ShaderBall_1m.InlayRings.RingLeft",
+                    "RootNode.ShaderBall_1m.InlayRings.RingRight",
+                    "RootNode.ShaderBall_1m.InnerPortion",
+                    "RootNode.ShaderBall_1m.InnerPortion.HubCap",
+                    "RootNode.ShaderBall_1m.InnerPortion.InnerSphere",
+                    "RootNode.ShaderBall_1m.MainSphere",
+                    "RootNode.ShaderBall_1m.MainSphere.Inside",
+                    "RootNode.ShaderBall_1m.MainSphere.LeftHub",
+                    "RootNode.ShaderBall_1m.MainSphere.MainOuterSphere",
+                    "RootNode.ShaderBall_1m.MainSphere.RightHub",
+                    "RootNode.ShaderBall_1m.MaterialBase",
+                    "RootNode.ShaderBall_1m.MaterialBase.BottomCap",
+                    "RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff",
+                    "RootNode.ShaderBall_1m.MaterialBase.InnerCone",
+                    "RootNode.ShaderBall_1m.MaterialBase.InnerCushion",
+                    "RootNode.ShaderBall_1m.MaterialBase.InnerPost",
+                    "RootNode.ShaderBall_1m.MaterialBase.Inset",
+                    "RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{209D5B18-0A56-5DD1-A926-C9E1E6B36211}"
+        },
+        {
+            "$type": "{41DCBEAB-203C-4A05-96FA-98E1D8A96FA1} ImportGroup"
+        }
+    ]
+}

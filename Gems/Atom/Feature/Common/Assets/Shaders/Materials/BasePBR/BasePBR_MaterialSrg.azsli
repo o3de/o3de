@@ -14,6 +14,7 @@
 #include "../MaterialInputs/SpecularInput.azsli"
 #include "../MaterialInputs/NormalInput.azsli"
 #include "../MaterialInputs/UvSetCount.azsli"
+#include "../MaterialInputs/SilhouetteBlockerInput.azsli"
 
 #include <Atom/Features/SrgSemantics.azsli>
 
