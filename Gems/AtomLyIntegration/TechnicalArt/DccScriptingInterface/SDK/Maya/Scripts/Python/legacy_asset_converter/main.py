@@ -271,6 +271,9 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.clean_material_names_checkbox = QtWidgets.QCheckBox('Clean Material Names')
         self.clean_material_names_checkbox.setChecked(False)
         self.right_checkbox_items.addWidget(self.clean_material_names_checkbox)
+        self.skip_white_texture_materials = QtWidgets.QCheckBox('Skip White Texture Materials')
+        self.skip_white_texture_materials.setChecked(True)
+        self.right_checkbox_items.addWidget(self.skip_white_texture_materials)
         self.main_container.addWidget(self.actions_groupbox)
 
         self.process_files_button = QtWidgets.QPushButton('Process Files')
@@ -1139,6 +1142,12 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         for key, values in mtl_info.items():
             _LOGGER.info(f'\n_\n+++++++++++++++++++++++++\nMaterial: {key}\n+++++++++++++++++++++++++\n')
             fbx_material_dictionary[key] = {}
+
+            if self.skip_white_texture_materials.isChecked():
+                if 'engineassets/textures/white.dds' in (str(path.as_posix()).lower() for path in values.textures.values()):
+                    _LOGGER.info('Found engine white texture... skipping')
+                    continue
+
             if values.attributes.Shader == 'Illum':
                 legacy_textures = values.textures
                 all_textures = self.get_additional_textures(search_path, legacy_textures)
@@ -1150,6 +1159,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             elif values.attributes.Shader == 'Nodraw':
                 _LOGGER.info('Found No-draw shader... skipping')
             else:
+                _LOGGER.info(f'Shader {values.attributes.Shader} not supported... skipping')
                 pass
         _LOGGER.info(f'\n_____\n_____FBX Material Dictionary:::: {fbx_material_dictionary}\n______\n')
         return fbx_material_dictionary
@@ -1352,6 +1362,10 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         """
         first_key = next(iter(asset_information.fbxfiles))
         for key, values in asset_information.fbxfiles[first_key].materials.items():
+            if not values:
+                # Unsupported material. See get_material_information()
+                continue
+
             for k, v in mtl_info.items():
                 if key is v.attributes.Name:
                     if v.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
