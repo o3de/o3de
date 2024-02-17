@@ -12,6 +12,8 @@
 #include <AzToolsFramework/Asset/AssetUtils.h>
 
 #include <QDir>
+#include <QDateTime>
+#include <QTimeZone>
 
 namespace AssetProcessor
 {
@@ -216,39 +218,67 @@ namespace AssetProcessor
 
     //////////////////////////////////////////////////////////////////////////
 
+    static void PopulateFileInfoFromFileIO(const char* absolutePath, FileStateInfo* fileInfo, AZ::IO::FileIOBase* fileIO)
+    {
+        if ((!fileInfo) || (!fileIO))
+        {
+            return;
+        }
+
+        AZ::u64 modTime = AZ::IO::FileTimeToMSecsSincePosixEpoch(fileIO->ModificationTime(absolutePath));
+        AZ::u64 fileSize = 0;
+        fileIO->Size(absolutePath, fileSize);
+        bool isDir = fileIO->IsDirectory(absolutePath);
+        *fileInfo = FileStateInfo(absolutePath, QDateTime::fromMSecsSinceEpoch(modTime, QTimeZone::utc()), fileSize, isDir);
+    }
+
     bool FileStatePassthrough::GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const
     {
-        if (QFileInfo fileInfo(absolutePath); fileInfo.exists())
+        // note that this interface is also used against dummy file systems in unit tests
+        // which means it cannot rely on Qt / QFileInfo or other operations that would use the actual file system
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIO, "A file IO system must be installed in order to get file info for a file.");
+        if (!fileIO)
         {
-            if (foundFileInfo)
-            {
-                *foundFileInfo = FileStateInfo(fileInfo.absoluteFilePath(), fileInfo.lastModified(), fileInfo.size(), fileInfo.isDir());
-            }
-            return true;
+            return false;
         }
-        
-        if constexpr (ASSETPROCESSOR_TRAIT_CASE_SENSITIVE_FILESYSTEM)
-        {
-            // The above is done as a quick initial result, if the file exists, great, no need to do anything further.
 
-            // However, its quite possible that the input absolute path has the wrong case.  On case-sensitive operating systems
-            // we need to actually check if the case needs fixing...
-            AZStd::string correctedPath = absolutePath.toUtf8().constData();
-            AZStd::string rootPath = AZ::IO::PathView(correctedPath).RootPath().Native();
-            correctedPath = correctedPath.substr(rootPath.size());
-            if (AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.c_str(), correctedPath, true))
+        AZStd::string absolutePathStr(absolutePath.toUtf8().constData()); // cache to avoid utf8 encoding multiple times
+        bool fileExists = fileIO->Exists(absolutePathStr.c_str());
+        if (fileExists)
+        {
+            // on a case-sensitive file system, the existence of the file means that the entire path and file
+            // name is already correct and we can early out.
+            if constexpr (ASSETPROCESSOR_TRAIT_CASE_SENSITIVE_FILESYSTEM)
             {
-                QString reassembledPath = QString::fromUtf8( (AZ::IO::Path(rootPath) / correctedPath).Native().c_str());
-                QFileInfo correctedFileInfo(reassembledPath);
-                if (correctedFileInfo.exists())
-                {
-                    if (foundFileInfo)
-                    {
-                        *foundFileInfo = FileStateInfo(correctedFileInfo.absoluteFilePath(), correctedFileInfo.lastModified(), correctedFileInfo.size(), correctedFileInfo.isDir());
-                    }
-                    return true;
-                }
+                PopulateFileInfoFromFileIO(absolutePathStr.c_str(), foundFileInfo, fileIO);
+                return true;
             }
+        }
+        else if constexpr (!ASSETPROCESSOR_TRAIT_CASE_SENSITIVE_FILESYSTEM)
+        {
+            // if the file does NOT exist and its a a case-insensitive file system
+            // it means that it wont exist with any casing.  We can early out here.
+            return false;
+        }
+
+        // On case-insensitive systems where the file was found, or
+        // on case-sensitive systems where the file was NOT found, 
+        // it is necessary to consult the actual file directory, since in the former case, the file may be found
+        // but will potentially have the wrong case, but in the latter case, the file may not be found because it does
+        // exist with different case.  Note that file operations like QFileInfo will not correct the case, we MUST
+        // consult the directory table to find the actual case of the file since that is the only place the information
+        // is recorded.
+
+        AZ::IO::Path correctedPath(absolutePath.toUtf8().constData());
+        correctedPath.MakePreferred();
+        AZStd::string rootPath = correctedPath.RootPath().Native();
+        AZStd::string correctedPathStr = correctedPath.Native().substr(rootPath.size());
+        if (AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.c_str(), correctedPathStr, true))
+        {
+            QString reassembledPath = QString::fromUtf8((AZ::IO::Path(rootPath) / correctedPathStr).Native().c_str());
+            PopulateFileInfoFromFileIO(reassembledPath.toUtf8().constData(), foundFileInfo, fileIO);
+            return true;
         }
 
         return false;

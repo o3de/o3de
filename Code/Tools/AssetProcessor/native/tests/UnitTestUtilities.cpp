@@ -324,14 +324,16 @@ namespace UnitTests
             .WillByDefault(Invoke(
                 [this](auto filePath, IO::OpenMode mode, IO::HandleType& handle)
                 {
-                    handle = ComputeHandle(filePath);
+                    AZStd::string normalizedPath(filePath);
+                    AzFramework::StringFunc::Path::Normalize(normalizedPath);
+                    handle = ComputeHandle(AZ::IO::PathView(normalizedPath));
 
-                    int systemMode = AZ::IO::TranslateOpenModeToSystemFileMode(filePath, mode);
+                    int systemMode = AZ::IO::TranslateOpenModeToSystemFileMode(normalizedPath.c_str(), mode);
 
                     // Any mode besides OPEN_READ_ONLY creates a file
                     if ((systemMode & ~int(IO::SystemFile::SF_OPEN_READ_ONLY)) > 0)
                     {
-                        m_mockFiles[handle] = { filePath, "" };
+                        m_mockFiles[handle] = { normalizedPath, "" };
                     }
 
                     return AZ::IO::Result(AZ::IO::ResultCode::Success);
@@ -360,7 +362,9 @@ namespace UnitTests
             .WillByDefault(Invoke(
                 [this](const char* filePath, AZ::u64& size)
                 {
-                    auto handle = ComputeHandle(filePath);
+                    AZStd::string normalizedPath(filePath);
+                    AzFramework::StringFunc::Path::Normalize(normalizedPath);
+                    auto handle = ComputeHandle(AZ::IO::PathView(normalizedPath));
                     auto itr = m_mockFiles.find(handle);
 
                     size = itr != m_mockFiles.end() ? itr->second.second.size() : 0;
@@ -372,7 +376,9 @@ namespace UnitTests
             .WillByDefault(Invoke(
                 [this](const char* filePath)
                 {
-                    auto handle = ComputeHandle(filePath);
+                    AZStd::string normalizedPath(filePath);
+                    AzFramework::StringFunc::Path::Normalize(normalizedPath);
+                    auto handle = ComputeHandle(AZ::IO::PathView(normalizedPath));
                     auto itr = m_mockFiles.find(handle);
                     return itr != m_mockFiles.end();
                 }));
@@ -381,14 +387,20 @@ namespace UnitTests
             .WillByDefault(Invoke(
                 [this](const char* originalPath, const char* newPath)
                 {
-                    auto originalHandle = ComputeHandle(originalPath);
-                    auto newHandle = ComputeHandle(newPath);
+                    AZStd::string normalizedOriginalPath(originalPath);
+                    AzFramework::StringFunc::Path::Normalize(normalizedOriginalPath);
+                    auto originalHandle = ComputeHandle(AZ::IO::PathView(normalizedOriginalPath));
+
+                    AZStd::string normalizedNewPath(newPath);
+                    AzFramework::StringFunc::Path::Normalize(normalizedNewPath);
+                    auto newHandle = ComputeHandle(AZ::IO::PathView(normalizedNewPath));
+
                     auto itr = m_mockFiles.find(originalHandle);
 
                     if (itr != m_mockFiles.end())
                     {
                         auto& [path, contents] = itr->second;
-                        path = newPath;
+                        path = normalizedNewPath;
 
                         if (originalHandle != newHandle)
                         {
@@ -406,7 +418,9 @@ namespace UnitTests
             .WillByDefault(Invoke(
                 [this](const char* filePath)
                 {
-                    auto handle = ComputeHandle(filePath);
+                    AZStd::string normalizedPath(filePath);
+                    AzFramework::StringFunc::Path::Normalize(normalizedPath);
+                    auto handle = ComputeHandle(AZ::IO::PathView(normalizedPath));
 
                     m_mockFiles.erase(handle);
 
@@ -453,8 +467,12 @@ namespace UnitTests
                     if ((!filePath)||(filePath[0] == 0))
                     {
                         return AZ::IO::ResultCode::Error;
-                    } 
-                    size_t filePathLen = strlen(filePath);
+                    }
+
+                    AZStd::string normalizedPath(filePath);
+                    AzFramework::StringFunc::Path::Normalize(normalizedPath);
+
+                    size_t filePathLen = normalizedPath.length();
 
                     // there is unfortunately an extra special case here
                     // This function could be called with filePath being something like "c:/" for the root of the file system
@@ -464,8 +482,9 @@ namespace UnitTests
                     // We are specifically AVOIDING using AZ::IO::Path here because these are mock paths that might
                     // be invalid paths on posix (for example, a unit test could ask for "c:/whatever" - the file system
                     // is also a mock file system.)
-                    bool filePathHasTrailingSlash = filePath[filePathLen - 1] == '/';
-                    AZStd::string formatter = filePathHasTrailingSlash ? "%s%s" : "%s/%s";
+                    const char endingChar = normalizedPath[filePathLen - 1];
+                    bool filePathHasTrailingSlash = endingChar == AZ_CORRECT_FILESYSTEM_SEPARATOR;
+                    AZStd::string formatter = filePathHasTrailingSlash ? "%s%s" : "%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "%s";
 
                     // mockFiles contains only files, but this function is expected to output directories as well
                     // we will emit any directory that is a substring of a stored file path.
@@ -474,16 +493,16 @@ namespace UnitTests
                     {
                         const auto& [path, contents] = pair;
                         
-                        if(AZStd::wildcard_match(AZStd::string::format(formatter.c_str(), filePath, filter), path))
+                        if (AZStd::wildcard_match(AZStd::string::format(formatter.c_str(), normalizedPath.c_str(), filter), path))
                         {
                             // path is a full path to a file, but we need to emulate directory traversal
-                            // e.g. filePath is a path like "c:/" and the path in the cache might be something like
+                            // e.g. normalizedPath is a path like "c:/" and the path in the cache might be something like
                             // "c:/somepath/somefile.txt".  For this to function correctly, we must behave as if
                             // we return "c:/somepath" here, indicating that the contents of "c:/" is "somepath"
                             //  and not "c:/somepath/somefile.txt" as this is NOT a recursive call.
 
                             AZStd::string pathWithoutRoot = path.substr(filePathHasTrailingSlash ? filePathLen : filePathLen + 1);
-                            size_t slashPos = pathWithoutRoot.find_first_of('/');
+                            size_t slashPos = pathWithoutRoot.find_first_of(AZ_CORRECT_FILESYSTEM_SEPARATOR);
                             // eg, input: "c:/", we found "c:/somepath/somefile.txt" in our cache,
                             // so the pathWithoutRoot is "somepath/somefile.txt".
                             if (slashPos != AZStd::string::npos)
@@ -513,14 +532,16 @@ namespace UnitTests
             .WillByDefault(Invoke(
                 [this](const char* filePath)
                 {
+                    AZStd::string normalizedPath(filePath);
+                    AzFramework::StringFunc::Path::Normalize(normalizedPath);
                     for (const auto& [hash, pair] : m_mockFiles)
                     {
                         const auto& [path, contents] = pair;
                         // if the given path is a prefix of the file path, it could be a directory
-                        if (path.find(filePath) == 0)
+                        if (path.find(normalizedPath.c_str()) == 0)
                         {
                             // its not a directory if the path is the exact same as the file path
-                            if (path.compare(filePath) == 0)
+                            if (path.compare(normalizedPath.c_str()) == 0)
                             {
                                 return false; // we found an exact match, so its not a directory, its a file.
                             }
@@ -528,7 +549,7 @@ namespace UnitTests
                             // if we get here, path starts with filePath must logically be longer than filePath
                             // since it did not match exactly but started with it.
                             // It is a directory if there is a slash immediately after filePath inside path
-                            if (path[strlen(filePath)] == '/')
+                            if (path[normalizedPath.length()] == AZ_CORRECT_FILESYSTEM_SEPARATOR)
                             {
                                 // if we get here, we have positively identified a file path in the cache that
                                 // has the given filePath as a substring of it and the character
