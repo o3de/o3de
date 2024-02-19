@@ -7,17 +7,17 @@
  */
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/MultiDeviceDispatchRaysItem.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/View.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridVisualizationRayTracingPass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -295,25 +295,21 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroups[] = {
-                    diffuseProbeGrid->GetVisualizationRayTraceSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
-                    rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
-                    views[0]->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
+                const RHI::MultiDeviceShaderResourceGroup* shaderResourceGroups[] = {
+                    diffuseProbeGrid->GetVisualizationRayTraceSrg()->GetRHIShaderResourceGroup(),
+                    rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup(),
+                    views[0]->GetRHIShaderResourceGroup(),
                 };
 
-                RHI::SingleDeviceDispatchRaysItem dispatchRaysItem;
-                dispatchRaysItem.m_arguments.m_direct.m_width = m_outputAttachmentSize.m_width;
-                dispatchRaysItem.m_arguments.m_direct.m_height = m_outputAttachmentSize.m_height;
-                dispatchRaysItem.m_arguments.m_direct.m_depth = 1;
-                dispatchRaysItem.m_rayTracingPipelineState =
-                    m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
-                dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(RHI::MultiDevice::DefaultDeviceIndex).get();
-                dispatchRaysItem.m_shaderResourceGroupCount = RHI::ArraySize(shaderResourceGroups);
-                dispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups;
-                dispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                RHI::MultiDeviceDispatchRaysItem dispatchRaysItem{ RHI::MultiDevice::AllDevices };
+                dispatchRaysItem.SetDimensionsDirect(m_outputAttachmentSize.m_width, m_outputAttachmentSize.m_height, 1);
+                dispatchRaysItem.SetRayTracingPipelineState(m_rayTracingPipelineState.get());
+                dispatchRaysItem.SetRayTracingShaderTable(m_rayTracingShaderTable.get());
+                dispatchRaysItem.SetShaderResourceGroups(shaderResourceGroups, RHI::ArraySize(shaderResourceGroups));
+                dispatchRaysItem.SetPipelineState(m_globalPipelineState.get());
 
                 // submit the DispatchRays item
-                context.GetCommandList()->Submit(dispatchRaysItem, index);
+                context.GetCommandList()->Submit(dispatchRaysItem.GetDeviceDispatchRaysItem(RHI::MultiDevice::DefaultDeviceIndex), index);
             }
         }
     }   // namespace RPI
