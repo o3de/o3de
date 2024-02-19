@@ -127,22 +127,24 @@ namespace AZ
             // This fix compares the new deffered command with the last one in the list and ignores it if they are fully equal
             if (m_deferredCommands.size() > 0)
             {
-                DeferredCommand& lastCommand = m_deferredCommands.back();
-                if (lastCommand.m_command == deferredCommand.m_command &&
-                    lastCommand.m_arguments.size() == deferredCommand.m_arguments.size())
+                for (DeferredCommand& checkCommand : m_deferredCommands)
                 {
-                    bool isEqual = true;
-                    for (int i = 0; i < lastCommand.m_arguments.size(); i++)
+                    if (checkCommand.m_command == deferredCommand.m_command &&
+                        checkCommand.m_arguments.size() == deferredCommand.m_arguments.size())
                     {
-                        if (lastCommand.m_arguments[i] != deferredCommand.m_arguments[i])
+                        bool isEqual = true;
+                        for (int i = 0; i < checkCommand.m_arguments.size(); i++)
                         {
-                            isEqual = false;
-                            break;
+                            if (checkCommand.m_arguments[i] != deferredCommand.m_arguments[i])
+                            {
+                                isEqual = false;
+                                break;
+                            }
                         }
-                    }
-                    if (isEqual)
-                    {
-                        return AZ::Success();
+                        if (isEqual)
+                        {
+                            return AZ::Success();
+                        }
                     }
                 }
             }
