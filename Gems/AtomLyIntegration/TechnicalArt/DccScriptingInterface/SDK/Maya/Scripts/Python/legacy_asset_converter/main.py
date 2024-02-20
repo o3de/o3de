@@ -1148,7 +1148,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     _LOGGER.info('Found engine white texture... skipping')
                     continue
 
-            if values.attributes.Shader == 'Illum':
+            if values.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
                 legacy_textures = values.textures
                 all_textures = self.get_additional_textures(search_path, legacy_textures)
                 fbx_material_dictionary[key][constants.FBX_TEXTURES] = self.get_texture_set(search_path, all_textures) if legacy_textures else ''

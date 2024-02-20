@@ -19,7 +19,7 @@ DIRECTORY_EXCLUSION_LIST = ['.mayaSwatches']
 
 LUMBERYARD_DATA_FILES = ['.mtl', '.assetinfo', '.material']
 
-EXPORT_MATERIAL_TYPES = ['Illum']
+EXPORT_MATERIAL_TYPES = ['Illum', 'Vegetation']
 
 PREFERRED_IMAGE_FORMAT = '.tif'
 

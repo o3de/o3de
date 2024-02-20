@@ -238,17 +238,16 @@ def find_min_max(buf):
 
 def get_converted_filename(src, dst, texture_type):
     """
-    Takes the structure of an existing filename extracted from the legacy mtl files, and renames it, base on the
-    texture type argument that is passed to it
+    Append the texture type to the texture name
     :param src: The legacy filename to be manipulated
     :param dst: The destination directory that the new file will be saved to
     :param texture_type: PBR texture type
-    :return:
+    :return: filepath
     """
     if src.is_file():
-        filename = src.name.replace(get_texture_type(src), texture_type)
+        filename = f'{src.stem}_{texture_type}{src.suffix}'
         dst = os.path.normpath(dst / filename)
-        _LOGGER.info(f'+=+=+=+=+=+=+=+=+=+=+=+ {dst}  -- {os.path.isfile(dst)}')
+        _LOGGER.info(f'+=+=+=+=+=+=+=+=+=+=+=+ {dst} -- overwriting {os.path.isfile(dst)}')
     return dst
 
 
@@ -289,7 +288,7 @@ def get_texture_basename(image_path):
 
 def get_texture_type(image_path):
     """
-    Gets the PBR texture type from the filename.
+    Returns the string after the last '_' from filename
     :param image_path: Path to the image from which to extract pbr type
     :return:
     """
