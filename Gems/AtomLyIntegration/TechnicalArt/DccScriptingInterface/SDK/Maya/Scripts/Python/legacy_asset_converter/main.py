@@ -793,8 +793,10 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                                 texture_key = 'Normal'
                             elif material_property == 'opacity':
                                 texture_key = 'Opacity'
-                                if image_conversion.shader_uses_alpha(shader_name):
+                                alpha = 0 if hasattr(material_values.numericalsettings, 'AlphaTest') is False else float(material_values.numericalsettings.AlphaTest)
+                                if image_conversion.shader_uses_alpha(shader_name) and alpha > 0:
                                     temp_dict['mode'] = 'Cutout'
+                                    temp_dict['factor'] = 1. - alpha
                             elif material_property == 'uv':
                                 modifications = material_values['modifications']
                                 if modifications:
@@ -1203,7 +1205,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :return:
         """
         numerical_settings = {}
-        property_list = ['Diffuse', 'Specular', 'Emittance', 'Opacity']
+        property_list = ['Diffuse', 'Specular', 'Emittance', 'Opacity', 'AlphaTest']
         for material_property in property_list:
             try:
                 numerical_settings[material_property] = mtl_info[material].attributes[material_property]
