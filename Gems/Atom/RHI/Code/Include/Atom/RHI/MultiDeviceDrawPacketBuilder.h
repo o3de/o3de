@@ -30,7 +30,7 @@ namespace AZ::RHI
             MultiDeviceDrawRequest() = default;
 
             //! Returns the device-specific DrawRequest for the given index
-            const DrawPacketBuilder::DrawRequest& GetDeviceDrawRequest(int deviceIndex);
+            DrawPacketBuilder::DrawRequest GetDeviceDrawRequest(int deviceIndex);
 
             //! The filter tag used to direct the draw item.
             DrawListTag m_listTag;
@@ -59,8 +59,6 @@ namespace AZ::RHI
             //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
             //! and the device-specific DrawItem holds a pointer to it.
             AZStd::unordered_map<int, AZStd::vector<StreamBufferView>> m_deviceStreamBufferViews;
-
-            AZStd::unordered_map<int, DrawPacketBuilder::DrawRequest> m_deviceDrawRequests;
         };
 
         explicit MultiDeviceDrawPacketBuilder(RHI::MultiDevice::DeviceMask deviceMask)

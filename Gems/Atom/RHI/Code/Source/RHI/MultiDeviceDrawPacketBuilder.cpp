@@ -16,37 +16,27 @@
 
 namespace AZ::RHI
 {
-    const DrawPacketBuilder::DrawRequest& MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::
+    DrawPacketBuilder::DrawRequest MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::
         GetDeviceDrawRequest(int deviceIndex)
     {
-        if (auto it{ m_deviceDrawRequests.find(deviceIndex) }; it != m_deviceDrawRequests.end())
+        if (!m_deviceStreamBufferViews.contains(deviceIndex))
         {
-            return it->second;
-        }
-        else
-        {
-            if (!m_deviceStreamBufferViews.contains(deviceIndex))
+            // We need to hold the memory for the single-device StreamBufferViews
+            AZStd::vector<StreamBufferView> deviceStreamBufferView;
+            for (auto& mdStreamBufferView : m_streamBufferViews)
             {
-                // We need to hold the memory for the single-device StreamBufferViews
-                AZStd::vector<StreamBufferView> deviceStreamBufferView;
-                for (auto& mdStreamBufferView : m_streamBufferViews)
-                {
-                    deviceStreamBufferView.emplace_back(mdStreamBufferView.GetDeviceStreamBufferView(deviceIndex));
-                }
-                m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::move(deviceStreamBufferView));
+                deviceStreamBufferView.emplace_back(mdStreamBufferView.GetDeviceStreamBufferView(deviceIndex));
             }
-            auto [iter, ok]{ m_deviceDrawRequests.insert(AZStd::make_pair(
-                deviceIndex,
-                DrawPacketBuilder::DrawRequest{
-                    m_listTag,
-                    m_stencilRef,
-                    m_deviceStreamBufferViews.at(deviceIndex),
-                    m_uniqueShaderResourceGroup ? m_uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get() : nullptr,
-                    m_pipelineState ? m_pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr,
-                    m_sortKey,
-                    m_drawFilterMask })) };
-            return iter->second;
+            m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::move(deviceStreamBufferView));
         }
+        return DrawPacketBuilder::DrawRequest{
+                m_listTag,
+                m_stencilRef,
+                m_deviceStreamBufferViews.at(deviceIndex),
+                m_uniqueShaderResourceGroup ? m_uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get() : nullptr,
+                m_pipelineState ? m_pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr,
+                m_sortKey,
+                m_drawFilterMask };
     }
 
     void MultiDeviceDrawPacketBuilder::Begin(IAllocator* allocator)
