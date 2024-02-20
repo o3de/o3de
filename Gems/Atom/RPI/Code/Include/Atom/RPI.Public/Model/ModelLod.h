@@ -72,7 +72,6 @@ namespace AZ
             {
                 RHI::MultiDeviceDrawArguments m_drawArguments;
                 RHI::MultiDeviceIndexBufferView m_indexBufferView;
-                RHI::MultiDeviceIndexBufferView m_sdIndexBufferView; // TODO: Remove once IndexBufferViews have been converted to multi device
 
                 StreamInfoList m_streamInfo;
 

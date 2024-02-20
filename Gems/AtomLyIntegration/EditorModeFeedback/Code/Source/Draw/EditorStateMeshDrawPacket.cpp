@@ -128,7 +128,7 @@ namespace AZ::Render
         drawPacketBuilder.Begin(nullptr);
 
         drawPacketBuilder.SetDrawArguments(mesh.m_drawArguments);
-        drawPacketBuilder.SetIndexBufferView(mesh.m_sdIndexBufferView);
+        drawPacketBuilder.SetIndexBufferView(mesh.m_indexBufferView);
         drawPacketBuilder.AddShaderResourceGroup(m_objectSrg->GetRHIShaderResourceGroup());
         drawPacketBuilder.AddShaderResourceGroup(m_material->GetRHIShaderResourceGroup());
 
