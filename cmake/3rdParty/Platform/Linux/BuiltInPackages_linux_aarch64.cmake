@@ -54,3 +54,4 @@ else()
     ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-linux-aarch64                TARGETS PhysX                       PACKAGE_HASH 7fa00d7d4f7532cf068246d4e424ce319529dfa09fb759d251676f2c59f6d50c)
 endif()
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.1.1-rev1-linux-aarch64              TARGETS AWSGameLiftServerSDK        PACKAGE_HASH eb03413cb92fd64a8cd11abcf666a61ae62d4497d0dd2154e4ea2247aaf5aac7)
+ly_associate_package(PACKAGE_NAME python-3.10.13-rev1-linux-aarch64                          TARGETS python                      PACKAGE_HASH dbb21ef0e855bff8e11adb07149c3d8f42f8262e102721bc3d1837b98eb7ef6d

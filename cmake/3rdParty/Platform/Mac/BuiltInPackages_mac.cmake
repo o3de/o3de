@@ -52,3 +52,4 @@ if(AZ_USE_PHYSX5)
 else()
     ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-mac                     TARGETS PhysX                       PACKAGE_HASH 83940b3876115db82cd8ffcb9e902278e75846d6ad94a41e135b155cee1ee186)
 endif()
+ly_associate_package(PACKAGE_NAME python-3.10.13-rev1-darwin                        TARGETS python                      PACKAGE_HASH e3474ce2d61805f606c003df3d9299fda6ad8f98f1b44096de103bb9cd8efff2
