@@ -30,7 +30,7 @@ namespace AZ::RHI
             MultiDeviceDrawRequest() = default;
 
             //! Returns the device-specific DrawRequest for the given index
-            DrawPacketBuilder::DrawRequest BuildDeviceDrawRequest(int deviceIndex);
+            DrawPacketBuilder::DrawRequest GetDeviceDrawRequest(int deviceIndex);
 
             //! The filter tag used to direct the draw item.
             DrawListTag m_listTag;
