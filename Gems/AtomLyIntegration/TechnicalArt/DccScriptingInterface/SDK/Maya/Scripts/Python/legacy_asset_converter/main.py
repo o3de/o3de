@@ -706,7 +706,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         if isinstance(value, list):
             converted_list = []
             for item in value:
-                item_value = 0 if item is 0 else float(item)
                 converted_list.append(item)
             return converted_list
         elif isinstance(value, str):
@@ -716,7 +715,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             elif value in ['true', 'false']:
                 return str(value)
             elif value.isnumeric():
-                return 0 if value is 0 else float(value)
+                return 0 if value == 0 else float(value)
             else:
                 pattern = r'\[[^\]]*\]'
                 test_brackets = re.sub(pattern, '', value)
@@ -728,7 +727,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         else:
             return value
 
-    def export_material_file(self, file_name, material_name, material_values, destination_directory):
+    def export_material_file(self, file_name, material_name, material_values, destination_directory, shader_name):
         """
         Collects all the information necessary to generate a material definition, and exports the file. Definition
         information is cross-referenced with a StandardPBR material template file, and information that runs counter
@@ -737,6 +736,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :param material_name: The name of the material that the definition represents.
         :param material_values: The values for the material to be included in the definition.
         :param destination_directory: Where the .material file is saved once processed.
+        :param shader_name: The name of the original shader file used by the material
         :return:
         """
         _LOGGER.info(f'\n_\n******** {material_name} -- EXPORT INFO: {material_values}')
@@ -793,6 +793,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                                 texture_key = 'Normal'
                             elif material_property == 'opacity':
                                 texture_key = 'Opacity'
+                                if image_conversion.shader_uses_alpha(shader_name):
+                                    temp_dict['mode'] = 'Cutout'
                             elif material_property == 'uv':
                                 modifications = material_values['modifications']
                                 if modifications:
@@ -1151,7 +1153,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             if values.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
                 legacy_textures = values.textures
                 all_textures = self.get_additional_textures(search_path, legacy_textures)
-                fbx_material_dictionary[key][constants.FBX_TEXTURES] = self.get_texture_set(search_path, all_textures) if legacy_textures else ''
+                fbx_material_dictionary[key][constants.FBX_TEXTURES] = self.get_texture_set(search_path, all_textures, values.attributes.Shader) if legacy_textures else ''
                 fbx_material_dictionary[key][constants.FBX_TEXTURE_MODIFICATIONS] = values.modifications if values.modifications else ''
                 fbx_material_dictionary[key][constants.FBX_NUMERICAL_SETTINGS] = self.get_numerical_settings(mtl_info, key)
                 fbx_material_dictionary[key][constants.FBX_MATERIAL_FILE] = ''
@@ -1183,8 +1185,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     if texture_basename:
                         for target_image in search_path.iterdir():
                             if target_image.stem.lower().startswith(texture_basename):
-                                texture_type = image_conversion.get_texture_type(target_image)
-                                for key, values in constants.IMAGE_KEYS.items():
+                                texture_type = image_conversion.get_filemask(target_image)
+                                for key, values in constants.FILE_MASKS.items():
                                     if texture_type.lower() in values:
                                         all_textures[key] = search_path / target_image
                                         break
@@ -1209,12 +1211,13 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 pass
         return numerical_settings
 
-    def get_texture_set(self, search_path, mtl_textures):
+    def get_texture_set(self, search_path, mtl_textures, shader_name):
         """
         Begins the process of collecting texture sets for each material found in an FBX file. The process begins by
         getting the file "stem" string in order to find textures starting with identical strings
         :param search_path: The directory to search for corresponding files
         :param mtl_textures: The texture file names pulled from the mtl files in the legacy directories
+        :param shader_name: The shader in which the texture is used
         :return:
         """
         _LOGGER.info(f'GetTexSet: {search_path}   MTL TEXTURES: {mtl_textures}')
@@ -1225,7 +1228,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     mtl_textures[key] = search_path / file
                     _LOGGER.info(f'\n///////// MTL TEX: {mtl_textures[key]}')
                     break
-        return image_conversion.get_pbr_textures(mtl_textures, Path(destination_directory), search_path, Path(self.input_directory))
+        return image_conversion.get_pbr_textures(mtl_textures, Path(destination_directory), Path(self.input_directory), shader_name)
 
     def get_relative_path_from_material(self, texture_file_abs_path, material_abs_path):
         """
@@ -1371,7 +1374,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     if v.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
                         material_values = Box(values)
                         material_file = self.export_material_file(f'{fbx_file.stem}_{key}.material'.lower(), key,
-                                                                  material_values, destination_directory)
+                                                                  material_values, destination_directory, v.attributes.Shader)
                         values.materialfile = material_file if material_file else ''
         self.set_materials_db(asset_information)
 

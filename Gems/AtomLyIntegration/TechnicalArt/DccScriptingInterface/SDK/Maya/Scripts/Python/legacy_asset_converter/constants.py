@@ -25,7 +25,7 @@ PREFERRED_IMAGE_FORMAT = '.tif'
 
 TRANSFER_EXTENSIONS = ['.fbx', '.assetinfo']
 
-IMAGE_KEYS = {
+FILE_MASKS = {
     'ddn': ['ddn'],
     'ddna': ['ddna'],
     'diffuse': ['diffuse', 'diff', 'dif', 'd'],

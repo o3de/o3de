@@ -28,7 +28,7 @@ module_name = 'legacy_asset_converter.main.image_conversion'
 _LOGGER = _logging.getLogger(module_name)
 
 
-def get_pbr_textures(legacy_textures, destination_directory, search_path, base_directory):
+def get_pbr_textures(legacy_textures, destination_directory, base_directory, shader_name):
     pbr_textures = {}
     for texture_type, texture_path in legacy_textures.items():
         _LOGGER.info(f'TEXTURETYPE::> {texture_type}  TEXTUREPATH::> {texture_path}')
@@ -40,7 +40,8 @@ def get_pbr_textures(legacy_textures, destination_directory, search_path, base_d
             _LOGGER.info(f'Found texture [{existing_path}]. Continuing...')
             texture_path = Path(existing_path)
         if texture_type == 'diffuse':
-            dst = get_converted_filename(texture_path, destination_directory, 'BaseColor')
+            filemask = 'BaseColorA' if shader_uses_alpha(shader_name) else 'BaseColor'
+            dst = get_converted_filename(texture_path, destination_directory, filemask)
             pbr_textures['BaseColor'] = transfer_texture(dst, texture_path) if not os.path.isfile(dst) else dst
         elif texture_type == 'specular':
             dst = get_converted_filename(texture_path, destination_directory, 'Metallic')
@@ -65,7 +66,7 @@ def get_pbr_textures(legacy_textures, destination_directory, search_path, base_d
         try:
             pbr_texture_keys = list(pbr_textures.keys())
             texture_path = Path(pbr_textures[pbr_texture_keys[0]])
-            filename = texture_path.name.replace(get_texture_type(texture_path), 'Metallic')
+            filename = texture_path.name.replace(get_filemask(texture_path), 'Metallic')
             _LOGGER.info(f'Filename: {filename}')
             target_file_path = destination_directory / filename
             _LOGGER.info(f'TargetFilePath: {target_file_path}')
@@ -91,6 +92,10 @@ def resolve_path(texture_path, base_directory):
             if target_file == texture_path.stem.lower():
                 return os.path.abspath(os.path.join(root, file))
     return None
+
+
+def shader_uses_alpha(shader_name):
+    return shader_name.lower() == 'vegetation'
 
 
 def transfer_texture(dst, src, overwrite=False):
@@ -238,14 +243,16 @@ def find_min_max(buf):
 
 def get_converted_filename(src, dst, texture_type):
     """
-    Append the texture type to the texture name
+    Takes the structure of an existing filename extracted from the legacy mtl files, and renames it, base on the
+    texture type argument that is passed to it
     :param src: The legacy filename to be manipulated
     :param dst: The destination directory that the new file will be saved to
     :param texture_type: PBR texture type
     :return: filepath
     """
     if src.is_file():
-        filename = f'{src.stem}_{texture_type}{src.suffix}'
+        filemask = get_filemask(src)
+        filename = f'{src.stem}_{texture_type}{src.suffix}' if filemask[-1].isdigit() else src.name.replace('_' + filemask, '_' + texture_type)
         dst = os.path.normpath(dst / filename)
         _LOGGER.info(f'+=+=+=+=+=+=+=+=+=+=+=+ {dst} -- overwriting {os.path.isfile(dst)}')
     return dst
@@ -286,7 +293,7 @@ def get_texture_basename(image_path):
     return None
 
 
-def get_texture_type(image_path):
+def get_filemask(image_path):
     """
     Returns the string after the last '_' from filename
     :param image_path: Path to the image from which to extract pbr type
