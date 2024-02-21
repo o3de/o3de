@@ -651,7 +651,7 @@ namespace AZ
                 {
                     size_t batchStart = batchIndex * batchSize;
                     // If we're in the last batch, we just get the remaining objects
-                    size_t currentBatchCount = batchIndex == batchCount - 1 ? visibleObjectCount % batchSize : batchSize;
+                    size_t currentBatchCount = batchIndex == batchCount - 1 ? visibleObjectCount - batchStart : batchSize;
 
                     addVisibleObjectsToBucketsTG.AddTask(
                         addVisibleObjectsToBucketsTaskDescriptor,
