@@ -378,7 +378,7 @@ namespace AZ
             // Remove any dangling leftovers 
             DeletePendingMeshletsRenderObjects();
 
-            AZStd::list<RHI::SingleDeviceDispatchItem*> dispatchItems;
+            AZStd::list<RHI::MultiDeviceDispatchItem*> dispatchItems;
             AZStd::list<const RHI::MultiDeviceDrawPacket*> drawPackets;
             for (auto renderObject : m_meshletsRenderObjects)
             {

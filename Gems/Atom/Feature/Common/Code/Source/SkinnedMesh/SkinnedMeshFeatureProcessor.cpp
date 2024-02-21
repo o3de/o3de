@@ -450,12 +450,12 @@ namespace AZ
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
 
-            AZStd::unordered_set<const RHI::SingleDeviceDispatchItem*>::iterator it = m_skinningDispatches.begin();
+            auto it = m_skinningDispatches.begin();
             AZStd::advance(it, startIndex);
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                const RHI::SingleDeviceDispatchItem* dispatchItem = *it;
-                commandList->Submit(*dispatchItem, index);
+                const auto* dispatchItem = *it;
+                commandList->Submit(dispatchItem->GetDeviceDispatchItem(RHI::MultiDevice::DefaultDeviceIndex), index);
             }
         }
 
@@ -463,12 +463,12 @@ namespace AZ
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
 
-            AZStd::unordered_set<const RHI::SingleDeviceDispatchItem*>::iterator it = m_morphTargetDispatches.begin();
+            auto it = m_morphTargetDispatches.begin();
             AZStd::advance(it, startIndex);
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                const RHI::SingleDeviceDispatchItem* dispatchItem = *it;
-                commandList->Submit(*dispatchItem, index);
+                const auto* dispatchItem = *it;
+                commandList->Submit(dispatchItem->GetDeviceDispatchItem(RHI::MultiDevice::DefaultDeviceIndex), index);
             }
         }
 
