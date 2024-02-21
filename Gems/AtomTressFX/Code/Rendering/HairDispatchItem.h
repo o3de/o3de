@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/RHI/SingleDeviceDispatchItem.h>
+#include <Atom/RHI/MultiDeviceDispatchItem.h>
 #include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
@@ -62,10 +62,10 @@ namespace AZ
                     uint32_t elementsAmount
                 );
 
-                RHI::SingleDeviceDispatchItem* GetDispatchItem() { return &m_dispatchItem;  }
+                RHI::MultiDeviceDispatchItem* GetDispatchItem() { return &m_dispatchItem;  }
 
             private:
-                RHI::SingleDeviceDispatchItem m_dispatchItem;
+                RHI::MultiDeviceDispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
                 RPI::Shader* m_shader;
             };
 

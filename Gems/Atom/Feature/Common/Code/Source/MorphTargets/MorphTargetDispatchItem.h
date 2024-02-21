@@ -58,7 +58,7 @@ namespace AZ
 
             bool Init();
 
-            const AZ::RHI::SingleDeviceDispatchItem& GetRHIDispatchItem() const;
+            const AZ::RHI::MultiDeviceDispatchItem& GetRHIDispatchItem() const;
 
             void SetWeight(float weight);
             float GetWeight() const;
@@ -71,7 +71,7 @@ namespace AZ
             void OnShaderAssetReinitialized(const Data::Asset<RPI::ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
 
-            RHI::SingleDeviceDispatchItem m_dispatchItem;
+            RHI::MultiDeviceDispatchItem m_dispatchItem;
 
             // The morph target shader used for this instance
             Data::Instance<RPI::Shader> m_morphTargetShader;
