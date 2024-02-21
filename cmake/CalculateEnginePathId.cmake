@@ -26,7 +26,7 @@ endif()
 
 string(TOLOWER ${PATH_TO_HASH} PATH_TO_HASH)
 
-# Calculate the path id based on the first 9 characters of the SHA1 hash of the normalized path
+# Calculate the path id based on the first 8 characters of the SHA1 hash of the normalized path
 string(SHA1 ENGINE_SOURCE_PATH_HASH "${PATH_TO_HASH}")
 string(SUBSTRING ${ENGINE_SOURCE_PATH_HASH} 0 8 ENGINE_SOURCE_PATH_ID)
 

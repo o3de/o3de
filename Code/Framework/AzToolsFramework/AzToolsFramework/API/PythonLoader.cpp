@@ -49,7 +49,8 @@ namespace AzToolsFramework::EmbeddedPython
 
         // Construct the path to where the python venv based on the engine path should be located
         AZ::IO::FixedMaxPath libPath = thirdPartyRoot;
-        libPath /= AZ::IO::FixedMaxPathString::format("venv/%x", digest[0]);
+        // The ID is based on the first 32 bits of the digest, and formatted to at least 8-character wide hexadecimal representation
+        libPath /= AZ::IO::FixedMaxPathString::format("venv/%08x", digest[0]);
         libPath = libPath.LexicallyNormal();
         return libPath;
     }

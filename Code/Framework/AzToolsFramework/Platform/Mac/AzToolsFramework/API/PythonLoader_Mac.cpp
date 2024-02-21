@@ -39,17 +39,10 @@ namespace AzToolsFramework::EmbeddedPython
             // If so, then use the path that is set as the third party path
             thirdPartyEnvPathPath = AZ::IO::FixedMaxPath(envValue);
         }
-        // If not, then attempt to get the current user's $HOME path from the environment, which is the
-        // default behavior for O3DE
-        else if ((envValue=std::getenv("HOME")) != nullptr)
+        else
         {
-            // If successful, build the path by appending the 3rd party subpath
-            thirdPartyEnvPathPath = AZ::IO::FixedMaxPath(envValue) / thirdPartySubpath;
-        }
-        else 
-        {
-            // If for some reason the current user's $HOME path cannot be queried from the environment,
-            // then use `getpwuid` to get the current user information to read the home directory. 
+            // If not, then attempt to get the home path from `getpwuid` by using the current user's id (getuid())
+            // and reading the `*pw_dir` (Initial working directory) as the home directory.
             envValue = getpwuid(getuid())->pw_dir;
             AZ_Assert(envValue!=nullptr, "Unable to calculate home directory");
             thirdPartyEnvPathPath = AZ::IO::FixedMaxPath(envValue) / thirdPartySubpath;
