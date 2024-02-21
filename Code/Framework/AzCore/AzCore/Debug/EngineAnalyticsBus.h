@@ -10,6 +10,8 @@
 #if defined(CARBONATED)
 // aefimov engine analytics bus to enable stats event from the engine, game's analytics processes those events
 
+#include <AzCore/std/containers/map.h>
+
 namespace AZ
 {
     namespace Debug
