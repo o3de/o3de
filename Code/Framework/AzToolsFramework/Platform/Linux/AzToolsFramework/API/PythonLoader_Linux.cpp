@@ -71,7 +71,7 @@ namespace AzToolsFramework::EmbeddedPython
         AZStd::string thirdPartyPathString = thirdPartyEnvPathPath.String();
         if ((!AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(thirdPartyPathString.c_str())) && createOnDemand)
         {
-            auto createPathResult = AZ::IO::FileIOBase::GetInstance()->CreatePath(thirdPartyPathString.c_str());
+            auto createPathResult = AZ::IO::FileIOBase::GetDirectInstance()->CreatePath(thirdPartyPathString.c_str());
             AZ_Assert(createPathResult, "Unable to create missing 3rd Party Folder '%s'", thirdPartyPathString.c_str())
         }
         return thirdPartyEnvPathPath;
