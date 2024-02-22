@@ -131,6 +131,7 @@ namespace UnitTests
         bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const override;
         const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& /*fullFileName*/) const override;
         const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 /*id*/) const override;
+        void SetScanFolder(const AssetProcessor::ScanFolderInfo& scanFolderInfo);
 
     private:
         AssetProcessor::ScanFolderInfo m_scanFolderInfo;

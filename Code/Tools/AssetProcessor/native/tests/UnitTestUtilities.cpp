@@ -27,6 +27,11 @@ namespace UnitTests
         m_scanFolderInfo = AssetProcessor::ScanFolderInfo{ scanfolder, "scanfolder", "scanfolder", true, true, { AssetBuilderSDK::PlatformInfo{ "pc", {} } }, 0, 1 };
     }
 
+    void MockPathConversion::SetScanFolder(const AssetProcessor::ScanFolderInfo& scanFolderInfo)
+    {
+        m_scanFolderInfo = scanFolderInfo;
+    }
+
     bool MockPathConversion::ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const
     {
         EXPECT_TRUE(fullFileName.startsWith(m_scanFolderInfo.ScanPath(), Qt::CaseInsensitive));
