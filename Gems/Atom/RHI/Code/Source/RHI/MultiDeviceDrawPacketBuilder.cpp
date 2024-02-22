@@ -49,6 +49,71 @@ namespace AZ::RHI
         }
     }
 
+    MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::MultiDeviceDrawRequest(const MultiDeviceDrawRequest& other)
+    {
+        m_listTag = other.m_listTag;
+        m_stencilRef = other.m_stencilRef;
+        m_streamBufferViews = other.m_streamBufferViews;
+        m_uniqueShaderResourceGroup = other.m_uniqueShaderResourceGroup;
+        m_pipelineState = other.m_pipelineState;
+        m_sortKey = other.m_sortKey;
+        m_drawFilterMask = other.m_drawFilterMask;
+        m_deviceStreamBufferViews = other.m_deviceStreamBufferViews;
+        m_deviceDrawRequests = other.m_deviceDrawRequests;
+
+        for(auto& [deviceIndex, deviceDrawRequest] : m_deviceDrawRequests)
+        {
+            deviceDrawRequest.m_streamBufferViews = m_deviceStreamBufferViews[deviceIndex];
+        }
+    }
+
+    MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest& MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::operator=(
+        const MultiDeviceDrawRequest& other)
+    {
+        m_listTag = other.m_listTag;
+        m_stencilRef = other.m_stencilRef;
+        m_streamBufferViews = other.m_streamBufferViews;
+        m_uniqueShaderResourceGroup = other.m_uniqueShaderResourceGroup;
+        m_pipelineState = other.m_pipelineState;
+        m_sortKey = other.m_sortKey;
+        m_drawFilterMask = other.m_drawFilterMask;
+        m_deviceStreamBufferViews = other.m_deviceStreamBufferViews;
+        m_deviceDrawRequests = other.m_deviceDrawRequests;
+
+        for(auto& [deviceIndex, deviceDrawRequest] : m_deviceDrawRequests)
+        {
+            deviceDrawRequest.m_streamBufferViews = m_deviceStreamBufferViews[deviceIndex];
+        }
+
+        return *this;
+    }
+
+    MultiDeviceDrawPacketBuilder::MultiDeviceDrawPacketBuilder(const MultiDeviceDrawPacketBuilder& other)
+    {
+        m_deviceMask = other.m_deviceMask;
+
+        m_drawRequests = other.m_drawRequests;
+
+        m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
+        m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+
+        m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
+    }
+
+    MultiDeviceDrawPacketBuilder& MultiDeviceDrawPacketBuilder::operator=(const MultiDeviceDrawPacketBuilder& other)
+    {
+        m_deviceMask = other.m_deviceMask;
+
+        m_drawRequests = other.m_drawRequests;
+
+        m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
+        m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+
+        m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
+
+        return *this;
+    }
+
     void MultiDeviceDrawPacketBuilder::Begin(IAllocator* allocator)
     {
         AZ_Error(

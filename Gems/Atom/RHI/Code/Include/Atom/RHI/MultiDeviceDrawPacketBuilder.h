@@ -61,6 +61,9 @@ namespace AZ::RHI
             AZStd::unordered_map<int, AZStd::vector<SingleDeviceStreamBufferView>> m_deviceStreamBufferViews;
 
             AZStd::unordered_map<int, SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest> m_deviceDrawRequests;
+
+            MultiDeviceDrawRequest(const MultiDeviceDrawRequest& other);
+            MultiDeviceDrawRequest& operator=(const MultiDeviceDrawRequest& other);
         };
 
         explicit MultiDeviceDrawPacketBuilder(RHI::MultiDevice::DeviceMask deviceMask)
@@ -77,6 +80,9 @@ namespace AZ::RHI
                 }
             }
         }
+
+        MultiDeviceDrawPacketBuilder(const MultiDeviceDrawPacketBuilder& other);
+        MultiDeviceDrawPacketBuilder& operator=(const MultiDeviceDrawPacketBuilder& other);
 
         // NOTE: This is configurable; just used to control the amount of memory held by the builder.
         static const size_t DrawItemCountMax = 16;
