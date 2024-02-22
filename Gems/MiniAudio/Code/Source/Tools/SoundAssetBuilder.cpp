@@ -19,8 +19,7 @@
 namespace MiniAudio
 {
     void SoundAssetBuilder::CreateJobs(
-        const AssetBuilderSDK::CreateJobsRequest& request,
-        AssetBuilderSDK::CreateJobsResponse& response) const
+        const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
     {
         for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
         {
@@ -36,8 +35,7 @@ namespace MiniAudio
     }
 
     void SoundAssetBuilder::ProcessJob(
-        [[maybe_unused]] const AssetBuilderSDK::ProcessJobRequest& request,
-        AssetBuilderSDK::ProcessJobResponse& response) const
+        [[maybe_unused]] const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
     {
         const AZStd::string& fromFile = request.m_fullPath;
 
@@ -85,11 +83,7 @@ namespace MiniAudio
 
         AssetBuilderSDK::JobProduct soundJobProduct;
         if (!AssetBuilderSDK::OutputObject(
-            soundAsset.Get(),
-            outputPath,
-            azrtti_typeid<SoundAsset>(),
-            SoundAsset::AssetSubId,
-            soundJobProduct))
+                soundAsset.Get(), outputPath, azrtti_typeid<SoundAsset>(), SoundAsset::AssetSubId, soundJobProduct))
         {
             AZ_Error("SoundAssetBuilder", false, "Failed to output product dependencies.");
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;

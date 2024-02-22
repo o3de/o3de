@@ -27,8 +27,7 @@ namespace MiniAudio
     {
     }
 
-    MiniAudioPlaybackComponentController::MiniAudioPlaybackComponentController(
-        const MiniAudioPlaybackComponentConfig& config)
+    MiniAudioPlaybackComponentController::MiniAudioPlaybackComponentController(const MiniAudioPlaybackComponentConfig& config)
     {
         m_config = config;
     }
@@ -99,11 +98,31 @@ namespace MiniAudio
         }
     }
 
-    void MiniAudioPlaybackComponentController::SetVolume(float volume)
+    float MiniAudioPlaybackComponentController::GetVolumePercentage() const
     {
+        return ma_sound_get_volume(m_sound.get());
+    }
+
+    void MiniAudioPlaybackComponentController::SetVolumePercentage(float volume)
+    {
+        m_config.m_volume = AZ::GetClamp(volume, 0.f, 100.f);
         if (m_sound)
         {
-            ma_sound_set_volume(m_sound.get(), volume);
+            ma_sound_set_volume(m_sound.get(), (m_config.m_volume / 100.f));
+        }
+    }
+
+    float MiniAudioPlaybackComponentController::GetVolumeDecibels() const
+    {
+        return ma_volume_linear_to_db(ma_sound_get_volume(m_sound.get()));
+    }
+
+    void MiniAudioPlaybackComponentController::SetVolumeDecibels(float volumeDecibels)
+    {
+        m_config.m_volume = ma_volume_db_to_linear(volumeDecibels) * 100.f;
+        if (m_sound)
+        {
+            ma_sound_set_volume(m_sound.get(), (m_config.m_volume / 100.f));
         }
     }
 
@@ -200,14 +219,25 @@ namespace MiniAudio
         OnConfigurationUpdated();
     }
 
-    float MiniAudioPlaybackComponentController::GetOuterVolume() const
+    float MiniAudioPlaybackComponentController::GetOuterVolumePercentage() const
     {
         return m_config.m_outerVolume;
     }
 
-    void MiniAudioPlaybackComponentController::SetOuterVolume(float outerVolume)
+    void MiniAudioPlaybackComponentController::SetOuterVolumePercentage(float outerVolume)
     {
         m_config.m_outerVolume = AZ::GetClamp(outerVolume, 0.f, 100.f);
+        OnConfigurationUpdated();
+    }
+
+    float MiniAudioPlaybackComponentController::GetOuterVolumeDecibels() const
+    {
+        return ma_volume_linear_to_db(m_config.m_outerVolume / 100.f);
+    }
+
+    void MiniAudioPlaybackComponentController::SetOuterVolumeDecibels(float outerVolumeDecibels)
+    {
+        m_config.m_outerVolume = ma_volume_db_to_linear(outerVolumeDecibels) * 100.f;
         OnConfigurationUpdated();
     }
 
@@ -263,7 +293,8 @@ namespace MiniAudio
     {
         if (m_sound)
         {
-            ma_sound_set_position(m_sound.get(), world.GetTranslation().GetX(), world.GetTranslation().GetY(), world.GetTranslation().GetZ());
+            ma_sound_set_position(
+                m_sound.get(), world.GetTranslation().GetX(), world.GetTranslation().GetY(), world.GetTranslation().GetZ());
 
             // Set the forward direction for the sound source
             if (!m_config.m_fixedDirection)
@@ -304,8 +335,8 @@ namespace MiniAudio
                     return;
                 }
 
-                ma_result result = ma_resource_manager_register_encoded_data(ma_engine_get_resource_manager(engine),
-                    m_soundName.c_str(), assetBuffer.data(), assetBuffer.size());
+                ma_result result = ma_resource_manager_register_encoded_data(
+                    ma_engine_get_resource_manager(engine), m_soundName.c_str(), assetBuffer.data(), assetBuffer.size());
                 if (result != MA_SUCCESS)
                 {
                     // An error occurred.
@@ -327,7 +358,7 @@ namespace MiniAudio
                     return;
                 }
 
-                ma_sound_set_volume(m_sound.get(), m_config.m_volume);
+                ma_sound_set_volume(m_sound.get(), (m_config.m_volume / 100.f));
                 ma_sound_set_looping(m_sound.get(), m_config.m_loop);
 
                 ma_sound_set_spatialization_enabled(m_sound.get(), m_config.m_enableSpatialization);
@@ -342,21 +373,28 @@ namespace MiniAudio
                     if (!m_config.m_fixedDirection)
                     {
                         AZ::Transform worldTm = AZ::Transform::CreateIdentity();
-                        AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-                        ma_sound_set_direction(m_sound.get(), worldTm.GetBasisY().GetX(), worldTm.GetBasisY().GetY(), worldTm.GetBasisY().GetZ());
+                        AZ::TransformBus::EventResult(
+                            worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+                        ma_sound_set_direction(
+                            m_sound.get(), worldTm.GetBasisY().GetX(), worldTm.GetBasisY().GetY(), worldTm.GetBasisY().GetZ());
                     }
                     else
                     {
-                        ma_sound_set_direction(m_sound.get(), m_config.m_direction.GetX(), m_config.m_direction.GetY(), m_config.m_direction.GetZ());
+                        ma_sound_set_direction(
+                            m_sound.get(), m_config.m_direction.GetX(), m_config.m_direction.GetY(), m_config.m_direction.GetZ());
                     }
 
-                    ma_sound_set_cone(m_sound.get(), m_config.m_innerAngleInRadians, m_config.m_outerAngleInRadians, (m_config.m_outerVolume/100.f));
+                    ma_sound_set_cone(
+                        m_sound.get(), m_config.m_innerAngleInRadians, m_config.m_outerAngleInRadians, (m_config.m_outerVolume / 100.f));
                 }
 
                 if (m_config.m_autoFollowEntity)
                 {
                     m_entityMovedHandler.Disconnect();
-                    AZ::TransformBus::Event(m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::BindTransformChangedEventHandler, m_entityMovedHandler);
+                    AZ::TransformBus::Event(
+                        m_entityComponentIdPair.GetEntityId(),
+                        &AZ::TransformBus::Events::BindTransformChangedEventHandler,
+                        m_entityMovedHandler);
 
                     AZ::Transform worldTm = AZ::Transform::CreateIdentity();
                     AZ::TransformBus::EventResult(worldTm, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
