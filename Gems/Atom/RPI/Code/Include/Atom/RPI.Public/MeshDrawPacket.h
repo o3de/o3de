@@ -113,6 +113,9 @@ namespace AZ
             // Tracks whether the Material has change since the DrawPacket was last built
             Material::ChangeId m_materialChangeId = Material::DEFAULT_CHANGE_ID;
 
+            // A handler which is called when a shader variant of the material is ready 
+            Material::OnMaterialShaderVariantReadyEvent::Handler m_shaderVariantHandler;
+
             // Set the sort key for the draw packet
             RHI::DrawItemSortKey m_sortKey = 0;
 
