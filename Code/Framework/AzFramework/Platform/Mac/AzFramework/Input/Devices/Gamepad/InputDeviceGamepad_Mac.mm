@@ -6,17 +6,16 @@
  *
  */
 
+
+
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
-
-#include <GameController/GameController.h>
-
 #include <AzCore/Debug/Trace.h>
+#include <GameController/GameController.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-    using namespace AzFramework;
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Digital button bitmasks
     const AZ::u32 DIGITAL_BUTTON_MASK_DU    = 0x0001;
@@ -39,27 +38,27 @@ namespace
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Map of digital button ids keyed by their button bitmask
-    const AZStd::unordered_map<AZ::u32, const InputChannelId*> GetDigitalButtonIdByBitMaskMap()
+    const AZStd::unordered_map<AZ::u32, const AzFramework::InputChannelId*> GetDigitalButtonIdByBitMaskMap()
     {
-        const AZStd::unordered_map<AZ::u32, const InputChannelId*> map =
+        const AZStd::unordered_map<AZ::u32, const AzFramework::InputChannelId*> map =
         {
-            { DIGITAL_BUTTON_MASK_DU,       &InputDeviceGamepad::Button::DU },
-            { DIGITAL_BUTTON_MASK_DD,       &InputDeviceGamepad::Button::DD },
-            { DIGITAL_BUTTON_MASK_DL,       &InputDeviceGamepad::Button::DL },
-            { DIGITAL_BUTTON_MASK_DR,       &InputDeviceGamepad::Button::DR },
+            { DIGITAL_BUTTON_MASK_DU,       &AzFramework::InputDeviceGamepad::Button::DU },
+            { DIGITAL_BUTTON_MASK_DD,       &AzFramework::InputDeviceGamepad::Button::DD },
+            { DIGITAL_BUTTON_MASK_DL,       &AzFramework::InputDeviceGamepad::Button::DL },
+            { DIGITAL_BUTTON_MASK_DR,       &AzFramework::InputDeviceGamepad::Button::DR },
 
-            { DIGITAL_BUTTON_MASK_L1,       &InputDeviceGamepad::Button::L1 },
-            { DIGITAL_BUTTON_MASK_R1,       &InputDeviceGamepad::Button::R1 },
-            { DIGITAL_BUTTON_MASK_L3,       &InputDeviceGamepad::Button::L3 },
-            { DIGITAL_BUTTON_MASK_R3,       &InputDeviceGamepad::Button::R3 },
+            { DIGITAL_BUTTON_MASK_L1,       &AzFramework::InputDeviceGamepad::Button::L1 },
+            { DIGITAL_BUTTON_MASK_R1,       &AzFramework::InputDeviceGamepad::Button::R1 },
+            { DIGITAL_BUTTON_MASK_L3,       &AzFramework::InputDeviceGamepad::Button::L3 },
+            { DIGITAL_BUTTON_MASK_R3,       &AzFramework::InputDeviceGamepad::Button::R3 },
 
-            { DIGITAL_BUTTON_MASK_A,        &InputDeviceGamepad::Button::A },
-            { DIGITAL_BUTTON_MASK_B,        &InputDeviceGamepad::Button::B },
-            { DIGITAL_BUTTON_MASK_X,        &InputDeviceGamepad::Button::X },
-            { DIGITAL_BUTTON_MASK_Y,        &InputDeviceGamepad::Button::Y },
+            { DIGITAL_BUTTON_MASK_A,        &AzFramework::InputDeviceGamepad::Button::A },
+            { DIGITAL_BUTTON_MASK_B,        &AzFramework::InputDeviceGamepad::Button::B },
+            { DIGITAL_BUTTON_MASK_X,        &AzFramework::InputDeviceGamepad::Button::X },
+            { DIGITAL_BUTTON_MASK_Y,        &AzFramework::InputDeviceGamepad::Button::Y },
 
-            { DIGITAL_BUTTON_MASK_PAUSE,    &InputDeviceGamepad::Button::Start },
-            { DIGITAL_BUTTON_MASK_SELECT,   &InputDeviceGamepad::Button::Select }
+            { DIGITAL_BUTTON_MASK_PAUSE,    &AzFramework::InputDeviceGamepad::Button::Start },
+            { DIGITAL_BUTTON_MASK_SELECT,   &AzFramework::InputDeviceGamepad::Button::Select }
         };
         return map;
     }
@@ -69,22 +68,22 @@ namespace
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    //! Platform specific implementation for apple game-pad input devices
-    class InputDeviceGamepadApple : public InputDeviceGamepad::Implementation
+    //! Platform specific implementation for Mac game-pad input devices
+    class InputDeviceGamepadMac : public InputDeviceGamepad::Implementation
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceGamepadApple, AZ::SystemAllocator);
+        AZ_CLASS_ALLOCATOR(InputDeviceGamepadMac, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDevice Reference to the input device being implemented
-        InputDeviceGamepadApple(InputDeviceGamepad& inputDevice);
+        InputDeviceGamepadMac(InputDeviceGamepad& inputDevice);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Destructor
-        ~InputDeviceGamepadApple() override;
+        ~InputDeviceGamepadMac() override;
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,51 +111,45 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::u32 InputDeviceGamepad::GetMaxSupportedGamepads()
-    {
-        return GCControllerPlayerIndex4 + 1;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceGamepad::Implementation* InputDeviceGamepad::Implementation::Create(
         InputDeviceGamepad& inputDevice)
     {
-        return aznew InputDeviceGamepadApple(inputDevice);
+        return aznew InputDeviceGamepadMac(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceGamepadApple::InputDeviceGamepadApple(InputDeviceGamepad& inputDevice)
+    InputDeviceGamepadMac::InputDeviceGamepadMac(InputDeviceGamepad& inputDevice)
         : InputDeviceGamepad::Implementation(inputDevice)
         , m_rawGamepadState(GetDigitalButtonIdByBitMaskMap())
         , m_controller(nullptr)
         , m_wasPausedHandlerCalled(false)
     {
-        AZ_Assert(inputDevice.GetInputDeviceId().GetIndex() < InputDeviceGamepad::GetMaxSupportedGamepads(),
-                  "Creating InputDeviceGamepadApple with index %d that is greater than the max supported by the game controller framework: %d",
-                  inputDevice.GetInputDeviceId().GetIndex(), InputDeviceGamepad::GetMaxSupportedGamepads());
+        AZ_Assert(inputDevice.GetInputDeviceId().GetIndex() <= GCControllerPlayerIndex4,
+                  "Creating InputDeviceGamepadMac with index %d that is greater than the max supported by the game controller framework: %d",
+                  inputDevice.GetInputDeviceId().GetIndex(), (GCControllerPlayerIndex4+1));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceGamepadApple::~InputDeviceGamepadApple()
+    InputDeviceGamepadMac::~InputDeviceGamepadMac()
     {
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceGamepadApple::IsConnected() const
+    bool InputDeviceGamepadMac::IsConnected() const
     {
         return m_controller != nullptr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceGamepadApple::SetVibration(float leftMotorSpeedNormalized,
-                                               float rightMotorSpeedNormalized)
+    void InputDeviceGamepadMac::SetVibration(float leftMotorSpeedNormalized, 
+                                             float rightMotorSpeedNormalized)
     {
         // The apple game controller framework does not (yet?) support force-feedback
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceGamepadApple::GetPhysicalKeyOrButtonText(const InputChannelId& inputChannelId,
-                                                             AZStd::string& o_keyOrButtonText) const
+    bool InputDeviceGamepadMac::GetPhysicalKeyOrButtonText(const InputChannelId& inputChannelId,
+                                                           AZStd::string& o_keyOrButtonText) const
     {
         if (inputChannelId == InputDeviceGamepad::Button::Start)
         {
@@ -240,7 +233,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    void InputDeviceGamepadApple::TickInputDevice()
+    void InputDeviceGamepadMac::TickInputDevice()
     {
         if (m_controller == nil)
         {
@@ -271,7 +264,7 @@ namespace AzFramework
             return;
         }
 
-        AZ_Assert(m_controller != nil, "Logic error in InputDeviceGamepadApple::TickInputDevice");
+        AZ_Assert(m_controller != nil, "Logic error in InputDeviceGamepadMac::TickInputDevice");
 
         // Always update the input channels while the game-pad is connected
         m_rawGamepadState.m_digitalButtonStates = 0;
@@ -314,7 +307,7 @@ namespace AzFramework
         }
         else
         {
-            AZ_WarningOnce("InputDeviceGamepadApple", false, "Unknown game-pad profile");
+            AZ_WarningOnce("InputDeviceGamepadMac", false, "Unknown game-pad profile");
         }
 
         if (m_wasPausedHandlerCalled)
@@ -325,4 +318,27 @@ namespace AzFramework
 
         ProcessRawGamepadState(m_rawGamepadState);
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class MacDeviceGamepadImplFactory
+        : public InputDeviceGamepad::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<InputDeviceGamepad::Implementation> Create(InputDeviceGamepad& inputDevice) override
+        {
+            return AZStd::make_unique<InputDeviceGamepadMac>(inputDevice);
+        }
+        AZ::u32 GetMaxSupportedGamepads() const override
+        {
+            return GCControllerPlayerIndex4 + 1;
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeDeviceGamepadImplentationFactory()
+    {
+        m_deviceGamepadImplFactory = AZStd::make_unique<MacDeviceGamepadImplFactory>();
+        AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Register(m_deviceGamepadImplFactory.get());
+    }
+
 } // namespace AzFramework

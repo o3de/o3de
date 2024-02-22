@@ -83,7 +83,7 @@ namespace AZ::Render
     {
         if (auto scene = GetParentScene(); scene != nullptr)
         {
-            if (m_compositePass && m_rasterPass)
+            if (m_compositePass && m_rasterPass && m_rasterPass->GetRenderPipeline())
             {
                 // Get DrawList from the dynamic draw interface and view
                 AZStd::vector<RHI::DrawListView> drawLists = AZ::RPI::DynamicDrawInterface::Get()->GetDrawListsForPass(m_rasterPass);

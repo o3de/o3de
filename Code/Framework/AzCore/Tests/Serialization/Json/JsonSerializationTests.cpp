@@ -431,7 +431,6 @@ namespace JsonSerializationTests
         EXPECT_CALL(*mock, Load(_, _, _, _))
             .Times(Exactly(1))
             .WillRepeatedly(Return(Result(m_deserializationSettings->m_reporting, "Test", Tasks::ReadField, Outcomes::Success, "")));
-
         TemplatedClass<int> instance;
         AZ::JsonSerialization::Load(instance, *m_jsonDocument, *m_deserializationSettings);
 
@@ -468,7 +467,6 @@ namespace JsonSerializationTests
         EXPECT_CALL(*mock, Load(_, _, _, _))
             .Times(Exactly(1))
             .WillRepeatedly(Return(Result(m_deserializationSettings->m_reporting, "Test", Tasks::ReadField, Outcomes::Success, "")));
-
         AZStd::unique_ptr<BaseClass> instance;
         ResultCode result = AZ::JsonSerialization::Load(instance, *m_jsonDocument, *m_deserializationSettings);
         EXPECT_NE(Processing::Halted, result.GetProcessing());
@@ -497,7 +495,6 @@ namespace JsonSerializationTests
         EXPECT_CALL(*mock, Store(_, _, _, _, _))
             .Times(Exactly(1))
             .WillRepeatedly(Return(Result(m_serializationSettings->m_reporting, "Test", Tasks::WriteValue, Outcomes::Success, "")));
-
         TemplatedClass<int> instance;
         AZ::JsonSerialization::Store(*m_jsonDocument, m_jsonDocument->GetAllocator(), instance, *m_serializationSettings);
 

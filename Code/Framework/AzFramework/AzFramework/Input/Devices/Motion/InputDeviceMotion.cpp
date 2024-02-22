@@ -58,7 +58,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMotion::InputDeviceMotion(const InputDeviceId& inputDeviceId,
-                                         ImplementationFactory implementationFactory)
+                                         ImplementationFactory* implementationFactory)
         : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_accelerationChannelsById()
@@ -106,7 +106,7 @@ namespace AzFramework
         }
 
         // Create the platform specific or custom implementation
-        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create(*this) : nullptr;
 
         // Connect to the motion sensor request bus
         InputMotionSensorRequestBus::Handler::BusConnect(GetInputDeviceId());

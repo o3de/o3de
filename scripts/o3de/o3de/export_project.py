@@ -191,6 +191,7 @@ class LauncherType(IntEnum):
     GAME = 1
     SERVER = 2
     UNIFIED = 4
+    HEADLESS = 8
 
 # Helper API
 def get_default_asset_platform():
@@ -702,7 +703,7 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        monolithic_build:bool = True,
                        logger: logging.Logger = None) -> None:
     """
-    Build the launchers for the project (game, server, unified)
+    Build the launchers for the project (game, server, unified, headless)
 
     @param ctx:                         Export Context
     @param build_config:                The build config to build (profile or release)
@@ -722,8 +723,10 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     should_build_game_launcher = (launcher_types & LauncherType.GAME) == LauncherType.GAME
     should_build_server_launcher = (launcher_types & LauncherType.SERVER) == LauncherType.SERVER
     should_build_unified_launcher = (launcher_types & LauncherType.UNIFIED) == LauncherType.UNIFIED
+    should_build_headless_server_launcher = (launcher_types & LauncherType.HEADLESS) == LauncherType.HEADLESS
 
-    if not (should_build_server_launcher or should_build_game_launcher or should_build_unified_launcher):
+
+    if not (should_build_server_launcher or should_build_game_launcher or should_build_unified_launcher or should_build_headless_server_launcher):
         return
 
     cmake_configure_command = ["cmake", "-B", game_build_path]
@@ -764,6 +767,8 @@ def build_game_targets(ctx: O3DEScriptExportContext,
         mono_build_args.append(f"{ctx.project_name}.GameLauncher")
     if should_build_unified_launcher:
         mono_build_args.append(f"{ctx.project_name}.UnifiedLauncher")
+    if should_build_headless_server_launcher:
+        mono_build_args.append(f"{ctx.project_name}.HeadlessServerLauncher")
 
     if ctx.cmake_additional_build_args:
         mono_build_args.extend(ctx.cmake_additional_build_args)

@@ -41,6 +41,26 @@ ly_add_target(
             ${gridmate_dependency}
 )
 
+ly_add_target(
+    NAME AzFramework.NativeUI STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        AzFramework/azframework_nativeui_files.cmake
+        ${pal_dir}/platform_nativeui_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_nativeui_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            .
+            ${pal_dir}
+        PRIVATE
+            ${common_dir}
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+)
+
 set(LY_SEARCH_MODE_DEFINE $<$<BOOL:"${LY_ARCHIVE_FILE_SEARCH_MODE}">:LY_ARCHIVE_FILE_SEARCH_MODE=${LY_ARCHIVE_FILE_SEARCH_MODE}>)
 
 ly_add_source_properties(
@@ -111,6 +131,30 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME AZ::AzFramework.Tests
             LABELS REQUIRES_tiaf;TIAF_shard_fixture
         )
+
+        ly_add_target(
+            NAME AzFramework.NativeUI.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE AZ
+            FILES_CMAKE
+                Tests/framework_nativeui_tests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+                    ${test_pal_dir}
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzFramework
+                    AZ::AzFramework.NativeUI
+                    AZ::AzTest
+                    AZ::AzTestShared
+                    AZ::AzFrameworkTestShared
+            RUNTIME_DEPENDENCIES
+                AZ::ProcessLaunchTest
+        )
+        ly_add_googletest(
+            NAME AZ::AzFramework.NativeUI.Tests
+        )
+
 
         include(${test_pal_dir}/platform_specific_test_targets.cmake)
 

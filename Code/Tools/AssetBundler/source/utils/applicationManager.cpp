@@ -37,6 +37,11 @@
 
 namespace AssetBundler
 {
+    // Added a declaration of GetBuildTargetName which retrieves the name of the build target
+    // The build target changes depending on which shared library/executable applicationManager.cpp
+    // is linked to 
+    AZStd::string_view GetBuildTargetName();
+
     const char compareVariablePrefix = '$';
 
     ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
@@ -189,7 +194,7 @@ namespace AssetBundler
     void ApplicationManager::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
     {
         AzToolsFramework::ToolsApplication::SetSettingsRegistrySpecializations(specializations);
-        specializations.Append("assetbundler");
+        specializations.Append(GetBuildTargetName());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////

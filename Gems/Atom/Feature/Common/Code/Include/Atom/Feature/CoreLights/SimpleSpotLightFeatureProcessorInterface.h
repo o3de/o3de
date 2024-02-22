@@ -37,10 +37,8 @@ namespace AZ
 
             //! Sets the intensity in RGB candela for a given LightHandle.
             virtual void SetRgbIntensity(LightHandle handle, const PhotometricColor<PhotometricUnitType>& lightColor) = 0;
-            //! Sets the position for a given LightHandle.
-            virtual void SetPosition(LightHandle handle, const AZ::Vector3& lightPosition) = 0;
-            //! Sets the direction for a given LightHandle.
-            virtual void SetDirection(LightHandle handle, const AZ::Vector3& lightDirection) = 0;
+            //! Sets the light's transformation for a given LightHandle.
+            virtual void SetTransform(LightHandle handle, const AZ::Transform& transform) = 0;
             //! Sets the radius in meters at which the provided LightHandle will no longer have an effect.
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
             //! Sets the inner and outer cone angles in radians.
@@ -49,6 +47,8 @@ namespace AZ
             virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
             //! Specifies the contribution of this light to the diffuse global illumination in the scene.
             virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
+            //! Set a gobo texture to the light
+            virtual void SetGoboTexture(LightHandle handle, AZ::Data::Instance<AZ::RPI::Image> goboTexture) = 0;
 
             // Shadow Settings
 

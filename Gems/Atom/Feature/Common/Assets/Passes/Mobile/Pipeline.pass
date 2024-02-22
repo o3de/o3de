@@ -156,6 +156,27 @@
                     ]
                 },
                 {
+                    "Name": "DeferredFogPass",
+                    "TemplateName": "MobileDeferredFogPassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "ForwardPass",
+                                "Attachment": "DepthStencilOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "MobileTransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "SilhouettePass",
                     "TemplateName": "SilhouettePassTemplate",
                     "Enabled": true,

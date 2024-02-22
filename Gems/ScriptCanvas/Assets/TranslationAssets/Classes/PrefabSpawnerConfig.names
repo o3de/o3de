@@ -1,0 +1,99 @@
+{
+    "entries": [
+        {
+            "base": "PrefabSpawnerConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Prefab Spawner Config",
+                "category": "Gameplay/Spawner"
+            },
+            "methods": [
+                {
+                    "base": "GetspawnOnActivate",
+                    "details": {
+                        "name": "Get Spawn On Activate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2BC3452-A345-00AB-129E-B457ACD38AAA}",
+                            "details": {
+                                "name": "Spawner Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetspawnOnActivate",
+                    "details": {
+                        "name": "Set Spawn On Activate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2BC3452-A345-00AB-129E-B457ACD38AAA}",
+                            "details": {
+                                "name": "Prefab Spawner Config"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetdestroyOnDeactivate",
+                    "details": {
+                        "name": "Get Destroy On Deactivate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2BC3452-A345-00AB-129E-B457ACD38AAA}",
+                            "details": {
+                                "name": "Prefab Spawner Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetdestroyOnDeactivate",
+                    "details": {
+                        "name": "Set Destroy On Deactivate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2BC3452-A345-00AB-129E-B457ACD38AAA}",
+                            "details": {
+                                "name": "Prefab Spawner Config"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

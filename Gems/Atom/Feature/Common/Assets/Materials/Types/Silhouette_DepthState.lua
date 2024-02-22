@@ -16,19 +16,19 @@ function GetMaterialPropertyDependencies()
         }
 end
 
-SilhouetteType_AlwaysDraw = 0
-SilhouetteType_Visible = 1
-SilhouetteType_XRay = 2
-SilhouetteType_NeverDraw = 3
+local SilhouetteType_AlwaysDraw = 0
+local SilhouetteType_Visible = 1
+local SilhouetteType_XRay = 2
+local SilhouetteType_NeverDraw = 3
 
-ComparisonFunc_Never = 0
-ComparisonFunc_Less = 1
-ComparisonFunc_Equal = 2
-ComparisonFunc_LessEqual = 3
-ComparisonFunc_Greater = 4
-ComparisonFunc_NotEqual = 5
-ComparisonFunc_GreaterEqual = 6
-ComparisonFunc_Always = 7
+local ComparisonFunc_Never = 0
+local ComparisonFunc_Less = 1
+local ComparisonFunc_Equal = 2
+local ComparisonFunc_LessEqual = 3
+local ComparisonFunc_Greater = 4
+local ComparisonFunc_NotEqual = 5
+local ComparisonFunc_GreaterEqual = 6
+local ComparisonFunc_Always = 7
 
 function Process(context)
     local silhouetteType = context:GetMaterialPropertyValue_enum("silhouetteType")

@@ -42,6 +42,7 @@ namespace AZ
             // The MeshFeatureProcessor sets this stencil bit on any geometry that should block silhouettes in the SilhouetteGather pass. 
             //
             // Used in pass range: Forward -> Silhouette
+            // This setting needs to match the Stencil ReadMask in SilhouetteGather.shader
             const uint32_t BlockSilhouettes = 0x40;
 
             // UseDiffuseGIPass

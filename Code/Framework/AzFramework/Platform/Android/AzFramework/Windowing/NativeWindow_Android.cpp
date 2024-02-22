@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <AzCore/Android/Utils.h>
 #include <android/native_window.h>
@@ -32,11 +33,6 @@ namespace AzFramework
     private:
         ANativeWindow* m_nativeWindow = nullptr;
     };
-
-    NativeWindow::Implementation* NativeWindow::Implementation::Create()
-    {
-        return aznew NativeWindowImpl_Android();
-    }
 
     void NativeWindowImpl_Android::InitWindow([[maybe_unused]]const AZStd::string& title,
                                               const WindowGeometry& geometry,
@@ -101,5 +97,23 @@ namespace AzFramework
                 m_nativeWindow, newResolution.m_width, newResolution.m_height, ANativeWindow_getFormat(m_nativeWindow));
         }
         NativeWindow::Implementation::SetRenderResolution(newResolution);
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    class AndroidNativeWindowFactory 
+        : public NativeWindow::ImplementationFactory
+    {
+    public:
+        AZStd::unique_ptr<NativeWindow::Implementation> Create() override
+        {
+            return AZStd::make_unique<NativeWindowImpl_Android>();
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()
+    {
+        m_nativeWindowImplFactory = AZStd::make_unique<AndroidNativeWindowFactory>();
+        AZ::Interface<NativeWindow::ImplementationFactory>::Register(m_nativeWindowImplFactory.get());
     }
 } // namespace AzFramework

@@ -153,8 +153,20 @@ namespace AzPhysics
         SimulatedBodyEvents::OnCollisionBegin* GetOnCollisionBeginEvent();
         SimulatedBodyEvents::OnCollisionPersist* GetOnCollisionPersistEvent();
         SimulatedBodyEvents::OnCollisionEnd* GetOnCollisionEndEvent();
+// Gruber patch begin // STA : make the following 2 methods public.
+// These methods are needed to emulate TriggerNotificationBus, which is made available in O3DE only as
+// AzPhysics::Automation::AutomationTriggerNotificationsBus, in a client project.
+#if defined(CARBONATED)
+    public:
+#endif // defined(CARBONATED)
+// Gruber patch end // STA
         SimulatedBodyEvents::OnTriggerEnter* GetOnTriggerEnterEvent();
         SimulatedBodyEvents::OnTriggerExit* GetOnTriggerExitEvent();
+// Gruber patch begin // STA : keep following methods private.
+#if defined(CARBONATED)
+    private:
+#endif // defined(CARBONATED)
+// Gruber patch end // STA
         SimulatedBodyEvents::OnSyncTransform* GetOnSyncTransformEvent();
     };
     //! Alias for a list of non owning weak pointers to SimulatedBody objects.

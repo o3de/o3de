@@ -1263,7 +1263,7 @@ namespace AzToolsFramework
             {
                 removed = templateIterator->second.RemoveLink(linkId);
 
-                //remove link
+                // Remove link
                 PrefabDomValueReference templateInstancesRef = templateIterator->second.GetInstancesValue();
                 if (templateInstancesRef == AZStd::nullopt)
                 {
@@ -1274,7 +1274,9 @@ namespace AzToolsFramework
                 removed = templateInstancesRef->get().RemoveMember(link.GetInstanceName().c_str())
                     ? removed : false;
 
-                if (removed)
+                // If removing all templates, we should not make any unnecessary updates for the linked instance DOMs.
+                // It is because doing such updates might cause some unexpected prefab patch warnings.
+                if (removed && !m_removingAllTemplates)
                 {
                     templateIterator->second.MarkAsDirty(true);
                     PropagateTemplateChanges(targetTemplateId);

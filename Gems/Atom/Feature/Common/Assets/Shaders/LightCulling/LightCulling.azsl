@@ -43,6 +43,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
     struct SimpleSpotLight
     {
+        float4x4 m_viewProjectionMatrix;    // Light's view projection matrix. Used to calculate uv for gobo 
         float3 m_position;
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
         float3 m_direction;
@@ -50,9 +51,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float3 m_rgbIntensityCandelas;
         float m_cosOuterConeAngle; // cosine of the inner cone angle
         uint m_shadowIndex; 
+        uint m_goboTexIndex;
         float m_affectsGIFactor;
         bool m_affectsGI;
-        float m_padding;
         [[pad_to(16)]] // Here to ensure we pad the struct to 16 in case someone adds incorrect padding
     };
 

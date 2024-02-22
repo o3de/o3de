@@ -263,7 +263,11 @@ namespace AZ
                 // LY editor create its own window which we can get its handle through AzFramework::WindowSystemNotificationBus::Handler's OnWindowCreated() function
                 AZ::ApplicationTypeQuery appType;
                 ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
-                if (!appType.IsValid() || appType.IsGame())
+                if (appType.IsHeadless())
+                {
+                    m_nativeWindow = nullptr;
+                }
+                else if (!appType.IsValid() || appType.IsGame())
                 {
                     // GFX TODO - investigate window creation being part of the GameApplication.
 

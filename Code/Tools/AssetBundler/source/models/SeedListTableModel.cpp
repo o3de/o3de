@@ -15,6 +15,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
+#include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogManager.h>
 
 #include <QFont>
 
@@ -65,13 +66,29 @@ namespace AssetBundler
 
         AZ::Data::AssetInfo assetInfo;
         QString platformList;
+        const auto& enabledPlatforms = AzToolsFramework::PlatformAddressedAssetCatalogManager::GetEnabledPlatforms();
+        if (enabledPlatforms.empty())
+        {
+            AZ_Error(AssetBundler::AppWindowName, false, "Unable to find any enabled asset platforms. Please verify the Asset Processor has run and generated assets successfully.");
+        }
+
         for (const auto& seed : m_seedListManager->GetAssetSeedList())
         {
-            assetInfo = AzToolsFramework::AssetSeedManager::GetAssetInfoById(
-                seed.m_assetId,
-                AzFramework::PlatformHelper::GetPlatformIndicesInterpreted(seed.m_platformFlags)[0],
-                absolutePath,
-                seed.m_assetRelativePath);
+            for (auto platformId : enabledPlatforms)
+            {
+                if (AZ::PlatformHelper::HasPlatformFlag(seed.m_platformFlags, platformId))
+                {
+                    assetInfo = AzToolsFramework::AssetSeedManager::GetAssetInfoById(
+                        seed.m_assetId,
+                        platformId,
+                        absolutePath,
+                        seed.m_assetRelativePath);
+                    if (assetInfo.m_assetId.IsValid())
+                    {
+                        break;
+                    }
+                }
+            }
             platformList = QString(m_seedListManager->GetReadablePlatformList(seed).c_str());
 
             m_additionalSeedInfoMap[seed.m_assetId].reset(new AdditionalSeedInfo(assetInfo.m_relativePath.c_str(), platformList));

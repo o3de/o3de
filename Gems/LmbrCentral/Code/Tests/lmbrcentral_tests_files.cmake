@@ -21,6 +21,7 @@ set(FILES
     LmbrCentralTest.cpp
     ShapeGeometryUtilTest.cpp
     SpawnerComponentTest.cpp
+    PrefabSpawnerComponentTest.cpp
     SplineComponentTests.cpp
     DiskShapeTest.cpp
     ReferenceShapeTests.cpp
@@ -30,5 +31,6 @@ set(FILES
     ShapeTestUtils.h
     ../Source/LmbrCentral.cpp
     ../Source/Scripting/SpawnerComponent.cpp
+    ../Source/Scripting/PrefabSpawnerComponent.cpp
     ../Source/Shape/TubeShape.cpp
 )
