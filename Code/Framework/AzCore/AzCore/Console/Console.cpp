@@ -120,11 +120,12 @@ namespace AZ
                                              requiredSet,
                                              requiredClear };
 
-#ifdef CARBONATED
-            // A protection against an execution of 2 the same commands one by one.
-            // For example, this happens because the "LoadLevel <path>" command from "Registry\autoexec.game.setreg" is compiled into
-            // "Cache\pc\bootstrap.game.<profile>.setreg" as a sequence of the same commands.
-            // This fix compares the new deffered command with the last one in the list and ignores it if they are fully equal
+#if defined(CARBONATED) && !(defined(AZ_PLATFORM_IOS) || defined(AZ_PLATFORM_ANDROID))
+            // A protection against an execution of the same command more than once.
+            // If LoadLevel command is in Registry\autoexec.game.setreg then it is also copied to
+            // "Cache\pc\bootstrap.game.<profile>.setreg". The engine executes both setrget files for Windows standalone client.
+            // The issue happens if there is a source setreg file available, which is not actual for mobile platforms.
+            // This code piece below compares the new deffered command with all the queue commands, it an exact match found then it ignores the new command.
             if (m_deferredCommands.size() > 0)
             {
                 for (DeferredCommand& checkCommand : m_deferredCommands)
@@ -143,7 +144,7 @@ namespace AZ
                         }
                         if (isEqual)
                         {
-                            return AZ::Success();
+                            return AZ::Success();  // ignore the command, do not add to the queue
                         }
                     }
                 }
