@@ -10,6 +10,7 @@
 
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QSignalBlocker>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QtWidgets/QHBoxLayout>
 AZ_POP_DISABLE_WARNING
@@ -48,9 +49,8 @@ namespace AzToolsFramework
 
     void PropertyBoolRadioButtonsCtrl::setValue(bool value)
     {
-        m_buttonGroup->blockSignals(true);
+        QSignalBlocker blocker(m_buttonGroup);
         m_buttonGroup->button(value ? s_trueButtonIndex : s_falseButtonIndex)->setChecked(true);
-        m_buttonGroup->blockSignals(false);
     }
 
     bool PropertyBoolRadioButtonsCtrl::value() const
@@ -113,6 +113,14 @@ namespace AzToolsFramework
                 PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
             });
         return newCtrl;
+    }
+
+    bool BoolPropertyRadioButtonsHandler::ResetGUIToDefaults(PropertyBoolRadioButtonsCtrl* GUI)
+    {
+        GUI->SetButtonText(false, "");
+        GUI->SetButtonText(true, "");
+        GUI->setValue(false);
+        return true;
     }
 
     void BoolPropertyRadioButtonsHandler::ConsumeAttribute(PropertyBoolRadioButtonsCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)

@@ -11,6 +11,7 @@
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/DOM/DomUtils.h>
+#include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/PointerObject.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
@@ -35,9 +36,15 @@ namespace AZ::DocumentPropertyEditor
         struct BoundContainer
         {
             // For constructing non-nested containers
-            BoundContainer(AZ::SerializeContext::IDataContainer* container, void* containerInstance)
+            BoundContainer(
+                AZ::SerializeContext::IDataContainer* container,
+                void* containerInstance,
+                void* parentInstance,
+                const AZ::SerializeContext::ClassData* parentClassData)
                 : m_container(container)
                 , m_containerInstance(containerInstance)
+                , m_parentInstance(parentInstance)
+                , m_parentClassData(parentClassData)
             {
             }
 
@@ -57,9 +64,33 @@ namespace AZ::DocumentPropertyEditor
                         container = reinterpret_cast<AZ::Serialize::IDataContainer*>(containerObject->m_address);
                     }
                 }
+
                 if (container != nullptr)
                 {
-                    return AZStd::make_unique<BoundContainer>(container, instance);
+                    void* parentInstance = nullptr;
+                    const AZ::SerializeContext::ClassData* parentClassData = nullptr;
+
+                    if (auto parentInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentInstance);
+                        parentInstanceValue && !parentInstanceValue->IsNull())
+                    {
+                        if (auto parentInstanceObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentInstanceValue);
+                            parentInstanceObject)
+                        {
+                            parentInstance = parentInstanceObject->m_address;
+                        }
+                    }
+
+                    if (auto parentClassDataValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentClassData);
+                        parentClassDataValue && !parentClassDataValue->IsNull())
+                    {
+                        if (auto parentClassDataObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentClassDataValue);
+                            parentClassDataObject && parentClassDataObject->m_typeId == azrtti_typeid<const SerializeContext::ClassData*>())
+                        {
+                            parentClassData = reinterpret_cast<const AZ::SerializeContext::ClassData*>(parentClassDataObject->m_address);
+                        }
+                    }
+
+                    return AZStd::make_unique<BoundContainer>(container, instance, parentInstance, parentClassData);
                 }
                 return nullptr;
             }
@@ -110,6 +141,15 @@ namespace AZ::DocumentPropertyEditor
                 impl->m_adapter->NotifyResetDocument();
             }
 
+            void StoreReservedInstance(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
+            {
+                m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
+                auto containerNode = GetContainerNode(impl, path);
+                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
+                impl->m_adapter->NotifyResetDocument();
+                m_reservedElementInstance = nullptr;
+            }
+
             void OnAddElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
                 if (m_container->IsFixedCapacity() && m_container->Size(m_containerInstance) >= m_container->Capacity(m_containerInstance))
@@ -117,39 +157,112 @@ namespace AZ::DocumentPropertyEditor
                     return;
                 }
 
-                const AZ::SerializeContext::ClassElement* containerClassElement =
-                    m_container->GetElement(m_container->GetDefaultElementNameCrc());
+                auto serialContext = impl->m_serializeContext;
+                auto containerClassElement = m_container->GetElement(m_container->GetDefaultElementNameCrc());
 
-                // The reserved element is an allocated instance of the IDataContainer's ValueType.
-                // In an associative container, this would be a pair.
-                m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
-
-                auto associativeContainer = m_container->GetAssociativeContainerInterface();
-                if (associativeContainer)
+                if (containerClassElement->m_flags & AZ::SerializeContext::ClassElement::FLG_POINTER)
                 {
-                    auto keyTypeAttribute = containerClassElement->FindAttribute(AZ_CRC_CE("KeyType"));
-                    if (keyTypeAttribute)
-                    {
-                        // Get the key type and send it with the dataAddress in the message, then skip the store
-                        // element below until we get an AddContainerKey message back from the DPE UI
-                        auto* keyTypeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Uuid>*>(keyTypeAttribute);
-                        if (keyTypeData)
+                    const AZ::Uuid& baseTypeId =
+                        containerClassElement->m_azRtti ? containerClassElement->m_azRtti->GetTypeId() : AZ::AzTypeInfo<int>::Uuid();
+
+                    auto derivedClasses = AZStd::make_shared<AZStd::vector<const AZ::SerializeContext::ClassData*>>();
+                    serialContext->EnumerateDerived(
+                        [&derivedClasses](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid& /*knownType*/) -> bool
                         {
-                            const AZ::TypeId& keyType = keyTypeData->Get(nullptr);
-                            DocumentAdapterPtr reflectionAdapter =
-                                AZStd::make_shared<ReflectionAdapter>(m_reservedElementInstance, keyType);
-                            Nodes::Adapter::QueryKey.InvokeOnDomNode(impl->m_adapter->GetContents(), &reflectionAdapter, path);
-                            return; // key queried; don't store the actual entry until the DPE handles the QueryKey message
+                            derivedClasses->push_back(classData);
+                            return true;
+                        },
+                        containerClassElement->m_typeId,
+                        baseTypeId);
+
+                    if (derivedClasses->size() == 1)
+                    {
+                        // there's just one, do it directly
+                        OnAddSubclassToContainer(impl, derivedClasses->front(), path);
+                    }
+                    else
+                    {
+                        Nodes::Adapter::QuerySubclass.InvokeOnDomNode(impl->m_adapter->GetContents(), &derivedClasses, path);
+                    }
+                }
+                else if (containerClassElement->m_typeId == AZ::SerializeTypeInfo<AZ::DynamicSerializableField>::GetUuid())
+                {
+                    // Dynamic serializable fields are capable of wrapping any type. Each one within a container can technically contain
+                    // an entirely different type from the others. We're going to assume that we're getting here via
+                    // ScriptPropertyGenericClassArray and that it strictly uses one type.
+
+                    const AZ::SerializeContext::ClassData* classData =
+                        serialContext->FindClassData(AZ::SerializeTypeInfo<AZ::DynamicSerializableField>::GetUuid());
+                    AZ_Assert(m_parentClassData && m_parentClassData->m_editData, "parentClassData must exist and have valid editData!");
+                    auto element = m_parentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
+                    if (element)
+                    {
+                        // Grab the AttributeMemberFunction used to get the Uuid type of the element wrapped by the DynamicSerializableField
+                        AZ::Edit::Attribute* assetTypeAttribute = element->FindAttribute(AZ::Edit::Attributes::DynamicElementType);
+                        if (assetTypeAttribute)
+                        {
+                            // Invoke the function we just grabbed and pull the class data based on that Uuid
+                            AZ::AttributeReader elementTypeIdReader(m_parentInstance, assetTypeAttribute);
+                            AZ::Uuid dynamicClassUuid;
+                            if (elementTypeIdReader.Read<AZ::Uuid>(dynamicClassUuid))
+                            {
+                                const AZ::SerializeContext::ClassData* dynamicClassData = serialContext->FindClassData(dynamicClassUuid);
+
+                                // Construct a new element based on the Uuid we just grabbed and wrap it in a DynamicSerializeableField for
+                                // storage
+                                if (classData && classData->m_factory && dynamicClassData && dynamicClassData->m_factory)
+                                {
+                                    // Reserve entry in the container
+                                    m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
+
+                                    // Create DynamicSerializeableField entry
+                                    void* newDataAddress = classData->m_factory->Create(classData->m_name);
+                                    AZ_Assert(newDataAddress, "Faliled to create new element for the continer!");
+
+                                    // Create dynamic element and populate entry with it
+                                    AZ::DynamicSerializableField* dynamicFieldDesc =
+                                        reinterpret_cast<AZ::DynamicSerializableField*>(newDataAddress);
+                                    void* newDynamicData = dynamicClassData->m_factory->Create(dynamicClassData->m_name);
+                                    dynamicFieldDesc->m_data = newDynamicData;
+                                    dynamicFieldDesc->m_typeId = dynamicClassData->m_typeId;
+
+                                    /// Store the entry in the container
+                                    *reinterpret_cast<AZ::DynamicSerializableField*>(m_reservedElementInstance) = *dynamicFieldDesc;
+                                    StoreReservedInstance(impl, path);
+                                }
+                            }
                         }
                     }
                 }
+                else
+                {
+                    // The reserved element is an allocated instance of the IDataContainer's ValueType.
+                    // In an associative container, this would be a pair.
+                    m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
 
-                m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
-                m_reservedElementInstance = nullptr;
-
-                auto containerNode = GetContainerNode(impl, path);
-                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
-                impl->m_adapter->NotifyResetDocument();
+                    auto associativeContainer = m_container->GetAssociativeContainerInterface();
+                    if (associativeContainer)
+                    {
+                        auto keyTypeAttribute = containerClassElement->FindAttribute(AZ_CRC_CE("KeyType"));
+                        if (keyTypeAttribute)
+                        {
+                            // Get the key type and send it with the dataAddress in the message, then skip the store
+                            // element below until we get an AddContainerKey message back from the DPE UI
+                            auto* keyTypeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Uuid>*>(keyTypeAttribute);
+                            if (keyTypeData)
+                            {
+                                const AZ::TypeId& keyType = keyTypeData->Get(nullptr);
+                                DocumentAdapterPtr reflectionAdapter =
+                                    AZStd::make_shared<ReflectionAdapter>(m_reservedElementInstance, keyType);
+                                Nodes::Adapter::QueryKey.InvokeOnDomNode(impl->m_adapter->GetContents(), &reflectionAdapter, path);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        StoreReservedInstance(impl, path);
+                    }
+                }
             }
 
             void OnAddElementToAssociativeContainer(
@@ -168,12 +281,7 @@ namespace AZ::DocumentPropertyEditor
                     associativeContainer->SetElementKey(m_reservedElementInstance, keyInstance);
                 }
 
-                m_container->StoreElement(m_containerInstance, m_reservedElementInstance);
-                m_reservedElementInstance = nullptr;
-
-                auto containerNode = GetContainerNode(impl, containerPath);
-                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
-                impl->m_adapter->NotifyResetDocument();
+                StoreReservedInstance(impl, containerPath);
             };
 
             void RejectAssociativeContainerKey(ReflectionAdapterReflectionImpl* impl)
@@ -183,8 +291,42 @@ namespace AZ::DocumentPropertyEditor
                 m_reservedElementInstance = nullptr;
             };
 
+            void OnAddSubclassToContainer(
+                ReflectionAdapterReflectionImpl* impl, const AZ::SerializeContext::ClassData* classData, AZ::Dom::Path path)
+            {
+                if (classData && classData->m_factory)
+                {
+                    auto serialContext = impl->m_serializeContext;
+                    auto containerClassElement = m_container->GetElement(m_container->GetDefaultElementNameCrc());
+
+                    // reserve entry in the container
+                    m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
+                    // create entry
+                    void* newDataAddress = classData->m_factory->Create(classData->m_name);
+
+                    AZ_Assert(newDataAddress, "Faliled to create new element for the container!");
+                    // cast to base type (if needed)
+                    void* basePtr = serialContext->DownCast(
+                        newDataAddress,
+                        classData->m_typeId,
+                        containerClassElement->m_typeId,
+                        classData->m_azRtti,
+                        containerClassElement->m_azRtti);
+                    AZ_Assert(
+                        basePtr != nullptr,
+                        "Can't cast container element %s to %s, make sure classes are registered in the system and not generics!",
+                        classData->m_name,
+                        containerClassElement->m_name);
+                    *reinterpret_cast<void**>(m_reservedElementInstance) = basePtr; // store the pointer in the class
+                    StoreReservedInstance(impl, path);
+                }
+            }
+
             AZ::SerializeContext::IDataContainer* m_container = nullptr;
             void* m_containerInstance = nullptr;
+
+            void* m_parentInstance = nullptr;
+            const AZ::SerializeContext::ClassData* m_parentClassData = nullptr;
 
             // An element instance reserved through the IDataContainer API
             void* m_reservedElementInstance = nullptr;
@@ -196,14 +338,15 @@ namespace AZ::DocumentPropertyEditor
         struct ContainerElement
         {
             // For constructing non-container elements
-            ContainerElement(AZ::SerializeContext::IDataContainer* container, void* containerInstance, void* elementInstance)
+            ContainerElement(AZ::SerializeContext::IDataContainer* container, void* containerInstance, size_t elementIndex)
                 : m_container(container)
                 , m_containerInstance(containerInstance)
-                , m_elementInstance(elementInstance)
+                , m_elementIndex(elementIndex)
             {
             }
 
-            static AZStd::unique_ptr<ContainerElement> CreateContainerElement(void* instance, const Reflection::IAttributes& attributes)
+            static AZStd::unique_ptr<ContainerElement> CreateContainerElement(
+                void* instance, size_t elementIndex, const Reflection::IAttributes& attributes)
             {
                 AZ_Assert(instance != nullptr, "Instance was nullptr when attempting to create a ContainerElement");
 
@@ -221,7 +364,8 @@ namespace AZ::DocumentPropertyEditor
                 {
                     auto parentContainerInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
                     void* parentContainerInstance{};
-                    AZStd::optional<AZ::PointerObject> parentContainerInstanceObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerInstanceValue);
+                    AZStd::optional<AZ::PointerObject> parentContainerInstanceObject =
+                        AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*parentContainerInstanceValue);
                     if (parentContainerInstanceObject.has_value() && parentContainerInstanceObject->IsValid())
                     {
                         parentContainerInstance = parentContainerInstanceObject->m_address;
@@ -233,14 +377,15 @@ namespace AZ::DocumentPropertyEditor
                     auto containerElementOverrideValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
                     if (containerElementOverrideValue)
                     {
-                        AZStd::optional<AZ::PointerObject> containerElementOverrideObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerElementOverrideValue);
+                        AZStd::optional<AZ::PointerObject> containerElementOverrideObject =
+                            AZ::Dom::Utils::ValueToType<AZ::PointerObject>(*containerElementOverrideValue);
                         if (containerElementOverrideObject.has_value() && containerElementOverrideObject->IsValid())
                         {
                             instance = containerElementOverrideObject->m_address;
                         }
                     }
 
-                    return AZStd::make_unique<ContainerElement>(parentContainer, parentContainerInstance, instance);
+                    return AZStd::make_unique<ContainerElement>(parentContainer, parentContainerInstance, elementIndex);
                 }
 
                 return nullptr;
@@ -285,15 +430,20 @@ namespace AZ::DocumentPropertyEditor
 
             void OnRemoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
-                m_container->RemoveElement(m_containerInstance, m_elementInstance, impl->m_serializeContext);
+                const AZ::SerializeContext::ClassElement* containerClassElement =
+                    m_container->GetElement(m_container->GetDefaultElementNameCrc());
+                auto elementInstance = m_container->GetElementByIndex(m_containerInstance, containerClassElement, m_elementIndex);
+                const bool elementRemoved = m_container->RemoveElement(m_containerInstance, elementInstance, impl->m_serializeContext);
+                (void)elementRemoved; // dodge unused warning when below assert is compiled out...
+                AZ_Assert(elementRemoved, "could not remove element!");
                 auto containerNode = GetContainerNode(impl, path);
                 Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
                 impl->m_adapter->NotifyResetDocument();
             }
 
-            void OnMoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path, AZ::s64 containerIndex, bool moveForward)
+            void OnMoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path, bool moveForward)
             {
-                m_container->SwapElements(m_containerInstance, containerIndex, (moveForward ? containerIndex + 1 : containerIndex - 1));
+                m_container->SwapElements(m_containerInstance, m_elementIndex, (moveForward ? m_elementIndex + 1 : m_elementIndex - 1));
                 auto containerNode = GetContainerNode(impl, path);
                 Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
                 impl->m_adapter->NotifyResetDocument();
@@ -301,7 +451,7 @@ namespace AZ::DocumentPropertyEditor
 
             AZ::SerializeContext::IDataContainer* m_container = nullptr;
             void* m_containerInstance = nullptr;
-            void* m_elementInstance = nullptr;
+            size_t m_elementIndex = 0;
         };
 
         struct ContainerEntry
@@ -659,6 +809,9 @@ namespace AZ::DocumentPropertyEditor
             auto parentContainerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
             auto parentContainerInstanceAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
 
+            auto containerIndexAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerIndex);
+            auto containerIndex = (containerIndexAttribute ? containerIndexAttribute->GetInt64() : 0);
+
             AZ::Serialize::IDataContainer* parentContainer{};
             if (parentContainerAttribute && !parentContainerAttribute->IsNull())
             {
@@ -681,13 +834,13 @@ namespace AZ::DocumentPropertyEditor
                 auto containerEntry = m_containers.ValueAtPath(m_builder.GetCurrentPath(), AZ::Dom::PrefixTreeMatch::ExactPath);
                 if (containerEntry)
                 {
-                    containerEntry->m_element = ContainerElement::CreateContainerElement(instance, attributes);
+                    containerEntry->m_element = ContainerElement::CreateContainerElement(instance, containerIndex, attributes);
                 }
                 else
                 {
                     m_containers.SetValue(
                         m_builder.GetCurrentPath(),
-                        ContainerEntry{ nullptr, ContainerElement::CreateContainerElement(instance, attributes) });
+                        ContainerEntry{ nullptr, ContainerElement::CreateContainerElement(instance, containerIndex, attributes) });
                 }
 
                 bool parentCanBeModified = true;
@@ -711,11 +864,6 @@ namespace AZ::DocumentPropertyEditor
                         auto containerSize = static_cast<AZ::s64>(parentContainer->Size(parentContainerInstance));
                         if (containerSize > 1 && parentContainer->IsSequenceContainer())
                         {
-                            auto containerIndexAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerIndex);
-                            AZ_Assert(
-                                containerIndexAttribute && !containerIndexAttribute->IsNull(),
-                                "children of a sequenced container should have a ContainerIndex!");
-                            auto containerIndex = containerIndexAttribute->GetInt64();
                             CreateContainerButton(Nodes::ContainerAction::MoveUp, !containerIndex, isAncestorDisabledValue, containerIndex);
                             CreateContainerButton(
                                 Nodes::ContainerAction::MoveDown,
@@ -741,26 +889,28 @@ namespace AZ::DocumentPropertyEditor
             }
 
             if (auto keyValueEntry = AZ::Dom::Utils::ValueToType<AZ::Reflection::LegacyReflectionInternal::KeyEntry>(*keyValueAttribute);
-                keyValueEntry&& keyValueEntry->IsValid())
+                keyValueEntry && keyValueEntry->IsValid())
             {
                 AZ::PointerObject keyValuePointerObject = keyValueEntry->m_keyInstance;
 
-                const AZStd::vector<AZ::Reflection::LegacyReflectionInternal::AttributeData>& keyAttributes = keyValueEntry->m_keyAttributes;
+                const AZStd::vector<AZ::Reflection::LegacyReflectionInternal::AttributeData>& keyAttributes =
+                    keyValueEntry->m_keyAttributes;
 
                 // Create a lambda that can return a lambda that searches the keyAttributes vector for a specific attribute
                 auto FindAttributeCreator = [](AZ::Name group, AZ::Name name)
                 {
                     return [group, name](const AZ::Reflection::LegacyReflectionInternal::AttributeData& attributeData) -> bool
                     {
-                        return group == attributeData.m_group&& name == attributeData.m_name;
+                        return group == attributeData.m_group && name == attributeData.m_name;
                     };
                 };
 
                 AZStd::string_view keyPropertyHandlerName;
                 // First try to search for the Handler attribute to see if a custom property handler has been specified
                 if (auto handlerIt = AZStd::find_if(
-                    keyAttributes.begin(),
-                    keyAttributes.end(), FindAttributeCreator(AZ::Name{}, Reflection::DescriptorAttributes::Handler));
+                        keyAttributes.begin(),
+                        keyAttributes.end(),
+                        FindAttributeCreator(AZ::Name{}, Reflection::DescriptorAttributes::Handler));
                     handlerIt != keyAttributes.end())
                 {
                     const AZ::Dom::Value& handler = handlerIt->m_value;
@@ -775,9 +925,9 @@ namespace AZ::DocumentPropertyEditor
                     // If the Key doesn't have a custom property handler
                     // and it's type is an is represented by an enum use the combo box property handler
                     if (auto enumTypeHandlerIt = AZStd::find_if(
-                        keyAttributes.begin(),
-                        keyAttributes.end(),
-                        FindAttributeCreator(AZ::Name{}, Nodes::PropertyEditor::EnumType.GetName()));
+                            keyAttributes.begin(),
+                            keyAttributes.end(),
+                            FindAttributeCreator(AZ::Name{}, Nodes::PropertyEditor::EnumType.GetName()));
                         enumTypeHandlerIt != keyAttributes.end() && !enumTypeHandlerIt->m_value.IsNull())
                     {
                         keyPropertyHandlerName = Nodes::ComboBox::Name;
@@ -1146,7 +1296,12 @@ namespace AZ::DocumentPropertyEditor
 
     void ReflectionAdapter::UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo)
     {
-        NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
+        auto valuePath = propertyChangeInfo.path / "Value";
+        auto currValue = GetContents()[valuePath];
+        if (currValue != propertyChangeInfo.newValue)
+        {
+            NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(valuePath, propertyChangeInfo.newValue) });
+        }
     }
 
     ExpanderSettings* ReflectionAdapter::CreateExpanderSettings(
@@ -1162,6 +1317,8 @@ namespace AZ::DocumentPropertyEditor
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::RejectContainerKey);
         m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::SetNodeDisabled);
+        m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::QuerySubclass);
+        m_impl->m_builder.AddMessageHandler(this, Nodes::Adapter::AddContainerSubclass);
         m_impl->m_onChangedCallbacks.Clear();
         m_impl->m_containers.Clear();
         if (m_instance != nullptr)
@@ -1368,10 +1525,8 @@ namespace AZ::DocumentPropertyEditor
                 case ContainerAction::MoveDown:
                     if (containerEntry->m_element)
                     {
-                        auto containerIndex = Nodes::ContainerActionButton::ContainerIndex.ExtractFromDomNode(node);
-                        AZ_Assert(containerIndex.has_value(), "MoveUp and MoveDown actions must have a ContainerIndex!");
                         containerEntry->m_element->OnMoveElement(
-                            m_impl.get(), message.m_messageOrigin, containerIndex.value(), action.value() == ContainerAction::MoveDown);
+                            m_impl.get(), message.m_messageOrigin, action.value() == ContainerAction::MoveDown);
                     }
                     break;
                 }
@@ -1396,6 +1551,15 @@ namespace AZ::DocumentPropertyEditor
             }
         };
 
+        auto addContainerSubclass = [&](const AZ::SerializeContext::ClassData* subClass, AZ::Dom::Path containerPath)
+        {
+            auto containerEntry = m_impl->m_containers.ValueAtPath(containerPath, AZ::Dom::PrefixTreeMatch::ParentsOnly);
+            if (containerEntry->m_container)
+            {
+                containerEntry->m_container->OnAddSubclassToContainer(m_impl.get(), subClass, containerPath);
+            }
+        };
+
         auto handleTreeUpdate = [&](Nodes::PropertyRefreshLevel)
         {
             // For now just trigger a soft reset but the end goal is to handle granular updates.
@@ -1415,6 +1579,8 @@ namespace AZ::DocumentPropertyEditor
             Nodes::Adapter::AddContainerKey,
             addKeyToContainer,
             Nodes::Adapter::RejectContainerKey,
-            rejectKeyToContainer);
+            rejectKeyToContainer,
+            Nodes::Adapter::AddContainerSubclass,
+            addContainerSubclass);
     }
 } // namespace AZ::DocumentPropertyEditor

@@ -94,6 +94,12 @@ namespace AzToolsFramework
         return newCtrl;
     }
 
+    void CheckBoxHandlerCommon::ResetValueCommon(PropertyCheckBoxCtrl* widget)
+    {
+        widget->setValue(false);
+        widget->SetCheckBoxToolTip("");
+    }
+
     void CheckBoxHandlerCommon::ConsumeAttributeCommon(
         PropertyCheckBoxCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* /*debugName*/)
     {
