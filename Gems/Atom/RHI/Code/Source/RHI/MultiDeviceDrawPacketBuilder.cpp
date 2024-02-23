@@ -16,26 +16,102 @@
 
 namespace AZ::RHI
 {
-    SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::BuildDeviceDrawRequest(int deviceIndex)
+    const SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest& MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::
+        GetDeviceDrawRequest(int deviceIndex)
     {
-        if (!m_deviceStreamBufferViews.contains(deviceIndex))
+        if (auto it{ m_deviceDrawRequests.find(deviceIndex) }; it != m_deviceDrawRequests.end())
         {
-            // We need to hold the memory for the single-device StreamBufferViews
-            AZStd::vector<SingleDeviceStreamBufferView> deviceStreamBufferView;
-            for (auto& mdStreamBufferView : m_streamBufferViews)
+            return it->second;
+        }
+        else
+        {
+            if (!m_deviceStreamBufferViews.contains(deviceIndex))
             {
-                deviceStreamBufferView.emplace_back(mdStreamBufferView.GetDeviceStreamBufferView(deviceIndex));
+                // We need to hold the memory for the single-device StreamBufferViews
+                AZStd::vector<SingleDeviceStreamBufferView> deviceStreamBufferView;
+                for (auto& mdStreamBufferView : m_streamBufferViews)
+                {
+                    deviceStreamBufferView.emplace_back(mdStreamBufferView.GetDeviceStreamBufferView(deviceIndex));
+                }
+                m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::move(deviceStreamBufferView));
             }
-            m_deviceStreamBufferViews.emplace(deviceIndex, AZStd::move(deviceStreamBufferView));
+            auto [iter, ok]{ m_deviceDrawRequests.insert(AZStd::make_pair(
+                deviceIndex,
+                SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest{
+                    m_listTag,
+                    m_stencilRef,
+                    m_deviceStreamBufferViews.at(deviceIndex),
+                    m_uniqueShaderResourceGroup ? m_uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get() : nullptr,
+                    m_pipelineState ? m_pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr,
+                    m_sortKey,
+                    m_drawFilterMask })) };
+            return iter->second;
+        }
+    }
+
+    MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::MultiDeviceDrawRequest(const MultiDeviceDrawRequest& other)
+    {
+        m_listTag = other.m_listTag;
+        m_stencilRef = other.m_stencilRef;
+        m_streamBufferViews = other.m_streamBufferViews;
+        m_uniqueShaderResourceGroup = other.m_uniqueShaderResourceGroup;
+        m_pipelineState = other.m_pipelineState;
+        m_sortKey = other.m_sortKey;
+        m_drawFilterMask = other.m_drawFilterMask;
+        m_deviceStreamBufferViews = other.m_deviceStreamBufferViews;
+        m_deviceDrawRequests = other.m_deviceDrawRequests;
+
+        for(auto& [deviceIndex, deviceDrawRequest] : m_deviceDrawRequests)
+        {
+            deviceDrawRequest.m_streamBufferViews = m_deviceStreamBufferViews[deviceIndex];
+        }
+    }
+
+    MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest& MultiDeviceDrawPacketBuilder::MultiDeviceDrawRequest::operator=(
+        const MultiDeviceDrawRequest& other)
+    {
+        m_listTag = other.m_listTag;
+        m_stencilRef = other.m_stencilRef;
+        m_streamBufferViews = other.m_streamBufferViews;
+        m_uniqueShaderResourceGroup = other.m_uniqueShaderResourceGroup;
+        m_pipelineState = other.m_pipelineState;
+        m_sortKey = other.m_sortKey;
+        m_drawFilterMask = other.m_drawFilterMask;
+        m_deviceStreamBufferViews = other.m_deviceStreamBufferViews;
+        m_deviceDrawRequests = other.m_deviceDrawRequests;
+
+        for(auto& [deviceIndex, deviceDrawRequest] : m_deviceDrawRequests)
+        {
+            deviceDrawRequest.m_streamBufferViews = m_deviceStreamBufferViews[deviceIndex];
         }
 
-        return { m_listTag,
-                 m_stencilRef,
-                 m_deviceStreamBufferViews.at(deviceIndex),
-                 m_uniqueShaderResourceGroup ? m_uniqueShaderResourceGroup->GetDeviceShaderResourceGroup(deviceIndex).get() : nullptr,
-                 m_pipelineState ? m_pipelineState->GetDevicePipelineState(deviceIndex).get() : nullptr,
-                 m_sortKey,
-                 m_drawFilterMask };
+        return *this;
+    }
+
+    MultiDeviceDrawPacketBuilder::MultiDeviceDrawPacketBuilder(const MultiDeviceDrawPacketBuilder& other)
+    {
+        m_deviceMask = other.m_deviceMask;
+
+        m_drawRequests = other.m_drawRequests;
+
+        m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
+        m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+
+        m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
+    }
+
+    MultiDeviceDrawPacketBuilder& MultiDeviceDrawPacketBuilder::operator=(const MultiDeviceDrawPacketBuilder& other)
+    {
+        m_deviceMask = other.m_deviceMask;
+
+        m_drawRequests = other.m_drawRequests;
+
+        m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
+        m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+
+        m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
+
+        return *this;
     }
 
     void MultiDeviceDrawPacketBuilder::Begin(IAllocator* allocator)
@@ -122,7 +198,7 @@ namespace AZ::RHI
             m_drawPacketInFlight->m_drawListMask.set(request.m_listTag.GetIndex());
             for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
             {
-                deviceDrawPacketBuilder.AddDrawItem(request.BuildDeviceDrawRequest(deviceIndex));
+                deviceDrawPacketBuilder.AddDrawItem(m_drawRequests.back().GetDeviceDrawRequest(deviceIndex));
             }
         }
         else
@@ -149,12 +225,12 @@ namespace AZ::RHI
         m_drawPacketInFlight->m_drawItems.reserve(m_drawRequests.size());
 
         // Setup single-device DrawItems
-        for (auto i{ 0 }; i < m_drawRequests.size(); ++i)
+        for (auto drawItemIndex{ 0 }; drawItemIndex < m_drawRequests.size(); ++drawItemIndex)
         {
             AZStd::unordered_map<int, SingleDeviceDrawItem*> deviceDrawItemPtrs;
             for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
             {
-                deviceDrawItemPtrs.emplace(deviceIndex, m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex]->GetDrawItem(0));
+                deviceDrawItemPtrs.emplace(deviceIndex, m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex]->GetDrawItem(drawItemIndex));
             }
             m_drawPacketInFlight->m_drawItems.emplace_back(MultiDeviceDrawItem{ m_deviceMask, AZStd::move(deviceDrawItemPtrs) });
         }
@@ -207,12 +283,12 @@ namespace AZ::RHI
         }
 
         // Setup single-device DrawItems
-        for (auto i{ 0 }; i < drawRequestCount; ++i)
+        for (auto drawItemIndex{ 0 }; drawItemIndex < drawRequestCount; ++drawItemIndex)
         {
             AZStd::unordered_map<int, SingleDeviceDrawItem*> deviceDrawItemPtrs;
             for (auto& [deviceIndex, deviceDrawPacketBuilder] : m_deviceDrawPacketBuilders)
             {
-                deviceDrawItemPtrs.emplace(deviceIndex, m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex]->GetDrawItem(0));
+                deviceDrawItemPtrs.emplace(deviceIndex, m_drawPacketInFlight->m_deviceDrawPackets[deviceIndex]->GetDrawItem(drawItemIndex));
             }
             m_drawPacketInFlight->m_drawItems.emplace_back(MultiDeviceDrawItem{ m_deviceMask, AZStd::move(deviceDrawItemPtrs) });
         }

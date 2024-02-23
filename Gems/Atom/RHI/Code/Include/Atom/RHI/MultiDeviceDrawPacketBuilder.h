@@ -30,7 +30,7 @@ namespace AZ::RHI
             MultiDeviceDrawRequest() = default;
 
             //! Returns the device-specific SingleDeviceDrawRequest for the given index
-            SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest BuildDeviceDrawRequest(int deviceIndex);
+            const SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest& GetDeviceDrawRequest(int deviceIndex);
 
             //! The filter tag used to direct the draw item.
             DrawListTag m_listTag;
@@ -59,6 +59,11 @@ namespace AZ::RHI
             //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
             //! and the device-specific SingleDeviceDrawItem holds a pointer to it.
             AZStd::unordered_map<int, AZStd::vector<SingleDeviceStreamBufferView>> m_deviceStreamBufferViews;
+
+            AZStd::unordered_map<int, SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest> m_deviceDrawRequests;
+
+            MultiDeviceDrawRequest(const MultiDeviceDrawRequest& other);
+            MultiDeviceDrawRequest& operator=(const MultiDeviceDrawRequest& other);
         };
 
         explicit MultiDeviceDrawPacketBuilder(RHI::MultiDevice::DeviceMask deviceMask)
@@ -75,6 +80,9 @@ namespace AZ::RHI
                 }
             }
         }
+
+        MultiDeviceDrawPacketBuilder(const MultiDeviceDrawPacketBuilder& other);
+        MultiDeviceDrawPacketBuilder& operator=(const MultiDeviceDrawPacketBuilder& other);
 
         // NOTE: This is configurable; just used to control the amount of memory held by the builder.
         static const size_t DrawItemCountMax = 16;

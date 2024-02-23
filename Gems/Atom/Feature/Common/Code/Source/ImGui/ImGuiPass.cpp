@@ -535,8 +535,8 @@ namespace AZ
             desc.m_byteCount = 64;
             desc.m_bufferData = instanceData;
             m_instanceBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-            m_instanceBufferView = RHI::SingleDeviceStreamBufferView(
-                *m_instanceBuffer->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex),
+            m_instanceBufferView = RHI::MultiDeviceStreamBufferView(
+                *m_instanceBuffer->GetRHIBuffer(),
                 0,
                 aznumeric_cast<uint32_t>(desc.m_byteCount),
                 aznumeric_cast<uint32_t>(desc.m_elementSize));
@@ -752,9 +752,9 @@ namespace AZ
             }
 
             static_assert(indexSize == 2, "Expected index size from ImGui to be 2 to match RHI::IndexFormat::Uint16");
-            m_indexBufferView = indexBuffer->GetIndexBufferView(RHI::IndexFormat::Uint16);
-            m_vertexBufferView[0] = vertexBuffer->GetStreamBufferView(vertexSize);
-            m_vertexBufferView[1] = m_instanceBufferView;
+            m_indexBufferView = indexBuffer->GetIndexBufferView(RHI::IndexFormat::Uint16).GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex);
+            m_vertexBufferView[0] = vertexBuffer->GetStreamBufferView(vertexSize).GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex);
+            m_vertexBufferView[1] = m_instanceBufferView.GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex);
 
             RHI::ValidateStreamBufferViews(m_pipelineState->ConstDescriptor().m_inputStreamLayout, m_vertexBufferView);
 

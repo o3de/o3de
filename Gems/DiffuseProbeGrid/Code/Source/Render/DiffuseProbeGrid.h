@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/MultiDeviceDrawPacketBuilder.h>
 #include <Atom/RHI/MultiDeviceRayTracingAccelerationStructure.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/PipelineState.h>
@@ -33,8 +33,8 @@ namespace AZ
             RHI::Ptr<RHI::MultiDeviceImagePool> m_imagePool;
             RHI::Ptr<RHI::MultiDeviceBufferPool> m_bufferPool;
 
-            AZStd::array<RHI::SingleDeviceStreamBufferView, 1> m_boxPositionBufferView;
-            RHI::SingleDeviceIndexBufferView m_boxIndexBufferView;
+            AZStd::array<RHI::MultiDeviceStreamBufferView, 1> m_boxPositionBufferView;
+            RHI::MultiDeviceIndexBufferView m_boxIndexBufferView;
             uint32_t m_boxIndexCount = 0;
 
             // image views
@@ -391,7 +391,7 @@ namespace AZ
             DiffuseProbeGridRenderData* m_renderData = nullptr;
 
             // render draw packet
-            RHI::ConstPtr<RHI::SingleDeviceDrawPacket> m_drawPacket;
+            RHI::ConstPtr<RHI::MultiDeviceDrawPacket> m_drawPacket;
 
             // sort key for the draw item
             const RHI::DrawItemSortKey InvalidSortKey = static_cast<RHI::DrawItemSortKey>(-1);
