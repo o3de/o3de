@@ -35,8 +35,13 @@ def get_pbr_textures(legacy_textures, destination_directory, base_directory, use
         if not texture_path.is_file():
             _LOGGER.info(f'(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((( Missing:::: {texture_path}')
             existing_path = resolve_path(texture_path, base_directory)
-            if not existing_path:
-                continue
+
+            # Fallback on tiff texture as it might exist like this on disk
+            if not existing_path and texture_path.suffix == '.dds':
+                existing_path = resolve_path(texture_path.with_suffix('.tif'), base_directory)
+                if not existing_path:
+                    continue
+
             _LOGGER.info(f'Found texture [{existing_path}]. Continuing...')
             texture_path = Path(existing_path)
         if texture_type == 'diffuse':
