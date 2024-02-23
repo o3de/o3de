@@ -238,7 +238,7 @@ namespace AzToolsFramework
         // todo: implement QSplitter-like functionality to allow the user to resize columns within a DPE
         
         // Determine the number of columns.
-        const int columnCount = m_columnStarts.size();
+        const int columnCount = aznumeric_cast<int>(m_columnStarts.size());
 
         // Early out if no columns are detected.
         if (columnCount == 0)
