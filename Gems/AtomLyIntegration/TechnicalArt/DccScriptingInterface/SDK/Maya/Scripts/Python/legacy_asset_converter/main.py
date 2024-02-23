@@ -1132,14 +1132,14 @@ class LegacyFilesConverter(QtWidgets.QDialog):
     # Getters/Setters ############
     ##############################
 
-    def get_material_information(self, search_path, mtl_info, assetinfo):
+    def get_material_information(self, search_path, mtl_info, assetinfo_filename):
         """
         Builds a dictionary for each fbx in a processed directory used for creating a .material file. This information
         includes texture sets, 'uv' modifications like tiling and rotation, numerical settings like color or f0 specularity
         settings, and the fbx layer geometry that the materials are assigned to
         :param search_path: The directory used to search for assets related to a listing
         :param mtl_info: Information drawn from the .mtl file relevant for processing
-        :param assetinfo: Information collected after processing PBR textures conversion
+        :param assetinfo_filename: Assetinfo file
         :return:
         """
         fbx_material_dictionary = Box({})
@@ -1159,7 +1159,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 fbx_material_dictionary[key][constants.FBX_TEXTURE_MODIFICATIONS] = values.modifications if values.modifications else ''
                 fbx_material_dictionary[key][constants.FBX_NUMERICAL_SETTINGS] = self.get_numerical_settings(mtl_info, key)
                 fbx_material_dictionary[key][constants.FBX_MATERIAL_FILE] = ''
-                fbx_material_dictionary[key][constants.FBX_ASSIGNED_GEO] = lumberyard_data.get_asset_info(search_path, assetinfo, key)
+                fbx_material_dictionary[key][constants.FBX_ASSIGNED_GEO] = lumberyard_data.get_asset_info(search_path, assetinfo_filename, key)
             elif values.attributes.Shader == 'Nodraw':
                 _LOGGER.info('Found No-draw shader... skipping')
             else:
@@ -1187,11 +1187,12 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     if texture_basename:
                         for target_image in search_path.iterdir():
                             if target_image.stem.lower().startswith(texture_basename):
-                                texture_type = image_conversion.get_filemask(target_image)
-                                for key, values in constants.FILE_MASKS.items():
-                                    if texture_type.lower() in values:
-                                        all_textures[key] = search_path / target_image
-                                        break
+                                filemask = image_conversion.get_filemask(target_image)
+                                for tex_type, possible_masks in constants.FILE_MASKS.items():
+                                    if filemask.lower() in possible_masks:
+                                        if tex_type not in all_textures.keys():
+                                            all_textures[tex_type] = search_path / target_image
+                                            break
                 except Exception as e:
                     _LOGGER.info(f'Could not find texture basename... skipping: {e}')
         return all_textures
