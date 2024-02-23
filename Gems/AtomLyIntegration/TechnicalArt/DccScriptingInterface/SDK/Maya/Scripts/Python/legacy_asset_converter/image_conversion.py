@@ -28,7 +28,7 @@ module_name = 'legacy_asset_converter.main.image_conversion'
 _LOGGER = _logging.getLogger(module_name)
 
 
-def get_pbr_textures(legacy_textures, destination_directory, base_directory, shader_name):
+def get_pbr_textures(legacy_textures, destination_directory, base_directory, uses_alpha):
     pbr_textures = {}
     for texture_type, texture_path in legacy_textures.items():
         _LOGGER.info(f'TEXTURETYPE::> {texture_type}  TEXTUREPATH::> {texture_path}')
@@ -40,7 +40,7 @@ def get_pbr_textures(legacy_textures, destination_directory, base_directory, sha
             _LOGGER.info(f'Found texture [{existing_path}]. Continuing...')
             texture_path = Path(existing_path)
         if texture_type == 'diffuse':
-            filemask = 'BaseColorA' if shader_uses_alpha(shader_name) else 'BaseColor'
+            filemask = 'BaseColorA' if uses_alpha else 'BaseColor'
             dst = get_converted_filename(texture_path, destination_directory, filemask)
             pbr_textures['BaseColor'] = transfer_texture(dst, texture_path) if not os.path.isfile(dst) else dst
         elif texture_type == 'specular':
@@ -92,10 +92,6 @@ def resolve_path(texture_path, base_directory):
             if target_file == texture_path.stem.lower():
                 return os.path.abspath(os.path.join(root, file))
     return None
-
-
-def shader_uses_alpha(shader_name):
-    return shader_name.lower() == 'vegetation'
 
 
 def transfer_texture(dst, src, overwrite=False):

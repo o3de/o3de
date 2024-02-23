@@ -793,8 +793,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                                 texture_key = 'Normal'
                             elif material_property == 'opacity':
                                 texture_key = 'Opacity'
-                                alpha = 0 if hasattr(material_values.numericalsettings, 'AlphaTest') is False else float(material_values.numericalsettings.AlphaTest)
-                                if image_conversion.shader_uses_alpha(shader_name) and alpha > 0:
+                                alpha = self.get_alpha_test_value(material_values.numericalsettings)
+                                if alpha > 0.:
                                     temp_dict['mode'] = 'Cutout'
                                     temp_dict['factor'] = 1. - alpha
                             elif material_property == 'uv':
@@ -1155,9 +1155,11 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             if values.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
                 legacy_textures = values.textures
                 all_textures = self.get_additional_textures(search_path, legacy_textures)
-                fbx_material_dictionary[key][constants.FBX_TEXTURES] = self.get_texture_set(search_path, all_textures, values.attributes.Shader) if legacy_textures else ''
+                numerical_settings = self.get_numerical_settings(mtl_info, key)
+                uses_alpha = self.get_alpha_test_value(numerical_settings) > 0.
+                fbx_material_dictionary[key][constants.FBX_NUMERICAL_SETTINGS] = numerical_settings
+                fbx_material_dictionary[key][constants.FBX_TEXTURES] = self.get_texture_set(search_path, all_textures, uses_alpha) if legacy_textures else ''
                 fbx_material_dictionary[key][constants.FBX_TEXTURE_MODIFICATIONS] = values.modifications if values.modifications else ''
-                fbx_material_dictionary[key][constants.FBX_NUMERICAL_SETTINGS] = self.get_numerical_settings(mtl_info, key)
                 fbx_material_dictionary[key][constants.FBX_MATERIAL_FILE] = ''
                 fbx_material_dictionary[key][constants.FBX_ASSIGNED_GEO] = lumberyard_data.get_asset_info(search_path, assetinfo_filename, key)
             elif values.attributes.Shader == 'Nodraw':
@@ -1214,13 +1216,19 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 pass
         return numerical_settings
 
-    def get_texture_set(self, search_path, mtl_textures, shader_name):
+    def get_alpha_test_value(self, numericalsettings):
+        if 'AlphaTest' in numericalsettings:
+            return float(numericalsettings['AlphaTest'])
+        else:
+            return 0.
+
+    def get_texture_set(self, search_path, mtl_textures, uses_alpha):
         """
         Begins the process of collecting texture sets for each material found in an FBX file. The process begins by
         getting the file "stem" string in order to find textures starting with identical strings
         :param search_path: The directory to search for corresponding files
         :param mtl_textures: The texture file names pulled from the mtl files in the legacy directories
-        :param shader_name: The shader in which the texture is used
+        :param uses_alpha: Bool to state weither diffuse texture should support alpha channel
         :return:
         """
         _LOGGER.info(f'GetTexSet: {search_path}   MTL TEXTURES: {mtl_textures}')
@@ -1231,7 +1239,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     mtl_textures[key] = search_path / file
                     _LOGGER.info(f'\n///////// MTL TEX: {mtl_textures[key]}')
                     break
-        return image_conversion.get_pbr_textures(mtl_textures, Path(destination_directory), Path(self.input_directory), shader_name)
+        return image_conversion.get_pbr_textures(mtl_textures, Path(destination_directory), Path(self.input_directory), uses_alpha)
 
     def get_relative_path_from_material(self, texture_file_abs_path, material_abs_path):
         """
