@@ -727,7 +727,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         else:
             return value
 
-    def export_material_file(self, file_name, material_name, material_values, destination_directory, shader_name):
+    def export_material_file(self, file_name, material_name, material_values, destination_directory):
         """
         Collects all the information necessary to generate a material definition, and exports the file. Definition
         information is cross-referenced with a StandardPBR material template file, and information that runs counter
@@ -736,7 +736,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :param material_name: The name of the material that the definition represents.
         :param material_values: The values for the material to be included in the definition.
         :param destination_directory: Where the .material file is saved once processed.
-        :param shader_name: The name of the original shader file used by the material
         :return:
         """
         _LOGGER.info(f'\n_\n******** {material_name} -- EXPORT INFO: {material_values}')
@@ -1390,7 +1389,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     if v.attributes.Shader in constants.EXPORT_MATERIAL_TYPES:
                         material_values = Box(values)
                         material_file = self.export_material_file(f'{fbx_file.stem}_{key}.material'.lower(), key,
-                                                                  material_values, destination_directory, v.attributes.Shader)
+                                                                  material_values, destination_directory)
                         values.materialfile = material_file if material_file else ''
         self.set_materials_db(asset_information)
 
