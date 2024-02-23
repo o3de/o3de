@@ -809,7 +809,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                                 _LOGGER.info(f'Unknown Material Property found: {material_property}')
 
                             # Add Texture Map
-                            if texture_key and texture_key in material_textures.keys():
+                            if texture_key and texture_key in material_textures.keys() and material_textures[texture_key]:
                                 if material_property not in ['emissive', 'general'] and 'factor' not in temp_dict.keys():
                                     temp_dict['factor'] = 1.0
                                     temp_dict['useTexture'] = True
