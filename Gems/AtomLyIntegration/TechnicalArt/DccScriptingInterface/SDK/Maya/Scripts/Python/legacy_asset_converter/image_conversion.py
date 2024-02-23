@@ -86,10 +86,17 @@ def get_pbr_textures(legacy_textures, destination_directory, base_directory, use
 
 def resolve_path(texture_path, base_directory):
     _LOGGER.info(f'Resolving Path... Filename[{texture_path.name}: {base_directory}')
+    
+    # Try to match path via topmost assets folder
+    split_dir = base_directory.as_posix().lower().split('/assets/')
+    if len(split_dir) > 1:
+        resolved_path = os.path.abspath(os.path.join(split_dir[0], 'assets', texture_path))
+        if os.path.exists(resolved_path):
+            return resolved_path
+
     for (root, dirs, files) in os.walk(base_directory.parent, topdown=True):
         for file in files:
-            target_file = file.split('.')[0].lower()
-            if target_file == texture_path.stem.lower():
+            if Path(file).name.lower() == texture_path.name.lower():
                 return os.path.abspath(os.path.join(root, file))
     return None
 
