@@ -39,6 +39,32 @@ namespace AZ::RHI
                 m_drawFilterMask };
     }
 
+    MultiDeviceDrawPacketBuilder::MultiDeviceDrawPacketBuilder(const MultiDeviceDrawPacketBuilder& other)
+    {
+        m_deviceMask = other.m_deviceMask;
+
+        m_drawRequests = other.m_drawRequests;
+
+        m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
+        m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+
+        m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
+    }
+
+    MultiDeviceDrawPacketBuilder& MultiDeviceDrawPacketBuilder::operator=(const MultiDeviceDrawPacketBuilder& other)
+    {
+        m_deviceMask = other.m_deviceMask;
+
+        m_drawRequests = other.m_drawRequests;
+
+        m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
+        m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+
+        m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
+
+        return *this;
+    }
+
     void MultiDeviceDrawPacketBuilder::Begin(IAllocator* allocator)
     {
         AZ_Error(
@@ -189,6 +215,7 @@ namespace AZ::RHI
         m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
 
         auto drawRequestCount{ original->m_drawListTags.size() };
+        m_drawPacketInFlight->m_drawListMask = original->m_drawListMask;
         m_drawPacketInFlight->m_drawListTags.resize_no_construct(drawRequestCount);
         m_drawPacketInFlight->m_drawFilterMasks.resize_no_construct(drawRequestCount);
         m_drawPacketInFlight->m_drawItemSortKeys.resize_no_construct(drawRequestCount);
