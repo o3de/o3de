@@ -39,8 +39,9 @@ def get_pbr_textures(legacy_textures, destination_directory, base_directory, use
             # Fallback on tiff texture as it might exist like this on disk
             if not existing_path and texture_path.suffix == '.dds':
                 existing_path = resolve_path(texture_path.with_suffix('.tif'), base_directory)
-                if not existing_path:
-                    continue
+
+            if not existing_path:
+                continue
 
             _LOGGER.info(f'Found texture [{existing_path}]. Continuing...')
             texture_path = Path(existing_path)
@@ -99,12 +100,26 @@ def resolve_path(texture_path, base_directory):
         if os.path.exists(resolved_path):
             return resolved_path
 
-    for (root, dirs, files) in os.walk(base_directory.parent, topdown=True):
+    cache_dir(base_directory)
+    for (root, dirs, files) in os_walk_cache(base_directory):
         for file in files:
             if Path(file).name.lower() == texture_path.name.lower():
                 return os.path.abspath(os.path.join(root, file))
     return None
 
+cache = {}
+def cache_dir(dir):
+    if dir in cache:
+        return
+    else:
+        cache[dir] = []
+        for x in os.walk(dir, topdown=True):
+            cache[dir].append(x)
+
+def os_walk_cache(dir):
+    if dir in cache:
+        for x in cache[dir]:
+            yield x
 
 def transfer_texture(dst, src, overwrite=False):
     if not os.path.exists(dst) or overwrite:
