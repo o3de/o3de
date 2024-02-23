@@ -1217,6 +1217,11 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         return numerical_settings
 
     def get_alpha_test_value(self, numericalsettings):
+        """
+        Return the AlphaTest key value found in dictionnary. Default to 0
+        :param numericalsettings: The shader numerical settings dictionnary
+        :return:
+        """
         if 'AlphaTest' in numericalsettings:
             return float(numericalsettings['AlphaTest'])
         else:
