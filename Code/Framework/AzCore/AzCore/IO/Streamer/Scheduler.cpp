@@ -501,6 +501,14 @@ namespace AZ::IO
 
     auto Scheduler::Thread_PrioritizeRequests(const FileRequest* first, const FileRequest* second) const -> Order
     {
+#if defined(CARBONATED)
+        // If the requests are identical, return Equal.
+        if(first == second)
+        {
+            return Order::Equal;
+        }
+#endif
+        
         // Sort by order priority of the command in the request. This allows to for instance have cancel request
         // always happen before any other requests.
         auto order = [](auto&& args)
