@@ -549,6 +549,11 @@ namespace AZ::IO
             }
 
             // If neither has started and have the same priority, prefer to start the closest deadline.
+            if (firstRead->m_deadline == secondRead->m_deadline)
+            {
+                return Order::Equal;
+            }
+
             return firstRead->m_deadline < secondRead->m_deadline ? Order::FirstRequest : Order::SecondRequest;
         }
 
@@ -598,6 +603,12 @@ namespace AZ::IO
             s64 secondReadOffset = AZStd::visit(offset, second->GetCommand());
             s64 firstSeekDistance = abs(aznumeric_cast<s64>(m_threadData.m_lastFileOffset) - firstReadOffset);
             s64 secondSeekDistance = abs(aznumeric_cast<s64>(m_threadData.m_lastFileOffset) - secondReadOffset);
+
+            if (firstSeekDistance == secondSeekDistance)
+            {
+                return Order::Equal;
+            }
+            
             return firstSeekDistance < secondSeekDistance ? Order::FirstRequest : Order::SecondRequest;
         }
 
