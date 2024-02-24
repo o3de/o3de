@@ -153,7 +153,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.log_file_location = os.path.join(Path.cwd(), 'output.log')
         self.directory_dictionary = {}
         self.materials_dictionary = {}
-        self.materials_db = shelve.open('materialsdb', protocol=2)
+        self.materials_db = {} #shelve.open('materialsdb', protocol=2) # Do not save materialDB on disk as can lead to issue on reopen
         self.file_target_method = 'Directory'
         self.selected_directory_index = -1
         self.separator_layout = QtWidgets.QHBoxLayout()
