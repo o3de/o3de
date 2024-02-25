@@ -89,6 +89,7 @@ from LegacyMeshComponentConverter import *
 from LegacyMaterialComponentConverter import *
 from LegacyActorComponentConverter import *
 from LegacyPointLightComponentConverter import *
+from LegacyTransformComponentConverter import *
 
 BUILD_PATH = "./" # Use current working directory, we expect to be in lumberyard dev folder
 GEMS_PATH = os.path.join(BUILD_PATH, "Gems")
@@ -182,6 +183,7 @@ class Component_File(object):
         componentConverters.append(Mesh_Component_Converter(self.assetCatalogHelper, self.statsCollector, self.normalizedProjectDir))
         componentConverters.append(Actor_Component_Converter(self.assetCatalogHelper, self.statsCollector, self.normalizedProjectDir))
         componentConverters.append(Point_Light_Component_Converter(self.assetCatalogHelper, self.statsCollector, self.normalizedProjectDir))
+        componentConverters.append(Transform_Component_Converter(self.assetCatalogHelper, self.statsCollector, self.normalizedProjectDir))
 
         if self.is_valid_xml():
             root = self.xml.getroot()
