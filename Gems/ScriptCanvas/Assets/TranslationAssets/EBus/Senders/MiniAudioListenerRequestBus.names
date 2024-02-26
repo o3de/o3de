@@ -9,6 +9,76 @@
             },
             "methods": [
                 {
+                    "base": "GetOuterVolumePercentage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Outer Volume Percentage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Outer Volume Percentage is invoked"
+                    },
+                    "details": {
+                        "name": "Get Outer Volume Percentage",
+                        "tooltip": "Get Outer Volume Percentage"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOuterVolumeDecibels",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Outer Volume Decibels"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Outer Volume Decibels is invoked"
+                    },
+                    "details": {
+                        "name": "Get Outer Volume Decibels",
+                        "tooltip": "Get Outer Volume Decibels"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOuterVolumeDecibels",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Outer Volume Decibels"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Outer Volume Decibels is invoked"
+                    },
+                    "details": {
+                        "name": "Set Outer Volume Decibels",
+                        "tooltip": "Set Outer Volume Decibels"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Outer Volume Decibels",
+                                "tooltip": "Set Volume Decibels Outside Outer Cone"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "GetOuterConeAngleInRadians",
                     "entry": {
                         "name": "In",
@@ -27,6 +97,53 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetGlobalVolumeDecibels",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Global Volume Decibels"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Global Volume Decibels is invoked"
+                    },
+                    "details": {
+                        "name": "Get Global Volume Decibels",
+                        "tooltip": "Get Global Volume Decibels"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetGlobalVolumeDecibels",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Global Volume Decibels"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Global Volume Decibels is invoked"
+                    },
+                    "details": {
+                        "name": "Set Global Volume Decibels",
+                        "tooltip": "Set Global Volume Decibels"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Global Volume Decibels",
+                                "tooltip": "Set Global Volume Decibels"
                             }
                         }
                     ]
@@ -55,24 +172,49 @@
                     ]
                 },
                 {
-                    "base": "GetOuterVolume",
+                    "base": "SetOuterVolumePercentage",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Outer Volume"
+                        "tooltip": "When signaled, this will invoke Set Outer Volume Percentage"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Outer Volume is invoked"
+                        "tooltip": "Signaled after Set Outer Volume Percentage is invoked"
                     },
                     "details": {
-                        "name": "Get Outer Volume",
-                        "tooltip": "Get Percent Volume Outside Outer Cone"
+                        "name": "Set Outer Volume Percentage",
+                        "tooltip": "Set Outer Volume Percentage"
                     },
-                    "results": [
+                    "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Outer Volume",
+                                "tooltip": "Set Volume Percent Outside Outer Cone"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetGlobalVolumePercentage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Global Volume Percentage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Global Volume Percentage is invoked"
+                    },
+                    "details": {
+                        "name": "Set Global Volume Percentage",
+                        "tooltip": "Set Global Volume Percentage"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Global Volume",
+                                "tooltip": "Set Global Volume Percent"
                             }
                         }
                     ]
@@ -102,6 +244,29 @@
                     ]
                 },
                 {
+                    "base": "GetGlobalVolumePercentage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Global Volume Percentage"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Global Volume Percentage is invoked"
+                    },
+                    "details": {
+                        "name": "Get Global Volume Percentage",
+                        "tooltip": "Get Global Volume Percentage"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "SetFollowEntity",
                     "entry": {
                         "name": "In",
@@ -113,7 +278,7 @@
                     },
                     "details": {
                         "name": "Set Follow Entity",
-                        "tooltip": "Set Follow Entity"
+                        "Tooltip": "Set Follow Entity"
                     },
                     "params": [
                         {
@@ -238,30 +403,6 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "float"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "base": "SetOuterVolume",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Outer Volume"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Set Outer Volume is invoked"
-                    },
-                    "details": {
-                        "name": "Set Outer Volume",
-                        "tooltip": "Set Percent Volume Outside Outer Cone"
-                    },
-                    "params": [
-                        {
-                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
-                            "details": {
-                                "name": "Outer Volume",
-                                "tooltip": "Set Percent Volume Outside Outer Cone"
                             }
                         }
                     ]

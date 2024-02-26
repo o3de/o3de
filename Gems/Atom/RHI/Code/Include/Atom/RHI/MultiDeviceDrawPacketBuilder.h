@@ -30,7 +30,7 @@ namespace AZ::RHI
             MultiDeviceDrawRequest() = default;
 
             //! Returns the device-specific DrawRequest for the given index
-            DrawPacketBuilder::DrawRequest BuildDeviceDrawRequest(int deviceIndex);
+            DrawPacketBuilder::DrawRequest GetDeviceDrawRequest(int deviceIndex);
 
             //! The filter tag used to direct the draw item.
             DrawListTag m_listTag;
@@ -75,6 +75,10 @@ namespace AZ::RHI
                 }
             }
         }
+
+        MultiDeviceDrawPacketBuilder(const MultiDeviceDrawPacketBuilder& other);
+        MultiDeviceDrawPacketBuilder& operator=(const MultiDeviceDrawPacketBuilder& other);
+        AZ_DISABLE_MOVE(MultiDeviceDrawPacketBuilder)
 
         // NOTE: This is configurable; just used to control the amount of memory held by the builder.
         static const size_t DrawItemCountMax = 16;

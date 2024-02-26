@@ -73,8 +73,6 @@ namespace AZ::RHI
 
     RayTracingTlasDescriptor MultiDeviceRayTracingTlasDescriptor::GetDeviceRayTracingTlasDescriptor(int deviceIndex) const
     {
-        AZ_Assert(m_mdInstancesBuffer, "No MultiDeviceBuffer available!\n");
-
         RayTracingTlasDescriptor descriptor;
 
         for (const auto& instance : m_mdInstances)
@@ -237,16 +235,19 @@ namespace AZ::RHI
 
         MultiDeviceObject::Init(deviceMask);
 
-        ResultCode resultCode = IterateObjects<RayTracingTlas>(
-            [this, &descriptor, &rayTracingBufferPools](int deviceIndex, auto deviceRayTracingTlas)
+        ResultCode resultCode{ResultCode::Success};
+        IterateDevices(
+            [this, &descriptor, &rayTracingBufferPools, &resultCode](int deviceIndex)
             {
                 auto device = RHISystemInterface::Get()->GetDevice(deviceIndex);
-                this->m_deviceObjects[deviceIndex] = Factory::Get().CreateRayTracingTlas();
+                auto deviceRayTracingTlas{Factory::Get().CreateRayTracingTlas()};
+                this->m_deviceObjects[deviceIndex] = deviceRayTracingTlas;
 
                 auto deviceDescriptor{ descriptor->GetDeviceRayTracingTlasDescriptor(deviceIndex) };
 
-                return deviceRayTracingTlas->CreateBuffers(
+                resultCode = deviceRayTracingTlas->CreateBuffers(
                     *device, &deviceDescriptor, *rayTracingBufferPools.GetDeviceRayTracingBufferPools(deviceIndex).get());
+                return resultCode == ResultCode::Success;
             });
 
         if (resultCode != ResultCode::Success)
@@ -277,11 +278,11 @@ namespace AZ::RHI
                 if (!tlasBuffer->m_deviceObjects[deviceIndex])
                 {
                     tlasBuffer = nullptr;
-                    return false;
+                    return ResultCode::Fail;
                 }
 
                 tlasBuffer->SetDescriptor(tlasBuffer->GetDeviceBuffer(deviceIndex)->GetDescriptor());
-                return true;
+                return ResultCode::Success;
             });
 
         return tlasBuffer;

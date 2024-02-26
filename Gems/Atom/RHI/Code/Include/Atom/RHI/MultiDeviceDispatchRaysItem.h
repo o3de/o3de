@@ -55,13 +55,13 @@ namespace AZ::RHI
         }
 
         //! The number of rays to cast
-        void SetDimensions(uint32_t width, uint32_t height, uint32_t depth)
+        void SetDimensionsDirect(uint32_t width, uint32_t height, uint32_t depth)
         {
             for (auto& [deviceIndex, dispatchRaysItem] : m_deviceDispatchRaysItems)
             {
-                dispatchRaysItem.m_width = width;
-                dispatchRaysItem.m_height = height;
-                dispatchRaysItem.m_depth = depth;
+                dispatchRaysItem.m_arguments.m_direct.m_width = width;
+                dispatchRaysItem.m_arguments.m_direct.m_height = height;
+                dispatchRaysItem.m_arguments.m_direct.m_depth = depth;
             }
         }
 
@@ -70,7 +70,7 @@ namespace AZ::RHI
         {
             for (auto& [deviceIndex, dispatchRaysItem] : m_deviceDispatchRaysItems)
             {
-                dispatchRaysItem.m_rayTracingPipelineState = rayTracingPipelineState->GetDevicePipelineState(deviceIndex).get();
+                dispatchRaysItem.m_rayTracingPipelineState = rayTracingPipelineState->GetDeviceRayTracingPipelineState(deviceIndex).get();
             }
         }
 

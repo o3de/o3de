@@ -29,6 +29,8 @@ namespace MiniAudio
 
         AZ::u32 m_listenerIndex = 0;
 
+        //! Global volume
+        float m_globalVolume = 100.0f;
         //! Inner cone angle
         float m_innerAngleInRadians = 3.f/5.f * AZ::Constants::TwoPi;
         float m_innerAngleInDegrees = AZ::RadToDeg(m_innerAngleInRadians);

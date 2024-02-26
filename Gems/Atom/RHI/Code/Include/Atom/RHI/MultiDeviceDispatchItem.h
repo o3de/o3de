@@ -128,11 +128,11 @@ namespace AZ::RHI
 
         //! Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
         void SetShaderResourceGroups(
-            const AZStd::span<const MultiDeviceShaderResourceGroup*> shaderResourceGroups, uint8_t shaderResourceGroupCount)
+            const AZStd::span<const MultiDeviceShaderResourceGroup*> shaderResourceGroups)
         {
             for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
             {
-                dispatchItem.m_shaderResourceGroupCount = shaderResourceGroupCount;
+                dispatchItem.m_shaderResourceGroupCount = static_cast<uint8_t>(shaderResourceGroups.size());
                 for (int i = 0; i < dispatchItem.m_shaderResourceGroupCount; ++i)
                 {
                     dispatchItem.m_shaderResourceGroups[i] = shaderResourceGroups[i]->GetDeviceShaderResourceGroup(deviceIndex).get();
