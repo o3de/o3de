@@ -298,6 +298,8 @@ namespace AZ
                     RHI::ShadingRateFlags::Rate4x4;
             }
 
+            m_features.m_signalFenceFromCPU = true;
+
             m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);
 #endif
 

@@ -62,6 +62,7 @@ namespace AZ
             FragmentShadingRate,
             FragmentDensityMap,
             Renderpass2,
+            TimelineSempahore,
             Count
         };
 

@@ -45,11 +45,13 @@ namespace AZ
             AZStd::vector<VkSemaphore> vkWaitSemaphoreVector; // vulkan.h has a #define called vkWaitSemaphores, so we name this differently
             AZStd::vector<VkPipelineStageFlags> vkWaitPipelineStages;
             AZStd::vector<VkSemaphore> vkSignalSemaphores;
+
+            VkTimelineSemaphoreSubmitInfo timelineSemaphoresSubmitInfos = {};
+
             VkSubmitInfo submitInfo;
             uint32_t submitCount = 0;
-            if (!commandBuffers.empty() ||
-                !waitSemaphoresInfo.empty() ||
-                !semaphoresToSignal.empty())
+            if (!commandBuffers.empty() || !waitSemaphoresInfo.empty() || !semaphoresToSignal.empty() ||
+                (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore))
             {
                 vkCommandBuffers.reserve(commandBuffers.size());
                 AZStd::transform(commandBuffers.begin(), commandBuffers.end(), AZStd::back_inserter(vkCommandBuffers), [&](const auto& item)
@@ -74,6 +76,21 @@ namespace AZ
                 submitInfo = {};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.pNext = nullptr;
+
+                if (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore)
+                {
+                    fenceToSignal->Reset();
+                    uint64_t value = fenceToSignal->GetPendingValue();
+                    timelineSemaphoresSubmitInfos.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+                    timelineSemaphoresSubmitInfos.pNext = nullptr;
+                    timelineSemaphoresSubmitInfos.waitSemaphoreValueCount = 0;
+                    timelineSemaphoresSubmitInfos.pWaitSemaphoreValues = nullptr;
+                    timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = 1;
+                    timelineSemaphoresSubmitInfos.pSignalSemaphoreValues = &value;
+                    submitInfo.pNext = &timelineSemaphoresSubmitInfos;
+                    vkSignalSemaphores.push_back(fenceToSignal->GetNativeSemaphore());
+                }
+
                 submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vkWaitSemaphoreVector.size());
                 submitInfo.pWaitSemaphores = vkWaitSemaphoreVector.empty() ? nullptr : vkWaitSemaphoreVector.data();
                 submitInfo.pWaitDstStageMask = vkWaitPipelineStages.empty() ? nullptr : vkWaitPipelineStages.data();
@@ -85,7 +102,7 @@ namespace AZ
             }
 
             VkFence nativeFence = VK_NULL_HANDLE;
-            if (fenceToSignal)
+            if (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::Fence)
             {
                 fenceToSignal->Reset();
                 nativeFence = fenceToSignal->GetNativeFence();
