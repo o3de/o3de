@@ -46,7 +46,10 @@ namespace AZ::RHI
         m_drawRequests = other.m_drawRequests;
 
         m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
-        m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+        if (other.m_drawPacketInFlight)
+        {
+            m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+        }
 
         m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
     }
@@ -58,7 +61,10 @@ namespace AZ::RHI
         m_drawRequests = other.m_drawRequests;
 
         m_drawPacketInFlight = aznew MultiDeviceDrawPacket;
-        m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+        if (other.m_drawPacketInFlight)
+        {
+            m_drawPacketInFlight->m_drawListMask = other.m_drawPacketInFlight->m_drawListMask;
+        }
 
         m_deviceDrawPacketBuilders = other.m_deviceDrawPacketBuilders;
 
