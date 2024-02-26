@@ -12,7 +12,7 @@
 #include <Atom/RHI/ConstantsData.h>
 #include <Atom/RHI/MultiDeviceBuffer.h>
 #include <Atom/RHI/MultiDeviceImage.h>
-#include <Atom/RHI/ShaderResourceGroupData.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroupData.h>
 #include <AzCore/std/containers/variant.h>
 
 namespace AZ::RHI
@@ -20,7 +20,7 @@ namespace AZ::RHI
     class MultiDeviceShaderResourceGroup;
     class MultiDeviceShaderResourceGroupPool;
 
-    //! MultiShaderResourceGroupData is a multi-device class holding single-device ShaderResourceGroupData objects,
+    //! MultiShaderResourceGroupData is a multi-device class holding single-device SingleDeviceShaderResourceGroupData objects,
     //! one for each device referenced in its deviceMask.
     //! All calls and data are forwarded to the single-device variants, while the multi-device data is also kept locally,
     //! including ConstantsData and Samplers.
@@ -33,7 +33,7 @@ namespace AZ::RHI
         MultiDeviceShaderResourceGroupData() = default;
         ~MultiDeviceShaderResourceGroupData() = default;
 
-        //! Creates MultiDeviceShaderResourceGroupData from a layout and initializes single-device ShaderResourceGroupData.
+        //! Creates MultiDeviceShaderResourceGroupData from a layout and initializes single-device SingleDeviceShaderResourceGroupData.
         explicit MultiDeviceShaderResourceGroupData(
             MultiDevice::DeviceMask deviceMask, const ShaderResourceGroupLayout* shaderResourceGroupLayout);
 
@@ -163,13 +163,13 @@ namespace AZ::RHI
         AZStd::span<const ConstPtr<MultiDeviceBufferView>> GetBufferGroup() const;
         AZStd::span<const SamplerState> GetSamplerGroup() const;
 
-        //! Returns the device-specific ShaderResourceGroupData for the given index
-        const ShaderResourceGroupData& GetDeviceShaderResourceGroupData(int deviceIndex) const
+        //! Returns the device-specific SingleDeviceShaderResourceGroupData for the given index
+        const SingleDeviceShaderResourceGroupData& GetDeviceShaderResourceGroupData(int deviceIndex) const
         {
             AZ_Error(
                 "MultiDeviceShaderResourceGroupData",
                 m_deviceShaderResourceGroupDatas.find(deviceIndex) != m_deviceShaderResourceGroupDatas.end(),
-                "No ShaderResourceGroupData found for device index %d\n",
+                "No SingleDeviceShaderResourceGroupData found for device index %d\n",
                 deviceIndex);
 
             return m_deviceShaderResourceGroupDatas.at(deviceIndex);
@@ -182,9 +182,9 @@ namespace AZ::RHI
         //! Returns the shader resource layout for this group.
         const ShaderResourceGroupLayout* GetLayout() const;
 
-        using ResourceType = ShaderResourceGroupData::ResourceType;
+        using ResourceType = SingleDeviceShaderResourceGroupData::ResourceType;
 
-        using ResourceTypeMask = ShaderResourceGroupData::ResourceTypeMask;
+        using ResourceTypeMask = SingleDeviceShaderResourceGroupData::ResourceTypeMask;
 
         // Structure to hold all the bindless views and the BindlessResourceType related to it
         struct MultiDeviceBindlessResourceViews
@@ -256,7 +256,7 @@ namespace AZ::RHI
         uint32_t m_updateMask = 0;
 
         //! A map of all device-specific ShaderResourceGroupDatas, indexed by the device index
-        AZStd::unordered_map<int, ShaderResourceGroupData> m_deviceShaderResourceGroupDatas;
+        AZStd::unordered_map<int, SingleDeviceShaderResourceGroupData> m_deviceShaderResourceGroupDatas;
     };
 
     template<typename T>

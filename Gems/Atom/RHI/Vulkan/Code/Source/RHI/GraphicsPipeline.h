@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/PipelineStateDescriptor.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/SingleDeviceDrawItem.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
 #include <RHI/Pipeline.h>
 #include <RHI/PipelineLayout.h>

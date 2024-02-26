@@ -44,7 +44,7 @@ namespace AZ::RHI
         {
             if (CheckBitsAll((AZStd::to_underlying(m_deviceMask) >> deviceIndex), 1u))
             {
-                m_deviceShaderResourceGroupDatas[deviceIndex] = ShaderResourceGroupData(layout);
+                m_deviceShaderResourceGroupDatas[deviceIndex] = SingleDeviceShaderResourceGroupData(layout);
             }
         }
     }
@@ -90,7 +90,7 @@ namespace AZ::RHI
 
             for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
             {
-                AZStd::vector<const ImageView*> deviceImageViews(imageViews.size());
+                AZStd::vector<const SingleDeviceImageView*> deviceImageViews(imageViews.size());
 
                 for (int imageIndex = 0; imageIndex < imageViews.size(); ++imageIndex)
                 {
@@ -129,7 +129,7 @@ namespace AZ::RHI
 
             for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
             {
-                AZStd::vector<const ImageView*> deviceImageViews(imageViews.size());
+                AZStd::vector<const SingleDeviceImageView*> deviceImageViews(imageViews.size());
 
                 for (int imageIndex = 0; imageIndex < imageViews.size(); ++imageIndex)
                 {
@@ -173,7 +173,7 @@ namespace AZ::RHI
 
             for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
             {
-                AZStd::vector<const BufferView*> deviceBufferViews(bufferViews.size());
+                AZStd::vector<const SingleDeviceBufferView*> deviceBufferViews(bufferViews.size());
 
                 for (int bufferIndex = 0; bufferIndex < bufferViews.size(); ++bufferIndex)
                 {
@@ -212,7 +212,7 @@ namespace AZ::RHI
 
             for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
             {
-                AZStd::vector<const BufferView*> deviceBufferViews(bufferViews.size());
+                AZStd::vector<const SingleDeviceBufferView*> deviceBufferViews(bufferViews.size());
 
                 for (int bufferIndex = 0; bufferIndex < bufferViews.size(); ++bufferIndex)
                 {
@@ -450,7 +450,7 @@ namespace AZ::RHI
     {
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
-            AZStd::vector<const ImageView*> deviceImageViews(imageViews.size());
+            AZStd::vector<const SingleDeviceImageView*> deviceImageViews(imageViews.size());
 
             for (int imageIndex = 0; imageIndex < imageViews.size(); ++imageIndex)
             {
@@ -503,7 +503,7 @@ namespace AZ::RHI
     {
         for (auto& [deviceIndex, deviceShaderResourceGroupData] : m_deviceShaderResourceGroupDatas)
         {
-            AZStd::vector<const BufferView*> deviceBufferViews(bufferViews.size());
+            AZStd::vector<const SingleDeviceBufferView*> deviceBufferViews(bufferViews.size());
 
             for (int bufferIndex = 0; bufferIndex < bufferViews.size(); ++bufferIndex)
             {

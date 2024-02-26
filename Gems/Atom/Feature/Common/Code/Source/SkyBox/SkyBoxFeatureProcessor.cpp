@@ -11,7 +11,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>

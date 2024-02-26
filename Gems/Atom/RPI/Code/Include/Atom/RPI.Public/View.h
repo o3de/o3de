@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/SingleDeviceShaderResourceGroup.h>
 #include <Atom/RHI/DrawListContext.h>
 
 #include <Atom/RPI.Public/Base.h>
@@ -66,16 +66,16 @@ namespace AZ
             RHI::DrawListMask GetDrawListMask() const { return m_drawListMask; }
             void Reset();
 
-            RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
+            RHI::SingleDeviceShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
             
             //! Add a draw packet to this view. DrawPackets need to be added every frame. This function is thread safe.
             //! The depth value here is the depth of the object from the perspective of the view.
-            void AddDrawPacket(const RHI::DrawPacket* drawPacket, float depth = 0.0f);
+            void AddDrawPacket(const RHI::SingleDeviceDrawPacket* drawPacket, float depth = 0.0f);
 
             //! Similar to previous AddDrawPacket() but calculates depth from packet position
-            void AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition);
+            void AddDrawPacket(const RHI::SingleDeviceDrawPacket* drawPacket, const Vector3& worldPosition);
             
             //! Similar to AddDrawPacket, but the view will not submit any draw items for rendering. It will just
             //! maintain a list of visible objects for the current frame, and the caller must get that list, reinterpret the
@@ -86,7 +86,7 @@ namespace AZ
             void AddVisibleObject(const void* userData, const Vector3& worldPosition);
 
             //! Add a draw item to this view with its associated draw list tag
-            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
+            void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::SingleDeviceDrawItemProperties& drawItemProperties);
 
             //! Applies some flags to the view that are reset each frame. The provided flags are combined with m_andFlags
             //! using &, and are combined with m_orFlags using |.

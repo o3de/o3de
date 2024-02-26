@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI/FrameAttachment.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
@@ -27,7 +27,7 @@ namespace AZ::RHI
         virtual ~ImageFrameAttachment() override = default;
 
         //! Initialization for imported images.
-        ImageFrameAttachment(const AttachmentId& attachmentId, Ptr<Image> image);
+        ImageFrameAttachment(const AttachmentId& attachmentId, Ptr<SingleDeviceImage> image);
 
         //! Initialization for transient images.
         ImageFrameAttachment(const TransientImageDescriptor& descriptor);
@@ -42,8 +42,8 @@ namespace AZ::RHI
 
         //! Returns the image assigned to this attachment. This is not guaranteed to exist
         //! until after frame graph compilation.
-        const Image* GetImage() const;
-        Image* GetImage();
+        const SingleDeviceImage* GetImage() const;
+        SingleDeviceImage* GetImage();
 
         //! Returns the image descriptor for this attachment.
         const ImageDescriptor& GetImageDescriptor() const;

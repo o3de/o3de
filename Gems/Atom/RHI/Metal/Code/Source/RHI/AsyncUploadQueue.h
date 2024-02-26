@@ -8,9 +8,9 @@
 #pragma once
 
 #include <Atom/RHI/AsyncWorkQueue.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/SingleDeviceBufferPool.h>
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
 #include <AzCore/std/containers/span.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Buffer.h>
@@ -50,19 +50,19 @@ namespace AZ
 
             //! Queue copy commands to upload buffer resource
             //! @return queue id which can be use to check whether upload finished or wait for upload finish
-            uint64_t QueueUpload(const RHI::BufferStreamRequest& request);
+            uint64_t QueueUpload(const RHI::SingleDeviceBufferStreamRequest& request);
 
             //! Queue copy commands to upload image subresources.
             //! @param residentMip is the resident mip level the expand request starts from.
             //! @return queue id which can be use to check whether upload finished or wait for upload finish
-            RHI::AsyncWorkHandle QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
+            RHI::AsyncWorkHandle QueueUpload(const RHI::SingleDeviceStreamingImageExpandRequest& request, uint32_t residentMip);
 
             bool IsUploadFinished(uint64_t fenceValue);
             void WaitForUpload(const RHI::AsyncWorkHandle& workHandle);
 
         private:
             struct FramePacket;
-            RHI::AsyncWorkHandle CreateAsyncWork(Fence& fence, RHI::Fence::SignalCallback callback = nullptr);
+            RHI::AsyncWorkHandle CreateAsyncWork(Fence& fence, RHI::SingleDeviceFence::SignalCallback callback = nullptr);
             void ProcessCallback(const RHI::AsyncWorkHandle& handle);
             void CopyBufferToImage(FramePacket* framePacket,
                                    Image* destImage,

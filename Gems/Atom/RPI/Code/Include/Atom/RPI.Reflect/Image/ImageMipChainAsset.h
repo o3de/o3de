@@ -12,7 +12,7 @@
 
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/SingleDeviceStreamingImagePool.h>
 
 #include <AzCore/std/containers/span.h>
 
@@ -70,7 +70,7 @@ namespace AZ
             AZStd::span<const uint8_t> GetSubImageData(uint32_t subImageIndex) const;
             
             //! Returns the sub-image layout for a single sub-image by index.
-            const RHI::ImageSubresourceLayout& GetSubImageLayout(uint32_t subImageIndex) const;
+            const RHI::SingleDeviceImageSubresourceLayout& GetSubImageLayout(uint32_t subImageIndex) const;
 
             using MipSliceList = AZStd::fixed_vector<RHI::StreamingImageMipSlice, RHI::Limits::Image::MipCountMax>;
 
@@ -109,7 +109,7 @@ namespace AZ
             AZStd::array<uint16_t, RHI::Limits::Image::MipCountMax> m_mipToSubImageOffset;
 
             // [Serialized] Maps the local mip level to a sub resource layout.
-            AZStd::array<RHI::ImageSubresourceLayout, RHI::Limits::Image::MipCountMax> m_subImageLayouts;
+            AZStd::array<RHI::SingleDeviceImageSubresourceLayout, RHI::Limits::Image::MipCountMax> m_subImageLayouts;
 
             // [Serialized] Contains a flat list of sub-images which reference the flat data blob.
             AZStd::vector<AZ::u64> m_subImageDataOffsets;

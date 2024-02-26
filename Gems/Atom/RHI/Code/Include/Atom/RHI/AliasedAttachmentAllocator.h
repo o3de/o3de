@@ -18,10 +18,10 @@
 
 namespace AZ::RHI
 {
-    class Resource;
+    class SingleDeviceResource;
     class Scope;
-    class Buffer;
-    class Image;
+    class SingleDeviceBuffer;
+    class SingleDeviceImage;
 
     namespace Internal
     {
@@ -49,8 +49,8 @@ namespace AZ::RHI
             // AliasedHeap
             AZStd::unique_ptr<AliasingBarrierTracker> CreateBarrierTrackerInternal() override           { return AZStd::make_unique<NoBarrierAliasingBarrierTracker>(); }
             ResultCode InitInternal([[maybe_unused]] Device& device, [[maybe_unused]] const AliasedHeapDescriptor& descriptor) override   { return ResultCode::Success; }
-            ResultCode InitImageInternal([[maybe_unused]] const ImageInitRequest& request, [[maybe_unused]] size_t heapOffset) override   { return ResultCode::Success; }
-            ResultCode InitBufferInternal([[maybe_unused]] const BufferInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return ResultCode::Success; }
+            ResultCode InitImageInternal([[maybe_unused]] const SingleDeviceImageInitRequest& request, [[maybe_unused]] size_t heapOffset) override   { return ResultCode::Success; }
+            ResultCode InitBufferInternal([[maybe_unused]] const SingleDeviceBufferInitRequest& request, [[maybe_unused]] size_t heapOffset) override { return ResultCode::Success; }
             //////////////////////////////////////////////////////////////////////////
         };
     }
@@ -101,7 +101,7 @@ namespace AZ::RHI
         //! Called when a buffer is being activated for the first time. This will acquire
         //! a buffer from a heap, configured for the provided descriptor. This may trigger a new
         //! heap to be allocated.
-        Buffer* ActivateBuffer(
+        SingleDeviceBuffer* ActivateBuffer(
             const TransientBufferDescriptor& descriptor,
             Scope& scope);
 
@@ -114,7 +114,7 @@ namespace AZ::RHI
         //! Called when an image is being activated for the first time. This will acquire
         //! an image from a heap, configured for the provided descriptor. This may trigger a new
         //! heap to be allocated.
-        Image* ActivateImage(
+        SingleDeviceImage* ActivateImage(
             const TransientImageDescriptor& descriptor,
             Scope& scope);
 
@@ -308,9 +308,9 @@ namespace AZ::RHI
     }
 
     template<class Heap>
-    Buffer* AliasedAttachmentAllocator<Heap>::ActivateBuffer(const TransientBufferDescriptor& descriptor, Scope& scope)
+    SingleDeviceBuffer* AliasedAttachmentAllocator<Heap>::ActivateBuffer(const TransientBufferDescriptor& descriptor, Scope& scope)
     {
-        Buffer* buffer = nullptr;
+        SingleDeviceBuffer* buffer = nullptr;
         AliasedHeap* heap = nullptr;
         ResultCode result = ResultCode::Fail;
         // We first try to allocate from the current heap pages.
@@ -374,9 +374,9 @@ namespace AZ::RHI
     }
 
     template<class Heap>
-    Image* AliasedAttachmentAllocator<Heap>::ActivateImage(const TransientImageDescriptor& descriptor, Scope& scope)
+    SingleDeviceImage* AliasedAttachmentAllocator<Heap>::ActivateImage(const TransientImageDescriptor& descriptor, Scope& scope)
     {
-        Image* image = nullptr;
+        SingleDeviceImage* image = nullptr;
         AliasedHeap* heap = nullptr;
         ResultCode result = ResultCode::Fail;
         // We first try to allocate from the current heap pages.

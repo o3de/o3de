@@ -82,10 +82,10 @@ namespace AZ::RHI
     ResultCode MultiDeviceQueryPool::InitQuery(MultiDeviceQuery** queries, uint32_t queryCount)
     {
         AZ_Assert(queries, "Null queries");
-        auto resultCode = IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
+        auto resultCode = IterateObjects<SingleDeviceQueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
-            AZStd::vector<RHI::Ptr<Query>> deviceQueries(queryCount);
-            AZStd::vector<Query*> rawDeviceQueries(queryCount);
+            AZStd::vector<RHI::Ptr<SingleDeviceQuery>> deviceQueries(queryCount);
+            AZStd::vector<SingleDeviceQuery*> rawDeviceQueries(queryCount);
             for (auto index{ 0u }; index < queryCount; ++index)
             {
                 deviceQueries[index] = RHI::Factory::Get().CreateQuery();
@@ -171,7 +171,7 @@ namespace AZ::RHI
 
         auto perDeviceResultCount{CalculatePerDeviceResultsCount(1)};
 
-        return IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
+        return IterateObjects<SingleDeviceQueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
             auto deviceQuery{ query->GetDeviceQuery(deviceIndex).get() };
             auto deviceResult{ result + (deviceIndex * perDeviceResultCount) };
@@ -205,9 +205,9 @@ namespace AZ::RHI
 
         auto perDeviceResultCount{CalculatePerDeviceResultsCount(queryCount)};
 
-        return IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
+        return IterateObjects<SingleDeviceQueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
-            AZStd::vector<Query*> deviceQueries(queryCount);
+            AZStd::vector<SingleDeviceQuery*> deviceQueries(queryCount);
             for (auto index{ 0u }; index < queryCount; ++index)
             {
                 deviceQueries[index] = queries[index]->GetDeviceQuery(deviceIndex).get();
@@ -233,7 +233,7 @@ namespace AZ::RHI
 
         auto perDeviceResultCount{CalculatePerDeviceResultsCount(0)};
 
-        return IterateObjects<QueryPool>([&](auto deviceIndex, auto deviceQueryPool)
+        return IterateObjects<SingleDeviceQueryPool>([&](auto deviceIndex, auto deviceQueryPool)
         {
             auto deviceResults{ results + (deviceIndex * perDeviceResultCount) };
             return deviceQueryPool->GetResults(deviceResults, perDeviceResultCount, flags);
@@ -247,7 +247,7 @@ namespace AZ::RHI
 
     void MultiDeviceQueryPool::Shutdown()
     {
-        IterateObjects<QueryPool>([]([[maybe_unused]] auto deviceIndex, auto deviceQueryPool)
+        IterateObjects<SingleDeviceQueryPool>([]([[maybe_unused]] auto deviceIndex, auto deviceQueryPool)
         {
             deviceQueryPool->Shutdown();
         });

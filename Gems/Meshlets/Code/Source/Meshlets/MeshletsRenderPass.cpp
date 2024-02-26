@@ -7,8 +7,8 @@
  */
 
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
+#include <Atom/RHI/SingleDevicePipelineState.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -172,7 +172,7 @@ namespace AZ
             return m_shader;
         }
 
-        bool MeshletsRenderPass::FillDrawRequestData(RHI::DrawPacketBuilder::DrawRequest& drawRequest)
+        bool MeshletsRenderPass::FillDrawRequestData(RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest& drawRequest)
         {
             if (!m_pipelineState)
             {
@@ -186,7 +186,7 @@ namespace AZ
         }
 
         // Adding draw packets
-        bool MeshletsRenderPass::AddDrawPackets(AZStd::list<const RHI::DrawPacket*> drawPackets)
+        bool MeshletsRenderPass::AddDrawPackets(AZStd::list<const RHI::SingleDeviceDrawPacket*> drawPackets)
         {
             bool overallSuccess = true;
 
@@ -198,7 +198,7 @@ namespace AZ
                 return false;
             }
             
-            for (const RHI::DrawPacket* drawPacket : drawPackets)
+            for (const RHI::SingleDeviceDrawPacket* drawPacket : drawPackets)
             {
                 if (!drawPacket)
                 {   // might not be an error - the object might have just been added and the DrawPacket is

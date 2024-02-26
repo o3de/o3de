@@ -47,8 +47,8 @@ namespace AZ
             static RPI::Ptr<MeshletsRenderPass> Create(const RPI::PassDescriptor& descriptor);
 
             // Adds the lod array of render data
-            bool FillDrawRequestData(RHI::DrawPacketBuilder::DrawRequest& drawRequest);
-            bool AddDrawPackets(AZStd::list<const RHI::DrawPacket*> drawPackets);
+            bool FillDrawRequestData(RHI::SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest& drawRequest);
+            bool AddDrawPackets(AZStd::list<const RHI::SingleDeviceDrawPacket*> drawPackets);
 
             Data::Instance<RPI::Shader> GetShader();
 
@@ -90,7 +90,7 @@ namespace AZ
             // To help create the pipeline state 
             RPI::PassDescriptor m_passDescriptor;
 
-            const RHI::PipelineState* m_pipelineState = nullptr;
+            const RHI::SingleDevicePipelineState* m_pipelineState = nullptr;
             RPI::ViewPtr m_currentView = nullptr;
         };
 

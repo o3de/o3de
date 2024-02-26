@@ -59,7 +59,7 @@ namespace AZ
             CommandListBase::FlushEncoder();
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::SingleDeviceCopyItem& copyItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
             CreateEncoder(CommandEncoderType::Blit);
@@ -69,7 +69,7 @@ namespace AZ
             {
                 case RHI::CopyItemType::Buffer:
                 {
-                    const RHI::CopyBufferDescriptor& descriptor = copyItem.m_buffer;
+                    const RHI::SingleDeviceCopyBufferDescriptor& descriptor = copyItem.m_buffer;
                     const auto* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                     const auto* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -84,7 +84,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::Image:
                 {
-                    const RHI::CopyImageDescriptor& descriptor = copyItem.m_image;
+                    const RHI::SingleDeviceCopyImageDescriptor& descriptor = copyItem.m_image;
                     const Image* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                     const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -115,7 +115,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::BufferToImage:
                 {
-                    const RHI::CopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
+                    const RHI::SingleDeviceCopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
                     const Buffer* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                     const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -144,7 +144,7 @@ namespace AZ
                 }
                 case RHI::CopyItemType::ImageToBuffer:
                 {
-                    const RHI::CopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
+                    const RHI::SingleDeviceCopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
                     const auto* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                     const auto* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -178,7 +178,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::SingleDeviceDispatchItem& dispatchItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -201,7 +201,7 @@ namespace AZ
 
         }
 
-        void CommandList::Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::SingleDeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -427,7 +427,7 @@ namespace AZ
         }
 
         CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::BindlessResourceType resourceType,
-                                                                    const RHI::ResourceView* resourceView)
+                                                                    const RHI::SingleDeviceResourceView* resourceView)
         {
             id<MTLResource> mtlResourceView = nil;
             bool isReadOnlyResource = false;
@@ -582,7 +582,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::SingleDeviceDrawItem& drawItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -631,7 +631,7 @@ namespace AZ
                 {
                     const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
 
-                    const RHI::IndexBufferView& indexBuffDescriptor = *drawItem.m_indexBufferView;
+                    const RHI::SingleDeviceIndexBufferView& indexBuffDescriptor = *drawItem.m_indexBufferView;
                     AZ::HashValue64 indicesHash = indexBuffDescriptor.GetHash();
 
                     m_state.m_indicesHash = indicesHash;
@@ -741,7 +741,7 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::SingleDeviceStreamBufferView* streams, uint32_t count)
         {
             uint16_t bufferArrayLen = 0;
             AZStd::array<id<MTLBuffer>, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBuffers;
@@ -789,12 +789,12 @@ namespace AZ
             [renderEncoder setDepthClipMode: rastState.m_depthClipMode];
         }
 
-        void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDraw(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Draw>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDispatch(const RHI::SingleDeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
@@ -890,20 +890,20 @@ namespace AZ
             m_state.m_scissorState.m_isDirty = false;
         }
 
-        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
 
-        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::UpdateBottomLevelAccelerationStructure(const RHI::SingleDeviceRayTracingBlas& rayTracingBlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
 
         void CommandList::BuildTopLevelAccelerationStructure(
-            const RHI::RayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::RayTracingBlas*>& changedBlasList)
+            const RHI::SingleDeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::SingleDeviceRayTracingBlas*>& changedBlasList)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

@@ -39,7 +39,7 @@ namespace AZ
             }            
         }
 
-        void DescriptorSet::UpdateBufferViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufViews)
+        void DescriptorSet::UpdateBufferViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceBufferView>>& bufViews)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
             VkDescriptorType type = layout.GetDescriptorType(layoutIndex);
@@ -53,7 +53,7 @@ namespace AZ
                 data.m_texelBufferViews.resize(bufViews.size());
                 for (size_t i = 0; i < bufViews.size(); ++i)
                 {
-                    const RHI::ConstPtr<RHI::BufferView>& bufferView = bufViews[i];
+                    const RHI::ConstPtr<RHI::SingleDeviceBufferView>& bufferView = bufViews[i];
                     VkBufferView vkBufferView;
                     if (!bufferView || bufferView->IsStale())
                     {
@@ -82,7 +82,7 @@ namespace AZ
                 for (size_t i = 0; i < bufViews.size(); ++i)
                 {
                     VkDescriptorBufferInfo bufferInfo = {};
-                    const RHI::ConstPtr<RHI::BufferView>& bufferView = bufViews[i];
+                    const RHI::ConstPtr<RHI::SingleDeviceBufferView>& bufferView = bufViews[i];
                     if (!bufferView || bufferView->IsStale())
                     {
                         bufferInfo.offset = 0;
@@ -121,7 +121,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateImageViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType)
+        void DescriptorSet::UpdateImageViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::SingleDeviceImageView>>& imageViews, RHI::ShaderInputImageType imageType)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
 
@@ -262,7 +262,7 @@ namespace AZ
             {
                 m_constantDataBuffer = Buffer::Create();
                 const RHI::BufferDescriptor bufferDescriptor(RHI::BufferBindFlags::Constant, constantDataSize);
-                RHI::BufferInitRequest request(*m_constantDataBuffer, bufferDescriptor);
+                RHI::SingleDeviceBufferInitRequest request(*m_constantDataBuffer, bufferDescriptor);
                 RHI::ResultCode rhiResult = vulkanDescriptor.m_constantDataPool->InitBuffer(request);
                 if (rhiResult != RHI::ResultCode::Success)
                 {

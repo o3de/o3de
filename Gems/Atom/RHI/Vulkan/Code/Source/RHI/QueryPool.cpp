@@ -42,7 +42,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::Query& query)
+        RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::SingleDeviceQuery& query)
         {
             // Nothing to initialize
             return RHI::ResultCode::Success;

@@ -10,7 +10,7 @@
 
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RHI/DispatchItem.h>
+#include <Atom/RHI/SingleDeviceDispatchItem.h>
 
 namespace AZ
 {
@@ -45,11 +45,11 @@ namespace AZ
 
             void SetPipelineState(RPI::Shader* shader);
 
-            RHI::DispatchItem* GetDispatchItem() { return m_shader ? &m_dispatchItem : nullptr; }
+            RHI::SingleDeviceDispatchItem* GetDispatchItem() { return m_shader ? &m_dispatchItem : nullptr; }
             Data::Instance<RPI::ShaderResourceGroup> GetMeshletDataSrg() { return m_meshletsDataSrg;  }
 
         private:
-            RHI::DispatchItem m_dispatchItem;
+            RHI::SingleDeviceDispatchItem m_dispatchItem;
             Data::Instance<RPI::ShaderResourceGroup> m_meshletsDataSrg;
             RPI::Shader* m_shader;
         };

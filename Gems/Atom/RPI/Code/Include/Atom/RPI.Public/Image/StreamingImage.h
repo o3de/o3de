@@ -209,7 +209,7 @@ namespace AZ
             Data::Instance<StreamingImagePool> m_pool;
 
             // RHI pool reference cached at init time from the parent pool asset.
-            RHI::StreamingImagePool* m_rhiPool = nullptr;
+            RHI::SingleDeviceStreamingImagePool* m_rhiPool = nullptr;
 
             // The image asset associated with this image instance.
             Data::Asset<StreamingImageAsset> m_imageAsset;

@@ -74,7 +74,7 @@ namespace AZ::RHI
                 m_waitThread.join();
             }
 
-            IterateObjects<Fence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
+            IterateObjects<SingleDeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
             {
                 deviceFence->Shutdown();
             });
@@ -90,7 +90,7 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        return IterateObjects<Fence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
+        return IterateObjects<SingleDeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
         {
             return deviceFence->SignalOnCpu();
         });
@@ -103,7 +103,7 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        return IterateObjects<Fence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
+        return IterateObjects<SingleDeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
         {
             return deviceFence->WaitOnCpu();
         });
@@ -151,7 +151,7 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
-        return IterateObjects<Fence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
+        return IterateObjects<SingleDeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
         {
             return deviceFence->Reset();
         });

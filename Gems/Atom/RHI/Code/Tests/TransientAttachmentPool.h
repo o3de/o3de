@@ -7,10 +7,10 @@
  */
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/SingleDeviceBuffer.h>
+#include <Atom/RHI/SingleDeviceImage.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/SingleDeviceTransientAttachmentPool.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -18,7 +18,7 @@
 namespace UnitTest
 {
     class TransientAttachmentPool
-        : public AZ::RHI::TransientAttachmentPool
+        : public AZ::RHI::SingleDeviceTransientAttachmentPool
     {
     public:
         AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
@@ -32,9 +32,9 @@ namespace UnitTest
 
         void BeginInternal(const AZ::RHI::TransientAttachmentPoolCompileFlags flags, const AZ::RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
 
-        AZ::RHI::Image* ActivateImage(const AZ::RHI::TransientImageDescriptor&) override;
+        AZ::RHI::SingleDeviceImage* ActivateImage(const AZ::RHI::TransientImageDescriptor&) override;
 
-        AZ::RHI::Buffer* ActivateBuffer(const AZ::RHI::TransientBufferDescriptor&) override;
+        AZ::RHI::SingleDeviceBuffer* ActivateBuffer(const AZ::RHI::TransientBufferDescriptor&) override;
 
         void DeactivateBuffer(const AZ::RHI::AttachmentId&) override;
 
@@ -42,9 +42,9 @@ namespace UnitTest
 
         void EndInternal() override;
 
-        AZ::RHI::Ptr<AZ::RHI::ImagePool> m_imagePool;
-        AZ::RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
-        AZStd::unordered_map<AZ::RHI::AttachmentId, AZ::RHI::Ptr<AZ::RHI::Resource>> m_attachments;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceImagePool> m_imagePool;
+        AZ::RHI::Ptr<AZ::RHI::SingleDeviceBufferPool> m_bufferPool;
+        AZStd::unordered_map<AZ::RHI::AttachmentId, AZ::RHI::Ptr<AZ::RHI::SingleDeviceResource>> m_attachments;
 
         AZStd::unordered_set<AZ::RHI::AttachmentId> m_activeSet;
     };

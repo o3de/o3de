@@ -12,12 +12,12 @@
 
 namespace AZ::RHI
 {
-    RayTracingPipelineStateDescriptor MultiDeviceRayTracingPipelineStateDescriptor::GetDeviceRayTracingPipelineStateDescriptor(
+    SingleDeviceRayTracingPipelineStateDescriptor MultiDeviceRayTracingPipelineStateDescriptor::GetDeviceRayTracingPipelineStateDescriptor(
         int deviceIndex) const
     {
         AZ_Assert(m_mdPipelineState, "No MultiDevicePipelineState available\n");
 
-        RayTracingPipelineStateDescriptor descriptor{ m_descriptor };
+        SingleDeviceRayTracingPipelineStateDescriptor descriptor{ m_descriptor };
 
         if (m_mdPipelineState)
         {
@@ -120,7 +120,7 @@ namespace AZ::RHI
 
         if (resultCode != ResultCode::Success)
         {
-            // Reset already initialized device-specific RayTracingPipelineState and set deviceMask to 0
+            // Reset already initialized device-specific SingleDeviceRayTracingPipelineState and set deviceMask to 0
             m_deviceObjects.clear();
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }

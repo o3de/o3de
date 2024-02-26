@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/MultiDeviceResource.h>
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/SingleDeviceQuery.h>
 
 namespace AZ::RHI
 {

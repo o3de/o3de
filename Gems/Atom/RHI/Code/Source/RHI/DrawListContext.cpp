@@ -39,7 +39,7 @@ namespace AZ::RHI
         m_drawListMask.reset();
     }
 
-    void DrawListContext::AddDrawPacket(const DrawPacket* drawPacket, float depth)
+    void DrawListContext::AddDrawPacket(const SingleDeviceDrawPacket* drawPacket, float depth)
     {
         if (drawPacket)
         {
@@ -51,7 +51,7 @@ namespace AZ::RHI
 
                 if (m_drawListMask[drawListTag.GetIndex()])
                 {
-                    DrawItemProperties drawItem = drawPacket->GetDrawItemProperties(i);
+                    SingleDeviceDrawItemProperties drawItem = drawPacket->GetDrawItemProperties(i);
                     if (drawItem.m_item->m_enabled)
                     {
                         drawItem.m_depth = depth;
@@ -69,7 +69,7 @@ namespace AZ::RHI
         }
     }
 
-    void DrawListContext::AddDrawItem(DrawListTag drawListTag, DrawItemProperties drawItemProperties)
+    void DrawListContext::AddDrawItem(DrawListTag drawListTag, SingleDeviceDrawItemProperties drawItemProperties)
     {
         if (!drawItemProperties.m_item->m_enabled)
         {

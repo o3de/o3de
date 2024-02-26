@@ -10,10 +10,10 @@
 
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/SingleDeviceDrawPacketBuilder.h>
 #include <Atom/RHI/MultiDeviceDrawPacket.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/StreamBufferView.h>
+#include <Atom/RHI/SingleDeviceStreamBufferView.h>
 
 namespace AZ
 {
@@ -29,8 +29,8 @@ namespace AZ::RHI
         {
             MultiDeviceDrawRequest() = default;
 
-            //! Returns the device-specific DrawRequest for the given index
-            DrawPacketBuilder::DrawRequest GetDeviceDrawRequest(int deviceIndex);
+            //! Returns the device-specific SingleDeviceDrawRequest for the given index
+            SingleDeviceDrawPacketBuilder::SingleDeviceDrawRequest GetDeviceDrawRequest(int deviceIndex);
 
             //! The filter tag used to direct the draw item.
             DrawListTag m_listTag;
@@ -57,8 +57,8 @@ namespace AZ::RHI
 
             //! A map of all device-specific StreamBufferViews, indexed by the device index
             //! This additional cache is needed since device-specific StreamBufferViews are returned as objects
-            //! and the device-specific DrawItem holds a pointer to it.
-            AZStd::unordered_map<int, AZStd::vector<StreamBufferView>> m_deviceStreamBufferViews;
+            //! and the device-specific SingleDeviceDrawItem holds a pointer to it.
+            AZStd::unordered_map<int, AZStd::vector<SingleDeviceStreamBufferView>> m_deviceStreamBufferViews;
         };
 
         explicit MultiDeviceDrawPacketBuilder(RHI::MultiDevice::DeviceMask deviceMask)
@@ -71,7 +71,7 @@ namespace AZ::RHI
                 // cast to u8 to prevent warning
                 if (RHI::CheckBit(AZStd::to_underlying(m_deviceMask), static_cast<AZ::u8>(deviceIndex)))
                 {
-                    m_deviceDrawPacketBuilders.emplace(deviceIndex, DrawPacketBuilder());
+                    m_deviceDrawPacketBuilders.emplace(deviceIndex, SingleDeviceDrawPacketBuilder());
                 }
             }
         }
@@ -84,10 +84,10 @@ namespace AZ::RHI
         static const size_t DrawItemCountMax = 16;
 
         //! Passes the linear allocator to all single-device DrawPacketBuilders and
-        //! initializes the multi-device DrawPacket which will be returned after calling End()
+        //! initializes the multi-device SingleDeviceDrawPacket which will be returned after calling End()
         void Begin(IAllocator* allocator);
 
-        //! Passes the DrawArguments to all single-device DrawPacketBuilders
+        //! Passes the SingleDeviceDrawArguments to all single-device DrawPacketBuilders
         void SetDrawArguments(const MultiDeviceDrawArguments& drawArguments);
 
         //! Passes the IndexBufferViews to all single-device DrawPacketBuilders
@@ -108,30 +108,30 @@ namespace AZ::RHI
         //! Passes a Viewport to all singl-device DrawPacketBuilders
         void SetViewport(const Viewport& viewport);
 
-        //! Passes the ShaderResourceGroup to all single-device DrawPacketBuilders
+        //! Passes the SingleDeviceShaderResourceGroup to all single-device DrawPacketBuilders
         void AddShaderResourceGroup(const MultiDeviceShaderResourceGroup* shaderResourceGroup);
 
         //! Passes the single-device DrawRequests to all single-device DrawPacketBuilders,
-        //! keeps the multi-device DrawRequest and sets the DrawListMask in the current
-        //! multi-device DrawPacket
+        //! keeps the multi-device SingleDeviceDrawRequest and sets the DrawListMask in the current
+        //! multi-device SingleDeviceDrawPacket
         void AddDrawItem(MultiDeviceDrawRequest& request);
 
         //! Builds all single-device DrawPackets linearly in memory using their allocator
-        //! and captures them in the multi-device DrawPacket, correctly linking the
-        //! single-device DrawItems with the corresponding multi-device DrawItem as well
+        //! and captures them in the multi-device SingleDeviceDrawPacket, correctly linking the
+        //! single-device DrawItems with the corresponding multi-device SingleDeviceDrawItem as well
         RHI::Ptr<MultiDeviceDrawPacket> End();
 
         //! Clones all single-device DrawPackets and then sets all corresponding pointers
-        //! in the multi-device DrawPacket and DrawItem objects
+        //! in the multi-device SingleDeviceDrawPacket and SingleDeviceDrawItem objects
         RHI::Ptr<MultiDeviceDrawPacket> Clone(const MultiDeviceDrawPacket* original);
 
     private:
         RHI::MultiDevice::DeviceMask m_deviceMask{ 0u };
-        AZStd::fixed_vector<MultiDeviceDrawRequest, DrawPacketBuilder::DrawItemCountMax> m_drawRequests;
+        AZStd::fixed_vector<MultiDeviceDrawRequest, SingleDeviceDrawPacketBuilder::DrawItemCountMax> m_drawRequests;
 
         RHI::Ptr<MultiDeviceDrawPacket> m_drawPacketInFlight;
 
-        //! A map of single-device DrawPacketBuilder, indexed by the device index
-        AZStd::unordered_map<int, DrawPacketBuilder> m_deviceDrawPacketBuilders;
+        //! A map of single-device SingleDeviceDrawPacketBuilder, indexed by the device index
+        AZStd::unordered_map<int, SingleDeviceDrawPacketBuilder> m_deviceDrawPacketBuilders;
     };
 } // namespace AZ::RHI

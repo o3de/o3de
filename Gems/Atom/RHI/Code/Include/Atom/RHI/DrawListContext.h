@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/DrawPacket.h>
+#include <Atom/RHI/SingleDeviceDrawPacket.h>
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/ThreadLocalContext.h>
 
@@ -41,11 +41,11 @@ namespace AZ::RHI
 
         /// Filters the draw items in the draw packet into draw lists. Only draw lists specified at init time are appended.
         /// The depth value here is the depth of the object from the perspective of the view.
-        void AddDrawPacket(const DrawPacket* drawPacket, float depth = 0.0f);
+        void AddDrawPacket(const SingleDeviceDrawPacket* drawPacket, float depth = 0.0f);
 
         /// Adds an individual draw item to the draw list associated with the provided tag. This will
         /// no-op if the tag is not present in the internal draw list mask.
-        void AddDrawItem(DrawListTag drawListTag, DrawItemProperties drawItemProperties);
+        void AddDrawItem(DrawListTag drawListTag, SingleDeviceDrawItemProperties drawItemProperties);
 
         /// Coalesces the draw lists in preparation for access via GetList. This should
         /// be called from a single thread as a sync point between the append / consume phases.
