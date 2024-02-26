@@ -156,7 +156,7 @@ namespace AZ
 
             AZStd::array<const RHI::MultiDeviceShaderResourceGroup*, 1> srgs{m_decomposeSrg->GetRHIShaderResourceGroup()};
 
-            m_dispatchItem.SetShaderResourceGroups(srgs, 1);
+            m_dispatchItem.SetShaderResourceGroups(srgs);
 
             // find srg input indexes
             m_decomposeInputImageIndex = m_decomposeSrg->FindShaderInputImageIndex(Name("m_msImage"));
