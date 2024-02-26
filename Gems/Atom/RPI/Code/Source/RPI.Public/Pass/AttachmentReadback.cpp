@@ -17,7 +17,7 @@
 
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/SingleDeviceFence.h>
+#include <Atom/RHI/MultiDeviceFence.h>
 #include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -111,7 +111,7 @@ namespace AZ
             return format;
         }
 
-        AttachmentReadback::AttachmentReadback(const RHI::ScopeId& scopeId)
+        AttachmentReadback::AttachmentReadback(const RHI::ScopeId& scopeId) : m_dispatchItem(RHI::MultiDevice::AllDevices)
         {
             for(uint32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
             {
@@ -120,9 +120,9 @@ namespace AZ
             
             // Create fence
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_fence = RHI::Factory::Get().CreateFence();
+            m_fence = aznew RHI::MultiDeviceFence;
             AZ_Assert(m_fence != nullptr, "AttachmentReadback failed to create a fence");
-            [[maybe_unused]] RHI::ResultCode result = m_fence->Init(*device, RHI::FenceState::Reset);
+            [[maybe_unused]] RHI::ResultCode result = m_fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Reset);
             AZ_Assert(result == RHI::ResultCode::Success, "AttachmentReadback failed to init fence");
 
             // Load shader and srg
@@ -152,10 +152,11 @@ namespace AZ
             const auto& shaderVariant = m_decomposeShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
 
-            m_dispatchItem.m_pipelineState = m_decomposeShader->AcquirePipelineState(pipelineStateDescriptor)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+            m_dispatchItem.SetPipelineState(m_decomposeShader->AcquirePipelineState(pipelineStateDescriptor));
 
-            m_dispatchItem.m_shaderResourceGroupCount = 1;
-            m_dispatchItem.m_shaderResourceGroups[0] = m_decomposeSrg->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get();
+            AZStd::array<const RHI::MultiDeviceShaderResourceGroup*, 1> srgs{m_decomposeSrg->GetRHIShaderResourceGroup()};
+
+            m_dispatchItem.SetShaderResourceGroups(srgs);
 
             // find srg input indexes
             m_decomposeInputImageIndex = m_decomposeSrg->FindShaderInputImageIndex(Name("m_msImage"));
@@ -287,7 +288,7 @@ namespace AZ
             dispatchArgs.m_threadsPerGroupY = 16;
             dispatchArgs.m_threadsPerGroupZ = 1;
 
-            m_dispatchItem.m_arguments = dispatchArgs;
+            m_dispatchItem.SetArguments(dispatchArgs);
 
             const RHI::MultiDeviceImageView* imageView = context.GetImageView(m_attachmentId);
             m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, imageView);
@@ -299,7 +300,7 @@ namespace AZ
 
         void AttachmentReadback::DecomposeExecute(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_dispatchItem);
+            context.GetCommandList()->Submit(m_dispatchItem.GetDeviceDispatchItem(RHI::MultiDevice::DefaultDeviceIndex));
         }
         
         void AttachmentReadback::CopyPrepare(RHI::FrameGraphInterface frameGraph)
@@ -317,7 +318,7 @@ namespace AZ
             }
 
             frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_readbackItems.size()));
-            frameGraph.SignalFence(*m_fence);
+            frameGraph.SignalFence(*m_fence->GetDeviceFence(RHI::MultiDevice::DefaultDeviceIndex));
 
             // CPU has already consumed the GPU buffer. We can clear it now.
             // We don't do this in the Async callback as the callback can get signaled by the GPU at anytime.
@@ -376,9 +377,9 @@ namespace AZ
                 m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
                 // copy buffer
-                RHI::SingleDeviceCopyBufferDescriptor copyBuffer;
-                copyBuffer.m_sourceBuffer = buffer->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
-                copyBuffer.m_destinationBuffer = m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
+                RHI::MultiDeviceCopyBufferDescriptor copyBuffer;
+                copyBuffer.m_mdSourceBuffer = buffer;
+                copyBuffer.m_mdDestinationBuffer = m_readbackItems[0].m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
                 copyBuffer.m_size = aznumeric_cast<uint32_t>(desc.m_byteCount);
 
                 m_readbackItems[0].m_copyItem = copyBuffer;
@@ -430,14 +431,14 @@ namespace AZ
                     m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
 
                     // copy descriptor for copying image to buffer
-                    RHI::SingleDeviceCopyImageToBufferDescriptor copyImageToBuffer;
-                    copyImageToBuffer.m_sourceImage = image->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
+                    RHI::MultiDeviceCopyImageToBufferDescriptor copyImageToBuffer;
+                    copyImageToBuffer.m_mdSourceImage = image;
                     copyImageToBuffer.m_sourceSize = imageSubresourceLayouts[mipSlice].m_size;
                     copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(mipSlice, 0 /*arraySlice*/, imageAspect);
                     copyImageToBuffer.m_destinationOffset = 0;
                     copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayouts[mipSlice].m_bytesPerRow;
                     copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayouts[mipSlice].m_bytesPerImage;
-                    copyImageToBuffer.m_destinationBuffer = readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex).get();
+                    copyImageToBuffer.m_mdDestinationBuffer = readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
                     copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
 
                     readbackItem.m_mipInfo.m_slice = mipSlice;
@@ -454,7 +455,7 @@ namespace AZ
             {
                 if (readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex])
                 {
-                    context.GetCommandList()->Submit(readbackItem.m_copyItem);
+                    context.GetCommandList()->Submit(readbackItem.m_copyItem.GetDeviceCopyItem(RHI::MultiDevice::DefaultDeviceIndex));
                 }
             }
         }
@@ -608,7 +609,7 @@ namespace AZ
                         uint8_t* const destBegin = readbackItem.m_dataBuffer->data();
                         // The source image WAS the destination when the copy item transferred data from GPU to CPU
                         // this explains why the name srcBytesPerRow for these memcpy operations.
-                        const auto srcBytesPerRow = readbackItem.m_copyItem.m_imageToBuffer.m_destinationBytesPerRow;
+                        const auto srcBytesPerRow = readbackItem.m_copyItem.m_mdImageToBuffer.m_destinationBytesPerRow;
                         for (uint32_t row = 0; row < rowCount; ++row)
                         {
                             void* dest = destBegin + row * imageLayout.m_bytesPerRow;
