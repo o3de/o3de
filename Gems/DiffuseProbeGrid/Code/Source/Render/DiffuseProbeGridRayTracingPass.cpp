@@ -6,24 +6,24 @@
  *
  */
 
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
+#include <Atom/RHI/MultiDeviceDispatchRaysItem.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
-#include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <Render/DiffuseProbeGridRayTracingPass.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -357,24 +357,21 @@ namespace AZ
                 {
                     AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
 
-                    const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroups[] = {
-                        diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
-                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
-                        rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()
+                    const RHI::MultiDeviceShaderResourceGroup* shaderResourceGroups[] = {
+                        diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),
+                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup(),
+                        rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()
                     };
 
-                    RHI::SingleDeviceDispatchRaysItem dispatchRaysItem;
-                    dispatchRaysItem.m_arguments.m_direct.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
-                    dispatchRaysItem.m_arguments.m_direct.m_height = AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount());
-                    dispatchRaysItem.m_arguments.m_direct.m_depth = 1;
-                    dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
-                    dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(RHI::MultiDevice::DefaultDeviceIndex).get();
-                    dispatchRaysItem.m_shaderResourceGroupCount = RHI::ArraySize(shaderResourceGroups);
-                    dispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups;
-                    dispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                    RHI::MultiDeviceDispatchRaysItem dispatchRaysItem{ RHI::MultiDevice::AllDevices };
+                    dispatchRaysItem.SetDimensionsDirect(diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount, AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount()), 1);
+                    dispatchRaysItem.SetRayTracingPipelineState(m_rayTracingPipelineState.get());
+                    dispatchRaysItem.SetRayTracingShaderTable(m_rayTracingShaderTable.get());
+                    dispatchRaysItem.SetShaderResourceGroups(shaderResourceGroups, RHI::ArraySize(shaderResourceGroups));
+                    dispatchRaysItem.SetPipelineState(m_globalPipelineState.get());
 
                     // submit the DispatchRays item
-                    context.GetCommandList()->Submit(dispatchRaysItem, index);
+                    context.GetCommandList()->Submit(dispatchRaysItem.GetDeviceDispatchRaysItem(RHI::MultiDevice::DefaultDeviceIndex), index);
                 }
             }
         }

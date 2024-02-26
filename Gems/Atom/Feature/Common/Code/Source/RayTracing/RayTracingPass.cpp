@@ -6,25 +6,25 @@
  *
  */
 
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/SingleDeviceDispatchRaysItem.h>
+#include <Atom/RHI/MultiDeviceDispatchRaysItem.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/SingleDevicePipelineState.h>
-#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
-#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <RayTracing/RayTracingFeatureProcessor.h>
 #include <RayTracing/RayTracingPass.h>
 #include <RayTracing/RayTracingPassData.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
@@ -333,7 +333,7 @@ namespace AZ
                 return;
             }
 
-            RHI::SingleDeviceDispatchRaysItem dispatchRaysItem;
+            RHI::MultiDeviceDispatchRaysItem dispatchRaysItem{ RHI::MultiDevice::AllDevices };
 
             // calculate thread counts if this is a full screen raytracing pass
             if (m_passData->m_makeFullscreenPass)
@@ -354,24 +354,22 @@ namespace AZ
 
                 RHI::Size imageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-                dispatchRaysItem.m_arguments.m_direct.m_width = imageSize.m_width;
-                dispatchRaysItem.m_arguments.m_direct.m_height = imageSize.m_height;
-                dispatchRaysItem.m_arguments.m_direct.m_depth = imageSize.m_depth;
+                dispatchRaysItem.SetDimensionsDirect(imageSize.m_width, imageSize.m_height, imageSize.m_depth);
             }
             else
             {
-                dispatchRaysItem.m_arguments.m_direct.m_width = m_passData->m_threadCountX;
-                dispatchRaysItem.m_arguments.m_direct.m_height = m_passData->m_threadCountY;
-                dispatchRaysItem.m_arguments.m_direct.m_depth = m_passData->m_threadCountZ;
+                dispatchRaysItem.SetDimensionsDirect(m_passData->m_threadCountX, m_passData->m_threadCountY, m_passData->m_threadCountZ);
             }
 
             // bind RayTracingGlobal, RayTracingScene, and View Srgs
             // [GFX TODO][ATOM-15610] Add RenderPass::SetSrgsForRayTracingDispatch
-            AZStd::vector<RHI::SingleDeviceShaderResourceGroup*> shaderResourceGroups = { m_shaderResourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get() };
+            AZStd::vector<RHI::MultiDeviceShaderResourceGroup*> shaderResourceGroups = {
+                m_shaderResourceGroup->GetRHIShaderResourceGroup()
+            };
 
             if (m_requiresRayTracingSceneSrg)
             {
-                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
+                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup());
             }
 
             if (m_requiresViewSrg)
@@ -379,29 +377,27 @@ namespace AZ
                 RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
                 if (view)
                 {
-                    shaderResourceGroups.push_back(view->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
+                    shaderResourceGroups.push_back(view->GetRHIShaderResourceGroup());
                 }
             }
 
             if (m_requiresSceneSrg)
             {
-                shaderResourceGroups.push_back(scene->GetShaderResourceGroup()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
+                shaderResourceGroups.push_back(scene->GetShaderResourceGroup()->GetRHIShaderResourceGroup());
             }
 
             if (m_requiresRayTracingMaterialSrg)
             {
-                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get());
+                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup());
             }
 
-            dispatchRaysItem.m_shaderResourceGroupCount = aznumeric_cast<uint32_t>(shaderResourceGroups.size());
-            dispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups.data();
-            dispatchRaysItem.m_rayTracingPipelineState =
-                m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
-            dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(RHI::MultiDevice::DefaultDeviceIndex).get();
-            dispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+            dispatchRaysItem.SetShaderResourceGroups(shaderResourceGroups.data(), aznumeric_cast<uint32_t>(shaderResourceGroups.size()));
+            dispatchRaysItem.SetRayTracingPipelineState(m_rayTracingPipelineState.get());
+            dispatchRaysItem.SetRayTracingShaderTable(m_rayTracingShaderTable.get());
+            dispatchRaysItem.SetPipelineState(m_globalPipelineState.get());
 
             // submit the DispatchRays item
-            context.GetCommandList()->Submit(dispatchRaysItem);
+            context.GetCommandList()->Submit(dispatchRaysItem.GetDeviceDispatchRaysItem(RHI::MultiDevice::DefaultDeviceIndex));
         }
 
         void RayTracingPass::OnShaderReinitialized([[maybe_unused]] const RPI::Shader& shader)
