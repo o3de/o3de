@@ -44,7 +44,12 @@ namespace MiniAudio
                     ->UIElement(AZ::Edit::UIHandlers::Button, "Stop Sound", "Stops playing the sound")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Stop Sound")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMiniAudioPlaybackComponent::StopSoundInEditor);
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMiniAudioPlaybackComponent::StopSoundInEditor)
+
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "Pause Sound", "Pause playing the sound")
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Pause Sound")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMiniAudioPlaybackComponent::PauseSoundInEditor);
 
                 editContext->Class<MiniAudioPlaybackComponentController>("MiniAudioPlaybackComponentController", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -186,7 +191,6 @@ namespace MiniAudio
 
     AZ::Crc32 EditorMiniAudioPlaybackComponent::PlaySoundInEditor()
     {
-        m_controller.Stop();
         m_controller.Play();
         return AZ::Edit::PropertyRefreshLevels::None;
     }
@@ -194,6 +198,12 @@ namespace MiniAudio
     AZ::Crc32 EditorMiniAudioPlaybackComponent::StopSoundInEditor()
     {
         m_controller.Stop();
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    AZ::Crc32 EditorMiniAudioPlaybackComponent::PauseSoundInEditor()
+    {
+        m_controller.Pause();
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
