@@ -1877,9 +1877,6 @@ CLocalizedStringsManager::LoadFunc CLocalizedStringsManager::GetLoadFunction() c
         }
         if(localizationFormat == 1)
 #endif
-#if defined(CARBONATED)
-        if (m_cvarLocalizationFormat == 1)
-#endif
         {
             return &CLocalizedStringsManager::DoLoadAGSXmlDocument;
         }
@@ -1918,10 +1915,10 @@ void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocaliz
 //////////////////////////////////////////////////////////////////////////
 LocalizedFont CLocalizedStringsManager::GetLocalizedFont(const char* fontAssetPath, float fontSize)
 {
-     AZStd::string fontAssetPathWithSize;
+    AZ_Assert(fontAssetPath && fontAssetPath[0], "CLocalizedStringsManager::GetLocalizedFont(): invalid font Asset path.")
     // Try Font + Size
-    fontAssetPathWithSize.format("%s:%d", fontAssetPath, (int)fontSize);
-     AZStd::to_lower(fontAssetPathWithSize.begin(), fontAssetPathWithSize.end());
+    AZStd::string fontAssetPathWithSize = AZStd::string::format("%s:%d", fontAssetPath, (int)fontSize);
+    AZStd::to_lower(fontAssetPathWithSize.begin(), fontAssetPathWithSize.end());
     auto keyCRC = AZ::Crc32(fontAssetPathWithSize);
     auto it = m_pLanguage->m_fontMapping.find(keyCRC);
     if (it == m_pLanguage->m_fontMapping.end())
