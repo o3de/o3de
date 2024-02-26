@@ -15,6 +15,7 @@
 #include "ImGuiLYAssetExplorer.h"
 #include "ImGuiLYCameraMonitor.h"
 #include "ImGuiLYEntityOutliner.h"
+#include "ImGuiInputMonitor.h"
 
 namespace ImGui
 {
@@ -57,6 +58,7 @@ namespace ImGui
         ImGuiLYAssetExplorer m_assetExplorer;
         ImGuiLYCameraMonitor m_cameraMonitor;
         ImGuiLYEntityOutliner m_entityOutliner;
+        ImGuiInputMonitor m_inputMonitor;
         bool m_showDeltaTimeGraphs = false;
         ImGui::LYImGuiUtils::HistogramContainer m_deltaTimeHistogram;
         ImGuiDropdownState m_dropdownState = ImGuiDropdownState::Hidden; //!< Keeps the state of the ImGui main menu dropdowns.

@@ -49,11 +49,15 @@ namespace MiniAudio
         void SetGlobalVolume(float scale) override;
         float GetGlobalVolume() const override;
         void SetGlobalVolumeInDecibels(float decibels) override;
+        AZ::u32 GetChannelCount() const override;
 
     private:
         std::unique_ptr<ma_engine> m_engine;
 
         float m_globalVolume = 1.f;
+
+        // Number of audio output channels
+        AZ::u32 m_channelCount = 0;
 
         // Assets related data
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;

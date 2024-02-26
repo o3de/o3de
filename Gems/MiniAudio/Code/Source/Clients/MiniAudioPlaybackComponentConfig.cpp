@@ -24,10 +24,15 @@ namespace MiniAudio
                 ->Field("Auto-follow", &MiniAudioPlaybackComponentConfig::m_autoFollowEntity)
                 ->Field("Loop", &MiniAudioPlaybackComponentConfig::m_loop)
                 ->Field("Spatialization", &MiniAudioPlaybackComponentConfig::m_enableSpatialization)
+                ->Field("Fixed Direction", &MiniAudioPlaybackComponentConfig::m_fixedDirection)
+                ->Field("Direction", &MiniAudioPlaybackComponentConfig::m_direction)
                 ->Field("Attenuation Model", &MiniAudioPlaybackComponentConfig::m_attenuationModel)
+                ->Field("Directional Attenuation Factor", &MiniAudioPlaybackComponentConfig::m_directionalAttenuationFactor)
                 ->Field("Min Distance", &MiniAudioPlaybackComponentConfig::m_minimumDistance)
                 ->Field("Max Distance", &MiniAudioPlaybackComponentConfig::m_maximumDistance)
-                ;
+                ->Field("Inner Cone Angle", &MiniAudioPlaybackComponentConfig::m_innerAngleInDegrees)
+                ->Field("Outer Cone Angle", &MiniAudioPlaybackComponentConfig::m_outerAngleInDegrees)
+                ->Field("Outer Volume", &MiniAudioPlaybackComponentConfig::m_outerVolume);
         }
     }
 } // namespace MiniAudio

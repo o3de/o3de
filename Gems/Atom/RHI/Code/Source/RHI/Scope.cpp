@@ -81,7 +81,6 @@ namespace AZ::RHI
         m_index.Reset();
         m_graphNodeIndex.Reset();
         m_estimatedItemCount = 1;
-        m_hardwareQueueClass = HardwareQueueClass::Graphics;
         m_producersByQueueLast.fill(nullptr);
         m_producersByQueue.fill(nullptr);
         m_consumersByQueue.fill(nullptr);

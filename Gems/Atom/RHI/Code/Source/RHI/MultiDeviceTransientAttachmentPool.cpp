@@ -160,6 +160,14 @@ namespace AZ::RHI
                     image->m_deviceObjects[deviceIndex] = deviceImage;
                     image->SetDescriptor(deviceImage->GetDescriptor());
                 }
+                else
+                {
+                    if (auto potentialDeviceImage{ image->m_deviceObjects.find(deviceIndex) };
+                        potentialDeviceImage != image->m_deviceObjects.end())
+                    {
+                        image->m_deviceObjects.erase(potentialDeviceImage);
+                    }
+                }
             });
 
         if (image->m_deviceObjects.empty())
@@ -211,6 +219,14 @@ namespace AZ::RHI
                 {
                     buffer->m_deviceObjects[deviceIndex] = deviceBuffer;
                     buffer->SetDescriptor(deviceBuffer->GetDescriptor());
+                }
+                else
+                {
+                    if (auto potentialDeviceBuffer{ buffer->m_deviceObjects.find(deviceIndex) };
+                        potentialDeviceBuffer != buffer->m_deviceObjects.end())
+                    {
+                        buffer->m_deviceObjects.erase(potentialDeviceBuffer);
+                    }
                 }
             });
 

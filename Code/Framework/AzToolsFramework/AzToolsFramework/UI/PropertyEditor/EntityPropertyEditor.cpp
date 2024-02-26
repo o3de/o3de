@@ -1304,7 +1304,8 @@ namespace AzToolsFramework
             entityDetailsVisible = true;
             entityDetailsLabelText = GetEntityDetailsLabelText();
         }
-        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyLayerEntities || selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities)
+        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyLayerEntities || selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities ||
+            selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab)
         {
             // If a customer filter is not already in use, only show layer components.
             if (!m_customFilterSet)

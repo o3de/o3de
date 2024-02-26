@@ -170,7 +170,7 @@ namespace AzToolsFramework
     protected:
         // we automatically take care of the rest:
         // --------------------- Internal Implementation ------------------------------
-        virtual void ResetGUIToDefaults_Internal(QWidget* widget) = 0;
+        virtual bool ResetGUIToDefaults_Internal(QWidget* widget) = 0;
         virtual void ConsumeAttributes_Internal(QWidget* widget, InstanceDataNode* attrValue) = 0;
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* t) = 0;
         virtual void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext* serializeContext) = 0;
@@ -206,7 +206,20 @@ namespace AzToolsFramework
         {
             if (m_widget)
             {
-                m_widget->deleteLater();
+                // Detect whether this is being run in the Editor or during a Unit Test.
+                AZ::ApplicationTypeQuery appType;
+                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                if (appType.IsValid() && !appType.IsEditor())
+                {
+                    // In Unit Tests, immediately delete the widget to prevent triggering the leak detection mechanism.
+                    delete m_widget;
+                    m_widget = nullptr;
+                }
+                else
+                {
+                    // In the Editor, use deleteLater as it is more stable.
+                    m_widget->deleteLater();
+                }
             }
             IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
         }
@@ -436,21 +449,20 @@ namespace AzToolsFramework
                 m_proxyClassElement.m_genericClassInfo = serializeContext->FindGenericClassInfo(typeId);
             }
 
-            if (m_widget)
-            {
-                // Reset widget's attributes before reading in new values
-                m_rpeHandler.ResetGUIToDefaults_Internal(m_widget);
-            }
-
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
             m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
 
             m_domNode = node;
         }
 
-        void PrepareWidgetForReuse() override
+        bool ResetToDefaults() override
         {
-            // No action is needed because the widget already gets reset each time a value is set from DOM
+            if (m_widget)
+            {
+                // Reset widget's attributes before reading in new values
+                return m_rpeHandler.ResetGUIToDefaults_Internal(m_widget);
+            }
+            return false;
         }
 
         QWidget* GetFirstInTabOrder() override
@@ -638,8 +650,11 @@ namespace AzToolsFramework
     public:
         typedef WidgetType widget_t;
 
-        // Resets widget attributes for reuse.
-        virtual void ResetGUIToDefaults([[maybe_unused]] WidgetType* widget) {}
+        // Resets widget attributes for reuse; returns true if widget was reset
+        virtual bool ResetGUIToDefaults([[maybe_unused]] WidgetType* widget)
+        {
+            return false;
+        }
 
         // this will be called in order to initialize your gui.  Your class will be fed one attribute at a time
         // you can interpret the attributes as you wish - use attrValue->Read<int>() for example, to interpret it as an int.
@@ -685,10 +700,10 @@ namespace AzToolsFramework
 
     protected:
         // ---------------- INTERNAL -----------------------------
-        virtual void ResetGUIToDefaults_Internal(QWidget* widget) override
+        virtual bool ResetGUIToDefaults_Internal(QWidget* widget) override
         {
             WidgetType* wid = static_cast<WidgetType*>(widget);
-            ResetGUIToDefaults(wid);
+            return ResetGUIToDefaults(wid);
         }
 
         virtual void ConsumeAttributes_Internal(QWidget* widget, InstanceDataNode* dataNode) override;

@@ -105,7 +105,7 @@ namespace AzToolsFramework
         static bool GetDefaultDisplayDecimals(PropertyDoubleSpinCtrl* GUI);
 
         QWidget* CreateGUI(QWidget* pParent) override;
-        void ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI) override;
+        bool ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI) override;
         void ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyDoubleSpinCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyDoubleSpinCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
@@ -122,7 +122,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(floatPropertySpinboxHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
-        void ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI) override;
+        bool ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI) override;
         void ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyDoubleSpinCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyDoubleSpinCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;

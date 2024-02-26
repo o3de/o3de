@@ -67,7 +67,8 @@ namespace AZ::Render
     {
         if (const auto* settingsRegistry = SettingsRegistry::Get(); settingsRegistry)
         {
-            const bool found = settingsRegistry->GetObject(passNamesOut, "/O3DE/AtomRenderOptions/PassNamesInViewportOptionsMenu");
+            [[maybe_unused]] const bool found =
+                settingsRegistry->GetObject(passNamesOut, "/O3DE/AtomRenderOptions/PassNamesInViewportOptionsMenu");
             AZ_Warning("AtomRenderOptions", found, "No AtomRenderOptions settings found from the settings registry");
         }
     }

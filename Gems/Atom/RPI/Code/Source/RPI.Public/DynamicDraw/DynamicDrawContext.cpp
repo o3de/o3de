@@ -546,7 +546,7 @@ namespace AZ
             drawItem.m_stencilRef = m_stencilRef;
 
             drawItemInfo.m_sortKey = m_sortKey++;
-            m_cachedDrawItems.emplace_back(drawItemInfo);
+            m_cachedDrawItems.emplace_back(AZStd::move(drawItemInfo));
         }
 
         void DynamicDrawContext::DrawLinear(const void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg)
@@ -632,7 +632,7 @@ namespace AZ
             }
 
             drawItemInfo.m_sortKey = m_sortKey++;
-            m_cachedDrawItems.emplace_back(drawItemInfo);
+            m_cachedDrawItems.emplace_back(AZStd::move(drawItemInfo));
         }
 
         Data::Instance<ShaderResourceGroup> DynamicDrawContext::NewDrawSrg()

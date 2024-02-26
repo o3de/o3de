@@ -355,7 +355,6 @@ namespace AzToolsFramework
     {
         if (DestroyEntityById(entityId))
         {
-            EditorRequests::Bus::Broadcast(&EditorRequests::DestroyEditorRepresentation, entityId, false);
             return true;
         }
 
@@ -684,8 +683,6 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::OnContextEntityRemoved(const AZ::EntityId& entityId)
     {
-        EditorRequests::Bus::Broadcast(&EditorRequests::DestroyEditorRepresentation, entityId, false);
-
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEditorEntityDeleted, entityId);
     }
 

@@ -15,8 +15,7 @@ namespace MiniAudio
     extern AZ::ComponentDescriptor* EditorMiniAudioListenerComponent_CreateDescriptor();
     extern AZ::ComponentDescriptor* EditorMiniAudioPlaybackComponent_CreateDescriptor();
 
-    class MiniAudioEditorModule
-        : public MiniAudioModuleInterface
+    class MiniAudioEditorModule : public MiniAudioModuleInterface
     {
     public:
         AZ_RTTI(MiniAudioEditorModule, "{501C94A1-993A-4203-9720-D43D6C1DDB7A}", MiniAudioModuleInterface);
@@ -26,13 +25,15 @@ namespace MiniAudio
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
-            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
-            // This happens through the [MyComponent]::Reflect() function.
-            m_descriptors.insert(m_descriptors.end(), {
-                MiniAudioEditorSystemComponent_CreateDescriptor(),
-                EditorMiniAudioListenerComponent_CreateDescriptor(),
-                EditorMiniAudioPlaybackComponent_CreateDescriptor(),
-            });
+            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and
+            // EditContext. This happens through the [MyComponent]::Reflect() function.
+            m_descriptors.insert(
+                m_descriptors.end(),
+                {
+                    MiniAudioEditorSystemComponent_CreateDescriptor(),
+                    EditorMiniAudioListenerComponent_CreateDescriptor(),
+                    EditorMiniAudioPlaybackComponent_CreateDescriptor(),
+                });
         }
 
         /**
@@ -41,11 +42,11 @@ namespace MiniAudio
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
-            return AZ::ComponentTypeList {
+            return AZ::ComponentTypeList{
                 MiniAudioEditorSystemComponent_GetTypeId(),
             };
         }
     };
-}// namespace MiniAudio
+} // namespace MiniAudio
 
 AZ_DECLARE_MODULE_CLASS(Gem_MiniAudio, MiniAudio::MiniAudioEditorModule)

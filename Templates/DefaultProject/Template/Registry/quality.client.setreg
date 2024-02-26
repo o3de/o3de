@@ -1,0 +1,27 @@
+{
+    "O3DE": {
+        "Quality": {
+            // Client specific quality setting overrides go in this file 
+            // See Registry/quality.setreg for more details
+            "Groups": {
+                // Example of how to override the default quality level for clients to be high
+                //"q_general": {
+                //    "Default": 2  
+                //}
+                // Additional custom quality groups overrides go here. 
+            },
+            "Devices": {
+                // Device rules for clients go here 
+                // Device rule groups can have whatever name makes sense to you
+                //"Example": {
+                //    "Rules": {
+                //        "ExampleRegexRule": { "DeviceModel": "^ModelRegex$" }
+                //    },
+                //    "Settings": {
+                //        "q_general": 0 
+                //    }
+                //}
+            }
+        }
+    }
+}

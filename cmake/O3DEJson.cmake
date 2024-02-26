@@ -58,6 +58,15 @@ function(o3de_read_json_key output_value input_json_path key)
     set(${output_value} ${value} PARENT_SCOPE)
 endfunction()
 
+function(o3de_read_optional_json_key output_value input_json_path key)
+    o3de_file_read_cache(${input_json_path} manifest_json_data)
+    string(JSON value ERROR_VARIABLE manifest_json_error GET ${manifest_json_data} ${key})
+    if(manifest_json_error)
+        return()
+    endif()
+    set(${output_value} ${value} PARENT_SCOPE)
+endfunction()
+
 #! o3de_read_json_keys: read multiple json keys at once. More efficient
 # than using o3de_read_json_key multiple times.
 # \arg:input_json_path - the path to the json file 

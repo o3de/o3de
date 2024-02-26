@@ -22,7 +22,6 @@
         "${Name}",
         "Atom",
         "AudioSystem",
-        "AWSCore",
         "CameraFramework",
         "DebugDraw",
         "DiffuseProbeGrid",
@@ -41,6 +40,7 @@
         "ScriptEvents",
         "StartingPointInput",
         "TextureAtlas",
-        "WhiteBox"
+        "WhiteBox",
+        "RemoteTools"
     ]
 }
