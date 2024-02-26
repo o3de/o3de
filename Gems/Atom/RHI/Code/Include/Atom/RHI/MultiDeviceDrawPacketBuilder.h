@@ -76,6 +76,10 @@ namespace AZ::RHI
             }
         }
 
+        MultiDeviceDrawPacketBuilder(const MultiDeviceDrawPacketBuilder& other);
+        MultiDeviceDrawPacketBuilder& operator=(const MultiDeviceDrawPacketBuilder& other);
+        AZ_DISABLE_MOVE(MultiDeviceDrawPacketBuilder)
+
         // NOTE: This is configurable; just used to control the amount of memory held by the builder.
         static const size_t DrawItemCountMax = 16;
 
