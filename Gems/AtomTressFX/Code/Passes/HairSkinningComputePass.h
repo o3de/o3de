@@ -10,6 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI.Reflect/Size.h>
+#include <Atom/RHI/MultiDeviceDispatchItem.h>
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -101,7 +102,7 @@ namespace AZ
 
                 //! list of dispatch items, each represents a single hair object that
                 //!  will be used by the skinning compute shader.
-                AZStd::unordered_set<const RHI::SingleDeviceDispatchItem*> m_dispatchItems;
+                AZStd::unordered_set<const RHI::MultiDeviceDispatchItem*> m_dispatchItems;
 
                 //! List of new render objects that their Per Object (dynamic) Srg should be bound
                 //!  to the resources.  Done once per pass per object only.

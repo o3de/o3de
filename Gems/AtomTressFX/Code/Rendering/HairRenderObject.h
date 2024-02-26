@@ -192,7 +192,7 @@ namespace AZ
                 //! Creates and fill the dispatch item associated with the compute shader
                 bool BuildDispatchItem(RPI::Shader* computeShader, DispatchLevel dispatchLevel);
 
-                const RHI::SingleDeviceDispatchItem* GetDispatchItem(RPI::Shader* computeShader);
+                const RHI::MultiDeviceDispatchItem* GetDispatchItem(RPI::Shader* computeShader);
 
                 void PrepareHairGenerationSrgDescriptors(uint32_t vertexCount, uint32_t numStrands);
 
