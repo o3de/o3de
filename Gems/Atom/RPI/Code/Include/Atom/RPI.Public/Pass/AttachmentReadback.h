@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/SingleDeviceCopyItem.h>
-#include <Atom/RHI/SingleDeviceDispatchItem.h>
+#include <Atom/RHI/MultiDeviceCopyItem.h>
+#include <Atom/RHI/MultiDeviceDispatchItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
@@ -146,7 +146,7 @@ namespace AZ
             struct ReadbackItem
             {
                 // The copy item used to read back a buffer, or a particular mip level of an image
-                RHI::SingleDeviceCopyItem m_copyItem;
+                RHI::MultiDeviceCopyItem m_copyItem;
 
                 // Host accessible buffer to save read back result
                 // Using triple buffer pointers, as it allows use to clear the buffer outside the async callback.
@@ -172,7 +172,7 @@ namespace AZ
 
             ReadbackState m_state = ReadbackState::Uninitialized;
 
-            Ptr<RHI::SingleDeviceFence> m_fence;
+            Ptr<RHI::MultiDeviceFence> m_fence;
 
             // Callback function when read back finished
             CallbackFunction m_callback = nullptr;
@@ -182,7 +182,7 @@ namespace AZ
             Data::Instance<ShaderResourceGroup> m_decomposeSrg;
             RHI::ShaderInputImageIndex m_decomposeInputImageIndex;
             RHI::ShaderInputImageIndex m_decomposeOutputImageIndex;
-            RHI::SingleDeviceDispatchItem m_dispatchItem;
+            RHI::MultiDeviceDispatchItem m_dispatchItem;
 
             // Scope producer for decomposing multi-sample image
             AZStd::shared_ptr<AZ::RHI::ScopeProducer> m_decomposeScopeProducer;
