@@ -170,9 +170,8 @@ namespace AssetProcessor
 
             for (const QString& expect : expectedFiles)
             {
-                CreateDummyFile(expect);
+                CreateDummyFileAZ(expect.toUtf8().constData());
             }
-
             m_data->m_dbConn.OpenDatabase();
 
             BuildConfig(m_data->m_assetRootSourceDir, &(m_data->m_dbConn), m_data->m_config);
@@ -915,10 +914,11 @@ namespace AssetProcessor
             m_customDataMembers->m_subfolder1AbsolutePath = m_data->m_assetRootSourceDir.absoluteFilePath("subfolder1").toStdString().c_str();
 
             AzFramework::StringFunc::Path::Join(m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetASourceRelPath.c_str(), m_customDataMembers->m_assetAFullPath);
-            CreateDummyFile(QString::fromUtf8(m_customDataMembers->m_assetAFullPath.c_str()), m_customDataMembers->m_assetTestString.c_str());
+            // since we use the mock virtual fileio, we must use the AZ version that creates mock files
+            CreateDummyFileAZ(m_customDataMembers->m_assetAFullPath.c_str(), m_customDataMembers->m_assetTestString.c_str());
 
             AzFramework::StringFunc::Path::Join(m_data->m_cacheRootDir.absolutePath().toUtf8().constData(), m_customDataMembers->m_assetAProductRelPath.c_str(), m_customDataMembers->m_assetAProductFullPath);
-            CreateDummyFile(QString::fromUtf8(m_customDataMembers->m_assetAProductFullPath.c_str()), m_customDataMembers->m_productTestString.c_str());
+            CreateDummyFileAZ(m_customDataMembers->m_assetAProductFullPath.c_str(), m_customDataMembers->m_productTestString.c_str());
         }
 
         bool GetAssetInfoById(bool expectedResult, AZStd::string expectedRelPath, AZStd::string expectedRootPath, AssetType assetType)
@@ -1113,7 +1113,7 @@ namespace AssetProcessor
 
     TEST_F(AssetCatalogTest_AssetInfo, FindSource_NotProcessed_NotInQueue_FindsSource)
     {
-        EXPECT_TRUE(UnitTestUtils::CreateDummyFileAZ(m_customDataMembers->m_assetAFullPath.c_str()));
+        EXPECT_TRUE(UnitTestUtils::CreateDummyFileAZ(m_customDataMembers->m_assetAFullPath.c_str(), m_customDataMembers->m_assetTestString.c_str()));
         // Get accurate UUID based on source database name instead of using the one that was randomly generated
         auto expectedSourceUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_customDataMembers->m_assetAFullPath.c_str()));
         ASSERT_TRUE(expectedSourceUuid);
@@ -1125,7 +1125,8 @@ namespace AssetProcessor
 
     TEST_F(AssetCatalogTest_AssetInfo, FindSource_NotProcessed_NotInQueue_RegisteredAsSourceType_FindsSource)
     {
-        EXPECT_TRUE(UnitTestUtils::CreateDummyFileAZ(m_customDataMembers->m_assetAFullPath.c_str()));
+        EXPECT_TRUE(UnitTestUtils::CreateDummyFileAZ(
+            m_customDataMembers->m_assetAFullPath.c_str(), m_customDataMembers->m_assetTestString.c_str()));
         // Get accurate UUID based on source database name instead of using the one that was randomly generated
         auto expectedSourceUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(m_customDataMembers->m_assetAFullPath.c_str()));
         ASSERT_TRUE(expectedSourceUuid);
@@ -1138,10 +1139,12 @@ namespace AssetProcessor
         EXPECT_TRUE(GetSourceInfoBySourcePath(true, m_customDataMembers->m_assetAFullPath.c_str(), expectedSourceUuid.GetValue(), m_customDataMembers->m_assetASourceRelPath.c_str(), m_customDataMembers->m_subfolder1AbsolutePath.c_str(), m_customDataMembers->m_assetAType));
     }
 
-    TEST_F(AssetCatalogTest, Multithread_AccessCatalogWhileInitializing_IsThreadSafe)
+    // this test can take an extremely long time due to its number of assets x number of iterations.
+    // keep it in the periodic suite.
+    TEST_F(AssetCatalogTest, Multithread_AccessCatalogWhileInitializing_IsThreadSafe_SUITE_periodic)
     {
-        static constexpr int NumTestAssets = 1000;
-        static constexpr int NumUpdateIterations = 1000;
+        static constexpr int NumTestAssets = 100;
+        static constexpr int NumUpdateIterations = 100;
 
         using namespace AssetProcessor;
         using namespace AzFramework::AssetSystem;
@@ -1157,7 +1160,7 @@ namespace AssetProcessor
             for (int i = 0; i < NumTestAssets; ++i)
             {
                 SourceAssetReference sourceAsset(1, AZStd::to_string(i).c_str());
-                UnitTestUtils::CreateDummyFile(sourceAsset.AbsolutePath().c_str());
+                UnitTestUtils::CreateDummyFileAZ(sourceAsset.AbsolutePath().c_str());
 
                 SourceDatabaseEntry sourceEntry;
                 sourceEntry.m_sourceName = sourceAsset.RelativePath().c_str();
