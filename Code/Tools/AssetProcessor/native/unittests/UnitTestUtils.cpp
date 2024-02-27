@@ -42,7 +42,7 @@ namespace UnitTestUtils
 
     bool CreateDummyFileAZ(AZ::IO::PathView fullPathToFile, AZStd::string_view contents)
     {
-        AZ::IO::FileIOStream stream(fullPathToFile.FixedMaxPathString().c_str(), AZ::IO::OpenMode::ModeWrite);
+        AZ::IO::FileIOStream stream(fullPathToFile.FixedMaxPathString().c_str(), AZ::IO::OpenMode::ModeWrite|AZ::IO::OpenMode::ModeCreatePath);
 
         if (!stream.IsOpen())
         {
