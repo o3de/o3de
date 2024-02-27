@@ -36,9 +36,10 @@ namespace AZ
         }
 
         RHI::ResultCode Queue::SubmitCommandBuffers(
-            const AZStd::vector<RHI::Ptr<CommandList>>& commandBuffers, 
+            const AZStd::vector<RHI::Ptr<CommandList>>& commandBuffers,
             const AZStd::vector<Semaphore::WaitSemaphore>& waitSemaphoresInfo,
-            const AZStd::vector< RHI::Ptr<Semaphore>>& semaphoresToSignal,
+            const AZStd::vector<RHI::Ptr<Semaphore>>& semaphoresToSignal,
+            const AZStd::vector<RHI::Ptr<Fence>>& fencesToWaitFor,
             Fence* fenceToSignal)
         {
             AZStd::vector<VkCommandBuffer> vkCommandBuffers;
@@ -47,6 +48,7 @@ namespace AZ
             AZStd::vector<VkSemaphore> vkSignalSemaphores;
 
             VkTimelineSemaphoreSubmitInfo timelineSemaphoresSubmitInfos = {};
+            AZStd::vector<uint64_t> vkWaitSemaphoreValues;
 
             VkSubmitInfo submitInfo;
             uint32_t submitCount = 0;
@@ -77,18 +79,31 @@ namespace AZ
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.pNext = nullptr;
 
-                if (fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore)
+                if ((fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore) || !fencesToWaitFor.empty())
                 {
-                    fenceToSignal->Reset();
-                    uint64_t value = fenceToSignal->GetPendingValue();
                     timelineSemaphoresSubmitInfos.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
                     timelineSemaphoresSubmitInfos.pNext = nullptr;
-                    timelineSemaphoresSubmitInfos.waitSemaphoreValueCount = 0;
-                    timelineSemaphoresSubmitInfos.pWaitSemaphoreValues = nullptr;
-                    timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = 1;
-                    timelineSemaphoresSubmitInfos.pSignalSemaphoreValues = &value;
                     submitInfo.pNext = &timelineSemaphoresSubmitInfos;
-                    vkSignalSemaphores.push_back(fenceToSignal->GetNativeSemaphore());
+
+                    if ((fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore))
+                    {
+                        uint64_t value = fenceToSignal->GetPendingValue();
+                        timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = 1;
+                        timelineSemaphoresSubmitInfos.pSignalSemaphoreValues = &value;
+                        vkSignalSemaphores.push_back(fenceToSignal->GetNativeSemaphore());
+                    }
+
+                    for (auto& fence : fencesToWaitFor)
+                    {
+                        AZ_Assert(
+                            fence->GetFenceType() == FenceType::TimelineSemaphore,
+                            "Queue: Only fences of type timeline semaphores can be waited for");
+                        vkWaitSemaphoreValues.push_back(fence->GetPendingValue());
+                        vkWaitSemaphoreVector.push_back(fence->GetNativeSemaphore());
+                    }
+                    timelineSemaphoresSubmitInfos.waitSemaphoreValueCount = static_cast<uint32_t>(vkWaitSemaphoreValues.size());
+                    timelineSemaphoresSubmitInfos.pWaitSemaphoreValues =
+                        vkWaitSemaphoreValues.empty() ? nullptr : vkWaitSemaphoreValues.data();
                 }
 
                 submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vkWaitSemaphoreVector.size());

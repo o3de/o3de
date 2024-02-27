@@ -142,7 +142,8 @@ namespace AZ
                     const bool hardwareQueueMismatch = scope.GetHardwareQueueClass() != mergedHardwareQueueClass;
 
                     // Check if we are straddling the boundary of a fence/semaphore.
-                    const bool onSyncBoundaries = !scope.GetWaitSemaphores().empty() || (scopePrev && (!scopePrev->GetSignalSemaphores().empty() || !scopePrev->GetSignalFences().empty()));
+                    const bool onSyncBoundaries = !scope.GetWaitSemaphores().empty() || !scope.GetWaitFences().empty() ||
+                        (scopePrev && (!scopePrev->GetSignalSemaphores().empty() || !scopePrev->GetSignalFences().empty()));
 
                     // If we exceeded limits, then flush the group.
                     const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onSyncBoundaries || subpassGroup;

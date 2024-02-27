@@ -270,9 +270,10 @@ namespace AZ
                     // We wait until the swapchain image has finished being rendered to initialize the
                     // ownership transfer.
                     vulkanQueue->SubmitCommandBuffers(
-                        AZStd::vector<RHI::Ptr<CommandList>>{commandList},
-                        AZStd::vector<Semaphore::WaitSemaphore>{AZStd::make_pair(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, presentSemaphore)},
-                        AZStd::vector< RHI::Ptr<Semaphore>>{transferSemaphore},
+                        AZStd::vector<RHI::Ptr<CommandList>>{ commandList },
+                        AZStd::vector<Semaphore::WaitSemaphore>{ AZStd::make_pair(VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, presentSemaphore) },
+                        AZStd::vector<RHI::Ptr<Semaphore>>{ transferSemaphore },
+                        {},
                         nullptr);
 
                     // The presentation engine must wait until the ownership transfer has completed.

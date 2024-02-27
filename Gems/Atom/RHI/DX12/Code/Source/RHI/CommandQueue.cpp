@@ -144,6 +144,11 @@ namespace AZ
                 static const uint32_t CommandListCountMax = 128;
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
 
+                for (Fence* fence : request.m_userFencesToWaitFor)
+                {
+                    dx12CommandQueue->Wait(fence->Get(), fence->GetPendingValue());
+                }
+
                 for (size_t producerQueueIdx = 0; producerQueueIdx < request.m_waitFences.size(); ++producerQueueIdx)
                 {
                     if (const uint64_t fenceValue = request.m_waitFences[producerQueueIdx])

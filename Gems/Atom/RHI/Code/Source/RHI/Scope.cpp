@@ -91,6 +91,7 @@ namespace AZ::RHI
         m_bufferAttachments.clear();
         m_swapChainsToPresent.clear();
         m_fencesToSignal.clear();
+        m_fencesToWaitFor.clear();
         m_resourcePoolResolves.clear();
         m_queryPools.clear();
     }
@@ -220,6 +221,11 @@ namespace AZ::RHI
     const AZStd::vector<Ptr<Fence>>& Scope::GetFencesToSignal() const
     {
         return m_fencesToSignal;
+    }
+
+    const AZStd::vector<Ptr<Fence>>& Scope::GetFencesToWaitFor() const
+    {
+        return m_fencesToWaitFor;
     }
 
     Scope* Scope::GetProducerByQueue(HardwareQueueClass hardwareQueueClass) const

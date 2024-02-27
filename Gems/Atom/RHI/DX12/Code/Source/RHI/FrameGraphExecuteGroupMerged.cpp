@@ -54,6 +54,16 @@ namespace AZ
                         fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
                     }
                 }
+
+                {
+                    auto& fencesToWaitFor = m_workRequest.m_userFencesToWaitFor;
+
+                    fencesToWaitFor.reserve(fencesToWaitFor.size() + scope->GetFencesToWaitFor().size());
+                    for (const RHI::Ptr<RHI::Fence>& fence : scope->GetFencesToWaitFor())
+                    {
+                        fencesToWaitFor.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                    }
+                }
             }
 
             InitMergedRequest request;

@@ -34,6 +34,9 @@ namespace AZ
 
             /// A set of user fences to signal after executing the command lists.
             AZStd::vector<Fence*> m_userFencesToSignal;
+
+            /// A set of user fences to wait for before executing the command lists.
+            AZStd::vector<Fence*> m_userFencesToWaitFor;
         };
 
         enum class HardwareQueueSubclass

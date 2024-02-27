@@ -228,6 +228,11 @@ namespace AZ
             return m_signalFences;
         }
 
+        const AZStd::vector<RHI::Ptr<Fence>>& Scope::GetWaitFences() const
+        {
+            return m_waitFences;
+        }
+
         const AZStd::vector<Semaphore::WaitSemaphore>& Scope::GetWaitSemaphores() const
         {
             return m_waitSemaphores;
@@ -283,9 +288,15 @@ namespace AZ
                 static_cast<Device&>(fence->GetDevice()).QueueForRelease(fence);
             }
 
+            for (const auto& fence : m_waitFences)
+            {
+                static_cast<Device&>(fence->GetDevice()).QueueForRelease(fence);
+            }
+
             m_waitSemaphores.clear();
             m_signalSemaphores.clear();
             m_signalFences.clear();
+            m_waitFences.clear();
             for (size_t i = 0; i < BarrierSlotCount; ++i)
             {
                 m_unoptimizedBarriers[i].clear();
@@ -327,11 +338,18 @@ namespace AZ
             CollectClearActions(GetImageAttachments(), m_imageClearRequests);
             CollectClearActions(GetBufferAttachments(), m_bufferClearRequests);
 
-            const auto& fences = GetFencesToSignal();
-            m_signalFences.reserve(fences.size());
-            for (const auto& fence : fences)
+            const auto& signalFences = GetFencesToSignal();
+            m_signalFences.reserve(signalFences.size());
+            for (const auto& fence : signalFences)
             {
                 m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
+            }
+
+            const auto& waitFences = GetFencesToWaitFor();
+            m_waitFences.reserve(waitFences.size());
+            for (const auto& fence : waitFences)
+            {
+                m_waitFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
             }
 
             Device& device = static_cast<Device&>(deviceBase);

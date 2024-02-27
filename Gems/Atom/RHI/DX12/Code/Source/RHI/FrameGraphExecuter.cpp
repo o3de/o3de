@@ -114,8 +114,11 @@ namespace AZ
                     // Check if the hardware queue classes match.
                     const bool hardwareQueueMismatch = scope.GetHardwareQueueClass() != mergedHardwareQueueClass;
 
+                    bool hasUserFencesToWaitFor = !scope.GetFencesToWaitFor().empty();
+
                     // Check if we are straddling the boundary of a fence.
-                    const bool onFenceBoundaries = (scope.HasWaitFences() || (scopePrev && scopePrev->HasSignalFence())) || hasUserFencesToSignal;
+                    const bool onFenceBoundaries = (scope.HasWaitFences() || (scopePrev && scopePrev->HasSignalFence())) ||
+                        hasUserFencesToSignal || hasUserFencesToWaitFor;
 
                     // If we exceeded limits, then flush the group.
                     const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onFenceBoundaries;

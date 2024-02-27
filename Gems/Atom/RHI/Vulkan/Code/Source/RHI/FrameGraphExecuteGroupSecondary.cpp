@@ -35,7 +35,8 @@ namespace AZ::Vulkan
         m_workRequest.m_semaphoresToWait = scope.GetWaitSemaphores();
         m_workRequest.m_semaphoresToSignal = scope.GetSignalSemaphores();
         m_workRequest.m_fencesToSignal = scope.GetSignalFences();
-            
+        m_workRequest.m_fencesToWaitFor = scope.GetWaitFences();
+
         InitRequest request;
         request.m_scopeId = scope.GetId();
         request.m_submitCount = scope.GetEstimatedItemCount();
