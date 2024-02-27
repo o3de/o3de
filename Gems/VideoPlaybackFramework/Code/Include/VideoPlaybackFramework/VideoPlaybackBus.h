@@ -52,7 +52,7 @@ namespace VideoPlaybackFramework
         /*
         * Clear resources and hide the video, this works for mobile native player only
         */
-        virtual void ClearResourcesAndHide() {}
+        virtual void ClearResourcesAndHide() = 0;
 
         /*
         * Load the video with given path name, and play video if auto play is active
