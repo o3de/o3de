@@ -49,9 +49,14 @@ AZ_CVAR(int32_t, sys_localization_format, 0, nullptr, AZ::ConsoleFunctorFlags::N
         "    1: AGS XML\n"
         "Default is 1 (AGS Xml)");
 
+// Gruber patch begin : force copying font substitution definitions for localizations into cache
 #if defined(CARBONATED)
-const char* LOCALIZATION_FONTMAPPING_FILE_NAME = "fontmapping.agsxml";
+//const char* LOCALIZATION_FONTMAPPING_FILE_NAME = "fontmapping.agsxml";
+//  The "o3de\Registry\AssetProcessorPlatformConfig.setreg" already contains the copy job:
+//  "RC loc.agsxml" { "glob": "*.loc.agsxml", "params": "copy", "version": 1  },
+const char* LOCALIZATION_FONTMAPPING_FILE_NAME = "fontmapping.loc.agsxml";
 #endif
+// Gruber patch end
 
 enum ELocalizedXmlColumns
 {
@@ -1985,6 +1990,11 @@ void CLocalizedStringsManager::LoadFontMappingData()
             continue;
         }
 
+        if (sFontName.empty()) // Gruber patch : skip empty entries
+        {
+            continue;
+        }
+
         XmlNodeRef localized = font->findChild("localized");
         if (localized == nullptr)
         {
@@ -1999,7 +2009,12 @@ void CLocalizedStringsManager::LoadFontMappingData()
             continue;
         }
 
-         AZStd::string key;
+        if (sLocalizedFontName.empty()) // Gruber patch : skip empty entries
+        {
+            continue;
+        }
+
+        AZStd::string key;
         int fontSize = 0;
         font->getAttr("size", fontSize);
         if (fontSize > 0)
