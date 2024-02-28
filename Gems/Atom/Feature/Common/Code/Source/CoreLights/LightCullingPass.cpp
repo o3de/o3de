@@ -147,7 +147,7 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
             RHI::Size res = GetDepthBufferResolution();
             m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = res.m_width;

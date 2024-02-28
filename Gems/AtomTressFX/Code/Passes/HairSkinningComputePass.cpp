@@ -230,7 +230,7 @@ namespace AZ
                 // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
                 // and sends them to the command list ahead of the dispatch.
                 // This includes the PerView, PerScene and PerPass srgs (what about per draw?)
-                SetSrgsForDispatch(commandList);
+                SetSrgsForDispatch(context);
 
                 auto it = m_dispatchItems.begin();
                 AZStd::advance(it, context.GetSubmitRange().m_startIndex);
