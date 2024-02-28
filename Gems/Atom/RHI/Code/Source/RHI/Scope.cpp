@@ -22,6 +22,16 @@ namespace AZ::RHI
         return m_isActive;
     }
 
+    int Scope::GetDeviceIndex() const
+    {
+        return m_deviceIndex;
+    }
+
+    Device& Scope::GetDevice() const
+    {
+        return *RHISystemInterface::Get()->GetDevice(m_deviceIndex);
+    }
+
     void Scope::Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass)
     {
         AZ_Assert(!scopeId.IsEmpty(), "Scope id is not valid.");
@@ -65,10 +75,11 @@ namespace AZ::RHI
         m_isActive = true;
     }
 
-    void Scope::Compile(Device& device)
+    void Scope::Compile(int deviceIndex)
     {
         AZ_Assert(m_isActive, "Scope being compiled but is not active");
-        CompileInternal(device);
+        m_deviceIndex = deviceIndex;
+        CompileInternal();
     }
 
     void Scope::Deactivate()
@@ -126,7 +137,7 @@ namespace AZ::RHI
 
     void Scope::InitInternal() {}
     void Scope::ActivateInternal() {}
-    void Scope::CompileInternal([[maybe_unused]] Device& device) {}
+    void Scope::CompileInternal() {}
     void Scope::DeactivateInternal() {}
     void Scope::ShutdownInternal() {}
 

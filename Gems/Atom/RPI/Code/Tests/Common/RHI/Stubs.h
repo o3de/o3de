@@ -316,7 +316,7 @@ namespace UnitTest
         private:
             void InitInternal() override {}
             void ActivateInternal() override {}
-            void CompileInternal([[maybe_unused]] AZ::RHI::Device& device) override {}
+            void CompileInternal() override {}
             void DeactivateInternal() override {}
             void ShutdownInternal() override {}
         };
