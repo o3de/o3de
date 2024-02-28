@@ -104,19 +104,19 @@ namespace AZ
         void ImageAttachmentCopy::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             // copy descriptor for copying image
-            RHI::SingleDeviceCopyImageDescriptor copyImage;
-            const AZ::RHI::SingleDeviceImage* image = context.GetImage(m_srcAttachmentId)->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
-            copyImage.m_sourceImage = image;
+            RHI::MultiDeviceCopyImageDescriptor copyImage;
+            const AZ::RHI::MultiDeviceImage* image = context.GetImage(m_srcAttachmentId);
+            copyImage.m_mdSourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;
             copyImage.m_sourceSubresource.m_arraySlice = m_sourceArraySlice;
-            copyImage.m_destinationImage = context.GetImage(m_destAttachmentId)->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex).get();
+            copyImage.m_mdDestinationImage = context.GetImage(m_destAttachmentId);
             
             m_copyItem = copyImage;
         }
 
         void ImageAttachmentCopy::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_copyItem);
+            context.GetCommandList()->Submit(m_copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
         }
 
         Ptr<ImageAttachmentPreviewPass> ImageAttachmentPreviewPass::Create(const PassDescriptor& descriptor)
@@ -234,7 +234,7 @@ namespace AZ
                 // unbind previous binded image views
                 m_passSrg->SetImageView(previewInfo.m_imageInput, nullptr, 0);
 
-                previewInfo.m_item.m_pipelineState = nullptr;
+                previewInfo.m_item.SetPipelineState(nullptr);
                 previewInfo.m_imageCount = 0;
             }
             m_passSrgChanged = true;
@@ -530,8 +530,8 @@ namespace AZ
                     RHI::DrawLinear drawLinear;
                     drawLinear.m_vertexCount = 4;
                     drawLinear.m_instanceCount = previewInfo.m_imageCount;
-                    previewInfo.m_item.m_arguments = RHI::SingleDeviceDrawArguments(drawLinear);
-                    previewInfo.m_item.m_pipelineState = m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor)->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                    previewInfo.m_item.SetArguments(RHI::MultiDeviceDrawArguments(drawLinear));
+                    previewInfo.m_item.SetPipelineState(m_shader->AcquirePipelineState(previewInfo.m_pipelineStateDescriptor));
                 }
             }
         }
@@ -552,7 +552,7 @@ namespace AZ
                 const ImageTypePreviewInfo& previewInfo = m_imageTypePreviewInfo[index];
                 if (previewInfo.m_imageCount > 0)
                 {
-                    commandList->Submit(previewInfo.m_item, index);
+                    commandList->Submit(previewInfo.m_item.GetDeviceDrawItem(context.GetDeviceIndex()), index);
                 }
             }
         }
