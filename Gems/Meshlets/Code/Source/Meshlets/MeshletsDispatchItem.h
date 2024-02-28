@@ -49,7 +49,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> GetMeshletDataSrg() { return m_meshletsDataSrg;  }
 
         private:
-            RHI::MultiDeviceDispatchItem m_dispatchItem;
+            RHI::MultiDeviceDispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
             Data::Instance<RPI::ShaderResourceGroup> m_meshletsDataSrg;
             RPI::Shader* m_shader;
         };
