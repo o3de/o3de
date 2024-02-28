@@ -11,6 +11,8 @@ set(FILES
     Include/Gestures/GestureRecognizerClickOrTap.inl
     Include/Gestures/GestureRecognizerDrag.h
     Include/Gestures/GestureRecognizerDrag.inl
+    Include/Gestures/GestureRecognizerDragRight.h
+    Include/Gestures/GestureRecognizerDragRight.inl
     Include/Gestures/GestureRecognizerHold.h
     Include/Gestures/GestureRecognizerHold.inl
     Include/Gestures/GestureRecognizerPinch.h
@@ -29,6 +31,8 @@ set(FILES
     Source/InputChannelGestureClickOrTap.h
     Source/InputChannelGestureDrag.cpp
     Source/InputChannelGestureDrag.h
+    Source/InputChannelGestureDragRight.cpp
+    Source/InputChannelGestureDragRight.h
     Source/InputChannelGestureHold.cpp
     Source/InputChannelGestureHold.h
     Source/InputChannelGesturePinch.cpp

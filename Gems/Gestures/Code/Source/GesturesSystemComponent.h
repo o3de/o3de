@@ -15,6 +15,7 @@
 
 #include "InputChannelGestureClickOrTap.h"
 #include "InputChannelGestureDrag.h"
+#include "InputChannelGestureDragRight.h"
 #include "InputChannelGestureHold.h"
 #include "InputChannelGesturePinch.h"
 #include "InputChannelGestureRotate.h"
@@ -71,6 +72,7 @@ namespace Gestures
         //! The config used to create a default gesture input channel
         InputChannelGestureClickOrTap::TypeAndConfig m_doublePressConfig;
         InputChannelGestureDrag::TypeAndConfig       m_dragConfig;
+        InputChannelGestureDragRight::TypeAndConfig       m_dragRightConfig;
         InputChannelGestureHold::TypeAndConfig       m_holdConfig;
         InputChannelGesturePinch::TypeAndConfig      m_pinchConfig;
         InputChannelGestureRotate::TypeAndConfig     m_rotateConfig;
