@@ -174,9 +174,9 @@ namespace AZ
 
             SetSrgsForDraw(commandList);
 
-            m_item.m_pipelineState = GetPipelineStateFromShaderVariant()->GetDevicePipelineState(context.GetDeviceIndex()).get();
+            m_item.SetPipelineState(GetPipelineStateFromShaderVariant());
 
-            commandList->Submit(m_item);
+            commandList->Submit(m_item.GetDeviceDrawItem(context.GetDeviceIndex()));
         }
 
         void DepthOfFieldBokehBlurPass::SetRadiusMinMax(float min, float max)
