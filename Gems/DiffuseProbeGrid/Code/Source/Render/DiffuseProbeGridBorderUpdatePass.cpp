@@ -226,7 +226,7 @@ namespace AZ
             {
                 SubmitItem& submitItem = m_submitItems[index];
 
-                commandList->SetShaderResourceGroupForDispatch(*submitItem.m_shaderResourceGroup->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex));
+                commandList->SetShaderResourceGroupForDispatch(*submitItem.m_shaderResourceGroup->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
                 commandList->Submit(submitItem.m_dispatchItem, index++);
             }
         }

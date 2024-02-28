@@ -201,7 +201,7 @@ namespace AZ
                 if (startIndex == 0)
                 {
                     RHI::CommandList* commandList = context.GetCommandList();
-                    commandList->Submit(m_clearShadowDrawPacket->GetDrawItemProperties(0).m_mdItem->GetDeviceDrawItem(RHI::MultiDevice::DefaultDeviceIndex), 0);
+                    commandList->Submit(m_clearShadowDrawPacket->GetDrawItemProperties(0).m_mdItem->GetDeviceDrawItem(context.GetDeviceIndex()), 0);
                 }
                 else
                 {

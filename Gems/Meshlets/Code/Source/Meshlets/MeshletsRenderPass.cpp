@@ -180,7 +180,7 @@ namespace AZ
             }
 
             drawRequest.m_listTag = m_drawListTag;
-            drawRequest.m_pipelineState = m_pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+            drawRequest.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
 
             return true;
         }
