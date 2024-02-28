@@ -151,8 +151,8 @@ namespace AZ
             RHI::ShaderInputNameIndex m_projectionMatrixIndex = "m_projectionMatrix";
             RHI::Viewport m_viewportState;
 
-            RHI::SingleDeviceIndexBufferView m_indexBufferView;
-            AZStd::array<RHI::SingleDeviceStreamBufferView, 2> m_vertexBufferView; // For vertex buffer and instance data
+            RHI::MultiDeviceIndexBufferView m_indexBufferView;
+            AZStd::array<RHI::MultiDeviceStreamBufferView, 2> m_vertexBufferView; // For vertex buffer and instance data
             AZStd::vector<DrawInfo> m_draws;
             Data::Instance<RPI::StreamingImage> m_fontAtlas;
 
