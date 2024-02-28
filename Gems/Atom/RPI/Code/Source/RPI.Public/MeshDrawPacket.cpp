@@ -509,7 +509,7 @@ namespace AZ
             if (m_drawPacket)
             {
                 m_activeShaders = shaderList;
-                m_materialSrg = m_material->GetRHIShaderResourceGroup() ? m_material->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex): nullptr;
+                m_materialSrg = m_material->GetRHIShaderResourceGroup();
                 return true;
             }
             else
