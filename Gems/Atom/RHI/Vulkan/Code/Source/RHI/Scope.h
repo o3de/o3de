@@ -162,7 +162,7 @@ namespace AZ
             // RHI::Scope
             void ActivateInternal() override;
             void DeactivateInternal() override;
-            void CompileInternal(RHI::Device& device) override;
+            void CompileInternal() override;
             void AddQueryPoolUse(RHI::Ptr<RHI::SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
 

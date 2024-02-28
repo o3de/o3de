@@ -53,6 +53,12 @@ namespace AZ::RHI
         //! Returns whether the scope is currently active on a frame.
         bool IsActive() const;
 
+        //! Returns the index of the device the scope is running on.
+        int GetDeviceIndex() const;
+
+        //! Returns the device the scope is running on.
+        Device& GetDevice() const;
+
         //! Returns the scope id associated with this scope.
         const ScopeId& GetId() const;
 
@@ -127,7 +133,7 @@ namespace AZ::RHI
         void Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId);
 
         //! Called when the scope is being compiled at the end of the graph-building phase.
-        void Compile(Device& device);
+        void Compile(int deviceIndex);
 
         //! Deactivates the scope for the current frame.
         void Deactivate();
@@ -170,7 +176,7 @@ namespace AZ::RHI
         virtual void ActivateInternal();
 
         /// Called when the scope is being compiled into platform-dependent actions (after graph compilation).
-        virtual void CompileInternal(Device& device);
+        virtual void CompileInternal();
 
         /// Called when the scope is deactivating at the end of the frame (after execution).
         virtual void DeactivateInternal();
@@ -213,6 +219,9 @@ namespace AZ::RHI
 
         /// Tracks whether the scope is active, which happens once per frame.
         bool m_isActive = false;
+
+        /// The device index the scope is running on.
+        int m_deviceIndex = MultiDevice::DefaultDeviceIndex;
 
         /// The cross-queue producers / consumers, indexed by hardware queue.
         AZStd::array<Scope*, HardwareQueueClassCount> m_producersByQueueLast = {{nullptr}};

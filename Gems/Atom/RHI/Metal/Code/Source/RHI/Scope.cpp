@@ -71,8 +71,9 @@ namespace AZ
             }
         }
     
-        void Scope::CompileInternal(RHI::Device& device)
+        void Scope::CompileInternal()
         {
+            RHI::Device& device = GetDevice();
             Device& mtlDevice = static_cast<Device&>(device);
             for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
             {
@@ -120,7 +121,7 @@ namespace AZ
                     m_swapChainAttachment = scopeAttachment;
                 }
                 
-                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
                 id<MTLTexture> imageViewMtlTexture = imageView->GetMemoryView().GetGpuAddress<id<MTLTexture>>();
                 

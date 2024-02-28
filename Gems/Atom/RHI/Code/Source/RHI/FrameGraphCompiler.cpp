@@ -146,7 +146,7 @@ namespace AZ::RHI
 
             for (Scope* scope : frameGraph.GetScopes())
             {
-                scope->Compile(GetDevice());
+                scope->Compile(MultiDevice::DefaultDeviceIndex);
             }
         }
 

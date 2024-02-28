@@ -328,7 +328,7 @@ namespace AZ
             }
         }
 
-        void Scope::CompileInternal(RHI::Device& deviceBase)
+        void Scope::CompileInternal()
         {
             for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
             {
@@ -352,6 +352,7 @@ namespace AZ
                 m_waitFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
             }
 
+            RHI::Device& deviceBase = GetDevice();
             Device& device = static_cast<Device&>(deviceBase);
             m_deviceSupportedPipelineStageFlags = device.GetCommandQueueContext().GetCommandQueue(GetHardwareQueueClass()).GetSupportedPipelineStages();
 
