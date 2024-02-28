@@ -97,8 +97,8 @@ namespace AZ
             void ResetSrgs();
 
             // Set srgs for pass's execution
-            void SetSrgsForDraw(RHI::CommandList* commandList);
-            void SetSrgsForDispatch(RHI::CommandList* commandList);
+            void SetSrgsForDraw(const RHI::FrameGraphExecuteContext& context);
+            void SetSrgsForDispatch(const RHI::FrameGraphExecuteContext& context);
 
             // Set PipelineViewTag associated for this pass
             // If the View bound to the tag exists,the view's srg will be collected to pass' srg bind list

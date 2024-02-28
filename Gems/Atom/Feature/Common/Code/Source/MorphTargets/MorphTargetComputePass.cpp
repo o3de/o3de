@@ -61,9 +61,7 @@ namespace AZ
         {
             if (m_skinnedMeshFeatureProcessor)
             {
-                RHI::CommandList* commandList = context.GetCommandList();
-
-                SetSrgsForDispatch(commandList);
+                SetSrgsForDispatch(context);
 
                 m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
             }

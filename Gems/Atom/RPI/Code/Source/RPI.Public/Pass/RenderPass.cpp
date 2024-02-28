@@ -410,19 +410,20 @@ namespace AZ
             }
         }
 
-        void RenderPass::SetSrgsForDraw(RHI::CommandList* commandList)
+        void RenderPass::SetSrgsForDraw(const RHI::FrameGraphExecuteContext& context)
         {
             for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDraw(*(itr.second->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex)));
+                context.GetCommandList()->SetShaderResourceGroupForDraw(*(itr.second->GetDeviceShaderResourceGroup(context.GetDeviceIndex())));
             }
         }
 
-        void RenderPass::SetSrgsForDispatch(RHI::CommandList* commandList)
+        void RenderPass::SetSrgsForDispatch(const RHI::FrameGraphExecuteContext& context)
         {
             for (auto itr : m_shaderResourceGroupsToBind)
             {
-                commandList->SetShaderResourceGroupForDispatch(*(itr.second->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex)));
+                context.GetCommandList()->SetShaderResourceGroupForDispatch(
+                    *(itr.second->GetDeviceShaderResourceGroup(context.GetDeviceIndex())));
             }
         }
 
