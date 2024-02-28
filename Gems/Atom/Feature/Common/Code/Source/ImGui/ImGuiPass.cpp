@@ -674,13 +674,13 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: BuildCommandListInternal");
 
             context.GetCommandList()->SetViewport(m_viewportState);
-            context.GetCommandList()->SetShaderResourceGroupForDraw(*m_resourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex));
+            context.GetCommandList()->SetShaderResourceGroupForDraw(*m_resourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
 
             for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
                 RHI::SingleDeviceDrawItem drawItem;
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
-                drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 drawItem.m_indexBufferView = &m_indexBufferView;
                 drawItem.m_streamBufferViewCount = 2;
                 drawItem.m_streamBufferViews = m_vertexBufferView.data();

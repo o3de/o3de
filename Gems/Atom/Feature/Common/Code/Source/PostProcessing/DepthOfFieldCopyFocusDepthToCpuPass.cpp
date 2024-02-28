@@ -98,7 +98,7 @@ namespace AZ
 
         void DepthOfFieldCopyFocusDepthToCpuPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_copyDescriptor.GetDeviceCopyBufferDescriptor(RHI::MultiDevice::DefaultDeviceIndex));
+            context.GetCommandList()->Submit(m_copyDescriptor.GetDeviceCopyBufferDescriptor(context.GetDeviceIndex()));
         }
 
     }   // namespace RPI

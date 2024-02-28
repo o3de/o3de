@@ -296,9 +296,9 @@ namespace AZ
                 }
 
                 const RHI::SingleDeviceShaderResourceGroup* shaderResourceGroups[] = {
-                    diffuseProbeGrid->GetVisualizationRayTraceSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
-                    rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
-                    views[0]->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
+                    diffuseProbeGrid->GetVisualizationRayTraceSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
+                    rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
+                    views[0]->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
                 };
 
                 RHI::SingleDeviceDispatchRaysItem dispatchRaysItem;
@@ -306,11 +306,11 @@ namespace AZ
                 dispatchRaysItem.m_arguments.m_direct.m_height = m_outputAttachmentSize.m_height;
                 dispatchRaysItem.m_arguments.m_direct.m_depth = 1;
                 dispatchRaysItem.m_rayTracingPipelineState =
-                    m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
-                dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(RHI::MultiDevice::DefaultDeviceIndex).get();
+                    m_rayTracingPipelineState->GetDeviceRayTracingPipelineState(context.GetDeviceIndex()).get();
+                dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable->GetDeviceRayTracingShaderTable(context.GetDeviceIndex()).get();
                 dispatchRaysItem.m_shaderResourceGroupCount = RHI::ArraySize(shaderResourceGroups);
                 dispatchRaysItem.m_shaderResourceGroups = shaderResourceGroups;
-                dispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                dispatchRaysItem.m_globalPipelineState = m_globalPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
 
                 // submit the DispatchRays item
                 context.GetCommandList()->Submit(dispatchRaysItem, index);

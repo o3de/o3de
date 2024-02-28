@@ -265,11 +265,11 @@ namespace AZ
                     for (auto submeshIndex = 0; submeshIndex < blasInstance.second.m_subMeshes.size(); ++submeshIndex)
                     {
                         auto& submeshBlasInstance = blasInstance.second.m_subMeshes[submeshIndex];
-                        changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex).get());
+                        changedBlasList.push_back(submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()).get());
                         if (blasInstance.second.m_blasBuilt == false)
                         {
                             // Always build the BLAS, if it has not previously been built
-                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex));
+                            context.GetCommandList()->BuildBottomLevelAccelerationStructure(*submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
                             continue;
                         }
 
@@ -282,13 +282,13 @@ namespace AZ
                         {
                             // Skinned mesh that simply needs an update
                             context.GetCommandList()->UpdateBottomLevelAccelerationStructure(
-                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex));
+                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
                         }
                         else
                         {
                             // Fall back to building the BLAS in any case
                             context.GetCommandList()->BuildBottomLevelAccelerationStructure(
-                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex));
+                                *submeshBlasInstance.m_blas->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
                         }
                     }
 
@@ -297,7 +297,7 @@ namespace AZ
             }
 
             // build the TLAS object
-            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas()->GetDeviceRayTracingTlas(RHI::MultiDevice::DefaultDeviceIndex), changedBlasList);
+            context.GetCommandList()->BuildTopLevelAccelerationStructure(*rayTracingFeatureProcessor->GetTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList);
 
             ++m_frameCount;
 

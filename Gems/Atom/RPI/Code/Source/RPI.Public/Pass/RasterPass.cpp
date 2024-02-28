@@ -267,7 +267,7 @@ namespace AZ
                 const RHI::MultiDeviceDrawItemProperties& drawItemProperties = m_drawListView[index];
                 if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                 {
-                    commandList->Submit(drawItemProperties.m_mdItem->GetDeviceDrawItem(RHI::MultiDevice::DefaultDeviceIndex), index + indexOffset);
+                    commandList->Submit(drawItemProperties.m_mdItem->GetDeviceDrawItem(context.GetDeviceIndex()), index + indexOffset);
                 }
             }
         }

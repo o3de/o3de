@@ -210,7 +210,7 @@ namespace AZ
         {
             if (m_needToUpdateLut && m_blendedLut.m_lutImage && m_currentShaderVariantIndex <= LookModificationSettings::MaxBlendLuts)
             {
-                m_dispatchItem.m_pipelineState = m_shaderVariant[m_currentShaderVariantIndex].m_pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                m_dispatchItem.m_pipelineState = m_shaderVariant[m_currentShaderVariantIndex].m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
 
                 ComputePass::BuildCommandListInternal(context);
 
