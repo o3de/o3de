@@ -74,7 +74,7 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
             // Each tile gets 32 threads to process indices
             m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = m_tileDim.m_width * m_dispatchItem.m_arguments.m_direct.m_threadsPerGroupX;

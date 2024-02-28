@@ -169,7 +169,7 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
             commandList->Submit(m_dispatchItem);
         }

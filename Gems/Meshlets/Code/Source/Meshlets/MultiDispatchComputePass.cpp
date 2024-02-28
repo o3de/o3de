@@ -117,7 +117,7 @@ namespace AZ
                 // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
                 // and sends them to the command list ahead of the dispatch.
                 // This includes the PerView, PerScene and PerPass srgs.
-                SetSrgsForDispatch(commandList);
+                SetSrgsForDispatch(context);
 
                 // In a similar way, add the dispatch high frequencies srgs.
                 for (uint32_t srg = 0; srg < dispatchItem->m_shaderResourceGroupCount; ++srg)

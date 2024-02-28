@@ -36,6 +36,7 @@ namespace AZ
 
         FullscreenTrianglePass::FullscreenTrianglePass(const PassDescriptor& descriptor)
             : RenderPass(descriptor)
+            , m_item(RHI::MultiDevice::AllDevices)
             , m_passDescriptor(descriptor)
         {
             LoadShader();
@@ -292,7 +293,7 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDraw(commandList);
+            SetSrgsForDraw(context);
 
             commandList->SetViewport(m_viewportState);
             commandList->SetScissor(m_scissorState);

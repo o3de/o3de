@@ -81,7 +81,7 @@ namespace AZ
             commandList->SetViewport(m_viewportState);
             commandList->SetScissor(m_scissorState);
 
-            SetSrgsForDraw(commandList);
+            SetSrgsForDraw(context);
 
             m_item.SetPipelineState(GetPipelineStateFromShaderVariant());
 
