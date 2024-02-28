@@ -154,20 +154,20 @@ namespace AZ
             m_queryRegistry.erase(query);
         }
 
-        RHI::ResultCode QueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode QueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context)
         {
             auto rhiQueryArray = GetRhiQueryArray();
             RHI::Ptr<RHI::MultiDeviceQuery> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
 
-            return beginQuery->GetDeviceQuery(RHI::MultiDevice::DefaultDeviceIndex)->Begin(commandList);
+            return beginQuery->GetDeviceQuery(context.GetDeviceIndex())->Begin(*context.GetCommandList());
         }
 
-        RHI::ResultCode QueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
+        RHI::ResultCode QueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context)
         {
             auto rhiQueryArray = GetRhiQueryArray();
             RHI::Ptr<RHI::MultiDeviceQuery> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
 
-            return endQuery->GetDeviceQuery(RHI::MultiDevice::DefaultDeviceIndex)->End(commandList);
+            return endQuery->GetDeviceQuery(context.GetDeviceIndex())->End(*context.GetCommandList());
         }
 
         AZStd::span<const RHI::Ptr<RHI::MultiDeviceQuery>> RPI::QueryPool::GetRhiQueryArray() const

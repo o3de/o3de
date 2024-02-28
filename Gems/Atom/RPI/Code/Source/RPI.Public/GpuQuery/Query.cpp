@@ -98,7 +98,7 @@ namespace AZ
                 return QueryResultCode::Fail;
             }
 
-            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->BeginQueryInternal(rhiQueryIndices.value(), *context.GetCommandList());
+            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->BeginQueryInternal(rhiQueryIndices.value(), context);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to begin recording the query");
 
             m_cachedScopeId = context.GetScopeId();
@@ -131,7 +131,7 @@ namespace AZ
                 return QueryResultCode::Fail;
             }
 
-            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->EndQueryInternal(rhiQueryIndices.value(), *context.GetCommandList());
+            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->EndQueryInternal(rhiQueryIndices.value(), context);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to end recording the query");
 
             return QueryResultCode::Success;

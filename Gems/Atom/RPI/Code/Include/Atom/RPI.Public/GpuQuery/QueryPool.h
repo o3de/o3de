@@ -75,8 +75,8 @@ namespace AZ
             QueryResultCode GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag);
 
             // Depending on the QueryType, the method to poll data from the queries vary.
-            virtual RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
-            virtual RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
+            virtual RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
+            virtual RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
 
             // Calculate the query result size in bytes. The size of the result depends on the QueryType.
             void CalculateResultSize();
