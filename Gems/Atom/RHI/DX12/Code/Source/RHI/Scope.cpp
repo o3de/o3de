@@ -193,7 +193,7 @@ namespace AZ
             }
         }
 
-        void Scope::CompileInternal([[maybe_unused]] RHI::Device& device)
+        void Scope::CompileInternal()
         {
             for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
             {
@@ -207,7 +207,7 @@ namespace AZ
             for (const RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
                 const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
-                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
 
                 const bool isFullView           = imageView->IsFullView();
@@ -281,7 +281,7 @@ namespace AZ
             for (const RHI::BufferScopeAttachment* scopeAttachment : GetBufferAttachments())
             {
                 const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment->GetUsageAndAccess();
-                const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView()->GetDeviceBufferView(GetDeviceIndex()).get());
                 const RHI::BufferScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
 
                 const bool isClearAction = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;

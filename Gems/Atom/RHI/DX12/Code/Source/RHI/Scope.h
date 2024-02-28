@@ -93,7 +93,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::Scope
             void DeactivateInternal() override;
-            void CompileInternal(RHI::Device& device) override;
+            void CompileInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
             void CompileAttachmentInternal(

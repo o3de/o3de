@@ -18,6 +18,7 @@ namespace AZ::RHI
         m_jobPolicy = JobPolicy::Serial;
 
         FrameGraphExecuteContext::Descriptor descriptor;
+        descriptor.m_deviceIndex = request.m_deviceIndex;
         descriptor.m_commandList = request.m_commandList;
         descriptor.m_commandListCount = 1;
         descriptor.m_commandListIndex = 0;
@@ -38,6 +39,7 @@ namespace AZ::RHI
 
         FrameGraphExecuteContext::Descriptor descriptor;
         descriptor.m_scopeId = request.m_scopeId;
+        descriptor.m_deviceIndex = request.m_deviceIndex;
         descriptor.m_commandListCount = request.m_commandListCount;
 
         // build the execute contexts
