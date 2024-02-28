@@ -300,7 +300,7 @@ namespace AZ
 
         void AttachmentReadback::DecomposeExecute(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_dispatchItem.GetDeviceDispatchItem(RHI::MultiDevice::DefaultDeviceIndex));
+            context.GetCommandList()->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
         
         void AttachmentReadback::CopyPrepare(RHI::FrameGraphInterface frameGraph)
@@ -416,7 +416,10 @@ namespace AZ
                     AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
                     imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
                     size_t totalSizeInBytes = 0;
-                    image->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex)
+                    // compute lowest device index from mask
+                    int deviceIndex = static_cast<int>(image->GetDeviceMask());
+                    deviceIndex = AZ::Log2(deviceIndex & -deviceIndex);
+                    image->GetDeviceImage(deviceIndex)
                         ->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
                     AZ::u64 byteCount = totalSizeInBytes;
 
