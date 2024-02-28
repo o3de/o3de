@@ -446,7 +446,7 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
+        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
 
@@ -455,11 +455,12 @@ namespace AZ
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
                 const auto* dispatchItem = *it;
-                commandList->Submit(dispatchItem->GetDeviceDispatchItem(RHI::MultiDevice::DefaultDeviceIndex), index);
+                context.GetCommandList()->Submit(dispatchItem->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
             }
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
+        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(
+            const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
 
@@ -468,7 +469,7 @@ namespace AZ
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
                 const auto* dispatchItem = *it;
-                commandList->Submit(dispatchItem->GetDeviceDispatchItem(RHI::MultiDevice::DefaultDeviceIndex), index);
+                context.GetCommandList()->Submit(dispatchItem->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
             }
         }
 

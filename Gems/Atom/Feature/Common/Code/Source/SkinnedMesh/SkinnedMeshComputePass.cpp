@@ -58,7 +58,7 @@ namespace AZ
 
                 SetSrgsForDispatch(commandList);
 
-                m_skinnedMeshFeatureProcessor->SubmitSkinningDispatchItems(commandList, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
+                m_skinnedMeshFeatureProcessor->SubmitSkinningDispatchItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex);
             }
         }
 
