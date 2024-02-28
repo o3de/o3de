@@ -151,6 +151,7 @@ namespace AZ::RHI
         }
 
     private:
+        mutable AZStd::mutex m_imageViewMutex;
         //! A raw pointer to a multi-device image
         ConstPtr<RHI::MultiDeviceImage> m_image;
         //! The corresponding ImageViewDescriptor for this view.

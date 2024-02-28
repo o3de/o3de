@@ -104,6 +104,7 @@ namespace AZ::RHI
         }
 
     private:
+        mutable AZStd::mutex m_bufferViewMutex;
         //! A raw pointer to a multi-device buffer
         ConstPtr<RHI::MultiDeviceBuffer> m_buffer;
         //! The corresponding BufferViewDescriptor for this view.

@@ -227,5 +227,7 @@ namespace AZ::RHI
 
     private:
         MultiDeviceRayTracingTlasDescriptor m_mdDescriptor;
+        mutable RHI::Ptr<RHI::MultiDeviceBuffer> m_tlasBuffer;
+        mutable RHI::Ptr<RHI::MultiDeviceBuffer> m_tlasInstancesBuffer;
     };
 } // namespace AZ::RHI
