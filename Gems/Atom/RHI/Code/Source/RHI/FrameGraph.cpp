@@ -134,7 +134,7 @@ namespace AZ::RHI
         {
             if (auto* lastScope = attachment->GetLastScope())
             {
-                lastScope->m_swapChainsToPresent.push_back(attachment->GetSwapChain()->GetDeviceSwapChain(RHI::MultiDevice::DefaultDeviceIndex).get());
+                lastScope->m_swapChainsToPresent.push_back(attachment->GetSwapChain()->GetDeviceSwapChain(lastScope->GetDeviceIndex()).get());
             }
         }
 
