@@ -732,8 +732,8 @@ namespace AZ
                 return 0;
             }
 
-            ImDrawIdx* indexBufferData = static_cast<ImDrawIdx*>(indexBuffer->GetBufferAddress());
-            ImDrawVert* vertexBufferData = static_cast<ImDrawVert*>(vertexBuffer->GetBufferAddress());
+            auto indexBufferDataAddress = indexBuffer->GetBufferAddress();
+            auto vertexBufferDataAddress = vertexBuffer->GetBufferAddress();
 
             uint32_t drawCount = 0;
             uint32_t indexBufferOffset = 0;
@@ -746,11 +746,17 @@ namespace AZ
                     const ImDrawList* drawList = drawData.CmdLists[cmdListIndex];
 
                     const uint32_t indexBufferByteSize = drawList->IdxBuffer.size() * indexSize;
-                    memcpy(indexBufferData + indexBufferOffset, drawList->IdxBuffer.Data, indexBufferByteSize);
+                    for(auto [deviceIndex, indexBufferData] : indexBufferDataAddress)
+                    {
+                        memcpy(static_cast<ImDrawIdx*>(indexBufferData) + indexBufferOffset, drawList->IdxBuffer.Data, indexBufferByteSize);
+                    }
                     indexBufferOffset += drawList->IdxBuffer.size();
 
                     const uint32_t vertexBufferByteSize = drawList->VtxBuffer.size() * vertexSize;
-                    memcpy(vertexBufferData + vertexBufferOffset, drawList->VtxBuffer.Data, vertexBufferByteSize);
+                    for(auto [deviceIndex, vertexBufferData] : vertexBufferDataAddress)
+                    {
+                        memcpy(static_cast<ImDrawVert*>(vertexBufferData) + vertexBufferOffset, drawList->VtxBuffer.Data, vertexBufferByteSize);
+                    }
                     vertexBufferOffset += drawList->VtxBuffer.size();
 
                     drawCount += drawList->CmdBuffer.size();
