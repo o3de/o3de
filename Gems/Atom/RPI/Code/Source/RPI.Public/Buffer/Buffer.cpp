@@ -231,7 +231,7 @@ namespace AZ
             }
         }
 
-        AZStd::vector<void*> Buffer::Map(size_t byteCount, uint64_t byteOffset)
+        AZStd::unordered_map<int, void*> Buffer::Map(size_t byteCount, uint64_t byteOffset)
         {
             if (byteOffset + byteCount > m_rhiBuffer->GetDescriptor().m_byteCount)
             {
