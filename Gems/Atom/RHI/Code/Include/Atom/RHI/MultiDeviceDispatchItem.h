@@ -100,9 +100,17 @@ namespace AZ::RHI
             return m_deviceDispatchItems.at(deviceIndex);
         }
 
+        //! Retrieve arguments specifing a dispatch type.
+        const MultiDeviceDispatchArguments& GetArguments() const
+        {
+            return m_arguments;
+        }
+
         //! Arguments specific to a dispatch type.
         void SetArguments(const MultiDeviceDispatchArguments& arguments)
         {
+            m_arguments = arguments;
+
             for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
             {
                 dispatchItem.m_arguments = arguments.GetDeviceDispatchArguments(deviceIndex);
@@ -162,6 +170,8 @@ namespace AZ::RHI
     private:
         //! A DeviceMask denoting on which devices a device-specific SingleDeviceDispatchItem should be generated
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
+        //! Caching the arguments for the corresponding getter.
+        MultiDeviceDispatchArguments m_arguments;
         //! A map of all device-specific SingleDeviceDispatchItem, indexed by the device index
         AZStd::unordered_map<int, SingleDeviceDispatchItem> m_deviceDispatchItems;
     };
