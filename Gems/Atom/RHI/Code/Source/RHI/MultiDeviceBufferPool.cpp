@@ -230,7 +230,7 @@ namespace AZ::RHI
             }
             else
             {
-                response.m_data.push_back(deviceMapResponse.m_data);
+                response.m_data[deviceIndex] = deviceMapResponse.m_data;
             }
 
             return resultCode;
