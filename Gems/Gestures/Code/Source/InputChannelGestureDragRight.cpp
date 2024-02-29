@@ -6,6 +6,9 @@
  *
  */
 
+// Add the DragRight gesture
+#if defined(CARBONATED)
+
 #include "InputChannelGestureDragRight.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,3 +94,5 @@ namespace Gestures
         InputChannel::UpdateState(false);
     }
 } // namespace Gestures
+
+#endif

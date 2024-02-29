@@ -8,6 +8,9 @@
 
 #pragma once
 
+// Add the DragRight gesture
+#if defined(CARBONATED)
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <CryCommon/ISystem.h>
@@ -46,11 +49,7 @@ inline void Gestures::RecognizerDragRight::Config::Reflect(AZ::ReflectContext* c
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline Gestures::RecognizerDragRight::RecognizerDragRight(const Config& config)
-    : m_config(config)
-    , m_startTime(AZ::Time::ZeroTimeMs)
-    , m_startPosition()
-    , m_currentPosition()
-    , m_currentState(State::Idle)
+    : RecognizerDrag(config)
 {
 }
 
@@ -59,132 +58,4 @@ inline Gestures::RecognizerDragRight::~RecognizerDragRight()
 {
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-inline bool Gestures::RecognizerDragRight::OnPressedEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
-{
-    CryLog(
-        "RecognizerDragRight::OnPressedEvent screenPosition (%f, %f) pointerIndex %ul m_config.pointerIndex %ul",
-        screenPosition.GetX(),
-        screenPosition.GetY(),
-        pointerIndex,
-        m_config.pointerIndex);
-
-    if (pointerIndex != m_config.pointerIndex)
-    {
-        return false;
-    }
-
-    switch (m_currentState)
-    {
-    case State::Idle:
-    {
-        m_startTime = AZ::GetRealElapsedTimeMs();
-        m_startPosition = screenPosition;
-        m_currentPosition = screenPosition;
-        m_currentState = State::Pressed;
-    }
-    break;
-    case State::Pressed:
-    case State::Dragging:
-    default:
-    {
-        // Should not be possible, but not fatal if we happen to get here somehow.
-        AZ_Warning("RecognizerDragRight", false, "RecognizerDragRight::OnPressedEvent state logic failure");
-    }
-    break;
-    }
-
-    return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-inline bool Gestures::RecognizerDragRight::OnDownEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
-{
-    CryLog(
-        "RecognizerDragRight::OnDownEvent screenPosition (%f, %f) pointerIndex %ul m_config.pointerIndex %ul",
-        screenPosition.GetX(),
-        screenPosition.GetY(),
-        pointerIndex,
-        m_config.pointerIndex);
-
-    if (pointerIndex != m_config.pointerIndex)
-    {
-        return false;
-    }
-
-    m_currentPosition = screenPosition;
-
-    switch (m_currentState)
-    {
-    case State::Pressed:
-    {
-        const AZ::TimeMs currentTime = AZ::GetRealElapsedTimeMs();
-        if ((AZ::TimeMsToSeconds(currentTime - m_startTime) >= m_config.minSecondsHeld) &&
-            (GetDistance() >= m_config.minPixelsMoved))
-        {
-            m_startTime = currentTime;
-            m_startPosition = m_currentPosition;
-            OnContinuousGestureInitiated();
-            m_currentState = State::Dragging;
-        }
-    }
-    break;
-    case State::Dragging:
-    {
-        OnContinuousGestureUpdated();
-    }
-    break;
-    case State::Idle:
-    default:
-    {
-        // Should not be possible, but not fatal if we happen to get here somehow.
-        AZ_Warning("RecognizerDragRight", false, "RecognizerDragRight::OnDownEvent state logic failure");
-    }
-    break;
-    }
-
-    return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-inline bool Gestures::RecognizerDragRight::OnReleasedEvent(const AZ::Vector2& screenPosition, uint32_t pointerIndex)
-{
-    CryLog(
-        "RecognizerDragRight::OnReleasedEvent screenPosition (%f, %f) pointerIndex %ul m_config.pointerIndex %ul",
-        screenPosition.GetX(),
-        screenPosition.GetY(),
-        pointerIndex,
-        m_config.pointerIndex);
-
-    if (pointerIndex != m_config.pointerIndex)
-    {
-        return false;
-    }
-
-    switch (m_currentState)
-    {
-    case State::Pressed:
-    {
-        // We never actually started dragging
-        m_currentPosition = screenPosition;
-        m_currentState = State::Idle;
-    }
-    break;
-    case State::Dragging:
-    {
-        m_currentPosition = screenPosition;
-        OnContinuousGestureEnded();
-        m_currentState = State::Idle;
-    }
-    break;
-    case State::Idle:
-    default:
-    {
-        // Should not be possible, but not fatal if we happen to get here somehow.
-        AZ_Warning("RecognizerDragRight", false, "RecognizerDragRight::OnReleasedEvent state logic failure");
-    }
-    break;
-    }
-
-    return false;
-}
+#endif

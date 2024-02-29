@@ -8,6 +8,9 @@
 
 #pragma once
 
+// Add the DragRight gesture
+#if defined(CARBONATED)
+
 #include "InputChannelGesture.h"
 
 #include <Gestures/GestureRecognizerDragRight.h>
@@ -92,3 +95,5 @@ namespace Gestures
         void OnContinuousGestureEnded() override;
     };
 } // namespace Gestures
+
+#endif
