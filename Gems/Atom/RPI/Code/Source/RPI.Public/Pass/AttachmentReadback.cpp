@@ -435,7 +435,7 @@ namespace AZ
             {
                 if (readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex])
                 {
-                    context.GetCommandList()->Submit(readbackItem.m_copyItem.GetDeviceCopyItem(RHI::MultiDevice::DefaultDeviceIndex));
+                    context.GetCommandList()->Submit(readbackItem.m_copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
                 }
             }
 
