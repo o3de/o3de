@@ -45,6 +45,7 @@ namespace MiniAudio
         // MiniAudioPlaybackRequestBus
         void Play() override;
         void Stop() override;
+        void Pause() override;
         void SetVolumePercentage(float volume) override;
         float GetVolumePercentage() const override;
         void SetVolumeDecibels(float volumeDecibels) override;
