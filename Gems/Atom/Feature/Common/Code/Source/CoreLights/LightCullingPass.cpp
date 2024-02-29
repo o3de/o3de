@@ -150,11 +150,14 @@ namespace AZ
             SetSrgsForDispatch(context);
 
             RHI::Size res = GetDepthBufferResolution();
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = res.m_width;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = res.m_height;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-            commandList->Submit(m_dispatchItem);
+            auto arguments{m_dispatchItem.GetArguments()};
+            arguments.m_direct.m_totalNumberOfThreadsX = res.m_width;
+            arguments.m_direct.m_totalNumberOfThreadsY = res.m_height;
+            arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+            m_dispatchItem.SetArguments(arguments);
+
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void LightCullingPass::ResetInternal()
