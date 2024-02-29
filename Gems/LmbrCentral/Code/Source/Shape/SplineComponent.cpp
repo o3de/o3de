@@ -15,57 +15,97 @@
 
 namespace LmbrCentral
 {
-    using SplineComboBoxVec = AZStd::vector<AZ::Edit::EnumConstant<size_t>>;
+    using SplineComboBoxVec = AZStd::vector<AZ::Edit::EnumConstant<SplineType>>;
     static SplineComboBoxVec PopulateSplineTypeList()
     {
         return SplineComboBoxVec
         {
-            { AZ::LinearSpline::RTTI_Type().GetHash(), "Linear" },
-            { AZ::BezierSpline::RTTI_Type().GetHash(), "Bezier" },
-            { AZ::CatmullRomSpline::RTTI_Type().GetHash(), "Catmull-Rom" }
+            { SplineType::LINEAR, "Linear" },
+            { SplineType::BEZIER, "Bezier" },
+            { SplineType::CATMULL_ROM, "Catmull-Rom" }
         };
     }
-
-    static AZ::SplinePtr MakeSplinePtr(AZ::u64 splineType)
+    static bool IsMatchingType(AZ::SplinePtr spline, SplineType splineType)
     {
-        if (splineType == AZ::LinearSpline::RTTI_Type().GetHash())
+        auto splineTypeHash = spline->RTTI_GetType().GetHash();
+        switch (splineType)
         {
-            return AZStd::make_shared<AZ::LinearSpline>();
+        case SplineType::LINEAR:
+            {
+                return (splineTypeHash == AZ::LinearSpline::RTTI_Type().GetHash());
+            }
+            break;
+        case SplineType::BEZIER:
+            {
+                return (splineTypeHash == AZ::BezierSpline::RTTI_Type().GetHash());
+            }
+            break;
+        case SplineType::CATMULL_ROM:
+            {
+                return (splineTypeHash == AZ::CatmullRomSpline::RTTI_Type().GetHash());
+            }
+            break;
+        default:
+            break;
         }
 
-        if (splineType == AZ::BezierSpline::RTTI_Type().GetHash())
-        {
-            return AZStd::make_shared<AZ::BezierSpline>();
-        }
+        return false;
+    }
 
-        if (splineType == AZ::CatmullRomSpline::RTTI_Type().GetHash())
+    static AZ::SplinePtr MakeSplinePtr(SplineType splineType)
+    {
+        switch (splineType)
         {
-            return AZStd::make_shared<AZ::CatmullRomSpline>();
+        case SplineType::LINEAR:
+            {
+                return AZStd::make_shared<AZ::LinearSpline>();
+            }
+            break;
+        case SplineType::BEZIER:
+            {
+                return AZStd::make_shared<AZ::BezierSpline>();
+            }
+            break;
+        case SplineType::CATMULL_ROM:
+            {
+                return AZStd::make_shared<AZ::CatmullRomSpline>();
+            }
+            break;
+        default:
+            {
+                AZ_Assert(false, "Unhandled spline type %d in %s", splineType, __FUNCTION__);
+            }
+            break;
         }
-
-        AZ_Assert(false, "Unhandled spline type %d in %s", splineType, __FUNCTION__);
 
         return nullptr;
     }
 
-    static AZ::SplinePtr CopySplinePtr(AZ::u64 splineType, const AZ::SplinePtr& spline)
+    static AZ::SplinePtr CopySplinePtr(SplineType splineType, const AZ::SplinePtr& spline)
     {
-        if (splineType == AZ::LinearSpline::RTTI_Type().GetHash())
+        switch (splineType)
         {
-            return AZStd::make_shared<AZ::LinearSpline>(*spline);
+        case SplineType::LINEAR:
+            {
+                return AZStd::make_shared<AZ::LinearSpline>(*spline);
+            }
+            break;
+        case SplineType::BEZIER:
+            {
+                return AZStd::make_shared<AZ::BezierSpline>(*spline);
+            }
+            break;
+        case SplineType::CATMULL_ROM:
+            {
+                return AZStd::make_shared<AZ::CatmullRomSpline>(*spline);
+            }
+            break;
+        default:
+            {
+                AZ_Assert(false, "Unhandled spline type %d in %s", splineType, __FUNCTION__);
+            }
+            break;
         }
-
-        if (splineType == AZ::BezierSpline::RTTI_Type().GetHash())
-        {
-            return AZStd::make_shared<AZ::BezierSpline>(*spline);
-        }
-
-        if (splineType == AZ::CatmullRomSpline::RTTI_Type().GetHash())
-        {
-            return AZStd::make_shared<AZ::CatmullRomSpline>(*spline);
-        }
-
-        AZ_Assert(false, "Unhandled spline type %d in %s", splineType, __FUNCTION__);
 
         return nullptr;
     }
@@ -101,7 +141,7 @@ namespace LmbrCentral
         }
     }
 
-    void SplineCommon::ChangeSplineType(AZ::u64 splineType)
+    void SplineCommon::ChangeSplineType(SplineType splineType)
     {
         m_splineType = splineType;
         OnChangeSplineType();
@@ -132,7 +172,7 @@ namespace LmbrCentral
     {
         AZ::u32 ret = AZ::Edit::PropertyRefreshLevels::None;
 
-        if (m_spline->RTTI_GetType().GetHash() != m_splineType)
+        if (!IsMatchingType(m_spline, m_splineType))
         {
             m_spline = CopySplinePtr(m_splineType, m_spline);
             m_spline->SetCallbacks(
@@ -298,7 +338,7 @@ namespace LmbrCentral
         return m_splineCommon.m_spline;
     }
 
-    void SplineComponent::ChangeSplineType(AZ::u64 splineType)
+    void SplineComponent::ChangeSplineType(SplineType splineType)
     {
         m_splineCommon.ChangeSplineType(splineType);
     }
