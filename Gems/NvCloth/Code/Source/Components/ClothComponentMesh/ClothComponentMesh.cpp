@@ -51,14 +51,14 @@ namespace NvCloth
             const AZ::RHI::Format expectedElementFormat);
         ~MappedBuffer();
 
-        T* GetBuffer()
+        AZStd::unordered_map<int, T*> GetBuffer()
         {
             return m_buffer;
         }
 
     private:
         AZ::Data::Instance<AZ::RPI::Buffer> m_rpiBuffer;
-        T* m_buffer = nullptr;
+        AZStd::unordered_map<int, T*> m_buffer;
     };
 
     template<typename T>
@@ -92,14 +92,17 @@ namespace NvCloth
         const uint64_t byteCount = aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementCount) * aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementSize);
         const uint64_t byteOffset = aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(bufferViewDescriptor.m_elementSize);
 
-        AZ_Assert(AZ::RHI::CheckBitsAny(m_rpiBuffer->GetRHIBuffer()->GetDeviceMask(), AZ::RHI::MultiDevice::DefaultDevice), "ClothComponentMesh currently only supports the default device.");
-        m_buffer = static_cast<T*>(m_rpiBuffer->Map(byteCount, byteOffset)[AZ::RHI::MultiDevice::DefaultDeviceIndex]);
+        auto data = m_rpiBuffer->Map(byteCount, byteOffset);
+        for(auto [deviceIndex, buffer] : data)
+        {
+            m_buffer[deviceIndex] = static_cast<T*>(buffer);
+        }
     }
 
     template<typename T>
     MappedBuffer<T>::~MappedBuffer()
     {
-        if (m_buffer)
+        if (!m_buffer.empty())
         {
             m_rpiBuffer->Unmap();
         }
@@ -556,12 +559,12 @@ namespace NvCloth
             MappedBuffer<AZ::Vector4> destTangents(subMesh.GetSemanticBufferAssetView(tangentSemantic), numVertices, AZ::RHI::Format::R32G32B32A32_FLOAT);
             MappedBuffer<AZ::PackedVector3f> destBitangents(subMesh.GetSemanticBufferAssetView(bitangentSemantic), numVertices, AZ::RHI::Format::R32G32B32_FLOAT);
 
-            auto* destVerticesBuffer = destVertices.GetBuffer();
-            auto* destNormalsBuffer = destNormals.GetBuffer();
-            auto* destTangentsBuffer = destTangents.GetBuffer();
-            auto* destBitangentsBuffer = destBitangents.GetBuffer();
+            auto destVerticesData = destVertices.GetBuffer();
+            auto destNormalsData = destNormals.GetBuffer();
+            auto destTangentsData = destTangents.GetBuffer();
+            auto destBitangentsData = destBitangents.GetBuffer();
 
-            if (!destVerticesBuffer)
+            if (!destVerticesData.empty())
             {
                 AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRHI(),
                     "Invalid vertex position buffer obtained from the render mesh to be modified.");
@@ -573,35 +576,48 @@ namespace NvCloth
                 const int renderVertexIndex = static_cast<int>(firstVertex + index);
 
                 const SimParticleFormat& renderParticle = renderParticles[renderVertexIndex];
-                destVerticesBuffer[index].Set(
-                    renderParticle.GetX(),
-                    renderParticle.GetY(),
-                    renderParticle.GetZ());
 
-                if (destNormalsBuffer)
+                for(auto& [deviceIndex, destVerticesBuffer] : destVerticesData)
+                {
+                    destVerticesBuffer[index].Set(
+                        renderParticle.GetX(),
+                        renderParticle.GetY(),
+                        renderParticle.GetZ());
+                }
+
+                if (!destNormalsData.empty())
                 {
                     const AZ::Vector3& renderNormal = renderNormals[renderVertexIndex];
-                    destNormalsBuffer[index].Set(
-                        renderNormal.GetX(),
-                        renderNormal.GetY(),
-                        renderNormal.GetZ());
+                    for(auto& [deviceIndex, destNormalsBuffer] : destNormalsData)
+                    {
+                        destNormalsBuffer[index].Set(
+                            renderNormal.GetX(),
+                            renderNormal.GetY(),
+                            renderNormal.GetZ());
+                    }
                 }
 
-                if (destTangentsBuffer)
+                if (!destTangentsData.empty())
                 {
                     const AZ::Vector3& renderTangent = renderTangents[renderVertexIndex];
-                    destTangentsBuffer[index].Set(
-                        renderTangent,
-                        -1.0f); // Shader function ConstructTBN inverts w to change bitangent sign, but the bitangents passed are already corrected, so passing -1.0 to counteract.
+                    for(auto& [deviceIndex, destTangentsBuffer] : destTangentsData)
+                    {
+                        destTangentsBuffer[index].Set(
+                            renderTangent,
+                            -1.0f); // Shader function ConstructTBN inverts w to change bitangent sign, but the bitangents passed are already corrected, so passing -1.0 to counteract.
+                    }
                 }
 
-                if (destBitangentsBuffer)
+                if (!destBitangentsData.empty())
                 {
                     const AZ::Vector3& renderBitangent = renderBitangents[renderVertexIndex];
-                    destBitangentsBuffer[index].Set(
-                        renderBitangent.GetX(),
-                        renderBitangent.GetY(),
-                        renderBitangent.GetZ());
+                    for(auto& [deviceIndex, destBitangentsBuffer] : destBitangentsData)
+                    {
+                        destBitangentsBuffer[index].Set(
+                            renderBitangent.GetX(),
+                            renderBitangent.GetY(),
+                            renderBitangent.GetZ());
+                    }
                 }
             }
         }
