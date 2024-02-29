@@ -53,7 +53,7 @@ namespace AZ
             const RHI::Size resolution = GetColorBufferResolution();
             SetTargetThreadCounts(resolution.m_width, resolution.m_height, 1);
 
-            commandList->Submit(m_dispatchItem);
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void LuminanceHistogramGeneratorPass::CreateHistogramBuffer()

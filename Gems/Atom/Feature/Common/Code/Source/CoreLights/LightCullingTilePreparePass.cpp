@@ -51,11 +51,13 @@ namespace AZ
 
             RHI::Size resolution = GetDepthBufferDimensions();
 
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = resolution.m_width;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = resolution.m_height;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
-            m_dispatchItem.m_pipelineState = m_msaaPipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
-            commandList->Submit(m_dispatchItem);
+            auto arguments{m_dispatchItem.GetArguments()};
+            arguments.m_direct.m_totalNumberOfThreadsX = resolution.m_width;
+            arguments.m_direct.m_totalNumberOfThreadsY = resolution.m_height;
+            arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+            m_dispatchItem.SetArguments(arguments);
+            m_dispatchItem.SetPipelineState(m_msaaPipelineState.get());
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         AZ::RHI::Size LightCullingTilePreparePass::GetDepthBufferDimensions()
