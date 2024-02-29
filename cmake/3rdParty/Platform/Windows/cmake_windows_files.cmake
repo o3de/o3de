@@ -9,4 +9,5 @@
 set(FILES
     BuiltInPackages_windows.cmake
     Wwise_windows.cmake
+    Python_windows.cmake
 )
