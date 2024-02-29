@@ -38,7 +38,12 @@ namespace Gestures
     const InputChannelId InputDeviceGestures::Gesture::Pinch("gesture_pinch");
     const InputChannelId InputDeviceGestures::Gesture::Rotate("gesture_rotate");
     const InputChannelId InputDeviceGestures::Gesture::Swipe("gesture_swipe");
+// Add the DragRight gesture
+#if defined(CARBONATED)
     const AZStd::array<InputChannelId, 7> InputDeviceGestures::Gesture::All =
+#else
+    const AZStd::array<InputChannelId, 6> InputDeviceGestures::Gesture::All =
+#endif
     {{
         DoublePress,
         Drag,
