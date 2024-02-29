@@ -39,8 +39,7 @@ namespace AZ
             
             m_ringBufferSize = ringBufferSize;
 
-            AZ_Assert(RHI::CheckBitsAny(m_ringBuffer->GetRHIBuffer()->GetDeviceMask(), RHI::MultiDevice::DefaultDevice), "DynamicBufferAllocator currently only supports the default device.");
-            m_ringBufferStartAddress = m_ringBuffer->Map(m_ringBufferSize, 0)[RHI::MultiDevice::DefaultDeviceIndex];
+            m_ringBufferStartAddress = m_ringBuffer->Map(m_ringBufferSize, 0);
             
             m_currentPosition = 0;
             m_endPositionLimit = 0;
@@ -55,7 +54,7 @@ namespace AZ
         {
             m_ringBuffer->Unmap();
             m_ringBuffer = nullptr;
-            m_ringBufferStartAddress = nullptr;
+            m_ringBufferStartAddress.clear();
         }
 
         // [GFX TODO][ATOM-13182] Add unit tests for DynamicBufferAllocator's Allocate function 
@@ -65,7 +64,7 @@ namespace AZ
             uint32_t allocatePosition = 0;
 
             //m_ringBufferStartAddress can be null for Null back end
-            if (!m_ringBufferStartAddress)
+            if (m_ringBufferStartAddress.empty())
             {
                 return nullptr;
             }
@@ -125,7 +124,10 @@ namespace AZ
             m_currentAllocatedSize += size;
 
             RHI::Ptr<DynamicBuffer> allocatedBuffer = aznew DynamicBuffer();
-            allocatedBuffer->m_address = (uint8_t*)m_ringBufferStartAddress + allocatePosition;
+            for(auto [deviceIndex, address] : m_ringBufferStartAddress)
+            {
+                allocatedBuffer->m_address[deviceIndex] = (uint8_t*)address + allocatePosition;
+            }
             allocatedBuffer->m_size = size;
             allocatedBuffer->m_allocator = this;
             return allocatedBuffer;
@@ -153,7 +155,11 @@ namespace AZ
 
         uint32_t DynamicBufferAllocator::GetBufferAddressOffset(RHI::Ptr<DynamicBuffer> dynamicBuffer)
         {
-            return aznumeric_cast<uint32_t>((uint8_t*)dynamicBuffer->m_address - (uint8_t*)m_ringBufferStartAddress);
+            AZ_Error("DynamicBufferAllocator", !m_ringBufferStartAddress.empty(), "No addresses available!");
+
+            auto it = m_ringBufferStartAddress.begin();
+
+            return aznumeric_cast<uint32_t>((uint8_t*)dynamicBuffer->m_address[it->first] - (uint8_t*)it->second);
         }
 
         void DynamicBufferAllocator::SetEnableAllocationWarning(bool enable)

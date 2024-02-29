@@ -71,7 +71,7 @@ namespace AZ
             uint32_t m_currentAllocatedSize = 0;
 
             uint32_t m_ringBufferSize = 0;
-            void* m_ringBufferStartAddress = 0;
+            AZStd::unordered_map<int, void*> m_ringBufferStartAddress;
             Data::Instance<Buffer> m_ringBuffer;
 
             // Allocation history which are in use by GPU. 
