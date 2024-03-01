@@ -231,11 +231,12 @@ namespace AZ
             }
             else
             {
-                AZStd::vector<Job*> perInstanceGroupJobQueue = CreatePerInstanceGroupJobQueue();
 
                 ExecuteSimulateJobQueue(initJobQueue, parentJob);
                 // Per-InstanceGroup work must be done after the Init jobs are complete, because the init jobs will determine which instance
                 // group each mesh belongs to and populate those instance groups
+                // Note: the Per-InstanceGroup jobs need to be created after init jobs because it's possible new instance groups created in init jobs
+                AZStd::vector<Job*> perInstanceGroupJobQueue = CreatePerInstanceGroupJobQueue();
                 ExecuteSimulateJobQueue(perInstanceGroupJobQueue, parentJob);
                 // Updating the culling scene must happen after the per-instance group work is done
                 // because the per-instance group work will update the draw packets.
