@@ -327,6 +327,16 @@ namespace AZ::RHI
         return nullptr;
     }
 
+    const RHI::Device* RHISystem::GetDevice(int deviceIndex) const
+    {
+        if (deviceIndex < m_devices.size())
+        {
+            return m_devices.at(deviceIndex).get();
+        }
+
+        return nullptr;
+    }
+
     int RHISystem::GetDeviceCount()
     {
         return static_cast<int>(m_devices.size());
@@ -440,6 +450,12 @@ namespace AZ::RHI
     bool RHISystem::GpuMarkersEnabled() const
     {
         return m_gpuMarkersEnabled;
+    }
+
+    bool RHISystem::CanMergeSubpasses() const
+    {
+        const auto devicePtr = GetDevice();
+        return devicePtr && (devicePtr->GetFeatures().m_renderTargetSubpassInputSupport != AZ::RHI::SubpassInputSupportType::NotSupported);
     }
 
     /////////////////////////////////////////////////////////////////////////////

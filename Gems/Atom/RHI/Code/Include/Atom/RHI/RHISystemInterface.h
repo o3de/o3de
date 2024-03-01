@@ -46,6 +46,8 @@ namespace AZ::RHI
 
         virtual RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) = 0;
 
+        virtual const RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) const = 0;
+
         [[nodiscard]] virtual AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) = 0;
 
         virtual int GetDeviceCount() = 0;
@@ -75,6 +77,9 @@ namespace AZ::RHI
         virtual const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const = 0;
 
         virtual bool GpuMarkersEnabled() const = 0;
+
+        //! Returns true is the RHI supports merging Subpasses.
+        virtual bool CanMergeSubpasses() const = 0;
     };
 
     //! This bus exists to give RHI samples the ability to slot in scopes manually

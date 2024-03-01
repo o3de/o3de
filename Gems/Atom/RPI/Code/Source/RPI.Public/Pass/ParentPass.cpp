@@ -15,10 +15,15 @@
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Pass/RenderPass.h>
 
 #include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
+
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
+#include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 
 namespace AZ
 {
@@ -41,6 +46,12 @@ namespace AZ
             : Pass(descriptor)
         {
             m_flags.m_createChildren = true;
+            if (m_passData && m_passData->m_mergeChildrenAsSubpasses)
+            {
+                AZ_Assert(RHI::RHISystemInterface::Get()->CanMergeSubpasses(),
+                    "Can not create parent pass '%s' because the active RHI can't merge subpasses.", descriptor.m_passName.GetCStr());
+                m_flags.m_mergeChildrenAsSubpasses = true;
+            }
         }
 
         ParentPass::~ParentPass()
@@ -51,6 +62,23 @@ namespace AZ
         }
 
         // --- Child Pass Addition ---
+        void ParentPass::MarkChildAsSubpass(const Ptr<Pass>& child)
+        {
+            if (m_flags.m_mergeChildrenAsSubpasses)
+            {
+                if (auto* childRenderPass = azrtti_cast<RenderPass*>(child.get()); childRenderPass && childRenderPass->CanBecomeSubpass())
+                {
+                    childRenderPass->m_flags.m_mergeChildrenAsSubpasses = true;
+                }
+                else
+                {
+                    AZ_Warning("ParentPass",  false,
+                        "Can't merge child passes because child pass with name [%s] is NOT a mergeable RenderPass.\n",
+                        child->GetName().GetCStr());
+                    m_flags.m_mergeChildrenAsSubpasses = false;
+                }
+            }
+        }
 
         void ParentPass::AddChild(const Ptr<Pass>& child, [[maybe_unused]] bool skipStateCheckWhenRunningTests)
         {
@@ -65,6 +93,9 @@ namespace AZ
                 AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
                 return;
             }
+
+            // This function is a NO OP if children are not supposed to be merged as subpasses.
+            MarkChildAsSubpass(child);
 
             child->m_parentChildIndex = static_cast<uint32_t>(m_children.size());
             m_children.push_back(child);
@@ -94,6 +125,9 @@ namespace AZ
                 AZ_Assert(false, "Can't insert a child pass with invalid position");
                 return false;
             }
+
+            // This function is a NO OP if children are not supposed to be merged as subpasses.
+            MarkChildAsSubpass(child);
 
             auto insertPos = m_children.cbegin() + index;
             m_children.insert(insertPos, child);
@@ -365,6 +399,9 @@ namespace AZ
             {
                 child->Build();
             }
+
+            // Only applicable is m_flags.m_mergeChildrenAsSubpasses is true (checked inside).
+            CreateRenderAttachmentConfigurationForSubpasses();
         }
 
         void ParentPass::OnInitializationFinishedInternal()
@@ -483,6 +520,68 @@ namespace AZ
                 }
             }
             return nullptr;
+        }
+
+        void ParentPass::ClearMergeAsSubpassesFlag()
+        {
+            m_flags.m_mergeChildrenAsSubpasses = false;
+            for (auto& childPass : m_children)
+            {
+                childPass->m_flags.m_mergeChildrenAsSubpasses = false;
+            }
+        }
+
+        void ParentPass::CreateRenderAttachmentConfigurationForSubpasses()
+        {
+            if (!m_flags.m_mergeChildrenAsSubpasses)
+            {
+                // This is the most common scenario.
+                return;
+            }
+
+            // We validated already during AddChild() and InsertChild() that all children are
+            // mergeable RenderPass instances.
+            const auto numSubpasses = m_children.size();
+            if (numSubpasses < 2)
+            {
+                AZ_Error("ParentPass", false, "A parent pass that merges its children must have at least two children");
+                m_flags.m_mergeChildrenAsSubpasses = false;
+                return;
+            }
+
+            bool allChildrenBuiltLayout = true;
+            RHI::RenderAttachmentLayoutBuilder builder;
+            for (auto subpassIndex = 0;  subpassIndex < numSubpasses; subpassIndex++)
+            {
+                RenderPass* renderPassChild = azrtti_cast<RenderPass*>(m_children[subpassIndex].get());
+                AZ_Assert( (renderPassChild != nullptr) && renderPassChild->CanBecomeSubpass(), "When merging subpasses, all children must be mergeable RenderPass");
+                auto* layoutBuilder = builder.AddSubpass();
+                if (!renderPassChild->BuildSubpassLayout(*layoutBuilder))
+                {
+                    AZ_Error("ParentPass", false, "RenderPass [%s] failed to build its subpass layout.\n", renderPassChild->GetName().GetCStr());
+                    allChildrenBuiltLayout = false;
+                    break;
+                }
+            }
+
+            if (!allChildrenBuiltLayout)
+            {
+                ClearMergeAsSubpassesFlag();
+                return;
+            }
+
+            auto renderAttachmentLayout = AZStd::make_shared<RHI::RenderAttachmentLayout>();
+            RHI::ResultCode result = builder.End(*renderAttachmentLayout.get());
+            if (result == RHI::ResultCode::Success)
+            {
+                // Loop again across all children and set their RenderAttachmentConfiguration
+                for (auto subpassIndex = 0; subpassIndex < numSubpasses; subpassIndex++)
+                {
+                    RenderPass* renderPassChild = azrtti_cast<RenderPass*>(m_children[subpassIndex].get());
+                    renderPassChild->SetRenderAttachmentLayout(renderAttachmentLayout, subpassIndex);
+                }
+            }
+
         }
 
         // --- Debug functions ---

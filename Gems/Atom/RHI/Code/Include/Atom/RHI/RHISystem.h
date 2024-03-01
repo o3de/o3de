@@ -59,11 +59,12 @@ namespace AZ::RHI
 
         //! Get/Set functions for the number of active pipelines in use in a frame 
         void SetNumActiveRenderPipelines(uint16_t numActiveRenderPipelines);
-        uint16_t GetNumActiveRenderPipelines() const;
+        uint16_t GetNumActiveRenderPipelines() const override;
 
         //////////////////////////////////////////////////////////////////////////
         // RHISystemInterface Overrides
         RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) override;
+        const RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
         //! Add a new virtual device (referencing the same physical device as an existing device marked by deviceIndexToVirtualize)
         [[nodiscard]] AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) override;
         int GetDeviceCount() override;
@@ -79,6 +80,7 @@ namespace AZ::RHI
         void SetDrawListTagEnabledByDefault(DrawListTag drawListTag, bool enabled) override;
         const AZStd::vector<DrawListTag>& GetDrawListTagsDisabledByDefault() const override;
         bool GpuMarkersEnabled() const override;
+        bool CanMergeSubpasses() const override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
