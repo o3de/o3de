@@ -52,7 +52,7 @@ size = random.uniform(0.5, 2.0)
 variation = random.uniform(1.5, 5.0)
 amount = random.randint(9, 21)
 
-def make_some_wonky_cubes(name=, size, variation, amount):
+def make_some_wonky_cubes(name, size, variation, amount):
     # remove previous
     obj_list = cmds.ls('{}*'.format(name))
     if len(obj_list) > 0:

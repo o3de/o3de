@@ -698,7 +698,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         if isinstance(value, list):
             converted_list = []
             for item in value:
-                item_value = 0 if item is 0 else float(item)
+                item_value = 0 if item == 0 else float(item)
                 converted_list.append(item)
             return converted_list
         elif isinstance(value, str):
@@ -708,7 +708,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             elif value in ['true', 'false']:
                 return str(value)
             elif value.isnumeric():
-                return 0 if value is 0 else float(value)
+                return 0 if value == 0 else float(value)
             else:
                 pattern = r'\[[^\]]*\]'
                 test_brackets = re.sub(pattern, '', value)
