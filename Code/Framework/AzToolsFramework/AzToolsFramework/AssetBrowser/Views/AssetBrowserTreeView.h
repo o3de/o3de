@@ -42,7 +42,6 @@ namespace AzToolsFramework
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
             , public AssetBrowserInteractionNotificationBus::Handler
-
         {
             Q_OBJECT
 
