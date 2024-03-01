@@ -47,6 +47,9 @@ class SessionContext:
         self.install_root = Path(request.config.getoption("--install-root")).resolve()
         self.project_path = Path(request.config.getoption("--project-path")).resolve()
 
+        # create the project path or TemporaryDirectory can fail
+        os.makedirs(self.project_path, exist_ok=True)
+
         # use a temp folder inside the project path to avoid issues where we cannot
         # clean up or remove the actual project folder
         with TemporaryDirectory(dir=self.project_path) as tmp_project_dir:
