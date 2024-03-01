@@ -488,6 +488,11 @@ namespace AZ
 
                         // Whether this pass contains a binding that is referenced globally through the pipeline
                         uint64_t m_containsGlobalReference : 1;
+
+                        // If this is a parent pass, indicates whether the child passes should be merged as subpasses.
+                        // If this is a child pass, indicates whether it is a subpass.
+                        // Please read about PassData::m_mergeChildrenAsSubpasses for more details.
+                        uint64_t m_mergeChildrenAsSubpasses : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };

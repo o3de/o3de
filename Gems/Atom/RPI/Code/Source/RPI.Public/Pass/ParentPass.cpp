@@ -15,10 +15,14 @@
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 
 #include <Atom/RPI.Reflect/Pass/SlowClearPassData.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
+
+#include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
+#include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 
 namespace AZ
 {
@@ -41,6 +45,10 @@ namespace AZ
             : Pass(descriptor)
         {
             m_flags.m_createChildren = true;
+            if (m_passData)
+            {
+                m_flags.m_mergeChildrenAsSubpasses = m_passData->m_mergeChildrenAsSubpasses;
+            }
         }
 
         ParentPass::~ParentPass()
@@ -51,6 +59,23 @@ namespace AZ
         }
 
         // --- Child Pass Addition ---
+        void ParentPass::MarkChildAsSubpass(const Ptr<Pass>& child)
+        {
+            if (m_flags.m_mergeChildrenAsSubpasses)
+            {
+                if (auto* rasterchild = azrtti_cast<RasterPass*>(child.get()))
+                {
+                    rasterchild->m_flags.m_mergeChildrenAsSubpasses = true;
+                }
+                else
+                {
+                    AZ_Warning("ParentPass",  false,
+                        "Can't merge child passes because child pass with name [%s] is NOT a RasterPass.\n",
+                        child->GetName().GetCStr());
+                    m_flags.m_mergeChildrenAsSubpasses = false;
+                }
+            }
+        }
 
         void ParentPass::AddChild(const Ptr<Pass>& child, [[maybe_unused]] bool skipStateCheckWhenRunningTests)
         {
@@ -65,6 +90,9 @@ namespace AZ
                 AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
                 return;
             }
+
+            // This function is a NO OP if children are not supposed to be merged as subpasses.
+            MarkChildAsSubpass(child);
 
             child->m_parentChildIndex = static_cast<uint32_t>(m_children.size());
             m_children.push_back(child);
@@ -94,6 +122,9 @@ namespace AZ
                 AZ_Assert(false, "Can't insert a child pass with invalid position");
                 return false;
             }
+
+            // This function is a NO OP if children are not supposed to be merged as subpasses.
+            MarkChildAsSubpass(child);
 
             auto insertPos = m_children.cbegin() + index;
             m_children.insert(insertPos, child);
@@ -365,6 +396,9 @@ namespace AZ
             {
                 child->Build();
             }
+
+            // Only applicable is m_flags.m_mergeChildrenAsSubpasses is true (checked inside).
+            CreateRenderAttachmentConfigurationForSubpasses();
         }
 
         void ParentPass::OnInitializationFinishedInternal()
@@ -483,6 +517,76 @@ namespace AZ
                 }
             }
             return nullptr;
+        }
+
+        void ParentPass::ClearMergeAsSubpassesFlag()
+        {
+            m_flags.m_mergeChildrenAsSubpasses = false;
+            for (auto& childPass : m_children)
+            {
+                childPass->m_flags.m_mergeChildrenAsSubpasses = false;
+            }
+        }
+
+        void ParentPass::CreateRenderAttachmentConfigurationForSubpasses()
+        {
+            if (!m_flags.m_mergeChildrenAsSubpasses)
+            {
+                // This is the most common scenario.
+                return;
+            }
+
+            // We validated already during AddChild() and InsertChild() that all children are
+            // of type RasterPass or subclass of RasterPass.
+            const auto numSubpasses = m_children.size();
+            AZ_Assert(numSubpasses > 1, "A parent pass that merges its children must have at least two children");
+
+            bool allChildrenBuiltLayout = true;
+            RHI::RenderAttachmentLayoutBuilder builder;
+            for (auto subpassIndex = 0;  subpassIndex < numSubpasses; subpassIndex++)
+            {
+                RasterPass* rasterChild = azrtti_cast<RasterPass*>(m_children[subpassIndex].get());
+                AZ_Assert(rasterChild != nullptr, "When merging subpasses, all children must be RasterPass");
+                auto* layoutBuilder = builder.AddSubpass();
+                if (!rasterChild->BuildSubpassLayout(*layoutBuilder, subpassIndex))
+                {
+                    AZ_Error("ParentPass", false, "RasterPass [%s] failed to build its subpass layout.\n", rasterChild->GetName().GetCStr());
+                    allChildrenBuiltLayout = false;
+                    break;
+                }
+            }
+
+            if (!allChildrenBuiltLayout)
+            {
+                ClearMergeAsSubpassesFlag();
+                return;
+            }
+
+            allChildrenBuiltLayout = true;
+            auto renderAttachmentLayout = AZStd::make_shared<RHI::RenderAttachmentLayout>();
+            RHI::ResultCode result = builder.End(*renderAttachmentLayout.get());
+            if (result == RHI::ResultCode::Success)
+            {
+                auto subpassDependenciesPtr = builder.GetSubpassDependencies();
+
+                // Loop again across all children and set their RenderAttachmentConfiguration
+                for (auto subpassIndex = 0; subpassIndex < numSubpasses; subpassIndex++)
+                {
+                    RasterPass* rasterChild = azrtti_cast<RasterPass*>(m_children[subpassIndex].get());
+                    if (!rasterChild->SetRenderAttachmentLayout(renderAttachmentLayout, subpassDependenciesPtr, subpassIndex))
+                    {
+                        AZ_Error("ParentPass", false, "RasterPass [%s] failed to set its render attachment layout.\n", rasterChild->GetName().GetCStr());
+                        allChildrenBuiltLayout = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!allChildrenBuiltLayout)
+            {
+                ClearMergeAsSubpassesFlag();
+                return;
+            }
         }
 
         // --- Debug functions ---

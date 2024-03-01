@@ -6,8 +6,11 @@
  *
  */
 
-#include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
 #include <AzCore/std/containers/unordered_map.h>
+
+#include <Atom/RHI.Reflect/RenderAttachmentLayoutBuilder.h>
+
+#include <Atom/RHI/SubpassDependenciesBuilderInterface.h>
 
 namespace AZ::RHI
 {
@@ -196,6 +199,16 @@ namespace AZ::RHI
             }
         }
 
+        // Request the active RHI to build the Subpass Dependencies, only if there's more than one subpass.
+        if (builtRenderAttachmentLayout.m_subpassCount > 1)
+        {
+            auto subpassDependencyBuilderIface = SubpassDependenciesBuilderInterface::Get();
+            if (subpassDependencyBuilderIface != nullptr) // Not all RHIs support building SubpassDependencies.
+            {
+                m_subpassDependencies = subpassDependencyBuilderIface->BuildSubpassDependencies(builtRenderAttachmentLayout);
+            }
+        }
+
         return ResultCode::Success;
     }
 
@@ -331,5 +344,10 @@ namespace AZ::RHI
         };
         m_shadingRateAttachment.m_loadStoreAction.m_storeAction = AttachmentStoreAction::DontCare;
         return this;
+    }
+
+    AZStd::shared_ptr<SubpassDependencies> RenderAttachmentLayoutBuilder::GetSubpassDependencies() const
+    {
+        return m_subpassDependencies;
     }
 }

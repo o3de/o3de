@@ -293,8 +293,19 @@ namespace AZ
                 default:
                     AZ_Assert(false, "ScopeAttachmentUsage %d is invalid.", attachment.m_usage);
                 }
-            }            
+            }
 
+            const auto* prebuiltSubpassDependencies = scope.GetNativeSubpassDependencies();
+            if (prebuiltSubpassDependencies != nullptr)
+            {
+                if (prebuiltSubpassDependencies->m_subpassCount == m_renderpassDesc.m_subpassCount)
+                {
+                    prebuiltSubpassDependencies->ApplySubpassDependencies(m_renderpassDesc);
+                }
+            }
+
+            // TODO: The following block should NOT exist because Subpasses in Vulkan
+            //    are only relevant for Raster passes that share Render Targets (images, not buffers).
             // Add the subpass dependencies from the buffer attachments.
             for (size_t index = 0; index < scope.GetBufferAttachments().size(); ++index)
             {
@@ -302,6 +313,7 @@ namespace AZ
                 const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView());
                 AddResourceDependency(subpassIndex, scope, bufferView);
             }
+
         }
 
         RHI::ResultCode RenderPassBuilder::End(RenderPassContext& builtContext)

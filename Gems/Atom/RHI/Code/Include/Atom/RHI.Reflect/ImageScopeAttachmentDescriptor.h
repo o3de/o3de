@@ -29,5 +29,12 @@ namespace AZ::RHI
 
         /// The image view associated with the binding.
         ImageViewDescriptor m_imageViewDescriptor;
+
+        //! Index of the Subpass that owns this scope attachment.
+        //! When this index is greater than 0, the frameGraph will make a "SameGroup"
+        //! connection between the previous and the current subpass.
+        //! This will guarantee that the Topological Sort of the framegraph
+        //! will group consecutive scopes as Subpasses.
+        uint32_t m_subpassIndex = 0;
     };
 }
