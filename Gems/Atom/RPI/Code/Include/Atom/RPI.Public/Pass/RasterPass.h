@@ -33,6 +33,8 @@ namespace AZ
             //! Creates a RasterPass
             static Ptr<RasterPass> Create(const PassDescriptor& descriptor);
 
+            bool IsRasterPass() const override { return true; } // Added by GALIB
+
             // Draw List & Pipeline View Tags
             RHI::DrawListTag GetDrawListTag() const override;
 

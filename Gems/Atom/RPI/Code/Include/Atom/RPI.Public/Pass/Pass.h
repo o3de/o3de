@@ -24,6 +24,7 @@
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
+#include <Atom/RHI.Reflect/RenderAttachmentLayout.h> // GALIB
 
 #include <AzCore/std/containers/span.h>
 
@@ -308,6 +309,20 @@ namespace AZ
 
             // Update all bindings on this pass that are connected to bindings on other passes
             virtual void UpdateConnectedBindings();
+
+            /////////////////////////////////////////////////////////////
+            //! EXPERIMENTAL GALIB
+            virtual bool IsRasterPass() const { return false; }
+
+            // The following functions will be called when IsRasterPass() returns true.
+
+            //! Build and return RenderAttachmentConfiguration of this pass from its render attachments
+            //! This function usually need to be called after pass attachments rebuilt to reflect latest layout
+            virtual RHI::RenderAttachmentConfiguration GetRenderAttachmentConfiguration() const {  RHI::RenderAttachmentConfiguration v; return v; } // Called if IsRasterPass() returns true.
+
+            //! Get MultisampleState of this pass from its output attachments
+            virtual RHI::MultisampleState GetMultisampleState() const { return {}; } // Called if IsRasterPass() returns true.
+            /////////////////////////////////////////////////////////////
 
         protected:
             explicit Pass(const PassDescriptor& descriptor);
