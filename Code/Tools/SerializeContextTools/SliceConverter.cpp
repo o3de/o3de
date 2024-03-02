@@ -654,7 +654,8 @@ namespace AZ
             }
 
             // Instantiate a new instance of the nested slice
-            AZ::SliceComponent::InstantiateResult instantiationResult = dependentSlice->Instantiate(serializeContext, &m_relativeToAbsoluteSlicePaths);
+            AZ::SliceComponent::InstantiateResult instantiationResult =
+                dependentSlice->Instantiate(serializeContext, NeedAssetProcessor() ? nullptr : &m_relativeToAbsoluteSlicePaths);
             if (instantiationResult != AZ::SliceComponent::InstantiateResult::Success)
             {
                 AZ_Error("Convert-Slice", false, "Failed to instantiate instance of %s", sliceAsset.GetHint().c_str());
