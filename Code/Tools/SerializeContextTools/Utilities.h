@@ -35,11 +35,10 @@ namespace AZ
 
             static AZStd::vector<AZ::Uuid> GetSystemComponents(const Application& application);
 
-            static bool InspectSerializedFile(
-                const char* filePath,
-                SerializeContext* sc,
-                const ObjectStream::ClassReadyCB& classCallback,
-                Data::AssetFilterCB assetFilterCallback = AZ::Data::AssetFilterNoAssetLoading);
+            //! Converts path into a path that's relative to the highest-priority containing folder
+            //! (the Assets folder for a Gem or the Projects folder for project's assets)
+            static AZStd::string GenerateRelativePosixPath(const AZStd::string& projectPath, const AZStd::string& path);
+            static AZStd::string GetStringAfterFirstOccurenceOf(const AZStd::string& toFind, const AZStd::string& string);
 
         private:
             Utilities() = delete;

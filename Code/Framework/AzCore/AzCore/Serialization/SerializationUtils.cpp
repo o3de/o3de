@@ -527,6 +527,60 @@ namespace AZ::Utils
         return ptr;
     }
 
+    bool InspectSerializedFile(
+        const char* filePath,
+        SerializeContext* sc,
+        const ObjectStream::ClassReadyCB& classCallback,
+        Data::AssetFilterCB assetFilterCallback)
+    {
+        if (!AZ::IO::FileIOBase::GetInstance()->Exists(filePath))
+        {
+            AZ_Error("Verify", false, "Unable to open file '%s' as it doesn't exist.", filePath);
+            return false;
+        }
+
+        AZ::IO::HandleType fileHandle;
+        auto openResult = AZ::IO::FileIOBase::GetInstance()->Open(filePath, AZ::IO::OpenMode::ModeRead, fileHandle);
+        if (!openResult)
+        {
+            AZ_Error("Verify", false, "File '%s' could not be opened.", filePath);
+            return false;
+        }
+
+        u64 fileLength = 0;
+        auto sizeResult = AZ::IO::FileIOBase::GetInstance()->Size(fileHandle, fileLength);
+        if (!sizeResult || (fileLength == 0))
+        {
+            AZ_Error("Verify", false, "File '%s' doesn't have content.", filePath);
+            return false;
+        }
+
+        AZStd::vector<u8> data;
+        data.resize_no_construct(fileLength);
+        u64 bytesRead = 0;
+        auto readResult = AZ::IO::FileIOBase::GetInstance()->Read(fileHandle, data.data(), fileLength, true, &bytesRead);
+        if (!readResult || (bytesRead != fileLength))
+        {
+            AZ_Error("Verify", false, "Unable to read file '%s'.", filePath);
+            return false;
+        }
+
+        AZ::IO::FileIOBase::GetInstance()->Close(fileHandle);
+
+        AZ::IO::MemoryStream stream(data.data(), fileLength);
+
+        ObjectStream::FilterDescriptor filter;
+        // By default, never load dependencies. That's another file that would need to be processed
+        // separately from this one.
+        filter.m_assetCB = assetFilterCallback;
+        if (!ObjectStream::LoadBlocking(&stream, *sc, classCallback, filter))
+        {
+            AZ_Printf("Verify", "Failed to deserialize '%s'\n", filePath);
+            return false;
+        }
+        return true;
+    }
+
     AZ::Attribute* FindEditOrSerializeContextAttribute(AZ::AttributeId attributeId, const AZ::SerializeContext::ClassData* classData,
         const AZ::SerializeContext::ClassElement* classElement, const AZ::Edit::ClassData* editClassData, const AZ::Edit::ElementData* elementEditData)
     {
@@ -598,4 +652,5 @@ namespace AZ::Utils
         const AZ::Edit::ElementData* elementEditData = classElement != nullptr ? classElement->m_editData : nullptr;
         return FindEditOrSerializeContextAttribute(attributeId, classData, classElement, editClassData, elementEditData);
     }
+
 } // namespace AZ::Utils
