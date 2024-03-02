@@ -32,7 +32,7 @@ execute_process (COMMAND bash ${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_
 set(O3DE_PY_SUBDIRS "Code;Gems;scripts;Tools")
 foreach(engine_subfolder ${O3DE_PY_SUBDIRS})
     file(GLOB_RECURSE pyfiles "${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/${engine_subfolder}/*.py")
-    foreach(pyfile in ${pyfiles})
+    foreach(pyfile ${pyfiles})
         execute_process (COMMAND bash ${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/python/python.sh -m py_compile ${pyfile})
     endforeach()
 endforeach()
