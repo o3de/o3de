@@ -168,12 +168,12 @@ namespace AZ::RHI
     //!  1) Derive transition barriers by walking the scope attachment chain on each frame attachment.
     //!  2) Derive queue fence values by walking the queue-centric scope graph.
     class FrameGraphCompiler
-        : public DeviceObject
+        : public Object
     {
     public:
         AZ_RTTI(FrameGraphCompiler, "{A126F362-C163-432E-94DE-61AA4DFDF102}", Object);
 
-        ResultCode Init(Device& device);
+        ResultCode Init();
 
         void Shutdown() override final;
 
@@ -190,7 +190,7 @@ namespace AZ::RHI
         // Platform API
 
         /// Called when the compiler is initializing.
-        virtual ResultCode InitInternal(Device& device) = 0;
+        virtual ResultCode InitInternal() = 0;
 
         /// Called when the compiler is shutting down.
         virtual void ShutdownInternal() = 0;

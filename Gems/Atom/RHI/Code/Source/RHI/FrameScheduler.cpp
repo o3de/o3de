@@ -44,7 +44,7 @@ namespace AZ::RHI
         m_frameGraphAttachmentDatabase = &m_frameGraph->GetAttachmentDatabase();
 
         m_frameGraphCompiler = Factory::Get().CreateFrameGraphCompiler();
-        resultCode = m_frameGraphCompiler->Init(device);
+        resultCode = m_frameGraphCompiler->Init();
 
         if (resultCode != ResultCode::Success)
         {

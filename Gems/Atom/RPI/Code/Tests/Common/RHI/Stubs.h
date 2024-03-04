@@ -328,7 +328,7 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal() override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::MessageOutcome CompileInternal(const AZ::RHI::FrameGraphCompileRequest&) override { return AZ::Success(); }
             void ShutdownInternal() override {}
         };

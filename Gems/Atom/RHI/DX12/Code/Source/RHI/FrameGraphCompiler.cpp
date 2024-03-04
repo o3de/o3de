@@ -192,7 +192,7 @@ namespace AZ
             return aznew FrameGraphCompiler();
         }
 
-        RHI::ResultCode FrameGraphCompiler::InitInternal(RHI::Device&)
+        RHI::ResultCode FrameGraphCompiler::InitInternal()
         {
             return RHI::ResultCode::Success;
         }
@@ -705,14 +705,13 @@ namespace AZ
 
         void FrameGraphCompiler::CompileAsyncQueueFences(const RHI::FrameGraph& frameGraph)
         {
-            Device& device = static_cast<Device&>(GetDevice());
-
             AZ_PROFILE_FUNCTION(RHI);
-            CommandQueueContext& context = device.GetCommandQueueContext();
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())
             {
                 Scope* scope = static_cast<Scope*>(scopeBase);
+                Device& device = static_cast<Device&>(scope->GetDevice());
+                CommandQueueContext& context = device.GetCommandQueueContext();
 
                 bool hasCrossQueueConsumer = false;
                 for (uint32_t hardwareQueueClassIdx = 0; hardwareQueueClassIdx < RHI::HardwareQueueClassCount; ++hardwareQueueClassIdx)
