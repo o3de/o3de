@@ -121,7 +121,7 @@ namespace AZ
                 const RHI::ImageScopeAttachmentDescriptor& bindingDescriptor = scopeAttachment->GetDescriptor();
                 const RHI::ImageFrameAttachment& imageFrameAttachment = scopeAttachment->GetFrameAttachment();
                 const RHI::ImageDescriptor& imageDescriptor = imageFrameAttachment.GetImageDescriptor();
-                const ImageView* attachmentImageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                const ImageView* attachmentImageView = static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
                 const RHI::Format imageViewFormat = attachmentImageView->GetFormat();
                 auto scopeAttachmentId = scopeAttachment->GetDescriptor().m_attachmentId;
                 AZ_Assert(imageViewFormat != RHI::Format::Unknown, "Invalid image view format.");
@@ -146,7 +146,7 @@ namespace AZ
                         attachmentBinding.m_initialLayout = GetInitialLayout(scope, *scopeAttachment);
                         attachmentBinding.m_finalLayout = finalLayout;
                         attachmentBinding.m_multisampleState = imageDescriptor.m_multisampleState;
-                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get()));
+                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get()));
                         m_clearValues.push_back(bindingDescriptor.m_loadStoreAction.m_clearValue);
                     }
                     else
@@ -188,7 +188,7 @@ namespace AZ
                         attachmentBinding.m_initialLayout = GetInitialLayout(scope, *scopeAttachment);
                         attachmentBinding.m_finalLayout = finalLayout;
                         attachmentBinding.m_multisampleState = imageDescriptor.m_multisampleState;
-                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get()));
+                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get()));
                         m_clearValues.push_back(bindingDescriptor.m_loadStoreAction.m_clearValue);
                     }
                     else
@@ -223,7 +223,7 @@ namespace AZ
                         attachmentBinding.m_finalLayout = finalLayout;
                         attachmentBinding.m_multisampleState = imageDescriptor.m_multisampleState;
 
-                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get()));
+                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get()));
                         m_clearValues.push_back(bindingDescriptor.m_loadStoreAction.m_clearValue);
                     }
                     else
@@ -271,7 +271,7 @@ namespace AZ
                         attachmentBinding.m_initialLayout = GetInitialLayout(scope, *scopeAttachment);
                         attachmentBinding.m_finalLayout = finalLayout;
                         attachmentBinding.m_multisampleState = imageDescriptor.m_multisampleState;
-                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get()));
+                        m_framebufferDesc.m_attachmentImageViews.push_back(static_cast<const ImageView*>(scopeAttachment->GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get()));
                     }
                     else
                     {
@@ -300,7 +300,7 @@ namespace AZ
             for (size_t index = 0; index < scope.GetBufferAttachments().size(); ++index)
             {
                 const RHI::BufferScopeAttachment* scopeAttachment = scope.GetBufferAttachments()[index];
-                const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment->GetBufferView()->GetDeviceBufferView(scope.GetDeviceIndex()).get());
                 AddResourceDependency(subpassIndex, scope, bufferView);
             }
         }
@@ -380,7 +380,7 @@ namespace AZ
             // Calculate the initial layout of an image attachment from a list of barriers.
             // The initial layout is the old layout of the first barrier of the image (it's the layout
             // that the image will be before starting the renderpass).
-            const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+            const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
             auto& barriers = scope.m_subpassBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Prologue)];
 
             auto findIt = AZStd::find_if(barriers.begin(), barriers.end(), [imageView](const Scope::Barrier& barrier)
@@ -398,7 +398,7 @@ namespace AZ
             // Calculate the final layout of an image attachment from a list of barriers.
             // The final layout is the new layout of the last barrier of the image (it's the layout
             // that the image will transition before ending the renderpass).
-            const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+            const ImageView* imageView = static_cast<const ImageView*>(attachment.GetImageView()->GetDeviceImageView(scope.GetDeviceIndex()).get());
             auto& barriers = scope.m_subpassBarriers[static_cast<uint32_t>(Scope::BarrierSlot::Epilogue)];
 
             auto findIt = AZStd::find_if(barriers.rbegin(), barriers.rend(), [imageView](const Scope::Barrier& barrier)
