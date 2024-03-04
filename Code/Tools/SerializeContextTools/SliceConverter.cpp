@@ -654,7 +654,7 @@ namespace AZ
             }
 
             // Instantiate a new instance of the nested slice
-            AZ::SliceComponent::InstantiateResult instantiationResult =
+            const AZ::SliceComponent::InstantiateResult instantiationResult =
                 dependentSlice->Instantiate(serializeContext, NeedAssetProcessor() ? nullptr : &m_relativeToAbsoluteSlicePaths);
             if (instantiationResult != AZ::SliceComponent::InstantiateResult::Success)
             {

@@ -940,6 +940,7 @@ namespace AZ
 
         /**
         * Instantiate entities for this slice, otherwise only the data are stored.
+        * \param serializeContext and relativeToAbsoluteSlicePaths are used for a specific case when asset processor is not available
         */
         InstantiateResult Instantiate(
             AZ::SerializeContext* serializeContext = nullptr,
@@ -1129,6 +1130,7 @@ namespace AZ
             return replaced;
         }
 
+        // Deserialize a slice without using asset processor and read root entity from it
         AZ::Entity* LoadRootEntityFromSlicePath(const char* filePath, SerializeContext* context);
     } // namespace EntityUtils
 
