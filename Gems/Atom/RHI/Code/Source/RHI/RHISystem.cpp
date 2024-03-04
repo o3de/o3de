@@ -100,7 +100,7 @@ namespace AZ::RHI
         }
 
         frameSchedulerDescriptor.m_platformLimitsDescriptor = platformLimitsDescriptor;
-        m_frameScheduler.Init(*m_devices[MultiDevice::DefaultDeviceIndex], frameSchedulerDescriptor);
+        m_frameScheduler.Init(MultiDevice::AllDevices, frameSchedulerDescriptor);
 
         RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnRHISystemInitialized);
     }
