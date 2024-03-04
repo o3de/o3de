@@ -35,34 +35,16 @@ namespace AZ::RHI
 
     ResultCode FrameGraphExecuter::Init(const FrameGraphExecuterDescriptor& descriptor)
     {
-        if (Validation::IsEnabled())
-        {
-            if (IsInitialized())
-            {
-                AZ_Error("FrameGraphExecuter", false, "FrameGraphExecuter is already initialized!");
-                return RHI::ResultCode::InvalidOperation;
-            }
-        }
-
         m_descriptor = descriptor;
         const RHI::ResultCode resultCode = InitInternal(descriptor);
-
-        if (resultCode == RHI::ResultCode::Success)
-        {
-            DeviceObject::Init(*descriptor.m_device);
-        }
 
         return resultCode;
     }
 
     void FrameGraphExecuter::Shutdown()
     {
-        if (IsInitialized())
-        {
-            AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
-            ShutdownInternal();
-            DeviceObject::Shutdown();
-        }
+        AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
+        ShutdownInternal();
     }
 
     void FrameGraphExecuter::Begin(const FrameGraph& frameGraph)
