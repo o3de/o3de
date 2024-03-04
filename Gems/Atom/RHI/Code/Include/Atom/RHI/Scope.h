@@ -11,7 +11,7 @@
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI/SingleDeviceResourcePool.h>
-#include <Atom/RHI/SingleDeviceQueryPool.h>
+#include <Atom/RHI/MultiDeviceQueryPool.h>
 #include <Atom/RHI/SingleDeviceFence.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
@@ -28,7 +28,6 @@ namespace AZ::RHI
     class ResourcePoolDatabase;
     class FrameGraph;
     class Device;
-    class SingleDeviceQueryPool;
 
     using GraphGroupId = Handle<uint32_t>;
 
@@ -163,7 +162,7 @@ namespace AZ::RHI
 
     protected:
         //! Called when the scope will use a query pool during it's execution. Some platforms need this information.
-        virtual void AddQueryPoolUse(Ptr<SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access);
+        virtual void AddQueryPoolUse(Ptr<MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access);
 
     private:
         //////////////////////////////////////////////////////////////////////////
@@ -256,6 +255,6 @@ namespace AZ::RHI
         AZStd::vector<Ptr<SingleDeviceFence>> m_fencesToWaitFor;
 
         /// The set query pools.
-        AZStd::vector<Ptr<SingleDeviceQueryPool>>                m_queryPools;
+        AZStd::vector<Ptr<MultiDeviceQueryPool>>                m_queryPools;
     };
 }

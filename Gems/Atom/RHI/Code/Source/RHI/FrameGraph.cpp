@@ -12,7 +12,7 @@
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/SingleDeviceImagePoolBase.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
-#include <Atom/RHI/SingleDeviceQueryPool.h>
+#include <Atom/RHI/MultiDeviceQueryPool.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/MultiDeviceSwapChain.h>
@@ -391,7 +391,7 @@ namespace AZ::RHI
         return UseAttachment(descriptor, access, ScopeAttachmentUsage::Copy);
     }
 
-    ResultCode FrameGraph::UseQueryPool(Ptr<SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access)
+    ResultCode FrameGraph::UseQueryPool(Ptr<MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access)
     {
         // We only insert an edge into the graph if the type of attachment is Local (i.e. is going to be accessed by other scopes in the current frame)
         if (type == QueryPoolScopeAttachmentType::Local)

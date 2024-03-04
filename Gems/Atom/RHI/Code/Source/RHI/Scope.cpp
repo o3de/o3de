@@ -130,7 +130,7 @@ namespace AZ::RHI
         resourcePoolDatabase.ForEachPoolResolver<decltype(queuePoolResolverFunction)>(queuePoolResolverFunction);
     }
 
-    void Scope::AddQueryPoolUse(Ptr<SingleDeviceQueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
+    void Scope::AddQueryPoolUse(Ptr<MultiDeviceQueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
     {
         m_queryPools.push_back(queryPool);
     }

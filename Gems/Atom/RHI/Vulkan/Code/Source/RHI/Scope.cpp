@@ -199,7 +199,7 @@ namespace AZ
                     continue;
                 }
 
-                queryPoolAttachment.m_pool->ResetQueries(commandList, queryPoolAttachment.m_interval);
+                AZStd::static_pointer_cast<QueryPool>(queryPoolAttachment.m_pool->GetDeviceQueryPool(GetDeviceIndex()))->ResetQueries(commandList, queryPoolAttachment.m_interval);
             }
         }
 
@@ -359,9 +359,9 @@ namespace AZ
             RHI::FrameEventBus::Handler::BusConnect(&deviceBase);
         }
 
-        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
+        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
-            m_queryPoolAttachments.push_back({ AZStd::static_pointer_cast<QueryPool>(queryPool), interval, access });
+            m_queryPoolAttachments.push_back({ queryPool, interval, access });
         }
 
         bool Scope::CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const

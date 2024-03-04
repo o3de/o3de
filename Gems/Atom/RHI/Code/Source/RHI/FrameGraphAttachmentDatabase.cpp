@@ -22,7 +22,7 @@ namespace AZ::RHI
         return seed;
     }
 
-    ScopeId FrameGraphAttachmentDatabase::EmplaceResourcePoolUse(SingleDeviceResourcePool& pool, ScopeId scopeId)
+    ScopeId FrameGraphAttachmentDatabase::EmplaceResourcePoolUse(MultiDeviceResourcePool& pool, ScopeId scopeId)
     {
         ScopeId lastScope;
         auto found = m_resourcePoolLastScopeUse.find(&pool);        

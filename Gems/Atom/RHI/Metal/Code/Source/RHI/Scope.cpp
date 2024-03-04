@@ -327,7 +327,7 @@ namespace AZ
                 //Attach occlusion testing related visibility buffer
                 if(queryPoolAttachment.m_pool->GetDescriptor().m_type == RHI::QueryType::Occlusion)
                 {
-                    commandList.AttachVisibilityBuffer(queryPoolAttachment.m_pool->GetVisibilityBuffer());
+                    commandList.AttachVisibilityBuffer(AZStd::static_pointer_cast<QueryPool>(queryPoolAttachment.m_pool->GetDeviceQueryPool(GetDeviceIndex()))->GetVisibilityBuffer());
                 }
             }
             
@@ -437,9 +437,9 @@ namespace AZ
             m_resourceFences[static_cast<uint32_t>(fenceAction)].push_back(fence);
         }
     
-        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
+        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
-            m_queryPoolAttachments.push_back({ AZStd::static_pointer_cast<QueryPool>(queryPool), interval, access });
+            m_queryPoolAttachments.push_back({ queryPool, interval, access });
         }
     }
 }

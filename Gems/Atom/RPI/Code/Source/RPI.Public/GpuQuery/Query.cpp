@@ -75,7 +75,7 @@ namespace AZ
             }
 
             // Tell the FrameGraph which RHI QueryPool, and which RHI Queries need to be used.
-            [[maybe_unused]] RHI::ResultCode resultCode = frameGraph.UseQueryPool(m_queryPool->m_rhiQueryPool->GetDeviceQueryPool(RHI::MultiDevice::DefaultDeviceIndex), rhiQueryIndices.value(), m_attachmentType, m_attachmentAccess);
+            [[maybe_unused]] RHI::ResultCode resultCode = frameGraph.UseQueryPool(m_queryPool->m_rhiQueryPool, rhiQueryIndices.value(), m_attachmentType, m_attachmentAccess);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to add the queries to the scope builder");
 
             // Invalidate the ScopeId.
