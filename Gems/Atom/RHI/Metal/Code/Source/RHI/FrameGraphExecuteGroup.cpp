@@ -40,7 +40,7 @@ namespace AZ
             fencesToSignal.reserve(scope.GetFencesToSignal().size());
             for (const RHI::Ptr<RHI::SingleDeviceFence>& fence : scope.GetFencesToSignal())
             {
-                fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope->GetDeviceIndex())).Get());
             }
             
             InitRequest request;

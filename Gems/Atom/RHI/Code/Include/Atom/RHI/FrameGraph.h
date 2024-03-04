@@ -107,8 +107,8 @@ namespace AZ::RHI
         ResultCode UseQueryPool(Ptr<MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
         void ExecuteAfter(const ScopeId& scopeId);
         void ExecuteBefore(const ScopeId& scopeId);
-        void SignalFence(SingleDeviceFence& fence);
-        void WaitFence(SingleDeviceFence& fence);
+        void SignalFence(MultiDeviceFence& fence);
+        void WaitFence(MultiDeviceFence& fence);
         void SetEstimatedItemCount(uint32_t itemCount);
         void SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass);
 
