@@ -67,6 +67,7 @@ namespace AZ
             }
 
             InitMergedRequest request;
+            request.m_deviceIndex = device.GetDeviceIndex();
             request.m_scopeEntries = scopeEntries.data();
             request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
             Base::Init(request);

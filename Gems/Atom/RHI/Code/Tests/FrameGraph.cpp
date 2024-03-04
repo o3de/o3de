@@ -11,7 +11,7 @@ namespace UnitTest
 {
     using namespace AZ;
 
-    RHI::ResultCode FrameGraphCompiler::InitInternal(RHI::Device&)
+    RHI::ResultCode FrameGraphCompiler::InitInternal()
     {
         return RHI::ResultCode::Success;
     }
