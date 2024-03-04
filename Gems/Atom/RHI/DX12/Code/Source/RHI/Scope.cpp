@@ -166,13 +166,13 @@ namespace AZ
     
         bool Scope::IsResourceDiscarded(const RHI::ImageScopeAttachment& scopeAttachment) const
         {
-            const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+            const ImageView* imageView = static_cast<const ImageView*>(scopeAttachment.GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
             return IsInDiscardResourceRequests(imageView->GetMemory());
         }
 
         bool Scope::IsResourceDiscarded(const RHI::BufferScopeAttachment& scopeAttachment) const
         {
-            const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment.GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get());
+            const BufferView* bufferView = static_cast<const BufferView*>(scopeAttachment.GetBufferView()->GetDeviceBufferView(GetDeviceIndex()).get());
             return IsInDiscardResourceRequests(bufferView->GetMemory());
         }
 
@@ -411,8 +411,8 @@ namespace AZ
                     {
                         if (imageAttachment->GetDescriptor().m_attachmentId == resolveAttachment->GetDescriptor().m_resolveAttachmentId)
                         {
-                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
-                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
+                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
                             commandList.GetCommandList()->ResolveSubresource(
                                 dstImageView->GetMemory(),
                                 0, 
