@@ -404,7 +404,7 @@ namespace AZ
             ResourceTransitionLoggerNull logger(bufferFrameAttachment.GetId());
 #endif
 
-            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
+            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(rootScope->GetDeviceIndex()));
             RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
 
             if (scopeAttachment == nullptr)
@@ -477,7 +477,6 @@ namespace AZ
             ResourceTransitionLoggerNull logger(imageFrameAttachment.GetId());
 #endif
 
-            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
 
             if (scopeAttachment == nullptr)
@@ -485,6 +484,9 @@ namespace AZ
                 AZ_WarningOnce("RHI", false, "Imported ImageFrameAttachment isn't used in any Scope");
                 return;
             }
+
+            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
+            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(firstScope.GetDeviceIndex()));
 
             const BarrierOp::CommandListState* barrierState = nullptr;
             if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::Depth))
@@ -496,7 +498,6 @@ namespace AZ
             D3D12_RESOURCE_TRANSITION_BARRIER transition = {0};
             transition.pResource = image.GetMemoryView().GetMemory();
 
-            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
             //Apply appropriate pre-discard transition
             if (firstScope.IsResourceDiscarded(*scopeAttachment))
             {
