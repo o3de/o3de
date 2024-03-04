@@ -1259,7 +1259,12 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
         {
             // with slices it is possible for users to get themselves into situations where a child no
             // longer exists, we should report an error in this case rather than asserting
+#if defined(CARBONATED)  // Carbonated patch : porting 02_27, to match LY Log
+            AZ_Error("UI", false,"Child element of Parent %s with Entity ID %llu no longer exists. Data will be lost.",
+                parent ? parent->GetName().c_str() : "(No Parent)", child);
+#else
             AZ_Error("UI", false, "Child element with Entity ID %llu no longer exists. Data will be lost.", child);
+#endif // CARBONATED
             // This case could happen if a slice asset has been deleted. We should try to continue and load the
             // canvas with errors.
             missingChildren.push_back(child);
@@ -1272,7 +1277,12 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
             // with slices it is possible for users to get themselves into situations where a child no
             // longer has an element component. In this case report an error and fail to load the data but do not
             // crash.
+#if defined(CARBONATED) // Carbonated patch : porting 02_27, to match LY Log
+            AZ_Error("UI", false, "Child element of Parent %s with Entity ID %llu no longer has a UiElementComponent. Data cannot be loaded.",
+                parent ? parent->GetName().c_str() : "(No Parent)", child);
+#else
             AZ_Error("UI", false, "Child element with Entity ID %llu no longer has a UiElementComponent. Data cannot be loaded.", child);
+#endif // CARBONATED
             return false;
         }
 
