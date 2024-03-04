@@ -205,7 +205,7 @@ namespace AZ::RHI
         }
             
         //! Requests that the provided fence be signaled after the scope has completed.
-        void SignalFence(SingleDeviceFence& fence)
+        void SignalFence(MultiDeviceFence& fence)
         {
             m_frameGraph.SignalFence(fence);
         }

@@ -318,7 +318,7 @@ namespace AZ
             }
 
             frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_readbackItems.size()));
-            frameGraph.SignalFence(*m_fence->GetDeviceFence(RHI::MultiDevice::DefaultDeviceIndex));
+            frameGraph.SignalFence(*m_fence);
 
             // CPU has already consumed the GPU buffer. We can clear it now.
             // We don't do this in the Async callback as the callback can get signaled by the GPU at anytime.
@@ -338,29 +338,6 @@ namespace AZ
             }
             // Loop the triple buffer index and cache the current index to the callback.
             m_readbackBufferCurrentIndex = (m_readbackBufferCurrentIndex + 1) % RHI::Limits::Device::FrameCountMax;
-            
-            uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
-            m_fence->WaitOnCpuAsync([this, readbackBufferCurrentIndex]()
-                {
-                    if (m_state == ReadbackState::Reading)
-                    {
-                        if (CopyBufferData(readbackBufferCurrentIndex))
-                        {
-                            m_state = ReadbackState::Success;
-                        }
-                        else
-                        {
-                            m_state = ReadbackState::Failed;
-                        }
-                    }
-                    if (m_callback)
-                    {
-                        m_callback(GetReadbackResult());
-                    }
-
-                    Reset();
-                }
-            );
         }
 
         void AttachmentReadback::CopyCompile(const RHI::FrameGraphCompileContext& context)
@@ -454,6 +431,29 @@ namespace AZ
 
         void AttachmentReadback::CopyExecute(const RHI::FrameGraphExecuteContext& context)
         {
+            uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
+            m_fence->GetDeviceFence(context.GetDeviceIndex())->WaitOnCpuAsync([this, readbackBufferCurrentIndex]()
+                {
+                    if (m_state == ReadbackState::Reading)
+                    {
+                        if (CopyBufferData(readbackBufferCurrentIndex))
+                        {
+                            m_state = ReadbackState::Success;
+                        }
+                        else
+                        {
+                            m_state = ReadbackState::Failed;
+                        }
+                    }
+                    if (m_callback)
+                    {
+                        m_callback(GetReadbackResult());
+                    }
+
+                    Reset();
+                }
+                );
+
             for (const auto& readbackItem : m_readbackItems)
             {
                 if (readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex])
