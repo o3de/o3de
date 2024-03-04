@@ -18,11 +18,6 @@ namespace AZ
 {
     namespace Metal
     {
-        Device& FrameGraphExecuter::GetDevice() const
-        {
-            return static_cast<Device&>(Base::GetDevice());
-        }
-        
         RHI::Ptr<FrameGraphExecuter> FrameGraphExecuter::Create()
         {
             return aznew FrameGraphExecuter();
@@ -39,7 +34,6 @@ namespace AZ
         
         RHI::ResultCode FrameGraphExecuter::InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor)
         {
-            m_commandQueueContext = &static_cast<Device*>(descriptor.m_device)->GetCommandQueueContext();
 
             const RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiPlatformLimitsDescriptor = descriptor.m_platformLimitsDescriptor;
             if (RHI::ConstPtr<PlatformLimitsDescriptor> metalPlatformLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiPlatformLimitsDescriptor))
@@ -56,8 +50,6 @@ namespace AZ
         
         void FrameGraphExecuter::BeginInternal(const RHI::FrameGraph& frameGraph)
         {
-            Device& device = GetDevice();
-
 #if defined(AZ_FORCE_CPU_GPU_INSYNC)
             // Forces all scopes to issue a dedicated merged scope group with one command list.
             // This will ensure that the Commit is done on only one scope and if an error happens
@@ -67,7 +59,7 @@ namespace AZ
             {
                 mergedScopes.push_back(static_cast<const Scope*>(scopeBase));
                 FrameGraphExecuteGroupMerged* scopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
-                scopeContextGroup->Init(device, AZStd::move(mergedScopes), GetGroupCount());
+                scopeContextGroup->Init(static_cast<Device&>(scopeBase->GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
             }
 #else
      
@@ -129,7 +121,7 @@ namespace AZ
                     mergedSwapchainCount = 0;
                     mergedHardwareQueueClass = scope.GetHardwareQueueClass();
                     FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
-                    multiScopeContextGroup->Init(device, AZStd::move(mergedScopes), GetGroupCount());
+                    multiScopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
                 }
                 
                 // Attempt to merge the current scope.
@@ -147,7 +139,7 @@ namespace AZ
                     const AZ::u32 commandListCount = AZStd::max(RHI::DivideByMultiple(totalScopeCost, CommandListCostThreshold), 1u);
 
                     FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
-                    scopeContextGroup->Init(device, scope, commandListCount, GetJobPolicy(), GetGroupCount());
+                    scopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), scope, commandListCount, GetJobPolicy(), GetGroupCount());
                 }
 
                 scopePrev = &scope;
@@ -158,7 +150,7 @@ namespace AZ
                 mergedGroupCost = 0;
                 mergedSwapchainCount = 0;
                 FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
-                multiScopeContextGroup->Init(device, AZStd::move(mergedScopes), GetGroupCount());
+                multiScopeContextGroup->Init(static_cast<Device&>(mergedScopes.front()->GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
             }
 #endif
         }
@@ -166,7 +158,7 @@ namespace AZ
         void FrameGraphExecuter::ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& groupBase)
         {
             FrameGraphExecuteGroupBase& group = static_cast<FrameGraphExecuteGroupBase&>(groupBase);
-            m_commandQueueContext->ExecuteWork(group.GetHardwareQueueClass(), group.AcquireWorkRequest());
+            &static_cast<Device*>(groupBase->GetDevice())->GetCommandQueueContext()->ExecuteWork(group.GetHardwareQueueClass(), group.AcquireWorkRequest());
         }
     }
 }
