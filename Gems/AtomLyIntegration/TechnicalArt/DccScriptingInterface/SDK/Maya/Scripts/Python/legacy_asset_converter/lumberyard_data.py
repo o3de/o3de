@@ -120,7 +120,9 @@ def get_material_info(target_directory, filename):
                     map_name = texture.get('Map')
                     file_path = texture.get('File')
                     material_textures[map_name.lower()] = Path(file_path)
-                    if texture.findall('TexMod'):
+                    # As Standard PBR shader uses same UV set for all textures,
+                    # we only want to carry over changes made to the main texture
+                    if map_name.lower() == 'diffuse' and texture.findall('TexMod'):
                         listing = texture.findall('TexMod')
                         for child in listing:
                             texture_modifications[material_attributes['Name']] = child.attrib

@@ -85,7 +85,6 @@ namespace MiniAudio
     {
         if (m_sound)
         {
-            ma_sound_seek_to_pcm_frame(m_sound.get(), 0);
             ma_sound_start(m_sound.get());
         }
     }
@@ -95,12 +94,21 @@ namespace MiniAudio
         if (m_sound)
         {
             ma_sound_stop(m_sound.get());
+            ma_sound_seek_to_pcm_frame(m_sound.get(), 0);
+        }
+    }
+
+    void MiniAudioPlaybackComponentController::Pause()
+    {
+        if (m_sound)
+        {
+            ma_sound_stop(m_sound.get());
         }
     }
 
     float MiniAudioPlaybackComponentController::GetVolumePercentage() const
     {
-        return ma_sound_get_volume(m_sound.get());
+        return ma_sound_get_volume(m_sound.get()) * 100.f;
     }
 
     void MiniAudioPlaybackComponentController::SetVolumePercentage(float volume)

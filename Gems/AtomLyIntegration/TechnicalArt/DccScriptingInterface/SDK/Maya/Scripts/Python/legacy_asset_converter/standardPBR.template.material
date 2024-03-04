@@ -64,12 +64,12 @@
             "subsurfaceScatterFactor": 1
         },
         "opacity": {
-            "factor": 1.0,
-            "cutoutAlpha": false,
-            "cutoutThreshold": 0.5,
-            "useBaseColorTextureAlpha": false,
-            "useTexture": false,
-            "textureMap": ""
+            "mode": "Opaque",
+            "alphaSource": "Packed",
+            "textureMap": "",
+            "textureMapUv": "Tiled",
+            "factor": 0.5,
+            "alphaAffectsSpecular": 0.0
         },
         "uv": {
         	"center": [

@@ -27,7 +27,7 @@ namespace LmbrCentral
 
         static void Reflect(AZ::ReflectContext* context);
 
-        void ChangeSplineType(AZ::u64 splineType);
+        void ChangeSplineType(SplineType splineType);
 
         /// Override callbacks to be used when spline changes/is modified.
         void SetCallbacks(
@@ -41,7 +41,7 @@ namespace LmbrCentral
     private:
         AZ::u32 OnChangeSplineType();
 
-        AZ::u64 m_splineType = AZ::LinearSpline::RTTI_Type().GetHash(); ///< The currently set spline type (default to Linear).
+        SplineType m_splineType = SplineType::LINEAR; ///< The currently set spline type (default to Linear).
 
         AZ::IndexFunction m_onAddVertex = nullptr;
         AZ::IndexFunction m_onRemoveVertex = nullptr;
@@ -69,7 +69,7 @@ namespace LmbrCentral
 
         // SplineComponentRequestBus
         AZ::SplinePtr GetSpline() override;
-        void ChangeSplineType(AZ::u64 splineType) override;
+        void ChangeSplineType(SplineType splineType) override;
         void SetClosed(bool closed) override;
 
         // SplineComponentRequestBus/VertexContainerInterface
