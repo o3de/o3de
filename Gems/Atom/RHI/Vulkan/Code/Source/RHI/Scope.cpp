@@ -331,7 +331,7 @@ namespace AZ
             m_signalFences.reserve(fences.size());
             for (const auto& fence : fences)
             {
-                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
+                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence->GetDeviceFence(GetDeviceIndex())));
             }
 
             RHI::Device& deviceBase = GetDevice();
