@@ -8,7 +8,6 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
-#include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
@@ -20,7 +19,6 @@ namespace AZ::RHI
     //! Fill this descriptor when initializing a FrameScheduler instance.
     struct FrameGraphExecuterDescriptor
     {
-        Device* m_device = nullptr;
         ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
     };
 
@@ -56,7 +54,7 @@ namespace AZ::RHI
     //! AddGroup method to partition the FrameGraph into execution groups. Each group and context will have platform
     //! specific overrides.
     class FrameGraphExecuter
-        : public DeviceObject
+        : public Object
     {
     public:
         virtual ~FrameGraphExecuter() = default;
@@ -67,8 +65,6 @@ namespace AZ::RHI
         //! Initializes the frame graph executer. Instances are created in an uninitialized state. Attempting
         //! to use an uninitialized instance will result in an error (when validation is enabled). If the call
         //! fails, an error code is returned and the instance will remain in an uninitialized state.
-        //!
-        //! @param device The device associated with the executer instance.
         ResultCode Init(const FrameGraphExecuterDescriptor& descriptor);
 
         //! Shuts down the frame graph executer, releasing all internal allocations. The user

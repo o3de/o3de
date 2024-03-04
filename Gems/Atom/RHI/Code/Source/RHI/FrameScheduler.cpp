@@ -54,7 +54,6 @@ namespace AZ::RHI
 
         m_frameGraphExecuter = Factory::Get().CreateFrameGraphExecuter();
         FrameGraphExecuterDescriptor executerDesc;
-        executerDesc.m_device = &device;
         executerDesc.m_platformLimitsDescriptor = descriptor.m_platformLimitsDescriptor;
         resultCode = m_frameGraphExecuter->Init(executerDesc);
 
