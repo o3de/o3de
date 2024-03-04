@@ -137,7 +137,7 @@ namespace AZ::RHI
         bool IsInitialized() const;
 
         /// Initializes the frame scheduler and connects it to the buses.
-        ResultCode Init(Device& device, const FrameSchedulerDescriptor& descriptor);
+        ResultCode Init(MultiDevice::DeviceMask deviceMask, const FrameSchedulerDescriptor& descriptor);
 
         /// Shuts down the frame scheduler.
         void Shutdown();
@@ -210,7 +210,7 @@ namespace AZ::RHI
 
         bool m_isProcessing = false;
 
-        Device* m_device = nullptr;
+        MultiDevice::DeviceMask m_deviceMask = static_cast<MultiDevice::DeviceMask>(0);
 
         AZStd::unique_ptr<FrameGraph> m_frameGraph;
         FrameGraphAttachmentDatabase* m_frameGraphAttachmentDatabase = nullptr;
