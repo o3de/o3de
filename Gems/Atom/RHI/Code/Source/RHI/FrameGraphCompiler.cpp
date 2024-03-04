@@ -23,18 +23,9 @@
 
 namespace AZ::RHI
 {
-    ResultCode FrameGraphCompiler::Init(Device& device)
+    ResultCode FrameGraphCompiler::Init()
     {
-        if (Validation::IsEnabled())
-        {
-            if (IsInitialized())
-            {
-                AZ_Error("FrameGraphCompiler", false, "FrameGraphCompiler already initialized. Shutdown must be called first.");
-                return ResultCode::InvalidArgument;
-            }
-        }
-
-        const ResultCode resultCode = InitInternal(device);
+        const ResultCode resultCode = InitInternal();
 
         if (resultCode == ResultCode::Success)
         {
@@ -44,9 +35,6 @@ namespace AZ::RHI
 
             const uint32_t ImageViewCapacity = 128;
             m_imageViewCache.SetCapacity(ImageViewCapacity);
-
-
-            DeviceObject::Init(device);
         }
 
         return resultCode;
@@ -54,16 +42,12 @@ namespace AZ::RHI
 
     void FrameGraphCompiler::Shutdown()
     {
-        if (IsInitialized())
-        {
-            m_imageViewCache.Clear();
-            m_bufferViewCache.Clear();
-            m_imageReverseLookupHash.clear();
-            m_bufferReverseLookupHash.clear();
-               
-            ShutdownInternal();
-            DeviceObject::Shutdown();
-        }
+        m_imageViewCache.Clear();
+        m_bufferViewCache.Clear();
+        m_imageReverseLookupHash.clear();
+        m_bufferReverseLookupHash.clear();
+
+        ShutdownInternal();
     }
 
     MessageOutcome FrameGraphCompiler::ValidateCompileRequest(const FrameGraphCompileRequest& request) const

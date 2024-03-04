@@ -48,6 +48,7 @@ namespace AZ
 
             InitRequest request;
             request.m_scopeId = scope.GetId();
+            request.m_deviceIndex = scope.GetDeviceIndex();
             request.m_submitCount = scope.GetEstimatedItemCount();
             request.m_commandLists = reinterpret_cast<RHI::CommandList* const*>(m_workRequest.m_commandLists.data());
             request.m_commandListCount = commandListCount;
