@@ -342,14 +342,14 @@ namespace AZ
             m_signalFences.reserve(signalFences.size());
             for (const auto& fence : signalFences)
             {
-                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
+                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence->GetDeviceFence(GetDeviceIndex())));
             }
 
             const auto& waitFences = GetFencesToWaitFor();
             m_waitFences.reserve(waitFences.size());
             for (const auto& fence : waitFences)
             {
-                m_waitFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
+                m_waitFences.push_back(AZStd::static_pointer_cast<Fence>(fence->GetDeviceFence(GetDeviceIndex())));
             }
 
             RHI::Device& deviceBase = GetDevice();

@@ -160,7 +160,7 @@ namespace AZ
         void FrameGraphExecuter::ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& groupBase)
         {
             FrameGraphExecuteGroupBase& group = static_cast<FrameGraphExecuteGroupBase&>(groupBase);
-            &static_cast<Device*>(group.GetDevice()->GetCommandQueueContext()->ExecuteWork(group.GetHardwareQueueClass(), group.MakeWorkRequest());
+            static_cast<Device*>(&group.GetDevice())->GetCommandQueueContext().ExecuteWork(group.GetHardwareQueueClass(), group.MakeWorkRequest());
         }
     }
 }

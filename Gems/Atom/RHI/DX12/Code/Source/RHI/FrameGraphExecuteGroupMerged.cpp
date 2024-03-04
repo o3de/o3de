@@ -49,9 +49,9 @@ namespace AZ
                     auto& fencesToSignal = m_workRequest.m_userFencesToSignal;
 
                     fencesToSignal.reserve(fencesToSignal.size() + scope->GetFencesToSignal().size());
-                    for (const RHI::Ptr<RHI::SingleDeviceFence>& fence : scope->GetFencesToSignal())
+                    for (const RHI::Ptr<RHI::MultiDeviceFence>& fence : scope->GetFencesToSignal())
                     {
-                        fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                        fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope->GetDeviceIndex())).Get());
                     }
                 }
 
@@ -59,9 +59,9 @@ namespace AZ
                     auto& fencesToWaitFor = m_workRequest.m_userFencesToWaitFor;
 
                     fencesToWaitFor.reserve(fencesToWaitFor.size() + scope->GetFencesToWaitFor().size());
-                    for (const RHI::Ptr<RHI::SingleDeviceFence>& fence : scope->GetFencesToWaitFor())
+                    for (const RHI::Ptr<RHI::MultiDeviceFence>& fence : scope->GetFencesToWaitFor())
                     {
-                        fencesToWaitFor.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                        fencesToWaitFor.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope->GetDeviceIndex())).Get());
                     }
                 }
             }

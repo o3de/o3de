@@ -64,7 +64,7 @@ namespace AZ
             m_readBackBuffer = resource.Get();
             m_readBackBuffer->SetName(L"Readback");
 
-            SetResolver(AZStd::make_unique<QueryPoolResolver>(device, *this));
+            SetResolver(AZStd::make_unique<QueryPoolResolver>(baseDevice.GetDeviceIndex(), *this));
             return RHI::ResultCode::Success;
         }
 
