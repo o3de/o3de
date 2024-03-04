@@ -31,7 +31,7 @@ namespace AZ
             // RHI::Scope
             void DeactivateInternal() override {}
             void CompileInternal() override {}
-            void AddQueryPoolUse([[maybe_unused]] RHI::Ptr<RHI::SingleDeviceQueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access) override {}
+            void AddQueryPoolUse([[maybe_unused]] RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access) override {}
             //////////////////////////////////////////////////////////////////////////
         };
     }
