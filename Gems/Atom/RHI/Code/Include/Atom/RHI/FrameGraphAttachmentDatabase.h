@@ -136,7 +136,7 @@ namespace AZ::RHI
 
         //! Emplaces a use of a resource pool by a specific scope. Returns the ScopeId of the most recent use of the pool or en empty
         //! ScopeId if this is the first use.
-        ScopeId EmplaceResourcePoolUse(SingleDeviceResourcePool& pool, ScopeId scopeId);
+        ScopeId EmplaceResourcePoolUse(MultiDeviceResourcePool& pool, ScopeId scopeId);
 
     private:
         bool ValidateAttachmentIsUnregistered(const AttachmentId& attachmentId) const;
@@ -162,7 +162,7 @@ namespace AZ::RHI
         AZStd::vector<BufferFrameAttachment*>                   m_bufferAttachments;
         AZStd::vector<BufferFrameAttachment*>                   m_importedBufferAttachments;
         AZStd::vector<BufferFrameAttachment*>                   m_transientBufferAttachments;
-        AZStd::unordered_map<Ptr<SingleDeviceResourcePool>, ScopeId>        m_resourcePoolLastScopeUse;
+        AZStd::unordered_map<Ptr<MultiDeviceResourcePool>, ScopeId>        m_resourcePoolLastScopeUse;
     };
 
     template <typename FrameAttachmentType, typename... Args>

@@ -12,6 +12,7 @@
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/SingleDeviceSwapChain.h>
+#include <Atom/RHI/MultiDeviceQueryPool.h>
 
 #include <Atom/RHI.Reflect/BufferScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
@@ -182,7 +183,7 @@ namespace AZ::RHI
         //! @param type The type of query pool attachment.
         //! @param access How the attachment is accessed by the scope.
         ResultCode UseQueryPool(
-            Ptr<SingleDeviceQueryPool> queryPool,
+            Ptr<MultiDeviceQueryPool> queryPool,
             const RHI::Interval& interval,
             QueryPoolScopeAttachmentType type,
             ScopeAttachmentAccess access)
