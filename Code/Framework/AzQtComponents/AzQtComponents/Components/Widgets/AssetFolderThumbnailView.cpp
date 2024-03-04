@@ -275,20 +275,22 @@ namespace AzQtComponents
         QLineEdit* lineEdit = qobject_cast<QLineEdit*>(widget);
         if (lineEdit)
         {
-            connect(
-                lineEdit,
-                &QLineEdit::editingFinished,
-                this,
-                [this]()
-                {
-                    auto sendingLineEdit = qobject_cast<QLineEdit*>(sender());
-                    if (sendingLineEdit)
-                    {
-                        emit RenameThumbnail(sendingLineEdit->text());
-                    }
-                });
+            connect(lineEdit, &QLineEdit::editingFinished, this, &AssetFolderThumbnailViewDelegate::editingFinished);
         }
         return widget;
+    }
+
+    void AssetFolderThumbnailViewDelegate::editingFinished()
+    {
+        if (auto sendingLineEdit = qobject_cast<QLineEdit*>(sender()); sendingLineEdit)
+        {
+            // debounce this call by disconnecting from the signal immediately.
+            // This is because editingFinished is triggered repeatedly, for example,
+            // when the user presses enter but also when the line edit loses focus.  
+            // If the user presses enter, both happen, causing a double send if we don't debounce like this.
+            QObject::disconnect(sendingLineEdit, &QLineEdit::editingFinished, this, &AssetFolderThumbnailViewDelegate::editingFinished); 
+            emit RenameThumbnail(sendingLineEdit->text());
+        }
     }
 
     void AssetFolderThumbnailViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const

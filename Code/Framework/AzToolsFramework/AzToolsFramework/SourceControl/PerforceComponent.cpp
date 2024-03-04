@@ -1036,8 +1036,16 @@ namespace AzToolsFramework
 
             if (!p4PortSet)
             {
+                // The warnings need to show up repeatedly, as the user might be turning on and off perforce and configuring it.
+                if (!s_perforceConn->CommandApplicationFound())
+                {
+                    AZ_Warning(SCC_WINDOW, false, "Perforce - p4 executable not found on path, will not use Perforce source control!\n");
+                }
+                else
+                {
+                    AZ_Warning(SCC_WINDOW, false, "Perforce - p4 executable found, but P4PORT (server address) is not set, Perforce not available!\n");
+                }
                 // Disable any further connection status testing
-                AZ_WarningOnce(SCC_WINDOW, false, "Perforce - P4PORT (server address) is not set, Perforce not available!\n");
                 m_testTrust = false;
                 m_testConnection = false;
                 m_validConnection = false;
@@ -1138,25 +1146,26 @@ namespace AzToolsFramework
 
         if (s_perforceConn->GetUser().empty() || s_perforceConn->GetClientName().empty())
         {
-            AZ_WarningOnce(SCC_WINDOW, false, "Perforce - Your client or user is empty, Perforce not available!\n");
+            AZ_Warning(SCC_WINDOW, false, "Perforce - Your client or user is empty, Perforce not available!\n");
             return false;
         }
 
         if (s_perforceConn->GetClientName().compare("*unknown*") == 0)
         {
-            AZ_WarningOnce(SCC_WINDOW, false, "Perforce - client spec not found, Perforce not available!\n");
+            AZ_Warning(SCC_WINDOW, false, "Perforce - client spec not found, Perforce not available!\n");
             return false;
         }
 
         if (s_perforceConn->GetClientRoot().empty())
         {
-            AZ_WarningOnce(SCC_WINDOW, false, "Perforce - Your workspace root is empty, Perforce not available!\n");
+            AZ_Warning(SCC_WINDOW, false, "Perforce - Your workspace root is empty, Perforce not available!\n");
             return false;
         }
 
         if (s_perforceConn->GetServerAddress().empty() || s_perforceConn->GetServerUptime().empty())
         {
-            AZ_WarningOnce(SCC_WINDOW, false, "Perforce - Could not get server information, Perforce not available!\n");
+            AZ_Warning(SCC_WINDOW, false, "Perforce - Could not get server information, Perforce not available!\n");
+            return false;
         }
 
         AZ_TracePrintf(SCC_WINDOW, "Perforce - Connected, User: %s | Client: %s\n", s_perforceConn->GetUser().c_str(), s_perforceConn->GetClientName().c_str());

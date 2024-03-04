@@ -147,6 +147,7 @@ namespace AzFramework
             bool EscalateAssetBySearchTerm(AZStd::string_view searchTerm) override;
 
             void ShowAssetProcessor() override;
+            void UpdateSourceControlStatus(bool newStatus) override;
             void ShowInAssetProcessor(const AZStd::string& assetPath) override;
 
             void GetUnresolvedProductReferences(AZ::Data::AssetId assetId, AZ::u32& unresolvedAssetIdReferences, AZ::u32& unresolvedPathReferences) override;
