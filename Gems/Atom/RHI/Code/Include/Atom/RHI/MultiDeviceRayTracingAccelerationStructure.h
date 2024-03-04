@@ -226,6 +226,9 @@ namespace AZ::RHI
         const RHI::Ptr<RHI::MultiDeviceBuffer> GetTlasInstancesBuffer() const;
 
     private:
+        //! Safe-guard access to creation of buffers cache during parallel access
+        mutable AZStd::mutex m_tlasBufferMutex;
+        mutable AZStd::mutex m_tlasInstancesBufferMutex;
         MultiDeviceRayTracingTlasDescriptor m_mdDescriptor;
         mutable RHI::Ptr<RHI::MultiDeviceBuffer> m_tlasBuffer;
         mutable RHI::Ptr<RHI::MultiDeviceBuffer> m_tlasInstancesBuffer;

@@ -257,11 +257,16 @@ namespace AZ::RHI
             MultiDeviceObject::Init(static_cast<MultiDevice::DeviceMask>(0u));
         }
 
+        // Each call to CreateBuffers advances m_currentBufferIndex internally, reset buffers to always receive currently active
+        m_tlasBuffer.reset();
+        m_tlasInstancesBuffer.reset();
+
         return resultCode;
     }
 
     const RHI::Ptr<RHI::MultiDeviceBuffer> MultiDeviceRayTracingTlas::GetTlasBuffer() const
     {
+        AZStd::lock_guard lock(m_tlasBufferMutex);
         if (m_deviceObjects.empty())
         {
             return nullptr;
@@ -295,6 +300,8 @@ namespace AZ::RHI
 
     const RHI::Ptr<RHI::MultiDeviceBuffer> MultiDeviceRayTracingTlas::GetTlasInstancesBuffer() const
     {
+        AZStd::lock_guard lock(m_tlasInstancesBufferMutex);
+
         if (m_deviceObjects.empty())
         {
             return nullptr;
