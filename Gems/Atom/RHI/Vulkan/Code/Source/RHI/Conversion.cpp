@@ -92,7 +92,7 @@ namespace AZ
                 case RHI::ScopeAttachmentUsage::ShadingRate:
                     {
                         const Image& image =
-                            static_cast<const Image&>(*(static_cast<const RHI::MultiDeviceImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
+                            static_cast<const Image&>(*(static_cast<const RHI::MultiDeviceImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
                         mergedStateFlags |=
                             RHI::CheckBitsAll(
                                 image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
@@ -263,7 +263,7 @@ namespace AZ
                 case RHI::ScopeAttachmentUsage::ShadingRate:
                     {
                         const Image& image =
-                            static_cast<const Image&>(*(static_cast<const RHI::MultiDeviceImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
+                            static_cast<const Image&>(*(static_cast<const RHI::MultiDeviceImageView*>(scopeAttachment.GetResourceView()))->GetImage()->GetDeviceImage(scopeAttachment.GetScope().GetDeviceIndex()));
                         accessFlags |=
                             RHI::CheckBitsAll(
                                 image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT))
@@ -394,7 +394,7 @@ namespace AZ
                 }
             }
 
-            const RHI::SingleDeviceImageView* imageView = imageAttachment.GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get();
+            const RHI::SingleDeviceImageView* imageView = imageAttachment.GetImageView()->GetDeviceImageView(imageAttachment.GetScope().GetDeviceIndex()).get();
             auto imageAspects = RHI::FilterBits(imageView->GetImage().GetAspectFlags(), imageView->GetDescriptor().m_aspectFlags);
             switch (usagesAndAccesses.front().m_usage)
             {

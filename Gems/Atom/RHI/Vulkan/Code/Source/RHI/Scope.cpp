@@ -569,8 +569,8 @@ namespace AZ
                     {
                         if (imageAttachment->GetDescriptor().m_attachmentId == resolveAttachment->GetDescriptor().m_resolveAttachmentId)
                         {
-                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
-                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
+                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
                             auto srcImageSubresourceRange = srcImageView->GetVkImageSubresourceRange();
                             auto dstImageSubresourceRange = dstImageView->GetVkImageSubresourceRange();
                             auto& srcImage = static_cast<const Image&>(srcImageView->GetImage());
