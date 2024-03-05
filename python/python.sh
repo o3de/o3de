@@ -17,7 +17,7 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 
-# Locate and make sure cmake is in the patch
+# Locate and make sure cmake is in the path
 if [[ "$OSTYPE" = *"darwin"* ]];
 then
     PAL=Mac

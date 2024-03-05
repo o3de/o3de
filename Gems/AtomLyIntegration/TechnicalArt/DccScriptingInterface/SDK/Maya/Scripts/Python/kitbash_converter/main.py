@@ -1022,14 +1022,14 @@ class AttributeListing(QtWidgets.QWidget):
         if isinstance(value, list):
             converted_list = []
             for item in value:
-                item_value = 0 if item is 0 else float(item)
+                item_value = 0 if item == 0 else float(item)
                 converted_list.append(item)
             return converted_list
         elif isinstance(value, str):
             if value.lower() in ['true', 'false']:
                 return bool(value.capitalize())
             elif value.isnumeric():
-                return 0 if value is 0 else float(value)
+                return 0 if value == 0 else float(value)
             else:
                 pattern = r'\[[^\]]*\]'
                 test_brackets = re.sub(pattern, '', value)

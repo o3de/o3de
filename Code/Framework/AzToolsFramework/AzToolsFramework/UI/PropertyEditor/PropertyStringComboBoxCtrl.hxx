@@ -27,11 +27,12 @@ namespace AzToolsFramework
     class PropertyStringComboBoxCtrl
         : public GenericComboBoxCtrl<AZStd::string>
     {
+        Q_OBJECT
+        using ComboBoxBase = GenericComboBoxCtrl<AZStd::string>;
+
         friend class StringEnumPropertyComboBoxHandler;
         template<typename T>
         friend class PropertyComboBoxHandlerCommon;
-        Q_OBJECT
-        using ComboBoxBase = GenericComboBoxCtrl<AZStd::string>;
 
     public:
         AZ_RTTI(PropertyStringComboBoxCtrl, "{886E5B2C-46F5-4046-B0A3-89C28CB28B38}", ComboBoxBase);

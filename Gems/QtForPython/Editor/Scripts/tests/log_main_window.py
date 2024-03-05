@@ -12,7 +12,7 @@ from PySide2 import QtGui
 from shiboken2 import wrapInstance, getCppPointer
 
 params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
-if(params is not None and params.mainWindowId is not 0):
+if(params is not None and params.mainWindowId != 0):
     mainWidgetWindow = QtWidgets.QWidget.find(params.mainWindowId)
     mainWindow = wrapInstance(int(getCppPointer(mainWidgetWindow)[0]), QtWidgets.QMainWindow)
     mainWindow.menuBar().addMenu("&Hello")

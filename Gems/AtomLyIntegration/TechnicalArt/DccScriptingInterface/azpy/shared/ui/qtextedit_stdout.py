@@ -45,7 +45,7 @@ _TOOL_TAG = 'azpy.shared.ui.pyside2_qtextedit_stdout'
 _TYPE_TAG = 'test'
 
 _MODULENAME = __name__
-if _MODULENAME is '__main__':
+if _MODULENAME == '__main__':
     _MODULENAME = _TOOL_TAG
 
 if _DCCSI_GDEBUG:

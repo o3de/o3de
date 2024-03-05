@@ -23,7 +23,19 @@ endif()
 
 execute_process (COMMAND lsb_release -a)
 
+# Download python before packaging. The python runtimes themselves will not be part of the packaging, but
+# the following script will also run through the scripts and create the necessary egg-link folders
+# which will be installed into the package
 execute_process (COMMAND bash ${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/python/get_python.sh)
+
+# Since snap is immutable, we will pre-compile all the python scripts that is packaged into python byte-codes
+set(O3DE_PY_SUBDIRS "Code;Gems;scripts;Tools")
+foreach(engine_subfolder ${O3DE_PY_SUBDIRS})
+    file(GLOB_RECURSE pyfiles "${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/${engine_subfolder}/*.py")
+    foreach(pyfile ${pyfiles})
+        execute_process (COMMAND bash ${CPACK_TEMPORARY_DIRECTORY}/O3DE/${CPACK_PACKAGE_VERSION}/python/python.sh -m py_compile ${pyfile})
+    endforeach()
+endforeach()
 
 # make sure that all files have the correct permissions
 execute_process (COMMAND chmod -R 755 O3DE

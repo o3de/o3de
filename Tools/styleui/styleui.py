@@ -126,30 +126,28 @@ def make_copy(args):
     ui_content = read_ui_file(args.ui_file_path)
     (inserted_variables, inserted_qss) = insert_styles_into_ui(qss_content, variables_content, ui_content)
     ui_copy_file_path = write_ui_copy(ui_content)
-    print 'copied', args.ui_file_path, 'to', ui_copy_file_path, 'with styles from', args.qss_file_path
+    print(f"copied {args.ui_file_path} to {ui_copy_file_path} with styles from {args.qss_file_path}")
     return (ui_copy_file_path, inserted_variables, inserted_qss)
 
 def read_qss_file(qss_file_path):
     with open(qss_file_path, 'r') as qss_file:
         qss_content = qss_file.read()
-        #print 'qss_content', qss_content
         return qss_content
 
 def read_variables_file(variables_file_path):
     with open(variables_file_path, 'r') as variables_file:
         variables_content = json.load(variables_file)
-        #print 'variables_content', variables_content
         return variables_content
         
 def replace_variables(qss_content, variables_content):
     for name, value in variables_content.get('StylesheetVariables', {}).iteritems():
         qss_content = qss_content.replace('@' + name, '/*@' + name + '*/' + value + '/*@*/')
-    #print 'replace_variables', qss_content
+
     return qss_content
     
 def read_ui_file(ui_file_path):
     ui_content = ET.parse(ui_file_path)
-    #print 'ui_content', ui_content
+
     return ui_content
     
 def insert_styles_into_ui(qss_content, variables_content, ui_content):
@@ -179,13 +177,11 @@ def remove_variables_from_property_value(property_value):
         if end_index != -1:
             removed_variables = property_value[start_index + len(START_VARIABLES_MARKER):end_index]
             property_value = property_value[:start_index] + property_value[end_index + len(END_VARIABLES_MARKER):]
-            #print 'removed', property_value
     return (property_value, removed_variables)
 
 def insert_variables_into_property_value(property_value, variables_content):    
     inserted_variables = json.dumps(variables_content, sort_keys=True, indent=4)
     property_value = property_value + START_VARIABLES_MARKER + inserted_variables + END_VARIABLES_MARKER
-    #print 'inserted', property_value
     return (property_value, inserted_variables)
     
 START_QSS_MARKER = '\n/*** START INSERTED STYLES ***/\n'
@@ -199,23 +195,20 @@ def remove_qss_from_property_value(property_value):
         if end_index != -1:
             removed_qss = property_value[start_index + len(START_QSS_MARKER):end_index]
             property_value = property_value[:start_index] + property_value[end_index + len(END_QSS_MARKER):]
-            #print 'removed', property_value
     return (property_value, removed_qss)
 
 def insert_qss_into_property_value(property_value, qss_content):    
     property_value = property_value + START_QSS_MARKER + qss_content + END_QSS_MARKER
-    #print 'inserted', property_value
     return (property_value, qss_content)
     
 def write_ui_copy(ui_content):
     (ui_copy_file, ui_copy_file_path) = tempfile.mkstemp(suffix='.ui', text=True)
-    #print 'ui_copy_file_path', ui_copy_file_path
+
     ui_content.write(os.fdopen(ui_copy_file, 'w'))
-    #os.close(ui_copy_file) ElementTree.write must be closing... fails if called
     return ui_copy_file_path
 
 def start_monitoring_for_changes(ui_copy_file_path, args, inserted_variables, inserted_qss):
-    print 'monitoring', ui_copy_file_path, 'for changes'
+    print(f'monitoring {ui_copy_file_path} for changes')
     monitor_thread = Thread(target = monitor_for_changes, args=(ui_copy_file_path, args, inserted_variables, inserted_qss))
     monitor_thread.start()
     return monitor_thread
@@ -254,57 +247,56 @@ def remove_styles_from_ui(ui_content):
     return (removed_variables, removed_qss)
     
 def update_ui(ui_content, ui_file_path):
-    print 'updating', ui_file_path, 'with changes'
+    print(f'updating {ui_file_path} with changes')
     try:
         ui_content.write(ui_file_path)
     except Exception as e:
-        print '\n*** WRITE FAILED', e
+        print(f'\n*** WRITE FAILED {e}')
         parts = os.path.splitext(ui_file_path)
         temp_path = parts[0] + '_BACKUP' + parts[1]
-        print '*** saving to', temp_path, 'instead\n'
+        print(f'*** saving to {temp_path} instead\n')
         ui_content.write(temp_path)
     
 def update_variables(removed_variables, variables_file_path):
-    print 'updating', variables_file_path, 'with changes'
+    print(f'updating {variables_file_path} with changes')
     try:
         with open(variables_file_path, "w") as variables_file:
             variables_file.write(removed_variables)
     except Exception as e:
-        print '\n*** WRITE FAILED', e
+        print(f'\n*** WRITE FAILED {e}')
         parts = os.path.splitext(variables_file_path)
         temp_path = parts[0] + '_BACKUP' + parts[1]
-        print '*** saving to', temp_path, 'instead\n'
+        print(f'*** saving to {temp_path} instead\n')
         with open(temp_path, "w") as variables_file:
             variables_file.write(removed_variables)
     
 def update_qss(removed_qss, qss_file_path):
-    print 'updating', qss_file_path, 'with changes'
+    print(f'updating {qss_file_path} with changes')
     removed_qss = re.sub(r'/\*@(\w+)\*/.*/\*@\*/', '@\g<1>', removed_qss)
     try:
         with open(qss_file_path, "w") as qss_file:
             qss_file.write(removed_qss)
     except Exception as e:
-        print '\n*** WRITE FAILED', e
+        print(f'\n*** WRITE FAILED {e}')
         parts = os.path.splitext(qss_file_path)
         temp_path = parts[0] + '_BACKUP' + parts[1]
-        print '*** saving to', temp_path, 'instead\n'
+        print(f'*** saving to {temp_path} instead\n')
         with open(temp_path, "w") as qss_file:
             qss_file.write(removed_qss)
     
 def stop_monitor_for_changes(monitor_thread):
-    print 'stopping change monitor'
+    print(f'stopping change monitor')
     global continue_monitoring
     continue_monitoring = False
     monitor_thread.join()
     
 def run_designer(designer_file_path, ui_copy_file_path):
-    print 'starting designer with', ui_copy_file_path
+    print(f'starting designer with {ui_copy_file_path}')
     subprocess.call([designer_file_path, ui_copy_file_path])
-    print 'designer exited'
+    print(f'designer exited')
     
 def delete_copy(ui_copy_file_path):
-    print 'deleting', ui_copy_file_path
+    print(f'deleting {ui_copy_file_path}')
     os.remove(ui_copy_file_path)
     
 main()
-

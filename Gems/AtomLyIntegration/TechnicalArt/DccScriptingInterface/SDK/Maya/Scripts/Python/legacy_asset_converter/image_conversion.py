@@ -28,19 +28,26 @@ module_name = 'legacy_asset_converter.main.image_conversion'
 _LOGGER = _logging.getLogger(module_name)
 
 
-def get_pbr_textures(legacy_textures, destination_directory, search_path, base_directory):
+def get_pbr_textures(legacy_textures, destination_directory, base_directory, uses_alpha):
     pbr_textures = {}
     for texture_type, texture_path in legacy_textures.items():
         _LOGGER.info(f'TEXTURETYPE::> {texture_type}  TEXTUREPATH::> {texture_path}')
         if not texture_path.is_file():
             _LOGGER.info(f'(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((( Missing:::: {texture_path}')
             existing_path = resolve_path(texture_path, base_directory)
+
+            # Fallback on tiff texture as it might exist like this on disk
+            if not existing_path and texture_path.suffix == '.dds':
+                existing_path = resolve_path(texture_path.with_suffix('.tif'), base_directory)
+
             if not existing_path:
                 continue
+
             _LOGGER.info(f'Found texture [{existing_path}]. Continuing...')
             texture_path = Path(existing_path)
         if texture_type == 'diffuse':
-            dst = get_converted_filename(texture_path, destination_directory, 'BaseColor')
+            filemask = 'BaseColorA' if uses_alpha else 'BaseColor'
+            dst = get_converted_filename(texture_path, destination_directory, filemask)
             pbr_textures['BaseColor'] = transfer_texture(dst, texture_path) if not os.path.isfile(dst) else dst
         elif texture_type == 'specular':
             dst = get_converted_filename(texture_path, destination_directory, 'Metallic')
@@ -65,7 +72,7 @@ def get_pbr_textures(legacy_textures, destination_directory, search_path, base_d
         try:
             pbr_texture_keys = list(pbr_textures.keys())
             texture_path = Path(pbr_textures[pbr_texture_keys[0]])
-            filename = texture_path.name.replace(get_texture_type(texture_path), 'Metallic')
+            filename = texture_path.name.replace(get_filemask(texture_path), 'Metallic')
             _LOGGER.info(f'Filename: {filename}')
             target_file_path = destination_directory / filename
             _LOGGER.info(f'TargetFilePath: {target_file_path}')
@@ -85,13 +92,34 @@ def get_pbr_textures(legacy_textures, destination_directory, search_path, base_d
 
 def resolve_path(texture_path, base_directory):
     _LOGGER.info(f'Resolving Path... Filename[{texture_path.name}: {base_directory}')
-    for (root, dirs, files) in os.walk(base_directory.parent, topdown=True):
+    
+    # Try to match path via topmost assets folder
+    split_dir = base_directory.as_posix().lower().split('/assets/')
+    if len(split_dir) > 1:
+        resolved_path = os.path.abspath(os.path.join(split_dir[0], 'assets', texture_path))
+        if os.path.exists(resolved_path):
+            return resolved_path
+
+    cache_dir(base_directory)
+    for (root, dirs, files) in os_walk_cache(base_directory):
         for file in files:
-            target_file = file.split('.')[0].lower()
-            if target_file == texture_path.stem.lower():
+            if Path(file).name.lower() == texture_path.name.lower():
                 return os.path.abspath(os.path.join(root, file))
     return None
 
+cache = {}
+def cache_dir(dir):
+    if dir in cache:
+        return
+    else:
+        cache[dir] = []
+        for x in os.walk(dir, topdown=True):
+            cache[dir].append(x)
+
+def os_walk_cache(dir):
+    if dir in cache:
+        for x in cache[dir]:
+            yield x
 
 def transfer_texture(dst, src, overwrite=False):
     if not os.path.exists(dst) or overwrite:
@@ -243,12 +271,13 @@ def get_converted_filename(src, dst, texture_type):
     :param src: The legacy filename to be manipulated
     :param dst: The destination directory that the new file will be saved to
     :param texture_type: PBR texture type
-    :return:
+    :return: filepath
     """
     if src.is_file():
-        filename = src.name.replace(get_texture_type(src), texture_type)
+        filemask = get_filemask(src)
+        filename = f'{src.stem}_{texture_type}{src.suffix}' if filemask[-1].isdigit() else src.name.replace('_' + filemask, '_' + texture_type)
         dst = os.path.normpath(dst / filename)
-        _LOGGER.info(f'+=+=+=+=+=+=+=+=+=+=+=+ {dst}  -- {os.path.isfile(dst)}')
+        _LOGGER.info(f'+=+=+=+=+=+=+=+=+=+=+=+ {dst} -- overwriting {os.path.isfile(dst)}')
     return dst
 
 
@@ -287,9 +316,9 @@ def get_texture_basename(image_path):
     return None
 
 
-def get_texture_type(image_path):
+def get_filemask(image_path):
     """
-    Gets the PBR texture type from the filename.
+    Returns the string after the last '_' from filename
     :param image_path: Path to the image from which to extract pbr type
     :return:
     """

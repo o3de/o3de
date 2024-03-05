@@ -22,6 +22,7 @@ namespace MiniAudio
 
         virtual void Play() = 0;
         virtual void Stop() = 0;
+        virtual void Pause() = 0;
         virtual void SetLooping(bool loop) = 0;
         virtual bool IsLooping() const = 0;
         virtual void SetSoundAsset(AZ::Data::Asset<SoundAsset> soundAsset) = 0;

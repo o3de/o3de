@@ -51,7 +51,7 @@ _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
+if _PACKAGENAME == '__main__':
     _PACKAGENAME = 'DCCsi.SDK.substance.builder.sbsar_info'
 
 import azpy
@@ -75,7 +75,7 @@ _TOOL_TAG = 'sdk.substance.builder.sbsar_info'
 _TYPE_TAG = 'module'
 
 _MODULENAME = __name__
-if _MODULENAME is '__main__':
+if _MODULENAME == '__main__':
     _MODULENAME = _TOOL_TAG
 # -------------------------------------------------------------------------
 

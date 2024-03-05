@@ -35,7 +35,7 @@ allWindows = QtGui.QGuiApplication.allWindows()
 printOrExcept(len(allWindows) > 0, 'Value allWindows greater than zero')
 
 azMainWidgetId = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetMainWindowId')
-printOrExcept(azMainWidgetId is not 0, 'GetMainWindowId')
+printOrExcept(azMainWidgetId != 0, 'GetMainWindowId')
 
 mainWidgetWindow = QtWidgets.QWidget.find(azMainWidgetId)
 mainWindow = wrapInstance(int(getCppPointer(mainWidgetWindow)[0]), QtWidgets.QMainWindow)
