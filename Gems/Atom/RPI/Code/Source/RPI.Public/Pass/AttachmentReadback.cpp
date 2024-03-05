@@ -432,11 +432,12 @@ namespace AZ
         void AttachmentReadback::CopyExecute(const RHI::FrameGraphExecuteContext& context)
         {
             uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
-            m_fence->GetDeviceFence(context.GetDeviceIndex())->WaitOnCpuAsync([this, readbackBufferCurrentIndex]()
+            auto deviceIndex = context.GetDeviceIndex();
+            m_fence->GetDeviceFence(deviceIndex)->WaitOnCpuAsync([this, readbackBufferCurrentIndex, deviceIndex]()
                 {
                     if (m_state == ReadbackState::Reading)
                     {
-                        if (CopyBufferData(readbackBufferCurrentIndex))
+                        if (CopyBufferData(readbackBufferCurrentIndex, deviceIndex))
                         {
                             m_state = ReadbackState::Success;
                         }
@@ -570,7 +571,7 @@ namespace AZ
             return result;
         }
 
-        bool AttachmentReadback::CopyBufferData(uint32_t readbackBufferIndex)
+        bool AttachmentReadback::CopyBufferData(uint32_t readbackBufferIndex, int deviceIndex)
         {
             for (auto& readbackItem : m_readbackItems)
             {
@@ -584,8 +585,7 @@ namespace AZ
                 auto bufferSize = readbackBufferCurrent->GetBufferSize();
                 readbackItem.m_dataBuffer = AZStd::make_shared<AZStd::vector<uint8_t>>();
 
-                AZ_Assert(RHI::CheckBitsAny(readbackBufferCurrent->GetRHIBuffer()->GetDeviceMask(), RHI::MultiDevice::DefaultDevice), "AttachmentReadback currently only supports the default device for now as long as passes have no device index yet.");
-                void* buf = readbackBufferCurrent->Map(bufferSize, 0)[RHI::MultiDevice::DefaultDeviceIndex];
+                void* buf = readbackBufferCurrent->Map(bufferSize, 0)[deviceIndex];
                 if (buf)
                 {
                     if (m_attachmentType == RHI::AttachmentType::Buffer)
