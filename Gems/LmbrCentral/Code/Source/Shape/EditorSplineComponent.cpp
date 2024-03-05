@@ -398,7 +398,7 @@ namespace LmbrCentral
         return m_splineCommon.m_spline;
     }
 
-    void EditorSplineComponent::ChangeSplineType(const AZ::u64 splineType)
+    void EditorSplineComponent::ChangeSplineType(const SplineType splineType)
     {
         m_splineCommon.ChangeSplineType(splineType);
     }

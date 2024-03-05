@@ -24,6 +24,7 @@
 namespace AZ::IO
 {
     class FileRequest;
+    class Streamer_SchedulerTest_RequestSorting_Test;
 
     namespace Requests
     {
@@ -65,6 +66,7 @@ namespace AZ::IO
         void GetRecommendations(IStreamerTypes::Recommendations& recommendations) const;
 
     private:
+        friend class Streamer_SchedulerTest_RequestSorting_Test;
         inline static constexpr u32 ProfilerColor = 0x0080ffff; //!< A lite shade of blue. (See https://www.color-hex.com/color/0080ff).
 
         void Thread_MainLoop();

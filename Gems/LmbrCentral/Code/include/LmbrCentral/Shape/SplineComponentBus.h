@@ -14,6 +14,13 @@
 
 namespace LmbrCentral
 {
+    enum class SplineType
+    {
+        LINEAR = 0,
+        BEZIER,
+        CATMULL_ROM
+    };
+
     /// Services provided by the Spline Component.
     class SplineComponentRequests
         : public AZ::VariableVertices<AZ::Vector3>
@@ -24,7 +31,7 @@ namespace LmbrCentral
         /// Change the type of interpolation used by the spline.
         /// @param splineType Refers to the RTTI Hash of the underlying Spline type
         /// (example: AZ::LinearSpline::RTTI_Type().GetHash()).
-        virtual void ChangeSplineType(AZ::u64 splineType) = 0;
+        virtual void ChangeSplineType(SplineType splineType) = 0;
         /// Set whether the spline should form a closed loop or not.
         virtual void SetClosed(bool closed) = 0;
 

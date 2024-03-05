@@ -37,7 +37,7 @@ class Actor_Component_Converter(Component_Converter):
     
     def gather_info_for_conversion(self, xmlElement, parent):
         # We don't need to modify the actor component, but we do need to add a material component
-        for possibleActorAssetComponent in xmlElement.getchildren():
+        for possibleActorAssetComponent in xmlElement.iter():
             if "field" in possibleActorAssetComponent.keys() and possibleActorAssetComponent.get("field") == "ActorAsset" and "value" in possibleActorAssetComponent.keys():
                 assetId = possibleActorAssetComponent.get("value")
                 
