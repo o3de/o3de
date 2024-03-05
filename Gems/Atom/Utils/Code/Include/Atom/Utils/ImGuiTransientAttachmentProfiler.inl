@@ -31,7 +31,7 @@ namespace AZ
                         memoryUsage = deviceStatistics.m_reservedMemory;
                     }
 
-                    ImGui::Text("Strategy: %s", ToString(RHI::RHISystemInterface::Get()->GetTransientAttachmentPoolDescriptor()->m_heapParameters.m_type));
+                    ImGui::Text("Strategy: %s", ToString(RHI::RHISystemInterface::Get()->GetTransientAttachmentPoolDescriptor()->begin()->second.m_heapParameters.m_type));
                     ImGui::Text("Buffer Memory: %.1f MB", static_cast<double>(memoryUsage.m_bufferMemoryInBytes * BytesToMB));
                     ImGui::Text("Image Memory: %.1f MB", static_cast<double>(memoryUsage.m_imageMemoryInBytes * BytesToMB));
                     ImGui::Text("Rendertarget Memory: %.1f MB", static_cast<double>(memoryUsage.m_rendertargetMemoryInBytes * BytesToMB));

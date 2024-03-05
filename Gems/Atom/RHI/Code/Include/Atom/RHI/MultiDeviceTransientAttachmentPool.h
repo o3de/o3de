@@ -45,7 +45,8 @@ namespace AZ::RHI
         virtual ~MultiDeviceTransientAttachmentPool() = default;
 
         //! Called to initialize the pool.
-        ResultCode Init(MultiDevice::DeviceMask deviceMask, const TransientAttachmentPoolDescriptor& descriptor);
+        ResultCode Init(
+            MultiDevice::DeviceMask deviceMask, const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>& descriptors);
 
         //! Called to shutdown the pool.
         void Shutdown();
@@ -88,7 +89,7 @@ namespace AZ::RHI
         AZStd::unordered_map<int, TransientAttachmentStatistics> GetStatistics() const;
 
         //! Get pool descriptor
-        const TransientAttachmentPoolDescriptor& GetDescriptor() const;
+        const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>& GetDescriptor() const;
 
         //! Get the compile flags being used during the allocation of resources.
         TransientAttachmentPoolCompileFlags GetCompileFlags() const;
@@ -97,7 +98,7 @@ namespace AZ::RHI
         //! Remove the entry related to the provided attachmentId from the cache as it is probably stale now
         void RemoveFromCache(RHI::AttachmentId attachmentId);
 
-        TransientAttachmentPoolDescriptor m_descriptor;
+        AZStd::unordered_map<int, TransientAttachmentPoolDescriptor> m_descriptors;
         TransientAttachmentPoolCompileFlags m_compileFlags = TransientAttachmentPoolCompileFlags::None;
 
         //! MultiDeviceImage/Buffers added as attachments to scopes are tracked in an internal cache

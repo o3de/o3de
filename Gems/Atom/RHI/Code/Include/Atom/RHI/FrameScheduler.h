@@ -34,10 +34,10 @@ namespace AZ::RHI
     struct FrameSchedulerDescriptor
     {
         // The descriptor used to initialize the transient attachment pool.
-        TransientAttachmentPoolDescriptor m_transientAttachmentPoolDescriptor;
+        AZStd::unordered_map<int, TransientAttachmentPoolDescriptor> m_transientAttachmentPoolDescriptors;
 
         // Platform specific limits
-        ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
+        AZStd::unordered_map<int, ConstPtr<PlatformLimitsDescriptor>> m_platformLimitsDescriptors;
     };
 
     //! @brief Fill and provide this request structure when invoking FrameScheduler::Compile.
@@ -178,7 +178,7 @@ namespace AZ::RHI
         ScopeId GetRootScopeId() const;
 
         //! Returns the descriptor which has information on the properties of a MultiDeviceTransientAttachmentPool.
-        const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
+        const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const;
 
         //! Adds a SingleDeviceRayTracingShaderTable to be built this frame
         void QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable);
