@@ -51,6 +51,8 @@ namespace AZ
             Data::Instance<RPI::Buffer> m_readbackBuffer;
             RHI::MultiDeviceCopyBufferDescriptor m_copyDescriptor;
             bool m_needsInitialize = true;
+            RHI::Ptr<RHI::MultiDeviceFence> m_fence;
+            float m_lastFocusDepth = 0;
         };
     }   // namespace RPI
 }   // namespace AZ
