@@ -21,6 +21,17 @@
 
 namespace AssetProcessor
 {
+    // note that this will be true if EITHER the source control is valid, connected, and working
+    // OR if source control is completely disabled and thus will just transparently pass thru to the file system
+    // it will only return false if the source control plugin is ACTIVE but is failing to function due to a configuration
+    // problem, or the executable being missing.
+    bool IsSourceControlValid()
+    {
+        using SCRequest = AzToolsFramework::SourceControlConnectionRequestBus;
+        AzToolsFramework::SourceControlState state = AzToolsFramework::SourceControlState::Disabled;
+        SCRequest::BroadcastResult(state, &SCRequest::Events::GetSourceControlState);
+        return (state != AzToolsFramework::SourceControlState::ConfigurationInvalid);
+    }
 
     bool WaitForSourceControl(AZStd::binary_semaphore& waitSignal)
     {
@@ -361,6 +372,16 @@ Please note that only those seed files will get updated that are active for your
         bool excludeMetaDataFiles,
         bool allowNonDatabaseFiles) const
     {
+        // nothing below will succeed if source control is active but invalid, so early out with a clear
+        // warning to the user.
+        if (!IsSourceControlValid())
+        {
+            // no point in continuing, it will always fail.
+            return AZ::Failure(AZStd::string("The Source Control plugin is active but the configuration is invalid.\n" 
+                                             "Either disable it by right-clicking the source control icon in the editor status bar,\n"
+                                             "or fix the configuration of it in that same right-click menu.\n"));
+        }
+
         if(normalizedSource.find("**") != AZStd::string::npos)
         {
             return AZ::Failure(AZStd::string("Consecutive wildcards are not allowed.  Please remove extra wildcards from your query.\n"));
