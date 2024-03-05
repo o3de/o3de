@@ -69,11 +69,6 @@ namespace AZ::RHI
     {
         if (IsInitialized())
         {
-            if (m_waitThread.joinable())
-            {
-                m_waitThread.join();
-            }
-
             IterateObjects<SingleDeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
             {
                 deviceFence->Shutdown();
@@ -94,54 +89,6 @@ namespace AZ::RHI
         {
             return deviceFence->SignalOnCpu();
         });
-    }
-
-    ResultCode MultiDeviceFence::WaitOnCpu() const
-    {
-        if (!ValidateIsInitialized())
-        {
-            return ResultCode::InvalidOperation;
-        }
-
-        return IterateObjects<SingleDeviceFence>([]([[maybe_unused]] auto deviceIndex, auto deviceFence)
-        {
-            return deviceFence->WaitOnCpu();
-        });
-    }
-
-    ResultCode MultiDeviceFence::WaitOnCpuAsync(SignalCallback callback)
-    {
-        if (!ValidateIsInitialized())
-        {
-            return ResultCode::InvalidOperation;
-        }
-
-        if (!callback)
-        {
-            AZ_Error("MultiDeviceFence", false, "Callback is null.");
-            return ResultCode::InvalidOperation;
-        }
-
-        if (m_waitThread.joinable())
-        {
-            m_waitThread.join();
-        }
-
-        AZStd::thread_desc threadDesc{ "MultiDeviceFence WaitOnCpu Thread" };
-
-        m_waitThread = AZStd::thread(
-            threadDesc,
-            [this, callback]()
-            {
-                ResultCode resultCode = WaitOnCpu();
-                if (resultCode != ResultCode::Success)
-                {
-                    AZ_Error("MultiDeviceFence", false, "Failed to call WaitOnCpu in async thread.");
-                }
-                callback();
-            });
-
-        return ResultCode::Success;
     }
 
     ResultCode MultiDeviceFence::Reset()
