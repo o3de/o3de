@@ -19,7 +19,7 @@ namespace AZ::RHI
     //! Fill this descriptor when initializing a FrameScheduler instance.
     struct FrameGraphExecuterDescriptor
     {
-        ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
+        AZStd::unordered_map<int, ConstPtr<PlatformLimitsDescriptor>> m_platformLimitsDescriptors;
     };
 
     //! FrameGraphExecuter is a context for executing the scopes of a compiled FrameGraph

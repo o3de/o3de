@@ -55,7 +55,7 @@ namespace AZ::RHI
 
         m_frameGraphExecuter = Factory::Get().CreateFrameGraphExecuter();
         FrameGraphExecuterDescriptor executerDesc;
-        executerDesc.m_platformLimitsDescriptor = descriptor.m_platformLimitsDescriptor;
+        executerDesc.m_platformLimitsDescriptors = descriptor.m_platformLimitsDescriptors;
         resultCode = m_frameGraphExecuter->Init(executerDesc);
 
         if (resultCode != ResultCode::Success)
@@ -64,10 +64,20 @@ namespace AZ::RHI
             return resultCode;
         }
 
-        if (SingleDeviceTransientAttachmentPool::NeedsTransientAttachmentPool(descriptor.m_transientAttachmentPoolDescriptor))
+        RHI::MultiDevice::DeviceMask transientAttachmentPoolDeviceMask{0};
+
+        for (auto& [deviceIndex, descriptor] : descriptor.m_transientAttachmentPoolDescriptors)
+        {
+            if (SingleDeviceTransientAttachmentPool::NeedsTransientAttachmentPool(descriptor))
+            {
+                transientAttachmentPoolDeviceMask |= static_cast<RHI::MultiDevice::DeviceMask>(1 << deviceIndex);
+            }
+        }
+
+        if (transientAttachmentPoolDeviceMask != static_cast<RHI::MultiDevice::DeviceMask>(0))
         {
             m_transientAttachmentPool = aznew MultiDeviceTransientAttachmentPool();
-            resultCode = m_transientAttachmentPool->Init(RHI::MultiDevice::AllDevices, descriptor.m_transientAttachmentPoolDescriptor);
+            resultCode = m_transientAttachmentPool->Init(transientAttachmentPoolDeviceMask, descriptor.m_transientAttachmentPoolDescriptors);
 
             if (resultCode != ResultCode::Success)
             {
@@ -688,7 +698,7 @@ namespace AZ::RHI
         return m_rootScopeId;
     }
 
-    const TransientAttachmentPoolDescriptor* FrameScheduler::GetTransientAttachmentPoolDescriptor() const
+    const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* FrameScheduler::GetTransientAttachmentPoolDescriptor() const
     {
         return m_transientAttachmentPool ? &m_transientAttachmentPool->GetDescriptor() : nullptr;
     }
