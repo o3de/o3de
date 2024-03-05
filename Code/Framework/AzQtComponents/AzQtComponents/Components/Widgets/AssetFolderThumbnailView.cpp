@@ -1071,6 +1071,9 @@ namespace AzQtComponents
             }
             else
             {
+                // Store previous selection - will be used if key modifiers are being held.
+                m_previousSelection = selectionModel()->selection();
+
                 // Start the updater to only refresh the selection at regular intervals.
                 m_selectionUpdater->start(m_selectionUpdateInterval);
 
@@ -1099,6 +1102,7 @@ namespace AzQtComponents
 
         ClearQueuedMouseEvent();
 
+        m_previousSelection.clear();
         m_selectionUpdater->stop();
         m_isDragSelectActive = false;
 
@@ -1139,7 +1143,38 @@ namespace AzQtComponents
             }
         }
 
-        selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+        switch (QGuiApplication::queryKeyboardModifiers())
+        {
+        case Qt::ControlModifier:
+            {
+                selection.merge(m_previousSelection, QItemSelectionModel::ToggleCurrent);
+                selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+            }
+            break;
+
+        case Qt::ShiftModifier:
+            {
+                // Replicates behavior in Windows explorer.
+                // This will add all newly selected items to the existing selection, but if an item is added
+                // to the selection rect and then removed, it will be removed from the previous selection.
+
+                // Remove new selection from previous selection.
+                m_previousSelection.merge(selection, QItemSelectionModel::Deselect | QItemSelectionModel::Current);
+
+                // Add previous selection to new selection.
+                selection.merge(m_previousSelection, QItemSelectionModel::SelectCurrent);
+
+                // Select both (updated) previous and current selection.
+                selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+            }
+            break;
+
+        default:
+            {
+                selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+            }
+            break;
+        }
     }
 
     void AssetFolderThumbnailView::ClearQueuedMouseEvent()
@@ -1307,19 +1342,16 @@ namespace AzQtComponents
             return QImage();
         }
 
-        QRect rect(6, 6, 64, 64);
-        QImage dragImage(QRect(0, 0, 70, 70).size(), QImage::Format_ARGB32_Premultiplied);
-        QPainter painter(&dragImage);
+        // Define size of rect for asset/folder icons.
+        QRect rect(0, 9, 36, 36);
 
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.fillRect(dragImage.rect(), Qt::transparent);
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.setOpacity(0.35f);
-        painter.fillRect(rect, QColor("#222222"));
-        painter.setOpacity(1.0f);
-
+        // Generate a drag image of the dragged element.
+        // We get the configuration of the first item in the list.
         auto index = indexList.at(0);
+        const auto isTopLevel = index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsTopLevel)).value<bool>();
+        const auto& config = isTopLevel ? m_config.rootThumbnail : m_config.childThumbnail;
 
+        // Initialize option
         QStyleOptionViewItem option;
         option.palette = palette();
         option.font = font();
@@ -1327,36 +1359,56 @@ namespace AzQtComponents
         option.decorationAlignment = Qt::AlignCenter;
         option.rect = rect;
 
-        // Generate a drag image of the dragged element.
-        const auto isTopLevel = index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsTopLevel)).value<bool>();
+        // Initialize painter from desired output image.
+        QImage dragImage(QRect(0, 0, 44, 56).size(), QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&dragImage);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.fillRect(dragImage.rect(), Qt::transparent);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
         painter.save();
-        painter.setFont(option.font);
 
-        const auto& config = isTopLevel ? m_config.rootThumbnail : m_config.childThumbnail;
+        // Define border color.
+        if (selectionModel()->isSelected(index))
+        {
+            painter.setPen(QPen(config.selectedBorderColor, config.selectedBorderThickness));
+        }
+        else
+        {
+            painter.setPen(QPen(config.borderColor, config.borderThickness));
+        }
+        
+        // Paint additional rectangles under the top one to signify multiple selection.
+        painter.setBrush(QColor("#555")); // TODO - move to const members
 
-        const auto borderRadius = config.borderRadius;
-        const auto padding = 5;
+        if (indexList.size() > 2)
+        {
+            painter.setOpacity(0.5f);
+            painter.drawRoundedRect(rect.translated(7, 7), 1, 1); // TODO - move to const members
+        }
+
+        if (indexList.size() > 1)
+        {
+            painter.setOpacity(1.0f);
+            painter.drawRoundedRect(rect.translated(3, 3), 1, 1); // TODO - move to const members
+        }
+
+        // Reset opacity to full.
+        painter.setOpacity(1.0f);
+
+
 
         const auto thumbnailRect = rect;
+
+        const auto padding = 5;
         const auto imageRect = thumbnailRect.adjusted(padding, padding, -padding, -padding);
 
         // border
         const auto halfBorderThickness = qMax(config.borderThickness, config.selectedBorderThickness) / 2;
         const auto borderRect =
             QRectF{ thumbnailRect }.adjusted(halfBorderThickness, halfBorderThickness, -halfBorderThickness, -halfBorderThickness);
-        QPen borderPen;
-        if (option.state & QStyle::State_Selected)
-        {
-            borderPen = { config.selectedBorderColor, config.selectedBorderThickness };
-        }
-        else
-        {
-            borderPen = { config.borderColor, config.borderThickness };
-        }
         painter.setBrush(config.backgroundColor);
-        painter.setPen(borderPen);
-        painter.drawRoundedRect(borderRect, borderRadius, borderRadius);
+        painter.drawRoundedRect(borderRect, config.borderRadius, config.borderRadius);
 
         // pixmap
         const auto& qVariant = index.data(Qt::DecorationRole);

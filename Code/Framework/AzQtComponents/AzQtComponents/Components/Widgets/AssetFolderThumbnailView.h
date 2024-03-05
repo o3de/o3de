@@ -177,6 +177,7 @@ namespace AzQtComponents
 
         // Selection Handling
         void SelectAllEntitiesInSelectionRect();
+        QItemSelection m_previousSelection;
 
         void ClearQueuedMouseEvent();
         void ProcessQueuedMousePressedEvent(QMouseEvent* event);
