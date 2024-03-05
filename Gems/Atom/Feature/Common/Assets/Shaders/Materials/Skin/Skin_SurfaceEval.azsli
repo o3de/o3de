@@ -54,21 +54,51 @@ real3 ApplyBaseColorWrinkleMap(bool shouldApply, real3 baseColor, Texture2D map,
     return baseColor;
 }
 
-real2 ApplyNormalWrinkleMap(bool shouldApply, real2 baseNormalSample, Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, real factor)
+float2 ApplyNormalWrinkleMap(bool shouldApply, float2 baseNormalSample, Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, real factor)
 {
     if (shouldApply)
     {
-        real2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
+        float2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
         return lerp(baseNormalSample, sampledValue, factor);
     }
     return baseNormalSample;
 }
 
+real GetOcclusionInputSkin(Texture2D map, sampler mapSampler, float2 uv, real factor, bool useTexture)
+{
+    real occlusion = 1.0;
+    if(useTexture)
+    {
+        //uv = float2(0.5, 0.5);
+        float occlusionSample = map.Sample(mapSampler, uv).r;
+        occlusion = real(occlusionSample);
+
+        // if(isnan(occlusionSample))
+        //     occlusion = 1;
+        // 
+        // if(isinf(occlusionSample))
+        //     occlusion = 1;
+        // 
+        // if(occlusionSample < 0.001)
+        //     occlusion = 1;
+        // 
+        // if(occlusionSample > 1)
+        //     occlusion = 1;
+        // 
+        // occlusionSample = saturate(occlusionSample + 1);
+        // occlusion = real(occlusionSample);
+
+        occlusion = pow(occlusion, factor);
+    }
+    return occlusion;
+}
+
+
 Surface EvaluateSurface_Skin(
     float3 positionWS,
-    real3 vertexNormal,
-    real3 tangents[UvSetCount],
-    real3 bitangents[UvSetCount],
+    float3 vertexNormal,
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     float2 detailUv,
     real4 wrinkleBlendFactors,
@@ -115,7 +145,7 @@ Surface EvaluateSurface_Skin(
     // Since the wrinkle normal maps should all be in the same tangent space as the main normal map, we should be able to blend the raw normal map
     // texture values before doing all the tangent space transforms, so we only have to do the transforms once, for better performance.
     
-    real2 normalMapSample = real2(0.0,0.0);
+    float2 normalMapSample = float2(0.0, 0.0);
     
     if(o_normal_useTexture)
     {
@@ -130,16 +160,16 @@ Surface EvaluateSurface_Skin(
         normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, MaterialSrg::m_wrinkle_normal_texture4, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, wrinkleBlendFactors.a);
     }
 
-    real3x3 uvMatrix = real3x3(CreateIdentity3x3());
+    float3x3 uvMatrix = float3x3(CreateIdentity3x3());
 
     if(o_detail_normal_useTexture)
     {
-        real3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, real(MaterialSrg::m_normalFactor));
+        float3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, float(MaterialSrg::m_normalFactor));
     
         bool applyOverlay = true;
         surface.normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormal, normalTS, tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], 
                                                  MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, detailUv, MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, 
-                                                 detailLayerNormalFactor, tangents[MaterialSrg::m_detail_allMapsUvIndex], bitangents[MaterialSrg::m_detail_allMapsUvIndex], real3x3(MaterialSrg::m_detailUvMatrix));
+                                                 detailLayerNormalFactor, tangents[MaterialSrg::m_detail_allMapsUvIndex], bitangents[MaterialSrg::m_detail_allMapsUvIndex], MaterialSrg::m_detailUvMatrix);
     }
     else
     {
@@ -154,6 +184,9 @@ Surface EvaluateSurface_Skin(
     
     real3 baseColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, real3(MaterialSrg::m_baseColor), o_baseColor_useTexture);
     
+    // AKM_MARKER
+    // baseColor = real3(0.5, 0.5, 0.3);
+
     bool useSampledBaseColor = o_baseColor_useTexture;
     if(o_wrinkleLayers_enabled && o_wrinkleLayers_baseColor_enabled)
     {
@@ -193,6 +226,9 @@ Surface EvaluateSurface_Skin(
     float2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
     real specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, real(MaterialSrg::m_specularF0Factor), o_specularF0_useTexture);
 
+    // AKM_MARKER
+    //specularF0Factor = 0.5f;
+
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor);
 
     // ------- Roughness -------
@@ -200,6 +236,10 @@ Surface EvaluateSurface_Skin(
     float2 roughnessUv = uvs[MaterialSrg::m_roughnessMapUvIndex];
     surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, real(MaterialSrg::m_roughnessFactor),
                                         real(MaterialSrg::m_roughnessLowerBound), real(MaterialSrg::m_roughnessUpperBound), o_roughness_useTexture);
+
+    // AKM_MARKER
+    // surface.roughnessLinear = 1;
+
     surface.CalculateRoughnessA();
 
     // ------- Dual Specular -------
@@ -215,10 +255,24 @@ Surface EvaluateSurface_Skin(
     surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
     surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
 
+    // AKM_MARKER
+    surface.subsurfaceScatteringFactor = real(0);
+    surface.subsurfaceScatteringQuality = real(0);
+    surface.scatterDistance = real3(0, 0, 0);
+
     // ------- Occlusion -------
     
-    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture);
-    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture);
+    bool useDiffuseTexture = o_diffuseOcclusion_useTexture;
+    bool useSpecularTexture = o_specularOcclusion_useTexture;
+
+    // useDiffuseTexture = false;
+    // useSpecularTexture = false;
+
+    surface.diffuseAmbientOcclusion = GetOcclusionInputSkin(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), useDiffuseTexture);
+    surface.specularOcclusion = GetOcclusionInputSkin(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), useSpecularTexture);
+
+    //surface.diffuseAmbientOcclusion = 1;
+    //surface.specularOcclusion = 1;
 
     // ------- Transmission -------
 

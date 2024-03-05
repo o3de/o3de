@@ -31,11 +31,11 @@
     class PixelGeometryData_EnhancedPBR 
     {
         float3 positionWS;
-        real3 vertexNormal;
+        float3 vertexNormal;
         float2 uvs[UvSetCount];
         float2 detailUvs[UvSetCount];
-        real3 tangents[UvSetCount];
-        real3 bitangents[UvSetCount];
+        float3 tangents[UvSetCount];
+        float3 bitangents[UvSetCount];
         bool isFrontFace;
         bool isDisplacementClipped;
     };
