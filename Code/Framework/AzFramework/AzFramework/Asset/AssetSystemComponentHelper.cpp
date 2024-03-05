@@ -43,6 +43,13 @@ namespace AzFramework
             SendRequest(request);
         }
 
+        void AssetSystemComponent::UpdateSourceControlStatus(bool newStatus)
+        {
+            UpdateSourceControlStatusRequest request;
+            request.m_sourceControlEnabled = newStatus;
+            SendRequest(request);
+        }
+
         void AssetSystemComponent::ShowInAssetProcessor(const AZStd::string& assetPath)
         {
             AllowAssetProcessorToForeground();

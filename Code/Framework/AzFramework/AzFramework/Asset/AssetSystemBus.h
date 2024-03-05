@@ -268,6 +268,7 @@ namespace AzFramework
 
             //! Show the AssetProcessor App
             virtual void ShowAssetProcessor() = 0;
+            virtual void UpdateSourceControlStatus(bool newStatus) = 0;
             //! Show an asset in the AssetProcessor App
             virtual void ShowInAssetProcessor(const AZStd::string& assetPath) = 0;
 

@@ -621,6 +621,26 @@ namespace AzFramework
 
         //---------------------------------------------------------------------
 
+        unsigned int UpdateSourceControlStatusRequest::GetMessageType() const
+        {
+            return MessageType;
+        }
+
+        void UpdateSourceControlStatusRequest::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<UpdateSourceControlStatusRequest>()
+                    ->Version(1)
+                    ->Field("SourceControlEnabled", &UpdateSourceControlStatusRequest::m_sourceControlEnabled);
+            }
+        }
+
+        //---------------------------------------------------------------------
+
+        //---------------------------------------------------------------------
+
         unsigned int ShowAssetInAssetProcessorRequest::GetMessageType() const
         {
             return MessageType;
@@ -1543,8 +1563,9 @@ namespace AzFramework
             }
         }
 
-        AssetChangeReportResponse::AssetChangeReportResponse(AZStd::vector<AZStd::string> lines)
+        AssetChangeReportResponse::AssetChangeReportResponse(AZStd::vector<AZStd::string> lines, bool success)
             : m_lines(lines)
+            , m_success(success)
         {
         }
 
@@ -1559,8 +1580,9 @@ namespace AzFramework
             if (serialize)
             {
                 serialize->Class<AssetChangeReportResponse, BaseAssetProcessorMessage>()
-                    ->Version(1)
-                    ->Field("Report", &AssetChangeReportResponse::m_lines);
+                    ->Version(2)
+                    ->Field("Report", &AssetChangeReportResponse::m_lines)
+                    ->Field("Success", &AssetChangeReportResponse::m_success);
             }
         }
 

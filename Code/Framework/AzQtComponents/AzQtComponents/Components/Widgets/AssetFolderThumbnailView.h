@@ -190,6 +190,9 @@ namespace AzQtComponents
 
     signals:
         void RenameThumbnail(const QString& value) const;
+    
+    protected Q_SLOTS:
+        void editingFinished();
 
     private:
         AssetFolderThumbnailView::Config m_config;
