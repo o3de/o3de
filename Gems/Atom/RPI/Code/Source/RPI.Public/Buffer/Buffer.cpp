@@ -10,6 +10,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/MultiDeviceFence.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/MultiDeviceBufferPool.h>
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RPI.Public/Buffer/BufferPool.h>
@@ -267,7 +268,16 @@ namespace AZ
         {
             if (m_streamFence)
             {
-                m_streamFence->WaitOnCpu();
+                auto deviceCount{RHI::RHISystemInterface::Get()->GetDeviceCount()};
+                auto deviceMask{m_streamFence->GetDeviceMask()};
+
+                for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
+                {
+                    if (AZStd::to_underlying(deviceMask) & (1 << deviceIndex))
+                    {
+                        m_streamFence->GetDeviceFence(deviceIndex)->WaitOnCpu();
+                    }
+                }
 
                 // Guard against calling release twice on the same pointer from different threads, 
                 // which would decrement the ref count twice and result in a crash
