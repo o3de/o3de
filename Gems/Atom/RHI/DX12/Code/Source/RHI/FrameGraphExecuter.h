@@ -41,7 +41,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             const RHI::ScopeId m_mergedScopeId{"Merged"};
-            FrameGraphExecuterData m_frameGraphExecuterData;
+            AZStd::unordered_map<int, FrameGraphExecuterData> m_frameGraphExecuterData;
         };
     }
 }

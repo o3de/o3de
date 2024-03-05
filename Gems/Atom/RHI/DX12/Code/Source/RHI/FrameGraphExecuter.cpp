@@ -34,10 +34,13 @@ namespace AZ
 
         RHI::ResultCode FrameGraphExecuter::InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor)
         {
-            const RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiPlatformLimitsDescriptor = descriptor.m_platformLimitsDescriptor;
-            if (RHI::ConstPtr<PlatformLimitsDescriptor> dx12PlatformLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiPlatformLimitsDescriptor))
+            for (auto& [deviceIndex, platformLimitsDescriptor] : descriptor.m_platformLimitsDescriptors)
             {
-                m_frameGraphExecuterData = dx12PlatformLimitsDesc->m_frameGraphExecuterData;
+                const RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiPlatformLimitsDescriptor = platformLimitsDescriptor;
+                if (RHI::ConstPtr<PlatformLimitsDescriptor> dx12PlatformLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiPlatformLimitsDescriptor))
+                {
+                    m_frameGraphExecuterData[deviceIndex] = dx12PlatformLimitsDesc->m_frameGraphExecuterData;
+                }
             }
 
             return RHI::ResultCode::Success;
@@ -83,14 +86,14 @@ namespace AZ
 
                 const uint32_t CommandListCostThreshold =
                     AZStd::max(
-                        m_frameGraphExecuterData.m_commandListCostThresholdMin,
-                        AZ::DivideAndRoundUp(estimatedItemCount, m_frameGraphExecuterData.m_commandListsPerScopeMax));
+                        m_frameGraphExecuterData[scope.GetDeviceIndex()].m_commandListCostThresholdMin,
+                        AZ::DivideAndRoundUp(estimatedItemCount, m_frameGraphExecuterData[scope.GetDeviceIndex()].m_commandListsPerScopeMax));
 
                 // Computes a cost heuristic based on the number of items and number of attachments in
                 // the scope. This cost is used to partition command list generation.
                 const uint32_t totalScopeCost =
-                    estimatedItemCount * m_frameGraphExecuterData.m_itemCost +
-                    static_cast<uint32_t>(scope.GetAttachments().size()) * m_frameGraphExecuterData.m_attachmentCost;
+                    estimatedItemCount * m_frameGraphExecuterData[scope.GetDeviceIndex()].m_itemCost +
+                    static_cast<uint32_t>(scope.GetAttachments().size()) * m_frameGraphExecuterData[scope.GetDeviceIndex()].m_attachmentCost;
 
                 const uint32_t swapchainCount = static_cast<uint32_t>(scope.GetSwapChainsToPresent().size());
 
@@ -100,7 +103,7 @@ namespace AZ
                     const bool exceededCommandCost = (mergedGroupCost + totalScopeCost) > CommandListCostThreshold;
 
                     // Check if the swap chains fit into this group.
-                    const bool exceededSwapChainLimit = (mergedSwapchainCount + swapchainCount) > m_frameGraphExecuterData.m_swapChainsPerCommandList;
+                    const bool exceededSwapChainLimit = (mergedSwapchainCount + swapchainCount) > m_frameGraphExecuterData[scope.GetDeviceIndex()].m_swapChainsPerCommandList;
 
                     // Check if the hardware queue classes match.
                     const bool hardwareQueueMismatch = scope.GetHardwareQueueClass() != mergedHardwareQueueClass;

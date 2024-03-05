@@ -13,7 +13,7 @@
 namespace AZ::RHI
 {
     ResultCode MultiDeviceTransientAttachmentPool::Init(
-        MultiDevice::DeviceMask deviceMask, const TransientAttachmentPoolDescriptor& descriptor)
+        MultiDevice::DeviceMask deviceMask, const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>& descriptors)
     {
         if (Validation::IsEnabled())
         {
@@ -24,31 +24,25 @@ namespace AZ::RHI
             }
         }
 
-        if (!SingleDeviceTransientAttachmentPool::ValidateInitParameters(descriptor))
-        {
-            return ResultCode::InvalidArgument;
-        }
-
-        m_descriptor = descriptor;
+        m_descriptors = descriptors;
 
         MultiDeviceObject::Init(deviceMask);
 
         ResultCode resultCode = ResultCode::Success;
 
         IterateDevices(
-            [this, &descriptor, &resultCode](int deviceIndex)
+            [this, &resultCode](int deviceIndex)
             {
+                if (!SingleDeviceTransientAttachmentPool::ValidateInitParameters(m_descriptors[deviceIndex]))
+                {
+                    return false;
+                }
+
                 auto* device = RHISystemInterface::Get()->GetDevice(deviceIndex);
 
                 m_deviceObjects[deviceIndex] = Factory::Get().CreateTransientAttachmentPool();
 
-                TransientAttachmentPoolDescriptor deviceDescriptor;
-                deviceDescriptor.m_bufferBudgetInBytes = descriptor.m_bufferBudgetInBytes;
-                deviceDescriptor.m_heapParameters = descriptor.m_heapParameters;
-                deviceDescriptor.m_imageBudgetInBytes = descriptor.m_imageBudgetInBytes;
-                deviceDescriptor.m_renderTargetBudgetInBytes = descriptor.m_renderTargetBudgetInBytes;
-
-                resultCode = GetDeviceTransientAttachmentPool(deviceIndex)->Init(*device, deviceDescriptor);
+                resultCode = GetDeviceTransientAttachmentPool(deviceIndex)->Init(*device, m_descriptors[deviceIndex]);
 
                 return resultCode == ResultCode::Success;
             });
@@ -269,9 +263,9 @@ namespace AZ::RHI
         return statistics;
     }
 
-    const TransientAttachmentPoolDescriptor& MultiDeviceTransientAttachmentPool::GetDescriptor() const
+    const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>& MultiDeviceTransientAttachmentPool::GetDescriptor() const
     {
-        return m_descriptor;
+        return m_descriptors;
     }
 
     TransientAttachmentPoolCompileFlags MultiDeviceTransientAttachmentPool::GetCompileFlags() const

@@ -71,7 +71,7 @@ namespace AZ::RHI
         RHI::PipelineStateCache* GetPipelineStateCache() override;
         void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
         double GetCpuFrameTime() const override;
-        const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
+        const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const override;
         ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
         void QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable) override;
         XRRenderingInterface* GetXRSystem() const override;
