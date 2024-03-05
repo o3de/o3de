@@ -32,7 +32,8 @@ install_dependencies () {
         pushd $DIR/../scripts/o3de/
         $DIR/python.sh setup.py sdist
         popd
-
+    fi
+    if [ -f $DIR/../scripts/o3de/dist/o3de-1.0.0.tar.gz ]; then
         $DIR/pip.sh install $DIR/../scripts/o3de/dist/o3de-1.0.0.tar.gz --no-deps --disable-pip-version-check --no-cache
     else
         $DIR/pip.sh install -e $DIR/../scripts/o3de --no-deps --disable-pip-version-check  --no-warn-script-location
