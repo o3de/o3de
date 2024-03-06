@@ -53,6 +53,15 @@ namespace AZ
             m_bufferPools = aznew RHI::MultiDeviceRayTracingBufferPools;
             m_bufferPools->Init(RHI::MultiDevice::AllDevices);
 
+            auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+            for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
+            {
+                m_meshBufferIndices[deviceIndex] = {};
+                m_materialTextureIndices[deviceIndex] = {};
+                m_materialInfos[deviceIndex] = {};
+            }
+
             // create TLAS attachmentId
             AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
             m_tlasAttachmentId = RHI::AttachmentId(AZStd::string::format("RayTracingTlasAttachmentId_%s", uuidString.c_str()));
@@ -126,7 +135,10 @@ namespace AZ
 
                 // add MeshInfo and MaterialInfo entries
                 m_meshInfos.emplace_back();
-                m_materialInfos.emplace_back();
+                for (auto& [deviceIndex, materialInfos] : m_materialInfos)
+                {
+                    materialInfos.emplace_back();
+                }
             }
 
             mesh.m_subMeshIndices = subMeshIndices;
@@ -208,7 +220,6 @@ namespace AZ
             {
                 SubMesh& subMesh = m_subMeshes[subMeshIndex];
                 MeshInfo& meshInfo = m_meshInfos[subMesh.m_globalIndex];
-                MaterialInfo& materialInfo = m_materialInfos[subMesh.m_globalIndex];
 
                 subMesh.m_irradianceColor.StoreToFloat4(meshInfo.m_irradianceColor.data());
                 worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
@@ -218,26 +229,6 @@ namespace AZ
                 AZ_Assert(subMesh.m_positionShaderBufferView.get(), "RayTracing Mesh PositionBuffer cannot be null");
                 AZ_Assert(subMesh.m_normalShaderBufferView.get(), "RayTracing Mesh NormalBuffer cannot be null");
 
-                // add mesh buffers
-                meshInfo.m_bufferStartIndex = m_meshBufferIndices.AddEntry(
-                {
-#if USE_BINDLESS_SRG
-                    subMesh.m_indexShaderBufferView.get() ? subMesh.m_indexShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_positionShaderBufferView.get() ? subMesh.m_positionShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_normalShaderBufferView.get() ? subMesh.m_normalShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_tangentShaderBufferView.get() ? subMesh.m_tangentShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_bitangentShaderBufferView.get() ? subMesh.m_bitangentShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_uvShaderBufferView.get() ? subMesh.m_uvShaderBufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex
-#else
-                    m_meshBuffers.AddResource(subMesh.m_indexShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_positionShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_normalShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_tangentShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_bitangentShaderBufferView.get()),
-                    m_meshBuffers.AddResource(subMesh.m_uvShaderBufferView.get())
-#endif
-                });
-
                 meshInfo.m_indexByteOffset = subMesh.m_indexBufferView.GetByteOffset();
                 meshInfo.m_positionByteOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
                 meshInfo.m_normalByteOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
@@ -245,43 +236,71 @@ namespace AZ
                 meshInfo.m_bitangentByteOffset = subMesh.m_bitangentShaderBufferView ? subMesh.m_bitangentVertexBufferView.GetByteOffset() : 0;
                 meshInfo.m_uvByteOffset = subMesh.m_uvShaderBufferView ? subMesh.m_uvVertexBufferView.GetByteOffset() : 0;
 
-                // add material textures
-                subMesh.m_baseColor.StoreToFloat4(materialInfo.m_baseColor.data());
-                subMesh.m_emissiveColor.StoreToFloat4(materialInfo.m_emissiveColor.data());
-                materialInfo.m_metallicFactor = subMesh.m_metallicFactor;
-                materialInfo.m_roughnessFactor = subMesh.m_roughnessFactor;
-                materialInfo.m_textureFlags = subMesh.m_textureFlags;
-
-                materialInfo.m_textureStartIndex = m_materialTextureIndices.AddEntry(
+                for (auto& [deviceIndex, materialInfos] : m_materialInfos)
                 {
+                    MaterialInfo& materialInfo = materialInfos[subMesh.m_globalIndex];
+
+                    auto& meshBufferIndices = m_meshBufferIndices[deviceIndex];
+
+                    // add mesh buffers
+                    meshInfo.m_bufferStartIndex = meshBufferIndices.AddEntry(
+                    {
 #if USE_BINDLESS_SRG
-                    subMesh.m_baseColorImageView.get() ? subMesh.m_baseColorImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_normalImageView.get() ? subMesh.m_normalImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_metallicImageView.get() ? subMesh.m_metallicImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_roughnessImageView.get() ? subMesh.m_roughnessImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex,
-                    subMesh.m_emissiveImageView.get() ? subMesh.m_emissiveImageView->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex() : InvalidIndex
+                        subMesh.m_indexShaderBufferView.get() ? subMesh.m_indexShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                        subMesh.m_positionShaderBufferView.get() ? subMesh.m_positionShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                        subMesh.m_normalShaderBufferView.get() ? subMesh.m_normalShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                        subMesh.m_tangentShaderBufferView.get() ? subMesh.m_tangentShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                        subMesh.m_bitangentShaderBufferView.get() ? subMesh.m_bitangentShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                        subMesh.m_uvShaderBufferView.get() ? subMesh.m_uvShaderBufferView->GetDeviceBufferView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex
 #else
-                    m_materialTextures.AddResource(subMesh.m_baseColorImageView.get()),
-                    m_materialTextures.AddResource(subMesh.m_normalImageView.get()),
-                    m_materialTextures.AddResource(subMesh.m_metallicImageView.get()),
-                    m_materialTextures.AddResource(subMesh.m_roughnessImageView.get()),
-                    m_materialTextures.AddResource(subMesh.m_emissiveImageView.get())
+                        m_meshBuffers.AddResource(subMesh.m_indexShaderBufferView.get()),
+                        m_meshBuffers.AddResource(subMesh.m_positionShaderBufferView.get()),
+                        m_meshBuffers.AddResource(subMesh.m_normalShaderBufferView.get()),
+                        m_meshBuffers.AddResource(subMesh.m_tangentShaderBufferView.get()),
+                        m_meshBuffers.AddResource(subMesh.m_bitangentShaderBufferView.get()),
+                        m_meshBuffers.AddResource(subMesh.m_uvShaderBufferView.get())
 #endif
-                });
+                    });
 
-                // add reflection probe data
-                if (mesh.m_reflectionProbe.m_reflectionProbeCubeMap.get())
-                {
-                    materialInfo.m_reflectionProbeCubeMapIndex = mesh.m_reflectionProbe.m_reflectionProbeCubeMap->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex)->GetBindlessReadIndex();
-                    if (materialInfo.m_reflectionProbeCubeMapIndex != InvalidIndex)
-                    {                        
-                        reflectionProbeModelToWorld3x4.StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorld.data());
-                        reflectionProbeModelToWorld3x4.GetInverseFull().StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorldInverse.data());
-                        mesh.m_reflectionProbe.m_outerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_outerObbHalfLengths.data());
-                        mesh.m_reflectionProbe.m_innerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_innerObbHalfLengths.data());
-                        materialInfo.m_reflectionProbeData.m_useReflectionProbe = true;
-                        materialInfo.m_reflectionProbeData.m_useParallaxCorrection = mesh.m_reflectionProbe.m_useParallaxCorrection;
-                        materialInfo.m_reflectionProbeData.m_exposure = mesh.m_reflectionProbe.m_exposure;
+                    // add material textures
+                    subMesh.m_baseColor.StoreToFloat4(materialInfo.m_baseColor.data());
+                    subMesh.m_emissiveColor.StoreToFloat4(materialInfo.m_emissiveColor.data());
+                    materialInfo.m_metallicFactor = subMesh.m_metallicFactor;
+                    materialInfo.m_roughnessFactor = subMesh.m_roughnessFactor;
+                    materialInfo.m_textureFlags = subMesh.m_textureFlags;
+
+                    auto& materialTextureIndices = m_materialTextureIndices[deviceIndex];
+                    materialInfo.m_textureStartIndex = materialTextureIndices.AddEntry(
+                    {
+#if USE_BINDLESS_SRG
+                        subMesh.m_baseColorImageView.get() ? subMesh.m_baseColorImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                        subMesh.m_normalImageView.get() ? subMesh.m_normalImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                        subMesh.m_metallicImageView.get() ? subMesh.m_metallicImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                        subMesh.m_roughnessImageView.get() ? subMesh.m_roughnessImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex,
+                        subMesh.m_emissiveImageView.get() ? subMesh.m_emissiveImageView->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidIndex
+#else
+                        m_materialTextures.AddResource(subMesh.m_baseColorImageView.get()),
+                        m_materialTextures.AddResource(subMesh.m_normalImageView.get()),
+                        m_materialTextures.AddResource(subMesh.m_metallicImageView.get()),
+                        m_materialTextures.AddResource(subMesh.m_roughnessImageView.get()),
+                        m_materialTextures.AddResource(subMesh.m_emissiveImageView.get())
+#endif
+                    });
+
+                    // add reflection probe data
+                    if (mesh.m_reflectionProbe.m_reflectionProbeCubeMap.get())
+                    {
+                        materialInfo.m_reflectionProbeCubeMapIndex = mesh.m_reflectionProbe.m_reflectionProbeCubeMap->GetImageView()->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex();
+                        if (materialInfo.m_reflectionProbeCubeMapIndex != InvalidIndex)
+                        {
+                            reflectionProbeModelToWorld3x4.StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorld.data());
+                            reflectionProbeModelToWorld3x4.GetInverseFull().StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorldInverse.data());
+                            mesh.m_reflectionProbe.m_outerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_outerObbHalfLengths.data());
+                            mesh.m_reflectionProbe.m_innerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_innerObbHalfLengths.data());
+                            materialInfo.m_reflectionProbeData.m_useReflectionProbe = true;
+                            materialInfo.m_reflectionProbeData.m_useParallaxCorrection = mesh.m_reflectionProbe.m_useParallaxCorrection;
+                            materialInfo.m_reflectionProbeData.m_exposure = mesh.m_reflectionProbe.m_exposure;
+                        }
                     }
                 }
             }
@@ -331,10 +350,16 @@ namespace AZ
                     uint32_t globalIndex = subMesh.m_globalIndex;
 
                     MeshInfo& meshInfo = m_meshInfos[globalIndex];
-                    MaterialInfo& materialInfo = m_materialInfos[globalIndex];
 
-                    m_meshBufferIndices.RemoveEntry(meshInfo.m_bufferStartIndex);
-                    m_materialTextureIndices.RemoveEntry(materialInfo.m_textureStartIndex);
+                    for (auto& [deviceIndex, meshBufferIndices] : m_meshBufferIndices)
+                    {
+                        meshBufferIndices.RemoveEntry(meshInfo.m_bufferStartIndex);
+                    }
+                    for (auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
+                    {
+                        MaterialInfo& materialInfo = m_materialInfos[deviceIndex][globalIndex];
+                        materialTextureIndices.RemoveEntry(materialInfo.m_textureStartIndex);
+                    }
 
 #if !USE_BINDLESS_SRG
                     m_meshBuffers.RemoveResource(subMesh.m_indexShaderBufferView.get());
@@ -356,7 +381,10 @@ namespace AZ
                         // the subMesh we're removing is in the middle of the global lists, remove by swapping the last element to its position in the list
                         m_subMeshes[globalIndex] = m_subMeshes.back();
                         m_meshInfos[globalIndex] = m_meshInfos.back();
-                        m_materialInfos[globalIndex] = m_materialInfos.back();
+                        for (auto& [deviceIndex, materialInfos] : m_materialInfos)
+                        {
+                            materialInfos[globalIndex] = materialInfos.back();
+                        }
 
                         // update the global index for the swapped subMesh
                         m_subMeshes[globalIndex].m_globalIndex = globalIndex;
@@ -369,7 +397,10 @@ namespace AZ
 
                     m_subMeshes.pop_back();
                     m_meshInfos.pop_back();
-                    m_materialInfos.pop_back();
+                    for (auto& [deviceIndex, materialInfos] : m_materialInfos)
+                    {
+                        materialInfos.pop_back();
+                    }
                 }
 
                 // remove from the Mesh list
@@ -383,10 +414,19 @@ namespace AZ
                     m_meshes.clear();
                     m_subMeshes.clear();
                     m_meshInfos.clear();
-                    m_materialInfos.clear();
+                    for (auto& [deviceIndex, materialInfos] : m_materialInfos)
+                    {
+                        materialInfos.clear();
+                    }
 
-                    m_meshBufferIndices.Reset();
-                    m_materialTextureIndices.Reset();
+                    for (auto& [deviceIndex, meshBufferIndices] : m_meshBufferIndices)
+                    {
+                        meshBufferIndices.Reset();
+                    }
+                    for (auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
+                    {
+                        materialTextureIndices.Reset();
+                    }
 
 #if !USE_BINDLESS_SRG
                     m_meshBuffers.Reset();
@@ -457,22 +497,26 @@ namespace AZ
                 {
                     SubMesh& subMesh = m_subMeshes[subMeshIndex];
                     uint32_t globalIndex = subMesh.m_globalIndex;
-                    MaterialInfo& materialInfo = m_materialInfos[globalIndex];
 
-                    materialInfo.m_reflectionProbeCubeMapIndex = reflectionProbeCubeMapIndex;
-                    if (materialInfo.m_reflectionProbeCubeMapIndex != InvalidIndex)
+                    for (auto& [deviceIndex, materialInfos] : m_materialInfos)
                     {
-                        reflectionProbeModelToWorld3x4.StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorld.data());
-                        reflectionProbeModelToWorld3x4.GetInverseFull().StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorldInverse.data());
-                        mesh.m_reflectionProbe.m_outerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_outerObbHalfLengths.data());
-                        mesh.m_reflectionProbe.m_innerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_innerObbHalfLengths.data());
-                        materialInfo.m_reflectionProbeData.m_useReflectionProbe = true;
-                        materialInfo.m_reflectionProbeData.m_useParallaxCorrection = mesh.m_reflectionProbe.m_useParallaxCorrection;
-                        materialInfo.m_reflectionProbeData.m_exposure = mesh.m_reflectionProbe.m_exposure;
-                    }
-                    else
-                    {
-                        materialInfo.m_reflectionProbeData.m_useReflectionProbe = false;
+                        MaterialInfo& materialInfo = materialInfos[globalIndex];
+
+                        materialInfo.m_reflectionProbeCubeMapIndex = reflectionProbeCubeMapIndex;
+                        if (materialInfo.m_reflectionProbeCubeMapIndex != InvalidIndex)
+                        {
+                            reflectionProbeModelToWorld3x4.StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorld.data());
+                            reflectionProbeModelToWorld3x4.GetInverseFull().StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorldInverse.data());
+                            mesh.m_reflectionProbe.m_outerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_outerObbHalfLengths.data());
+                            mesh.m_reflectionProbe.m_innerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_innerObbHalfLengths.data());
+                            materialInfo.m_reflectionProbeData.m_useReflectionProbe = true;
+                            materialInfo.m_reflectionProbeData.m_useParallaxCorrection = mesh.m_reflectionProbe.m_useParallaxCorrection;
+                            materialInfo.m_reflectionProbeData.m_exposure = mesh.m_reflectionProbe.m_exposure;
+                        }
+                        else
+                        {
+                            materialInfo.m_reflectionProbeData.m_useReflectionProbe = false;
+                        }
                     }
                 }
 
@@ -568,8 +612,15 @@ namespace AZ
                     // resize for the new sub-mesh count
                     currentMaterialInfoGpuBuffer->Resize(newMaterialInfoByteCount);
                 }
-               
-                currentMaterialInfoGpuBuffer->UpdateData(m_materialInfos.data(), newMaterialInfoByteCount);
+
+                AZStd::unordered_map<int, const void*> rawData;
+
+                for (auto& [deviceIndex, materialInfos] : m_materialInfos)
+                {
+                    rawData[deviceIndex] = materialInfos.data();
+                }
+
+                currentMaterialInfoGpuBuffer->UpdateData(rawData, newMaterialInfoByteCount);
 
                 m_materialInfoBufferNeedsUpdate = false;
             }
@@ -584,7 +635,7 @@ namespace AZ
 
                 // update mesh buffer indices buffer
                 Data::Instance<RPI::Buffer>& currentMeshBufferIndicesGpuBuffer = m_meshBufferIndicesGpuBuffer[m_currentIndexListFrameIndex];
-                uint32_t newMeshBufferIndicesByteCount = aznumeric_cast<uint32_t>(m_meshBufferIndices.GetIndexList().size()) * sizeof(uint32_t);
+                uint32_t newMeshBufferIndicesByteCount = aznumeric_cast<uint32_t>(m_meshBufferIndices.begin()->second.GetIndexList().size()) * sizeof(uint32_t);
 
                 if (currentMeshBufferIndicesGpuBuffer == nullptr)
                 {
@@ -622,12 +673,19 @@ namespace AZ
 
                 currentMeshBufferIndicesGpuBuffer->UpdateData(resolvedMeshBufferIndices.data(), newMeshBufferIndicesByteCount);
 #else
-                currentMeshBufferIndicesGpuBuffer->UpdateData(m_meshBufferIndices.GetIndexList().data(), newMeshBufferIndicesByteCount);
+                AZStd::unordered_map<int, const void*> rawMeshData;
+
+                for (auto& [deviceIndex, meshBufferIndices] : m_meshBufferIndices)
+                {
+                    rawMeshData[deviceIndex] = meshBufferIndices.GetIndexList().data();
+                }
+
+                currentMeshBufferIndicesGpuBuffer->UpdateData(rawMeshData, newMeshBufferIndicesByteCount);
 #endif
 
                 // update material texture indices buffer
                 Data::Instance<RPI::Buffer>& currentMaterialTextureIndicesGpuBuffer = m_materialTextureIndicesGpuBuffer[m_currentIndexListFrameIndex];
-                uint32_t newMaterialTextureIndicesByteCount = aznumeric_cast<uint32_t>(m_materialTextureIndices.GetIndexList().size()) * sizeof(uint32_t);
+                uint32_t newMaterialTextureIndicesByteCount = aznumeric_cast<uint32_t>(m_materialTextureIndices.begin()->second.GetIndexList().size()) * sizeof(uint32_t);
 
                 if (currentMaterialTextureIndicesGpuBuffer == nullptr)
                 {
@@ -665,7 +723,15 @@ namespace AZ
 
                 currentMaterialTextureIndicesGpuBuffer->UpdateData(resolvedMaterialTextureIndices.data(), newMaterialTextureIndicesByteCount);
 #else
-                currentMaterialTextureIndicesGpuBuffer->UpdateData(m_materialTextureIndices.GetIndexList().data(), newMaterialTextureIndicesByteCount);
+
+                AZStd::unordered_map<int, const void*> rawMaterialData;
+
+                for (auto& [deviceIndex, materialTextureIndices] : m_materialTextureIndices)
+                {
+                    rawMaterialData[deviceIndex] = materialTextureIndices.GetIndexList().data();
+                }
+
+                currentMaterialTextureIndicesGpuBuffer->UpdateData(rawMaterialData, newMaterialTextureIndicesByteCount);
 #endif
 
                 m_indexListNeedsUpdate = false;

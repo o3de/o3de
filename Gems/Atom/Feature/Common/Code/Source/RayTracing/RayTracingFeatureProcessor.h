@@ -362,7 +362,7 @@ namespace AZ
 
             // vector of MaterialInfo, transferred to the materialInfoGpuBuffer
             using MaterialInfoVector = AZStd::vector<MaterialInfo>;
-            MaterialInfoVector m_materialInfos;
+            AZStd::unordered_map<int, MaterialInfoVector> m_materialInfos;
             Data::Instance<RPI::Buffer> m_materialInfoGpuBuffer[BufferFrameCount];
             uint32_t m_currentMaterialInfoFrameIndex = 0;
 
@@ -389,10 +389,10 @@ namespace AZ
 
             // mesh buffer and material texture index lists, which contain the array indices of the mesh resources
             static const uint32_t NumMeshBuffersPerMesh = 6;
-            RayTracingIndexList<NumMeshBuffersPerMesh> m_meshBufferIndices;
+            AZStd::unordered_map<int, RayTracingIndexList<NumMeshBuffersPerMesh>> m_meshBufferIndices;
 
             static const uint32_t NumMaterialTexturesPerMesh = 5;
-            RayTracingIndexList<NumMaterialTexturesPerMesh> m_materialTextureIndices;
+            AZStd::unordered_map<int, RayTracingIndexList<NumMaterialTexturesPerMesh>> m_materialTextureIndices;
 
             // Gpu buffers for the mesh and material index lists
             Data::Instance<RPI::Buffer> m_meshBufferIndicesGpuBuffer[BufferFrameCount];
