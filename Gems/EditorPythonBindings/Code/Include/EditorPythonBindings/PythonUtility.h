@@ -11,7 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string_view.h>
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <pybind11/pybind11.h>
 
 namespace AZ
@@ -158,11 +158,21 @@ namespace EditorPythonBindings
                 const AZStd::string methodName, const AZ::BehaviorMethod& behaviorMethod, const AZ::BehaviorClass* behaviorClass = nullptr);
 
             //! Creates a string with class definition and documentation.
-            AZStd::string ClassDefinition(const AZ::BehaviorClass* behaviorClass, const AZStd::string className);
+            AZStd::string ClassDefinition(
+                const AZ::BehaviorClass* behaviorClass,
+                const AZStd::string className,
+                bool defineProperties = true,
+                bool defineMethods = true);
 
             //! Creates a property definition
             AZStd::string PropertyDefinition(
                 AZStd::string_view propertyName, int level, const AZ::BehaviorProperty& property, const AZ::BehaviorClass* behaviorClass);
+
+            AZStd::string GlobalPropertyDefinition(
+                const AZStd::string moduleName,
+                const AZStd::string propertyName,
+                const AZ::BehaviorProperty& behaviorProperty,
+                bool needsHeader = true);
 
         private:
             AZStd::string FetchListType(const AZ::TypeId& typeId);

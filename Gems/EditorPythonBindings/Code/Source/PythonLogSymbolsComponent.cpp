@@ -8,11 +8,11 @@
 
 #include <PythonLogSymbolsComponent.h>
 
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
+#include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonProxyBus.h>
 #include <Source/PythonProxyObject.h>
 #include <Source/PythonTypeCasters.h>
-#include <Source/PythonUtility.h>
 #include <pybind11/embed.h>
 
 #include <AzCore/IO/FileIO.h>
@@ -150,42 +150,8 @@ namespace EditorPythonBindings
         auto fileHandle = OpenModuleAt(moduleName);
         if (fileHandle->IsValid())
         {
-            // Behavior Class types with member methods and properties
-            AZStd::string buffer;
-            AzFramework::StringFunc::Append(buffer, "class ");
-            AzFramework::StringFunc::Append(buffer, className.data());
-            AzFramework::StringFunc::Append(buffer, ":\n");
+            AZStd::string buffer = m_pythonBehaviorDescription.ClassDefinition(behaviorClass, className);
             AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, buffer.c_str(), buffer.size());
-            buffer.clear();
-
-            if (behaviorClass->m_methods.empty() && behaviorClass->m_properties.empty())
-            {
-                AZStd::string body{ "    # behavior class type with no methods or properties \n" };
-                Text::Indent(1, body);
-                AzFramework::StringFunc::Append(body, "pass\n\n");
-                AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, body.c_str(), body.size());
-            }
-            else
-            {
-                for (const auto& properyEntry : behaviorClass->m_properties)
-                {
-                    AZ::BehaviorProperty* property = properyEntry.second;
-                    AZStd::string propertyName{ properyEntry.first };
-                    Scope::FetchScriptName(property->m_attributes, propertyName);
-                    WriteProperty(*fileHandle, 1, propertyName, *property, behaviorClass);
-                }
-
-                for (const auto& methodEntry : behaviorClass->m_methods)
-                {
-                    AZ::BehaviorMethod* method = methodEntry.second;
-                    if (method && PythonProxyObjectManagement::IsMemberLike(*method, behaviorClass->m_typeId))
-                    {
-                        AZStd::string baseMethodName{ methodEntry.first };
-                        Scope::FetchScriptName(method->m_attributes, baseMethodName);
-                        WriteMethod(*fileHandle, baseMethodName, *method, behaviorClass);
-                    }
-                }
-            }
         }
     }
 
@@ -254,37 +220,13 @@ namespace EditorPythonBindings
         auto fileHandle = OpenModuleAt(moduleName);
         if (fileHandle->IsValid())
         {
-            AZStd::string buffer;
-
             // add header
             AZ::u64 filesize = 0;
             AZ::IO::FileIOBase::GetInstance()->Size(fileHandle->m_handle, filesize);
-            if (filesize == 0)
-            {
-                AzFramework::StringFunc::Append(buffer, "class property():\n");
-            }
+            bool needsHeader = (filesize == 0);
 
-            Text::Indent(1, buffer);
-            AzFramework::StringFunc::Append(buffer, propertyName.data());
-            AzFramework::StringFunc::Append(buffer, ": ClassVar[");
-
-            const AZ::BehaviorParameter* resultParam = behaviorProperty->m_getter->GetResult();
-            AZStd::string_view type = FetchPythonTypeAndTraits(resultParam->m_typeId, resultParam->m_traits);
-            if (type.empty())
-            {
-                AzFramework::StringFunc::Append(buffer, "Any");
-            }
-            else
-            {
-                AzFramework::StringFunc::Append(buffer, type.data());
-            }
-            AzFramework::StringFunc::Append(buffer, "] = None");
-
-            if (behaviorProperty->m_getter && !behaviorProperty->m_setter)
-            {
-                AzFramework::StringFunc::Append(buffer, " # read only");
-            }
-            AzFramework::StringFunc::Append(buffer, "\n");
+            AZStd::string buffer =
+                m_pythonBehaviorDescription.GlobalPropertyDefinition(moduleName, propertyName, *behaviorProperty, needsHeader);
 
             AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, buffer.c_str(), buffer.size());
         }

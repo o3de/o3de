@@ -6,10 +6,10 @@
  *
  */
 
+#include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonMarshalComponent.h>
 #include <Source/PythonProxyObject.h>
 #include <Source/PythonTypeCasters.h>
-#include <Source/PythonUtility.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -1097,10 +1097,6 @@ namespace EditorPythonBindings
                 Internal::Indent(indentLevel, buffer);
                 pythonArgs.emplace_back("self");
             }
-            else
-            {
-                indentLevel = 0;
-            }
 
             AzFramework::StringFunc::Append(buffer, "def ");
             if (isMemberLike || !behaviorClass)
@@ -1146,7 +1142,70 @@ namespace EditorPythonBindings
             AzFramework::StringFunc::Append(buffer, "pass\n\n");
             return buffer;
         }
-        
+
+        AZStd::string PythonBehaviorDescription::ClassDefinition(
+            const AZ::BehaviorClass* behaviorClass, const AZStd::string className, bool defineProperties, bool defineMethods)
+        {
+            AZStd::string buffer;
+            AzFramework::StringFunc::Append(buffer, "class ");
+            AzFramework::StringFunc::Append(buffer, className.data());
+            AzFramework::StringFunc::Append(buffer, ":\n");
+
+            if (behaviorClass->m_methods.empty() && behaviorClass->m_properties.empty())
+            {
+                AZStd::string body;
+                if (defineProperties && defineMethods)
+                {
+                    body = "    # behavior class type with no methods or properties \n";
+                }
+                else if (defineProperties)
+                {
+                    body = "    # behavior class type with no properties \n";
+                }
+                else if (defineMethods)
+                {
+                    body = "    # behavior class type with no methods \n";
+                }
+                else
+                {
+                    body = "";
+                }
+                Internal::Indent(1, body);
+                AzFramework::StringFunc::Append(body, "pass\n\n");
+            }
+            else
+            {
+                if (defineProperties)
+                {
+                    for (const auto& propertyEntry : behaviorClass->m_properties)
+                    {
+                        AZ::BehaviorProperty* property = propertyEntry.second;
+                        AZStd::string propertyName{ propertyEntry.first };
+                        Scope::FetchScriptName(property->m_attributes, propertyName);
+                        AZStd::string propertyDef = PropertyDefinition(propertyName, 1, *property, behaviorClass);
+                        AzFramework::StringFunc::Append(buffer, propertyDef.c_str());
+                    }
+                }
+
+                if (defineMethods)
+                {
+                    for (const auto& methodEntry : behaviorClass->m_methods)
+                    {
+                        AZ::BehaviorMethod* method = methodEntry.second;
+                        if (method && PythonProxyObjectManagement::IsMemberLike(*method, behaviorClass->m_typeId))
+                        {
+                            AZStd::string baseMethodName{ methodEntry.first };
+                            Scope::FetchScriptName(method->m_attributes, baseMethodName);
+                            AZStd::string methodDef = MethodDefinition(baseMethodName, *method, behaviorClass);
+                            AzFramework::StringFunc::Append(buffer, methodDef.c_str());
+                        }
+                    }
+                }
+            }
+
+            return buffer;
+        }
+
         AZStd::string PythonBehaviorDescription::PropertyDefinition(
             AZStd::string_view propertyName, int level, const AZ::BehaviorProperty& property, const AZ::BehaviorClass* behaviorClass)
         {
@@ -1171,6 +1230,45 @@ namespace EditorPythonBindings
             AzFramework::StringFunc::Append(buffer, ":\n");
             Internal::Indent(level + 1, buffer);
             AzFramework::StringFunc::Append(buffer, "pass\n\n");
+            return buffer;
+        }
+
+        AZStd::string PythonBehaviorDescription::GlobalPropertyDefinition(
+            const AZStd::string moduleName,
+            const AZStd::string propertyName,
+            const AZ::BehaviorProperty& behaviorProperty,
+            bool needsHeader)
+        {
+            AZStd::string buffer;
+
+            // add header
+            if (needsHeader)
+            {
+                AzFramework::StringFunc::Append(buffer, "class property():\n");
+            }
+
+            Internal::Indent(1, buffer);
+            AzFramework::StringFunc::Append(buffer, propertyName.data());
+            AzFramework::StringFunc::Append(buffer, ": ClassVar[");
+
+            const AZ::BehaviorParameter* resultParam = behaviorProperty.m_getter->GetResult();
+            AZStd::string_view type = FetchPythonTypeAndTraits(resultParam->m_typeId, resultParam->m_traits);
+            if (type.empty())
+            {
+                AzFramework::StringFunc::Append(buffer, "Any");
+            }
+            else
+            {
+                AzFramework::StringFunc::Append(buffer, type.data());
+            }
+            AzFramework::StringFunc::Append(buffer, "] = None");
+
+            if (behaviorProperty.m_getter && !behaviorProperty.m_setter)
+            {
+                AzFramework::StringFunc::Append(buffer, " # read only");
+            }
+            AzFramework::StringFunc::Append(buffer, "\n");
+
             return buffer;
         }
     } // namespace Text

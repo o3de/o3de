@@ -11,8 +11,8 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
 
-#include <Source/PythonCommon.h>
-#include <Source/PythonUtility.h>
+#include <EditorPythonBindings/PythonCommon.h>
+#include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonSymbolsBus.h>
 
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
