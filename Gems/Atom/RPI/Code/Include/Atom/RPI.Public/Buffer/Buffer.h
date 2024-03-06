@@ -56,6 +56,9 @@ namespace AZ
             //! Update buffer's content with sourceData at an offset of bufferByteOffset
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0);
 
+            //! Update buffer's content with sourceData for each device at an offset of bufferByteOffset
+            bool UpdateData(const AZStd::unordered_map<int, const void*> sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0);
+
             //! Reallocate a new block of memory for this buffer. The previous allocated
             //! memory will be discarded once the GPU is done using it. This only works
             //! for buffers with host heap memory level.
