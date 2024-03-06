@@ -243,7 +243,7 @@ namespace AZ::RHI
         /// The set of fences to signal on scope completion.
         AZStd::vector<Ptr<Fence>>                m_fencesToSignal;
 
-        /// The set of fences to wait for scope completion.
+        /// The set of fences to wait for on scope completion.
         AZStd::vector<Ptr<Fence>> m_fencesToWaitFor;
 
         /// The set query pools.
