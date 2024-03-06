@@ -7,19 +7,19 @@
  */
 #pragma once
 
+#include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/optional.h>
+#include <AzCore/std/string/string_view.h>
 #include <Source/PythonCommon.h>
 #include <pybind11/pybind11.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/RTTI/AttributeReader.h>
-#include <AzCore/std/string/string_view.h>
-#include <AzCore/std/optional.h>
 
 namespace AZ
 {
     struct BehaviorParameter;
     struct BehaviorArgument;
     class BehaviorMethod;
-}
+} // namespace AZ
 
 namespace EditorPythonBindings
 {
@@ -37,7 +37,7 @@ namespace EditorPythonBindings
             }
             return (scopeType == AZ::Script::Attributes::ScopeFlags::Automation || scopeType == AZ::Script::Attributes::ScopeFlags::Common);
         }
-    
+
         inline void FetchScriptName(const AZ::AttributeArray& attributes, AZStd::string& baseName)
         {
             AZ::Attribute* scriptNameAttribute = AZ::FindAttribute(AZ::Script::Attributes::Alias, attributes);
@@ -47,20 +47,25 @@ namespace EditorPythonBindings
                 scopeAttributeReader.Read<AZStd::string>(baseName);
             }
         }
-    }
+    } // namespace Scope
 
     namespace Module
     {
         using PackageMapType = AZStd::unordered_map<AZStd::string, pybind11::module>;
 
         //! Finds or creates a sub-module to add a base parent module; create all the sub-modules as well
-        //! @param modulePackageMap keeps track of the known modules 
+        //! @param modulePackageMap keeps track of the known modules
         //! @param moduleName can be a dot separated string such as "mygen.mypackage.mymodule"
         //! @param parentModule the module to add new sub-modules
         //! @param fallbackModule the module to add new sub-modules
         //! @param alertUsingFallback issue a warning if using the fallback module
         //! @return the new submodule
-        pybind11::module DeterminePackageModule(PackageMapType& modulePackageMap, AZStd::string_view moduleName, pybind11::module parentModule, pybind11::module fallbackModule, bool alertUsingFallback);
+        pybind11::module DeterminePackageModule(
+            PackageMapType& modulePackageMap,
+            AZStd::string_view moduleName,
+            pybind11::module parentModule,
+            pybind11::module fallbackModule,
+            bool alertUsingFallback);
 
         inline AZStd::optional<AZStd::string_view> GetName(const AZ::AttributeArray& attributes)
         {
@@ -77,15 +82,14 @@ namespace EditorPythonBindings
             }
             return {};
         }
-    }
+    } // namespace Module
 
     namespace Convert
     {
         // allocation pattern for BehaviorValueParameters being stored in the stack and needs to be cleaned at the end of a block
         using VariableDeleter = AZStd::function<void()>;
 
-        struct StackVariableAllocator final
-            : public AZStd::static_buffer_allocator<256, 16>
+        struct StackVariableAllocator final : public AZStd::static_buffer_allocator<256, 16>
         {
         public:
             ~StackVariableAllocator();
@@ -99,26 +103,33 @@ namespace EditorPythonBindings
         //! @param behaviorValue is a parameter that came from a result or some prepared behavior value
         //! @param stackVariableAllocator manages the allocated parameter while in scope
         //! @return a valid Python object or None if no conversion was possible
-        pybind11::object BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator);
+        pybind11::object BehaviorValueParameterToPython(
+            AZ::BehaviorArgument& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator);
 
         //! Converts Python object to a behavior value parameter using an existing behaviorArgument from a Behavior Method
         //! @param behaviorArgument the stored argument slot from a Behavior Method to match with the pyObj to covert in the parameter
         //! @param parameter is the output of the conversion from Python to a Behavior value
         //! @param stackVariableAllocator manages the allocated parameter while in scope
         //! @return true if the conversion happened
-        bool PythonToBehaviorValueParameter(const AZ::BehaviorParameter& behaviorArgument, pybind11::object pyObj, AZ::BehaviorArgument& parameter, Convert::StackVariableAllocator& stackVariableAllocator);
-    
-        //! Converts Python object to a PythonProxyObject, if possible 
-        //! @param behaviorArgument A stored PythonProxyObject in Python, returns FALSE if the Python object does not point to a PythonProxyObject
+        bool PythonToBehaviorValueParameter(
+            const AZ::BehaviorParameter& behaviorArgument,
+            pybind11::object pyObj,
+            AZ::BehaviorArgument& parameter,
+            Convert::StackVariableAllocator& stackVariableAllocator);
+
+        //! Converts Python object to a PythonProxyObject, if possible
+        //! @param behaviorArgument A stored PythonProxyObject in Python, returns FALSE if the Python object does not point to a
+        //! PythonProxyObject
         //! @param parameter is the output of the conversion from Python to a Behavior value
         //! @return true if the conversion happened
-        bool PythonProxyObjectToBehaviorValueParameter(const AZ::BehaviorParameter& behaviorArgument, pybind11::object pyObj, AZ::BehaviorArgument& parameter);
+        bool PythonProxyObjectToBehaviorValueParameter(
+            const AZ::BehaviorParameter& behaviorArgument, pybind11::object pyObj, AZ::BehaviorArgument& parameter);
 
         //! Gets a readable type name for the Python object; this will unwrap a PythonProxyObject to find its underlying type name
         //! @param pyObj any valid Python object value
         //! @return text form of the Python object value type
         AZStd::string GetPythonTypeName(pybind11::object pyObj);
-    }
+    } // namespace Convert
 
     namespace Call
     {
@@ -127,5 +138,38 @@ namespace EditorPythonBindings
 
         //! Calls a BehaviorMethod with a tuple of arguments for member class level functions
         pybind11::object ClassMethod(AZ::BehaviorMethod* behaviorMethod, AZ::BehaviorObject self, pybind11::args args);
-    }
-}
+    } // namespace Call
+
+    namespace Text
+    {
+        class PythonBehaviorDescription
+        {
+        public:
+            //! Get Python type for behavior typeId.
+            AZStd::string_view FetchPythonTypeAndTraits(const AZ::TypeId& typeId, AZ::u32 traits);
+            AZStd::string FetchPythonTypeName(const AZ::BehaviorParameter& param);
+            AZStd::string FetchOutcomeType(const AZ::TypeId& typeId);
+
+            //! Creates a string containing bus events and documentation.
+            AZStd::string BusDefinition(const AZStd::string busName, const AZ::BehaviorEBus* behaviorEBus);
+
+            //! Creates a string with class or global method definition and documentation.
+            AZStd::string MethodDefinition(
+                const AZStd::string methodName, const AZ::BehaviorMethod& behaviorMethod, const AZ::BehaviorClass* behaviorClass = nullptr);
+
+            //! Creates a string with class definition and documentation.
+            AZStd::string ClassDefinition(const AZ::BehaviorClass* behaviorClass, const AZStd::string className);
+
+            //! Creates a property definition
+            AZStd::string PropertyDefinition(
+                AZStd::string_view propertyName, int level, const AZ::BehaviorProperty& property, const AZ::BehaviorClass* behaviorClass);
+
+        private:
+            AZStd::string FetchListType(const AZ::TypeId& typeId);
+            AZStd::string FetchMapType(const AZ::TypeId& typeId);
+
+            using TypeMap = AZStd::unordered_map<AZ::TypeId, AZStd::string>;
+            TypeMap m_typeCache;
+        };
+    } // namespace Text
+} // namespace EditorPythonBindings
