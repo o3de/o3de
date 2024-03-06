@@ -1172,6 +1172,7 @@ namespace EditorPythonBindings
                 }
                 Internal::Indent(1, body);
                 AzFramework::StringFunc::Append(body, "pass\n\n");
+                AzFramework::StringFunc::Append(buffer, body.c_str());
             }
             else
             {
