@@ -78,7 +78,7 @@ namespace AzToolsFramework::EmbeddedPython
         const auto parseOutcome = AZ::Settings::ParseConfigFile(systemFileStream, parserSettings);
         AZ_Error("python", parseOutcome, "Python venv file at %s missing home key. Make sure to run python/get_python.", pythonVenvConfig.c_str());
 
-        return AZ::IO::FixedMaxPath(pythonHome.c_str());
+        return AZ::IO::FixedMaxPath(pythonHome);
     }
 
     void PythonLoader::ReadPythonEggLinkPaths(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot, AZStd::vector<AZStd::string>& resultPaths)
