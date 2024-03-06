@@ -48,9 +48,16 @@ namespace AZ::RHI
     void RHISystem::Init(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout)
     {
         //! If a bindless srg layout is not provided we simply skip initialization with the assumption that no one will use bindless srg
-        if (bindlessSrgLayout && m_devices[MultiDevice::DefaultDeviceIndex]->InitBindlessSrg(bindlessSrgLayout) != RHI::ResultCode::Success)
+        if (bindlessSrgLayout)
         {
-            AZ_Assert(false, "RHISystem", "Bindless SRG was not initialized.\n");
+            bool success = true;
+
+            for (auto device : m_devices)
+            {
+                success &= device->InitBindlessSrg(bindlessSrgLayout) == RHI::ResultCode::Success;
+            }
+
+            AZ_Assert(success, "RHISystem", "Bindless SRG was not initialized.\n");
         }
 
         RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;

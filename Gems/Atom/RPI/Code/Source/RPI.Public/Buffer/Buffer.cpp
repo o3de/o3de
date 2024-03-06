@@ -331,11 +331,40 @@ namespace AZ
             if (auto buf = Map(sourceDataSize, bufferByteOffset); buf.size())
             {
                 auto partialResult{false};
-                for (auto index{ 0u }; index < buf.size(); ++index)
+                for (auto& [deviceIndex, buffer] : buf)
                 {
-                    if(buf[index] != nullptr)
+                    if(buffer != nullptr)
                     {
-                        memcpy(buf[index], sourceData, sourceDataSize);
+                        memcpy(buffer, sourceData, sourceDataSize);
+                        partialResult = true;
+                    }
+                }
+
+                if(partialResult)
+                {
+                    Unmap();
+                }
+                return partialResult;
+            }
+
+            return false;
+        }
+
+        bool Buffer::UpdateData(const AZStd::unordered_map<int, const void*> sourceData, uint64_t sourceDataSize, uint64_t bufferByteOffset)
+        {
+            if (sourceDataSize == 0)
+            {
+                return true;
+            }
+
+            if (auto buf = Map(sourceDataSize, bufferByteOffset); buf.size())
+            {
+                auto partialResult{false};
+                for (auto& [deviceIndex, source] : sourceData)
+                {
+                    if(buf[deviceIndex] != nullptr)
+                    {
+                        memcpy(buf[deviceIndex], source, sourceDataSize);
                         partialResult = true;
                     }
                 }
