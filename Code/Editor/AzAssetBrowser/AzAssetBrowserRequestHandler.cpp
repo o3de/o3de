@@ -194,7 +194,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
         return validEntries[0];
     }
 
-    // return true if a given product has an asociated component type.
+    // return true if a given product has an associated component type.
     bool ProductHasAssociatedComponent(const ProductAssetBrowserEntry* product)
     {
         if (!product)
