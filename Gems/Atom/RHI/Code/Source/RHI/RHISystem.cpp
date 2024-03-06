@@ -53,8 +53,6 @@ namespace AZ::RHI
             AZ_Assert(false, "RHISystem", "Bindless SRG was not initialized.\n");
         }
 
-        Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor = m_devices[MultiDevice::DefaultDeviceIndex]->GetDescriptor().m_platformLimitsDescriptor;
-
         RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
 
         m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
@@ -64,6 +62,8 @@ namespace AZ::RHI
 
         for (int deviceIndex{0}; deviceIndex < GetDeviceCount(); ++deviceIndex)
         {
+            Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor = m_devices[deviceIndex]->GetDescriptor().m_platformLimitsDescriptor;
+
             frameSchedulerDescriptor.m_transientAttachmentPoolDescriptors[deviceIndex].m_renderTargetBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
             frameSchedulerDescriptor.m_transientAttachmentPoolDescriptors[deviceIndex].m_imageBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
             frameSchedulerDescriptor.m_transientAttachmentPoolDescriptors[deviceIndex].m_bufferBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_bufferBudgetInBytes;
