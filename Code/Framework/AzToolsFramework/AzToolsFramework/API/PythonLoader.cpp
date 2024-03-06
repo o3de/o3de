@@ -58,7 +58,6 @@ namespace AzToolsFramework::EmbeddedPython
     AZ::IO::FixedMaxPath PythonLoader::GetPythonExecutablePath(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot)
     {
         AZ::IO::FixedMaxPath pythonVenvConfig = PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot) / "pyvenv.cfg";
-        AZ::IO::FileIOStream fileIoStream;
         AZ::IO::SystemFileStream systemFileStream;
         if (!systemFileStream.Open(pythonVenvConfig.c_str(), AZ::IO::OpenMode::ModeRead))
         {
