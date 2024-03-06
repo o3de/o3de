@@ -210,7 +210,7 @@ namespace AZ::RHI
         }
 
         //! Requests that the provided fence be waited for before the scope has started.
-        void WaitFence(SingleDeviceFence& fence)
+        void WaitFence(Fence& fence)
         {
             m_frameGraph.WaitFence(fence);
         }
