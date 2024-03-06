@@ -66,7 +66,7 @@ namespace AzToolsFramework::EmbeddedPython
         }
 
         AZ::Settings::ConfigParserSettings parserSettings;
-        AZStd::string pythonHome;
+        AZ::IO::FixedMaxPathString pythonHome;
         parserSettings.m_parseConfigEntryFunc = [&pythonHome](const AZ::Settings::ConfigParserSettings::ConfigEntry& configEntry)
         {
             if (configEntry.m_keyValuePair.m_key.compare("home") == 0)
