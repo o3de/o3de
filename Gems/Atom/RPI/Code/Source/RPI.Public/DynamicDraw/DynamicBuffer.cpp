@@ -47,7 +47,7 @@ namespace AZ
             return m_allocator->GetStreamBufferView(this, strideByteCount);
         }
 
-        void DynamicBuffer::Initialize(AZStd::unordered_map<int, void*> address, uint32_t size)
+        void DynamicBuffer::Initialize(const AZStd::unordered_map<int, void*>& address, uint32_t size)
         {
             m_address = address;
             m_size = size;

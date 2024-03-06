@@ -62,7 +62,7 @@ namespace AZ
             DynamicBuffer() = default;
 
             // initialize function called by DynamicBufferAllocator which to initialize this buffer
-            void Initialize(AZStd::unordered_map<int, void*> address, uint32_t size);
+            void Initialize(const AZStd::unordered_map<int, void*>& address, uint32_t size);
 
             AZStd::unordered_map<int, void*> m_address;
             uint32_t m_size;
