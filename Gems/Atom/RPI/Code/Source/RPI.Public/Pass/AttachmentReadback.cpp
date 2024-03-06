@@ -370,59 +370,14 @@ namespace AZ
                     AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());
                     return;
                 }
-                m_imageDescriptor = image->GetDescriptor();
+
                 for (uint16_t itemIdx = 0; itemIdx < static_cast<uint16_t>(m_readbackItems.size()); itemIdx++)
                 {
                     auto& readbackItem = m_readbackItems[itemIdx];
-                    // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the array subresources and planars
-                    // only array 0, and one aspect (planar) at this moment.
-                    // Note: Mip Levels and Texture3D images are supported.
-                    const uint16_t mipSlice = m_imageMipsRange.m_mipSliceMin + itemIdx;
-                    RHI::ImageSubresourceRange range(mipSlice, mipSlice, 0, 0);
-                    range.m_aspectFlags = RHI::ImageAspectFlags::Color;
-
-                    // setup aspect 
-                    RHI::ImageAspect imageAspect = RHI::ImageAspect::Color;
-                    RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(m_imageDescriptor.m_format);
-                    if (RHI::CheckBitsAll(imageAspectFlags, RHI::ImageAspectFlags::Depth))
-                    {
-                        imageAspect = RHI::ImageAspect::Depth;
-                        range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
-                    }
-
-                    AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
-                    imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
-                    size_t totalSizeInBytes = 0;
-                    // compute lowest device index from mask
-                    int deviceIndex = static_cast<int>(image->GetDeviceMask());
-                    deviceIndex = AZ::Log2(deviceIndex & -deviceIndex);
-                    image->GetDeviceImage(deviceIndex)
-                        ->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
-                    AZ::u64 byteCount = totalSizeInBytes;
-
-                    RPI::CommonBufferDescriptor desc;
-                    desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
-                    desc.m_bufferName = m_readbackName.GetStringView();
-                    desc.m_byteCount = byteCount;
-
-                    readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-
-                    // Use the aspect format as output format, this format is also used as copy destination's format
-                    m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
 
                     // copy descriptor for copying image to buffer
                     RHI::MultiDeviceCopyImageToBufferDescriptor copyImageToBuffer;
                     copyImageToBuffer.m_mdSourceImage = image;
-                    copyImageToBuffer.m_sourceSize = imageSubresourceLayouts[mipSlice].m_size;
-                    copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(mipSlice, 0 /*arraySlice*/, imageAspect);
-                    copyImageToBuffer.m_destinationOffset = 0;
-                    copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayouts[mipSlice].m_bytesPerRow;
-                    copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayouts[mipSlice].m_bytesPerImage;
-                    copyImageToBuffer.m_mdDestinationBuffer = readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
-                    copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
-
-                    readbackItem.m_mipInfo.m_slice = mipSlice;
-                    readbackItem.m_mipInfo.m_size = imageSubresourceLayouts[mipSlice].m_size;
 
                     readbackItem.m_copyItem = copyImageToBuffer;
                 }
@@ -433,37 +388,106 @@ namespace AZ
         {
             uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
             auto deviceIndex = context.GetDeviceIndex();
-            m_fence->GetDeviceFence(deviceIndex)->WaitOnCpuAsync([this, readbackBufferCurrentIndex, deviceIndex]()
-                {
-                    if (m_state == ReadbackState::Reading)
+            m_fence->GetDeviceFence(deviceIndex)
+                ->WaitOnCpuAsync(
+                    [this, readbackBufferCurrentIndex, deviceIndex]()
                     {
-                        if (CopyBufferData(readbackBufferCurrentIndex, deviceIndex))
+                        if (m_state == ReadbackState::Reading)
                         {
-                            m_state = ReadbackState::Success;
+                            if (CopyBufferData(readbackBufferCurrentIndex, deviceIndex))
+                            {
+                                m_state = ReadbackState::Success;
+                            }
+                            else
+                            {
+                                m_state = ReadbackState::Failed;
+                            }
                         }
-                        else
+                        if (m_callback)
                         {
-                            m_state = ReadbackState::Failed;
+                            m_callback(GetReadbackResult());
                         }
-                    }
-                    if (m_callback)
-                    {
-                        m_callback(GetReadbackResult());
-                    }
 
-                    Reset();
-                }
-                );
+                        Reset();
+                    });
 
-            for (const auto& readbackItem : m_readbackItems)
+            for (uint16_t itemIdx = 0; itemIdx < static_cast<uint16_t>(m_readbackItems.size()); itemIdx++)
             {
+                auto& readbackItem = m_readbackItems[itemIdx];
+                if (m_attachmentType == RHI::AttachmentType::Image)
+                {
+                    // copy image to read back buffer since only buffer can be accessed by host
+                    const auto image = readbackItem.m_copyItem.m_mdImage.m_mdSourceImage;
+                    if (!image)
+                    {
+                        AZ_Warning(
+                            "AttachmentReadback",
+                            false,
+                            "Failed to find attachment image %s for copy to buffer",
+                            m_copyAttachmentId.GetCStr());
+                        return;
+                    }
+
+                    m_imageDescriptor = image->GetDescriptor();
+                    // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the array subresources and planars
+                    // only array 0, and one aspect (planar) at this moment.
+                    // Note: Mip Levels and Texture3D images are supported.
+                    const uint16_t mipSlice = m_imageMipsRange.m_mipSliceMin + itemIdx;
+                    RHI::ImageSubresourceRange range(mipSlice, mipSlice, 0, 0);
+                    range.m_aspectFlags = RHI::ImageAspectFlags::Color;
+
+                    // setup aspect
+                    RHI::ImageAspect imageAspect = RHI::ImageAspect::Color;
+                    RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(m_imageDescriptor.m_format);
+                    if (RHI::CheckBitsAll(imageAspectFlags, RHI::ImageAspectFlags::Depth))
+                    {
+                    imageAspect = RHI::ImageAspect::Depth;
+                    range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                        }
+
+                        AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
+                        imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
+                        size_t totalSizeInBytes = 0;
+                        image->GetDeviceImage(context.GetDeviceIndex())
+                            ->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
+                        AZ::u64 byteCount = totalSizeInBytes;
+
+                        RPI::CommonBufferDescriptor desc;
+                        desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
+                        desc.m_bufferName = m_readbackName.GetStringView();
+                        desc.m_byteCount = byteCount;
+
+                        readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex] =
+                            BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+
+                        // Use the aspect format as output format, this format is also used as copy destination's format
+                        m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
+
+                        // copy descriptor for copying image to buffer
+                        RHI::MultiDeviceCopyImageToBufferDescriptor copyImageToBuffer;
+                        copyImageToBuffer.m_mdSourceImage = image;
+                        copyImageToBuffer.m_sourceSize = imageSubresourceLayouts[mipSlice].m_size;
+                        copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(mipSlice, 0 /*arraySlice*/, imageAspect);
+                        copyImageToBuffer.m_destinationOffset = 0;
+                        copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayouts[mipSlice].m_bytesPerRow;
+                        copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayouts[mipSlice].m_bytesPerImage;
+                        copyImageToBuffer.m_mdDestinationBuffer =
+                            readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
+                        copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
+
+                        readbackItem.m_mipInfo.m_slice = mipSlice;
+                        readbackItem.m_mipInfo.m_size = imageSubresourceLayouts[mipSlice].m_size;
+
+                        readbackItem.m_copyItem = copyImageToBuffer;
+                }
+
                 if (readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex])
                 {
                     context.GetCommandList()->Submit(readbackItem.m_copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
                 }
             }
         }
-        
+
         void AttachmentReadback::Reset()
         {
             m_attachmentId = RHI::AttachmentId{};

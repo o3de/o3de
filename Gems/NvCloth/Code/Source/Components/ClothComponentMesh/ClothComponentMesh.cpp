@@ -559,10 +559,10 @@ namespace NvCloth
             MappedBuffer<AZ::Vector4> destTangents(subMesh.GetSemanticBufferAssetView(tangentSemantic), numVertices, AZ::RHI::Format::R32G32B32A32_FLOAT);
             MappedBuffer<AZ::PackedVector3f> destBitangents(subMesh.GetSemanticBufferAssetView(bitangentSemantic), numVertices, AZ::RHI::Format::R32G32B32_FLOAT);
 
-            auto destVerticesData = destVertices.GetBuffer();
-            auto destNormalsData = destNormals.GetBuffer();
-            auto destTangentsData = destTangents.GetBuffer();
-            auto destBitangentsData = destBitangents.GetBuffer();
+            const auto& destVerticesData = destVertices.GetBuffer();
+            const auto& destNormalsData = destNormals.GetBuffer();
+            const auto& destTangentsData = destTangents.GetBuffer();
+            const auto& destBitangentsData = destBitangents.GetBuffer();
 
             if (!destVerticesData.empty())
             {
