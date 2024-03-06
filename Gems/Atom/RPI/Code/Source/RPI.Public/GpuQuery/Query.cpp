@@ -137,7 +137,7 @@ namespace AZ
             return QueryResultCode::Success;
         }
 
-        QueryResultCode Query::GetLatestResultAndWait(void* queryResult, uint32_t resultSizeInBytes)
+        QueryResultCode Query::GetLatestResultAndWait(void* queryResult, uint32_t resultSizeInBytes, int deviceIndex)
         {
             if (resultSizeInBytes < m_queryPool->GetQueryResultSize())
             {
@@ -156,10 +156,10 @@ namespace AZ
             const SubQuery& recentSubQuery = m_subQueryArray[recentSubQueryIndex];
 
             // This may stall the calling thread; depending if the query result is already available for polling.
-            return m_queryPool->GetQueryResultFromIndices(static_cast<uint64_t*>(queryResult), recentSubQuery.m_rhiQueryIndices, RHI::QueryResultFlagBits::Wait);
+            return m_queryPool->GetQueryResultFromIndices(static_cast<uint64_t*>(queryResult), recentSubQuery.m_rhiQueryIndices, RHI::QueryResultFlagBits::Wait, deviceIndex);
         }
 
-        QueryResultCode Query::GetLatestResult(void* queryResult, uint32_t resultSizeInBytes)
+        QueryResultCode Query::GetLatestResult(void* queryResult, uint32_t resultSizeInBytes, int deviceIndex)
         {
             if (resultSizeInBytes < m_queryPool->GetQueryResultSize())
             {
@@ -176,7 +176,7 @@ namespace AZ
             }
 
             SubQuery& subQuery = m_subQueryArray[latestQueryIndex];
-            return m_queryPool->GetQueryResultFromIndices(static_cast<uint64_t*>(queryResult), subQuery.m_rhiQueryIndices, RHI::QueryResultFlagBits::None);
+            return m_queryPool->GetQueryResultFromIndices(static_cast<uint64_t*>(queryResult), subQuery.m_rhiQueryIndices, RHI::QueryResultFlagBits::None, deviceIndex);
         }
 
         bool Query::AssignNewFrameIndexToSubQuery(uint64_t poolFrameIndex)

@@ -176,14 +176,14 @@ namespace AZ
             return m_rhiQueryArray;
         }
 
-        QueryResultCode QueryPool::GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag)
+        QueryResultCode QueryPool::GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag, int deviceIndex)
         {
             // Get the raw RHI Query pointers.
-            AZStd::vector<RHI::MultiDeviceQuery*> queryArray = GetRawRhiQueriesFromInterval(rhiQueryIndices);
+            AZStd::vector<RHI::SingleDeviceQuery*> queryArray = GetRawRhiQueriesFromInterval(rhiQueryIndices, deviceIndex);
 
             // RHI Query results are readback with values that are a multiple of uint64_t.
             const uint32_t resultCount = m_queryResultSize / sizeof(uint64_t);
-            const RHI::ResultCode resultCode = m_rhiQueryPool->GetResults(queryArray.data(), m_queriesPerResult, result, resultCount, queryResultFlag);
+            const RHI::ResultCode resultCode = m_rhiQueryPool->GetDeviceQueryPool(deviceIndex)->GetResults(queryArray.data(), m_queriesPerResult, result, resultCount, queryResultFlag);
 
             return resultCode == RHI::ResultCode::Success ? QueryResultCode::Success : QueryResultCode::Fail;
         }
@@ -262,15 +262,15 @@ namespace AZ
             return AZStd::span<const RHI::Ptr<RHI::MultiDeviceQuery>>(m_rhiQueryArray.begin() + rhiQueryIndices.m_min, queryCount);
         }
 
-        AZStd::vector<RHI::MultiDeviceQuery*> QueryPool::GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const
+        AZStd::vector<RHI::SingleDeviceQuery*> QueryPool::GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices, int deviceIndex) const
         {
             auto rhiQueries = GetRhiQueriesFromInterval(rhiQueryIndices);
 
-            AZStd::vector<RHI::MultiDeviceQuery*> queryArray;
+            AZStd::vector<RHI::SingleDeviceQuery*> queryArray;
             queryArray.reserve(rhiQueries.size());
             for (RHI::Ptr<RHI::MultiDeviceQuery> rhiQuery : rhiQueries)
             {
-                queryArray.emplace_back(rhiQuery.get());
+                queryArray.emplace_back(rhiQuery->GetDeviceQuery(deviceIndex).get());
             }
 
             return queryArray;

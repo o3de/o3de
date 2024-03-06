@@ -69,10 +69,10 @@ namespace AZ
             // Returns a span of RHI Queries depending on the indices that are provided.
             AZStd::span<const RHI::Ptr<RHI::MultiDeviceQuery>> GetRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
             // Returns an array of raw RHI Query pointers depending on the indices that are provided.
-            AZStd::vector<RHI::MultiDeviceQuery*> GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices) const;
+            AZStd::vector<AZ::RHI::SingleDeviceQuery*> GetRawRhiQueriesFromInterval(const RHI::Interval& rhiQueryIndices, int deviceIndex) const;
 
             // Readback results from the provided RHI Query indices.
-            QueryResultCode GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag);
+            QueryResultCode GetQueryResultFromIndices(uint64_t* result, RHI::Interval rhiQueryIndices, RHI::QueryResultFlagBits queryResultFlag, int deviceIndex);
 
             // Depending on the QueryType, the method to poll data from the queries vary.
             virtual RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
