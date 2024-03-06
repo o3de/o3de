@@ -1295,6 +1295,22 @@ IEditor* SandboxIntegrationManager::GetEditor()
 }
 
 //////////////////////////////////////////////////////////////////////////
+bool SandboxIntegrationManager::GetUndoSliceOverrideSaveValue()
+{
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+bool SandboxIntegrationManager::GetShowCircularDependencyError()
+{
+    return true;
+}
+
+void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& /* showCircularDependencyError */)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
 void SandboxIntegrationManager::LaunchLuaEditor(const char* files)
 {
     CCryEditApp::instance()->OpenLUAEditor(files);

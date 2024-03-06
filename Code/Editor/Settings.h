@@ -407,6 +407,15 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SLevelSaveSettings levelSaveSettings;
 
+    // Legacy - remove once all references have been removed.
+    struct SSliceSettings
+    {
+        bool dynamicByDefault;
+    };
+
+    SSliceSettings sliceSettings;
+    bool prefabSystem = true;
+
 private:
     void SaveValue(const char* sSection, const char* sKey, int value);
     void SaveValue(const char* sSection, const char* sKey, const QColor& value);
