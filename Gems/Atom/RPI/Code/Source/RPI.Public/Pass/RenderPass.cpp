@@ -222,6 +222,8 @@ namespace AZ
             BeginScopeQuery(context);
             BuildCommandListInternal(context);
             EndScopeQuery(context);
+
+            m_lastDeviceIndex = context.GetDeviceIndex();
         }
 
         void RenderPass::DeclareAttachmentsToFrameGraph(RHI::FrameGraphInterface frameGraph) const
@@ -567,13 +569,13 @@ namespace AZ
             {
                 const uint32_t TimestampResultQueryCount = 2u;
                 uint64_t timestampResult[TimestampResultQueryCount] = {0};
-                query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
+                query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, m_lastDeviceIndex);
                 m_timestampResult = TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
             });
 
             ExecuteOnPipelineStatisticsQuery([this](RHI::Ptr<Query> query)
             {
-                query->GetLatestResult(&m_statisticsResult, sizeof(PipelineStatisticsResult));
+                query->GetLatestResult(&m_statisticsResult, sizeof(PipelineStatisticsResult), m_lastDeviceIndex);
             });
         }
     }   // namespace RPI

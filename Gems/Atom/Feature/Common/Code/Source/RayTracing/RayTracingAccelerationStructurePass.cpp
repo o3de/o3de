@@ -345,6 +345,8 @@ namespace AZ
             // [GHI-16945] Feature Request - Add GPU timestamp and pipeline statistic support for scopes
             ExecuteOnTimestampQuery(endQuery);
             ExecuteOnPipelineStatisticsQuery(endQuery);
+
+            m_lastDeviceIndex = context.GetDeviceIndex();
         }
 
         void RayTracingAccelerationStructurePass::ReadbackScopeQueryResults()
@@ -354,14 +356,14 @@ namespace AZ
                 {
                   const uint32_t TimestampResultQueryCount{ 2u };
                   uint64_t timestampResult[TimestampResultQueryCount] = { 0 };
-                  query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount);
+                  query->GetLatestResult(&timestampResult, sizeof(uint64_t) * TimestampResultQueryCount, m_lastDeviceIndex);
                   m_timestampResult = RPI::TimestampResult(timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics);
                 });
 
             ExecuteOnPipelineStatisticsQuery(
                 [this](const RHI::Ptr<RPI::Query>& query)
                 {
-                  query->GetLatestResult(&m_statisticsResult, sizeof(RPI::PipelineStatisticsResult));
+                  query->GetLatestResult(&m_statisticsResult, sizeof(RPI::PipelineStatisticsResult), m_lastDeviceIndex);
                 });
         }
     }   // namespace RPI
