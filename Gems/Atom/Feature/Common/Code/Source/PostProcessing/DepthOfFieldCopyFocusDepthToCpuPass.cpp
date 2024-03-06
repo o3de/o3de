@@ -105,10 +105,7 @@ namespace AZ
                     }
                 }
 
-                if (m_fence)
-                {
-                    m_fence->Reset();
-                }
+                m_fence->Reset();
             }
             );
 
