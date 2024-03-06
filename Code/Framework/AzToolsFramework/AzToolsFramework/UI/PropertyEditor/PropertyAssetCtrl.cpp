@@ -91,6 +91,7 @@ namespace AzToolsFramework
         pLayout->setContentsMargins(0, 0, 0, 0);
         pLayout->setSpacing(2);
 
+        m_browseEdit->lineEdit()->setAcceptDrops(false);
         setAcceptDrops(true);
 
         m_thumbnail = new ThumbnailPropertyCtrl(this);
