@@ -53,12 +53,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
     serialize.Class<Undo>()
         ->Version(2)
         ->Field("UndoLevels", &Undo::m_undoLevels)
-        ->Field("UndoSliceOverrideSaves", &Undo::m_undoSliceOverrideSaveValue);;
-
-    serialize.Class<DeepSelection>()
-        ->Version(2)
-        ->Field("DeepSelectionRange", &DeepSelection::m_deepSelectionRange)
-        ->Field("StickDuplicate", &DeepSelection::m_stickDuplicate);
+        ->Field("UndoSliceOverrideSaves", &Undo::m_undoSliceOverrideSaveValue);
 
     serialize.Class<SliceSettings>()
         ->Version(1)
@@ -70,7 +65,6 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Field("Prefab Save Settings", &CEditorPreferencesPage_General::m_levelSaveSettings)
         ->Field("Messaging", &CEditorPreferencesPage_General::m_messaging)
         ->Field("Undo", &CEditorPreferencesPage_General::m_undo)
-        ->Field("Deep Selection", &CEditorPreferencesPage_General::m_deepSelection)
         ->Field("Slice Settings", &CEditorPreferencesPage_General::m_sliceSettings);
 
 
@@ -113,12 +107,6 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Max, 10000)
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Undo::m_undoSliceOverrideSaveValue, "Undo Slice Override Saves", "Allow slice saves to be undone");
 
-        editContext->Class<DeepSelection>("Selection", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DeepSelection::m_stickDuplicate, "Stick duplicate to cursor", "Stick duplicate to cursor")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &DeepSelection::m_deepSelectionRange, "Deep selection range", "Deep Selection Range")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-            ->Attribute(AZ::Edit::Attributes::Max, 1000.0f);
-
         editContext->Class<SliceSettings>("Slices", "")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SliceSettings::m_slicesDynamicByDefault, "New Slices Dynamic By Default", "When creating slices, they will be set to dynamic by default");
 
@@ -129,7 +117,6 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Prefab Save Settings", "File>Save")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_messaging, "Messaging", "Messaging")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_deepSelection, "Selection", "Selection")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_sliceSettings, "Slices", "Slice Settings");
     }
 }
@@ -180,10 +167,6 @@ void CEditorPreferencesPage_General::OnApply()
 
     gSettings.m_undoSliceOverrideSaveValue = m_undo.m_undoSliceOverrideSaveValue;
 
-    //deep selection
-    gSettings.deepSelectionSettings.fRange = m_deepSelection.m_deepSelectionRange;
-    gSettings.deepSelectionSettings.bStickDuplicate = m_deepSelection.m_stickDuplicate;
-
     //slices
     gSettings.sliceSettings.dynamicByDefault = m_sliceSettings.m_slicesDynamicByDefault;
 }
@@ -213,10 +196,6 @@ void CEditorPreferencesPage_General::InitializeSettings()
     //undo
     m_undo.m_undoLevels = gSettings.undoLevels;
     m_undo.m_undoSliceOverrideSaveValue = gSettings.m_undoSliceOverrideSaveValue;
-
-    //deep selection
-    m_deepSelection.m_deepSelectionRange = gSettings.deepSelectionSettings.fRange;
-    m_deepSelection.m_stickDuplicate = gSettings.deepSelectionSettings.bStickDuplicate;
 
     //slices
     m_sliceSettings.m_slicesDynamicByDefault = gSettings.sliceSettings.dynamicByDefault;
