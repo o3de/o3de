@@ -83,14 +83,6 @@ private:
         bool m_undoSliceOverrideSaveValue;
     };
 
-    struct DeepSelection
-    {
-        AZ_TYPE_INFO(DeepSelection, "{225616BF-66DE-41EC-9FDD-F5A104112547}")
-
-        float m_deepSelectionRange;
-        bool m_stickDuplicate;
-    };
-
     struct SliceSettings
     {
         AZ_TYPE_INFO(SliceSettings, "{8505CCC1-874C-4389-B51A-B9E5FF70CFDA}")
@@ -102,7 +94,6 @@ private:
     LevelSaveSettings m_levelSaveSettings;
     Messaging m_messaging;
     Undo m_undo;
-    DeepSelection m_deepSelection;
     SliceSettings m_sliceSettings;
     QIcon m_icon;
 };
