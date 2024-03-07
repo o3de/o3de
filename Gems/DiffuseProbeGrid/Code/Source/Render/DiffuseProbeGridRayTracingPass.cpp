@@ -48,8 +48,6 @@ namespace AZ
 
         void DiffuseProbeGridRayTracingPass::CreateRayTracingPipelineState()
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             // load the ray tracing shader
             // Note: the shader may not be available on all platforms
             AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracing.azshader";

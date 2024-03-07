@@ -58,8 +58,6 @@ namespace AZ
 
         void RayTracingPass::Init()
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             m_passData = RPI::PassUtils::GetPassData<RayTracingPassData>(m_passDescriptor);
             if (m_passData == nullptr)
             {
@@ -231,7 +229,6 @@ namespace AZ
 
             if (!m_rayTracingShaderTable)
             {
-                RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
                 RHI::MultiDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
                 m_rayTracingShaderTable = aznew RHI::MultiDeviceRayTracingShaderTable;
