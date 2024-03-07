@@ -41,10 +41,9 @@ namespace AZ
 
         void RayTracingFeatureProcessor::Activate()
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            m_rayTracingEnabled = device->GetFeatures().m_rayTracing;
+            auto deviceMask{RHI::RHISystemInterface::Get()->GetRayTracingSupport()};
 
-            if (!m_rayTracingEnabled)
+            if (deviceMask == RHI::MultiDevice::NoDevices)
             {
                 return;
             }
@@ -53,7 +52,7 @@ namespace AZ
 
             // initialize the ray tracing buffer pools
             m_bufferPools = aznew RHI::MultiDeviceRayTracingBufferPools;
-            m_bufferPools->Init(RHI::MultiDevice::AllDevices);
+            m_bufferPools->Init(deviceMask);
 
             auto deviceCount = RHI::RHISystemInterface::Get()->GetDeviceCount();
 
@@ -368,7 +367,7 @@ namespace AZ
                     itMeshBlasInstance->second.m_subMeshes.push_back({ rayTracingBlas });
 
                     // create the buffers from the BLAS descriptor
-                    rayTracingBlas->CreateBuffers(RHI::MultiDevice::AllDevices, &blasDescriptor, *m_bufferPools);
+                    rayTracingBlas->CreateBuffers(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &blasDescriptor, *m_bufferPools);
 
                     // store the BLAS in the mesh
                     subMesh.m_blas = rayTracingBlas;

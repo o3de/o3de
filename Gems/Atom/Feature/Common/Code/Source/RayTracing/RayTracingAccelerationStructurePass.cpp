@@ -33,8 +33,7 @@ namespace AZ
             : Pass(descriptor)
         {
             // disable this pass if we're on a platform that doesn't support raytracing
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 SetEnabled(false);
             }
@@ -175,7 +174,7 @@ namespace AZ
 
                     // create the TLAS buffers based on the descriptor
                     RHI::Ptr<RHI::MultiDeviceRayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
-                    rayTracingTlas->CreateBuffers(RHI::MultiDevice::AllDevices, &tlasDescriptor, rayTracingBufferPools);
+                    rayTracingTlas->CreateBuffers(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), &tlasDescriptor, rayTracingBufferPools);
 
                     // import and attach the TLAS buffer
                     const RHI::Ptr<RHI::MultiDeviceBuffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();

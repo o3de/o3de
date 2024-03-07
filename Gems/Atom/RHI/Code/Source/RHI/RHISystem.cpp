@@ -332,6 +332,21 @@ namespace AZ::RHI
         return static_cast<int>(m_devices.size());
     }
 
+    MultiDevice::DeviceMask RHISystem::GetRayTracingSupport()
+    {
+        MultiDevice::DeviceMask result{0};
+
+        for (int deviceIndex{0}; deviceIndex < m_devices.size(); ++deviceIndex)
+        {
+            if (m_devices[deviceIndex]->GetFeatures().m_rayTracing)
+            {
+                result |= static_cast<MultiDevice::DeviceMask>(1 << deviceIndex);
+            }
+        }
+
+        return result;
+    }
+
     RHI::PipelineStateCache* RHISystem::GetPipelineStateCache()
     {
         return m_pipelineStateCache.get();
