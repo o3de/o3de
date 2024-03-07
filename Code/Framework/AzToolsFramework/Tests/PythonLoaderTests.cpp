@@ -28,8 +28,15 @@ namespace UnitTest
     protected:
         AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
 
-        static constexpr const char* s_testEnginePath = "O3de_path";
-        static constexpr const char* s_testEnginePathHashId = "1af80774";
+        static constexpr AZStd::string_view  s_testEnginePath = "O3de_path";        
+        static constexpr AZ::u32 s_testEnginePathHashId = []() -> AZ::u32
+        {
+            AZ::Sha1 pathSha1;
+            pathSha1.ProcessBytes(AZStd::as_bytes(AZStd::span(s_testEnginePath)));
+            AZ::Sha1::DigestType digestType{};
+            pathSha1.GetDigest(digestType);
+            return digestType[0];
+        }();
         static constexpr const char* s_test3rdPartySubPath = ".o3de/3rdParty";
     };
 
