@@ -285,7 +285,7 @@ namespace O3DE::ProjectManager
         m_pythonStarted = false;
 
         // set PYTHON_HOME
-        AZStd::string pyBasePath = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonHomePath(m_enginePath.StringAsPosix()).StringAsPosix();
+        AZStd::string pyBasePath = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonHomePath(m_enginePath).StringAsPosix();
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
             AZ_Error("python", false, "Python home path does not exist: %s", pyBasePath.c_str());
@@ -321,8 +321,13 @@ namespace O3DE::ProjectManager
 
             AZ::IO::FixedMaxPath thirdPartyFolder = AzToolsFramework::EmbeddedPython::PythonLoader::GetDefault3rdPartyPath(false);
 
-            AZStd::vector<AZStd::string> extendedPaths;
-            AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(thirdPartyFolder, m_enginePath.c_str(), extendedPaths);
+            AZStd::vector<AZ::IO::Path> extendedPaths;
+            AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(
+                thirdPartyFolder, m_enginePath.c_str(), [&extendedPaths](AZ::IO::PathView path)
+                {
+                    extendedPaths.emplace_back(path);
+                });
+
             if (extendedPaths.size())
             {
                 ExtendSysPath(extendedPaths);
@@ -2073,7 +2078,7 @@ namespace O3DE::ProjectManager
         m_pythonErrorStrings.push_back(errorString);
     }
 
-    bool PythonBindings::ExtendSysPath(const AZStd::vector<AZStd::string>& extendPaths)
+    bool PythonBindings::ExtendSysPath(const AZStd::vector<AZ::IO::Path>& extendPaths)
     {
         AZStd::unordered_set<AZStd::string> oldPathSet;
         auto SplitPath = [&oldPathSet](AZStd::string_view pathPart)
@@ -2085,7 +2090,7 @@ namespace O3DE::ProjectManager
         AZStd::string pathAppend{ "import sys\n" };
         for (const auto& thisStr : extendPaths)
         {
-            if (!oldPathSet.contains(thisStr))
+            if (!oldPathSet.contains(thisStr.c_str()))
             {
                 pathAppend.append(AZStd::string::format("sys.path.append(r'%s')\n", thisStr.c_str()));
                 appended = true;

@@ -9,13 +9,6 @@
 #include <AzToolsFramework/API/PythonLoader.h>
 
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/std/string/conversions.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/string/string_view.h>
-#include <AzFramework/IO/LocalFileIO.h>
-
-#include <shlobj.h>
-#include <tchar.h>
 
 namespace AzToolsFramework::EmbeddedPython
 {
@@ -29,58 +22,4 @@ namespace AzToolsFramework::EmbeddedPython
         // No required modules need explicit unloading on this platform
     }
 
-    AZ::IO::FixedMaxPath PythonLoader::GetDefault3rdPartyPath(bool createOnDemand)
-    {
-        AZ::IO::FixedMaxPath thirdPartyEnvPathPath;
-
-        // First check if `LY_3RDPARTY_PATH` is explicitly set in the environment
-        size_t envBufferSize{ 0 };
-        getenv_s(&envBufferSize, nullptr, 0, "LY_3RDPARTY_PATH");
-        if (envBufferSize > 0)
-        {
-            AZ_Assert(
-                envBufferSize < AZ::IO::MaxPathLength,
-                "The environment variable for 'LY_3RDPARTY_PATH' must not exceed the max path length of %ld",
-                AZ::IO::MaxPathLength);
-
-            char envBuffer[AZ::IO::MaxPathLength] = {'\0'};
-            getenv_s(&envBufferSize, envBuffer, envBufferSize, "LY_3RDPARTY_PATH");
-            thirdPartyEnvPathPath = AZ::IO::FixedMaxPath(envBuffer);
-        }
-        else
-        {
-            // If not, the generate the default 3rdParty path location which is based on the current user's 
-            // profile path.
-            WCHAR userProfilePath[AZ::IO::MaxPathLength] = { '\0' };
-            HRESULT result = SHGetFolderPathW(NULL, CSIDL_PROFILE | CSIDL_FLAG_CREATE, NULL, 0, userProfilePath);
-            AZ_Assert(SUCCEEDED(result), "Unable to determine profile path needed for the 3rd folder");
-            size_t userProfilePathLength = wcslen(userProfilePath);
-            AZStd::string profilePathUtf8;
-
-            // Convert UTF-16 to UTF-8
-            AZStd::to_string(profilePathUtf8, { userProfilePath, aznumeric_cast<size_t>(userProfilePathLength) });
-
-            AZ::IO::FixedMaxPath profileFixedPath(profilePathUtf8);
-
-            thirdPartyEnvPathPath = profileFixedPath / ".o3de" / "3rdParty";
-        }
-        AZStd::string thirdPartyPathString = thirdPartyEnvPathPath.String();
-        if ((!AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(thirdPartyPathString.c_str())) && createOnDemand)
-        {
-            auto createPathResult = AZ::IO::FileIOBase::GetDirectInstance()->CreatePath(thirdPartyPathString.c_str());
-            AZ_Assert(createPathResult, "Unable to create missing 3rd Party Folder '%s'", thirdPartyPathString.c_str())
-        }
-        return thirdPartyEnvPathPath;
-    }
-
-
-    AZ::IO::FixedMaxPath PythonLoader::GetPythonHomePath(AZStd::string_view engineRoot)
-    {
-        AZ::IO::FixedMaxPath thirdPartyFolder = GetDefault3rdPartyPath(true);
-
-
-        // On Windows, the executable folder is $PYTHONHOME, so return the same path for $PYTHONHOME
-        AZ::IO::FixedMaxPath pythonHomePath = PythonLoader::GetPythonExecutablePath(thirdPartyFolder, engineRoot);
-        return pythonHomePath;
-    }
 } // namespace AzToolsFramework::EmbeddedPython

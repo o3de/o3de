@@ -38,7 +38,7 @@ namespace UnitTest
         auto test3rdPartyPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_test3rdPartySubPath;
         auto testVenvPath = test3rdPartyPath / "venv";
 
-        AZStd::string engineRoot{ s_testEnginePath };
+        AZ::IO::FixedMaxPath engineRoot{ s_testEnginePath };
 
         AZ::IO::FileIOBase::GetInstance()->CreatePath(test3rdPartyPath.String().c_str());
 
@@ -65,7 +65,7 @@ namespace UnitTest
 
 
         // Test the method
-        AZStd::string engineRoot{ s_testEnginePath };
+        AZ::IO::FixedMaxPath engineRoot{ s_testEnginePath };
         AZ::IO::FixedMaxPath test3rdPartyRoot = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_test3rdPartySubPath;
 
         auto result = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonExecutablePath(test3rdPartyRoot, engineRoot);
@@ -78,7 +78,7 @@ namespace UnitTest
     TEST_F(AzToolsFrameworkPythonLoaderFixture, TestReadPythonEggLinkPaths_Valid)
     {
         // Prepare the test folder and create dummy egg-link files
-        AZ::IO::FixedMaxPath testRelativeSiteLIbsPath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv" / s_testEnginePathHashId / LY_PYTHON_SITE_PACKAGE_SUBPATH;
+        AZ::IO::FixedMaxPath testRelativeSiteLIbsPath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv" / s_testEnginePathHashId / O3DE_PYTHON_SITE_PACKAGE_SUBPATH;
         AZ::IO::FixedMaxPath testFullSiteLIbsPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / testRelativeSiteLIbsPath;
         AZ::IO::FileIOBase::GetInstance()->CreatePath(testFullSiteLIbsPath.String().c_str());
 
@@ -101,10 +101,16 @@ namespace UnitTest
         }
 
         // Test the method
-        AZStd::string engineRoot{ s_testEnginePath };
+        AZ::IO::FixedMaxPath engineRoot{ s_testEnginePath };
         AZ::IO::FixedMaxPath test3rdPartyRoot = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_test3rdPartySubPath;
         AZStd::vector<AZStd::string> resultEggLinkPaths;
-        AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(test3rdPartyRoot, engineRoot, resultEggLinkPaths);
+        AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(
+            test3rdPartyRoot,
+            engineRoot,
+            [&resultEggLinkPaths](AZ::IO::PathView path)
+            {
+                resultEggLinkPaths.emplace_back(path.Native());
+            } );
 
         // Sort the expected and actual lists
         AZStd::sort(expectedResults.begin(), expectedResults.end());

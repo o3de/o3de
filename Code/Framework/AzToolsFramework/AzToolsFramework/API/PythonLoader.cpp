@@ -7,7 +7,7 @@
 */
 
 #include <AzToolsFramework/API/PythonLoader.h>
-
+#include <AzToolsFramework_Traits_Platform.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/Path/Path.h>
@@ -32,7 +32,50 @@ namespace AzToolsFramework::EmbeddedPython
         UnloadRequiredModules();
     }
 
-    AZ::IO::FixedMaxPath PythonLoader::GetPythonVenvPath(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot)
+    AZ::IO::FixedMaxPath PythonLoader::GetDefault3rdPartyPath(bool createOnDemand)
+    {
+        AZ::IO::FixedMaxPath thirdPartyEnvPathPath;
+        static constexpr const char* thirdPartySubpath = ".o3de/3rdParty";
+        static constexpr const char* env3rdPartyKey = "LY_3RDPARTY_PATH";
+
+        char env3rdPartyPath[AZ::IO::MaxPathLength] = {'\0'};
+        auto envOutcome = AZ::Utils::GetEnv(AZStd::span(env3rdPartyPath), env3rdPartyKey);
+        if (envOutcome && (strlen(env3rdPartyPath) > 0))
+        {
+            // If so, then use the path that is set as the third party path
+            thirdPartyEnvPathPath = AZ::IO::FixedMaxPath(env3rdPartyPath).LexicallyNormal();
+        }
+        else
+        {
+            auto manifestPath = AZ::Utils::GetO3deManifestDirectory();
+            thirdPartyEnvPathPath = AZ::IO::FixedMaxPath(manifestPath) / "3rdParty";
+        }
+
+        AZStd::string thirdPartyPathString = thirdPartyEnvPathPath.String();
+        if ((!AZ::IO::SystemFile::IsDirectory(thirdPartyPathString.c_str())) && createOnDemand)
+        {
+            auto createPathResult = AZ::IO::SystemFile::CreateDir(thirdPartyPathString.c_str());
+            AZ_Assert(createPathResult, "Unable to create missing 3rd Party Folder '%s'", thirdPartyPathString.c_str())
+        }
+        return thirdPartyEnvPathPath;
+    }
+
+    AZ::IO::FixedMaxPath PythonLoader::GetPythonHomePath(AZ::IO::PathView engineRoot)
+    {
+        AZ::IO::FixedMaxPath thirdPartyFolder = GetDefault3rdPartyPath(true);
+
+        // On Windows, the executable folder is $PYTHONHOME, so return the same path for $PYTHONHOME
+
+        #if AZ_TRAIT_PYTHON_LOADER_PYTHON_HOME_BIN_SUBPATH
+        AZ::IO::FixedMaxPath pythonHomePath = PythonLoader::GetPythonExecutablePath(thirdPartyFolder, engineRoot).ParentPath();
+        #else
+        AZ::IO::FixedMaxPath pythonHomePath = PythonLoader::GetPythonExecutablePath(thirdPartyFolder, engineRoot);
+        #endif // AZ_TRAIT_PYTHON_LOADER_PYTHON_HOME_BIN_SUBPATH
+
+        return pythonHomePath;
+    }
+
+    AZ::IO::FixedMaxPath PythonLoader::GetPythonVenvPath(AZ::IO::PathView thirdPartyRoot, AZ::IO::PathView engineRoot)
     {
         // Perform the same hash calculation as cmake/CalculateEnginePathId.cmake
 
@@ -55,7 +98,7 @@ namespace AzToolsFramework::EmbeddedPython
         return libPath;
     }
 
-    AZ::IO::FixedMaxPath PythonLoader::GetPythonExecutablePath(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot)
+    AZ::IO::FixedMaxPath PythonLoader::GetPythonExecutablePath(AZ::IO::PathView thirdPartyRoot, AZ::IO::PathView engineRoot)
     {
         AZ::IO::FixedMaxPath pythonVenvConfig = PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot) / "pyvenv.cfg";
         AZ::IO::SystemFileStream systemFileStream;
@@ -81,14 +124,14 @@ namespace AzToolsFramework::EmbeddedPython
         return AZ::IO::FixedMaxPath(pythonHome.c_str());
     }
 
-    void PythonLoader::ReadPythonEggLinkPaths(AZ::IO::PathView thirdPartyRoot, AZStd::string_view engineRoot, AZStd::vector<AZStd::string>& resultPaths)
+    void PythonLoader::ReadPythonEggLinkPaths(AZ::IO::PathView thirdPartyRoot, AZ::IO::PathView engineRoot, EggLinkPathVisitor resultPathCallback)
     {
         // Get the python venv path
         AZ::IO::FixedMaxPath pythonVenvSitePackages =
-            AZ::IO::FixedMaxPath(PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot)) / LY_PYTHON_SITE_PACKAGE_SUBPATH;
+            AZ::IO::FixedMaxPath(PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot)) / O3DE_PYTHON_SITE_PACKAGE_SUBPATH;
 
         // Always add the site-packages folder from the virtual environment into the path list
-        resultPaths.emplace_back(pythonVenvSitePackages.LexicallyNormal().Native());
+        resultPathCallback(pythonVenvSitePackages.LexicallyNormal());
 
         // pybind11 does not resolve any .egg-link files, so any packages that there pip-installed into the venv as egg-links
         // are not getting resolved. We will do this manually by opening the egg-links in the venv site-packages path and injecting
@@ -96,7 +139,7 @@ namespace AzToolsFramework::EmbeddedPython
         AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(
             pythonVenvSitePackages.c_str(),
             "*.egg-link",
-            [&resultPaths](const char* filePath) -> bool
+            [&resultPathCallback](const char* filePath) -> bool
             {
                 auto readFileResult = AZ::Utils::ReadFile(filePath);
                 if (readFileResult)
@@ -110,7 +153,7 @@ namespace AzToolsFramework::EmbeddedPython
                     {
                         if (eggLinkLine.compare(".") != 0)
                         {
-                            resultPaths.emplace_back(eggLinkLine);
+                            resultPathCallback(AZ::IO::Path(eggLinkLine));
                         }
                     }
                 }

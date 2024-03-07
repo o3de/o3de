@@ -7,6 +7,8 @@
 #
 
 set(FILES
-    AzToolsFramework/API/PythonLoader_Linux.cpp
+    AzToolsFramework_Traits_Linux.h
+    AzToolsFramework_Traits_Platform.h
     AzToolsFramework/API/EditorAssetSystemAPI_Linux.cpp
+    ../Common/UnixLike/AzToolsFramework/API/PythonLoader_UnixLike.cpp
 )
