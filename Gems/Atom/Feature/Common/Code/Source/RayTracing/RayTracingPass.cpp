@@ -40,8 +40,7 @@ namespace AZ
             : RenderPass(descriptor)
             , m_passDescriptor(descriptor)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 // raytracing is not supported on this platform
                 SetEnabled(false);
@@ -196,7 +195,7 @@ namespace AZ
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = aznew RHI::MultiDeviceRayTracingPipelineState;
-            m_rayTracingPipelineState->Init(RHI::MultiDevice::AllDevices, descriptor);
+            m_rayTracingPipelineState->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), descriptor);
 
             // make sure the shader table rebuilds if we're hotreloading
             m_rayTracingRevision = 0;
@@ -265,7 +264,7 @@ namespace AZ
                 RHI::MultiDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
                 m_rayTracingShaderTable = aznew RHI::MultiDeviceRayTracingShaderTable;
-                m_rayTracingShaderTable->Init(RHI::MultiDevice::AllDevices, rayTracingBufferPools);
+                m_rayTracingShaderTable->Init(RHI::RHISystemInterface::Get()->GetRayTracingSupport(), rayTracingBufferPools);
             }
 
             RPI::RenderPass::FrameBeginInternal(params);

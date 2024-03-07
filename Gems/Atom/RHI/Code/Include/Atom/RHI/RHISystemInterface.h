@@ -50,6 +50,8 @@ namespace AZ::RHI
 
         virtual int GetDeviceCount() = 0;
 
+        virtual MultiDevice::DeviceMask GetRayTracingSupport() = 0;
+
         virtual RHI::DrawListTagRegistry* GetDrawListTagRegistry() = 0;
 
         virtual RHI::PipelineStateCache* GetPipelineStateCache() = 0;
