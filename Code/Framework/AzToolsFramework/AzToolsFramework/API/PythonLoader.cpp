@@ -112,7 +112,7 @@ namespace AzToolsFramework::EmbeddedPython
         AZ::IO::FixedMaxPathString pythonHome;
         parserSettings.m_parseConfigEntryFunc = [&pythonHome](const AZ::Settings::ConfigParserSettings::ConfigEntry& configEntry)
         {
-            if (configEntry.m_keyValuePair.m_key.compare("home") == 0)
+            if (AZ::StringFunc::Equals(configEntry.m_keyValuePair.m_key, "home"))
             {
                 pythonHome = configEntry.m_keyValuePair.m_value;
             }
@@ -121,7 +121,7 @@ namespace AzToolsFramework::EmbeddedPython
         const auto parseOutcome = AZ::Settings::ParseConfigFile(systemFileStream, parserSettings);
         AZ_Error("python", parseOutcome, "Python venv file at %s missing home key. Make sure to run python/get_python.", pythonVenvConfig.c_str());
 
-        return AZ::IO::FixedMaxPath(pythonHome.c_str());
+        return AZ::IO::FixedMaxPath(pythonHome);
     }
 
     void PythonLoader::ReadPythonEggLinkPaths(AZ::IO::PathView thirdPartyRoot, AZ::IO::PathView engineRoot, EggLinkPathVisitor resultPathCallback)
