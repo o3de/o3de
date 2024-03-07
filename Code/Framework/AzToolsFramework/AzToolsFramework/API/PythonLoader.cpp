@@ -112,7 +112,7 @@ namespace AzToolsFramework::EmbeddedPython
         AZ::IO::FixedMaxPathString pythonHome;
         parserSettings.m_parseConfigEntryFunc = [&pythonHome](const AZ::Settings::ConfigParserSettings::ConfigEntry& configEntry)
         {
-            if (AZ::StringFunc::Equals(configEntry.m_keyValuePair.m_key, "home"))
+            if (AZ::StringFunc::Equal(configEntry.m_keyValuePair.m_key, "home"))
             {
                 pythonHome = configEntry.m_keyValuePair.m_value;
             }

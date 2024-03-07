@@ -28,15 +28,8 @@ namespace UnitTest
     protected:
         AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
 
-        static constexpr AZStd::string_view  s_testEnginePath = "O3de_path";        
-        static constexpr AZ::u32 s_testEnginePathHashId = []() -> AZ::u32
-        {
-            AZ::Sha1 pathSha1;
-            pathSha1.ProcessBytes(AZStd::as_bytes(AZStd::span(s_testEnginePath)));
-            AZ::Sha1::DigestType digestType{};
-            pathSha1.GetDigest(digestType);
-            return digestType[0];
-        }();
+        static constexpr AZStd::string_view s_testEnginePath = "O3de_path";
+        static constexpr const char* s_testEnginePathHashId = "1af80774";
         static constexpr const char* s_test3rdPartySubPath = ".o3de/3rdParty";
     };
 
@@ -47,7 +40,8 @@ namespace UnitTest
 
         AZ::IO::FixedMaxPath engineRoot{ s_testEnginePath };
 
-        AZ::IO::FileIOBase::GetInstance()->CreatePath(test3rdPartyPath.String().c_str());
+        AZ::IO::SystemFile::CreateDir(test3rdPartyPath.String().c_str());
+        //AZ::IO::FileIOBase::GetInstance()->CreatePath(test3rdPartyPath.String().c_str());
 
         auto result = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonVenvPath(test3rdPartyPath, engineRoot);
 
@@ -61,7 +55,8 @@ namespace UnitTest
         // Prepare the test venv pyvenv.cfg file in the expected location
         AZ::IO::FixedMaxPath tempVenvRelativePath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv/" / s_testEnginePathHashId;
         AZ::IO::FixedMaxPath tempVenvFullPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / tempVenvRelativePath;
-        AZ::IO::FileIOBase::GetInstance()->CreatePath(tempVenvFullPath.String().c_str());
+        AZ::IO::SystemFile::CreateDir(tempVenvFullPath.String().c_str());
+        //AZ::IO::FileIOBase::GetInstance()->CreatePath(tempVenvFullPath.String().c_str());
         AZ::IO::FixedMaxPath tempPyConfigFile = tempVenvRelativePath / "pyvenv.cfg";
         AZStd::string testPython3rdPartyPath = "/home/user/python/";
         AZStd::string testPyConfigFileContent = AZStd::string::format("home = %s\n"
@@ -87,21 +82,24 @@ namespace UnitTest
         // Prepare the test folder and create dummy egg-link files
         AZ::IO::FixedMaxPath testRelativeSiteLIbsPath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv" / s_testEnginePathHashId / O3DE_PYTHON_SITE_PACKAGE_SUBPATH;
         AZ::IO::FixedMaxPath testFullSiteLIbsPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / testRelativeSiteLIbsPath;
-        AZ::IO::FileIOBase::GetInstance()->CreatePath(testFullSiteLIbsPath.String().c_str());
+        AZ::IO::SystemFile::CreateDir(testFullSiteLIbsPath.String().c_str());
+        //AZ::IO::FileIOBase::GetInstance()->CreatePath(testFullSiteLIbsPath.String().c_str());
 
         AZStd::vector<AZStd::string> expectedResults;
         expectedResults.emplace_back(testFullSiteLIbsPath.LexicallyNormal().Native());
 
-        static constexpr const char* testEggLinkPaths[] = { "/lib/path/one", "/lib/path/two", "/lib/path/three" };
-        size_t testEggLinkPathCount = sizeof(testEggLinkPaths) / sizeof(const char*);
+        //static constexpr const char* testEggLinkPaths[] = { "/lib/path/one", "/lib/path/two", "/lib/path/three" };
+        //size_t testEggLinkPathCount = sizeof(testEggLinkPaths) / sizeof(const char*);
 
-
-        for (size_t i = 0; i < testEggLinkPathCount; ++i)
+        static constexpr auto testEggLinkPaths = AZStd::to_array<const char*>({ "/lib/path/one", "/lib/path/two", "/lib/path/three" });
+        int index = 0;
+        for (const char* testEggLinkPath : testEggLinkPaths)
         {
-            AZStd::string testEggFileName = AZStd::string::format("test-%d.egg-link", static_cast<int>(i));
-            const char* lineBreak = ((i % 2) == 0) ? "\n" : "\r\n";
-            AZStd::string testEggFileContent = AZStd::string::format("%s%s.", testEggLinkPaths[i], lineBreak);
-            expectedResults.emplace_back(AZStd::string(testEggLinkPaths[i]));
+            ++index;
+            AZStd::string testEggFileName = AZStd::string::format("test-%d.egg-link", static_cast<int>(index));
+            const char* lineBreak = ((index % 2) == 0) ? "\n" : "\r\n";
+            AZStd::string testEggFileContent = AZStd::string::format("%s%s.", testEggLinkPath, lineBreak);
+            expectedResults.emplace_back(AZStd::string(testEggLinkPath));
 
             AZ::IO::FixedMaxPath testEggILeNamePath = testRelativeSiteLIbsPath / testEggFileName;
             AZ::Test::CreateTestFile(m_tempDirectory, testEggILeNamePath, testEggFileContent);
@@ -123,17 +121,7 @@ namespace UnitTest
         AZStd::sort(expectedResults.begin(), expectedResults.end());
         AZStd::sort(resultEggLinkPaths.begin(), resultEggLinkPaths.end());
 
-        size_t expectedSize = expectedResults.size();
-        size_t actualSize = resultEggLinkPaths.size();
-        EXPECT_EQ(expectedSize, actualSize);
-
-        for (size_t i = 0; i < expectedSize; i++)
-        {
-            AZStd::string expectedPath = expectedResults[i];
-            AZStd::string actualPath = resultEggLinkPaths[i];
-
-            EXPECT_TRUE(expectedPath == actualPath);
-        }
+        EXPECT_EQ(expectedResults, resultEggLinkPaths);
     }
 
 } // namespace UnitTest
