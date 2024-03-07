@@ -93,6 +93,7 @@ namespace AZ::RHI
         {
         };
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(DeviceMask);
+        constexpr DeviceMask NoDevices{ 0u };
         constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(AZStd::numeric_limits<uint32_t>::max()) };
         constexpr DeviceMask DefaultDevice{ 1u };
 

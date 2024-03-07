@@ -67,6 +67,7 @@ namespace AZ::RHI
         //! Add a new virtual device (referencing the same physical device as an existing device marked by deviceIndexToVirtualize)
         [[nodiscard]] AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) override;
         int GetDeviceCount() override;
+        MultiDevice::DeviceMask GetRayTracingSupport() override;
         RHI::DrawListTagRegistry* GetDrawListTagRegistry() override;
         RHI::PipelineStateCache* GetPipelineStateCache() override;
         void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;

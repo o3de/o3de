@@ -205,8 +205,7 @@ namespace AZ
             // handle auto-select
             if (mode == DiffuseProbeGridMode::AutoSelect)
             {
-                RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-                m_mode = (device->GetFeatures().m_rayTracing) ? DiffuseProbeGridMode::RealTime : DiffuseProbeGridMode::Baked;
+                m_mode = (RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices) ? DiffuseProbeGridMode::RealTime : DiffuseProbeGridMode::Baked;
             }
             else
             {

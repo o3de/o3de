@@ -48,8 +48,7 @@ namespace AZ
                 return;
             }
 
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-            RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
+            auto deviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
 
             m_diffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
             m_realTimeDiffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
@@ -60,7 +59,7 @@ namespace AZ
 
             m_bufferPool = aznew RHI::MultiDeviceBufferPool;
             m_bufferPool->SetName(Name("DiffuseProbeGridBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(RHI::MultiDevice::AllDevices, desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(deviceMask, desc);
             AZ_Error("DiffuseProbeGridFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -73,7 +72,7 @@ namespace AZ
 
                 m_probeGridRenderData.m_imagePool = aznew RHI::MultiDeviceImagePool;
                 m_probeGridRenderData.m_imagePool->SetName(Name("DiffuseProbeGridRenderImageData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(RHI::MultiDevice::AllDevices, imagePoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(deviceMask, imagePoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
 
@@ -84,7 +83,7 @@ namespace AZ
 
                 m_probeGridRenderData.m_bufferPool = aznew RHI::MultiDeviceBufferPool;
                 m_probeGridRenderData.m_bufferPool->SetName(Name("DiffuseProbeGridRenderBufferData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(RHI::MultiDevice::AllDevices, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(deviceMask, bufferPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
             }
 
@@ -116,11 +115,11 @@ namespace AZ
                 AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
             }
 
-            if (device->GetFeatures().m_rayTracing)
+            if (deviceMask != RHI::MultiDevice::NoDevices)
             {
                 // initialize the buffer pools for the DiffuseProbeGrid visualization
                 m_visualizationBufferPools = aznew RHI::MultiDeviceRayTracingBufferPools;
-                m_visualizationBufferPools->Init(RHI::MultiDevice::AllDevices);
+                m_visualizationBufferPools->Init(deviceMask);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
 
@@ -466,8 +465,7 @@ namespace AZ
 
         bool DiffuseProbeGridFeatureProcessor::CanBakeTextures()
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            return device->GetFeatures().m_rayTracing;
+            return RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
         }
 
         void DiffuseProbeGridFeatureProcessor::BakeTextures(
@@ -894,8 +892,7 @@ namespace AZ
         void DiffuseProbeGridFeatureProcessor::UpdatePasses()
         {
             // disable the DiffuseProbeGridUpdatePass if the platform does not support raytracing
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
                 RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
@@ -971,9 +968,10 @@ namespace AZ
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_visualizationBlas = aznew RHI::MultiDeviceRayTracingBlas;
-            if (device->GetFeatures().m_rayTracing)
+            auto deviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
+            if (deviceMask != RHI::MultiDevice::NoDevices)
             {
-                m_visualizationBlas->CreateBuffers(RHI::MultiDevice::AllDevices, &blasDescriptor, *m_visualizationBufferPools);
+                m_visualizationBlas->CreateBuffers(deviceMask, &blasDescriptor, *m_visualizationBufferPools);
             }
         }
 

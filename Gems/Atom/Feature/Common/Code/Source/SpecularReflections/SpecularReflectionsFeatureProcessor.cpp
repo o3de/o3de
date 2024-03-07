@@ -56,11 +56,8 @@ namespace AZ
 
         void SpecularReflectionsFeatureProcessor::UpdatePasses()
         {
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-            RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
-
             // disable raytracing if the platform does not support it
-            m_ssrOptions.m_rayTracing &= device->GetFeatures().m_rayTracing;
+            m_ssrOptions.m_rayTracing &= RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
 
             // determine size multiplier to pass to the shaders
             float sizeMultiplier = m_ssrOptions.m_halfResolution ? 0.5f : 1.0f;
