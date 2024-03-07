@@ -672,8 +672,9 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
 
     if (hasFilter)
     {
-        m_ui->m_assetBrowserTreeViewWidget->selectionModel()->select(
-            m_ui->m_assetBrowserTreeViewWidget->model()->index(0, 0, {}), QItemSelectionModel::ClearAndSelect);
+        // Clear the selection when the filter is applied.
+        m_ui->m_assetBrowserTreeViewWidget->selectionModel()->clearSelection();
+        m_ui->m_searchWidget->SetSelectionCount(0);
     }
 
     if (ed_useNewAssetBrowserListView)
