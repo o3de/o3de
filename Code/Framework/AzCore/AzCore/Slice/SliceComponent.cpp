@@ -1065,8 +1065,8 @@ namespace AZ
         }
 
         SliceComponent* dependentSlice = nullptr;
-        const bool useAssetProcessor = !serializeContext || !relativeToAbsoluteSlicePaths;
-        if (useAssetProcessor)
+        const bool useAssetCatalog = !serializeContext || !relativeToAbsoluteSlicePaths;
+        if (useAssetCatalog)
         {
             AZ::Data::AssetInfo assetInfo;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, m_asset.GetId());
@@ -3991,15 +3991,14 @@ namespace AZ
         AZ::Entity* LoadRootEntityFromSlicePath(const char* filePath, SerializeContext* context)
         {
             AZ::Entity* sliceRootEntity = nullptr;
-            auto callback = [&sliceRootEntity](void* classPtr, const Uuid& classId, SerializeContext*)
+            auto callback = [&sliceRootEntity](void* classPtr, const Uuid& classId, SerializeContext* serializeContext)
             {
-                if (classId != azrtti_typeid<AZ::Entity>())
+                sliceRootEntity = serializeContext->Cast<AZ::Entity*>(classPtr, classId);
+                if (!sliceRootEntity)
                 {
                     AZ_Warning("LoadRootEntityFromSlicePath", false, "  File not opened: Slice root is not an entity.\n");
                     return false;
                 }
-
-                sliceRootEntity = reinterpret_cast<AZ::Entity*>(classPtr);
                 return true;
             };
 

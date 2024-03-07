@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 
 namespace AZ
 {
@@ -37,8 +38,8 @@ namespace AZ
 
             //! Converts path into a path that's relative to the highest-priority containing folder
             //! (the Assets folder for a Gem or the Projects folder for project's assets)
-            static AZStd::string GenerateRelativePosixPath(const AZStd::string& projectPath, const AZStd::string& path);
-            static AZStd::string GetStringAfterFirstOccurenceOf(const AZStd::string& toFind, const AZStd::string& string);
+            static AZStd::string GenerateRelativePosixPath(const AZ::IO::PathView& projectPath, const AZ::IO::PathView& absolutePath);
+            static AZStd::string_view GetStringAfterFirstOccurenceOf(const AZStd::string_view& toFind, const AZStd::string_view& string);
 
         private:
             Utilities() = delete;

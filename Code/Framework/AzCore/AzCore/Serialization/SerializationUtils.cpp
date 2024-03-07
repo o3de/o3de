@@ -533,41 +533,12 @@ namespace AZ::Utils
         const ObjectStream::ClassReadyCB& classCallback,
         Data::AssetFilterCB assetFilterCallback)
     {
-        if (!AZ::IO::FileIOBase::GetInstance()->Exists(filePath))
-        {
-            AZ_Error("Verify", false, "Unable to open file '%s' as it doesn't exist.", filePath);
-            return false;
-        }
-
-        AZ::IO::HandleType fileHandle;
-        auto openResult = AZ::IO::FileIOBase::GetInstance()->Open(filePath, AZ::IO::OpenMode::ModeRead, fileHandle);
-        if (!openResult)
+        AZ::IO::FileIOStream stream(filePath, AZ::IO::OpenMode::ModeRead);
+        if (!stream.IsOpen())
         {
             AZ_Error("Verify", false, "File '%s' could not be opened.", filePath);
             return false;
         }
-
-        u64 fileLength = 0;
-        auto sizeResult = AZ::IO::FileIOBase::GetInstance()->Size(fileHandle, fileLength);
-        if (!sizeResult || (fileLength == 0))
-        {
-            AZ_Error("Verify", false, "File '%s' doesn't have content.", filePath);
-            return false;
-        }
-
-        AZStd::vector<u8> data;
-        data.resize_no_construct(fileLength);
-        u64 bytesRead = 0;
-        auto readResult = AZ::IO::FileIOBase::GetInstance()->Read(fileHandle, data.data(), fileLength, true, &bytesRead);
-        if (!readResult || (bytesRead != fileLength))
-        {
-            AZ_Error("Verify", false, "Unable to read file '%s'.", filePath);
-            return false;
-        }
-
-        AZ::IO::FileIOBase::GetInstance()->Close(fileHandle);
-
-        AZ::IO::MemoryStream stream(data.data(), fileLength);
 
         ObjectStream::FilterDescriptor filter;
         // By default, never load dependencies. That's another file that would need to be processed
@@ -578,6 +549,7 @@ namespace AZ::Utils
             AZ_Printf("Verify", "Failed to deserialize '%s'\n", filePath);
             return false;
         }
+
         return true;
     }
 

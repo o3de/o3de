@@ -92,7 +92,7 @@ namespace AZ
                 SliceComponent::InstantiatedContainer* instantiatedEntities,
                 SerializeContext* context);
 
-            AZStd::string m_projectPath;
+            AZ::IO::Path m_projectPath;
 
             // Track all of the entity IDs created and associate them with enough conversion information to know how to place the
             // entities in the correct place in the prefab hierarchy and fix up parent entity ID mappings to work with the nested

@@ -93,7 +93,7 @@ namespace AZ
 
                 for (const AZStd::string& absolutePath : sliceAbsPaths)
                 {
-                    const AZStd::string relativePath = Utilities::GenerateRelativePosixPath(m_projectPath, absolutePath);
+                    const AZStd::string relativePath = Utilities::GenerateRelativePosixPath(m_projectPath, AZ::IO::PathView(absolutePath));
                     m_relativeToAbsoluteSlicePaths[relativePath] = absolutePath;
                 }
             }
@@ -490,7 +490,7 @@ namespace AZ
                 // Get relative path from highest priority folder (Assets for Gems and project folders for project assets).
                 // Without asset processor, it is incorrect so we create it ourself and update it on the database later
                 nestedPrefabPath = NeedAssetProcessor() ? nestedPrefabCreationPath
-                                                        : Utilities::GenerateRelativePosixPath(m_projectPath, nestedPrefabPath.String());
+                                                        : Utilities::GenerateRelativePosixPath(m_projectPath, nestedPrefabPath);
 
                 // Now, see if we already have a template ID in memory for it.
                 AzToolsFramework::Prefab::TemplateId nestedTemplateId =

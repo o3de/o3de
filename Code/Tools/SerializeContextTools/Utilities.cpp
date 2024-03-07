@@ -191,16 +191,21 @@ namespace AZ::SerializeContextTools
         return result;
     }
 
-    AZStd::string Utilities::GenerateRelativePosixPath(const AZStd::string& projectPath, const AZStd::string& absolutePath)
+    AZStd::string Utilities::GenerateRelativePosixPath(const AZ::IO::PathView& projectPath, const AZ::IO::PathView& absolutePath)
     {
-        AZStd::string absolutePathCpy = absolutePath;
-        AZStd::replace(absolutePathCpy.begin(), absolutePathCpy.end(), AZ::IO::WindowsPathSeparator, AZ::IO::PosixPathSeparator);
-        AZStd::to_lower(absolutePathCpy.begin(), absolutePathCpy.end());
-        return absolutePath.starts_with(projectPath) ? absolutePathCpy.substr(projectPath.length() + 1)
-                                                     : GetStringAfterFirstOccurenceOf("assets/", absolutePathCpy);
+        AZ::IO::FixedMaxPath projectRelativeFilePath = absolutePath.LexicallyProximate(projectPath);
+        AZStd::to_lower(projectRelativeFilePath.Native().begin(), projectRelativeFilePath.Native().end());
+
+        AZStd::string result = projectRelativeFilePath.StringAsPosix();
+        const bool isOutsideProjectFolder = result.starts_with("..");
+        if (isOutsideProjectFolder)
+        {
+            result = GetStringAfterFirstOccurenceOf("assets/", result);
+        }
+        return result;
     }
 
-    AZStd::string Utilities::GetStringAfterFirstOccurenceOf(const AZStd::string& toFind, const AZStd::string& string)
+    AZStd::string_view Utilities::GetStringAfterFirstOccurenceOf(const AZStd::string_view& toFind, const AZStd::string_view& string)
     {
         const auto startIndex = string.find(toFind);
         return startIndex == AZStd::string::npos ? string : string.substr(startIndex + toFind.length());
