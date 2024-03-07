@@ -82,6 +82,7 @@ namespace Terrain
                         EditorTerrainMacroMaterialComponent::s_componentName, EditorTerrainMacroMaterialComponent::s_componentDescription)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, EditorTerrainMacroMaterialComponent::s_icon)
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/terrain/terrain-macro-material/")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, EditorTerrainMacroMaterialComponent::s_viewportIcon)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, EditorTerrainMacroMaterialComponent::s_helpUrl)
                     ->Attribute(AZ::Edit::Attributes::Category, EditorTerrainMacroMaterialComponent::s_categoryName)
