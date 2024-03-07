@@ -103,7 +103,6 @@ namespace AZ
 
         void DiffuseProbeGridVisualizationPreparePass::FrameBeginInternal(FramePrepareParams params)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 

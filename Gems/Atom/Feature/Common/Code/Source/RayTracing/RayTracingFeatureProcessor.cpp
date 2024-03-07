@@ -271,8 +271,6 @@ namespace AZ
                 return;
             }
 
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             // lock the mutex to protect the mesh and BLAS lists
             AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 

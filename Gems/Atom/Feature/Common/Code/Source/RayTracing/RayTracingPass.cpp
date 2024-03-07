@@ -65,8 +65,6 @@ namespace AZ
 
         void RayTracingPass::CreatePipelineState()
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             struct RTShaderLib
             {
                 AZ::Data::AssetId m_shaderAssetId;
@@ -264,7 +262,6 @@ namespace AZ
 
             if (!m_rayTracingShaderTable)
             {
-                RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
                 RHI::MultiDeviceRayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
                 m_rayTracingShaderTable = aznew RHI::MultiDeviceRayTracingShaderTable;
