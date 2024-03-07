@@ -332,8 +332,6 @@ namespace AZ
                 return;
             }
 
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             uint32_t probeCountX;
             uint32_t probeCountY;
             GetTexture2DProbeCount(probeCountX, probeCountY);

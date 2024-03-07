@@ -119,7 +119,6 @@ namespace AZ
             }
             
             // Create fence
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_fence = aznew RHI::MultiDeviceFence;
             AZ_Assert(m_fence != nullptr, "AttachmentReadback failed to create a fence");
             [[maybe_unused]] RHI::ResultCode result = m_fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Reset);
