@@ -338,21 +338,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             }
         });
 
-    connect(
-        m_ui->m_assetBrowserTreeViewWidget,
-        &QAbstractItemView::clicked,
-        this,
-        [this](const QModelIndex& idx)
-        {
-            using namespace AzToolsFramework::AssetBrowser;
-            auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
-            {
-                AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
-            }
-            m_ui->m_searchWidget->ClearStringFilter();
-        });
-
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearStringFilter,
