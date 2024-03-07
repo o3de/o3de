@@ -1013,7 +1013,7 @@ namespace DebugDraw
         DebugDrawTextElement& newText = m_activeTexts.emplace_back();
         newText.m_drawMode = DebugDrawTextElement::DrawMode::OnScreen;
         newText.m_text = text;
-        newText.m_fontScale = fontScale > 0.0f ? fontScale : 1.0f;
+        newText.m_fontScale = fontScale;
         newText.m_color = color;
         newText.m_duration = duration;
         AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
