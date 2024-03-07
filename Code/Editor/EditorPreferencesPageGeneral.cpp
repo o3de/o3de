@@ -53,18 +53,12 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Version(2)
         ->Field("UndoLevels", &Undo::m_undoLevels);
 
-    serialize.Class<DeepSelection>()
-        ->Version(2)
-        ->Field("DeepSelectionRange", &DeepSelection::m_deepSelectionRange)
-        ->Field("StickDuplicate", &DeepSelection::m_stickDuplicate);
-
     serialize.Class<CEditorPreferencesPage_General>()
         ->Version(1)
         ->Field("General Settings", &CEditorPreferencesPage_General::m_generalSettings)
         ->Field("Prefab Save Settings", &CEditorPreferencesPage_General::m_levelSaveSettings)
         ->Field("Messaging", &CEditorPreferencesPage_General::m_messaging)
-        ->Field("Undo", &CEditorPreferencesPage_General::m_undo)
-        ->Field("Deep Selection", &CEditorPreferencesPage_General::m_deepSelection);
+        ->Field("Undo", &CEditorPreferencesPage_General::m_undo);
 
     AZ::EditContext* editContext = serialize.GetEditContext();
     if (editContext)
@@ -102,20 +96,13 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Min, 0)
             ->Attribute(AZ::Edit::Attributes::Max, 10000);
 
-        editContext->Class<DeepSelection>("Selection", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DeepSelection::m_stickDuplicate, "Stick duplicate to cursor", "Stick duplicate to cursor")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &DeepSelection::m_deepSelectionRange, "Deep selection range", "Deep Selection Range")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-            ->Attribute(AZ::Edit::Attributes::Max, 1000.0f);
-
         editContext->Class<CEditorPreferencesPage_General>("General Editor Preferences", "Class for handling General Editor Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_generalSettings, "General Settings", "General Editor Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Prefab Save Settings", "File>Save")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_messaging, "Messaging", "Messaging")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_deepSelection, "Selection", "Selection");
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences");
     }
 }
 
@@ -161,10 +148,6 @@ void CEditorPreferencesPage_General::OnApply()
 
     //undo
     gSettings.undoLevels = m_undo.m_undoLevels;
-
-    //deep selection
-    gSettings.deepSelectionSettings.fRange = m_deepSelection.m_deepSelectionRange;
-    gSettings.deepSelectionSettings.bStickDuplicate = m_deepSelection.m_stickDuplicate;
 }
 
 void CEditorPreferencesPage_General::InitializeSettings()
@@ -191,7 +174,4 @@ void CEditorPreferencesPage_General::InitializeSettings()
     //undo
     m_undo.m_undoLevels = gSettings.undoLevels;
 
-    //deep selection
-    m_deepSelection.m_deepSelectionRange = gSettings.deepSelectionSettings.fRange;
-    m_deepSelection.m_stickDuplicate = gSettings.deepSelectionSettings.bStickDuplicate;
 }

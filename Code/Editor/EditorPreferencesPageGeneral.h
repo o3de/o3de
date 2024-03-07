@@ -81,19 +81,10 @@ private:
         int m_undoLevels;
     };
 
-    struct DeepSelection
-    {
-        AZ_TYPE_INFO(DeepSelection, "{225616BF-66DE-41EC-9FDD-F5A104112547}")
-
-        float m_deepSelectionRange;
-        bool m_stickDuplicate;
-    };
-
     GeneralSettings m_generalSettings;
     LevelSaveSettings m_levelSaveSettings;
     Messaging m_messaging;
     Undo m_undo;
-    DeepSelection m_deepSelection;
     QIcon m_icon;
 };
 
