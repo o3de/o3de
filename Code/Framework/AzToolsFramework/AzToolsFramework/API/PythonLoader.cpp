@@ -35,7 +35,6 @@ namespace AzToolsFramework::EmbeddedPython
     AZ::IO::FixedMaxPath PythonLoader::GetDefault3rdPartyPath(bool createOnDemand)
     {
         AZ::IO::FixedMaxPath thirdPartyEnvPathPath;
-        static constexpr const char* thirdPartySubpath = ".o3de/3rdParty";
         static constexpr const char* env3rdPartyKey = "LY_3RDPARTY_PATH";
 
         char env3rdPartyPath[AZ::IO::MaxPathLength] = {'\0'};
