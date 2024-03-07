@@ -162,7 +162,7 @@ namespace DebugDraw
          * Draws text on the screen with scaled default render font.
          *
          * @param text              Text to be displayed.
-         * @param fontScale         Scale factor to default render font, if <= 0.0f then set to 1.0f.
+         * @param fontScale         Scale factor to default render font.
          * @param color             Color of text.
          * @param duration          How long to display the text for (in seconds); 0 value will draw for one frame; negative values draw forever.
          */
@@ -175,7 +175,7 @@ namespace DebugDraw
          * @param x                 X coordinate.
          * @param y                 Y coordinate.
          * @param text              Text to be displayed.
-         * @param fontScale         Scale factor to default render font, if <= 0.0f then set to 1.0f.
+         * @param fontScale         Scale factor to default render font.
          * @param color             Color of text.
          * @param duration          How long to display the text for (in seconds); 0 value will draw for one frame; negative values draw forever.
          * @param bCenter           If true (default), centers drawn text relative to x coordinate, otherwise text is left-aligned.
