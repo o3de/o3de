@@ -27,12 +27,14 @@ install_dependencies () {
         return $retVal
     fi
 
-    # if we're building a container app, create a package from o3de then install that to remove absolute paths to o3de scripts
+    # If we're building a container app, create a package from o3de then install that to remove absolute paths to o3de scripts
     if [ "$O3DE_PACKAGE_TYPE" == "SNAP" ]; then
         pushd $DIR/../scripts/o3de/
         $DIR/python.sh setup.py sdist
         popd
     fi
+    # If the dist package is detected (result of a built container app), run the install of the o3de script library from the 
+    # dist package so that the egg-link file will not be created inside the o3de script folder
     if [ -f $DIR/../scripts/o3de/dist/o3de-1.0.0.tar.gz ]; then
         $DIR/pip.sh install $DIR/../scripts/o3de/dist/o3de-1.0.0.tar.gz --no-deps --disable-pip-version-check --no-cache
     else

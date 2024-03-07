@@ -328,7 +328,7 @@ namespace O3DE::ProjectManager
                     extendedPaths.emplace_back(path);
                 });
 
-            if (extendedPaths.size())
+            if (!extendedPaths.empty())
             {
                 ExtendSysPath(extendedPaths);
             }
@@ -2080,10 +2080,10 @@ namespace O3DE::ProjectManager
 
     bool PythonBindings::ExtendSysPath(const AZStd::vector<AZ::IO::Path>& extendPaths)
     {
-        AZStd::unordered_set<AZStd::string> oldPathSet;
+        AZStd::unordered_set<AZ::IO::Path> oldPathSet;
         auto SplitPath = [&oldPathSet](AZStd::string_view pathPart)
         {
-            oldPathSet.emplace(pathPart);
+            oldPathSet.emplace(AZ::IO::FixedMaxPath(pathPart));
         };
         AZ::StringFunc::TokenizeVisitor(Py_EncodeLocale(Py_GetPath(), nullptr), SplitPath, DELIM);
         bool appended{ false };

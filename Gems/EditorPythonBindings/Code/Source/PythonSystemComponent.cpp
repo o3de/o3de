@@ -27,7 +27,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/std/string/tokenize.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
