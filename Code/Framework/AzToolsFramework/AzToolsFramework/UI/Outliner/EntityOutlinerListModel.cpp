@@ -737,6 +737,12 @@ namespace AzToolsFramework
         [[maybe_unused]] int column,
         const QModelIndex& parent) const
     {
+        // Can only drop assets if a level is loaded!
+        if (rowCount() == 0)
+        {
+            return false;
+        }
+
         if (action != Qt::DropAction::CopyAction)
         {
             // we can only 'move' entityIds, and that will already be handled at this point
