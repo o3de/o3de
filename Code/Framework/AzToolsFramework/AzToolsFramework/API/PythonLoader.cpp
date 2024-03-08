@@ -19,6 +19,7 @@
 #include <AzCore/std/string/tokenize.h>
 #include <AzCore/Settings/ConfigParser.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/IO/LocalFileIO.h>
 
 namespace AzToolsFramework::EmbeddedPython
 {
@@ -124,6 +125,8 @@ namespace AzToolsFramework::EmbeddedPython
 
     void PythonLoader::ReadPythonEggLinkPaths(AZ::IO::PathView thirdPartyRoot, AZ::IO::PathView engineRoot, EggLinkPathVisitor resultPathCallback)
     {
+
+
         // Get the python venv path
         AZ::IO::FixedMaxPath pythonVenvSitePackages =
             AZ::IO::FixedMaxPath(PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot)) / O3DE_PYTHON_SITE_PACKAGE_SUBPATH;
@@ -134,7 +137,8 @@ namespace AzToolsFramework::EmbeddedPython
         // pybind11 does not resolve any .egg-link files, so any packages that there pip-installed into the venv as egg-links
         // are not getting resolved. We will do this manually by opening the egg-links in the venv site-packages path and injecting
         // the non local paths as well
-        AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(
+        AZ::IO::LocalFileIO localFileSystem;
+        localFileSystem.FindFiles(
             pythonVenvSitePackages.c_str(),
             "*.egg-link",
             [&resultPathCallback](const char* filePath) -> bool

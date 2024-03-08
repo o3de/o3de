@@ -19,7 +19,7 @@
 namespace UnitTest
 {
     class AzToolsFrameworkPythonLoaderFixture
-        : public ToolsApplicationFixture<>
+        : public LeakDetectionFixture
     {
     protected:
         AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
@@ -78,7 +78,6 @@ namespace UnitTest
         AZ::IO::FixedMaxPath testRelativeSiteLIbsPath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv" / s_testEnginePathHashId / O3DE_PYTHON_SITE_PACKAGE_SUBPATH;
         AZ::IO::FixedMaxPath testFullSiteLIbsPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / testRelativeSiteLIbsPath;
         AZ::IO::SystemFile::CreateDir(testFullSiteLIbsPath.String().c_str());
-        //AZ::IO::FileIOBase::GetInstance()->CreatePath(testFullSiteLIbsPath.String().c_str());
 
         AZStd::vector<AZStd::string> expectedResults;
         expectedResults.emplace_back(testFullSiteLIbsPath.LexicallyNormal().Native());
