@@ -38,6 +38,14 @@ struct PayloadData
     bool   m_lightVisibilityTrace;
 };
 
+enum class ReflectionMethod
+{
+    ScreenSpace,
+    Hybrid,
+    HybridWithFallback,
+    RayTracing
+};
+
 ShaderResourceGroup RayTracingGlobalSrg : SRG_RayTracingGlobal
 {
     Texture2DMS<float>    m_depth;
@@ -53,7 +61,7 @@ ShaderResourceGroup RayTracingGlobalSrg : SRG_RayTracingGlobal
     float m_invOutputScale;
     float m_maxRayLength;
     float m_maxRoughness;
-    bool  m_rayTraceFallbackData;
+    uint m_reflectionMethod;
     bool  m_rayTraceFallbackSpecular;
 
     Sampler PointSampler
@@ -695,4 +703,16 @@ float3 GetIblSpecular(
     }
 
     return outSpecular;
+}
+
+bool IsRayTracingFallbackEnabled()
+{
+    ReflectionMethod reflectionMethod = (ReflectionMethod)RayTracingGlobalSrg::m_reflectionMethod;
+    return reflectionMethod == ReflectionMethod::HybridWithFallback || reflectionMethod == ReflectionMethod::RayTracing;
+}
+
+bool IsRayTracingOverrideEnabled()
+{
+    ReflectionMethod reflectionMethod = (ReflectionMethod)RayTracingGlobalSrg::m_reflectionMethod;
+    return reflectionMethod == ReflectionMethod::RayTracing;
 }
