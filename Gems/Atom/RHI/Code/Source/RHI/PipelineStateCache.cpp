@@ -275,6 +275,11 @@ namespace AZ::RHI
 
     bool PipelineStateCache::InsertPipelineState(PipelineStateSet& pipelineStateSet, PipelineStateEntry pipelineStateEntry)
     {
+        //GALIB
+        //pipelineStateSet;
+        //pipelineStateEntry;
+        //return true;
+        
         auto ret = pipelineStateSet.insert(pipelineStateEntry);
         return ret.second;
     }
