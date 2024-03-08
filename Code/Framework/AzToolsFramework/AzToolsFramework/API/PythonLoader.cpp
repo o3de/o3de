@@ -52,8 +52,8 @@ namespace AzToolsFramework::EmbeddedPython
 
         if ((!AZ::IO::SystemFile::IsDirectory(thirdPartyEnvPathPath.c_str())) && createOnDemand)
         {
-            auto createPathResult = AZ::IO::SystemFile::CreateDir(thirdPartyPathString.c_str());
-            AZ_Assert(createPathResult, "Unable to create missing 3rd Party Folder '%s'", thirdPartyPathString.c_str())
+            auto createPathResult = AZ::IO::SystemFile::CreateDir(thirdPartyEnvPathPath.c_str());
+            AZ_Assert(createPathResult, "Unable to create missing 3rd Party Folder '%s'", thirdPartyEnvPathPath.c_str())
         }
         return thirdPartyEnvPathPath;
     }
@@ -151,7 +151,7 @@ namespace AzToolsFramework::EmbeddedPython
                     {
                         if (eggLinkLine.compare(".") != 0)
                         {
-                            resultPathCallback(AZ::IO::Path(eggLinkLine));
+                            resultPathCallback(AZ::IO::PathView(eggLinkLine));
                         }
                     }
                 }
