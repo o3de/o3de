@@ -6,6 +6,8 @@
  *
  */
 
+#include <Atom/RHI/FrameGraphExecuteContext.h>
+
 #include <Atom/RPI.Public/GpuQuery/TimestampQueryPool.h>
 
 namespace AZ
