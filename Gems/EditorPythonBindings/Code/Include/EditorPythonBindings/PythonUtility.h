@@ -155,14 +155,18 @@ namespace EditorPythonBindings
 
             //! Creates a string with class or global method definition and documentation.
             AZStd::string MethodDefinition(
-                const AZStd::string methodName, const AZ::BehaviorMethod& behaviorMethod, const AZ::BehaviorClass* behaviorClass = nullptr);
+                const AZStd::string methodName,
+                const AZ::BehaviorMethod& behaviorMethod,
+                const AZ::BehaviorClass* behaviorClass = nullptr,
+                bool defineTooltip = false);
 
             //! Creates a string with class definition and documentation.
             AZStd::string ClassDefinition(
                 const AZ::BehaviorClass* behaviorClass,
                 const AZStd::string className,
                 bool defineProperties = true,
-                bool defineMethods = true);
+                bool defineMethods = true,
+                bool defineTooltip = false);
 
             //! Creates a property definition
             AZStd::string PropertyDefinition(

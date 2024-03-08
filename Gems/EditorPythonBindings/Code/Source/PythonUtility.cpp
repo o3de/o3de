@@ -6,6 +6,7 @@
  *
  */
 
+#include "AzCore/Script/ScriptContextAttributes.h"
 #include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonMarshalComponent.h>
 #include <Source/PythonProxyObject.h>
@@ -779,6 +780,23 @@ namespace EditorPythonBindings
     {
         namespace Internal
         {
+            AZStd::string ReadStringAttribute(const AZ::AttributeArray& attributes, const AZ::Crc32& attribute)
+            {
+                AZStd::string attributeValue = "";
+                if (auto attributeItem = azrtti_cast<AZ::AttributeData<AZStd::string>*>(AZ::FindAttribute(attribute, attributes)))
+                {
+                    attributeValue = attributeItem->Get(nullptr);
+                    return attributeValue;
+                }
+
+                if (auto attributeItem = azrtti_cast<AZ::AttributeData<const char*>*>(AZ::FindAttribute(attribute, attributes)))
+                {
+                    attributeValue = attributeItem->Get(nullptr);
+                    return attributeValue;
+                }
+                return {};
+            }
+
             AZStd::string TypeNameFallback(const AZ::TypeId& typeId)
             {
                 // fall back to class data m_name
@@ -1083,7 +1101,10 @@ namespace EditorPythonBindings
 
         //! Creates a string with class or global method definition and documentation.
         AZStd::string PythonBehaviorDescription::MethodDefinition(
-            const AZStd::string methodName, const AZ::BehaviorMethod& behaviorMethod, const AZ::BehaviorClass* behaviorClass)
+            const AZStd::string methodName,
+            const AZ::BehaviorMethod& behaviorMethod,
+            const AZ::BehaviorClass* behaviorClass,
+            bool defineTooltip)
         {
             AZStd::string buffer;
             AZStd::vector<AZStd::string> pythonArgs;
@@ -1138,13 +1159,27 @@ namespace EditorPythonBindings
             AZStd::string argsList;
             AzFramework::StringFunc::Join(buffer, pythonArgs.begin(), pythonArgs.end(), ",");
             AzFramework::StringFunc::Append(buffer, ") -> None:\n");
+
+            if (defineTooltip)
+            {
+                AZStd::string methodTooltip = Internal::ReadStringAttribute(behaviorMethod.m_attributes, AZ::Script::Attributes::ToolTip);
+                if (!methodTooltip.empty())
+                {
+                    Internal::AddCommentBlock(indentLevel + 1, methodTooltip, buffer);
+                }
+            }
+
             Internal::Indent(indentLevel + 1, buffer);
             AzFramework::StringFunc::Append(buffer, "pass\n\n");
             return buffer;
         }
 
         AZStd::string PythonBehaviorDescription::ClassDefinition(
-            const AZ::BehaviorClass* behaviorClass, const AZStd::string className, bool defineProperties, bool defineMethods)
+            const AZ::BehaviorClass* behaviorClass,
+            const AZStd::string className,
+            bool defineProperties,
+            bool defineMethods,
+            bool defineTooltip)
         {
             AZStd::string buffer;
             AzFramework::StringFunc::Append(buffer, "class ");
@@ -1197,7 +1232,7 @@ namespace EditorPythonBindings
                         {
                             AZStd::string baseMethodName{ methodEntry.first };
                             Scope::FetchScriptName(method->m_attributes, baseMethodName);
-                            AZStd::string methodDef = MethodDefinition(baseMethodName, *method, behaviorClass);
+                            AZStd::string methodDef = MethodDefinition(baseMethodName, *method, behaviorClass, defineTooltip);
                             AzFramework::StringFunc::Append(buffer, methodDef.c_str());
                         }
                     }
