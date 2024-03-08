@@ -8,10 +8,11 @@
 #pragma once
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
-
 namespace AzToolsFramework::EmbeddedPython
 {
     // When using embedded Python, some platforms need to explicitly load the python library.
@@ -55,14 +56,6 @@ namespace AzToolsFramework::EmbeddedPython
         static AZ::IO::FixedMaxPath GetPythonExecutablePath(AZ::IO::PathView thirdPartyRoot, AZ::IO::PathView engineRoot);
 
     private:
-
-        //! Load the platform-specific required modules that are needed by embedded python applications
-        void LoadRequiredModules();
-
-        //! Unload the platform-specific required modules that were loaded previously
-        void UnloadRequiredModules();
-
-        [[maybe_unused]] void* m_embeddedLibPythonHandle{ nullptr };
-
+        AZStd::unique_ptr<AZ::DynamicModuleHandle> m_embeddedLibPythonModuleHandle;
     };
 } // namespace AzToolsFramework::EmbeddedPython

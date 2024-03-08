@@ -25,12 +25,25 @@ namespace AzToolsFramework::EmbeddedPython
 {
     PythonLoader::PythonLoader()
     {
-        LoadRequiredModules();
+        #if AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
+        // PYTHON_SHARED_LIBRARY_PATH must be defined in the build scripts and referencing the path to the python shared library
+        #if !defined(PYTHON_SHARED_LIBRARY_PATH)
+        #error "PYTHON_SHARED_LIBRARY_PATH is not defined"
+        #endif
+        AZ::IO::FixedMaxPath libPythonName = AZ::IO::PathView(PYTHON_SHARED_LIBRARY_PATH).Filename();
+        m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(libPythonName.c_str(), false);
+        bool loadResult = m_embeddedLibPythonModuleHandle->Load(false, true);
+        
+        AZ_Error("PythonLoader", loadResult, "Failed to load %s.\n", libPythonName.c_str());
+        #endif // AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
     }
 
     PythonLoader::~PythonLoader()
     {
-        UnloadRequiredModules();
+        #if AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
+        AZ_Assert(m_embeddedLibPythonModuleHandle, "DynamicModuleHandle for python was not created");
+        m_embeddedLibPythonModuleHandle->Unload();
+        #endif // AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
     }
 
     AZ::IO::FixedMaxPath PythonLoader::GetDefault3rdPartyPath(bool createOnDemand)

@@ -9,6 +9,5 @@
 set(FILES
     AzToolsFramework_Traits_Windows.h
     AzToolsFramework_Traits_Platform.h
-    AzToolsFramework/API/PythonLoader_Windows.cpp
     AzToolsFramework/API/EditorAssetSystemAPI_Windows.cpp
 )
