@@ -23,6 +23,7 @@
 #include <AzCore/Memory/SystemAllocator.h> // Used as the allocator for most components.
 #include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/PlatformDef.h> // Needed for Component_Platform.inl include
 #include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ
@@ -467,12 +468,11 @@ namespace AZ
     //! The `AZ_CLASS` is a placeholder macro that is used to substitute `class` template parameters
     //! For non-type template parameters such as `size_t` or `int` the `AZ_AUTO` placeholder can be used
 
-    // Clang on Windows uses the preprocessor in MSVC compatibility mode, which cannot parse the AZ_VA_OPT macro in some instances, but
-    // since the comma after __VA_ARGS__ is removed automatically if __VA_ARGS__ is empty, it does not have to be used.
-    #if defined(AZ_COMPILER_CLANG) && defined(AZ_PLATFORM_WINDOWS)
-    #define AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER(_ComponentClassOrTemplate, _BaseClass, ...) \
-        AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__, _BaseClass)
-    #else
+    // Include the platform specific implementation of AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER
+    #include <AzCore/Component/Component_Platform.inl>
+
+    // If there was no platform specific implementation defined, use a default one:
+    #if !defined(AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER)
     #define AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER(_ComponentClassOrTemplate, _BaseClass, ...) \
         AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__ AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) _BaseClass)
     #endif
