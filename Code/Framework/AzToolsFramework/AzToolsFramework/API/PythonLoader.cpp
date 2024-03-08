@@ -49,15 +49,22 @@ namespace AzToolsFramework::EmbeddedPython
     AZ::IO::FixedMaxPath PythonLoader::GetDefault3rdPartyPath(bool createOnDemand)
     {
         AZ::IO::FixedMaxPath thirdPartyEnvPathPath;
-        static constexpr const char* env3rdPartyKey = "LY_3RDPARTY_PATH";
 
-        char env3rdPartyPath[AZ::IO::MaxPathLength] = {'\0'};
+        // The highest priority for the 3rd party path is the environment variable 'LY_3RDPARTY_PATH'
+        static constexpr const char* env3rdPartyKey = "LY_3RDPARTY_PATH";
+        char env3rdPartyPath[AZ::IO::MaxPathLength] = { '\0' };
         auto envOutcome = AZ::Utils::GetEnv(AZStd::span(env3rdPartyPath), env3rdPartyKey);
         if (envOutcome && (strlen(env3rdPartyPath) > 0))
         {
             // If so, then use the path that is set as the third party path
             thirdPartyEnvPathPath = AZ::IO::FixedMaxPath(env3rdPartyPath).LexicallyNormal();
         }
+        // The next priority is to read the 3rd party directory from the manifest file
+        else if (auto manifest3rdPartyResult = AZ::Utils::Get3rdPartyDirectory(); manifest3rdPartyResult.IsSuccess())
+        {
+            thirdPartyEnvPathPath = manifest3rdPartyResult.GetValue();
+        }
+        // Fallback to the default 3rd Party path based on the location of the manifest folder
         else
         {
             auto manifestPath = AZ::Utils::GetO3deManifestDirectory();
