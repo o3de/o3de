@@ -17,7 +17,7 @@ namespace AZ
         {
             if (m_size >= size)
             {
-                for(auto [deviceIndex, address] : m_address)
+                for(auto& [deviceIndex, address] : m_address)
                 {
                     memcpy(address, data, size);
                 }
@@ -32,7 +32,7 @@ namespace AZ
             return m_size;
         }
 
-        AZStd::unordered_map<int, void*> DynamicBuffer::GetBufferAddress()
+        const AZStd::unordered_map<int, void*>& DynamicBuffer::GetBufferAddress()
         {
             return m_address;
         }
