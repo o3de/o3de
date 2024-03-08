@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/MultiDeviceQuery.h>
 #include <Atom/RHI/RHISystemInterface.h>
