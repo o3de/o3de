@@ -22,11 +22,18 @@ uint        prefix##m_specularF0MapUvIndex;
 #define COMMON_OPTIONS_SPECULAR_F0(prefix) \
 option bool prefix##o_specularF0_useTexture; 
 
-real GetSpecularInput(Texture2D map, sampler mapSampler, float2 uv, real specularFactor, bool useTexture)
+real GetSpecularInput(Texture2D map, sampler mapSampler, float2 uv, real specularFactor, bool useTexture, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
     if (useTexture)
     {
-        specularFactor *= real(map.Sample(mapSampler, uv).r);
+        if (customDerivatives)
+        {
+            specularFactor *= real(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).r);
+        }
+        else
+        {
+            specularFactor *= real(map.Sample(mapSampler, uv).r);
+        }
     }
     return specularFactor;
 }
