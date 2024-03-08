@@ -50,8 +50,7 @@ namespace AzToolsFramework::EmbeddedPython
             thirdPartyEnvPathPath = AZ::IO::FixedMaxPath(manifestPath) / "3rdParty";
         }
 
-        AZStd::string thirdPartyPathString = thirdPartyEnvPathPath.String();
-        if ((!AZ::IO::SystemFile::IsDirectory(thirdPartyPathString.c_str())) && createOnDemand)
+        if ((!AZ::IO::SystemFile::IsDirectory(thirdPartyEnvPathPath.c_str())) && createOnDemand)
         {
             auto createPathResult = AZ::IO::SystemFile::CreateDir(thirdPartyPathString.c_str());
             AZ_Assert(createPathResult, "Unable to create missing 3rd Party Folder '%s'", thirdPartyPathString.c_str())
