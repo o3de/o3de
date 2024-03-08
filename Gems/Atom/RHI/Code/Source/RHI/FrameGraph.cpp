@@ -207,6 +207,10 @@ namespace AZ::RHI
         GraphEdgeType edgeType = usage == ScopeAttachmentUsage::SubpassInput ? GraphEdgeType::SameGroup : GraphEdgeType::DifferentGroup;
         if (Scope* producer = frameAttachment.GetLastScope())
         {
+            if (producer->GetId() == descriptor.m_subpassScopeId)
+            {
+                edgeType = GraphEdgeType::SameGroup; // GALIB
+            }
             InsertEdge(*producer, *m_currentScope, edgeType);
         }
 

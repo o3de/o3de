@@ -47,7 +47,7 @@ namespace AZ
 
             //! Build and return RenderAttachmentConfiguration of this pass from its render attachments
             //! This function usually need to be called after pass attachments rebuilt to reflect latest layout
-            RHI::RenderAttachmentConfiguration GetRenderAttachmentConfiguration() const override; // GALIB added override
+            RHI::RenderAttachmentConfiguration GetRenderAttachmentConfiguration(uint32_t subpassIndex = 0) const override; // GALIB added override
 
             //! Get MultisampleState of this pass from its output attachments
             RHI::MultisampleState GetMultisampleState() const override; // GALIB added override
