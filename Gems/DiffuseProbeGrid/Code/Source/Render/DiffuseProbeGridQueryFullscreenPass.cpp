@@ -220,13 +220,13 @@ namespace AZ
                 const uint8_t srgCount = 3;
                 AZStd::array<const RHI::SingleDeviceShaderResourceGroup*, 8> shaderResourceGroups =
                 {
-                    diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
-                    m_shaderResourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get(),
-                    views[0]->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(RHI::MultiDevice::DefaultDeviceIndex).get()
+                    diffuseProbeGrid->GetQuerySrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
+                    m_shaderResourceGroup->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
+                    views[0]->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get()
                 };
 
                 RHI::SingleDeviceDispatchItem dispatchItem;
-                dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(RHI::MultiDevice::DefaultDeviceIndex).get();
+                dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_shaderResourceGroupCount = srgCount;
                 dispatchItem.m_shaderResourceGroups = shaderResourceGroups;

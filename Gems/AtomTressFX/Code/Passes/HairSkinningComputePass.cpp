@@ -237,7 +237,7 @@ namespace AZ
 
                 for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index, ++it)
                 {
-                    commandList->Submit((*it)->GetDeviceDispatchItem(RHI::MultiDevice::DefaultDeviceIndex), index);
+                    commandList->Submit((*it)->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
                 }
 
                 // Clear the dispatch items. They will need to be re-populated next frame

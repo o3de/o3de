@@ -154,10 +154,10 @@ namespace AZ
             AZStd::vector<const RHI::SingleDeviceRayTracingBlas*> changedBlasList;
             if (m_visualizationBlasBuilt == false)
             {
-                context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas()->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex));
+                context.GetCommandList()->BuildBottomLevelAccelerationStructure(*diffuseProbeGridFeatureProcessor->GetVisualizationBlas()->GetDeviceRayTracingBlas(context.GetDeviceIndex()));
                 m_visualizationBlasBuilt = true;
                 changedBlasList.push_back(diffuseProbeGridFeatureProcessor->GetVisualizationBlas()
-                                              ->GetDeviceRayTracingBlas(RHI::MultiDevice::DefaultDeviceIndex)
+                                              ->GetDeviceRayTracingBlas(context.GetDeviceIndex())
                                               .get());
             }
 
@@ -176,7 +176,7 @@ namespace AZ
                 }
 
                 // build the TLAS object
-                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas()->GetDeviceRayTracingTlas(RHI::MultiDevice::DefaultDeviceIndex), changedBlasList);
+                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList);
             }
         }
 
