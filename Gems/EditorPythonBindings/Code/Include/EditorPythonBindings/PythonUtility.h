@@ -154,13 +154,18 @@ namespace EditorPythonBindings
             AZStd::string BusDefinition(const AZStd::string busName, const AZ::BehaviorEBus* behaviorEBus);
 
             //! Creates a string with class or global method definition and documentation.
+            //! @param defineTooltip if true, the tooltip will be included in the definition
             AZStd::string MethodDefinition(
                 const AZStd::string methodName,
                 const AZ::BehaviorMethod& behaviorMethod,
                 const AZ::BehaviorClass* behaviorClass = nullptr,
-                bool defineTooltip = false);
+                bool defineTooltip = false,
+                bool defineDebugDescription = false);
 
             //! Creates a string with class definition and documentation.
+            //! @param defineProperties if true, the properties will be included in the definition
+            //! @param defineMethods if true, the methods will be included in the definition
+            //! @param defineTooltip if true, the tooltip will be included in the definition
             AZStd::string ClassDefinition(
                 const AZ::BehaviorClass* behaviorClass,
                 const AZStd::string className,

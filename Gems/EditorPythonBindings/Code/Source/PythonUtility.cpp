@@ -1039,6 +1039,10 @@ namespace EditorPythonBindings
 
             // record the event names the behavior can send, their parameters and return type
             AZStd::string comment = behaviorEBus->m_toolTip;
+            if (comment.empty())
+            {
+                comment = Internal::ReadStringAttribute(behaviorEBus->m_attributes, AZ::Script::Attributes::ToolTip);
+            }
 
             if (!behaviorEBus->m_events.empty())
             {
@@ -1104,7 +1108,8 @@ namespace EditorPythonBindings
             const AZStd::string methodName,
             const AZ::BehaviorMethod& behaviorMethod,
             const AZ::BehaviorClass* behaviorClass,
-            bool defineTooltip)
+            bool defineTooltip,
+            bool defineDebugDescription)
         {
             AZStd::string buffer;
             AZStd::vector<AZStd::string> pythonArgs;
@@ -1160,13 +1165,29 @@ namespace EditorPythonBindings
             AzFramework::StringFunc::Join(buffer, pythonArgs.begin(), pythonArgs.end(), ",");
             AzFramework::StringFunc::Append(buffer, ") -> None:\n");
 
+            AZStd::string methodTooltipAndDebugDescription = "";
+
+            if (defineDebugDescription && behaviorMethod.m_debugDescription != nullptr)
+            {
+                AZStd::string debugDescription(behaviorMethod.m_debugDescription);
+                if (!debugDescription.empty())
+                {
+                    methodTooltipAndDebugDescription += debugDescription;
+                    methodTooltipAndDebugDescription += "\n";
+                }
+            }
             if (defineTooltip)
             {
                 AZStd::string methodTooltip = Internal::ReadStringAttribute(behaviorMethod.m_attributes, AZ::Script::Attributes::ToolTip);
                 if (!methodTooltip.empty())
                 {
-                    Internal::AddCommentBlock(indentLevel + 1, methodTooltip, buffer);
+                    methodTooltipAndDebugDescription += methodTooltip;
+                    methodTooltipAndDebugDescription += "\n";
                 }
+            }
+            if (!methodTooltipAndDebugDescription.empty())
+            {
+                Internal::AddCommentBlock(indentLevel + 1, methodTooltipAndDebugDescription, buffer);
             }
 
             Internal::Indent(indentLevel + 1, buffer);
@@ -1205,6 +1226,16 @@ namespace EditorPythonBindings
                 {
                     body = "";
                 }
+                if (defineTooltip)
+                {
+                    AZStd::string classTooltip =
+                        Internal::ReadStringAttribute(behaviorClass->m_attributes, AZ::Script::Attributes::ToolTip);
+                    if (!classTooltip.empty())
+                    {
+                        Internal::AddCommentBlock(1, classTooltip, body);
+                    }
+                }
+
                 Internal::Indent(1, body);
                 AzFramework::StringFunc::Append(body, "pass\n\n");
                 AzFramework::StringFunc::Append(buffer, body.c_str());
