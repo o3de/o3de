@@ -13,11 +13,7 @@
 #include <AzCore/std/sort.h>
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
-#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
-#include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzFramework/IO/LocalFileIO.h>
 #include <AzToolsFramework/API/PythonLoader.h>
 
 namespace UnitTest
@@ -56,7 +52,6 @@ namespace UnitTest
         AZ::IO::FixedMaxPath tempVenvRelativePath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv/" / s_testEnginePathHashId;
         AZ::IO::FixedMaxPath tempVenvFullPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / tempVenvRelativePath;
         AZ::IO::SystemFile::CreateDir(tempVenvFullPath.String().c_str());
-        //AZ::IO::FileIOBase::GetInstance()->CreatePath(tempVenvFullPath.String().c_str());
         AZ::IO::FixedMaxPath tempPyConfigFile = tempVenvRelativePath / "pyvenv.cfg";
         AZStd::string testPython3rdPartyPath = "/home/user/python/";
         AZStd::string testPyConfigFileContent = AZStd::string::format("home = %s\n"
@@ -88,21 +83,18 @@ namespace UnitTest
         AZStd::vector<AZStd::string> expectedResults;
         expectedResults.emplace_back(testFullSiteLIbsPath.LexicallyNormal().Native());
 
-        //static constexpr const char* testEggLinkPaths[] = { "/lib/path/one", "/lib/path/two", "/lib/path/three" };
-        //size_t testEggLinkPathCount = sizeof(testEggLinkPaths) / sizeof(const char*);
-
         static constexpr auto testEggLinkPaths = AZStd::to_array<const char*>({ "/lib/path/one", "/lib/path/two", "/lib/path/three" });
         int index = 0;
         for (const char* testEggLinkPath : testEggLinkPaths)
         {
             ++index;
-            AZStd::string testEggFileName = AZStd::string::format("test-%d.egg-link", static_cast<int>(index));
+            AZStd::string testEggFileName = AZStd::string::format("test-%d.egg-link", index);
             const char* lineBreak = ((index % 2) == 0) ? "\n" : "\r\n";
             AZStd::string testEggFileContent = AZStd::string::format("%s%s.", testEggLinkPath, lineBreak);
             expectedResults.emplace_back(AZStd::string(testEggLinkPath));
 
-            AZ::IO::FixedMaxPath testEggILeNamePath = testRelativeSiteLIbsPath / testEggFileName;
-            AZ::Test::CreateTestFile(m_tempDirectory, testEggILeNamePath, testEggFileContent);
+            AZ::IO::FixedMaxPath testEggLinkNamePath = testRelativeSiteLIbsPath / testEggFileName;
+            AZ::Test::CreateTestFile(m_tempDirectory, testEggLinkNamePath, testEggFileContent);
         }
 
         // Test the method
