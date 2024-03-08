@@ -39,7 +39,7 @@ namespace AZ
             
             m_ringBufferSize = ringBufferSize;
 
-            m_ringBufferStartAddress = m_ringBuffer->Map(m_ringBufferSize, 0);
+            m_ringBufferStartAddresses = m_ringBuffer->Map(m_ringBufferSize, 0);
             
             m_currentPosition = 0;
             m_endPositionLimit = 0;
@@ -54,7 +54,7 @@ namespace AZ
         {
             m_ringBuffer->Unmap();
             m_ringBuffer = nullptr;
-            m_ringBufferStartAddress.clear();
+            m_ringBufferStartAddresses.clear();
         }
 
         // [GFX TODO][ATOM-13182] Add unit tests for DynamicBufferAllocator's Allocate function 
@@ -64,7 +64,7 @@ namespace AZ
             uint32_t allocatePosition = 0;
 
             //m_ringBufferStartAddress can be null for Null back end
-            if (m_ringBufferStartAddress.empty())
+            if (m_ringBufferStartAddresses.empty())
             {
                 return nullptr;
             }
@@ -124,7 +124,7 @@ namespace AZ
             m_currentAllocatedSize += size;
 
             RHI::Ptr<DynamicBuffer> allocatedBuffer = aznew DynamicBuffer();
-            for(auto [deviceIndex, address] : m_ringBufferStartAddress)
+            for(auto [deviceIndex, address] : m_ringBufferStartAddresses)
             {
                 allocatedBuffer->m_address[deviceIndex] = (uint8_t*)address + allocatePosition;
             }
@@ -155,9 +155,9 @@ namespace AZ
 
         uint32_t DynamicBufferAllocator::GetBufferAddressOffset(RHI::Ptr<DynamicBuffer> dynamicBuffer)
         {
-            AZ_Error("DynamicBufferAllocator", !m_ringBufferStartAddress.empty(), "No addresses available!");
+            AZ_Error("DynamicBufferAllocator", !m_ringBufferStartAddresses.empty(), "No addresses available!");
 
-            auto it = m_ringBufferStartAddress.begin();
+            auto it = m_ringBufferStartAddresses.begin();
 
             return aznumeric_cast<uint32_t>((uint8_t*)dynamicBuffer->m_address[it->first] - (uint8_t*)it->second);
         }

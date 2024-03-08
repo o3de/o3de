@@ -48,7 +48,7 @@ namespace AZ
             uint32_t GetSize();
 
             //! Get the buffer's address. User can write data to the address.
-            AZStd::unordered_map<int, void*> GetBufferAddress();
+            const AZStd::unordered_map<int, void*>& GetBufferAddress();
 
             //! Get IndexBufferView if this buffer is used as index buffer
             RHI::MultiDeviceIndexBufferView GetIndexBufferView(RHI::IndexFormat format);

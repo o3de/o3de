@@ -51,7 +51,7 @@ namespace NvCloth
             const AZ::RHI::Format expectedElementFormat);
         ~MappedBuffer();
 
-        AZStd::unordered_map<int, T*> GetBuffer()
+        const AZStd::unordered_map<int, T*>& GetBuffer()
         {
             return m_buffer;
         }
