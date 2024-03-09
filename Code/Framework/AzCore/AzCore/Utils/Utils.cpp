@@ -16,7 +16,7 @@
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/JSON/document.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -417,27 +417,13 @@ namespace AZ::Utils
         // Locate the manifest file
         auto manifestPath = GetO3deManifestPath(settingsRegistry);
 
-        // Read the content of the manifest file
-        const auto fileSize = AZ::IO::SystemFile::Length(manifestPath.c_str());
-        if (!fileSize)
+        auto readJsonDocOutput = AZ::JsonSerializationUtils::ReadJsonFile(manifestPath);
+        if (!readJsonDocOutput.IsSuccess())
         {
-            return AZ::Failure(AZStd::string::format("Invalid manifest file %.*s", AZ_STRING_ARG(manifestPath)));
+            return AZ::Failure(readJsonDocOutput.GetError());
         }
-        AZStd::vector<char> buffer(fileSize + 1);
-        buffer[fileSize] = '\0';
-        if (!AZ::IO::SystemFile::Read(manifestPath.c_str(), buffer.data()))
-        {
-            return AZ::Failure(AZStd::string::format("Error reading manifest file %.*s", AZ_STRING_ARG(manifestPath)));
-        }
-        const AZStd::string manifestContent = AZStd::string(buffer.begin(), buffer.end());
 
-        // Parse the manifest content and read the 'default_third_party_folder' value
-
-        rapidjson::Document configurationFile;
-        if (configurationFile.Parse(manifestContent.c_str()).HasParseError())
-        {
-            return AZ::Failure(AZStd::string::format("Error reading manifest file %.*s (JSON parse error)", AZ_STRING_ARG(manifestPath)));
-        }
+        rapidjson::Document configurationFile = readJsonDocOutput.TakeValue();
 
         auto thirdPartyFolder = configurationFile["default_third_party_folder"].GetString();
         return AZ::Success(thirdPartyFolder);
