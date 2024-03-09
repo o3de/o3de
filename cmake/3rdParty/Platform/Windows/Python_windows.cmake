@@ -14,5 +14,6 @@ ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.13-rev1-windows)
 ly_set(LY_PYTHON_PACKAGE_HASH a6f1fd50552c8780852b75186a97469f77d55d06a01de73e5ca601e4a12be232)
 ly_set(LY_PYTHON_EXECUTABLE "python/python.exe")
 ly_set(LY_PYTHON_VENV_SITE_PACKAGES "Lib/site-packages")
+ly_set(LY_PYTHON_VENV_PYTHON "Scripts/python.exe")
 
 ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})

@@ -34,7 +34,13 @@ exit /b 1
 
 REM Set the expected location of the python venv for this engine and the locations of the critical scripts/executables 
 REM needed to run python within the venv properly
-SET PYTHON_VENV=%USERPROFILE%\.o3de\3rdParty\venv\%ENGINE_ID%
+
+REM If the %LY_3RDPARTY_PATH% is not set, then default it to %USERPROFILE%/.o3de/3rdParty
+IF "" == "%LY_3RDPARTY_PATH%" (
+    SET LY_3RDPARTY_PATH=%USERPROFILE%\.o3de\3rdParty
+)
+
+SET PYTHON_VENV=%LY_3RDPARTY_PATH%\venv\%ENGINE_ID%
 SET PYTHON_VENV_ACTIVATE=%PYTHON_VENV%\Scripts\activate.bat
 SET PYTHON_VENV_DEACTIVATE=%PYTHON_VENV%\Scripts\deactivate.bat
 IF [%1] EQU [debug] (
@@ -45,7 +51,7 @@ IF [%1] EQU [debug] (
     SET PYTHON_ARGS=%*
 )
 IF EXIST %PYTHON_VENV_PYTHON% GOTO PYTHON_VENV_EXISTS
-ECHO Python has not been setup completely for O3DE. 
+ECHO Python has not been setup completely for O3DE. Missing Python venv %PYTHON_VENV_PYTHON%
 ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
 exit /b 1
 
@@ -66,14 +72,14 @@ REM Make sure there a .hash file that serves as the marker for the source python
 SET PYTHON_VENV_HASH=%PYTHON_VENV%\.hash
 
 IF EXIST %PYTHON_VENV_HASH% GOTO PYTHON_VENV_HASH_EXISTS
-ECHO Python has not been setup completely for O3DE. 
+ECHO Python has not been setup completely for O3DE. Missing venv hash %PYTHON_VENV_HASH%
 ECHO Try running %CMD_DIR%\get_python.bat to setup Python for O3DE.
 exit /b 1
 
 :PYTHON_VENV_HASH_EXISTS
 
 REM Read in the .hash from the venv to see if we need to update the version of python
-FOR /F %%g IN ('type %PYTHON_VENV_HASH%') DO SET VENV_PACKAGE_HASH=%%g
+SET /p VENV_PACKAGE_HASH=<%PYTHON_VENV_HASH%
 
 IF "%VENV_PACKAGE_HASH%" == "%CURRENT_PACKAGE_HASH%" GOTO PYTHON_VENV_MATCHES
 ECHO Python needs to be updated against the current version.

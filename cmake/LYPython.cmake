@@ -49,12 +49,22 @@ function(ly_setup_python_venv)
     # 
     if (EXISTS "${PYTHON_VENV_PATH}/.hash")
         file(READ "${PYTHON_VENV_PATH}/.hash" LY_CURRENT_VENV_PACKAGE_HASH
-        LIMIT 80)
+             LIMIT 80)
         if (NOT ${LY_CURRENT_VENV_PACKAGE_HASH} STREQUAL ${LY_PYTHON_PACKAGE_HASH})
+            # The package hash changed, re-install the venv
             set(CREATE_NEW_VENV TRUE)
             file(REMOVE_RECURSE "${PYTHON_VENV_PATH}")
         else()
-            message(STATUS "Using Python venv at ${PYTHON_VENV_PATH}")
+            # Sanity check to make sure the python launcher in the venv works
+            execute_process(COMMAND ${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_PYTHON} --version
+                            RESULT_VARIABLE command_result)
+            if (NOT ${command_result} EQUAL 0)
+                message(STATUS "Error validating python inside the venv. Reinstalling")
+                set(CREATE_NEW_VENV TRUE)
+                file(REMOVE_RECURSE "${PYTHON_VENV_PATH}")
+            else()
+                message(STATUS "Using Python venv at ${PYTHON_VENV_PATH}")
+            endif()
         endif()
     else()
         set(CREATE_NEW_VENV TRUE)
@@ -63,7 +73,11 @@ function(ly_setup_python_venv)
     if (CREATE_NEW_VENV)
         message(STATUS "Creating Python venv at ${PYTHON_VENV_PATH}")
         execute_process(COMMAND "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_EXECUTABLE}" -m venv "${PYTHON_VENV_PATH}"
-                        WORKING_DIRECTORY "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}")
+                        WORKING_DIRECTORY "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}"
+                        RESULT_VARIABLE command_result)
+        if (NOT ${command_result} EQUAL 0)
+            message(FATAL_ERROR "Error creating a venv")
+        endif()
         file(WRITE "${PYTHON_VENV_PATH}/.hash" ${LY_PYTHON_PACKAGE_HASH})
     endif()
     

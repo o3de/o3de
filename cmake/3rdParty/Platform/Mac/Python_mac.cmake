@@ -14,5 +14,6 @@ ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.13-rev1-darwin)
 ly_set(LY_PYTHON_PACKAGE_HASH 14a88370fa8673344cf51354ce1a1021a0a1fb1742d774b5a0033a94e3384ec1)
 ly_set(LY_PYTHON_EXECUTABLE "Python.framework/Versions/Current/bin/python3")
 ly_set(LY_PYTHON_VENV_SITE_PACKAGES "lib/python3.10/site-packages")
+ly_set(LY_PYTHON_VENV_PYTHON "bin/python")
 
 ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})

@@ -64,13 +64,14 @@ if ERRORLEVEL 1 (
 
 :install_packages
 echo calling PIP to install requirements...
-call "%CMD_DIR%\pip.cmd" install -r "%CMD_DIR%/requirements.txt" --disable-pip-version-check --no-warn-script-location
+CALL "%CMD_DIR%\python.cmd" -m pip install -r "%CMD_DIR%/requirements.txt" --disable-pip-version-check --no-warn-script-location
 if ERRORLEVEL 1 (
     echo Failed to install the packages listed in %CMD_DIR%\requirements.txt.  Check the log above!
     EXIT /b 1
 )
 
-call "%CMD_DIR%\pip.cmd" install -e "%CMD_DIR%/../scripts/o3de" --disable-pip-version-check --no-warn-script-location --no-deps
+echo calling PIP to O3DE
+CALL "%CMD_DIR%\python.cmd" -m pip install -e "%CMD_DIR%/../scripts/o3de" --disable-pip-version-check --no-warn-script-location --no-deps
 if ERRORLEVEL 1 (
     echo Failed to install %CMD_DIR%\..\scripts\o3de into python.  Check the log above!
     EXIT /b 1
