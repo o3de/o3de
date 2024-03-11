@@ -678,12 +678,18 @@ namespace AZ
 
             for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
+                auto indexBufferView{m_indexBufferView.GetDeviceIndexBufferView(context.GetDeviceIndex())};
+                AZStd::array<RHI::SingleDeviceStreamBufferView, 2> vertexBufferView{
+                    m_vertexBufferView[0].GetDeviceStreamBufferView(context.GetDeviceIndex()),
+                    m_vertexBufferView[1].GetDeviceStreamBufferView(context.GetDeviceIndex())
+                };
+
                 RHI::SingleDeviceDrawItem drawItem;
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState()->GetDevicePipelineState(context.GetDeviceIndex()).get();
-                drawItem.m_indexBufferView = &m_indexBufferView;
+                drawItem.m_indexBufferView = &indexBufferView;
                 drawItem.m_streamBufferViewCount = 2;
-                drawItem.m_streamBufferViews = m_vertexBufferView.data();
+                drawItem.m_streamBufferViews = vertexBufferView.data();
                 drawItem.m_scissorsCount = 1;
                 drawItem.m_scissors = &m_draws.at(i).m_scissor;
 
@@ -726,8 +732,8 @@ namespace AZ
                 return 0;
             }
 
-            ImDrawIdx* indexBufferData = static_cast<ImDrawIdx*>(indexBuffer->GetBufferAddress());
-            ImDrawVert* vertexBufferData = static_cast<ImDrawVert*>(vertexBuffer->GetBufferAddress());
+            auto indexBufferDataAddress = indexBuffer->GetBufferAddress();
+            auto vertexBufferDataAddress = vertexBuffer->GetBufferAddress();
 
             uint32_t drawCount = 0;
             uint32_t indexBufferOffset = 0;
@@ -740,11 +746,17 @@ namespace AZ
                     const ImDrawList* drawList = drawData.CmdLists[cmdListIndex];
 
                     const uint32_t indexBufferByteSize = drawList->IdxBuffer.size() * indexSize;
-                    memcpy(indexBufferData + indexBufferOffset, drawList->IdxBuffer.Data, indexBufferByteSize);
+                    for(auto [deviceIndex, indexBufferData] : indexBufferDataAddress)
+                    {
+                        memcpy(static_cast<ImDrawIdx*>(indexBufferData) + indexBufferOffset, drawList->IdxBuffer.Data, indexBufferByteSize);
+                    }
                     indexBufferOffset += drawList->IdxBuffer.size();
 
                     const uint32_t vertexBufferByteSize = drawList->VtxBuffer.size() * vertexSize;
-                    memcpy(vertexBufferData + vertexBufferOffset, drawList->VtxBuffer.Data, vertexBufferByteSize);
+                    for(auto [deviceIndex, vertexBufferData] : vertexBufferDataAddress)
+                    {
+                        memcpy(static_cast<ImDrawVert*>(vertexBufferData) + vertexBufferOffset, drawList->VtxBuffer.Data, vertexBufferByteSize);
+                    }
                     vertexBufferOffset += drawList->VtxBuffer.size();
 
                     drawCount += drawList->CmdBuffer.size();
@@ -752,9 +764,9 @@ namespace AZ
             }
 
             static_assert(indexSize == 2, "Expected index size from ImGui to be 2 to match RHI::IndexFormat::Uint16");
-            m_indexBufferView = indexBuffer->GetIndexBufferView(RHI::IndexFormat::Uint16).GetDeviceIndexBufferView(RHI::MultiDevice::DefaultDeviceIndex);
-            m_vertexBufferView[0] = vertexBuffer->GetStreamBufferView(vertexSize).GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex);
-            m_vertexBufferView[1] = m_instanceBufferView.GetDeviceStreamBufferView(RHI::MultiDevice::DefaultDeviceIndex);
+            m_indexBufferView = indexBuffer->GetIndexBufferView(RHI::IndexFormat::Uint16);
+            m_vertexBufferView[0] = vertexBuffer->GetStreamBufferView(vertexSize);
+            m_vertexBufferView[1] = m_instanceBufferView;
 
             RHI::ValidateStreamBufferViews(m_pipelineState->ConstDescriptor().m_inputStreamLayout, m_vertexBufferView);
 

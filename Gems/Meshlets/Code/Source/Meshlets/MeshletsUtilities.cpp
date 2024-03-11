@@ -120,7 +120,7 @@ namespace AZ
                 return false;
             }
 
-            if (!srg->SetBufferView(bufferIndex, buffer->GetBufferView()->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
+            if (!srg->SetBufferView(bufferIndex, buffer->GetBufferView()))
             {
                 AZ_Error(warningHeader, false, "Failed to bind buffer view for [%s]", bufferDesc.m_bufferName.GetCStr());
                 return false;
@@ -196,7 +196,7 @@ namespace AZ
                 return false;
             }
 
-            if (!srg->SetBufferView(bufferIndex, bufferView->GetDeviceBufferView(RHI::MultiDevice::DefaultDeviceIndex).get()))
+            if (!srg->SetBufferView(bufferIndex, bufferView))
             {
                 AZ_Error(warningHeader, false, "Failed to bind buffer view for [%s]", bufferDesc.m_bufferName.GetCStr());
                 return false;

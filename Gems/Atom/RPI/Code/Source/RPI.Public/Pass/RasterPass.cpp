@@ -280,7 +280,7 @@ namespace AZ
             {
                 commandList->SetViewport(m_viewportState);
                 commandList->SetScissor(m_scissorState);
-                SetSrgsForDraw(commandList);
+                SetSrgsForDraw(context);
                 SubmitDrawItems(context, context.GetSubmitRange().m_startIndex, context.GetSubmitRange().m_endIndex, 0);
             }
         }
