@@ -20,7 +20,7 @@ include(cmake/3rdPartyPackages.cmake)
 # python interpreter we want to use is for the windows HOST pc, not the PAL platform:
 
 
-set(LY_PAL_PYTHON_PACKAGE_FILE_NAME ${LY_ROOT_FOLDER}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Python_${PAL_PLATFORM_NAME_LOWERCASE}${LY_HOST_ARCHITECTURE_NAME_EXTENSION}.cmake)
+set(LY_PAL_PYTHON_PACKAGE_FILE_NAME ${LY_ROOT_FOLDER}/cmake/3rdParty/Platform/${PAL_HOST_PLATFORM_NAME}/Python_${PAL_HOST_PLATFORM_NAME_LOWERCASE}${LY_HOST_ARCHITECTURE_NAME_EXTENSION}.cmake)
 cmake_path(NORMAL_PATH LY_PAL_PYTHON_PACKAGE_FILE_NAME)
 include(${LY_PAL_PYTHON_PACKAGE_FILE_NAME})
 
