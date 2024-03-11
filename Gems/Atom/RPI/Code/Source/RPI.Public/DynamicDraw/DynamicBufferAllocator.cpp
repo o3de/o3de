@@ -39,7 +39,13 @@ namespace AZ
             
             m_ringBufferSize = ringBufferSize;
 
-            m_ringBufferStartAddresses = m_ringBuffer->Map(m_ringBufferSize, 0);
+            for (auto& [deviceIndex, address] : m_ringBuffer->Map(m_ringBufferSize, 0))
+            {
+                if (address != nullptr)
+                {
+                    m_ringBufferStartAddresses[deviceIndex] = address;
+                }
+            }
             
             m_currentPosition = 0;
             m_endPositionLimit = 0;
