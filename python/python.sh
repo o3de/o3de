@@ -89,10 +89,11 @@ then
     exit 1
 fi
 
-
-PYTHONPATH=""
+# The python in the venv environment is a symlink which will cause issues with loading the python shared
+# object that is relative to the original python lib shared library in the package.
+PYTHON_LIB_PATH=$(awk -F ' = ' '/home/ {print $2}' $LY_3RDPARTY_PATH/venv/$ENGINE_ID/pyvenv.cfg | sed 's/python\/bin/python\/lib/g')
 
 source $PYTHON_VENV_ACTIVATE
 
-PYTHONNOUSERSITE=1 "$PYTHON_VENV_PYTHON" "$@"
+PYTHONNOUSERSITE=1 LD_LIBRARY_PATH="$PYTHON_LIB_PATH:$LD_LIBRARY_PATH" "$PYTHON_VENV_PYTHON" "$@"
 exit $?

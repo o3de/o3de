@@ -11,7 +11,7 @@
 # and PAL_PLATFORM_NAME to the platform you'd like to get or update python for.
 # defines must come before the script call.
 # example:
-# cmake -DPAL_PLATFORM_NAME:string=Windows -DLY_ROOT_FOLDER:string=%CMD_DIR% -P get_python_package_path.cmake
+# cmake -DPAL_PLATFORM_NAME:string=Windows -DLY_ROOT_FOLDER:string=%CMD_DIR% -P get_python_package_hash.cmake
 
 cmake_minimum_required(VERSION 3.22)
 

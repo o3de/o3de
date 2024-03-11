@@ -38,6 +38,17 @@ set(PYTHON_VENV_PATH "${LY_3RDPARTY_PATH}/venv/${ENGINE_SOURCE_PATH_ID}")
 cmake_path(NORMAL_PATH PYTHON_VENV_PATH )
 ly_set(LY_PYTHON_VENV_PATH ${PYTHON_VENV_PATH})
 
+# On Linux systems, we need to create a symlink to the shared library as well
+# due to the fact that a symlink is created for the python executable inside 
+# the virtual environment, but the python executable is custom built to use
+# an RPATH set to $ORIGIN/../lib to match the install structure in the package.
+if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+    set(LY_LINK_TO_SHARED_LIBRARY TRUE)
+else()
+    set(LY_LINK_TO_SHARED_LIBRARY FALSE)
+endif()
+
+
 function(ly_setup_python_venv)
 
     # Check if we need to setup a new venv.
@@ -71,13 +82,43 @@ function(ly_setup_python_venv)
     endif()
 
     if (CREATE_NEW_VENV)
+        # Run the install venv command, but skip the pip setup because we may need to manually create 
+        # a link to the shared library within the created virtual environment before proceeding with
+        # the pip install command.
         message(STATUS "Creating Python venv at ${PYTHON_VENV_PATH}")
-        execute_process(COMMAND "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_EXECUTABLE}" -m venv "${PYTHON_VENV_PATH}"
-                        WORKING_DIRECTORY "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}"
+        execute_process(COMMAND "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}/${LY_PYTHON_EXECUTABLE}" -m venv "${PYTHON_VENV_PATH}" --without-pip --clear
+                        WORKING_DIRECTORY "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}"
+                        COMMAND_ECHO STDOUT
                         RESULT_VARIABLE command_result)
+
         if (NOT ${command_result} EQUAL 0)
             message(FATAL_ERROR "Error creating a venv")
         endif()
+
+        if (LY_LINK_TO_SHARED_LIBRARY)
+            # Create a symlink to the package's python shared library inside the virtual environments
+            # own lib sub folder to match the original package structure
+            execute_process(COMMAND ln -s "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_LIB_PATH}/libpython3.10.so.1.0" libpython3.10.so.1.0
+                            WORKING_DIRECTORY "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_LIB_PATH}"
+                            COMMAND_ECHO STDOUT
+                            RESULT_VARIABLE command_result)
+            if (NOT ${command_result} EQUAL 0)
+                message(WARNING "Unable to createa venv shared library link.")
+            endif()
+        endif()
+
+        # Manually install pip into the virtual environment
+        message(STATUS "Installing pip into venv at ${PYTHON_VENV_PATH} (${PYTHON_VENV_PATH}/${LY_PYTHON_BIN_PATH})")
+
+        execute_process(COMMAND "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_PYTHON}" -m ensurepip --upgrade --default-pip -v
+                        WORKING_DIRECTORY "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_BIN_PATH}"
+                        COMMAND_ECHO STDOUT
+                        RESULT_VARIABLE command_result)
+
+        if (NOT ${command_result} EQUAL 0)
+            message(FATAL_ERROR "Error installing pip into venv: ${LY_PIP_ERROR}")
+        endif()
+
         file(WRITE "${PYTHON_VENV_PATH}/.hash" ${LY_PYTHON_PACKAGE_HASH})
     endif()
     
@@ -123,6 +164,7 @@ function(update_pip_requirements requirements_file_path unique_name)
     endif()
 
     set(ENV{PYTHONNOUSERSITE} 1)
+
     execute_process(COMMAND 
         ${LY_PYTHON_CMD} -m pip install -r "${requirements_file_path}" --disable-pip-version-check --no-warn-script-location
         WORKING_DIRECTORY ${LY_ROOT_FOLDER}/python
@@ -224,18 +266,19 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
         OUTPUT_VARIABLE PIP_OUT 
         ERROR_VARIABLE PIP_OUT
         )
+
     # we discard the error output of above, since it might not be installed, which is ok
     message(VERBOSE "pip uninstall result: ${PIP_RESULT}")
     message(VERBOSE "pip uninstall output: ${PIP_OUT}")
 
     # now install the new one:
+
     execute_process(COMMAND 
         ${LY_PYTHON_CMD} -m pip install -e ${package_folder_path} --no-deps --disable-pip-version-check  --no-warn-script-location 
         WORKING_DIRECTORY ${LY_ROOT_FOLDER}/python
         RESULT_VARIABLE PIP_RESULT
         OUTPUT_VARIABLE PIP_OUT 
         ERROR_VARIABLE PIP_OUT
-        
         )
 
     message(VERBOSE "pip install result: ${PIP_RESULT}")
