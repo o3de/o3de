@@ -73,9 +73,9 @@ namespace AZ
             m_fenceType = FenceType::Invalid;
             if (device.GetFeatures().m_signalFenceFromCPU)
             {
-                VkSemaphoreTypeCreateInfo timelineCreateInfo;
+                VkSemaphoreTypeCreateInfo timelineCreateInfo{};
                 timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
-                timelineCreateInfo.pNext = NULL;
+                timelineCreateInfo.pNext = nullptr;
                 timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
                 timelineCreateInfo.initialValue = 0;
 
@@ -174,7 +174,7 @@ namespace AZ
                 {
                     VkSemaphoreSignalInfo signalInfo;
                     signalInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO;
-                    signalInfo.pNext = NULL;
+                    signalInfo.pNext = nullptr;
                     signalInfo.semaphore = m_nativeSemaphore;
                     signalInfo.value = m_pendingValue;
 
@@ -202,9 +202,9 @@ namespace AZ
                 break;
             case FenceType::TimelineSemaphore:
                 {
-                    VkSemaphoreWaitInfo waitInfo;
+                    VkSemaphoreWaitInfo waitInfo{};
                     waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
-                    waitInfo.pNext = NULL;
+                    waitInfo.pNext = nullptr;
                     waitInfo.flags = 0;
                     waitInfo.semaphoreCount = 1;
                     waitInfo.pSemaphores = &m_nativeSemaphore;

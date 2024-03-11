@@ -181,6 +181,11 @@ namespace AZ
             return m_bufferDeviceAddressFeatures;
         }
 
+        const VkPhysicalDeviceTimelineSemaphoreFeatures& PhysicalDevice::GetPhysicalDeviceTimelineSemaphoreFeatures() const
+        {
+            return m_timelineSemaphoreFeatures;
+        }
+
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
         {
             return m_vulkan12Features;
@@ -375,6 +380,7 @@ namespace AZ
                 m_rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
                 m_shadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
                 m_fragmentDensityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
+                m_timelineSemaphoreFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
 
                 VkPhysicalDeviceFeatures2 deviceFeatures2 = {};
                 deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -389,11 +395,12 @@ namespace AZ
                       &m_robutness2Features,
                       &m_float16Int8Features,
                       &m_separateDepthStencilFeatures,
-                      &m_vulkan12Features ,
+                      &m_vulkan12Features,
                       &m_accelerationStructureFeatures,
                       &m_rayTracingPipelineFeatures,
                       &m_shadingRateFeatures,
-                      &m_fragmentDensityMapFeatures});
+                      &m_fragmentDensityMapFeatures,
+                      &m_timelineSemaphoreFeatures });
 
                 context.GetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, &deviceFeatures2);
                 m_deviceFeatures = deviceFeatures2.features;

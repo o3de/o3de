@@ -48,7 +48,7 @@ namespace AZ
             AZStd::vector<VkSemaphore> vkSignalSemaphores;
 
             VkTimelineSemaphoreSubmitInfo timelineSemaphoresSubmitInfos = {};
-            uint64_t fenceToSignalValue = 0;
+            AZStd::vector<uint64_t> vkSignalSemaphoreValues;
             AZStd::vector<uint64_t> vkWaitSemaphoreValues;
 
             VkSubmitInfo submitInfo;
@@ -88,12 +88,14 @@ namespace AZ
 
                     if ((fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore))
                     {
-                        fenceToSignalValue = fenceToSignal->GetPendingValue();
-                        timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = 1;
-                        timelineSemaphoresSubmitInfos.pSignalSemaphoreValues = &fenceToSignalValue;
+                        vkSignalSemaphoreValues.resize(vkSignalSemaphores.size(), 0);
+                        vkSignalSemaphoreValues.push_back(fenceToSignal->GetPendingValue());
                         vkSignalSemaphores.push_back(fenceToSignal->GetNativeSemaphore());
+                        timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = vkSignalSemaphoreValues.size();
+                        timelineSemaphoresSubmitInfos.pSignalSemaphoreValues = vkSignalSemaphoreValues.data();
                     }
 
+                    vkWaitSemaphoreValues.resize(vkWaitSemaphoreVector.size(), 0);
                     for (auto& fence : fencesToWaitFor)
                     {
                         AZ_Assert(
