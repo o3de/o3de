@@ -19,6 +19,12 @@ namespace AZ
             {
                 for(auto [deviceIndex, address] : m_address)
                 {
+                    if (deviceIndex != 0)
+                    {
+                        AZ_Assert(false, "Non-zero device index");
+                        exit(-5);
+                    }
+
                     memcpy(address, data, size);
                 }
                 return true;
