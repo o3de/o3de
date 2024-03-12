@@ -91,7 +91,7 @@ fi
 
 # The python in the venv environment is a symlink which will cause issues with loading the python shared
 # object that is relative to the original python lib shared library in the package.
-PYTHON_LIB_PATH=$(awk -F ' = ' '/home/ {print $2}' $LY_3RDPARTY_PATH/venv/$ENGINE_ID/pyvenv.cfg | sed 's/python\/bin/python\/lib/g')
+PYTHON_LIB_PATH=$PYTHON_VENV/lib
 
 source $PYTHON_VENV_ACTIVATE
 
