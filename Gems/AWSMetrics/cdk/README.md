@@ -15,7 +15,7 @@ process also creates a virtualenv within this project, stored under the .env
 directory.  To create the virtualenv it assumes that there is a `python3`
 (or `python` for Windows) executable in your path with access to the `venv`
 package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually. Please note that Python version 3.10.5 or higher is required to deploy this CDK application.
+you can create the virtualenv manually. Please note that Python version 3.10.13 or higher is required to deploy this CDK application.
 
 To manually create a virtualenv on macOS and Linux:
 

@@ -18,7 +18,7 @@ Run from cdk directory within gem.
 
 Optional set up python path to LY Python
 ```
-set PATH="..\..\..\python\runtime\python-3.10.5-rev1-windows\python\";%PATH%
+set PATH="..\..\..\python\";%PATH%
 ```
 
 This project is set up like a standard Python project.  Use python interpreter from Open3d to setup python dependencies
