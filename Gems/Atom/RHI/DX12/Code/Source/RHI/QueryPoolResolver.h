@@ -9,7 +9,7 @@
 
 #include <RHI/ResourcePoolResolver.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <RHI/Fence.h>
+#include <Atom/RHI/MultiDeviceFence.h>
 
 namespace AZ
 {
@@ -40,7 +40,7 @@ namespace AZ
                 D3D12_QUERY_TYPE m_queryType = D3D12_QUERY_TYPE_OCCLUSION;
             };
 
-            QueryPoolResolver(Device& device, QueryPool& queryPool);
+            QueryPoolResolver(int deviceIndex, QueryPool& queryPool);
             virtual ~QueryPoolResolver() = default;
 
             /*  Queues a request for resolving a QueryPool. This will be processed during the resolve phase.
@@ -61,10 +61,10 @@ namespace AZ
             void Deactivate() override;
 
             QueryPool& m_queryPool; ///< Query pool that is being resolved.
-            Device& m_device;
+            int m_deviceIndex;
             AZStd::vector<ResolveRequest> m_resolveRequests; /// List of requests to be resolved.
 
-            RHI::Ptr<FenceImpl> m_resolveFence; ///< Fence used for checking if a request has finished.
+            RHI::Ptr<RHI::MultiDeviceFence> m_resolveFence; ///< Fence used for checking if a request has finished.
         };
     }
 }
