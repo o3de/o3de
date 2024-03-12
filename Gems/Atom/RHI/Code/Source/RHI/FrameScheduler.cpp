@@ -22,6 +22,7 @@
 #include <Atom/RHI/SingleDeviceShaderResourceGroupPool.h>
 #include <Atom/RHI/MultiDeviceTransientAttachmentPool.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/SingleDeviceRayTracingShaderTable.h>
 
 #include <AzCore/Interface/Interface.h>
