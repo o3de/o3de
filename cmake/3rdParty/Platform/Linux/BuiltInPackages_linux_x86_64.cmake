@@ -53,3 +53,4 @@ if(AZ_USE_PHYSX5)
 else()
     ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev6-linux                   TARGETS PhysX                       PACKAGE_HASH 220a420d0e48b27d0dfe4ef71774a40cd6015938a58f8870d9e666d7c1537c94)
 endif()
+ly_associate_package(PACKAGE_NAME python-3.10.13-rev2-linux                         TARGETS python                      PACKAGE_HASH a7832f9170a3ac93fbe678e9b3d99a977daa03bb667d25885967e8b4977b86f8
