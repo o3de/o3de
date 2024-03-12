@@ -88,14 +88,14 @@ namespace AZ
 
                     if ((fenceToSignal && fenceToSignal->GetFenceType() == FenceType::TimelineSemaphore))
                     {
-                        vkSignalSemaphoreValues.resize(vkSignalSemaphores.size(), 0);
+                        vkSignalSemaphoreValues.resize(vkSignalSemaphores.size(), 0); // Add 'dummy' values for binary sempahores
                         vkSignalSemaphoreValues.push_back(fenceToSignal->GetPendingValue());
                         vkSignalSemaphores.push_back(fenceToSignal->GetNativeSemaphore());
                         timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = vkSignalSemaphoreValues.size();
                         timelineSemaphoresSubmitInfos.pSignalSemaphoreValues = vkSignalSemaphoreValues.data();
                     }
 
-                    vkWaitSemaphoreValues.resize(vkWaitSemaphoreVector.size(), 0);
+                    vkWaitSemaphoreValues.resize(vkWaitSemaphoreVector.size(), 0); // Add 'dummy' values for binary sempahores
                     for (auto& fence : fencesToWaitFor)
                     {
                         AZ_Assert(
