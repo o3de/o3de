@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/API/PythonLoader.h>
 #include <AzToolsFramework_Traits_Platform.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/Path/Path.h>
@@ -30,11 +31,17 @@ namespace AzToolsFramework::EmbeddedPython
         #if !defined(PYTHON_SHARED_LIBRARY_PATH)
         #error "PYTHON_SHARED_LIBRARY_PATH is not defined"
         #endif
-        AZ::IO::FixedMaxPath libPythonName = AZ::IO::PathView(PYTHON_SHARED_LIBRARY_PATH).Filename();
-        m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(libPythonName.c_str(), false);
+
+        AZ::IO::FixedMaxPath engineRoot = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath());
+        AZ::IO::FixedMaxPath thirdPartyRoot = PythonLoader::GetDefault3rdPartyPath(false);
+        AZ::IO::FixedMaxPath pythonVenvPath = PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot);
+
+        AZ::IO::PathView libPythonName = AZ::IO::PathView(PYTHON_SHARED_LIBRARY_PATH).Filename();
+        AZ::IO::FixedMaxPath pythonVenvLibPath = pythonVenvPath / "lib" / libPythonName;
+
+        m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(pythonVenvLibPath.StringAsPosix().c_str(), false);
         bool loadResult = m_embeddedLibPythonModuleHandle->Load(false, true);
-        
-        AZ_Error("PythonLoader", loadResult, "Failed to load %s.\n", libPythonName.c_str());
+        AZ_Error("PythonLoader", loadResult, "Failed to load %s.\n", libPythonName.StringAsPosix().c_str());
         #endif // AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
     }
 
