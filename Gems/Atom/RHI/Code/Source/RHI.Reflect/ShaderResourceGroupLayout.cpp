@@ -6,6 +6,7 @@
  *
  */
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
+#include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
 
@@ -442,6 +443,20 @@ namespace AZ::RHI
 
     ShaderInputImageIndex ShaderResourceGroupLayout::FindShaderInputImageIndex(const Name& name) const
     {
+        {
+            AZ::Debug::StackFrame frames[10];
+            unsigned int numFrames = AZ::Debug::StackRecorder::Record(frames, AZ_ARRAY_SIZE(frames));
+            AZ::Debug::SymbolStorage::StackLine stackLines[AZ_ARRAY_SIZE(frames)];
+            printf("\n====================================\n");
+            printf("Callstack:\n");
+            AZ::Debug::SymbolStorage::DecodeFrames(frames, numFrames, stackLines);
+            for (u32 i = 0; i < numFrames; ++i)
+            {
+                printf("%s\n", stackLines[i]);
+            }
+            printf("====================================\n");
+        }
+
         return m_idReflectionForImages.Find(name);
     }
 
