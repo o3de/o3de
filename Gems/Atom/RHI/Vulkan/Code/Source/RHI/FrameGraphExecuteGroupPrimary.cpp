@@ -6,6 +6,7 @@
  *
  */
 #include <Atom/RHI/Factory.h>
+#include <RHI/Device.h>
 #include <RHI/FrameGraphExecuteGroupPrimary.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
