@@ -172,10 +172,12 @@ namespace AzToolsFramework
                 }
             }
 
-            QAction* openAssetAction = fileMenu->addAction("&Open");
+            QAction* openAssetAction = fileMenu->addAction("&Open...");
             connect(openAssetAction, &QAction::triggered, this, &AssetEditorWidget::OpenAssetWithDialog);
 
             m_recentFileMenu = fileMenu->addMenu("Open Recent");
+
+            fileMenu->addSeparator();
 
             m_saveAssetAction = fileMenu->addAction("&Save");
             m_saveAssetAction->setShortcut(QKeySequence::Save);
@@ -707,12 +709,15 @@ namespace AzToolsFramework
 
             m_saveAllAssetsAction->setEnabled(haveDirtyTabs);
 
-            // Enable the single save options depending on whether the current tab is dirty.
+            // Current tab
             AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
             if (tab)
             {
+                // Enable the Save option depending on whether the current tab is dirty.
                 m_saveAssetAction->setEnabled(tab->IsDirty());
-                m_saveAsAssetAction->setEnabled(tab->IsDirty());
+
+                // Always enable Save As... if a tab is active.
+                m_saveAsAssetAction->setEnabled(true);
             }
         }
 

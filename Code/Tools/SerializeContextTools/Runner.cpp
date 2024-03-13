@@ -72,11 +72,12 @@ namespace SerializeContextTools
         AZ_Printf("Help", R"(    example: 'convert-ini --files=AssetProcessorPlatformConfig.ini;bootstrap.cfg --ext=setreg)" "\n");
         AZ_Printf("Help", "  'convert-slice': Converts ObjectStream-based slice files or legacy levels to a JSON-based prefab.\n");
         AZ_Printf("Help", "    [arg] -files=<path>: <comma or semicolon>-separated list of files to convert. Supports wildcards.\n");
+        AZ_Printf("Help", "    [opt] -slices=<path>: <comma or semicolon>-separated list of .slice files that you converted files depends on. Supports wildcards. Use this if you cannot use the asset processor on the target project (like o3de converting lumberyard)\n");
         AZ_Printf("Help", "    [opt] -dryrun: Processes as normal, but doesn't write files.\n");
         AZ_Printf("Help", "    [opt] -keepdefaults: Fields are written if a default value was found.\n");
         AZ_Printf("Help", "    [opt] -verbose: Report additional details during the conversion process.\n");
         AZ_Printf("Help", "    example: 'convert-slice -files=*.slice -specializations=editor\n");
-        AZ_Printf("Help", "    example: 'convert-slice -files=Levels/TestLevel/TestLevel.ly -specializations=editor\n");
+        AZ_Printf("Help", "    example: 'convert-slice -files=Levels/TestLevel/TestLevel.ly -project-path=F:/lmbr-fork/dev/StarterGame -slices=Gems/*.slice -specializations=editor\n");
         AZ_Printf("Help", "\n");
         AZ_Printf("Help", "  'createtype': Create a default constructed object using Json Serialization and output the contents.\n");
         AZ_Printf("Help", "    [arg] --type-name=<string>: Name of type to construct and output.\n");

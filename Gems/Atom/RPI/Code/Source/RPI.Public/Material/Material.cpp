@@ -857,5 +857,9 @@ namespace AZ
         {
             return m_materialProperties.GetMaterialPropertiesLayout();
         }
+        Data::Instance<RPI::ShaderResourceGroup> Material::GetShaderResourceGroup()
+        {
+            return m_shaderResourceGroup;
+        }
     } // namespace RPI
 } // namespace AZ

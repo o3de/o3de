@@ -13,19 +13,33 @@
 enum class OpacitySource {Packed, Split, None};
 option OpacitySource o_opacity_source;
 
-real SampleAlpha(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, OpacitySource opacitySource)
+real SampleAlpha(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, OpacitySource opacitySource, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
     real alpha = 1.0;
     switch(opacitySource)
     {
         case OpacitySource::Packed:
         {
-            alpha = real(baseColorMap.Sample(mapSampler, baseColorUv).a);
+            if (customDerivatives)
+            {
+                alpha = real(baseColorMap.SampleGrad(mapSampler, baseColorUv, uvDxDy.xy, uvDxDy.zw).a);
+            }
+            else
+            {
+                alpha = real(baseColorMap.Sample(mapSampler, baseColorUv).a);
+            }
             break;
         }
         case OpacitySource::Split:  
         {
-            alpha = real(opacityMap.Sample(mapSampler, opacityUv).r);
+            if (customDerivatives)
+            {
+                alpha = real(opacityMap.SampleGrad(mapSampler, opacityUv, uvDxDy.xy, uvDxDy.zw).r);
+            }
+            else
+            {
+                alpha = real(opacityMap.Sample(mapSampler, opacityUv).r);
+            }
             break;
         }
         case OpacitySource::None:
@@ -34,9 +48,9 @@ real SampleAlpha(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorU
     return alpha;
 }
 
-real GetAlphaInputAndClip(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, real opacityFactor, OpacitySource opacitySource)
+real GetAlphaInputAndClip(Texture2D baseColorMap, Texture2D opacityMap, float2 baseColorUv, float2 opacityUv, sampler mapSampler, real opacityFactor, OpacitySource opacitySource, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
-    real alpha = SampleAlpha(baseColorMap, opacityMap, baseColorUv, opacityUv, mapSampler, opacitySource);
+    real alpha = SampleAlpha(baseColorMap, opacityMap, baseColorUv, opacityUv, mapSampler, opacitySource, uvDxDy, customDerivatives);
     CheckClipping(alpha, opacityFactor);
     return (alpha * opacityFactor);
 }

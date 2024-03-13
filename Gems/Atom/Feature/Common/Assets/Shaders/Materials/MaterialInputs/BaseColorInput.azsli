@@ -28,7 +28,7 @@ Texture2D prefix##m_baseColorMap;
 option bool prefix##o_baseColor_useTexture; \
 option TextureBlendMode prefix##o_baseColorTextureBlendMode = TextureBlendMode::Multiply;
 
-real3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, real3 baseColor, bool useTexture)
+real3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, real3 baseColor, bool useTexture, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
 {
     if(OverrideBaseColorEnabled())
     {
@@ -37,7 +37,15 @@ real3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, real3 base
 
     if(useTexture)
     {
-        real3 sampledAbledo = real3(map.Sample(mapSampler, uv).rgb);
+        real3 sampledAbledo;
+        if (customDerivatives)
+        {
+            sampledAbledo = real3(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).rgb);
+        }
+        else
+        {
+            sampledAbledo = real3(map.Sample(mapSampler, uv).rgb);
+        }
         //Convert to ACEScg as that is our intermediate working space. 
         //Todo - We should data drive this color space
         return LinearSrgb_To_AcesCg(sampledAbledo);
