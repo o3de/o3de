@@ -91,7 +91,7 @@ namespace AZ
                         vkSignalSemaphoreValues.resize(vkSignalSemaphores.size(), 0); // Add 'dummy' values for binary sempahores
                         vkSignalSemaphoreValues.push_back(fenceToSignal->GetPendingValue());
                         vkSignalSemaphores.push_back(fenceToSignal->GetNativeSemaphore());
-                        timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = vkSignalSemaphoreValues.size();
+                        timelineSemaphoresSubmitInfos.signalSemaphoreValueCount = static_cast<uint32_t>(vkSignalSemaphoreValues.size());
                         timelineSemaphoresSubmitInfos.pSignalSemaphoreValues = vkSignalSemaphoreValues.data();
                     }
 
