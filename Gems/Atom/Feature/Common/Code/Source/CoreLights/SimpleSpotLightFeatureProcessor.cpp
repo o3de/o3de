@@ -147,7 +147,8 @@ namespace AZ
                 if (m_goboArrayChanged)
                 {
                     // collect all gobo textures and assign index for each spot light
-                    AZStd::unordered_map<AZ::Data::Instance<AZ::RPI::Image>, int> gobosTextures;
+                    AZStd::unordered_map<AZ::Data::Instance<AZ::RPI::Image>, uint32_t> gobosTextures;
+                    m_goboTextures.clear();
 
                     for (int32_t idx = 0; idx < m_lightData.GetDataCount(); idx++)
                     {
@@ -157,7 +158,9 @@ namespace AZ
                         {
                             if (gobosTextures.find(image) == gobosTextures.end())
                             {
-                                gobosTextures[image] = aznumeric_cast<int>(gobosTextures.size());
+                                uint32_t index = aznumeric_cast<uint32_t>(gobosTextures.size());
+                                gobosTextures[image] = index;
+                                m_goboTextures.push_back(image);
                             }
                             lightData.m_goboTextureIndex = gobosTextures[image];
                         }
@@ -165,20 +168,6 @@ namespace AZ
                         {
                             lightData.m_goboTextureIndex = MaxGoboTextureCount;
                         }
-                    }
-                
-                    m_goboTextures.clear();
-                    int32_t currentIdx = 0;
-                    // add gobo textures to the vector. Limit the max gobo texture count.
-                    for (auto& item : gobosTextures)
-                    {
-                        if (currentIdx >= MaxGoboTextureCount)
-                        {
-                            AZ_WarningOnce("SimpleSpotLight", false, "There are more than %d (MaxGoboTextureCount) gobo textures used in the level.", MaxGoboTextureCount);
-                            break;
-                        }
-                        m_goboTextures.push_back(item.first);
-                        currentIdx++;
                     }
 
                     m_goboArrayChanged = false;
@@ -222,12 +211,20 @@ namespace AZ
             AZ_PROFILE_SCOPE(RPI, "SimpleSpotLightFeatureProcessor: Render");
             m_visibleSpotLightsBufferUsedCount = 0;
 
+            uint64_t count = m_goboTextures.size();
+            if (count > MaxGoboTextureCount)
+            {
+                AZ_WarningOnce("SimpleSpotLight", false, "There are more than %d (MaxGoboTextureCount) gobo textures used in the level.", MaxGoboTextureCount);
+                count = MaxGoboTextureCount;
+            }
+
             for (const RPI::ViewPtr& view : packet.m_views)
             {
                 m_lightBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());
-                if (m_goboTextures.size())
+                if (count > 0)
                 {
-                    view->GetShaderResourceGroup()->SetImageArray(m_goboTexturesIndex, AZStd::span(m_goboTextures.begin(), m_goboTextures.end()));
+                    view->GetShaderResourceGroup()->SetImageArray(m_goboTexturesIndex, AZStd::span(m_goboTextures.begin(), m_goboTextures.begin() + count));
+                    
                 }
                 CullLights(view);
             }
