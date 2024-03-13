@@ -59,7 +59,6 @@ namespace SurfaceData
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
-                // ->Event("GetSurfacePoints", &SurfaceDataSystemRequestBus::Events::GetSurfacePoints)
                 ->Event(
                     "GetSurfacePoints",
                     [](SurfaceData::SurfaceDataSystem* handler, const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags) -> SurfaceData::SurfacePointList
@@ -67,14 +66,6 @@ namespace SurfaceData
                         SurfaceData::SurfacePointList result;
                         handler->GetSurfacePoints(inPosition, desiredTags, result);
                         return result;
-                    })
-                ->Event("GetFirstSurfacePoint",
-                    [](SurfaceData::SurfaceDataSystem* handler, const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags) -> AzFramework::SurfaceData::SurfacePoint
-                    {
-                        SurfaceData::SurfacePointList surfacePointList;
-                        handler->GetSurfacePoints(inPosition, desiredTags, surfacePointList);
-
-                        return surfacePointList.GetFirstSurfacePoint();
                     })
                 ->Event("RefreshSurfaceData", &SurfaceDataSystemRequestBus::Events::RefreshSurfaceData)
                 ->Event("GetSurfaceDataProviderHandle", &SurfaceDataSystemRequestBus::Events::GetSurfaceDataProviderHandle)
@@ -299,11 +290,6 @@ namespace SurfaceData
             AZStd::span<const AZ::Vector3>(&inPosition, 1), AZ::Aabb::CreateFromPoint(inPosition), desiredTags, surfacePointList);
     }
 
-    void SurfaceDataSystemComponent::GetFirstSurfacePoint(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const
-    {
-        GetSurfacePointsFromListInternal(
-            AZStd::span<const AZ::Vector3>(&inPosition, 1), AZ::Aabb::CreateFromPoint(inPosition), desiredTags, surfacePointList);
-    }
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize,
         const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointLists) const
