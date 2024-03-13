@@ -96,6 +96,10 @@ namespace AZ::RHI
         //! Whether swapchain scaling support is available.
         RHI::ScalingFlags m_swapchainScalingFlags = RHI::ScalingFlags::None;
 
+        //! Whether fences can be signalled from the CPU
+        //! If this is false, the Fence::SignalOnCpu inserts the signal command into a queue
+        bool m_signalFenceFromCPU = false;
+
         /// Additional features here.
     };
 }

@@ -68,6 +68,7 @@ namespace AZ
             InsertWorkRequestElements(m_workRequest.m_semaphoresToWait, workRequest.m_semaphoresToWait);
             InsertWorkRequestElements(m_workRequest.m_semaphoresToSignal, workRequest.m_semaphoresToSignal);
             InsertWorkRequestElements(m_workRequest.m_fencesToSignal, workRequest.m_fencesToSignal);
+            InsertWorkRequestElements(m_workRequest.m_fencesToWaitFor, workRequest.m_fencesToWaitFor);
         }
     }
 }
