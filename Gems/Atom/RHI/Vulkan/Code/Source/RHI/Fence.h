@@ -17,8 +17,21 @@ namespace AZ
     {
         class Device;
 
-        class Fence final
-            : public RHI::SingleDeviceFence
+        enum class FenceType
+        {
+          // Fence is based on VkFence
+          // Cannot natively be signalled from the CPU
+          // Signalling from the CPU is emulated by submitting a signal command to the Graphics queue
+          // The signal command must also be submitted before we can wait for the fence to be signalled
+          // Used if the device does not support timeline semaphores (Vulkan version < 1.2)
+            Fence,
+                   // Fence is based on a timeline semaphore VkSemaphore
+                   // Is used if the device supports it
+            TimelineSemaphore,
+            Invalid
+        };
+
+        class Fence final : public RHI::SingleDeviceFence
         {
             using Base = RHI::SingleDeviceFence;
 
@@ -29,11 +42,18 @@ namespace AZ
             static RHI::Ptr<Fence> Create();
             ~Fence() = default;
 
+            FenceType GetFenceType() const;
+
+            // VkFence functions
+            VkFence GetNativeFence() const;
             // According to the Vulkan Standard, fences can only be waited after the event
             // that will signal it is submitted. Because of this we need to tell the fence that it's
             // okay to start waiting on the native fence.
             void SignalEvent();
-            VkFence GetNativeFence() const;
+
+            // VkSemaphore functions
+            VkSemaphore GetNativeSemaphore() const;
+            uint64_t GetPendingValue() const;
 
         private:
             Fence() = default;
@@ -53,9 +73,13 @@ namespace AZ
             RHI::FenceState GetFenceStateInternal() const override;
             //////////////////////////////////////////////////////////////////////
 
-            VkFence m_nativeFence = VK_NULL_HANDLE;
+            FenceType m_fenceType = FenceType::Invalid;
 
+            VkFence m_nativeFence = VK_NULL_HANDLE;
             AZ::Vulkan::SignalEvent m_signalEvent;
+
+            VkSemaphore m_nativeSemaphore = VK_NULL_HANDLE;
+            uint64_t m_pendingValue = 0;
         };
-    }
-}
+    } // namespace Vulkan
+} // namespace AZ

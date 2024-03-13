@@ -108,6 +108,7 @@ namespace AZ::RHI
         void ExecuteAfter(const ScopeId& scopeId);
         void ExecuteBefore(const ScopeId& scopeId);
         void SignalFence(MultiDeviceFence& fence);
+        void WaitFence(MultiDeviceFence& fence);
         void SetEstimatedItemCount(uint32_t itemCount);
         void SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass);
 
