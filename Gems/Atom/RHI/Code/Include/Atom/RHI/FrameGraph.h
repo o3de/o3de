@@ -26,9 +26,7 @@ namespace AZ::RHI
     class ImageScopeAttachment;
     class BufferScopeAttachment;
     class ResolveScopeAttachment;
-    class SingleDeviceSwapChain;
-    class SingleDeviceResourcePool;
-    class SingleDeviceQueryPool;
+    class MultiDeviceQueryPool;
     class SingleDeviceFence;
     struct Interval;
 
@@ -106,10 +104,10 @@ namespace AZ::RHI
         ResultCode UseShaderAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseCopyAttachment(const BufferScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
         ResultCode UseCopyAttachment(const ImageScopeAttachmentDescriptor& descriptor, ScopeAttachmentAccess access);
-        ResultCode UseQueryPool(Ptr<SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
+        ResultCode UseQueryPool(Ptr<MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, QueryPoolScopeAttachmentType type, ScopeAttachmentAccess access);
         void ExecuteAfter(const ScopeId& scopeId);
         void ExecuteBefore(const ScopeId& scopeId);
-        void SignalFence(SingleDeviceFence& fence);
+        void SignalFence(MultiDeviceFence& fence);
         void SetEstimatedItemCount(uint32_t itemCount);
         void SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass);
 

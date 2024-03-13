@@ -29,28 +29,18 @@ namespace AZ::RHI
         //! passes on the initial FenceState to each SingleDeviceFence
         ResultCode Init(MultiDevice::DeviceMask deviceMask, FenceState initialState);
 
-        //! Waits on m_waitThread and shuts down all device-specific fences.
+        //! Shuts down all device-specific fences.
         void Shutdown() override final;
 
         //! Signals the device-specific fences managed by this class
         RHI::ResultCode SignalOnCpu();
-
-        //! Waits (blocks) for all device-specific fences managed by this class
-        RHI::ResultCode WaitOnCpu() const;
 
         //! Resets the device-specific fences.
         RHI::ResultCode Reset();
 
         using SignalCallback = AZStd::function<void()>;
 
-        //! Spawns a dedicated thread to wait on all device-specific fences. The provided callback
-        //! is invoked when the fences complete.
-        ResultCode WaitOnCpuAsync(SignalCallback callback);
-
     protected:
         bool ValidateIsInitialized() const;
-
-        //! This can be used to asynchronously wait on all fences by calling WaitOnCpuAsync
-        AZStd::thread m_waitThread;
     };
 } // namespace AZ::RHI

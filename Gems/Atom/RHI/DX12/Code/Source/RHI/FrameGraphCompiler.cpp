@@ -192,7 +192,7 @@ namespace AZ
             return aznew FrameGraphCompiler();
         }
 
-        RHI::ResultCode FrameGraphCompiler::InitInternal(RHI::Device&)
+        RHI::ResultCode FrameGraphCompiler::InitInternal()
         {
             return RHI::ResultCode::Success;
         }
@@ -404,7 +404,7 @@ namespace AZ
             ResourceTransitionLoggerNull logger(bufferFrameAttachment.GetId());
 #endif
 
-            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(RHI::MultiDevice::DefaultDeviceIndex));
+            Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer()->GetDeviceBuffer(rootScope->GetDeviceIndex()));
             RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
 
             if (scopeAttachment == nullptr)
@@ -477,7 +477,6 @@ namespace AZ
             ResourceTransitionLoggerNull logger(imageFrameAttachment.GetId());
 #endif
 
-            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(RHI::MultiDevice::DefaultDeviceIndex));
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
 
             if (scopeAttachment == nullptr)
@@ -485,6 +484,9 @@ namespace AZ
                 AZ_WarningOnce("RHI", false, "Imported ImageFrameAttachment isn't used in any Scope");
                 return;
             }
+
+            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
+            Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage()->GetDeviceImage(firstScope.GetDeviceIndex()));
 
             const BarrierOp::CommandListState* barrierState = nullptr;
             if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::Depth))
@@ -496,7 +498,6 @@ namespace AZ
             D3D12_RESOURCE_TRANSITION_BARRIER transition = {0};
             transition.pResource = image.GetMemoryView().GetMemory();
 
-            Scope& firstScope = static_cast<Scope&>(scopeAttachment->GetScope());
             //Apply appropriate pre-discard transition
             if (firstScope.IsResourceDiscarded(*scopeAttachment))
             {
@@ -705,14 +706,13 @@ namespace AZ
 
         void FrameGraphCompiler::CompileAsyncQueueFences(const RHI::FrameGraph& frameGraph)
         {
-            Device& device = static_cast<Device&>(GetDevice());
-
             AZ_PROFILE_FUNCTION(RHI);
-            CommandQueueContext& context = device.GetCommandQueueContext();
 
             for (RHI::Scope* scopeBase : frameGraph.GetScopes())
             {
                 Scope* scope = static_cast<Scope*>(scopeBase);
+                Device& device = static_cast<Device&>(scope->GetDevice());
+                CommandQueueContext& context = device.GetCommandQueueContext();
 
                 bool hasCrossQueueConsumer = false;
                 for (uint32_t hardwareQueueClassIdx = 0; hardwareQueueClassIdx < RHI::HardwareQueueClassCount; ++hardwareQueueClassIdx)

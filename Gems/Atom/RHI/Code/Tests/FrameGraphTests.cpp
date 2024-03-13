@@ -83,8 +83,6 @@ namespace UnitTest
             m_rhiSystem->InitDevices(AZ::RHI::InitDevicesFlags::SingleDevice);
             m_rhiSystem->Init();
 
-            auto device = AZ::RHI::RHISystemInterface::Get()->GetDevice(RHI::MultiDevice::DefaultDeviceIndex);
-
             m_state.reset(new State);
 
             {
@@ -151,7 +149,7 @@ namespace UnitTest
             }
 
             m_state->m_frameGraphCompiler = RHI::Factory::Get().CreateFrameGraphCompiler();
-            m_state->m_frameGraphCompiler->Init(*device);
+            m_state->m_frameGraphCompiler->Init();
         }
 
         void TearDown() override

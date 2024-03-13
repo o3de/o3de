@@ -199,7 +199,7 @@ namespace AZ
                     continue;
                 }
 
-                queryPoolAttachment.m_pool->ResetQueries(commandList, queryPoolAttachment.m_interval);
+                AZStd::static_pointer_cast<QueryPool>(queryPoolAttachment.m_pool->GetDeviceQueryPool(GetDeviceIndex()))->ResetQueries(commandList, queryPoolAttachment.m_interval);
             }
         }
 
@@ -331,7 +331,7 @@ namespace AZ
             m_signalFences.reserve(fences.size());
             for (const auto& fence : fences)
             {
-                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence));
+                m_signalFences.push_back(AZStd::static_pointer_cast<Fence>(fence->GetDeviceFence(GetDeviceIndex())));
             }
 
             RHI::Device& deviceBase = GetDevice();
@@ -341,9 +341,9 @@ namespace AZ
             RHI::FrameEventBus::Handler::BusConnect(&deviceBase);
         }
 
-        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::SingleDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
+        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::MultiDeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
-            m_queryPoolAttachments.push_back({ AZStd::static_pointer_cast<QueryPool>(queryPool), interval, access });
+            m_queryPoolAttachments.push_back({ queryPool, interval, access });
         }
 
         bool Scope::CanOptimizeBarrier(const Barrier& barrier, BarrierSlot slot) const
@@ -551,8 +551,8 @@ namespace AZ
                     {
                         if (imageAttachment->GetDescriptor().m_attachmentId == resolveAttachment->GetDescriptor().m_resolveAttachmentId)
                         {
-                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
-                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(RHI::MultiDevice::DefaultDeviceIndex).get());
+                            auto srcImageView = static_cast<const ImageView*>(imageAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
+                            auto dstImageView = static_cast<const ImageView*>(resolveAttachment->GetImageView()->GetDeviceImageView(GetDeviceIndex()).get());
                             auto srcImageSubresourceRange = srcImageView->GetVkImageSubresourceRange();
                             auto dstImageSubresourceRange = dstImageView->GetVkImageSubresourceRange();
                             auto& srcImage = static_cast<const Image&>(srcImageView->GetImage());

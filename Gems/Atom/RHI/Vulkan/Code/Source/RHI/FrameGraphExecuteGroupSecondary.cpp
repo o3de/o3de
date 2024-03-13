@@ -38,6 +38,7 @@ namespace AZ::Vulkan
             
         InitRequest request;
         request.m_scopeId = scope.GetId();
+        request.m_deviceIndex = scope.GetDeviceIndex();
         request.m_submitCount = scope.GetEstimatedItemCount();
         request.m_commandLists = reinterpret_cast<RHI::CommandList*const*>(m_secondaryCommands.data());
         request.m_commandListCount = commandListCount;

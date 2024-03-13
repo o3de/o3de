@@ -18,9 +18,6 @@ namespace AZ
 {
     namespace Vulkan
     {
-        class Device;
-
-
         class FrameGraphExecuter final
             : public RHI::FrameGraphExecuter
         {
@@ -31,8 +28,6 @@ namespace AZ
             AZ_RTTI(FrameGraphExecuter, "22B6E224-9469-4D8B-828F-A81C83B6EEEC", Base);
 
             static RHI::Ptr<FrameGraphExecuter> Create();
-
-            Device& GetDevice() const;
 
         private:
             FrameGraphExecuter();

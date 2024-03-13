@@ -129,7 +129,7 @@ namespace AZ::RHI
         resourcePoolDatabase.ForEachPoolResolver<decltype(queuePoolResolverFunction)>(queuePoolResolverFunction);
     }
 
-    void Scope::AddQueryPoolUse(Ptr<SingleDeviceQueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
+    void Scope::AddQueryPoolUse(Ptr<MultiDeviceQueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
     {
         m_queryPools.push_back(queryPool);
     }
@@ -227,7 +227,7 @@ namespace AZ::RHI
         return m_swapChainsToPresent;
     }
 
-    const AZStd::vector<Ptr<SingleDeviceFence>>& Scope::GetFencesToSignal() const
+    const AZStd::vector<Ptr<MultiDeviceFence>>& Scope::GetFencesToSignal() const
     {
         return m_fencesToSignal;
     }
@@ -261,7 +261,7 @@ namespace AZ::RHI
         consumer->m_producersByQueue[static_cast<uint32_t>(producer->GetHardwareQueueClass())] = producer;
     }
 
-    void Scope::AddFenceToSignal(Ptr<SingleDeviceFence> fence)
+    void Scope::AddFenceToSignal(Ptr<MultiDeviceFence> fence)
     {
         m_fencesToSignal.push_back(fence);
     }

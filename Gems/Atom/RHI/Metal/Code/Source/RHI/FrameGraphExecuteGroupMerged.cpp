@@ -46,11 +46,12 @@ namespace AZ
                 fencesToSignal.reserve(fencesToSignal.size() + scope->GetFencesToSignal().size());
                 for (const RHI::Ptr<RHI::SingleDeviceFence>& fence : scope->GetFencesToSignal())
                 {
-                    fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
+                    fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence->GetDeviceFence(scope->GetDeviceIndex())).Get());
                 }
             }
 
             InitMergedRequest request;
+            request.m_deviceIndex = device.GetDeviceIndex();
             request.m_scopeEntries = scopeEntries.data();
             request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
             
