@@ -23,6 +23,9 @@ namespace AssetProcessor
     class AssetDatabaseConnection;
 
     const char ExcludedDependenciesSymbol = ':';
+#if defined(CARBONATED)
+    constexpr const char RecursiveDependenciesPattern[] = "**";
+#endif
 
     /// Handles resolving and saving product path dependencies
     class PathDependencyManager
