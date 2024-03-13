@@ -15,20 +15,6 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        struct EditorPrefabOverride final
-        {
-            AZ_RTTI(EditorPrefabOverride, "{348F250E-1EA9-4AA0-A02F-9D32D9B9B585}");
-            AZ_CLASS_ALLOCATOR(EditorPrefabOverride, AZ::SystemAllocator);
-
-            EditorPrefabOverride() = default;
-            EditorPrefabOverride(AZStd::string label, AZStd::string value);
-
-            static void Reflect(AZ::ReflectContext* context);
-
-            AZStd::string m_label;
-            AZStd::string m_value;
-        };
-
         class EditorPrefabComponent
             : public AzToolsFramework::Components::EditorComponentBase
         {
@@ -41,11 +27,35 @@ namespace AzToolsFramework
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
 
+            AZStd::string GetLabelForIndex(int index) const;
+
         private:
             void Activate() override;
             void Deactivate() override;
 
-            AZStd::vector<EditorPrefabOverride> m_patches;
+            // Overrides UI
+            struct EditorPrefabOverride final
+            {
+                AZ_RTTI(EditorPrefabOverride, "{56D1C6B9-7096-4CD5-8E18-66330A43E0E1}");
+                AZ_CLASS_ALLOCATOR(EditorPrefabOverride, AZ::SystemAllocator);
+
+                EditorPrefabOverride() = default;
+                EditorPrefabOverride(AZ::IO::Path path, AZStd::string value);
+
+                static void Reflect(AZ::ReflectContext* context);
+
+                AZStd::string GetPropertyName() const;
+                AZStd::string GetPropertyPath() const;
+
+                AZ::IO::Path m_path;
+                AZStd::string m_value;
+            };
+
+            //void GenerateOverridesList();
+
+            // TODO - Ensure this does not get serialized to JSON.
+            // This is just an Editor component and the data shown is instance-dependent.
+            AZStd::vector<EditorPrefabOverride> m_overrides;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

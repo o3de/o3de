@@ -27,6 +27,7 @@ namespace AzToolsFramework
     bool LabelHandler::ResetGUIToDefaults(QLabel* GUI)
     {
         GUI->setText(QString());
+        GUI->setToolTip(QString());
         return true;
     }
 

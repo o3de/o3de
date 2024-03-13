@@ -34,6 +34,7 @@ namespace AzToolsFramework
         QString blankString;
         GUI->setPlaceholderText(blankString);
         GUI->setText(blankString);
+        GUI->setToolTip(blankString);
         GUI->setReadOnly(false);
         return true;
     }
