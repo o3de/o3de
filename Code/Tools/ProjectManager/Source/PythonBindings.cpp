@@ -273,7 +273,6 @@ namespace O3DE::ProjectManager
         return m_pythonStarted && Py_IsInitialized();
     }
 
-
     bool PythonBindings::StartPython()
     {
         if (Py_IsInitialized())

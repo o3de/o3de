@@ -32,6 +32,7 @@ namespace AzToolsFramework::EmbeddedPython
         #error "PYTHON_SHARED_LIBRARY_PATH is not defined"
         #endif
 
+        // Construct the path to the shared python library within the venv folder
         AZ::IO::FixedMaxPath engineRoot = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath());
         AZ::IO::FixedMaxPath thirdPartyRoot = PythonLoader::GetDefault3rdPartyPath(false);
         AZ::IO::FixedMaxPath pythonVenvPath = PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot);
@@ -90,8 +91,7 @@ namespace AzToolsFramework::EmbeddedPython
     {
         AZ::IO::FixedMaxPath thirdPartyFolder = GetDefault3rdPartyPath(true);
 
-        // On Windows, the executable folder is $PYTHONHOME, so return the same path for $PYTHONHOME
-
+        // The python HOME path relative to the executable depends on the host platform the package is created for
         #if AZ_TRAIT_PYTHON_LOADER_PYTHON_HOME_BIN_SUBPATH
         AZ::IO::FixedMaxPath pythonHomePath = PythonLoader::GetPythonExecutablePath(thirdPartyFolder, engineRoot).ParentPath();
         #else
@@ -104,6 +104,7 @@ namespace AzToolsFramework::EmbeddedPython
     AZ::IO::FixedMaxPath PythonLoader::GetPythonVenvPath(AZ::IO::PathView thirdPartyRoot, AZ::IO::PathView engineRoot)
     {
         // Perform the same hash calculation as cmake/CalculateEnginePathId.cmake
+        /////
 
         // Prepare the engine path the same way as cmake/CalculateEnginePathId.cmake
         AZStd::string enginePath = AZ::IO::FixedMaxPath(engineRoot).StringAsPosix();
@@ -152,8 +153,6 @@ namespace AzToolsFramework::EmbeddedPython
 
     void PythonLoader::ReadPythonEggLinkPaths(AZ::IO::PathView thirdPartyRoot, AZ::IO::PathView engineRoot, EggLinkPathVisitor resultPathCallback)
     {
-
-
         // Get the python venv path
         AZ::IO::FixedMaxPath pythonVenvSitePackages =
             AZ::IO::FixedMaxPath(PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot)) / O3DE_PYTHON_SITE_PACKAGE_SUBPATH;

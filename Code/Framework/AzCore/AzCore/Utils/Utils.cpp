@@ -8,7 +8,6 @@
 
 #include <AzCore/Utils/Utils.h>
 
-
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/FileIO.h>

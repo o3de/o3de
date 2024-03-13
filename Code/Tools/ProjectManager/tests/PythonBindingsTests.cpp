@@ -10,7 +10,6 @@
 #include <AzTest/Utils.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/IO/LocalFileIO.h>
 #include <PythonBindings.h>
 #include <ProjectManager_Test_Traits_Platform.h>
 
@@ -54,10 +53,6 @@ namespace O3DE::ProjectManager
 
         void SetUp() override
         {
-            m_previousDirectInstance = AZ::IO::FileIOBase::GetDirectInstance();
-
-            AZ::IO::FileIOBase::SetDirectInstance(&m_fileIO);
-
             const AZStd::string engineRootPath{ AZ::Test::GetEngineRootPath() };
             m_pythonBindings = AZStd::make_unique<TestablePythonBindings>(AZ::IO::PathView(engineRootPath));
         }
@@ -65,8 +60,6 @@ namespace O3DE::ProjectManager
         void TearDown() override
         {
             m_pythonBindings.reset();
-
-            AZ::IO::FileIOBase::SetDirectInstance(m_previousDirectInstance);
         }
 
         //! AZ::Debug::TraceMessageBus
@@ -78,8 +71,6 @@ namespace O3DE::ProjectManager
 
         AZStd::unique_ptr<ProjectManager::TestablePythonBindings> m_pythonBindings;
         AZStd::vector<AZStd::string> m_gatheredMessages;
-        AZ::IO::FileIOBase* m_previousDirectInstance {nullptr};
-        AZ::IO::LocalFileIO m_fileIO;
     };
 
     TEST_F(PythonBindingsTests, PythonBindings_Start_Python_Succeeds)
