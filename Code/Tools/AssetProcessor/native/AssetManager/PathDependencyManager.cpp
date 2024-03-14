@@ -512,15 +512,31 @@ namespace AssetProcessor
             bool isExcludedDependency = dependencyPathSearch.starts_with(ExcludedDependenciesSymbol);
             dependencyPathSearch = isExcludedDependency ? dependencyPathSearch.substr(1) : dependencyPathSearch;
 #if defined(CARBONATED)
-            bool isRecursiveDependency = dependencyPathSearch.ends_with(RecursiveDependenciesPattern);
-            dependencyPathSearch = isRecursiveDependency ? dependencyPathSearch.substr(0, dependencyPathSearch.length() - 1) : dependencyPathSearch;
+            bool isRecursiveDependency = false;
+            AZStd::string searchExtension;
+            const auto pos = dependencyPathSearch.rfind(RecursiveDependenciesExtPattern);
+            const bool isRecursiveExtDependency = pos != AZStd::string::npos;
+            if (isRecursiveExtDependency)
+            {
+                searchExtension = dependencyPathSearch.substr(pos + RecursiveDependenciesExtPatternLen - 1);
+                dependencyPathSearch = dependencyPathSearch.substr(0, pos + 1);
+            }
+            else
+            {
+                isRecursiveDependency = dependencyPathSearch.ends_with(RecursiveDependenciesPattern);
+                dependencyPathSearch = isRecursiveDependency ? dependencyPathSearch.substr(0, dependencyPathSearch.length() - 1) : dependencyPathSearch;
+            }
 #endif
             // The database uses % for wildcards, both path based searching uses *, so keep a copy of the path with the * wildcard for later
             // use.
             AZStd::string pathWildcardSearchPath(dependencyPathSearch);
             bool isExactDependency = !AzFramework::StringFunc::Replace(dependencyPathSearch, '*', '%');
 
-            if (cleanedupDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::ProductFile)
+            if (
+#if defined(CARBONATED)
+                isRecursiveExtDependency ||
+#endif
+                cleanedupDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::ProductFile)
             {
                 SanitizeForDatabase(dependencyPathSearch);
                 SanitizeForDatabase(pathWildcardSearchPath);
@@ -558,6 +574,15 @@ namespace AssetProcessor
                     {
                         if (m_stateData->GetSourceByJobID(productDatabaseEntry.m_jobPK, sourceDatabaseEntry))
                         {
+#if defined(CARBONATED)
+                            if (isRecursiveExtDependency)
+                            {
+                                if (!productDatabaseEntry.m_productName.contains(searchExtension))
+                                {
+                                    continue;
+                                }
+                            }
+#endif
                             // The SQL wildcard search is greedy and doesn't match the path based, glob style wildcard search that is
                             // expected in this case. This also matches the behavior of resolving unmet dependencies later. There are two
                             // cases that wildcard dependencies resolve:
@@ -568,7 +593,7 @@ namespace AssetProcessor
                             // This check here makes sure that the filter for 1 matches 2.
                             if (!isExactDependency
 #if defined(CARBONATED)
-                                && !isRecursiveDependency
+                                && !isRecursiveDependency && !isRecursiveExtDependency
 #endif
                                 )
                             {
