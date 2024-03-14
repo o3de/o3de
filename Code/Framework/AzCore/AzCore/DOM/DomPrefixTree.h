@@ -84,8 +84,8 @@ namespace AZ::Dom
     {
     public:
         DomPrefixTree() = default;
-        DomPrefixTree(const DomPrefixTree<T>&) = default;
-        DomPrefixTree(DomPrefixTree<T>&&) = default;
+        DomPrefixTree(const DomPrefixTree&) = default;
+        DomPrefixTree(DomPrefixTree&&) = default;
         explicit DomPrefixTree(AZStd::initializer_list<AZStd::pair<Path, T>> init);
 
         template<class Range, class = AZStd::enable_if_t<RangeConvertibleToPrefixTree<Range, T>>>
@@ -143,6 +143,7 @@ namespace AZ::Dom
         //! Returns true if the root node is empty.
         bool IsEmpty() const;
 
+    private:
         struct Node
         {
             AZStd::unordered_map<PathEntry, Node> m_values;
@@ -154,7 +155,6 @@ namespace AZ::Dom
         //! Since Node is an internal private struct in this class, this constructor that uses Node is also private.
         explicit DomPrefixTree(Node&& node);
 
-    private:
         Node* GetNodeForPath(const Path& path);
         const Node* GetNodeForPath(const Path& path) const;
 
