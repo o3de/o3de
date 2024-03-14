@@ -583,6 +583,11 @@ namespace Terrain
 
         for (auto& [deviceIndex, data] : m_detailMaterialShaderData)
         {
+            if (m_detailMaterialShaderIndex.GetSize() > data.size())
+            {
+                data.resize(m_detailMaterialShaderIndex.GetSize());
+            }
+
             auto& shaderData = data.at(materialData.m_detailMaterialBufferIndex);
             shaderData = DetailMaterialShaderData();
 
@@ -987,6 +992,11 @@ namespace Terrain
 
         for (auto& [deviceIndex, data] : m_detailMaterialShaderData)
         {
+            if (m_detailMaterialShaderIndex.GetSize() > data.size())
+            {
+                data.resize(m_detailMaterialShaderIndex.GetSize());
+            }
+
             auto& materialShaderData = data.at(m_passthroughMaterialId);
             // Material defaults to white (1.0, 1.0, 1.0), set the blend mode to multiply so it passes through to the macro material.
             materialShaderData.m_flags = DetailTextureFlags::BlendModeMultiply;
