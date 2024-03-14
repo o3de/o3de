@@ -132,7 +132,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
-                $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
+                ${gem_name}.Private.Object
             PRIVATE
                  3rdParty::miniaudio
                  3rdParty::stb_vorbis
