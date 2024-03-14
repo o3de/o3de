@@ -7,6 +7,7 @@
 #
 
 set(FILES
-    ../Common/Default/AzToolsFramework/API/PythonLoader_Default.cpp
+    AzToolsFramework_Traits_Mac.h
+    AzToolsFramework_Traits_Platform.h
     AzToolsFramework/API/EditorAssetSystemAPI_Mac.cpp
 )

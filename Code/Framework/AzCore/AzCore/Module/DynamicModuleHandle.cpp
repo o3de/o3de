@@ -16,9 +16,9 @@ namespace AZ
     {
     }
 
-    bool DynamicModuleHandle::Load(bool isInitializeFunctionRequired)
+    bool DynamicModuleHandle::Load(bool isInitializeFunctionRequired, bool globalSymbols /*= false*/)
     {
-        LoadStatus status = LoadModule();
+        LoadStatus status = LoadModule(globalSymbols);
         switch (status)
         {
             case LoadStatus::LoadFailure:

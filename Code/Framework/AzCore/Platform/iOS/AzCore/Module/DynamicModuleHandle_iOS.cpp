@@ -18,13 +18,14 @@ namespace AZ::Platform
         return AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "Frameworks";
     }
 
-    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen)
+    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen, bool globalSymbols)
     {
         void* handle = dlopen(fileName.c_str(), RTLD_NOLOAD);
         alreadyOpen = (handle != nullptr);
         if (!alreadyOpen)
         {
-            handle = dlopen(fileName.c_str(), RTLD_NOW);
+            int openFlags = globalSymbols ? RTLD_NOW | RTLD_GLOBAL : RTLD_NOW;
+            handle = dlopen(fileName.c_str(), openFlags);
         }
         return handle;
     }

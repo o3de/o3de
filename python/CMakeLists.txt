@@ -14,6 +14,7 @@ endif()
 ly_install_files(
     FILES
         get_python.cmake
+        get_python_package_hash.cmake
         readme.md
         requirements.txt
     DESTINATION python
