@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/DOM/DomPath.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverrideTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -41,6 +42,12 @@ namespace AzToolsFramework
             //! @return Whether overrides are reverted successfully.
             bool RevertOverrides(AZ::Dom::Path path, LinkId linkId) const;
 
+            // TODO - Fill this in!
+            bool PushOverrideToPrefab(const AZ::Dom::Path& path, AZStd::string_view relativePath, InstanceOptionalReference instance) const;
+
+            // TODO - Fill this in!
+            bool PushOverrideToLink(const AZ::Dom::Path& path, AZStd::string_view relativePath, LinkId sourceLinkId, LinkId targetLinkId) const;
+            
         private:
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };

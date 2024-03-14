@@ -172,7 +172,10 @@ namespace AZStd
     template<>
     struct hash<AZ::Dom::PathEntry>
     {
-        size_t operator()(const AZ::Dom::PathEntry& entry) const;
+        size_t operator()(const AZ::Dom::PathEntry& entry) const
+        {
+            return entry.GetHash();
+        }
     };
 
     template<>

@@ -52,6 +52,11 @@ namespace AzToolsFramework
             //! @param entityComponentIdPair The entityId and componentId on which overrides should be reverted.
             //! @return Whether overrides are successfully reverted on the component.
             virtual bool RevertComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
+
+            //! Apply overrides on the given component. Returns false if no overrides are present on the component.
+            //! @param entityComponentIdPair The entityId and componentId on which overrides should be applied.
+            //! @return Whether overrides are successfully reverted on the component.
+            virtual bool ApplyComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair) = 0;
         };
 
         class PrefabOverridePublicRequests : public AZ::EBusTraits

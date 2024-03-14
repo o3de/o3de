@@ -137,14 +137,6 @@ namespace AZ::Dom
     }
 } // namespace AZ::Dom
 
-namespace AZStd
-{
-    size_t AZStd::hash<AZ::Dom::PathEntry>::operator()(const AZ::Dom::PathEntry& entry) const
-    {
-        return entry.GetHash();
-    }
-} // namespace AZStd
-
 namespace AZ::Dom
 {
     const AZ::Name& PathEntry::GetKey() const
