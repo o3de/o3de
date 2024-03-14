@@ -58,9 +58,12 @@ namespace AZ
 
             for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
             {
-                m_meshBufferIndices[deviceIndex] = {};
-                m_materialTextureIndices[deviceIndex] = {};
-                m_materialInfos[deviceIndex] = {};
+                if ((AZStd::to_underlying(deviceMask) >> deviceIndex) & 1)
+                {
+                    m_meshBufferIndices[deviceIndex] = {};
+                    m_materialTextureIndices[deviceIndex] = {};
+                    m_materialInfos[deviceIndex] = {};
+                }
             }
 
             // create TLAS attachmentId
