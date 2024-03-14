@@ -66,9 +66,9 @@ namespace AZ::RHI
 
         RHI::MultiDevice::DeviceMask transientAttachmentPoolDeviceMask{0};
 
-        for (auto& [deviceIndex, descriptor] : descriptor.m_transientAttachmentPoolDescriptors)
+        for (auto& [deviceIndex, transientAttachmentPoolDescriptor] : descriptor.m_transientAttachmentPoolDescriptors)
         {
-            if (SingleDeviceTransientAttachmentPool::NeedsTransientAttachmentPool(descriptor))
+            if (SingleDeviceTransientAttachmentPool::NeedsTransientAttachmentPool(transientAttachmentPoolDescriptor))
             {
                 transientAttachmentPoolDeviceMask |= static_cast<RHI::MultiDevice::DeviceMask>(1 << deviceIndex);
             }

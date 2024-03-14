@@ -687,11 +687,8 @@ namespace AZ::RHI
             {
                 // First pass to calculate size needed.
                 processCommands(TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources);
-                auto statistics = transientAttachmentPool.GetStatistics();
-                for (auto& [deviceIndex, deviceStatistics] : statistics)
-                {
-                    memoryUsage = deviceStatistics.m_reservedMemory;
-                }
+                auto statistics = transientAttachmentPool.GetDeviceTransientAttachmentPool(deviceIndex)->GetStatistics();
+                memoryUsage = statistics.m_reservedMemory;
             }
         }
 
