@@ -48,7 +48,7 @@ namespace AZ
                 return;
             }
 
-            auto deviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
+            auto rayTracingDeviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
 
             m_diffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
             m_realTimeDiffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
@@ -59,7 +59,7 @@ namespace AZ
 
             m_bufferPool = aznew RHI::MultiDeviceBufferPool;
             m_bufferPool->SetName(Name("DiffuseProbeGridBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(deviceMask, desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(RHI::MultiDevice::AllDevices, desc);
             AZ_Error("DiffuseProbeGridFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -72,7 +72,7 @@ namespace AZ
 
                 m_probeGridRenderData.m_imagePool = aznew RHI::MultiDeviceImagePool;
                 m_probeGridRenderData.m_imagePool->SetName(Name("DiffuseProbeGridRenderImageData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(deviceMask, imagePoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(RHI::MultiDevice::AllDevices, imagePoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
 
@@ -83,7 +83,7 @@ namespace AZ
 
                 m_probeGridRenderData.m_bufferPool = aznew RHI::MultiDeviceBufferPool;
                 m_probeGridRenderData.m_bufferPool->SetName(Name("DiffuseProbeGridRenderBufferData"));
-                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(deviceMask, bufferPoolDesc);
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(RHI::MultiDevice::AllDevices, bufferPoolDesc);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
             }
 
@@ -115,11 +115,11 @@ namespace AZ
                 AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
             }
 
-            if (deviceMask != RHI::MultiDevice::NoDevices)
+            if (rayTracingDeviceMask != RHI::MultiDevice::NoDevices)
             {
                 // initialize the buffer pools for the DiffuseProbeGrid visualization
                 m_visualizationBufferPools = aznew RHI::MultiDeviceRayTracingBufferPools;
-                m_visualizationBufferPools->Init(deviceMask);
+                m_visualizationBufferPools->Init(rayTracingDeviceMask);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
 
