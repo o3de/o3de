@@ -233,8 +233,10 @@ namespace ImGui
                 ImGui::SetCursorPosX(prevCursorPos);
             }
 
+#if !defined(CARBONATED) // the line below resets toolbar position to the beginning and causes overlapping with the previously added toolbar items from the game. This line was absent in LY.
             // Add some space before the first menu so it won't overlap with view control buttons
             ImGui::SetCursorPosX(dpiAwareSizeFn(40.0f + viewportBorderPadding.m_left));
+#endif // !defined(CARBONATED)
 
             // Main Open 3D Engine menu
             if (ImGui::BeginMenu("O3DE"))
