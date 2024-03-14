@@ -440,44 +440,42 @@ namespace AZ
                     RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(m_imageDescriptor.m_format);
                     if (RHI::CheckBitsAll(imageAspectFlags, RHI::ImageAspectFlags::Depth))
                     {
-                    imageAspect = RHI::ImageAspect::Depth;
-                    range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
-                        }
+                        imageAspect = RHI::ImageAspect::Depth;
+                        range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
+                    }
 
-                        AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
-                        imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
-                        size_t totalSizeInBytes = 0;
-                        image->GetDeviceImage(context.GetDeviceIndex())
-                            ->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
-                        AZ::u64 byteCount = totalSizeInBytes;
+                    AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
+                    imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
+                    size_t totalSizeInBytes = 0;
+                    image->GetDeviceImage(context.GetDeviceIndex())->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
+                    AZ::u64 byteCount = totalSizeInBytes;
 
-                        RPI::CommonBufferDescriptor desc;
-                        desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
-                        desc.m_bufferName = m_readbackName.GetStringView();
-                        desc.m_byteCount = byteCount;
+                    RPI::CommonBufferDescriptor desc;
+                    desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
+                    desc.m_bufferName = m_readbackName.GetStringView();
+                    desc.m_byteCount = byteCount;
 
-                        readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex] =
-                            BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                    readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex] =
+                        BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
-                        // Use the aspect format as output format, this format is also used as copy destination's format
-                        m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
+                    // Use the aspect format as output format, this format is also used as copy destination's format
+                    m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
 
-                        // copy descriptor for copying image to buffer
-                        RHI::MultiDeviceCopyImageToBufferDescriptor copyImageToBuffer;
-                        copyImageToBuffer.m_mdSourceImage = image;
-                        copyImageToBuffer.m_sourceSize = imageSubresourceLayouts[mipSlice].m_size;
-                        copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(mipSlice, 0 /*arraySlice*/, imageAspect);
-                        copyImageToBuffer.m_destinationOffset = 0;
-                        copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayouts[mipSlice].m_bytesPerRow;
-                        copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayouts[mipSlice].m_bytesPerImage;
-                        copyImageToBuffer.m_mdDestinationBuffer =
-                            readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
-                        copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
+                    // copy descriptor for copying image to buffer
+                    RHI::MultiDeviceCopyImageToBufferDescriptor copyImageToBuffer;
+                    copyImageToBuffer.m_mdSourceImage = image;
+                    copyImageToBuffer.m_sourceSize = imageSubresourceLayouts[mipSlice].m_size;
+                    copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(mipSlice, 0 /*arraySlice*/, imageAspect);
+                    copyImageToBuffer.m_destinationOffset = 0;
+                    copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayouts[mipSlice].m_bytesPerRow;
+                    copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayouts[mipSlice].m_bytesPerImage;
+                    copyImageToBuffer.m_mdDestinationBuffer = readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
+                    copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
 
-                        readbackItem.m_mipInfo.m_slice = mipSlice;
-                        readbackItem.m_mipInfo.m_size = imageSubresourceLayouts[mipSlice].m_size;
+                    readbackItem.m_mipInfo.m_slice = mipSlice;
+                    readbackItem.m_mipInfo.m_size = imageSubresourceLayouts[mipSlice].m_size;
 
-                        readbackItem.m_copyItem = copyImageToBuffer;
+                    readbackItem.m_copyItem = copyImageToBuffer;
                 }
 
                 if (readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex])
