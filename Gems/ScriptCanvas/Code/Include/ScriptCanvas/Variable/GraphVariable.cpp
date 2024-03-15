@@ -146,8 +146,8 @@ namespace ScriptCanvas
 
     const char* GraphVariable::s_InitialValueSourceNames[VariableFlags::InitialValueSource::COUNT] =
     {
-        "From Graph",
-        "From Component"
+        "Graph",
+        "Component"
     };
 
     const char* GraphVariable::s_ScopeNames[static_cast<int>(VariableFlags::Scope::COUNT)] =
