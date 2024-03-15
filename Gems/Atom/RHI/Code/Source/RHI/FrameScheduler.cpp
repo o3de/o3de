@@ -86,6 +86,8 @@ namespace AZ::RHI
             }
         }
 
+        m_deviceMask = deviceMask;
+
         auto deviceCount{RHI::RHISystemInterface::Get()->GetDeviceCount()};
         for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
         {
@@ -96,8 +98,6 @@ namespace AZ::RHI
             m_rootScopeProducers[deviceIndex].reset(aznew ScopeProducerEmpty(GetRootScopeId(deviceIndex)));
             m_rootScopes[deviceIndex] = m_rootScopeProducers[deviceIndex]->GetScope();
         }
-
-        m_deviceMask = deviceMask;
 
         m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
 
