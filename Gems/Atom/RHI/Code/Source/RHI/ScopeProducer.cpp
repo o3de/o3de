@@ -38,6 +38,11 @@ namespace AZ::RHI
         return m_scope.get();
     }
 
+    int ScopeProducer::GetDeviceIndex() const
+    {
+        return m_deviceIndex;
+    }
+
     void ScopeProducer::SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass)
     {
         m_scope->SetHardwareQueueClass(hardwareQueueClass);
