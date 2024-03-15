@@ -65,6 +65,10 @@ ${OVERRIDE_JAVA_SOURCESET}
         pickFirst '**/*.so'
     }
 
+    aaptOptions {
+        noCompress 'pak'
+    }
+
 }
 
 // Inject the zip64 option into package task to allow 4GiB apks
