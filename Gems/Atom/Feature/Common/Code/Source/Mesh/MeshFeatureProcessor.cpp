@@ -1723,7 +1723,6 @@ namespace AZ
                 for (size_t lodIndex = 0; lodIndex < m_postCullingInstanceDataByLod.size(); ++lodIndex)
                 {
                     PostCullingInstanceDataList& postCullingInstanceDataList = m_postCullingInstanceDataByLod[lodIndex];
-                    size_t meshIndex = 0;
                     for (PostCullingInstanceData& postCullingData : postCullingInstanceDataList)
                     {
                         postCullingData.m_instanceGroupHandle->RemoveAssociatedInstance(this);
@@ -1731,7 +1730,6 @@ namespace AZ
                         // Remove instance will decrement the use-count of the instance group, and only release the instance group
                         // if nothing else is referring to it.
                         meshInstanceManager.RemoveInstance(postCullingData.m_instanceGroupHandle);
-                        ++meshIndex;
                     }
                     postCullingInstanceDataList.clear();
                 }
