@@ -252,7 +252,11 @@ namespace AZ::RHI
         for (ScopeProducer* scopeProducer : m_scopeProducers)
         {
             RHI_PROFILE_SCOPE_VERBOSE("FrameScheduler: PrepareProducers: Scope %s", scopeProducer->GetScopeId().GetCStr());
-            m_frameGraph->BeginScope(*scopeProducer->GetScope());
+
+            auto scope = scopeProducer->GetScope();
+            scope->SetDeviceIndex(scopeProducer->GetDeviceIndex());
+
+            m_frameGraph->BeginScope(*scope);
             scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);
                 
             // All scopes depend on the root scopes.

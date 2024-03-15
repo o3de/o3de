@@ -130,7 +130,12 @@ namespace AZ::RHI
 
             for (Scope* scope : frameGraph.GetScopes())
             {
-                scope->Compile(MultiDevice::DefaultDeviceIndex);
+                if (scope->GetDeviceIndex() == MultiDevice::InvalidDeviceIndex)
+                {
+                    scope->SetDeviceIndex(MultiDevice::DefaultDeviceIndex);
+                }
+
+                scope->Compile();
             }
         }
 
