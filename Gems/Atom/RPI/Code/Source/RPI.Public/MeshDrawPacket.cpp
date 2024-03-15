@@ -216,6 +216,8 @@ namespace AZ
                 DoUpdate(parentScene);
                 m_materialChangeId = m_material->GetCurrentChangeId();
                 m_needUpdate = false;
+
+                DebugOutputShaderVariants();
                 return true;
             }
 
@@ -225,6 +227,22 @@ namespace AZ
         static bool HasRootConstants(const RHI::ConstantsLayout* rootConstantsLayout)
         {
             return rootConstantsLayout && rootConstantsLayout->GetDataSize() > 0;
+        }
+
+        void MeshDrawPacket::DebugOutputShaderVariants()
+        {
+#ifdef DEBUG_MESH_SHADERVARIANTS
+            uint32_t index = 0;
+
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, m_modelLod->GetAssetId());
+
+            AZ_TracePrintf("MeshDrawPacket", "Mesh: %s", assetInfo.m_relativePath.data());
+            for (const auto& variant : m_shaderVariantNames)
+            {
+                AZ_TracePrintf("MeshDrawPacket", "%d: %s", index++, variant.data());
+            }
+#endif
         }
 
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
@@ -265,6 +283,10 @@ namespace AZ
             bool isFirstShaderItem = true;
 
             m_perDrawSrgs.clear();
+
+#ifdef DEBUG_MESH_SHADERVARIANTS
+            m_shaderVariantNames.clear();
+#endif
 
             auto appendShader = [&](const ShaderCollection::Item& shaderItem, const Name& materialPipelineName)
             {
@@ -348,6 +370,10 @@ namespace AZ
 
                 const ShaderVariantId requestedVariantId = shaderOptions.GetShaderVariantId();
                 const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(requestedVariantId);
+
+#ifdef DEBUG_MESH_SHADERVARIANTS
+                m_shaderVariantNames.push_back(variant.GetShaderVariantAsset().GetHint());
+#endif
 
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
                 variant.ConfigurePipelineState(pipelineStateDescriptor);
@@ -503,3 +529,4 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
+
