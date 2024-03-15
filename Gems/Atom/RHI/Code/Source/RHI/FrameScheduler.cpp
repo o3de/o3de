@@ -86,8 +86,17 @@ namespace AZ::RHI
             }
         }
 
-        m_rootScopeProducer.reset(aznew ScopeProducerEmpty(GetRootScopeId()));
-        m_rootScope = m_rootScopeProducer->GetScope();
+        auto deviceCount{RHI::RHISystemInterface::Get()->GetDeviceCount()};
+        for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
+        {
+            if (((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1) == 0)
+            {
+                continue;
+            }
+            m_rootScopeProducers[deviceIndex].reset(aznew ScopeProducerEmpty(GetRootScopeId(deviceIndex)));
+            m_rootScopes[deviceIndex] = m_rootScopeProducers[deviceIndex]->GetScope();
+        }
+
         m_deviceMask = deviceMask;
 
         m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
@@ -109,8 +118,8 @@ namespace AZ::RHI
     {
         m_deviceMask = static_cast<MultiDevice::DeviceMask>(0);
         m_taskGraphActive = nullptr;
-        m_rootScopeProducer = nullptr;
-        m_rootScope = nullptr;
+        m_rootScopeProducers.clear();
+        m_rootScopes.clear();
         m_frameGraphExecuter = nullptr;
         m_frameGraphCompiler = nullptr;
         m_transientAttachmentPool = nullptr;
@@ -246,10 +255,21 @@ namespace AZ::RHI
             m_frameGraph->BeginScope(*scopeProducer->GetScope());
             scopeProducer->SetupFrameGraphDependencies(*m_frameGraph);
                 
-            // All scopes depend on the root scope.
-            if (scopeProducer->GetScopeId() != m_rootScopeId)
+            // All scopes depend on the root scopes.
+            auto deviceCount{RHI::RHISystemInterface::Get()->GetDeviceCount()};
+            for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
-                m_frameGraph->ExecuteAfter(m_rootScopeId);
+                if (((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1) == 0)
+                {
+                    continue;
+                }
+
+                //? If the deviceIndex of the Scope was known at this point,
+                //? we could only insert dependencies accordingly
+                if (scopeProducer->GetScopeId() != GetRootScopeId(deviceIndex))
+                {
+                    m_frameGraph->ExecuteAfter(GetRootScopeId(deviceIndex));
+                }
             }
 
             m_frameGraph->EndScope();
@@ -465,8 +485,6 @@ namespace AZ::RHI
         {
             m_frameGraph->Begin();
 
-            ImportScopeProducer(*m_rootScopeProducer);
-
             for (int deviceIndex = 0; deviceIndex < deviceCount; ++deviceIndex)
             {
                 if (((AZStd::to_underlying(m_deviceMask) >> deviceIndex) & 1) == 0)
@@ -476,8 +494,8 @@ namespace AZ::RHI
 
                 Device* device = RHI::RHISystemInterface::Get()->GetDevice(deviceIndex);
 
-                // Queue resource pool resolves onto the root scope.
-                m_rootScope->QueueResourcePoolResolves(device->GetResourcePoolDatabase());
+                ImportScopeProducer(*(m_rootScopeProducers.at(deviceIndex)));
+                m_rootScopes[deviceIndex]->QueueResourcePoolResolves(device->GetResourcePoolDatabase());
 
                 // This is broadcast after beginning the frame so that the CPU and GPU are synchronized.
                 FrameEventBus::Event(device, &FrameEventBus::Events::OnFrameBegin);
@@ -693,9 +711,19 @@ namespace AZ::RHI
         return 0;
     }
 
-    ScopeId FrameScheduler::GetRootScopeId() const
+    ScopeId FrameScheduler::GetRootScopeId(int deviceIndex)
     {
-        return m_rootScopeId;
+        auto iterator{ m_rootScopeIds.find(deviceIndex) };
+        if (iterator == m_rootScopeIds.end())
+        {
+            auto [new_iterator, inserted]{ m_rootScopeIds.insert(
+                AZStd::make_pair(deviceIndex, AZStd::string{AZStd::string("Root") + AZStd::to_string(deviceIndex)})) };
+            if (inserted)
+            {
+                return ScopeId{new_iterator->second};
+            }
+        }
+        return ScopeId(iterator->second);
     }
 
     const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* FrameScheduler::GetTransientAttachmentPoolDescriptor() const

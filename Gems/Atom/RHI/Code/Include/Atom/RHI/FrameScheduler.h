@@ -174,8 +174,8 @@ namespace AZ::RHI
         //! Returns memory statistics for the previous frame.
         const MemoryStatistics* GetMemoryStatistics() const;
 
-        //! Returns the implicit root scope id.
-        ScopeId GetRootScopeId() const;
+        //! Returns the implicit root scope id for the given deviceIndex.
+        ScopeId GetRootScopeId(int deviceIndex = 0);
 
         //! Returns the descriptor which has information on the properties of a MultiDeviceTransientAttachmentPool.
         const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const;
@@ -187,7 +187,7 @@ namespace AZ::RHI
         const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
 
     private:
-        const ScopeId m_rootScopeId{"Root"};
+        AZStd::unordered_map<int, AZStd::string> m_rootScopeIds;
 
         bool ValidateIsInitialized() const;
         bool ValidateIsProcessing() const;
@@ -225,8 +225,8 @@ namespace AZ::RHI
 
         FrameSchedulerCompileRequest m_compileRequest;
 
-        Scope* m_rootScope = nullptr;
-        AZStd::unique_ptr<ScopeProducerEmpty> m_rootScopeProducer;
+        AZStd::unordered_map<int, Scope*> m_rootScopes;
+        AZStd::unordered_map<int, AZStd::unique_ptr<ScopeProducerEmpty>> m_rootScopeProducers;
         AZStd::vector<ScopeProducer*> m_scopeProducers;
         AZStd::unordered_map<ScopeId, ScopeProducer*> m_scopeProducerLookup;
 
