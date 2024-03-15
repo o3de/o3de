@@ -69,6 +69,10 @@ namespace AZ::RHI
         //! Returns the scope associated with this scope producer.
         const Scope* GetScope() const;
 
+        //! Returns the device index of the device the scope should run on.
+        //! May return InvalidDeviceIndex to signal that no device index is specified.
+        virtual int GetDeviceIndex() const;
+
     protected:
 
         //!  Protected default constructor for classes that inherit from
@@ -110,5 +114,6 @@ namespace AZ::RHI
 
         ScopeId m_scopeId;
         Ptr<Scope> m_scope;
+        int m_deviceIndex{MultiDevice::InvalidDeviceIndex};
     };
 }

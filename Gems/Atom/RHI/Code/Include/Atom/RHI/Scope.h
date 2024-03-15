@@ -55,6 +55,9 @@ namespace AZ::RHI
         //! Returns the index of the device the scope is running on.
         int GetDeviceIndex() const;
 
+        //! Sets the index of the device the scope is running on.
+        void SetDeviceIndex(int deviceIndex);
+
         //! Returns the device the scope is running on.
         Device& GetDevice() const;
 
@@ -132,7 +135,7 @@ namespace AZ::RHI
         void Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId);
 
         //! Called when the scope is being compiled at the end of the graph-building phase.
-        void Compile(int deviceIndex);
+        void Compile();
 
         //! Deactivates the scope for the current frame.
         void Deactivate();
