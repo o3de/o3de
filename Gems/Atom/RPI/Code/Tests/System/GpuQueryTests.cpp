@@ -109,7 +109,7 @@ namespace UnitTest
             EXPECT_EQ(resultCode, QueryResultCode::Success);
             void* data = nullptr;
             // Query type of the pool is occlusion, which expects a result size of sizeof(uint64_t).
-            resultCode = query->GetLatestResult(data, sizeof(uint32_t));
+            resultCode = query->GetLatestResult(data, sizeof(uint32_t), RHI::MultiDevice::DefaultDeviceIndex);
             EXPECT_EQ(resultCode, QueryResultCode::Fail);
         }
 
@@ -185,9 +185,9 @@ namespace UnitTest
             }
 
             void* data = reinterpret_cast<void*>(&mockData);
-            resultCode = query->GetLatestResult(data, ResultSize);
+            resultCode = query->GetLatestResult(data, ResultSize, context.GetDeviceIndex());
             EXPECT_EQ(resultCode, QueryResultCode::Success);
-            resultCode = query->GetLatestResultAndWait(data, ResultSize);
+            resultCode = query->GetLatestResultAndWait(data, ResultSize, context.GetDeviceIndex());
             EXPECT_EQ(resultCode, QueryResultCode::Success);
         }
     }
@@ -232,7 +232,7 @@ namespace UnitTest
             EXPECT_EQ(resultCode, QueryResultCode::Success);
             void* data = nullptr;
             // Query type of the pool is statistics, which expects a result size of sizeof(uint64_t) * number of active flags.
-            resultCode = query->GetLatestResult(data, sizeof(uint64_t) * 3u);
+            resultCode = query->GetLatestResult(data, sizeof(uint64_t) * 3u, RHI::MultiDevice::DefaultDeviceIndex);
             EXPECT_EQ(resultCode, QueryResultCode::Fail);
         }
 
@@ -258,9 +258,9 @@ namespace UnitTest
             }
 
             void* data = reinterpret_cast<void*>(&mockData);
-            resultCode = query->GetLatestResult(data, ResultSize);
+            resultCode = query->GetLatestResult(data, ResultSize, RHI::MultiDevice::DefaultDeviceIndex);
             EXPECT_EQ(resultCode, QueryResultCode::Success);
-            resultCode = query->GetLatestResultAndWait(data, ResultSize);
+            resultCode = query->GetLatestResultAndWait(data, ResultSize, RHI::MultiDevice::DefaultDeviceIndex);
             EXPECT_EQ(resultCode, QueryResultCode::Success);
         }
     }
@@ -304,9 +304,9 @@ namespace UnitTest
             }
 
             void* data = reinterpret_cast<void*>(&mockData);
-            resultCode = query->GetLatestResult(data, ResultSize);
+            resultCode = query->GetLatestResult(data, ResultSize, RHI::MultiDevice::DefaultDeviceIndex);
             EXPECT_EQ(resultCode, QueryResultCode::Success);
-            resultCode = query->GetLatestResultAndWait(data, ResultSize);
+            resultCode = query->GetLatestResultAndWait(data, ResultSize, RHI::MultiDevice::DefaultDeviceIndex);
             EXPECT_EQ(resultCode, QueryResultCode::Success);
         }
     }

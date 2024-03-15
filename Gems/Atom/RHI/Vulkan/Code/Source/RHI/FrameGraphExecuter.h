@@ -46,7 +46,7 @@ namespace AZ
 
             // List of handlers for execute groups.
             AZStd::unordered_map<RHI::GraphGroupId, AZStd::unique_ptr<FrameGraphExecuteGroupHandler>> m_groupHandlers;
-            FrameGraphExecuterData m_frameGraphExecuterData;
+            AZStd::unordered_map<int, FrameGraphExecuterData> m_frameGraphExecuterData;
         };
     }
 }

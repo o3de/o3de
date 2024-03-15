@@ -47,8 +47,6 @@ namespace AZ
         RHI::ResultCode ShaderResourceGroupPool::Init(
             ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             m_pool = aznew RHI::MultiDeviceShaderResourceGroupPool;
             if (!m_pool)
             {

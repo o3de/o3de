@@ -119,7 +119,6 @@ namespace AZ
             }
             
             // Create fence
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_fence = aznew RHI::MultiDeviceFence;
             AZ_Assert(m_fence != nullptr, "AttachmentReadback failed to create a fence");
             [[maybe_unused]] RHI::ResultCode result = m_fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Reset);
@@ -370,10 +369,65 @@ namespace AZ
                     AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());
                     return;
                 }
-                m_imageDescriptor = image->GetDescriptor();
+
                 for (uint16_t itemIdx = 0; itemIdx < static_cast<uint16_t>(m_readbackItems.size()); itemIdx++)
                 {
                     auto& readbackItem = m_readbackItems[itemIdx];
+
+                    // copy descriptor for copying image to buffer
+                    RHI::MultiDeviceCopyImageToBufferDescriptor copyImageToBuffer;
+                    copyImageToBuffer.m_mdSourceImage = image;
+
+                    readbackItem.m_copyItem = copyImageToBuffer;
+                }
+            }
+        }
+
+        void AttachmentReadback::CopyExecute(const RHI::FrameGraphExecuteContext& context)
+        {
+            uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
+            auto deviceIndex = context.GetDeviceIndex();
+            m_fence->GetDeviceFence(deviceIndex)
+                ->WaitOnCpuAsync(
+                    [this, readbackBufferCurrentIndex, deviceIndex]()
+                    {
+                        if (m_state == ReadbackState::Reading)
+                        {
+                            if (CopyBufferData(readbackBufferCurrentIndex, deviceIndex))
+                            {
+                                m_state = ReadbackState::Success;
+                            }
+                            else
+                            {
+                                m_state = ReadbackState::Failed;
+                            }
+                        }
+                        if (m_callback)
+                        {
+                            m_callback(GetReadbackResult());
+                        }
+
+                        Reset();
+                    });
+
+            for (uint16_t itemIdx = 0; itemIdx < static_cast<uint16_t>(m_readbackItems.size()); itemIdx++)
+            {
+                auto& readbackItem = m_readbackItems[itemIdx];
+                if (m_attachmentType == RHI::AttachmentType::Image)
+                {
+                    // copy image to read back buffer since only buffer can be accessed by host
+                    const auto image = readbackItem.m_copyItem.m_mdImage.m_mdSourceImage;
+                    if (!image)
+                    {
+                        AZ_Warning(
+                            "AttachmentReadback",
+                            false,
+                            "Failed to find attachment image %s for copy to buffer",
+                            m_copyAttachmentId.GetCStr());
+                        return;
+                    }
+
+                    m_imageDescriptor = image->GetDescriptor();
                     // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the array subresources and planars
                     // only array 0, and one aspect (planar) at this moment.
                     // Note: Mip Levels and Texture3D images are supported.
@@ -381,7 +435,7 @@ namespace AZ
                     RHI::ImageSubresourceRange range(mipSlice, mipSlice, 0, 0);
                     range.m_aspectFlags = RHI::ImageAspectFlags::Color;
 
-                    // setup aspect 
+                    // setup aspect
                     RHI::ImageAspect imageAspect = RHI::ImageAspect::Color;
                     RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(m_imageDescriptor.m_format);
                     if (RHI::CheckBitsAll(imageAspectFlags, RHI::ImageAspectFlags::Depth))
@@ -393,11 +447,7 @@ namespace AZ
                     AZStd::vector<RHI::SingleDeviceImageSubresourceLayout> imageSubresourceLayouts;
                     imageSubresourceLayouts.resize_no_construct(m_imageDescriptor.m_mipLevels);
                     size_t totalSizeInBytes = 0;
-                    // compute lowest device index from mask
-                    int deviceIndex = static_cast<int>(image->GetDeviceMask());
-                    deviceIndex = AZ::Log2(deviceIndex & -deviceIndex);
-                    image->GetDeviceImage(deviceIndex)
-                        ->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
+                    image->GetDeviceImage(context.GetDeviceIndex())->GetSubresourceLayouts(range, imageSubresourceLayouts.data(), &totalSizeInBytes);
                     AZ::u64 byteCount = totalSizeInBytes;
 
                     RPI::CommonBufferDescriptor desc;
@@ -405,7 +455,8 @@ namespace AZ
                     desc.m_bufferName = m_readbackName.GetStringView();
                     desc.m_byteCount = byteCount;
 
-                    readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+                    readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex] =
+                        BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
                     // Use the aspect format as output format, this format is also used as copy destination's format
                     m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
@@ -426,43 +477,14 @@ namespace AZ
 
                     readbackItem.m_copyItem = copyImageToBuffer;
                 }
-            }
-        }
 
-        void AttachmentReadback::CopyExecute(const RHI::FrameGraphExecuteContext& context)
-        {
-            uint32_t readbackBufferCurrentIndex = m_readbackBufferCurrentIndex;
-            m_fence->GetDeviceFence(context.GetDeviceIndex())->WaitOnCpuAsync([this, readbackBufferCurrentIndex]()
-                {
-                    if (m_state == ReadbackState::Reading)
-                    {
-                        if (CopyBufferData(readbackBufferCurrentIndex))
-                        {
-                            m_state = ReadbackState::Success;
-                        }
-                        else
-                        {
-                            m_state = ReadbackState::Failed;
-                        }
-                    }
-                    if (m_callback)
-                    {
-                        m_callback(GetReadbackResult());
-                    }
-
-                    Reset();
-                }
-                );
-
-            for (const auto& readbackItem : m_readbackItems)
-            {
                 if (readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex])
                 {
                     context.GetCommandList()->Submit(readbackItem.m_copyItem.GetDeviceCopyItem(context.GetDeviceIndex()));
                 }
             }
         }
-        
+
         void AttachmentReadback::Reset()
         {
             m_attachmentId = RHI::AttachmentId{};
@@ -570,7 +592,7 @@ namespace AZ
             return result;
         }
 
-        bool AttachmentReadback::CopyBufferData(uint32_t readbackBufferIndex)
+        bool AttachmentReadback::CopyBufferData(uint32_t readbackBufferIndex, int deviceIndex)
         {
             for (auto& readbackItem : m_readbackItems)
             {
@@ -584,8 +606,7 @@ namespace AZ
                 auto bufferSize = readbackBufferCurrent->GetBufferSize();
                 readbackItem.m_dataBuffer = AZStd::make_shared<AZStd::vector<uint8_t>>();
 
-                AZ_Assert(RHI::CheckBitsAny(readbackBufferCurrent->GetRHIBuffer()->GetDeviceMask(), RHI::MultiDevice::DefaultDevice), "AttachmentReadback currently only supports the default device for now as long as passes have no device index yet.");
-                void* buf = readbackBufferCurrent->Map(bufferSize, 0)[RHI::MultiDevice::DefaultDeviceIndex];
+                void* buf = readbackBufferCurrent->Map(bufferSize, 0)[deviceIndex];
                 if (buf)
                 {
                     if (m_attachmentType == RHI::AttachmentType::Buffer)

@@ -50,6 +50,8 @@ namespace AZ::RHI
 
         virtual int GetDeviceCount() = 0;
 
+        virtual MultiDevice::DeviceMask GetRayTracingSupport() = 0;
+
         virtual RHI::DrawListTagRegistry* GetDrawListTagRegistry() = 0;
 
         virtual RHI::PipelineStateCache* GetPipelineStateCache() = 0;
@@ -60,7 +62,7 @@ namespace AZ::RHI
 
         virtual uint16_t GetNumActiveRenderPipelines() const = 0;
 
-        virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
+        virtual const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const = 0;
 
         virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const = 0;
 

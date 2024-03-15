@@ -48,8 +48,7 @@ namespace AZ
                 return;
             }
 
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-            RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
+            auto rayTracingDeviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
 
             m_diffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
             m_realTimeDiffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
@@ -116,11 +115,11 @@ namespace AZ
                 AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
             }
 
-            if (device->GetFeatures().m_rayTracing)
+            if (rayTracingDeviceMask != RHI::MultiDevice::NoDevices)
             {
                 // initialize the buffer pools for the DiffuseProbeGrid visualization
                 m_visualizationBufferPools = aznew RHI::MultiDeviceRayTracingBufferPools;
-                m_visualizationBufferPools->Init(RHI::MultiDevice::AllDevices);
+                m_visualizationBufferPools->Init(rayTracingDeviceMask);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
 
@@ -466,8 +465,7 @@ namespace AZ
 
         bool DiffuseProbeGridFeatureProcessor::CanBakeTextures()
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            return device->GetFeatures().m_rayTracing;
+            return RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices;
         }
 
         void DiffuseProbeGridFeatureProcessor::BakeTextures(
@@ -894,8 +892,7 @@ namespace AZ
         void DiffuseProbeGridFeatureProcessor::UpdatePasses()
         {
             // disable the DiffuseProbeGridUpdatePass if the platform does not support raytracing
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false)
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices)
             {
                 RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
                 RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
@@ -971,9 +968,10 @@ namespace AZ
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_visualizationBlas = aznew RHI::MultiDeviceRayTracingBlas;
-            if (device->GetFeatures().m_rayTracing)
+            auto deviceMask = RHI::RHISystemInterface::Get()->GetRayTracingSupport();
+            if (deviceMask != RHI::MultiDevice::NoDevices)
             {
-                m_visualizationBlas->CreateBuffers(RHI::MultiDevice::AllDevices, &blasDescriptor, *m_visualizationBufferPools);
+                m_visualizationBlas->CreateBuffers(deviceMask, &blasDescriptor, *m_visualizationBufferPools);
             }
         }
 

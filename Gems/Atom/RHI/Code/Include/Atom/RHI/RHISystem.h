@@ -67,11 +67,12 @@ namespace AZ::RHI
         //! Add a new virtual device (referencing the same physical device as an existing device marked by deviceIndexToVirtualize)
         [[nodiscard]] AZStd::optional<int> AddVirtualDevice(int deviceIndexToVirtualize = MultiDevice::DefaultDeviceIndex) override;
         int GetDeviceCount() override;
+        MultiDevice::DeviceMask GetRayTracingSupport() override;
         RHI::DrawListTagRegistry* GetDrawListTagRegistry() override;
         RHI::PipelineStateCache* GetPipelineStateCache() override;
         void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
         double GetCpuFrameTime() const override;
-        const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
+        const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* GetTransientAttachmentPoolDescriptor() const override;
         ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
         void QueueRayTracingShaderTableForBuild(SingleDeviceRayTracingShaderTable* rayTracingShaderTable) override;
         XRRenderingInterface* GetXRSystem() const override;

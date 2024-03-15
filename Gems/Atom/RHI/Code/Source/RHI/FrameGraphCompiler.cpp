@@ -679,15 +679,16 @@ namespace AZ::RHI
         };
 
         AZStd::optional<TransientAttachmentStatistics::MemoryUsage> memoryUsage;
-        // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
-        if (transientAttachmentPool.GetDescriptor().m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
+
+        for (auto& [deviceIndex, descriptor] : transientAttachmentPool.GetDescriptor())
         {
-            // First pass to calculate size needed.
-            processCommands(TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources);
-            auto statistics = transientAttachmentPool.GetStatistics();
-            for (auto& [deviceIndex, deviceStatistics] : statistics)
+            // Check if we need to do two passes (one for calculating the size and the second one for allocating the resources)
+            if (descriptor.m_heapParameters.m_type == HeapAllocationStrategy::MemoryHint)
             {
-                memoryUsage = deviceStatistics.m_reservedMemory;
+                // First pass to calculate size needed.
+                processCommands(TransientAttachmentPoolCompileFlags::GatherStatistics | TransientAttachmentPoolCompileFlags::DontAllocateResources);
+                auto statistics = transientAttachmentPool.GetDeviceTransientAttachmentPool(deviceIndex)->GetStatistics();
+                memoryUsage = statistics.m_reservedMemory;
             }
         }
 

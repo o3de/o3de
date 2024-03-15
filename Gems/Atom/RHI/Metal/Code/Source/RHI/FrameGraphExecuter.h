@@ -40,7 +40,7 @@ namespace AZ
             void ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& group) override;
             void EndInternal() override {}
             
-            FrameGraphExecuterData m_frameGraphExecuterData;
+            AZStd::unordered_map<int, FrameGraphExecuterData> m_frameGraphExecuterData;
 
         };
     }

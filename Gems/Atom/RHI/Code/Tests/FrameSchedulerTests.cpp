@@ -241,7 +241,7 @@ namespace UnitTest
             RHI::FrameScheduler frameScheduler;
 
             RHI::FrameSchedulerDescriptor descriptor;
-            descriptor.m_transientAttachmentPoolDescriptor.m_bufferBudgetInBytes = 80 * 1024 * 1024;
+            descriptor.m_transientAttachmentPoolDescriptors[RHI::MultiDevice::DefaultDeviceIndex].m_bufferBudgetInBytes = 80 * 1024 * 1024;
             frameScheduler.Init(RHI::MultiDevice::DefaultDevice, descriptor);
 
             RHI::ImageScopeAttachmentDescriptor imageBindingDescs[2];
