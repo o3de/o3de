@@ -177,9 +177,11 @@ namespace AZ::RHI
     }
 
     Image* SwapChain::GetCurrentImage() const
-    {
         if (m_descriptor.m_isXrSwapChain)
         {
+            // GALIB: TODO: This code needs to be adjusted to account for the macro AZ_FORCE_CPU_GPU_INSYNC
+            // which limits the swapchain to single buffer instead of triple buffer and the XR System
+            // assumes always triple buffer.
             return m_images[m_xrSystem->GetCurrentImageIndex(m_descriptor.m_xrSwapChainIndex)].get();
         }
         return m_images[m_currentImageIndex].get();

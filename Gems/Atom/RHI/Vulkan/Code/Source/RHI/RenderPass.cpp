@@ -470,6 +470,127 @@ namespace AZ
             return m_descriptor.m_attachmentCount;
         }
 
+
+        static void AddSubpassDependencyForSubpassInputs(
+            AZStd::vector<VkSubpassDependency>& subpassDependencies, uint32_t srcSubpass, uint32_t dstSubpass)
+        {
+            subpassDependencies.emplace_back();
+            VkSubpassDependency& dependency = subpassDependencies.back();
+            dependency = {};
+            dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // The only flag that makes sense for Tiled Rendering GPUs.
+
+            dependency.srcSubpass = srcSubpass;
+            dependency.srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+            dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+            dependency.dstSubpass = dstSubpass;
+            dependency.dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            dependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
+        }
+
+        static void AddSubpassDependencyForRenderTargets(
+            AZStd::vector<VkSubpassDependency>& subpassDependencies, uint32_t srcSubpass, uint32_t dstSubpass)
+        {
+            subpassDependencies.emplace_back();
+            VkSubpassDependency& dependency = subpassDependencies.back();
+            dependency = {};
+            dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // The only flag that makes sense for Tiled Rendering GPUs.
+
+            dependency.srcSubpass = srcSubpass;
+            dependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+            dependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+            dependency.dstSubpass = dstSubpass;
+            dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+            dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        }
+
+        static void AddSubpassDependencyForDepthStencilTargets(
+            AZStd::vector<VkSubpassDependency>& subpassDependencies,
+            uint32_t srcSubpass, uint32_t dstSubpass)
+        {
+            subpassDependencies.emplace_back();
+            VkSubpassDependency& dependency = subpassDependencies.back();
+            dependency = {};
+            dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT; // The only flag that makes sense for Tiled Rendering GPUs. 
+
+            dependency.srcSubpass = srcSubpass;
+            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            //VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+            dependency.dstSubpass = dstSubpass;
+            dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+             //VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+             //VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        }
+
+        static bool AreRenderAttachmentDescriptorsDependent(const RHI::RenderAttachmentDescriptor& srcDescriptor, const RHI::RenderAttachmentDescriptor& dstDescriptor)
+        {
+            if (!srcDescriptor.IsValid() || !dstDescriptor.IsValid())
+            {
+                return false;
+            }
+            return srcDescriptor.m_attachmentIndex == dstDescriptor.m_attachmentIndex;
+        }
+
+        static bool AreSubpassInputsDependent(
+            const RHI::SubpassInputDescriptor& srcDescriptor, const RHI::SubpassInputDescriptor& dstDescriptor)
+        {
+            return (srcDescriptor.m_attachmentIndex == dstDescriptor.m_attachmentIndex) &&
+                aznumeric_cast<uint32_t>(srcDescriptor.m_aspectFlags & dstDescriptor.m_aspectFlags);
+        }
+
+        //! A helper function, invoked by ConvertRenderAttachmentLayout that adds all subpass dependecies for subpasses
+        //! that depend on @preSubpassIndex.
+        static void AddSubpassDependencies(
+            AZStd::vector<VkSubpassDependency>& subpassDependencies,
+            uint32_t preSubpassIndex,
+            const AZStd::array<RHI::SubpassRenderAttachmentLayout, RHI::Limits::Pipeline::SubpassCountMax>& subpassLayouts,
+            uint32_t subpassCount)
+        {
+            const RHI::SubpassRenderAttachmentLayout& preSubpassLayout = subpassLayouts[preSubpassIndex];
+            for (uint32_t postSubpassIndex = preSubpassIndex + 1; postSubpassIndex < subpassCount; postSubpassIndex++)
+            {
+                // Check if there's depthStencil dependency.
+                const RHI::SubpassRenderAttachmentLayout& postSubpassLayout = subpassLayouts[postSubpassIndex];
+                if (AreRenderAttachmentDescriptorsDependent(preSubpassLayout.m_depthStencilDescriptor, postSubpassLayout.m_depthStencilDescriptor))
+                {
+                    AddSubpassDependencyForDepthStencilTargets(subpassDependencies, preSubpassIndex, postSubpassIndex);
+                }
+
+                for (uint32_t preRenderTargetIndex = 0; preRenderTargetIndex < preSubpassLayout.m_rendertargetCount; preRenderTargetIndex++)
+                {
+                    for (uint32_t postRenderTargetIndex = 0; postRenderTargetIndex < postSubpassLayout.m_rendertargetCount;
+                        postRenderTargetIndex++)
+                    {
+                        if (AreRenderAttachmentDescriptorsDependent(
+                                preSubpassLayout.m_rendertargetDescriptors[preRenderTargetIndex],
+                                postSubpassLayout.m_rendertargetDescriptors[postRenderTargetIndex]))
+                        {
+                            AddSubpassDependencyForRenderTargets(subpassDependencies, preSubpassIndex, postSubpassIndex);
+                        }
+                    }
+                }
+
+                for (uint32_t preSubpassInputIndex = 0; preSubpassInputIndex < preSubpassLayout.m_subpassInputCount; preSubpassInputIndex++)
+                {
+                    for (uint32_t postSubpassInputIndex = 0; postSubpassInputIndex < postSubpassLayout.m_subpassInputCount;
+                         postSubpassInputIndex++)
+                    {
+                        if (AreSubpassInputsDependent(
+                                preSubpassLayout.m_subpassInputDescriptors[preSubpassInputIndex],
+                                postSubpassLayout.m_subpassInputDescriptors[postSubpassInputIndex]))
+                        {
+                            AddSubpassDependencyForSubpassInputs(subpassDependencies, preSubpassIndex, postSubpassIndex);
+                        }
+                    }
+                }
+
+            }
+        }
+
         RenderPass::Descriptor RenderPass::ConvertRenderAttachmentLayout(
             Device& device,
             const RHI::RenderAttachmentLayout& layout,
@@ -565,6 +686,8 @@ namespace AZ
                         subpassDescriptor.m_preserveAttachments[subpassDescriptor.m_preserveAttachmentCount++] = attachmentIndex;
                     }
                 }
+
+                AddSubpassDependencies(renderPassDesc.m_subpassDependencies, subpassIndex, layout.m_subpassLayouts, layout.m_subpassCount);
             }
 
             return renderPassDesc;
