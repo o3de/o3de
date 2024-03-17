@@ -38,17 +38,6 @@ set(PYTHON_VENV_PATH "${LY_3RDPARTY_PATH}/venv/${ENGINE_SOURCE_PATH_ID}")
 cmake_path(NORMAL_PATH PYTHON_VENV_PATH )
 ly_set(LY_PYTHON_VENV_PATH ${PYTHON_VENV_PATH})
 
-# On Linux systems, we need to create a symlink to the shared library as well
-# due to the fact that a symlink is created for the python executable inside 
-# the virtual environment, but the python executable is custom built to use
-# an RPATH set to $ORIGIN/../lib to match the install structure in the package.
-if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
-    set(LY_LINK_TO_SHARED_LIBRARY TRUE)
-else()
-    set(LY_LINK_TO_SHARED_LIBRARY FALSE)
-endif()
-
-
 function(ly_setup_python_venv)
 
     # Check if we need to setup a new venv.
