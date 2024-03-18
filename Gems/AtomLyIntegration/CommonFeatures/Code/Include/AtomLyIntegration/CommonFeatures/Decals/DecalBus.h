@@ -37,6 +37,14 @@ namespace AZ
             //! Sets the decal opacity
             virtual void SetOpacity(float opacity) = 0;
 
+            #if defined(CARBONATED)
+            //! Gets the decals visibility
+            virtual bool GetVisibility() const = 0;
+
+            //! Sets the decals visibility
+            virtual void SetVisibility(bool visible) = 0;
+            #endif
+
             //! Gets the decal color
             virtual const AZ::Vector3& GetDecalColor() const = 0;
 

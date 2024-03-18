@@ -59,6 +59,10 @@ namespace AZ
                     ->Event("GetSortKey", &DecalRequestBus::Events::GetSortKey)
                     ->Event("GetDecalColor", &DecalRequestBus::Events::GetDecalColor)
                     ->Event("SetDecalColor", &DecalRequestBus::Events::SetDecalColor)
+#if defined(CARBONATED)
+                    ->Event("GetVisibility", &DecalRequestBus::Events::GetVisibility)
+                    ->Event("SetVisibility", &DecalRequestBus::Events::SetVisibility)
+#endif
                     ->Event("GetDecalColorFactor", &DecalRequestBus::Events::GetDecalColorFactor)
                     ->Event("SetDecalColorFactor", &DecalRequestBus::Events::SetDecalColorFactor)
                     ->VirtualProperty("AttenuationAngle", "GetAttenuationAngle", "SetAttenuationAngle")
@@ -92,6 +96,9 @@ namespace AZ
 
         DecalComponentController::DecalComponentController(const DecalComponentConfig& config)
             : m_configuration(config)
+#if defined(CARBONATED)
+            , mIsHidden(false)
+#endif
         {
         }
 
@@ -216,6 +223,19 @@ namespace AZ
             OpacityChanged();
         }
 
+        #if defined(CARBONATED)
+        bool DecalComponentController::GetVisibility() const
+        {
+            return !mIsHidden;
+        }
+
+        void DecalComponentController::SetVisibility(bool show)
+        {
+            mIsHidden = !show;
+            OpacityChanged();
+        }
+        #endif
+
         float DecalComponentController::GetNormalMapOpacity() const
         {
             return m_configuration.m_normalMapOpacity;
@@ -270,7 +290,11 @@ namespace AZ
             DecalNotificationBus::Event(m_entityId, &DecalNotifications::OnOpacityChanged, m_configuration.m_opacity);
             if (m_featureProcessor)
             {
+                #if defined(CARBONATED)
+                m_featureProcessor->SetDecalOpacity(m_handle, mIsHidden ? 0.0f : m_configuration.m_opacity);
+                #else
                 m_featureProcessor->SetDecalOpacity(m_handle, m_configuration.m_opacity);
+                #endif
             }
         }
 
