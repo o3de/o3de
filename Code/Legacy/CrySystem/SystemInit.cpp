@@ -1193,6 +1193,26 @@ static AZStd::string ConcatPath(const char* szPart1, const char* szPart2)
     return ret;
 }
 
+#if defined(CARBONATED)
+static void cvar_OnAssertLevelCvarChanged(const int& assertLevel)
+{
+    CSystem::SetAssertLevel(assertLevel);
+}
+
+AZ_CVAR(
+    int,
+    sys_asserts,
+    1,
+    cvar_OnAssertLevelCvarChanged,
+    AZ::ConsoleFunctorFlags::IsCheat,
+    "0 = Suppress Asserts\n"
+    "1 = Log Asserts\n"
+    "2 = Show Assert Dialog\n"
+    "3 = Crashes the Application on Assert\n"
+    "Note: when set to '0 = Suppress Asserts', assert expressions are still evaluated. To turn asserts into a no-op, undefine "
+    "AZ_ENABLE_TRACING and recompile.");
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 void CSystem::CreateSystemVars()
 {
@@ -1433,6 +1453,8 @@ void CSystem::CreateSystemVars()
 
     // adding CVAR to toggle assert verbosity level
     const int defaultAssertValue = 1;
+
+#if !defined(CARBONATED)
     REGISTER_CVAR2_CB(
         "sys_asserts",
         &g_cvars.sys_asserts,
@@ -1445,6 +1467,8 @@ void CSystem::CreateSystemVars()
         "Note: when set to '0 = Suppress Asserts', assert expressions are still evaluated. To turn asserts into a no-op, undefine "
         "AZ_ENABLE_TRACING and recompile.",
         OnAssertLevelCvarChanged);
+#endif
+
     CSystem::SetAssertLevel(defaultAssertValue);
 
     REGISTER_CVAR2(
