@@ -57,6 +57,7 @@ function(ly_setup_python_venv)
         else()
             # Sanity check to make sure the python launcher in the venv works
             execute_process(COMMAND ${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_PYTHON} --version
+                            OUTPUT_QUIET
                             RESULT_VARIABLE command_result)
             if (NOT ${command_result} EQUAL 0)
                 message(STATUS "Error validating python inside the venv. Reinstalling")
