@@ -67,6 +67,7 @@ namespace AZ
      
             bool hasUserFencesToSignal = false;
             RHI::HardwareQueueClass mergedHardwareQueueClass = RHI::HardwareQueueClass::Graphics;
+            int mergedDeviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
             AZ::u32 mergedGroupCost = 0;
             AZ::u32 mergedSwapchainCount = 0;
             AZStd::vector<const Scope*> mergedScopes;
@@ -113,8 +114,11 @@ namespace AZ
                 // Check if we are straddling the boundary of a fence.
                 const bool onFenceBoundaries = (scope.HasWaitFences() || (scopePrev && scopePrev->HasSignalFence())) || hasUserFencesToSignal;
 
+                       // Check if the devices match.
+                const bool deviceMismatch = mergedDeviceIndex != scope.GetDeviceIndex();
+
                 // If we exceeded limits, then flush the group.
-                const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onFenceBoundaries;
+                const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onFenceBoundaries || deviceMismatch;
 
                 if (flushMergedScopes && mergedScopes.size())
                 {
@@ -122,6 +126,7 @@ namespace AZ
                     mergedGroupCost = 0;
                     mergedSwapchainCount = 0;
                     mergedHardwareQueueClass = scope.GetHardwareQueueClass();
+                    mergedDeviceIndex = scope.GetDeviceIndex();
                     FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
                     multiScopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
                 }
