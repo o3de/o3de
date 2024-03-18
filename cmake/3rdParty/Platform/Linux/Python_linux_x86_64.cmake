@@ -39,7 +39,8 @@ find_package(Python ${LY_PYTHON_VERSION_MAJOR_MINOR}
              QUIET)
 
 ly_set(LY_LINK_TO_SHARED_LIBRARY TRUE)
-if (Python_FOUND)}	# If a system python is found, then make sure shared object is ABI compatible with the 3rd party python
+if (Python_FOUND)
+    # If a system python is found, then make sure shared object is ABI compatible with the 3rd party python
     string(SUBSTRING "${Python_SOABI}" 0 11 CHECK_PYTHON_ABI_STRING)
     if ("${CHECK_PYTHON_ABI_STRING}" STREQUAL "cpython-310")
         # If the system python is ABI compatible, then do not create the sym-link
