@@ -16,8 +16,9 @@ namespace AZ::RHI
         m_scope = Factory::Get().CreateScope();
     }
 
-    ScopeProducer::ScopeProducer(const ScopeId& scopeId)
-        : m_scopeId{scopeId}
+    ScopeProducer::ScopeProducer(const ScopeId& scopeId, int deviceIndex)
+        : m_scopeId{ scopeId }
+        , m_deviceIndex{ deviceIndex }
     {
         m_scope = Factory::Get().CreateScope();
         m_scope->Init(scopeId);
@@ -54,9 +55,10 @@ namespace AZ::RHI
         InitScope(scopeId);
     }
 
-    void ScopeProducer::InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass)
+    void ScopeProducer::InitScope(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass, int deviceIndex)
     {
         m_scopeId = scopeId;
+        m_deviceIndex = deviceIndex;
             
         if (m_scope->IsInitialized())
         {

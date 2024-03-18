@@ -95,7 +95,7 @@ namespace AZ::RHI
             {
                 continue;
             }
-            m_rootScopeProducers[deviceIndex].reset(aznew ScopeProducerEmpty(GetRootScopeId(deviceIndex)));
+            m_rootScopeProducers[deviceIndex].reset(aznew ScopeProducerEmpty(GetRootScopeId(deviceIndex), deviceIndex));
             m_rootScopes[deviceIndex] = m_rootScopeProducers[deviceIndex]->GetScope();
         }
 

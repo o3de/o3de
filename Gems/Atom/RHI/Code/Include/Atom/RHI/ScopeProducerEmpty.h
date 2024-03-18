@@ -17,8 +17,8 @@ namespace AZ::RHI
     public:
         AZ_CLASS_ALLOCATOR(ScopeProducerEmpty, SystemAllocator);
 
-        ScopeProducerEmpty(const ScopeId& scopeId)
-            : ScopeProducer(scopeId)
+        ScopeProducerEmpty(const ScopeId& scopeId, int deviceIndex = MultiDevice::InvalidDeviceIndex)
+            : ScopeProducer(scopeId, deviceIndex)
         {}
 
     private:
