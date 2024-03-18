@@ -84,17 +84,7 @@ function(ly_setup_python_venv)
             message(FATAL_ERROR "Error creating a venv")
         endif()
 
-        if (LY_LINK_TO_SHARED_LIBRARY)
-            # Create a symlink to the package's python shared library inside the virtual environments
-            # own lib sub folder to match the original package structure
-            execute_process(COMMAND ln -s -f "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_LIB_PATH}/libpython3.10.so.1.0" libpython3.10.so.1.0
-                            WORKING_DIRECTORY "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_LIB_PATH}"
-                            COMMAND_ECHO STDOUT
-                            RESULT_VARIABLE command_result)
-            if (NOT ${command_result} EQUAL 0)
-                message(WARNING "Unable to createa venv shared library link.")
-            endif()
-        endif()
+        ly_post_python_venv_install(${PYTHON_VENV_PATH})
 
         # Manually install pip into the virtual environment
         message(STATUS "Installing pip into venv at ${PYTHON_VENV_PATH} (${PYTHON_VENV_PATH}/${LY_PYTHON_BIN_PATH})")
