@@ -24,9 +24,7 @@ namespace AssetProcessor
 
     const char ExcludedDependenciesSymbol = ':';
 #if defined(CARBONATED)
-    static constexpr size_t RecursiveDependenciesExtPatternLen = 5;
-    static constexpr const char RecursiveDependenciesExtPattern[RecursiveDependenciesExtPatternLen + 1] = "**/*.";
-    static constexpr const char RecursiveDependenciesPattern[] = "**";
+    constexpr const char RecursiveDependenciesPattern[] = "**";
 #endif
 
     /// Handles resolving and saving product path dependencies
