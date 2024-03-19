@@ -36,7 +36,7 @@ function(ly_post_python_venv_install venv_path)
                     COMMAND_ECHO STDOUT
                     RESULT_VARIABLE command_result)
     if (NOT ${command_result} EQUAL 0)
-        message(WARNING "Unable to createa venv shared library link.")
+        message(WARNING "Unable to create a venv shared library link.")
     endif()
 
 endfunction()
