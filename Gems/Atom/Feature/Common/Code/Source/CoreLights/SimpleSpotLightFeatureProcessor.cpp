@@ -150,25 +150,26 @@ namespace AZ
                     AZStd::unordered_map<AZ::Data::Instance<AZ::RPI::Image>, uint32_t> gobosTextures;
                     m_goboTextures.clear();
 
-                    for (int32_t idx = 0; idx < m_lightData.GetDataCount(); idx++)
-                    {
-                        auto& lightData = m_lightData.GetData<0>(idx);
-                        auto image = m_lightData.GetData<1>(idx).m_goboTexture;
-                        if (image)
+                    m_lightData.ForEach([&](uint16_t idx) -> bool
                         {
-                            if (gobosTextures.find(image) == gobosTextures.end())
+                            auto& lightData = m_lightData.GetData<0>(idx);
+                            auto image = m_lightData.GetData<1>(idx).m_goboTexture;
+                            if (image)
                             {
-                                uint32_t index = aznumeric_cast<uint32_t>(gobosTextures.size());
-                                gobosTextures[image] = index;
-                                m_goboTextures.push_back(image);
+                                if (gobosTextures.find(image) == gobosTextures.end())
+                                {
+                                    uint32_t index = aznumeric_cast<uint32_t>(gobosTextures.size());
+                                    gobosTextures[image] = index;
+                                    m_goboTextures.push_back(image);
+                                }
+                                lightData.m_goboTextureIndex = gobosTextures[image];
                             }
-                            lightData.m_goboTextureIndex = gobosTextures[image];
-                        }
-                        else
-                        {
-                            lightData.m_goboTextureIndex = MaxGoboTextureCount;
-                        }
-                    }
+                            else
+                            {
+                                lightData.m_goboTextureIndex = MaxGoboTextureCount;
+                            }
+                            return true; // continue to next light
+                        });
 
                     m_goboArrayChanged = false;
                 }
@@ -185,21 +186,22 @@ namespace AZ
                 AZStd::vector<MeshCommon::BoundsVariant> lightsWithShadow;
                 AZStd::vector<MeshCommon::BoundsVariant> lightsWithoutShadow;
 
-                for (int32_t idx = 0; idx < m_lightData.GetDataCount(); idx++)
-                {
-                    const auto& lightData = m_lightData.GetData<0>(idx);
-                    const auto& extraData = m_lightData.GetData<1>(idx);
+                m_lightData.ForEach([&](uint16_t idx) -> bool
+                    {
+                        const auto& lightData = m_lightData.GetData<0>(idx);
+                        const auto& extraData = m_lightData.GetData<1>(idx);
 
-                    SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(lightData.m_shadowIndex);
-                    if (shadowId.IsValid())
-                    {
-                        lightsWithShadow.push_back(extraData.m_boundsVariant);
-                    }
-                    else
-                    {
-                        lightsWithoutShadow.push_back(extraData.m_boundsVariant);
-                    }
-                }
+                        SpotLightUtils::ShadowId shadowId = SpotLightUtils::ShadowId(lightData.m_shadowIndex);
+                        if (shadowId.IsValid())
+                        {
+                            lightsWithShadow.push_back(extraData.m_boundsVariant);
+                        }
+                        else
+                        {
+                            lightsWithoutShadow.push_back(extraData.m_boundsVariant);
+                        }
+                        return true; // continue to next light
+                    });
 
                 MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(lightsWithoutShadow), lightOnly);
                 MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(lightsWithShadow), lightAndShadow);
