@@ -33,20 +33,10 @@ namespace AzToolsFramework::EmbeddedPython
         #error "PYTHON_SHARED_LIBRARY_PATH is not defined"
         #endif
 
-        // Construct the path to the shared python library within the venv folder
-        AZ::IO::FixedMaxPath engineRoot = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath());
-        AZ::IO::FixedMaxPath thirdPartyRoot = PythonLoader::GetDefault3rdPartyPath(false);
-        AZ::IO::FixedMaxPath pythonVenvPath = PythonLoader::GetPythonVenvPath(thirdPartyRoot, engineRoot);
+        m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(libPythonName.c_str(), false);
+        bool loadResult = m_embeddedLibPythonModuleHandle->Load(false, true);
+        AZ_Error("PythonLoader", loadResult, "Failed to load %s.\n", libPythonName.StringAsPosix().c_str());
 
-        AZ::IO::PathView libPythonName = AZ::IO::PathView(PYTHON_SHARED_LIBRARY_PATH).Filename();
-        AZ::IO::FixedMaxPath pythonVenvLibPath = pythonVenvPath / "lib" / libPythonName;
-
-        if (AZ::IO::SystemFile::Exists(pythonVenvLibPath.StringAsPosix().c_str()))
-        {
-            m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(pythonVenvLibPath.StringAsPosix().c_str(), false);
-            bool loadResult = m_embeddedLibPythonModuleHandle->Load(false, true);
-            AZ_Error("PythonLoader", loadResult, "Failed to load %s.\n", libPythonName.StringAsPosix().c_str());
-        }
         #endif // AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
     }
 
