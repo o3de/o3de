@@ -44,6 +44,10 @@ namespace AZ
             {
                 m_flags.m_bindViewSrg = true;
             }
+            if (passData && passData->m_deviceIndex > 0 && passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
+            {
+                m_deviceIndex = passData->m_deviceIndex;
+            }
         }
 
         RenderPass::~RenderPass()
@@ -191,7 +195,7 @@ namespace AZ
             m_timestampResult = AZ::RPI::TimestampResult();
             if (GetScopeId().IsEmpty())
             {
-                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass);
+                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, m_deviceIndex);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
