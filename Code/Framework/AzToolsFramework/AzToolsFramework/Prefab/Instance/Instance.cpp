@@ -18,6 +18,8 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -947,8 +949,22 @@ namespace AzToolsFramework
 
         void Instance::SetCachedInstanceDom(PrefabDomValueConstReference instanceDom)
         {
-            m_cachedInstanceDom = PrefabDom(); // force a flush of memory by clearing first.
-            m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
+            // force a flush of memory by clearing first if cache isn't empty.
+            if (!m_cachedInstanceDom.IsNull())
+            {
+                m_cachedInstanceDom = PrefabDom(); 
+            }
+
+            // Only store the cached instance dom if m_doesCacheDom is set.
+            if (m_isDomCachingEnabled)
+            {
+                m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
+            }
+        }
+
+        void Instance::EnableDomCaching(bool enableDomCaching)
+        {
+            m_isDomCachingEnabled = enableDomCaching;
         }
     }
 } // namespace AzToolsFramework

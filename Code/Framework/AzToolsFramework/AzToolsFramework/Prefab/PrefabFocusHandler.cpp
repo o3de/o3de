@@ -287,6 +287,10 @@ namespace AzToolsFramework::Prefab
         m_rootAliasFocusPath = focusedInstance->get().GetAbsoluteInstanceAliasPath();
         m_rootAliasFocusPathLength = aznumeric_cast<int>(AZStd::distance(m_rootAliasFocusPath.begin(), m_rootAliasFocusPath.end()));
 
+        // Unset the DOM caching for previous focus and enabled it in new focus to optimize editing.
+        previousFocusedInstance->get().EnableDomCaching(false);
+        focusedInstance->get().EnableDomCaching(true);
+
         // Focus on the container entity in the Editor, if the interface is initialized.
         if (m_focusModeInterface)
         {

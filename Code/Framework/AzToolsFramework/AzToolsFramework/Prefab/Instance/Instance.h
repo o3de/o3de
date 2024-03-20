@@ -315,10 +315,12 @@ namespace AzToolsFramework
             //! @}
 
             //! Getter and setter for cached instance DOM.
+            //! Note that caching the DOM is disabled by default and needs to be enabled per instance.
             //! @{
             PrefabDomConstReference GetCachedInstanceDom() const;
             PrefabDomReference GetCachedInstanceDom();
             void SetCachedInstanceDom(PrefabDomValueConstReference instanceDom);
+            void EnableDomCaching(bool enableDomCaching);
             //! @}
 
         private:
@@ -408,6 +410,9 @@ namespace AzToolsFramework
 
             // Defines entity id and instance relationship. The default relationship is one-to-one.
             EntityIdInstanceRelationship m_entityIdInstanceRelationship = DefaultEntityIdInstanceRelationship;
+
+            // Whether the instance should store a cache of its DOM or not.
+            bool m_isDomCachingEnabled = false;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework
