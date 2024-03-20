@@ -110,6 +110,10 @@ namespace AZ::IO
         virtual bool ClosePacks(AZStd::string_view pWildcard) = 0;
         //returns if a archive exists matching the wildcard
         virtual bool FindPacks(AZStd::string_view pWildcardIn) = 0;
+#if defined(CARBONATED)
+        // returns if a pak has already been opened
+        virtual bool IsPackOpen(AZStd::string_view pName) = 0;
+#endif
 
         // Set access status of a archive files with a wildcard
         virtual bool SetPacksAccessible(bool bAccessible, AZStd::string_view pWildcard) = 0;

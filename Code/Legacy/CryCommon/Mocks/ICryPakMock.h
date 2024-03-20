@@ -30,6 +30,9 @@ struct CryPakMock
     MOCK_METHOD1(ClosePack, bool(AZStd::string_view pName));
     MOCK_METHOD1(ClosePacks, bool(AZStd::string_view pWildcard));
     MOCK_METHOD1(FindPacks, bool(AZStd::string_view pWildcardIn));
+#if defined(CARBONATED)
+    MOCK_METHOD1(IsPackOpen, bool(AZStd::string_view pName));
+#endif
     MOCK_METHOD2(SetPacksAccessible, bool(bool bAccessible, AZStd::string_view pWildcard));
     MOCK_METHOD2(SetPackAccessible, bool(bool bAccessible, AZStd::string_view pName));
     MOCK_METHOD1(SetLocalizationFolder, void(AZStd::string_view sLocalizationFolder));
