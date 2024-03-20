@@ -9,6 +9,13 @@
             },
             "platformFlags": 255,
             "pathHint": "certificates/aws/cacert.pem"
+        },
+        {
+            "assetId": {
+                "guid": "{BE86AA04-4998-5AB7-A665-B0C5E7AA16CC}"
+            },
+            "platformFlags": 255,
+            "pathHint": "resource_mapping_schema.json"
         }
     ]
 }
