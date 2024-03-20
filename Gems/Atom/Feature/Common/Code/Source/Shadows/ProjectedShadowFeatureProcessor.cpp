@@ -28,6 +28,39 @@
 
 namespace AZ::Render
 {
+    namespace
+    {
+        AZ_CVAR(
+            bool,
+            r_cullShadowmapOutsideViewFrustum,
+            true,
+            nullptr,
+            AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
+            "If set, enables filtering of shadow maps that are outside of the view frustum.");
+
+        bool IsShadowmapCullingEnabled()
+        {
+            bool cullShadowmapOutsideViewFrustum = true;
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get())
+            {
+                console->GetCvarValue("r_cullShadowmapOutsideViewFrustum", cullShadowmapOutsideViewFrustum);
+            }
+            return cullShadowmapOutsideViewFrustum;
+        }
+
+        bool IsLightInsideAnyViewFrustum(AZStd::span<AZ::Frustum> viewFrustums, const AZ::Vector3& lightPosition, float attenuationRadius)
+        {
+            return std::any_of(
+                viewFrustums.begin(),
+                viewFrustums.end(),
+                [lightPosition, attenuationRadius](const AZ::Frustum& viewFrustum)
+                {
+                    return viewFrustum.IntersectSphere(lightPosition, attenuationRadius) != AZ::IntersectResult::Exterior;
+                });
+        }
+
+    } // namespace
+
     void ProjectedShadowFeatureProcessor::Reflect(ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -631,23 +664,41 @@ namespace AZ::Render
             }
         }
     }
-    
-    void ProjectedShadowFeatureProcessor::PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<RPI::PipelineViewTag, RPI::ViewPtr>>& outViews)
+
+    void ProjectedShadowFeatureProcessor::PrepareViews(
+        const PrepareViewsPacket& prepareViewsPacket, AZStd::vector<AZStd::pair<RPI::PipelineViewTag, RPI::ViewPtr>>& outViews)
     {
         if (m_primaryProjectedShadowmapsPass != nullptr)
         {
             RPI::RenderPipeline* renderPipeline = m_primaryProjectedShadowmapsPass->GetRenderPipeline();
             if (renderPipeline)
             {
+                AZStd::vector<AZ::Frustum> mainViewFrustums;
+                for (const auto& [view, viewTag] : prepareViewsPacket.m_persistentViews)
+                {
+                    AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
+                    mainViewFrustums.push_back(viewFrustum);
+                }
+                bool cullShadowmapOutsideViewFrustum = IsShadowmapCullingEnabled();
+
                 auto& shadowProperties = m_shadowProperties.GetDataVector();
                 for (ShadowProperty& shadowProperty : shadowProperties)
                 {
                     uint16_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
                     const FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowIndex);
-                    if (filterData.m_shadowmapSize == aznumeric_cast<uint32_t>(ShadowmapSize::None))
+                    bool needsRender = filterData.m_shadowmapSize != aznumeric_cast<uint32_t>(ShadowmapSize::None);
+                    if (!needsRender)
                     {
                         continue;
                     }
+                    auto lightPosition = shadowProperty.m_desc.m_transform.GetTranslation();
+                    if (cullShadowmapOutsideViewFrustum &&
+                        !IsLightInsideAnyViewFrustum(mainViewFrustums, lightPosition, shadowProperty.m_desc.m_farPlaneDistance))
+                    {
+                        shadowProperty.m_shadowmapPass->SetEnabled(false);
+                        continue;
+                    }
+                    shadowProperty.m_shadowmapPass->SetEnabled(true);
 
                     const RPI::PipelineViewTag& viewTag = shadowProperty.m_shadowmapPass->GetPipelineViewTag();
                     const RHI::DrawListMask drawListMask = renderPipeline->GetDrawListMask(viewTag);
