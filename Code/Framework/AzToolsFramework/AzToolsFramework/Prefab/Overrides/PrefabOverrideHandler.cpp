@@ -119,17 +119,17 @@
         bool PrefabOverrideHandler::PushOverrideToPrefab(
             const AZ::Dom::Path& path,
             AZStd::string_view relativePath,
-            InstanceOptionalReference instance
+            InstanceOptionalReference targetInstance
         ) const
         {
-            // Retrieve the link between focusedInstance and owningInstance.
-            LinkId linkId = instance->get().GetLinkId();
+            // Retrieve the link between the instance holding the overrides (focused) and the one receiving them (targetInstance).
+            LinkId linkId = targetInstance->get().GetLinkId();
             LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
 
             // Start an undo batch.
             ScopedUndoBatch undoBatch("Apply Overrides to Prefab");
 
-            // Remove Overrides in sourceLink.
+            // Remove Overrides in the link.
             PrefabOverridePrefixTree subTree = link->get().RemoveOverrides(path);
             if (subTree.IsEmpty())
             {
@@ -140,7 +140,7 @@
             // Visit all nodes to apply patches as edits one by one, with the correct path.
             subTree.VisitPath(
                 AZ::Dom::Path(""),
-                [&undoBatch, &instance, relativePath](
+                [&undoBatch, &targetInstance, relativePath](
                     [[maybe_unused]] const AZ::Dom::Path& path, [[maybe_unused]] Link::PrefabOverrideMetadata& metaData) -> bool
                 {
                     const auto& overridePath = metaData.m_patch.FindMember("path")->value;
@@ -151,9 +151,10 @@
                         overridePathStr = overridePathStr.substr(relativePath.length());
                     }
 
+                    // Apply individual overrides to target prefab template.
                     PrefabUndoComponentPropertyEdit* state = aznew PrefabUndoComponentPropertyEdit("Apply Override");
                     state->SetParent(undoBatch.GetUndoBatch());
-                    state->Capture(instance->get(), AZ::Dom::Path(overridePathStr).ToString(), metaData.m_patch.FindMember("value")->value);
+                    state->Capture(targetInstance->get(), AZ::Dom::Path(overridePathStr).ToString(), metaData.m_patch.FindMember("value")->value);
                     state->Redo();
 
                     return true;
@@ -181,11 +182,11 @@
             LinkId targetLinkId
         ) const
         {
-            // Retrieve nodes.
+            // Retrieve link.
             LinkReference sourceLink = m_prefabSystemComponentInterface->FindLink(sourceLinkId);
             LinkReference targetLink = m_prefabSystemComponentInterface->FindLink(targetLinkId);
 
-            // Remove relativePath from pathStr.
+            // Remove relativePath from pathStr so that the patches from sourceLink can be applied to targetLink.
             AZStd::string pathStr = path.ToString();
             if (pathStr.starts_with(relativePath))
             {
