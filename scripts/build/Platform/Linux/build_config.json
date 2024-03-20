@@ -537,7 +537,7 @@
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
       "CDK_VERSION": "2.68.0",
-      "PYTHON_RUNTIME": "python-3.10.5-rev2-linux"
+      "PYTHON_RUNTIME": "python-3.10.13-rev1-linux"
     }
   },
   "awsi_destruction": {
@@ -549,7 +549,7 @@
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
       "CDK_VERSION": "2.68.0",
-      "PYTHON_RUNTIME": "python-3.10.5-rev2-linux"
+      "PYTHON_RUNTIME": "python-3.10.13-rev1-linux"
     }
   }
 }

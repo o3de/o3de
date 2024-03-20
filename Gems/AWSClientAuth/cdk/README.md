@@ -21,7 +21,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 This project is set up like a standard Python project. You can use either a [python virtual environment](https://docs.aws.amazon.com/cdk/v2/guide/work-with-cdk-python.html) or use python interpreter from O3DE to setup python dependencies ie:
 ```
-set PATH="..\..\..\python\runtime\python-3.10.5-rev1-windows\python\";%PATH%
+set PATH="..\..\..\python";%PATH%
 ```
 
 Once the python and pip are set up, you can install the required dependencies. To setup with O3DE's python interpreter use:

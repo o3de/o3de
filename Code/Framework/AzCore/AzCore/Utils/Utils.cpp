@@ -15,6 +15,7 @@
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -408,6 +409,23 @@ namespace AZ::Utils
         // Resize again just in case bytesRead is less than length for some reason
         fileContent.resize_no_construct(bytesRead);
         return AZ::Success(AZStd::move(fileContent));
+    }
+
+    AZ::Outcome<AZStd::string, AZStd::string> Get3rdPartyDirectory(AZ::SettingsRegistryInterface* settingsRegistry /*= nullptr*/)
+    {
+        // Locate the manifest file
+        auto manifestPath = GetO3deManifestPath(settingsRegistry);
+
+        auto readJsonDocOutput = AZ::JsonSerializationUtils::ReadJsonFile(manifestPath);
+        if (!readJsonDocOutput.IsSuccess())
+        {
+            return AZ::Failure(readJsonDocOutput.GetError());
+        }
+
+        rapidjson::Document configurationFile = readJsonDocOutput.TakeValue();
+
+        auto thirdPartyFolder = configurationFile["default_third_party_folder"].GetString();
+        return AZ::Success(thirdPartyFolder);
     }
 
     template AZ::Outcome<AZStd::string, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);

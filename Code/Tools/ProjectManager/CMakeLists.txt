@@ -67,6 +67,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzQtComponents
+            AZ::AzToolsFramework
             AZ::ProjectManager.Static
 )
 
@@ -94,6 +95,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFrameworkTestShared
                 AZ::AzQtComponents
                 AZ::ProjectManager.Static
+                AZ::AzToolsFramework
     )
 
     ly_add_googletest(
