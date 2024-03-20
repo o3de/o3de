@@ -10,6 +10,7 @@
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverrideHandler.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoApplyOverrides.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoRevertOverrides.h>
 
 #include <AzCore/DOM/DomPrefixTree.h>
@@ -182,7 +183,6 @@
             LinkId targetLinkId
         ) const
         {
-            // TODO - Change this so that it can be undone.
             // TODO - We're only ever pushing from a parent link to a child link, could we just pass one?
 
             // Retrieve nodes.
@@ -246,13 +246,19 @@
 
                     return true;
                 },
-                AZ::Dom::PrefixTreeTraversalFlags::None
-            );
+                AZ::Dom::PrefixTreeTraversalFlags::None);
 
-            // Add Overrides to targetLink
-            AZ::Dom::Path newPath;
-            newPath.FromString(pathStr);
-            targetLink->get().AddOverrides(newPath, AZStd::move(newOverrides));
+            // Create node for overrides reversal on source link so that they get restored on undo.
+            PrefabUndoRevertOverrides* sourceState = new Prefab::PrefabUndoRevertOverrides("Capture Override SubTree");
+            sourceState->Capture(path, AZStd::move(subTree), sourceLinkId);
+            sourceState->SetParent(undoBatch.GetUndoBatch());
+
+            // Create node for overrides addition on target link so that they get removed on undo.
+            PrefabUndoApplyOverrides* targetState = new Prefab::PrefabUndoApplyOverrides("Apply Overrides");
+            targetState->Capture(path, AZStd::move(newOverrides), targetLinkId);
+            targetState->SetParent(undoBatch.GetUndoBatch());
+
+            targetState->Redo();
 
             sourceLink->get().UpdateTarget();
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(sourceLink->get().GetTargetTemplateId(), true);
