@@ -6,18 +6,14 @@
  *
  */
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverrideHandler.h>
+
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoApplyOverrides.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoRevertOverrides.h>
-
-#include <AzCore/DOM/DomPrefixTree.h>
-#include <AzCore/std/string/string_view.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoComponentPropertyEdit.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoRevertOverrides.h>
 
  namespace AzToolsFramework
 {
