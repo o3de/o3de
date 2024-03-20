@@ -35,6 +35,9 @@ namespace AZ
             /// Fence to signal after execution of commands
             AZStd::vector<RHI::Ptr<Fence>> m_fencesToSignal;
 
+            /// Fence to wait for before execution of command
+            AZStd::vector<RHI::Ptr<Fence>> m_fencesToWaitFor;
+
             /// Debug label to insert during work execution
             AZStd::string m_debugLabel;
         };

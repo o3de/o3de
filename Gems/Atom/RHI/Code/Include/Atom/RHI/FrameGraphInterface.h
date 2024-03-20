@@ -208,7 +208,13 @@ namespace AZ::RHI
         {
             m_frameGraph.SignalFence(fence);
         }
-            
+
+        //! Requests that the provided fence be waited for before the scope has started.
+        void WaitFence(Fence& fence)
+        {
+            m_frameGraph.WaitFence(fence);
+        }
+
         //! Sets the number of work items (Draw / Dispatch / etc) that will be processed by
         //! this scope. This value is used to load-balance the scope across command lists. A small
         //! value may result in the scope being merged onto a single command list, whereas a large

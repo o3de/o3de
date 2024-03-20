@@ -168,6 +168,15 @@ namespace AZ
         AZ::Outcome<Container, AZStd::string> ReadFile(
             AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
 
+
+        //! Retrieves the full path where the 3rd Party path is configured to based on the value of 'default_third_party_folder'
+        //! in the o3de manifest file (o3de_manifest.json)
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup of the manifest file to base the lookup from
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        //! Returns the outcome of the request, the configured 3rd Party path if successful, the error message if not.
+        AZ::Outcome<AZStd::string, AZStd::string> Get3rdPartyDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+
         //! error code value returned when GetEnv fails
         enum class GetEnvErrorCode
         {

@@ -169,6 +169,7 @@ set(FILES
     PropertyIntSpinCtrlTests.cpp
     PropertyTreeEditorTests.cpp
     PythonBindingTests.cpp
+    PythonLoaderTests.cpp
     QtWidgetLimitsTests.cpp
     Script/LuaEditorSystemComponentTests.cpp
     Script/ScriptComponentTests.cpp

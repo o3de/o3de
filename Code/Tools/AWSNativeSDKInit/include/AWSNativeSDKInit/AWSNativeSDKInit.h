@@ -54,7 +54,7 @@ namespace AWSNativeSDKInit
         //! Note: This is a helper function for managing the environment variable, AWS_EC2_METADATA_DISABLED, but impacts just the current application's environment.
         //! @param force If true, always set AWS_EC2_METADATA_DISABLED to true, otherwise only set if environment variable is not set.
         //! @returns True if env var was set or currently prevents calls, False otherwise 
-        static bool PreventAwsEC2MetadataCalls(bool force);
+        static bool PreventAwsEC2MetadataCalls(bool force = false);
 
     private:    
         void InitializeAwsApiInternal();

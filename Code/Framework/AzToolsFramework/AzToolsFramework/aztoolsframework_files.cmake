@@ -90,6 +90,7 @@ set(FILES
     API/EntityCompositionNotificationBus.h
     API/EditorViewportIconDisplayInterface.h
     API/PythonLoader.h
+    API/PythonLoader.cpp
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     Application/Ticker.h

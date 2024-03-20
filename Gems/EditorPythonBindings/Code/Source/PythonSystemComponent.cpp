@@ -16,6 +16,7 @@
 #include <pybind11/eval.h>
 #include <osdefs.h> // for DELIM
 
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -38,13 +39,7 @@
 
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonScriptNotificationsBus.h>
-
-namespace Platform
-{
-    // Implemented in each different platform's implementation files, as it differs per platform.
-    bool InsertPythonBinaryLibraryPaths(AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot);
-    AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot);
-}
+#include <AzToolsFramework/API/PythonLoader.h>
 
 // this is called the first time a Python script contains "import azlmbr"
 PYBIND11_EMBEDDED_MODULE(azlmbr, m)
@@ -494,19 +489,31 @@ namespace EditorPythonBindings
         };
 
         // The discovery order will be:
-        //   1 - engine-root/EngineAsets
-        //   2 - gems
-        //   3 - project
-        //   4 - user(dev)
+        //   1 - The python venv site-packages
+        //   2 - engine-root/EngineAsets
+        //   3 - gems
+        //   4 - project
+        //   5 - user(dev)
 
-        // 1 - engine
+        // 1 - The python venv site-packages
+        AZ::IO::FixedMaxPath thirdPartyFolder = AzToolsFramework::EmbeddedPython::PythonLoader::GetDefault3rdPartyPath(false);
+
+        AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(
+            thirdPartyFolder,
+            AZ::Utils::GetEnginePath().c_str(),
+            [&pythonPathStack](AZ::IO::PathView path)
+            {
+                pythonPathStack.emplace_back(path.Native());
+            });
+
+        // 2 - engine
         AZ::IO::FixedMaxPath engineRoot;
         if (settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder); !engineRoot.empty())
         {
             resolveScriptPath((engineRoot / "Assets").Native());
         }
 
-        // 2 - gems
+        // 3 - gems
         AZStd::vector<AZ::IO::Path> gemSourcePaths;
         auto AppendGemPaths = [&gemSourcePaths](AZStd::string_view, AZStd::string_view gemPath)
         {
@@ -519,10 +526,10 @@ namespace EditorPythonBindings
             resolveScriptPath(gemSourcePath.Native());
         }
 
-        // 3 - project
+        // 4 - project
         resolveScriptPath(AZStd::string_view{ projectPath });
 
-        // 4 - user
+        // 5 - user
         AZStd::string assetsType;
         AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetsType,
             AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::Assets);
@@ -559,7 +566,7 @@ namespace EditorPythonBindings
         AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
         // set PYTHON_HOME
-        AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, engineRoot.c_str());
+        AZStd::string pyBasePath = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonHomePath(engineRoot.c_str()).StringAsPosix();
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
             AZ_Warning("python", false, "Python home path must exist! path:%s", pyBasePath.c_str());

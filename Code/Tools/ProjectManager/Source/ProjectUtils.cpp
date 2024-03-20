@@ -8,6 +8,7 @@
 
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>
+#include <ProjectManager_Traits_Platform.h>
 #include <PythonBindingsInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
@@ -715,6 +716,15 @@ namespace O3DE::ProjectManager
             }
 
             return AZ::Success(QString(projectBuildPath.c_str()));
+        }
+
+        QString GetPythonExecutablePath(const QString& enginePath)
+        {
+            // append lib path to Python paths
+            AZ::IO::FixedMaxPath libPath = enginePath.toUtf8().constData();
+            libPath /= AZ::IO::FixedMaxPathString(AZ_TRAIT_PROJECT_MANAGER_PYTHON_EXECUTABLE_SUBPATH);
+            libPath = libPath.LexicallyNormal();
+            return QString(libPath.String().c_str());
         }
 
         QString GetDefaultProjectPath()

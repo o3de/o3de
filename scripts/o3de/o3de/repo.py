@@ -278,6 +278,9 @@ def get_object_json_data_from_cached_repo(repo_uri: str, repo_key: str, object_t
 
         # attempt to download the missing repo.json
         cache_file = download_repo_manifest(url)
+        if not cache_file:
+            logger.error(f'Could not download the repository json file from {repo_uri}')
+            return list()
         file_name = pathlib.Path(cache_file).resolve()
         if not file_name.is_file():
             logger.error(f'Could not download the repository json file from {repo_uri}')
