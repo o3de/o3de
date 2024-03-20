@@ -1006,6 +1006,9 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 #else
         if (g_cvars.sys_asserts == 2)
 #endif
+        {
+            gEnv->bNoAssertDialog = true;
+        }
 
         LogBuildInfo();
 

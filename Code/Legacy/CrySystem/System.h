@@ -149,8 +149,8 @@ public:
 
     static void OnLanguageCVarChanged(ICVar* language);
     static void OnLocalizationFolderCVarChanged(ICVar* const pLocalizationFolder);
-    // adding CVAR to toggle assert verbosity level
 #if !defined(CARBONATED)
+    // adding CVAR to toggle assert verbosity level
     static void OnAssertLevelCvarChanged(ICVar* pArgs);
 #endif
     static void SetAssertLevel(int _assertlevel);
