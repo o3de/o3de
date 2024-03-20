@@ -122,8 +122,6 @@
             InstanceOptionalReference instance
         ) const
         {
-            // TODO - Can we retrieve the instance from the link so that the link is passed, and the API is similar?
-
             // Retrieve the link between focusedInstance and owningInstance.
             LinkId linkId = instance->get().GetLinkId();
             LinkReference link = m_prefabSystemComponentInterface->FindLink(linkId);
@@ -183,8 +181,6 @@
             LinkId targetLinkId
         ) const
         {
-            // TODO - We're only ever pushing from a parent link to a child link, could we just pass one?
-
             // Retrieve nodes.
             LinkReference sourceLink = m_prefabSystemComponentInterface->FindLink(sourceLinkId);
             LinkReference targetLink = m_prefabSystemComponentInterface->FindLink(targetLinkId);
@@ -246,7 +242,8 @@
 
                     return true;
                 },
-                AZ::Dom::PrefixTreeTraversalFlags::None);
+                AZ::Dom::PrefixTreeTraversalFlags::None
+            );
 
             // Create node for overrides reversal on source link so that they get restored on undo.
             PrefabUndoRevertOverrides* sourceState = new Prefab::PrefabUndoRevertOverrides("Capture Override SubTree");
