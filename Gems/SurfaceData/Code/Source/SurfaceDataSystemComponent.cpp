@@ -61,10 +61,23 @@ namespace SurfaceData
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
                 ->Event(
                     "GetSurfacePoints",
-                    [](SurfaceData::SurfaceDataSystem* handler, const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags) -> SurfaceData::SurfacePointList
+                    [](SurfaceData::SurfaceDataSystem* handler, const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags) -> AZStd::vector<AzFramework::SurfaceData::SurfacePoint>
                     {
-                        SurfaceData::SurfacePointList result;
-                        handler->GetSurfacePoints(inPosition, desiredTags, result);
+                        AZStd::vector<AzFramework::SurfaceData::SurfacePoint> result;
+                        SurfaceData::SurfacePointList surfacePointList;
+                        handler->GetSurfacePoints(inPosition, desiredTags, surfacePointList);
+                        surfacePointList.EnumeratePoints(
+                        [&result](
+                            [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks)-> bool
+                        {
+                            AzFramework::SurfaceData::SurfacePoint point;
+                            point.m_position = position;
+                            point.m_normal = normal;
+                            point.m_surfaceTags = masks.GetSurfaceTagWeightList();
+
+                            result.emplace_back(point);
+                            return true;
+                        });
                         return result;
                     })
                 ->Event("RefreshSurfaceData", &SurfaceDataSystemRequestBus::Events::RefreshSurfaceData)
