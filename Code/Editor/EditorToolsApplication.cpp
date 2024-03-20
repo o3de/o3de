@@ -227,14 +227,16 @@ namespace EditorInternal
         return OpenLevel(levelName);
     }
 
-    int EditorToolsApplication::CreateLevel(AZStd::string_view levelName, bool /*bUseTerrain*/)
+    int EditorToolsApplication::CreateLevel(AZStd::string_view templateName, AZStd::string_view levelName, bool /*bUseTerrain*/)
     {
         // Clang warns about a temporary being created in a function's argument list, so fullyQualifiedLevelName before the call
         QString fullyQualifiedLevelName;
-        return CCryEditApp::instance()->CreateLevel(QString::fromUtf8(levelName.data(), static_cast<int>(levelName.size())), fullyQualifiedLevelName);
+        return CCryEditApp::instance()->CreateLevel(QString::fromUtf8(templateName.data(), static_cast<int>(templateName.size())),
+                                                    QString::fromUtf8(levelName.data(), static_cast<int>(levelName.size())),
+                                                    fullyQualifiedLevelName);
     }
 
-    int EditorToolsApplication::CreateLevelNoPrompt(AZStd::string_view levelName, int /*terrainExportTextureSize*/, bool /*useTerrain*/)
+    int EditorToolsApplication::CreateLevelNoPrompt(AZStd::string_view templateName, AZStd::string_view levelName, int /*terrainExportTextureSize*/, bool /*useTerrain*/)
     {
         // If a level was open, ignore any unsaved changes if it had been modified
         if (GetIEditor()->IsLevelLoaded())
@@ -244,7 +246,9 @@ namespace EditorInternal
 
         // Clang warns about a temporary being created in a function's argument list, so fullyQualifiedLevelName before the call
         QString fullyQualifiedLevelName;
-        return CCryEditApp::instance()->CreateLevel(QString::fromUtf8(levelName.data(), static_cast<int>(levelName.size())), fullyQualifiedLevelName);
+        return CCryEditApp::instance()->CreateLevel(QString::fromUtf8(templateName.data(), static_cast<int>(templateName.size())),
+                                                    QString::fromUtf8(levelName.data(), static_cast<int>(levelName.size())),
+                                                    fullyQualifiedLevelName);
     }
 
     AZStd::string EditorToolsApplication::GetCurrentLevelName() const

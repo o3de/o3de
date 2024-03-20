@@ -178,13 +178,13 @@ namespace
         return false;
     }
 
-    int PyCreateLevel(const char* levelName, [[maybe_unused]] int resolution, [[maybe_unused]] int unitSize, [[maybe_unused]] bool bUseTerrain)
+    int PyCreateLevel(const char* templateName, const char* levelName, [[maybe_unused]] int resolution, [[maybe_unused]] int unitSize, [[maybe_unused]] bool bUseTerrain)
     {
         QString qualifiedName;
-        return CCryEditApp::instance()->CreateLevel(levelName, qualifiedName);
+        return CCryEditApp::instance()->CreateLevel(templateName, levelName, qualifiedName);
     }
 
-    int PyCreateLevelNoPrompt(const char* levelName, [[maybe_unused]] int heightmapResolution, [[maybe_unused]] int heightmapUnitSize,
+    int PyCreateLevelNoPrompt(const char* templateName, const char* levelName, [[maybe_unused]] int heightmapResolution, [[maybe_unused]] int heightmapUnitSize,
         [[maybe_unused]] int terrainExportTextureSize, [[maybe_unused]] bool useTerrain)
     {
         // If a level was open, ignore any unsaved changes if it had been modified
@@ -194,7 +194,7 @@ namespace
         }
 
         QString qualifiedName;
-        return CCryEditApp::instance()->CreateLevel(levelName, qualifiedName);
+        return CCryEditApp::instance()->CreateLevel(templateName, levelName, qualifiedName);
     }
 
     const char* PyGetCurrentLevelName()
@@ -407,8 +407,8 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("open_level", ::PyOpenLevel, nullptr, "Opens a level."));
             addLegacyGeneral(behaviorContext->Method("open_level_no_prompt", ::PyOpenLevelNoPrompt, nullptr, "Opens a level. Doesn't prompt user about saving a modified level."));
             addLegacyGeneral(behaviorContext->Method("reload_current_level", ::PyReloadCurrentLevel, nullptr, "Re-loads the current level. If no level is loaded, then does nothing."));
-            addLegacyGeneral(behaviorContext->Method("create_level", ::PyCreateLevel, nullptr, "Creates a level with the parameters of 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
-            addLegacyGeneral(behaviorContext->Method("create_level_no_prompt", ::PyCreateLevelNoPrompt, nullptr, "Creates a level with the parameters of 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
+            addLegacyGeneral(behaviorContext->Method("create_level", ::PyCreateLevel, nullptr, "Creates a level with the parameters of 'templateName', 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
+            addLegacyGeneral(behaviorContext->Method("create_level_no_prompt", ::PyCreateLevelNoPrompt, nullptr, "Creates a level with the parameters of 'templateName','levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
             addLegacyGeneral(behaviorContext->Method("get_game_folder", PyGetGameFolderAsString, nullptr, "Gets the path to the Game folder of current project."));
             addLegacyGeneral(behaviorContext->Method("get_build_folder", PyGetBuildFolderAsString, nullptr, "Gets the build folder path of current project."));
             addLegacyGeneral(behaviorContext->Method("get_current_level_name", PyGetCurrentLevelName, nullptr, "Gets the name of the current level."));

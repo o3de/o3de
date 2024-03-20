@@ -62,8 +62,8 @@ namespace EditorInternal
         bool OpenLevel(AZStd::string_view levelName) override;
         bool OpenLevelNoPrompt(AZStd::string_view levelName) override;
 
-        int CreateLevel(AZStd::string_view levelName, bool bUseTerrain) override;
-        int CreateLevelNoPrompt(AZStd::string_view levelName, int terrainExportTextureSize, bool useTerrain) override;
+        int CreateLevel(AZStd::string_view templateName, AZStd::string_view levelName, bool bUseTerrain) override;
+        int CreateLevelNoPrompt(AZStd::string_view templateName, AZStd::string_view levelName, int terrainExportTextureSize, bool useTerrain) override;
 
         void Exit() override;
         void ExitNoPrompt() override;
