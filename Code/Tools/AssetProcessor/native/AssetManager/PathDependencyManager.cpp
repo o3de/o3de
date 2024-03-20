@@ -511,6 +511,10 @@ namespace AssetProcessor
 
             bool isExcludedDependency = dependencyPathSearch.starts_with(ExcludedDependenciesSymbol);
             dependencyPathSearch = isExcludedDependency ? dependencyPathSearch.substr(1) : dependencyPathSearch;
+#if defined(CARBONATED)
+            bool isRecursiveDependency = dependencyPathSearch.ends_with(RecursiveDependenciesPattern);
+            dependencyPathSearch = isRecursiveDependency ? dependencyPathSearch.substr(0, dependencyPathSearch.length() - 1) : dependencyPathSearch;
+#endif
             // The database uses % for wildcards, both path based searching uses *, so keep a copy of the path with the * wildcard for later
             // use.
             AZStd::string pathWildcardSearchPath(dependencyPathSearch);
@@ -562,7 +566,11 @@ namespace AssetProcessor
                             //  2. When another product is created, all existing wildcard dependencies are compared against that product to
                             //  see if it matches them.
                             // This check here makes sure that the filter for 1 matches 2.
+#if defined(CARBONATED)
+                            if (!isExactDependency && isRecursiveDependency)
+#else
                             if (!isExactDependency)
+#endif
                             {
                                 AZ::IO::PathView searchPath(productDatabaseEntry.m_productName);
 
