@@ -566,11 +566,11 @@ namespace AssetProcessor
                             //  2. When another product is created, all existing wildcard dependencies are compared against that product to
                             //  see if it matches them.
                             // This check here makes sure that the filter for 1 matches 2.
-                            if (!isExactDependency
 #if defined(CARBONATED)
-                                && !isRecursiveDependency
+                            if (!isExactDependency && isRecursiveDependency)
+#else
+                            if (!isExactDependency)
 #endif
-                                )
                             {
                                 AZ::IO::PathView searchPath(productDatabaseEntry.m_productName);
 
