@@ -1162,9 +1162,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     }
 
     m_bInitializedSuccessfully = true;
-#if defined(CARBONATED)
-    AZ::Interface<AZ::IConsole>::Get()->PerformCommand("bg_assertDialogReady 1");
-#endif
+
     return true;
 }
 
