@@ -112,7 +112,7 @@
             return true;
         }
 
-        bool PrefabOverrideHandler::PushOverrideToPrefab(
+        bool PrefabOverrideHandler::PushOverridesToPrefab(
             const AZ::Dom::Path& path,
             AZStd::string_view relativePath,
             InstanceOptionalReference targetInstance
@@ -171,7 +171,7 @@
             return true;
         }
 
-        bool PrefabOverrideHandler::PushOverrideToLink(
+        bool PrefabOverrideHandler::PushOverridesToLink(
             const AZ::Dom::Path& path,
             AZStd::string_view relativePath,
             LinkId sourceLinkId,
@@ -206,29 +206,33 @@
             subTree.VisitPath(
                 AZ::Dom::Path(""),
                 [&newOverrides, relativePath](
-                    [[maybe_unused]] const AZ::Dom::Path& path, [[maybe_unused]] Link::PrefabOverrideMetadata& metaData) -> bool
+                    const AZ::Dom::Path& path, Link::PrefabOverrideMetadata& metaData) -> bool
                 {
-                    // Copy the patch.
+                    // Patches in subTree were retrieved from the source link, so they will contain a path property
+                    // with the relative path from source link to the property being overridden.
+                    // Given that we now want to move these to the target path, we should alter the path so that it is
+                    // pointing from target link to the property being overridden.
+                    // Since the target link is always a descendant of the source link, we are able to do this
+                    // by simply removing the relative path from source to target link from the beginning of the path.
+
+                    // Copy the patch so that subTree is untouched and can be used for undo/redo.
                     PrefabDom newPatch;
                     newPatch.CopyFrom(metaData.m_patch, newPatch.GetAllocator());
 
-                    // Get the path.
                     auto& overridePath = newPatch.FindMember("path")->value;
-
-                    // Fix up the path.
                     AZStd::string overridePathStr = overridePath.GetString();
                     if (overridePathStr.starts_with(relativePath))
                     {
                         overridePathStr = overridePathStr.substr(relativePath.length());
                     }
 
-                    // Set the new fixes up path into newPatch.
                     overridePath.SetString(
                         overridePathStr.c_str(),
                         static_cast<rapidjson::SizeType>(overridePathStr.length()),
                         newPatch.GetAllocator()
                     );
 
+                    // We copy the paths to newOverrides, which is what will be added to the target link.
                     newOverrides.SetValue<Link::PrefabOverrideMetadata>(
                         path,
                         Link::PrefabOverrideMetadata(
@@ -252,8 +256,10 @@
             targetState->Capture(path, AZStd::move(newOverrides), targetLinkId);
             targetState->SetParent(undoBatch.GetUndoBatch());
 
+            // Actually apply the overrides.
             targetState->Redo();
 
+            // Correctly update both links.
             sourceLink->get().UpdateTarget();
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(sourceLink->get().GetTargetTemplateId(), true);
             m_prefabSystemComponentInterface->PropagateTemplateChanges(sourceLink->get().GetTargetTemplateId());

@@ -47,7 +47,7 @@ namespace AzToolsFramework
             //! @param relativePath The relative path from the instance currently holding the overrides to the one that will receive them.
             //! @param targetInstance The instance whose prefab template the overrides will be pushed to.
             //! @return Whether overrides are applied successfully.
-            bool PushOverrideToPrefab(const AZ::Dom::Path& path, AZStd::string_view relativePath, InstanceOptionalReference targetInstance) const;
+            bool PushOverridesToPrefab(const AZ::Dom::Path& path, AZStd::string_view relativePath, InstanceOptionalReference targetInstance) const;
 
             //! Pushes overrides corresponding to the provided path from one link to another.
             //! For this to work, overrides should target a descendant of both source and target links,
@@ -57,7 +57,7 @@ namespace AzToolsFramework
             //! @param sourceLinkId The id for the link currently holding the overrides.
             //! @param targetLinkId The id for the link that will be receive the overrides.
             //! @return Whether overrides are applied successfully.
-            bool PushOverrideToLink(const AZ::Dom::Path& path, AZStd::string_view relativePath, LinkId sourceLinkId, LinkId targetLinkId) const;
+            bool PushOverridesToLink(const AZ::Dom::Path& path, AZStd::string_view relativePath, LinkId sourceLinkId, LinkId targetLinkId) const;
             
         private:
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;

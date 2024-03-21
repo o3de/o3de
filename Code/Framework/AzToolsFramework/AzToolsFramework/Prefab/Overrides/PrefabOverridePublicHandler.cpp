@@ -212,7 +212,7 @@ namespace AzToolsFramework
                 // Retrieve the paths from the focusedInstance to the owningInstance.
                 auto relativePath = PrefabInstanceUtils::GetRelativePathBetweenInstances(focusedInstance->get(), owningInstance->get());
 
-                return m_prefabOverrideHandler.PushOverrideToPrefab(pathAndLinkIdPair.first, relativePath, owningInstance);
+                return m_prefabOverrideHandler.PushOverridesToPrefab(pathAndLinkIdPair.first, relativePath, owningInstance);
             }
             else
             {
@@ -231,7 +231,7 @@ namespace AzToolsFramework
                 // Retrieve the paths from the focusedInstance to the targetInstance.
                 auto relativePath = PrefabInstanceUtils::GetRelativePathBetweenInstances(sourceInstance->get(), targetInstance->get());
 
-                return m_prefabOverrideHandler.PushOverrideToLink(pathAndLinkIdPair.first, relativePath, sourceLinkId, targetLinkId);
+                return m_prefabOverrideHandler.PushOverridesToLink(pathAndLinkIdPair.first, relativePath, sourceLinkId, targetLinkId);
             }
         }
 
