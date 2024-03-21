@@ -1130,12 +1130,12 @@ namespace AZ::IO
 
 #if defined(CARBONATED)
     // returns if a pak has already been opened
-    bool Archive::IsPackOpen(AZStd::string_view szPath)
+    bool Archive::IsPackOpen(AZStd::string_view pName)
     {
-        auto fullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(szPath);
+        auto fullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pName);
         if (!fullPath)
         {
-            AZ_Assert(false, "Unable to resolve path for filepath %.*s", aznumeric_cast<int>(szPath.size()), szPath.data());
+            AZ_Assert(false, "Unable to resolve path for filepath %.*s", AZ_STRING_ARG(pName));
             return false;
         }
 
