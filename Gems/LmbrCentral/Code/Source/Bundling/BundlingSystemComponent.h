@@ -60,6 +60,10 @@ namespace LmbrCentral
         void Deactivate() override;
 
         // BundlingSystemRequestBus
+#if defined(CARBONATED)
+        void LoadBundle(const char* bundlePath, bool reload) override;
+        AZStd::vector<AZStd::string> GenerateBundlesToLoadList(const char* baseFolder, const char* fileExtension) override;
+#endif
         void LoadBundles(const char* baseFolder, const char* fileExtension) override;
         void UnloadBundles() override;
 

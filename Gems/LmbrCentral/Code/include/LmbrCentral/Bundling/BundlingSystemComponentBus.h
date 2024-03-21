@@ -19,6 +19,16 @@ namespace LmbrCentral
         : public AZ::EBusTraits
     {
     public:
+#if defined(CARBONATED)
+        /**
+         * Loads a specific bundle
+         */
+        virtual void LoadBundle([[maybe_unused]] const char* bundlePath, [[maybe_unused]] bool reload) {}
+        /**
+         * Generates a list of bundles to load
+         */
+        virtual AZStd::vector<AZStd::string> GenerateBundlesToLoadList([[maybe_unused]] const char* baseFolder, [[maybe_unused]] const char* fileExtension) { return AZStd::vector<AZStd::string>(); }
+#endif
 
         /**
          * Load bundles with a given file extension such as .pak from a given folder

@@ -15,6 +15,10 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+#if defined(CARBONATED)
+#include <AzCore/std/sort.h>
+#endif
+
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/Archive/IArchive.h>
 
@@ -58,6 +62,16 @@ namespace LmbrCentral
         AZStd::string fileFilter{ AZStd::string::format("*%s", bundleExtension) };
         AZStd::vector<AZStd::string> bundleList;
 
+#if defined(CARBONATED)
+        AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(bundlePath, fileFilter.c_str(), [&bundleList](const char* foundPath) -> bool
+        {
+            if (!AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(foundPath))
+            {
+                bundleList.push_back(foundPath);
+            }
+            return true;
+        });
+#else
         AZ::IO::FileIOBase::GetInstance()->FindFiles(bundlePath, fileFilter.c_str(), [&bundleList](const char* foundPath) -> bool
         {
             if (!AZ::IO::FileIOBase::GetInstance()->IsDirectory(foundPath))
@@ -66,6 +80,7 @@ namespace LmbrCentral
             }
             return true;
         });
+#endif
 
         return bundleList;
     }
@@ -114,8 +129,118 @@ namespace LmbrCentral
         m_bundleModeBundles.clear();
     }
 
+#if defined(CARBONATED)
+    /**
+     * Loads a specific bundle, optionally reloading it if it has been previously opened.
+     * There's a good amount of copy-pasta here.  Intentional, to reduce refactor-deltas in LY vs Carbonated code.
+     */
+    void BundlingSystemComponent::LoadBundle(const char* szPath, bool reload)
+    {
+        auto archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        if (!archive)
+        {
+            AZ_Error("BundlingSystem", false, "Couldn't Get IArchive to load bundles!");
+            return;
+        }
+
+        AZStd::lock_guard<AZStd::mutex> openBundleLock(m_bundleModeMutex);
+
+        // NOTE:  'bundlePath' must produce an identical result to paks discovered below in "LoadBundles"
+        AZStd::string bundlePath;
+        AZ::StringFunc::Path::Join(bundleRoot, szPath, bundlePath);
+
+        bool pakOpened = false;
+        for (const auto& openedBundle : m_bundleModeBundles)
+        {
+            if (openedBundle == bundlePath)
+            {
+                pakOpened = true;
+                break;
+            }
+        }
+
+        if (pakOpened)
+        {
+            if (!reload)
+            {
+                return;
+            }
+
+            if (archive->IsPackOpen(AZStd::string_view(szPath)))
+            {
+                if (!archive->ClosePack(szPath))
+                {
+                    AZ_Warning("BundlingSystem", false, "Failed to close bundle %s", szPath);
+                }
+            }
+
+            m_bundleModeBundles.erase(AZStd::remove(m_bundleModeBundles.begin(), m_bundleModeBundles.end(), bundlePath.c_str()), m_bundleModeBundles.end());
+        }
+
+        if (archive->OpenPack(bundleRoot, szPath))
+        {
+            AZ_TracePrintf("BundlingSystem", "Loaded bundle %s\n", bundlePath.c_str());
+            m_bundleModeBundles.emplace_back(AZStd::move(bundlePath));
+        }
+        else
+        {
+            AZ_TracePrintf("BundlingSystem", "Failed to load %s\n", bundlePath.c_str());
+        }
+    }
+
+    AZStd::vector<AZStd::string> BundlingSystemComponent::GenerateBundlesToLoadList(const char* bundleFolder, const char* bundleExtension)
+    {
+        AZStd::vector<AZStd::string> bundleToLoadList;
+        AZStd::vector<AZStd::string> bundleList = GetBundleList(bundleFolder, bundleExtension);
+        AZ_TracePrintf("BundlingSystem", "Loading bundles from %s of type %s\n", bundleFolder, bundleExtension);
+        if (!bundleList.size())
+        {
+            AZ_Warning("BundlingSystem", false, "Failed to locate bundles of type %s in folder %s", bundleExtension, bundleFolder);
+            return bundleToLoadList;
+        }
+
+        AZStd::lock_guard<AZStd::mutex> openBundleLock(m_bundleModeMutex);
+        for (const auto& thisBundle : bundleList)
+        {
+            AZStd::string bundlePath;
+            AZ::StringFunc::Path::Join(bundleRoot, thisBundle.c_str(), bundlePath);
+
+            bool pakOpened = false;
+            for (const auto& openedBundle : m_bundleModeBundles)
+            {
+                // Comparing openedBundle with bundlePath instead of 'thisBundle' since the path will get normalized
+                if (openedBundle == bundlePath)
+                {
+                    pakOpened = true;
+                    break;
+                }
+            }
+
+            if (!pakOpened)
+                bundleToLoadList.push_back(thisBundle);
+        }
+
+        // HACK - ensure that patch paks are loaded last
+        AZStd::sort(bundleToLoadList.begin(), bundleToLoadList.end(), [](const AZStd::string& a, const AZStd::string& b)
+        {
+            int a_patch = (a.find("patch") != AZStd::string::npos) ? 1 : 0;
+            int b_patch = (b.find("patch") != AZStd::string::npos) ? 1 : 0;
+
+            // We force patch DLC to sort at the end of the list.
+            if (a_patch != b_patch)
+                return (a_patch < b_patch);
+
+            return a.compare(b) < 0;
+        });
+
+        return bundleToLoadList;
+    }
+#endif
     void BundlingSystemComponent::LoadBundles(const char* bundleFolder, const char* bundleExtension)
     {
+#if defined(CARBONATED)
+        AZStd::vector<AZStd::string> bundleList = GenerateBundlesToLoadList(bundleFolder, bundleExtension);
+#else
         AZStd::vector<AZStd::string> bundleList = GetBundleList(bundleFolder, bundleExtension);
         AZ_TracePrintf("BundlingSystem", "Loading bundles from %s of type %s\n",bundleFolder, bundleExtension);
         if (!bundleList.size())
@@ -123,6 +248,7 @@ namespace LmbrCentral
             AZ_Warning("BundlingSystem", false, "Failed to locate bundles of type %s in folder %s", bundleExtension, bundleFolder);
             return;
         }
+#endif
 
         auto archive = AZ::Interface<AZ::IO::IArchive>::Get();
         if (!archive)
