@@ -890,6 +890,8 @@ set(FILES
     Prefab/PrefabUndoHelpers.h
     Prefab/Spawnable/ComponentRequirementsValidator.h
     Prefab/Spawnable/ComponentRequirementsValidator.cpp
+    Prefab/Spawnable/AssetPlatformComponentRemover.h
+    Prefab/Spawnable/AssetPlatformComponentRemover.cpp
     Prefab/Spawnable/EditorInfoRemover.h
     Prefab/Spawnable/EditorInfoRemover.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h

@@ -1343,10 +1343,7 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
 
             // carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
-            editInfo->DataElement(
-                AZ::Edit::UIHandlers::CheckBox,
-                &UiTransform2dComponent::m_isFlooringOffsets,
-                "Floor offsets",
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTransform2dComponent::m_isFlooringOffsets, "Floor offsets",
                 "When checked, this element's offsets are floored");
 #endif
             // carbonated end
@@ -1396,6 +1393,10 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
             ->Event("SetPivotY", &UiTransformBus::Events::SetPivotY)
             ->Event("GetScaleToDeviceMode", &UiTransformBus::Events::GetScaleToDeviceMode)
             ->Event("SetScaleToDeviceMode", &UiTransformBus::Events::SetScaleToDeviceMode)
+#if defined(CARBONATED) // Carbonated patch : porting 02_27
+            ->Event("GetIsFlooringOffsets", &UiTransformBus::Events::GetIsFlooringOffsets)
+            ->Event("SetIsFlooringOffsets", &UiTransformBus::Events::SetIsFlooringOffsets)
+#endif // CARBONATED
             ->Event("GetViewportPosition", &UiTransformBus::Events::GetViewportPosition)
             ->Event("SetViewportPosition", &UiTransformBus::Events::SetViewportPosition)
             ->Event("GetCanvasPosition", &UiTransformBus::Events::GetCanvasPosition)

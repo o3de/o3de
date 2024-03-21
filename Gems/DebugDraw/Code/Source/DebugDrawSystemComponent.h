@@ -103,6 +103,12 @@ namespace DebugDraw
         void DrawTextAtLocation(const AZ::Vector3& worldLocation, const AZStd::string& text, const AZ::Color& color, float duration) override;
         void DrawTextOnEntity(const AZ::EntityId& targetEntity, const AZStd::string& text, const AZ::Color& color, float duration) override;
         void DrawTextOnScreen(const AZStd::string& text, const AZ::Color& color, float duration) override;
+// carbonated begin : additional DebugDrawText methods
+#if defined(CARBONATED)
+        void DrawScaledTextOnScreen(const AZStd::string& text, float fontScale, const AZ::Color& color, float duration) override;
+        void DrawScaledTextOnScreenPos(float x, float y, const AZStd::string& text, float fontScale, const AZ::Color& color, float duration, bool bCenter = true) override;
+#endif // CARBONATED
+// carbonated end
 
         // DebugDrawInternalRequestBus interface implementation
         void RegisterDebugDrawComponent(AZ::Component* component) override;

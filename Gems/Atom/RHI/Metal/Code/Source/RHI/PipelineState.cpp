@@ -126,6 +126,8 @@ namespace AZ
             {
                 NSString* entryPointStr = [[NSString alloc] initWithCString : entryPoint.data() encoding: NSASCIIStringEncoding];
                 pFunction = [lib newFunctionWithName:entryPointStr];
+                [entryPointStr release];
+                entryPointStr = nil;
                 [lib release];
                 lib = nil;
             }

@@ -49,9 +49,14 @@ AZ_CVAR(int32_t, sys_localization_format, 0, nullptr, AZ::ConsoleFunctorFlags::N
         "    1: AGS XML\n"
         "Default is 1 (AGS Xml)");
 
+// Gruber patch begin : force copying font substitution definitions for localizations into cache
 #if defined(CARBONATED)
-const char* LOCALIZATION_FONTMAPPING_FILE_NAME = "fontmapping.agsxml";
+//const char* LOCALIZATION_FONTMAPPING_FILE_NAME = "fontmapping.agsxml";
+//  The "o3de\Registry\AssetProcessorPlatformConfig.setreg" already contains the copy job:
+//  "RC loc.agsxml" { "glob": "*.loc.agsxml", "params": "copy", "version": 1  },
+const char* LOCALIZATION_FONTMAPPING_FILE_NAME = "fontmapping.loc.agsxml";
 #endif
+// Gruber patch end
 
 enum ELocalizedXmlColumns
 {
@@ -1877,9 +1882,6 @@ CLocalizedStringsManager::LoadFunc CLocalizedStringsManager::GetLoadFunction() c
         }
         if(localizationFormat == 1)
 #endif
-#if defined(CARBONATED)
-        if (m_cvarLocalizationFormat == 1)
-#endif
         {
             return &CLocalizedStringsManager::DoLoadAGSXmlDocument;
         }
@@ -1918,10 +1920,10 @@ void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocaliz
 //////////////////////////////////////////////////////////////////////////
 LocalizedFont CLocalizedStringsManager::GetLocalizedFont(const char* fontAssetPath, float fontSize)
 {
-     AZStd::string fontAssetPathWithSize;
+    AZ_Assert(fontAssetPath && fontAssetPath[0], "CLocalizedStringsManager::GetLocalizedFont(): invalid font Asset path.")
     // Try Font + Size
-    fontAssetPathWithSize.format("%s:%d", fontAssetPath, (int)fontSize);
-     AZStd::to_lower(fontAssetPathWithSize.begin(), fontAssetPathWithSize.end());
+    AZStd::string fontAssetPathWithSize = AZStd::string::format("%s:%d", fontAssetPath, (int)fontSize);
+    AZStd::to_lower(fontAssetPathWithSize.begin(), fontAssetPathWithSize.end());
     auto keyCRC = AZ::Crc32(fontAssetPathWithSize);
     auto it = m_pLanguage->m_fontMapping.find(keyCRC);
     if (it == m_pLanguage->m_fontMapping.end())
@@ -1988,6 +1990,11 @@ void CLocalizedStringsManager::LoadFontMappingData()
             continue;
         }
 
+        if (sFontName.empty()) // Gruber patch : skip empty entries
+        {
+            continue;
+        }
+
         XmlNodeRef localized = font->findChild("localized");
         if (localized == nullptr)
         {
@@ -2002,7 +2009,12 @@ void CLocalizedStringsManager::LoadFontMappingData()
             continue;
         }
 
-         AZStd::string key;
+        if (sLocalizedFontName.empty()) // Gruber patch : skip empty entries
+        {
+            continue;
+        }
+
+        AZStd::string key;
         int fontSize = 0;
         font->getAttr("size", fontSize);
         if (fontSize > 0)

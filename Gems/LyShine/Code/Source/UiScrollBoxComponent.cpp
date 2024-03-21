@@ -1332,6 +1332,9 @@ void UiScrollBoxComponent::Activate()
     UiScrollBoxBus::Handler::BusConnect(GetEntityId());
     UiScrollableBus::Handler::BusConnect(GetEntityId());
     UiInitializationBus::Handler::BusConnect(GetEntityId());
+#if defined(CARBONATED) // Carbonated patch : porting 02_27
+    AZ::TickBus::Handler::BusConnect();
+#endif // CARBONATED
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1342,6 +1345,9 @@ void UiScrollBoxComponent::Deactivate()
     UiScrollableBus::Handler::BusDisconnect(GetEntityId());
     UiInitializationBus::Handler::BusDisconnect(GetEntityId());
     UiTransformChangeNotificationBus::MultiHandler::BusDisconnect();
+#if defined(CARBONATED) // Carbonated patch : porting 02_27
+    AZ::TickBus::Handler::BusDisconnect();
+#endif // CARBONATED
 
     if (m_hScrollBarEntity.IsValid() && m_isHorizontalScrollingEnabled)
     {
@@ -1393,7 +1399,11 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiScrollBoxComponent, UiInteractableComponent>()
+#if defined(CARBONATED) // Carbonated patch : porting 02_27
+            ->Version(5, &VersionConverter)
+#else
             ->Version(4, &VersionConverter)
+#endif // CARBONATED
         // Content group
             ->Field("ContentEntity", &UiScrollBoxComponent::m_contentEntity)
             ->Field("ScrollOffset", &UiScrollBoxComponent::m_scrollOffset)
@@ -1408,6 +1418,11 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
             ->Field("AllowVertScrolling", &UiScrollBoxComponent::m_isVerticalScrollingEnabled)
             ->Field("VScrollBarEntity", &UiScrollBoxComponent::m_vScrollBarEntity)
             ->Field("VScrollBarVisibility", &UiScrollBoxComponent::m_vScrollBarVisibility)
+#if defined(CARBONATED) // Carbonated patch : porting 02_27
+        // Scroll speed and momentum group
+            ->Field("ScrollingSpeed", &UiScrollBoxComponent::m_scrollSensitivity)
+            ->Field("MomentumScrollingDuration", &UiScrollBoxComponent::m_momentumDuration)
+#endif // CARBONATED
         // Actions group
             ->Field("ScrollOffsetChangingActionName", &UiScrollBoxComponent::m_scrollOffsetChangingActionName)
             ->Field("ScrollOffsetChangedActionName", &UiScrollBoxComponent::m_scrollOffsetChangedActionName);
@@ -1490,6 +1505,20 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                     ->EnumAttribute(UiScrollBoxInterface::ScrollBarVisibility::AutoHideAndResizeViewport, "Auto hide and resize view area");
             }
 
+#if defined(CARBONATED) // Carbonated patch : porting 02_27
+            // Scroll speed and momentum group
+            {
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Scrolling speed and momentum")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+
+                editInfo->DataElement(0, &UiScrollBoxComponent::m_scrollSensitivity, "Scroll speed", "Horiz and Vert speed factor applied when scrolling.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show);
+
+                editInfo->DataElement(0, &UiScrollBoxComponent::m_momentumDuration, "Momentun duration", "Time for which we keep scrolling after release.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show);
+            }
+#endif // CARBONATED
+
             // Actions group
             {
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
@@ -1565,7 +1594,7 @@ UiScrollBoxComponent::EntityComboBoxVec UiScrollBoxComponent::PopulateChildEntit
     EntityComboBoxVec result;
 
     // add a first entry for "None"
-    result.push_back(AZStd::make_pair(AZ::EntityId(AZ::EntityId()), "<None>"));
+    result.push_back(AZStd::make_pair(AZ::EntityId(), "<None>")); // Carbonated patch : was AZ::EntityId(AZ::EntityId())
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
@@ -1865,6 +1894,9 @@ float UiScrollBoxComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
     AZ::Matrix4x4 transformFromViewport;
     UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
     AZ::Vector2 dragVec = endPoint - startPoint;
+#if defined(CARBONATED) // Carbonated patch : porting 02_27
+    dragVec *= m_scrollSensitivity;
+#endif // CARBONATED
     AZ::Vector3 dragVec3(dragVec.GetX(), dragVec.GetY(), 0.0f);
     AZ::Vector3 localDragVec = transformFromViewport.Multiply3x3(dragVec3);
 

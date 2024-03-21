@@ -2243,7 +2243,10 @@ namespace ScriptCanvas
 
         if (!Data::IsValueType(m_type) && !SatisfiesTraits(static_cast<AZ::u8>(description.m_traits)))
         {
-            return AZ::Failure(AZStd::string("Attempting to convert null value to BehaviorArgument that expects reference or value"));
+            // Carbonated patch begin : porting 02_27
+            //return AZ::Failure(AZStd::string("Attempting to convert null value to BehaviorArgument that expects reference or value"));
+            return AZ::Failure(AZStd::string::format("Attempting to convert null value %s to BehaviorArgument that expects reference or value", description.m_name));
+            // Carbonated patch end
         }
 
         if (IS_A(Data::Type::Number()))

@@ -459,7 +459,13 @@ namespace DebugDraw
         #endif // DEBUGDRAW_GEM_EDITOR
 
         // Draw text elements and remove any that are expired
+// carbonated begin : additional DebugDrawText methods
+#if defined(CARBONATED)
+        float currentOnScreenY = 20.f; // Initial shift down for the 1st line, then recalculate shifts down for next lines accounting for textElement.m_fontScale
+#else
         int numScreenTexts = 0;
+#endif // CARBONATED
+// carbonated end
         AZ::EntityId lastTargetEntityId;
 
         for (auto& textElement : m_activeTexts)
@@ -468,8 +474,27 @@ namespace DebugDraw
             debugDisplay.SetColor(textColor);
             if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::OnScreen)
             {
+// carbonated begin : additional DebugDrawText methods
+#if defined(CARBONATED)
+                if (textElement.m_useOnScreenCoordinates)
+                {
+                    // Reuse textElement.m_worldLocation for 2D OnScreen positioning.
+                    debugDisplay.Draw2dTextLabel(textElement.m_worldLocation.GetX(),textElement.m_worldLocation.GetY(),textElement.m_fontScale
+                        , textElement.m_text.c_str(), textElement.m_bCenter);
+                }
+                else
+                {
+                    // Hardcoded 2D OnScreen positioning as in original code. Note original code below with constant shifts.
+                    debugDisplay.Draw2dTextLabel(100.0f, currentOnScreenY, textElement.m_fontScale, textElement.m_text.c_str());
+                    // Prepare the shift down for a next line assuming default m_textSizeFactor = 12.0f + line gap. 
+                    // Could be more precise if Draw2dTextLabel() returned drawn text size with current viewport settings.
+                    currentOnScreenY += textElement.m_fontScale * 14.0f + 2.0f; 
+                }
+#else
                 debugDisplay.Draw2dTextLabel(100.0f, 20.f + ((float)numScreenTexts * 15.0f), 1.4f, textElement.m_text.c_str() );
                 ++numScreenTexts;
+#endif // CARBONATED
+                // carbonated end
             }
             else if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::InWorld)
             {
@@ -995,7 +1020,38 @@ namespace DebugDraw
         AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
     }
 
-    void DebugDrawSystemComponent::CreateTextEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawTextElement& element)
+    // carbonated begin : additional DebugDrawText methods
+#if defined(CARBONATED)
+    void DebugDrawSystemComponent::DrawScaledTextOnScreen(const AZStd::string& text, float fontScale, const AZ::Color& color, float duration)
+    {
+        AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
+        DebugDrawTextElement& newText = m_activeTexts.emplace_back();
+        newText.m_drawMode = DebugDrawTextElement::DrawMode::OnScreen;
+        newText.m_text = text;
+        newText.m_fontScale = fontScale;
+        newText.m_color = color;
+        newText.m_duration = duration;
+        AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+    }
+
+    void DebugDrawSystemComponent::DrawScaledTextOnScreenPos(float x, float y, const AZStd::string& text, float fontScale, const AZ::Color& color, float duration, bool bCenter)
+    {
+        AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
+        DebugDrawTextElement& newText = m_activeTexts.emplace_back();
+        newText.m_drawMode = DebugDrawTextElement::DrawMode::OnScreen;
+        newText.m_text = text;
+        newText.m_fontScale = fontScale;
+        newText.m_color = color;
+        newText.m_duration = duration;
+        newText.m_bCenter = bCenter;
+        newText.m_useOnScreenCoordinates = true;
+        newText.m_worldLocation.Set(x, y, 1.f);
+        AZ::TickRequestBus::BroadcastResult(newText.m_activateTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+    }
+#endif // CARBONATED
+    // carbonated end
+
+    void DebugDrawSystemComponent::DebugDrawSystemComponent::CreateTextEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawTextElement& element)
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
         m_activeTexts.push_back(element);

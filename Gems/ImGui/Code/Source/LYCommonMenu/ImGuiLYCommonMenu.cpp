@@ -233,8 +233,10 @@ namespace ImGui
                 ImGui::SetCursorPosX(prevCursorPos);
             }
 
+#if !defined(CARBONATED) // the line below resets toolbar position to the beginning and causes overlapping with the previously added toolbar items from the game. This line was absent in LY.
             // Add some space before the first menu so it won't overlap with view control buttons
             ImGui::SetCursorPosX(dpiAwareSizeFn(40.0f + viewportBorderPadding.m_left));
+#endif // !defined(CARBONATED)
 
             // Main Open 3D Engine menu
             if (ImGui::BeginMenu("O3DE"))
@@ -662,6 +664,22 @@ namespace ImGui
                 if (ImGui::BeginMenu("Misc."))
                 {
                     // Assert Level
+#if defined(CARBONATED)
+                    if (console != nullptr)
+                    {
+                        int assertLevelValue = 0;
+                        if (console->GetCvarValue("sys_asserts", assertLevelValue) == AZ::GetValueResult::Success)
+                        {
+                            int dragIntVal = assertLevelValue;
+                            ImGui::Text("sys_asserts: %d ( 0-off | 1-log | 2-popup | 3-crash )", assertLevelValue);
+                            ImGui::SliderInt("##sys_asserts", &dragIntVal, 0, 3);
+                            if (dragIntVal != assertLevelValue)
+                            {
+                                console->PerformCommand(AZStd::string::format("sys_asserts %d", dragIntVal).c_str());
+                            }
+                        }
+                    }
+#else
                     static ICVar* gAssertLevelCVAR = gEnv->pConsole->GetCVar("sys_asserts");
                     if (gAssertLevelCVAR)
                     {
@@ -674,6 +692,7 @@ namespace ImGui
                             gAssertLevelCVAR->Set(dragIntVal);
                         }
                     }
+#endif
 
                     // End Misc Options Menu
                     ImGui::EndMenu();

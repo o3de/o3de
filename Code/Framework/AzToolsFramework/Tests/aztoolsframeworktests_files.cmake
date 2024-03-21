@@ -121,6 +121,7 @@ set(FILES
     Prefab/PrefabInstantiateTests.cpp
     Prefab/PrefabAssetFixupTests.cpp
     Prefab/PrefabLoadTemplateTests.cpp
+    Prefab/PrefabProcessorRemoveComponentPerPlatformTests.cpp
     Prefab/PrefabTestComponent.cpp
     Prefab/PrefabTestComponent.h
     Prefab/PrefabTestData.cpp

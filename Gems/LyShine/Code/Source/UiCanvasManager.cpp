@@ -175,6 +175,10 @@ AZ::EntityId UiCanvasManager::CreateCanvas()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::EntityId UiCanvasManager::LoadCanvas(const AZStd::string& assetIdPathname)
 {
+#if defined(CARBONATED) // Carbonated patch : porting 02_27, to match LY Log // TODO // FIXME : remove for release
+    AZ_TracePrintf("UiCanvasManager", "Loading UI Canvas: %s", assetIdPathname.c_str());
+#endif // CARBONATED
+
     // Prevent canvas from being loaded when we are in the editor in a simulation mode
     // but not in game mode (ex. AI/Physics mode or Preview mode).
     // NOTE: Normal Preview mode load does not come through here since we clone the canvas rather than load it

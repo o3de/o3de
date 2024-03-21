@@ -137,7 +137,7 @@ namespace AZ
                 if (mgr)
                 {
                     // The assets folder in an APK will have either 'engine.json' (LOOSE mode) or 'engine_android.pak' (PAK Mode)
-                    const char* asset_marker_files[] = { "engine.json", "static_engine_android.pak" };
+                    const char* asset_marker_files[] = { "engine.json", "engine_android.pak" };
                     AAsset* asset = nullptr;
                     for (const char* asset_marker : asset_marker_files)
                     {

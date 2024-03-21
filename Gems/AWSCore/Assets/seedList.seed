@@ -1,0 +1,21 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{04076EA5-647C-528C-BE13-7C0CF52409B4}"
+            },
+            "platformFlags": 255,
+            "pathHint": "certificates/aws/cacert.pem"
+        },
+        {
+            "assetId": {
+                "guid": "{BE86AA04-4998-5AB7-A665-B0C5E7AA16CC}"
+            },
+            "platformFlags": 255,
+            "pathHint": "resource_mapping_schema.json"
+        }
+    ]
+}
