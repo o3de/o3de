@@ -98,6 +98,10 @@ namespace AzToolsFramework
             //! @param context reflection context.
             static void Reflect(AZ::ReflectContext* context);
 
+            //! Whether caching the instance's dom should be enabled by default.
+            //! Setting can be changed for individual instances using EnableDomCaching.
+            inline static bool s_DomCachingEnabledDefault = false;
+
             //! Gets template id.
             //! @return Template id of the instance.
             TemplateId GetTemplateId() const;
@@ -412,6 +416,7 @@ namespace AzToolsFramework
             EntityIdInstanceRelationship m_entityIdInstanceRelationship = DefaultEntityIdInstanceRelationship;
 
             // Whether the instance should store a cache of its DOM or not.
+            // Default value is set by s_DomCachingEnabledDefault in the constructor.
             bool m_isDomCachingEnabled = false;
         };
     } // namespace Prefab

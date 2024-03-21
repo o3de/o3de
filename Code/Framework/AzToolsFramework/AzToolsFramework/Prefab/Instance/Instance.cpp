@@ -87,6 +87,8 @@ namespace AzToolsFramework
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
+            m_isDomCachingEnabled = s_DomCachingEnabledDefault;
+
             if (parent)
             {
                 AliasPath absoluteInstancePath = m_parent->GetAbsoluteInstanceAliasPath();
