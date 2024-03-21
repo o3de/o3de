@@ -18,36 +18,6 @@
 
 #include <QVBoxLayout>
 
-QComponentEntityEditorOutlinerWindow::QComponentEntityEditorOutlinerWindow(QWidget* parent)
-    : QMainWindow(parent)
-    , m_outlinerWidget(nullptr)
-{
-    gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
-
-    Init();
-}
-
-QComponentEntityEditorOutlinerWindow::~QComponentEntityEditorOutlinerWindow()
-{
-    gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
-}
-
-void QComponentEntityEditorOutlinerWindow::OnSystemEvent([[maybe_unused]] ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
-{
-}
-
-void QComponentEntityEditorOutlinerWindow::Init()
-{
-    QVBoxLayout* layout = new QVBoxLayout();
-
-    m_outlinerWidget = new OutlinerWidget(nullptr);
-    layout->addWidget(m_outlinerWidget);
-
-    QWidget* window = new QWidget();
-    window->setLayout(layout);
-    setCentralWidget(window);
-}
-
 QEntityOutlinerWindow::QEntityOutlinerWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_outlinerWidget(nullptr)
@@ -77,10 +47,4 @@ void QEntityOutlinerWindow::Init()
     window->setLayout(layout);
     setCentralWidget(window);
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// End of context menu handling
-///////////////////////////////////////////////////////////////////////////////
-
-#include <UI/moc_QComponentEntityEditorOutlinerWindow.cpp>
 
