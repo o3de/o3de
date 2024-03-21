@@ -44,7 +44,7 @@ namespace AZ
             {
                 m_flags.m_bindViewSrg = true;
             }
-            if (passData && passData->m_deviceIndex > 0 && passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
+            if (passData && passData->m_deviceIndex >= 0 && passData->m_deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount())
             {
                 m_deviceIndex = passData->m_deviceIndex;
             }
