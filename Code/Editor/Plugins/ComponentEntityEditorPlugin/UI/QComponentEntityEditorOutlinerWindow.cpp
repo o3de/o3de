@@ -9,7 +9,6 @@
 #include <EditorDefs.h>
 #include "CryEdit.h"
 #include "UI/QComponentEntityEditorOutlinerWindow.h"
-#include "UI/Outliner/OutlinerWidget.hxx"
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
