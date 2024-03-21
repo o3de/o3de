@@ -721,13 +721,13 @@ namespace AZ::RHI
         if (iterator == m_rootScopeIds.end())
         {
             auto [new_iterator, inserted]{ m_rootScopeIds.insert(
-                AZStd::make_pair(deviceIndex, AZStd::string{AZStd::string("Root") + AZStd::to_string(deviceIndex)})) };
+                AZStd::make_pair(deviceIndex, ScopeId{AZStd::string("Root") + AZStd::to_string(deviceIndex)})) };
             if (inserted)
             {
-                return ScopeId{new_iterator->second};
+                return new_iterator->second;
             }
         }
-        return ScopeId(iterator->second);
+        return iterator->second;
     }
 
     const AZStd::unordered_map<int, TransientAttachmentPoolDescriptor>* FrameScheduler::GetTransientAttachmentPoolDescriptor() const

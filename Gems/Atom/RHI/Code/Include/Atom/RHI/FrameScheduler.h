@@ -187,7 +187,7 @@ namespace AZ::RHI
         const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
 
     private:
-        AZStd::unordered_map<int, AZStd::string> m_rootScopeIds;
+        AZStd::unordered_map<int, ScopeId> m_rootScopeIds;
 
         bool ValidateIsInitialized() const;
         bool ValidateIsProcessing() const;
