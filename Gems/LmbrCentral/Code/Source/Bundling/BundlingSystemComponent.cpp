@@ -158,22 +158,20 @@ namespace LmbrCentral
 
         if (pakOpened)
         {
-            if (reload)
-            {
-                if (archive->IsPackOpen(AZStd::string_view(szPath)))
-                {
-                    if (!archive->ClosePack(szPath))
-                    {
-                        AZ_Warning("BundlingSystem", false, "Failed to close bundle %s", szPath);
-                    }
-                }
-
-                m_bundleModeBundles.erase(AZStd::remove(m_bundleModeBundles.begin(), m_bundleModeBundles.end(), bundlePath.c_str()), m_bundleModeBundles.end());
-            }
-            else
+            if (!reload)
             {
                 return;
             }
+
+            if (archive->IsPackOpen(AZStd::string_view(szPath)))
+            {
+                if (!archive->ClosePack(szPath))
+                {
+                    AZ_Warning("BundlingSystem", false, "Failed to close bundle %s", szPath);
+                }
+            }
+
+            m_bundleModeBundles.erase(AZStd::remove(m_bundleModeBundles.begin(), m_bundleModeBundles.end(), bundlePath.c_str()), m_bundleModeBundles.end());
         }
 
         if (archive->OpenPack(bundleRoot, szPath))
@@ -219,7 +217,6 @@ namespace LmbrCentral
                 bundleToLoadList.push_back(thisBundle);
         }
 
-#if defined(CARBONATED)
         // HACK - ensure that patch paks are loaded last
         AZStd::sort(bundleToLoadList.begin(), bundleToLoadList.end(), [](const AZStd::string& a, const AZStd::string& b)
         {
@@ -232,7 +229,6 @@ namespace LmbrCentral
 
             return a.compare(b) < 0;
         });
-#endif
 
         return bundleToLoadList;
     }

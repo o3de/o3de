@@ -1132,8 +1132,8 @@ namespace AZ::IO
     // returns if a pak has already been opened
     bool Archive::IsPackOpen(AZStd::string_view szPath)
     {
-        auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(szPath);
-        if (!szFullPath)
+        auto fullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(szPath);
+        if (!fullPath)
         {
             AZ_Assert(false, "Unable to resolve path for filepath %.*s", aznumeric_cast<int>(szPath.size()), szPath.data());
             return false;
@@ -1141,9 +1141,9 @@ namespace AZ::IO
 
         // setup PackDesc before the test
         PackDesc desc;
-        desc.m_strFileName = *szFullPath;
+        desc.m_strFileName = *fullPath;
 
-        AZStd::string_view szBindRoot = szFullPath->ParentPath().Native();
+        AZStd::string_view szBindRoot = fullPath->ParentPath().Native();
 
         if (AZ::IO::FixedMaxPath pathBindRoot; !AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pathBindRoot, szBindRoot))
         {

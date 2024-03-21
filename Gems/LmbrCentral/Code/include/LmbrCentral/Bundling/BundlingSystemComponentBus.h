@@ -23,9 +23,7 @@ namespace LmbrCentral
         /**
          * Loads a specific bundle
          */
-        virtual void LoadBundle([[maybe_unused]] const char* bundlePath, [[maybe_unused]] bool reload)
-        {
-        }
+        virtual void LoadBundle([[maybe_unused]] const char* bundlePath, [[maybe_unused]] bool reload) {}
         /**
          * Generates a list of bundles to load
          */
