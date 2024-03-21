@@ -15,6 +15,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
         class PrefabFocusInterface;
         class PrefabSystemComponentInterface;
@@ -59,6 +60,11 @@ namespace AzToolsFramework
             //! @return Whether overrides are successfully reverted on the component.
             bool RevertComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
 
+            //! Apply overrides on the given component from the focused prefab. Returns false if no overrides are present.
+            //! @param entityComponentIdPair The entityId and componentId on which overrides should be applied.
+            //! @return Whether overrides are successfully reverted on the component.
+            bool ApplyComponentOverrides(const AZ::EntityComponentIdPair& entityComponentIdPair) override;
+
             //! Fetches the path to the entity matching the id and the linkId corresponding to the topmost prefab in the hierarchy.
             //! @param entityId The id of the entity to use to fetch the path.
             //! @return The path and link id pair.
@@ -71,6 +77,7 @@ namespace AzToolsFramework
 
             PrefabOverrideHandler m_prefabOverrideHandler;
 
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
             PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;

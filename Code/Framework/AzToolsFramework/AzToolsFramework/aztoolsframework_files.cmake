@@ -938,6 +938,8 @@ set(FILES
     Prefab/Undo/PrefabUndoAddEntity.cpp
     Prefab/Undo/PrefabUndoAddEntityAsOverride.h
     Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
+    Prefab/Undo/PrefabUndoApplyOverrides.h
+    Prefab/Undo/PrefabUndoApplyOverrides.cpp
     Prefab/Undo/PrefabUndoComponentPropertyEdit.h
     Prefab/Undo/PrefabUndoComponentPropertyEdit.cpp
     Prefab/Undo/PrefabUndoComponentPropertyOverride.h
