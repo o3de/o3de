@@ -993,11 +993,19 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         }
 
         //////////////////////////////////////////////////////////////////////////
+#if defined(CARBONATED)
+        if (Legacy::System::CVars::sys_asserts == 0)
+#else
         if (g_cvars.sys_asserts == 0)
+#endif
         {
             gEnv->bIgnoreAllAsserts = true;
         }
+#if defined(CARBONATED)
+        if (Legacy::System::CVars::sys_asserts == 2)
+#else
         if (g_cvars.sys_asserts == 2)
+#endif
         {
             gEnv->bNoAssertDialog = true;
         }
@@ -1154,9 +1162,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     }
 
     m_bInitializedSuccessfully = true;
-#if defined(CARBONATED)
-    AZ::Interface<AZ::IConsole>::Get()->PerformCommand("bg_assertDialogReady 1");
-#endif
+
     return true;
 }
 
@@ -1192,6 +1198,37 @@ static AZStd::string ConcatPath(const char* szPart1, const char* szPart2)
 
     return ret;
 }
+
+#if defined(CARBONATED)
+namespace Legacy::System::CVars
+{
+    static void cvar_OnAssertLevelCvarChanged(const int& assertLevel)
+    {
+        CSystem::SetAssertLevel(assertLevel);
+    }
+
+    AZ_CVAR(
+        int,
+        sys_asserts,
+        1,
+        cvar_OnAssertLevelCvarChanged,
+        AZ::ConsoleFunctorFlags::IsCheat,
+        "0 = Suppress Asserts\n"
+        "1 = Log Asserts\n"
+        "2 = Show Assert Dialog\n"
+        "3 = Crashes the Application on Assert\n"
+        "Note: when set to '0 = Suppress Asserts', assert expressions are still evaluated. To turn asserts into a no-op, undefine "
+        "AZ_ENABLE_TRACING and recompile.");
+
+    AZ_CVAR(
+        int,
+        sys_error_debugbreak,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "__debugbreak() if a VALIDATOR_ERROR_DBGBREAK message is hit");
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 void CSystem::CreateSystemVars()
@@ -1433,6 +1470,8 @@ void CSystem::CreateSystemVars()
 
     // adding CVAR to toggle assert verbosity level
     const int defaultAssertValue = 1;
+
+#if !defined(CARBONATED)
     REGISTER_CVAR2_CB(
         "sys_asserts",
         &g_cvars.sys_asserts,
@@ -1445,10 +1484,14 @@ void CSystem::CreateSystemVars()
         "Note: when set to '0 = Suppress Asserts', assert expressions are still evaluated. To turn asserts into a no-op, undefine "
         "AZ_ENABLE_TRACING and recompile.",
         OnAssertLevelCvarChanged);
+#endif
+
     CSystem::SetAssertLevel(defaultAssertValue);
 
+#if !defined(CARBONATED)
     REGISTER_CVAR2(
         "sys_error_debugbreak", &g_cvars.sys_error_debugbreak, 0, VF_CHEAT, "__debugbreak() if a VALIDATOR_ERROR_DBGBREAK message is hit");
+#endif
 
     REGISTER_STRING("dlc_directory", "", 0, "Holds the path to the directory where DLC should be installed to and read from");
 
@@ -1496,7 +1539,11 @@ bool CSystem::UnregisterErrorObserver(IErrorObserver* errorObserver)
 
 void CSystem::OnAssert(const char* condition, const char* message, const char* fileName, unsigned int fileLineNumber)
 {
+#if defined(CARBONATED)
+    if (Legacy::System::CVars::sys_asserts == 0)
+#else
     if (g_cvars.sys_asserts == 0)
+#endif
     {
         return;
     }
@@ -1506,7 +1553,11 @@ void CSystem::OnAssert(const char* condition, const char* message, const char* f
     {
         (*it)->OnAssert(condition, message, fileName, fileLineNumber);
     }
+#if defined(CARBONATED)
+    if (Legacy::System::CVars::sys_asserts > 1)
+#else
     if (g_cvars.sys_asserts > 1)
+#endif
     {
         CryFatalError("<assert> %s\r\n%s\r\n%s (%d)\r\n", condition, message, fileName, fileLineNumber);
     }

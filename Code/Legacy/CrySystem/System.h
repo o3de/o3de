@@ -19,6 +19,10 @@
 #include <AzFramework/Archive/ArchiveVars.h>
 #include <CryCommon/LoadScreenBus.h>
 
+#if defined(CARBONATED)
+#include <AzCore/Console/IConsole.h>
+#endif
+
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Math/Crc.h>
 
@@ -99,13 +103,25 @@ struct SSystemCVars
     float sys_update_profile_time;
     int sys_MaxFPS;
     float sys_maxTimeStepForMovieSystem;
-    
+
+#if defined(CARBONATED)
+    // Moved to Legacy::System::CVars
+#else
     int sys_asserts;
     int sys_error_debugbreak;
+#endif
 
     AZ::IO::ArchiveVars archiveVars;
 };
 extern SSystemCVars g_cvars;
+
+#if defined(CARBONATED)
+namespace Legacy::System::CVars
+{
+    AZ_CVAR_EXTERNED(int, sys_asserts);
+    AZ_CVAR_EXTERNED(int, sys_error_debugbreak);
+} // namespace Legacy::System::CVars
+#endif
 
 class CSystem;
 
@@ -133,8 +149,10 @@ public:
 
     static void OnLanguageCVarChanged(ICVar* language);
     static void OnLocalizationFolderCVarChanged(ICVar* const pLocalizationFolder);
+#if !defined(CARBONATED)
     // adding CVAR to toggle assert verbosity level
     static void OnAssertLevelCvarChanged(ICVar* pArgs);
+#endif
     static void SetAssertLevel(int _assertlevel);
     static void OnLogLevelCvarChanged(ICVar* pArgs);
     static void SetLogLevel(int _logLevel);
