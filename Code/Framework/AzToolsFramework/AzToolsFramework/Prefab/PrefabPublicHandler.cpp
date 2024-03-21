@@ -39,6 +39,7 @@
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 
 #include <QString>
+#include <QTimer>
 
 namespace AzToolsFramework
 {
@@ -1340,8 +1341,15 @@ namespace AzToolsFramework
                 // Select the duplicated entities/instances
                 auto selectionUndo = aznew SelectionCommand(duplicatedEntityAndInstanceIds, "Select Duplicated Entities/Instances");
                 selectionUndo->SetParent(undoBatch.GetUndoBatch());
-                ToolsApplicationRequestBus::Broadcast(
-                    &ToolsApplicationRequestBus::Events::SetSelectedEntities, duplicatedEntityAndInstanceIds);
+
+                QTimer::singleShot(
+                    0,
+                    [duplicatedEntityAndInstanceIds]()
+                    {
+                        ToolsApplicationRequestBus::Broadcast(
+                            &ToolsApplicationRequestBus::Events::SetSelectedEntities, duplicatedEntityAndInstanceIds);
+                    }
+                );
             }
 
             return AZ::Success(AZStd::move(duplicatedEntityAndInstanceIds));
