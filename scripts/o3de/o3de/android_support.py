@@ -45,7 +45,7 @@ elif platform.system() == 'Darwin':
     EXE_EXTENSION = ''
     O3DE_SCRIPT_EXTENSION = '.sh'
     SDKMANAGER_EXTENSION = ''
-    GRADLE_EXTENSION = '.sh'
+    GRADLE_EXTENSION = ''
     DEFAULT_ANDROID_SDK_PATH = f"{os.getenv('HOME')}/Library/Android/Sdk"
     PYTHON_SCRIPT = 'python.sh'
 elif platform.system() == 'Linux':
