@@ -90,7 +90,7 @@ namespace AZ::Debug
     AZ_CVAR_SCOPED(int, bg_traceLogLevel, static_cast<int>(LogLevel::Info), &TraceLevelChanged, ConsoleFunctorFlags::Null, "Enable trace message logging in release mode.  0=disabled, 1=errors, 2=warnings, 3=info, 4=debug, 5=trace.");
     AZ_CVAR_SCOPED(bool, bg_alwaysShowCallstack, false, &AlwaysShowCallstackChanged, ConsoleFunctorFlags::Null, "Force stack trace output without allowing ebus interception.");
 #if defined(CARBONATED)
-    AZ_CVAR_SCOPED(int, bg_assertDialogReady, 0, nullptr, ConsoleFunctorFlags::Null, "Show assertion popup dialog: 0=disabled, 1=enabled.");
+    AZ_CVAR(int, bg_assertDialogReady, 0, nullptr, ConsoleFunctorFlags::Null, "Show assertion popup dialog: 0=disabled, 1=enabled.");
 #endif
     // Allow redirection of trace raw output writes to stdout, stderr or to /dev/null
     static constexpr const char* fileStreamIdentifier = "raw_c_stream";
@@ -390,9 +390,15 @@ namespace AZ::Debug
             }
 
             bool assertsAutoBreak = false;
+#if defined(CARBONATED)
+            int assertDialogReady = 0;
+#endif
             if (auto* console = Interface<IConsole>::Get())
             {
                 console->GetCvarValue("bg_assertsAutoBreak", assertsAutoBreak);
+#if defined(CARBONATED)
+                console->GetCvarValue("bg_assertDialogReady", assertDialogReady);
+#endif
             }
             if (assertsAutoBreak && IsDebuggerPresent())
             {
@@ -404,7 +410,7 @@ namespace AZ::Debug
             //display native UI dialogs at verbosity level 2 or higher
             else if (currentLevel >= assertLevel_nativeUI
 #if defined(CARBONATED)
-                && bg_assertDialogReady != 0
+                && assertDialogReady != 0
 #endif
                 )
             {
