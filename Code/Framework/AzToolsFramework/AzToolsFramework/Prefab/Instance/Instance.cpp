@@ -957,7 +957,6 @@ namespace AzToolsFramework
                 m_cachedInstanceDom = PrefabDom(); 
             }
 
-            // Only store the cached instance dom if m_doesCacheDom is set.
             if (m_isDomCachingEnabled)
             {
                 m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
