@@ -13,8 +13,11 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/string_view.h>
-#include <AzCore/std/sort.h>
 #include <AzCore/StringFunc/StringFunc.h>
+
+#if defined(CARBONATED)
+#include <AzCore/std/sort.h>
+#endif
 
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/Archive/IArchive.h>
