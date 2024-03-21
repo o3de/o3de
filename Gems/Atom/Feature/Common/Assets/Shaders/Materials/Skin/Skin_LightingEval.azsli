@@ -35,25 +35,19 @@ LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPositi
     LightingData lightingData;
     InitializeLightingData_SkinPBR(surface, screenPosition, viewPosition, lightingData);
     
-    
-    
-    // CalculateLighting_BasePBR(surface, screenPosition, lightingData);
+    CalculateLighting_BasePBR(surface, screenPosition, lightingData);
 
-    // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, screenPosition);
-
-    
-    // Apply Image Based Lighting (IBL)
-    ApplyIblForward(surface, lightingData);
-    
-    
-    // Finalize Lighting
-    lightingData.FinalizeLighting(surface);
-
-    lightingData.specularLighting *= lightingData.specularOcclusion;
-    lightingData.diffuseLighting *= lightingData.diffuseAmbientOcclusion;
-
-
+    // // Apply Direct Lighting
+    // ApplyDirectLighting(surface, lightingData, screenPosition);
+    // 
+    // // Apply Image Based Lighting (IBL)
+    // ApplyIblForward(surface, lightingData);
+    // 
+    // // Finalize Lighting
+    // lightingData.FinalizeLighting(surface);
+    // 
+    // //lightingData.specularLighting *= lightingData.specularOcclusion;
+    // //lightingData.diffuseLighting *= lightingData.diffuseAmbientOcclusion;
 
 
     bool specularIsNan = isnan(lightingData.specularLighting.x) ||
@@ -76,7 +70,6 @@ LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPositi
     {
         lightingData.specularLighting = blueColor;
     }
-
 
 
 
