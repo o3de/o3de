@@ -530,7 +530,7 @@ namespace AZ::RHI
         return "<<Format Value Error>>";
     }
 
-    uint32_t GetFormatDimensionAlignment(Format format)
+    RHI::Size GetFormatDimensionAlignment(Format format)
     {
         switch (format)
         {
@@ -560,34 +560,46 @@ namespace AZ::RHI
         case Format::EAC_R11_SNORM:
         case Format::ASTC_4x4_UNORM:
         case Format::ASTC_4x4_UNORM_SRGB:
+            return RHI::Size(4, 4, 1);
         case Format::ASTC_5x4_UNORM:
         case Format::ASTC_5x4_UNORM_SRGB:
+            return RHI::Size(5, 4, 1);
         case Format::ASTC_5x5_UNORM:
         case Format::ASTC_5x5_UNORM_SRGB:
+            return RHI::Size(5, 5, 1);
         case Format::ASTC_6x5_UNORM:
         case Format::ASTC_6x5_UNORM_SRGB:
+            return RHI::Size(6, 5, 1);
         case Format::ASTC_6x6_UNORM:
         case Format::ASTC_6x6_UNORM_SRGB:
+            return RHI::Size(6, 6, 1);
         case Format::ASTC_8x5_UNORM:
         case Format::ASTC_8x5_UNORM_SRGB:
+            return RHI::Size(8, 5, 1);
         case Format::ASTC_8x6_UNORM:
         case Format::ASTC_8x6_UNORM_SRGB:
+            return RHI::Size(8, 6, 1);
         case Format::ASTC_8x8_UNORM:
         case Format::ASTC_8x8_UNORM_SRGB:
+            return RHI::Size(8, 8, 1);
         case Format::ASTC_10x5_UNORM:
         case Format::ASTC_10x5_UNORM_SRGB:
+            return RHI::Size(10, 5, 1);
         case Format::ASTC_10x6_UNORM:
         case Format::ASTC_10x6_UNORM_SRGB:
+            return RHI::Size(10, 6, 1);
         case Format::ASTC_10x8_UNORM:
         case Format::ASTC_10x8_UNORM_SRGB:
+            return RHI::Size(10, 8, 1);
         case Format::ASTC_10x10_UNORM:
         case Format::ASTC_10x10_UNORM_SRGB:
+            return RHI::Size(10, 10, 1);
         case Format::ASTC_12x10_UNORM:
         case Format::ASTC_12x10_UNORM_SRGB:
+            return RHI::Size(12, 10, 1);
         case Format::ASTC_12x12_UNORM:
         case Format::ASTC_12x12_UNORM_SRGB:
-            return 4;
-
+            return RHI::Size(12, 12, 1);
         case Format::R8G8_B8G8_UNORM:
         case Format::G8R8_G8B8_UNORM:
         case Format::YUY2:
@@ -596,10 +608,10 @@ namespace AZ::RHI
         case Format::NV12:
         case Format::P010:
         case Format::P016:
-            return 2;
+            return RHI::Size(2, 2, 1);
 
         default:
-            return 1;
+            return RHI::Size(1, 1, 1);
         }
     }
 
