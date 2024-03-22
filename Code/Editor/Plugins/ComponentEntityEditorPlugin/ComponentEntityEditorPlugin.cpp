@@ -12,7 +12,6 @@
 
 #include "UI/QComponentEntityEditorMainWindow.h"
 #include "UI/QComponentEntityEditorOutlinerWindow.h"
-#include "UI/QComponentLevelEntityEditorMainWindow.h"
 #include "UI/ComponentPalette/ComponentPaletteSettings.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -155,56 +154,19 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         LyViewPane::CategoryTools,
         pinnedInspectorOptions);
 
-    bool prefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+    // Add the Outliner to the Tools Menu
+    ViewPaneOptions outlinerOptions;
+    outlinerOptions.canHaveMultipleInstances = true;
+    outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+    // Override the default behavior for component mode enter/exit and imgui enter/exit
+    // so that we don't automatically disable and enable the Entity Outliner. This will be handled separately.
+    outlinerOptions.isDisabledInComponentMode = false;
+    outlinerOptions.isDisabledInImGuiMode = false;
 
-    if (prefabSystemEnabled)
-    {
-        // Add the new Outliner to the Tools Menu
-
-        ViewPaneOptions outlinerOptions;
-        outlinerOptions.canHaveMultipleInstances = true;
-        outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
-        // Override the default behavior for component mode enter/exit and imgui enter/exit
-        // so that we don't automatically disable and enable the Entity Outliner. This will be handled separately.
-        outlinerOptions.isDisabledInComponentMode = false;
-        outlinerOptions.isDisabledInImGuiMode = false;
-
-        RegisterViewPane<QEntityOutlinerWindow>(
-            LyViewPane::EntityOutliner,
-            LyViewPane::CategoryTools,
-            outlinerOptions);
-    }
-    else
-    {
-        ViewPaneOptions levelInspectorOptions;
-        levelInspectorOptions.canHaveMultipleInstances = false;
-        levelInspectorOptions.preferedDockingArea = Qt::RightDockWidgetArea;
-        levelInspectorOptions.paneRect = QRect(50, 50, 400, 700);
-        RegisterViewPane<QComponentLevelEntityEditorInspectorWindow>(
-            LyViewPane::LevelInspector, LyViewPane::CategoryTools, levelInspectorOptions);
-
-        // Add the Legacy Outliner to the Tools Menu
-        ViewPaneOptions outlinerOptions;
-        outlinerOptions.canHaveMultipleInstances = true;
-        outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
-        // Override the default behavior for component mode enter/exit and imgui enter/exit
-        // so that we don't automatically disable and enable the Entity Outliner. This will be handled separately.
-        outlinerOptions.isDisabledInComponentMode = false;
-        outlinerOptions.isDisabledInImGuiMode = false;
-
-        // this pane was originally introduced with this name, so layout settings are all saved with that name, despite the preview label being removed.
-        outlinerOptions.saveKeyName = "Entity Outliner (PREVIEW)";
-
-        RegisterViewPane<QComponentEntityEditorOutlinerWindow>(
-            LyViewPane::EntityOutliner,
-            LyViewPane::CategoryTools,
-            outlinerOptions);
-
-        AzToolsFramework::ViewPaneOptions options;
-        options.preferedDockingArea = Qt::NoDockWidgetArea;
-        RegisterViewPane<SliceRelationshipWidget>(LyViewPane::SliceRelationships, LyViewPane::CategoryTools, options);
-    }
+    RegisterViewPane<QEntityOutlinerWindow>(
+        LyViewPane::EntityOutliner,
+        LyViewPane::CategoryTools,
+        outlinerOptions);
 
     ComponentEntityEditorPluginInternal::RegisterSandboxObjects();
 
