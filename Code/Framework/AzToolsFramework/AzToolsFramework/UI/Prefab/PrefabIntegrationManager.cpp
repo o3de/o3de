@@ -39,7 +39,6 @@
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -975,20 +974,11 @@ namespace AzToolsFramework
             }
 
             // Check all entities
-            bool containsLayers = false;
             for (const auto& entityId : selectedEntities)
             {
                 if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
                 {
                     // Can't create a prefab with read-only entities in it.
-                    return false;
-                }
-
-                AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                    containsLayers, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-                if (containsLayers)
-                {
-                    // Can't create a prefab with layers in it.
                     return false;
                 }
             }
