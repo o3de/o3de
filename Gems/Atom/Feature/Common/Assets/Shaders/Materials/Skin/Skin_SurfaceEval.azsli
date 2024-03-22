@@ -139,7 +139,7 @@ Surface EvaluateSurface_Skin(
 
     // ------- Normal -------
 
-    surface.vertexNormal = vertexNormal;
+    surface.vertexNormal = real3(vertexNormal);
     real detailLayerNormalFactor = real(MaterialSrg::m_detail_normal_factor) * detailLayerBlendFactor;
 
     // Since the wrinkle normal maps should all be in the same tangent space as the main normal map, we should be able to blend the raw normal map

@@ -29,7 +29,7 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(
     PixelGeometryData geoData;
 
     geoData.positionWS = positionWS;
-    geoData.vertexNormal = normalize(normalWS);
+    geoData.vertexNormal = real3( normalize(normalWS) );
 
     geoData.uvs = uvs;
     geoData.isFrontFace = isFrontFace;

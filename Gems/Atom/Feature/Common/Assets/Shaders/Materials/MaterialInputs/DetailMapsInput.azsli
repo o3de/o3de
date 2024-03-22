@@ -74,11 +74,11 @@ float3 ApplyNormalMapOverlayTS(bool applyOverlay, float3 vertexNormalWS, float3 
         // [GFX TODO][ATOM-15111]: Find a more efficient way to do this.
 
         // Convert the overlay normal from its local tangent space into the main normal's tangent space.
-        float3 overlayNormalWS = TangentSpaceToWorld(overlayNormalTS, vertexNormalWS, overlayTangent, overlayBitangent);
-        float3 overlayNormalInMainTS = WorldSpaceToTangent(overlayNormalWS, vertexNormalWS, mainTangent, mainBitangent);
+        float3 overlayNormalWS = TangentSpaceToWorldFp32(overlayNormalTS, vertexNormalWS, overlayTangent, overlayBitangent);
+        float3 overlayNormalInMainTS = WorldSpaceToTangentFp32(overlayNormalWS, vertexNormalWS, mainTangent, mainBitangent);
 
         // Combine normals in tangent space
-        float3 normalInMainTS = ReorientTangentSpaceNormal(mainNormalTS, overlayNormalInMainTS);
+        float3 normalInMainTS = ReorientTangentSpaceNormalFp32(mainNormalTS, overlayNormalInMainTS);
 
         return normalInMainTS;
     }
@@ -97,12 +97,12 @@ float3 ApplyNormalMapOverlayWS(bool applyOverlay, float3 vertexNormalWS, float3 
     if(applyOverlay && AreDetailNormalMapsEnabled())
     {
         float3 normalTS = ApplyNormalMapOverlayTS(applyOverlay, vertexNormalWS, mainNormalTS, mainTangent, mainBitangent, overlayNormalMap, overlayMapSampler, overlayUv, flipOverlayNormalX, flipOverlayNormalY, overlayFactor, overlayTangent, overlayBitangent, overlayNormalUvMatrix);
-        float3 normalWS = normalize( TangentSpaceToWorld(normalTS, vertexNormalWS, mainTangent, mainBitangent) );
+        float3 normalWS = normalize( TangentSpaceToWorldFp32(normalTS, vertexNormalWS, mainTangent, mainBitangent) );
         return normalWS;
     }
     else
     {
-        return normalize( TangentSpaceToWorld(mainNormalTS, vertexNormalWS, mainTangent, mainBitangent) );
+        return normalize( TangentSpaceToWorldFp32(mainNormalTS, vertexNormalWS, mainTangent, mainBitangent) );
     }
 }
 

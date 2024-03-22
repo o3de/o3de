@@ -26,12 +26,19 @@ void InitializeLightingData_SkinPBR(inout Surface surface, float4 screenPosition
 
     lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
     lightingData.specularOcclusion = surface.specularOcclusion;
+
+    // AKM_MARKER
     //lightingData.diffuseAmbientOcclusion = 1;
     //lightingData.specularOcclusion = 1;
 }
 
 LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPosition, float3 viewPosition)
 {
+    // AKM_MARKER
+    real3 redColor = real3(0.5, 0.0, 0.0);
+    real3 blueColor = real3(0.0, 0.0, 0.5);
+    real3 greenColor = real3(0.0, 0.5, 0.0);
+
     LightingData lightingData;
     InitializeLightingData_SkinPBR(surface, screenPosition, viewPosition, lightingData);
     
@@ -49,6 +56,7 @@ LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPositi
     // //lightingData.specularLighting *= lightingData.specularOcclusion;
     // //lightingData.diffuseLighting *= lightingData.diffuseAmbientOcclusion;
 
+#if 0
 
     bool specularIsNan = isnan(lightingData.specularLighting.x) ||
                          isnan(lightingData.specularLighting.y) ||
@@ -58,20 +66,26 @@ LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPositi
                          lightingData.specularLighting.y < 0.0f ||
                          lightingData.specularLighting.z < 0.0f;
 
-    real3 redColor = real3(0.5, 0.0, 0.0);
-    real3 blueColor = real3(0.0, 0.0, 0.5);
-    real3 greenColor = real3(0.0, 0.5, 0.0);
+    bool diffuseIsNan = isnan(lightingData.diffuseLighting.x) ||
+                        isnan(lightingData.diffuseLighting.y) ||
+                        isnan(lightingData.diffuseLighting.z);
 
-    if(specularIsNan)
+    bool diffuseIsNeg = lightingData.diffuseLighting.x < 0.0f ||
+                        lightingData.diffuseLighting.y < 0.0f ||
+                        lightingData.diffuseLighting.z < 0.0f;
+
+    if(diffuseIsNan)
     {
         lightingData.specularLighting = redColor;
     }
-    else if(specularIsNeg)
+    else if(diffuseIsNeg)
     {
         lightingData.specularLighting = blueColor;
     }
-
-
+    else
+    {
+        lightingData.specularLighting = greenColor;
+    }
 
     //ApplySimpleSpotLights(surface, lightingData);
 
@@ -160,6 +174,8 @@ LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPositi
     //lightingData.diffuseLighting = saturate(surface.roughnessLinear * surface.specularF0 * 6.0f);
     //lightingData.diffuseLighting = real3(0.2, 0.2, 0.0);
     //lightingData.specularLighting = real3(0.0, 0.0, 0.0);
+
+#endif
 
     return lightingData;
 }

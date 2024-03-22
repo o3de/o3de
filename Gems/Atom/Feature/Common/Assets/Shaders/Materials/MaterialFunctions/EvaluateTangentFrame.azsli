@@ -11,7 +11,7 @@
 // The built-in tangent frame evaluation forwards the tangent frame interpolated from the vertex
 // data streams for UV-index 0. For UV-index 1, the tangent frame is computed from UV surface gradients.
 void EvaluateTangentFrame(
-    float3 normal,
+    real3 normal,
     float3 worldPosition,
     bool isFrontFace,
     float2 uv,
@@ -24,8 +24,8 @@ void EvaluateTangentFrame(
 {
     if (DrawSrg::GetTangentAtUv(uvIndex) == 0)
     {
-        OUT_tangent = IN_tangent;
-        OUT_bitangent = IN_bitangent;
+        OUT_tangent = float3(IN_tangent);
+        OUT_bitangent = float3(IN_bitangent);
     }
     else
     {
