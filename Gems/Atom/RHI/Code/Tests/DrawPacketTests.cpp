@@ -178,7 +178,7 @@ namespace UnitTest
             m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
 
             m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
-            m_rhiSystem->InitDevices(AZ::RHI::InitDevicesFlags::SingleDevice);
+            m_rhiSystem->InitDevices();
             m_rhiSystem->Init();
         }
 

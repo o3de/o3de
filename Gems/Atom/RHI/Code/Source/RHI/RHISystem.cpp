@@ -35,11 +35,11 @@ namespace AZ::RHI
         return Interface<RHIMemoryStatisticsInterface>::Get();
     }
 
-    ResultCode RHISystem::InitDevices(InitDevicesFlags initializationVariant)
+    ResultCode RHISystem::InitDevices(int deviceCount)
     {
         Interface<RHISystemInterface>::Register(this);
         Interface<RHIMemoryStatisticsInterface>::Register(this);
-        return InitInternalDevices(initializationVariant);
+        return InitInternalDevices(deviceCount);
     }
     
     void RHISystem::Init(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout)
@@ -111,7 +111,7 @@ namespace AZ::RHI
         RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnRHISystemInitialized);
     }
 
-    ResultCode RHISystem::InitInternalDevices(InitDevicesFlags initializationVariant)
+    ResultCode RHISystem::InitInternalDevices(int deviceCount)
     {
         RHI::PhysicalDeviceList physicalDevices = RHI::Factory::Get().EnumeratePhysicalDevices();
 
@@ -125,7 +125,7 @@ namespace AZ::RHI
 
         RHI::PhysicalDeviceList usePhysicalDevices;
 
-        if (initializationVariant == InitDevicesFlags::MultiDevice)
+        if (deviceCount > 1)
         {
             AZ_Printf("RHISystem", "\tUsing multiple devices\n");
 
@@ -206,6 +206,14 @@ namespace AZ::RHI
             {
                 m_devices.emplace_back(AZStd::move(device));
             }
+        }
+
+        for (auto index{ 0 }; m_devices.size() < deviceCount; index++)
+        {
+            // We do not have enough physical devices for the requested device count
+            // Virtualize the existing devices up to the required number
+            auto deviceIndex{ AddVirtualDevice(m_devices[index]->GetDeviceIndex()) };
+            AZ_Printf("RHISystem", "\tVirtualized device %d from device %d\n", deviceIndex.value(), m_devices[index]->GetDeviceIndex());
         }
 
         if (m_devices.empty())
