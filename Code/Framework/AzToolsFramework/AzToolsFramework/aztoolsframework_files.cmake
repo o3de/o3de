@@ -968,6 +968,8 @@ set(FILES
     UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.hxx
     UI/Outliner/EntityOutlinerListModel.cpp
+    UI/Outliner/EntityOutlinerListModelFromPrefab.hxx
+    UI/Outliner/EntityOutlinerListModelFromPrefab.cpp
     UI/Outliner/EntityOutlinerRequestBus.h
     UI/Outliner/EntityOutlinerSearchWidget.h
     UI/Outliner/EntityOutlinerSearchWidget.cpp

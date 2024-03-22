@@ -36,7 +36,7 @@
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDisplayOptionsMenu.h>
-#include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerListModelFromPrefab.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
 
 #include <AzQtComponents/Components/StyleManager.h>
@@ -170,7 +170,7 @@ namespace AzToolsFramework
         m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
         AZ_Assert(
             (m_readOnlyEntityPublicInterface != nullptr),
-            "EntityOutlinerListModel requires a ReadOnlyEntityPublicInterface instance on Initialize.");
+            "EntityOutlinerWidget requires a ReadOnlyEntityPublicInterface instance on Initialize.");
 
         m_gui = new Ui::EntityOutlinerWidgetUI();
         m_gui->setupUi(this);
@@ -192,7 +192,7 @@ namespace AzToolsFramework
         AzQtComponents::StyleManager::addSearchPaths("outliner", pathOnDisk, qrcPath.toString(), engineRootPath);
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("outliner:EntityOutliner.qss"));
 
-        m_listModel = aznew EntityOutlinerListModel(this);
+        m_listModel = aznew EntityOutlinerListModelFromPrefab(this);
         m_listModel->SetSortMode(m_sortMode);
 
         const int autoExpandDelayMilliseconds = 2500;
@@ -227,10 +227,10 @@ namespace AzToolsFramework
         connect(m_gui->m_objectTree, &QTreeView::expanded, this, &EntityOutlinerWidget::OnTreeItemExpanded);
         connect(m_gui->m_objectTree, &QTreeView::collapsed, this, &EntityOutlinerWidget::OnTreeItemCollapsed);
         connect(m_gui->m_objectTree, &EntityOutlinerTreeView::ItemDropped, this, &EntityOutlinerWidget::OnDropEvent);
-        connect(m_listModel, &EntityOutlinerListModel::SelectEntity, this, &EntityOutlinerWidget::OnSelectEntity);
-        connect(m_listModel, &EntityOutlinerListModel::EnableSelectionUpdates, this, &EntityOutlinerWidget::OnEnableSelectionUpdates);
-        connect(m_listModel, &EntityOutlinerListModel::ResetFilter, this, &EntityOutlinerWidget::ClearFilter);
-        connect(m_listModel, &EntityOutlinerListModel::ReapplyFilter, this, &EntityOutlinerWidget::InvalidateFilter);
+        connect(m_listModel, &EntityOutlinerListModelFromPrefab::SelectEntity, this, &EntityOutlinerWidget::OnSelectEntity);
+        connect(m_listModel, &EntityOutlinerListModelFromPrefab::EnableSelectionUpdates, this, &EntityOutlinerWidget::OnEnableSelectionUpdates);
+        connect(m_listModel, &EntityOutlinerListModelFromPrefab::ResetFilter, this, &EntityOutlinerWidget::ClearFilter);
+        connect(m_listModel, &EntityOutlinerListModelFromPrefab::ReapplyFilter, this, &EntityOutlinerWidget::InvalidateFilter);
 
         QToolButton* display_options = new QToolButton(this);
         display_options->setObjectName(QStringLiteral("m_display_options"));
@@ -247,7 +247,7 @@ namespace AzToolsFramework
         // Sorting is performed in a very specific way by the proxy model.
         // Disable sort indicator so user isn't confused by the fact
         // that they can't actually change how sorting works.
-        m_gui->m_objectTree->hideColumn(EntityOutlinerListModel::ColumnSortIndex);
+        m_gui->m_objectTree->hideColumn(EntityOutlinerListModelFromPrefab::ColumnSortIndex);
         m_gui->m_objectTree->setSortingEnabled(true);
         m_gui->m_objectTree->header()->setSortIndicatorShown(false);
         m_gui->m_objectTree->header()->setStretchLastSection(false);
@@ -258,13 +258,13 @@ namespace AzToolsFramework
         // resize the icon columns so that the Visibility and Lock toggle icon columns stay right-justified
         m_gui->m_objectTree->header()->setStretchLastSection(false);
         m_gui->m_objectTree->header()->setMinimumSectionSize(0);
-        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnName, QHeaderView::Stretch);
-        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnVisibilityToggle, QHeaderView::Fixed);
-        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnVisibilityToggle, 20);
-        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnLockToggle, QHeaderView::Fixed);
-        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnLockToggle, 24);
-        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModel::ColumnSpacing, QHeaderView::Fixed);
-        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModel::ColumnSpacing, 16);
+        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModelFromPrefab::ColumnName, QHeaderView::Stretch);
+        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModelFromPrefab::ColumnVisibilityToggle, QHeaderView::Fixed);
+        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModelFromPrefab::ColumnVisibilityToggle, 20);
+        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModelFromPrefab::ColumnLockToggle, QHeaderView::Fixed);
+        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModelFromPrefab::ColumnLockToggle, 24);
+        m_gui->m_objectTree->header()->setSectionResizeMode(EntityOutlinerListModelFromPrefab::ColumnSpacing, QHeaderView::Fixed);
+        m_gui->m_objectTree->header()->resizeSection(EntityOutlinerListModelFromPrefab::ColumnSpacing, 16);
 
         connect(m_gui->m_objectTree->selectionModel(),
             &QItemSelectionModel::selectionChanged,
@@ -835,8 +835,8 @@ namespace AzToolsFramework
 
         switch (index.column())
         {
-            case EntityOutlinerListModel::ColumnVisibilityToggle:
-            case EntityOutlinerListModel::ColumnLockToggle:
+            case EntityOutlinerListModelFromPrefab::ColumnVisibilityToggle:
+            case EntityOutlinerListModelFromPrefab::ColumnLockToggle:
                 // Don't care passing an explicit check state as the model is just toggling on its own
                 m_gui->m_objectTree->model()->setData(index, Qt::CheckState(), Qt::CheckStateRole);
                 break;
@@ -997,7 +997,7 @@ namespace AzToolsFramework
         for (const auto& index : selection.indexes())
         {
             // Skip any column except the main name column...
-            if (index.column() == EntityOutlinerListModel::ColumnName)
+            if (index.column() == EntityOutlinerListModelFromPrefab::ColumnName)
             {
                 const AZ::EntityId entityId = GetEntityIdFromIndex(index);
                 if (entityId.IsValid())
@@ -1021,12 +1021,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters)
     {
-        AZStd::vector<EntityOutlinerListModel::ComponentTypeValue> componentFilters;
+        AZStd::vector<EntityOutlinerListModelFromPrefab::ComponentTypeValue> componentFilters;
         componentFilters.reserve(activeTypeFilters.count());
 
         for (auto filter : activeTypeFilters)
         {
-            EntityOutlinerListModel::ComponentTypeValue value;
+            EntityOutlinerListModelFromPrefab::ComponentTypeValue value;
             value.m_uuid = qvariant_cast<AZ::Uuid>(filter.metadata);
             value.m_globalVal = filter.globalFilterValue;
             componentFilters.push_back(value);
