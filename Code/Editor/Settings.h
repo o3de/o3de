@@ -194,11 +194,6 @@ struct SExperimentalFeaturesSettings
 };
 
 //////////////////////////////////////////////////////////////////////////
-struct SSliceSettings
-{
-    bool dynamicByDefault;
-};
-
 struct SLevelSaveSettings
 {
     AzToolsFramework::Prefab::SaveAllPrefabsPreference saveAllPrefabsPreference;
@@ -270,7 +265,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     void ConvertPath(const AZStd::string_view sourcePath, AZStd::string& category, AZStd::string& attribute);
 
     // needs to be called after crysystem has been loaded
-    void    LoadDefaultGamePaths();
+    void LoadDefaultGamePaths();
 
     // need to expose updating of the source control enable/disable flag
     // because its state is updateable through the main status bar
@@ -283,9 +278,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     // Variables.
     //////////////////////////////////////////////////////////////////////////
     int undoLevels;
-    bool m_undoSliceOverrideSaveValue;
     bool bShowDashboardAtStartup;
-    bool m_showCircularDependencyError;
     bool bAutoloadLastLevelAtStartup;
     bool bMuteAudio;
 
@@ -412,11 +405,16 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     int backgroundUpdatePeriod;
     const char* g_TemporaryLevelName;
 
-    SSliceSettings sliceSettings;
-
     SLevelSaveSettings levelSaveSettings;
 
-    bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
+    // Legacy - remove once all references have been removed.
+    struct SSliceSettings
+    {
+        bool dynamicByDefault;
+    };
+
+    SSliceSettings sliceSettings;
+    bool prefabSystem = true;
 
 private:
     void SaveValue(const char* sSection, const char* sKey, int value);
