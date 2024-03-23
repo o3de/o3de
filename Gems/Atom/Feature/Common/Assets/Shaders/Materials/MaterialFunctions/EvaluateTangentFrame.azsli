@@ -24,8 +24,8 @@ void EvaluateTangentFrame(
 {
     if (DrawSrg::GetTangentAtUv(uvIndex) == 0)
     {
-        OUT_tangent = float3(IN_tangent);
-        OUT_bitangent = float3(IN_bitangent);
+        OUT_tangent = IN_tangent;
+        OUT_bitangent = IN_bitangent;
     }
     else
     {

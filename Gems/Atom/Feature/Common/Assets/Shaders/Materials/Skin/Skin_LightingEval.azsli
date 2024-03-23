@@ -44,17 +44,20 @@ LightingData EvaluateLighting_SkinPBR(inout Surface surface, float4 screenPositi
     
     CalculateLighting_BasePBR(surface, screenPosition, lightingData);
 
-    // // Apply Direct Lighting
+    // Apply Direct Lighting
     // ApplyDirectLighting(surface, lightingData, screenPosition);
-    // 
+    
     // // Apply Image Based Lighting (IBL)
     // ApplyIblForward(surface, lightingData);
-    // 
-    // // Finalize Lighting
+
+    // Finalize Lighting
     // lightingData.FinalizeLighting(surface);
-    // 
-    // //lightingData.specularLighting *= lightingData.specularOcclusion;
-    // //lightingData.diffuseLighting *= lightingData.diffuseAmbientOcclusion;
+    
+    //lightingData.specularLighting *= lightingData.specularOcclusion;
+    //lightingData.diffuseLighting *= lightingData.diffuseAmbientOcclusion;
+
+    //lightingData.diffuseLighting = 0;
+    //lightingData.specularLighting *= 20.0f;
 
 #if 0
 
