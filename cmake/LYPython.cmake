@@ -34,7 +34,15 @@ execute_process(COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Ca
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # Normalize the expected location of the Python venv and set its path globally
-set(PYTHON_VENV_PATH "${LY_3RDPARTY_PATH}/venv/${ENGINE_SOURCE_PATH_ID}")
+# The root Python folder is based off of the same folder as the manifest file
+if(DEFINED ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
+    set(PYTHON_ROOT_PATH "$ENV{USERPROFILE}/.o3de/Python") # Windows
+else()
+    set(PYTHON_ROOT_PATH "$ENV{HOME}/.o3de/Python") # Unix
+endif()
+set(PYTHON_PACKAGES_ROOT_PATH "${PYTHON_ROOT_PATH}/packages")
+set(PYTHON_PACKAGE_CACHE_ROOT_PATH "${PYTHON_ROOT_PATH}/downloaded_packages")
+set(PYTHON_VENV_PATH "${PYTHON_ROOT_PATH}/venv/${ENGINE_SOURCE_PATH_ID}")
 cmake_path(NORMAL_PATH PYTHON_VENV_PATH )
 ly_set(LY_PYTHON_VENV_PATH ${PYTHON_VENV_PATH})
 
@@ -76,8 +84,8 @@ function(ly_setup_python_venv)
         # a link to the shared library within the created virtual environment before proceeding with
         # the pip install command.
         message(STATUS "Creating Python venv at ${PYTHON_VENV_PATH}")
-        execute_process(COMMAND "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}/${LY_PYTHON_EXECUTABLE}" -m venv "${PYTHON_VENV_PATH}" --without-pip --clear
-                        WORKING_DIRECTORY "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}"
+        execute_process(COMMAND "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}/${LY_PYTHON_EXECUTABLE}" -m venv "${PYTHON_VENV_PATH}" --without-pip --clear
+                        WORKING_DIRECTORY "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}"
                         COMMAND_ECHO STDOUT
                         RESULT_VARIABLE command_result)
 
@@ -287,6 +295,8 @@ endfunction()
 
 # We need to download the associated Python package early and install the venv 
 ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
+ly_set_package_download_location(${LY_PYTHON_PACKAGE_NAME} ${PYTHON_PACKAGES_ROOT_PATH})
+ly_set_package_download_cache_location(${LY_PYTHON_PACKAGE_NAME} ${PYTHON_PACKAGE_CACHE_ROOT_PATH})
 ly_download_associated_package(Python)
 ly_setup_python_venv()
 

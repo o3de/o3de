@@ -26,14 +26,11 @@ ly_set(LY_PYTHON_VENV_LIB_PATH "lib")
 ly_set(LY_PYTHON_VENV_SITE_PACKAGES "${LY_PYTHON_VENV_LIB_PATH}/python3.10/site-packages")
 ly_set(LY_PYTHON_VENV_PYTHON "${LY_PYTHON_VENV_BIN_PATH}/python")
 
-ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
-
 function(ly_post_python_venv_install venv_path)
 
 	# We need to create a symlink to the shared library in the venv
-    execute_process(COMMAND ln -s -f "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_LIB_PATH}/${LY_PYTHON_SHARED_LIB}" ${LY_PYTHON_SHARED_LIB}
+    execute_process(COMMAND ln -s -f "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_LIB_PATH}/${LY_PYTHON_SHARED_LIB}" ${LY_PYTHON_SHARED_LIB}
                     WORKING_DIRECTORY "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_LIB_PATH}"
-                    COMMAND_ECHO STDOUT
                     RESULT_VARIABLE command_result)
     if (NOT ${command_result} EQUAL 0)
         message(WARNING "Unable to create a venv shared library link.")

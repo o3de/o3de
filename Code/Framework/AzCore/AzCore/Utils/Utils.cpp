@@ -428,6 +428,14 @@ namespace AZ::Utils
         return AZ::Success(thirdPartyFolder);
     }
 
+    AZ::IO::FixedMaxPathString GetO3dePythonVenvRoot(AZ::SettingsRegistryInterface* settingsRegistry /*= nullptr*/)
+    {
+        // Locate the manifest directory
+        auto manifestDirectory = AZ::IO::FixedMaxPath(GetO3deManifestDirectory(settingsRegistry)) / "Python" / "venv";
+        return AZ::IO::FixedMaxPathString(manifestDirectory.c_str());
+    }
+
+
     template AZ::Outcome<AZStd::string, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
     template AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
     template AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);

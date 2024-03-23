@@ -41,17 +41,23 @@ function(ly_copy source_files relative_target_directory)
             else()
                 set(target_file_size 0)
             endif()
-            if((NOT source_file_size EQUAL target_file_size) OR "${source_file}" IS_NEWER_THAN "${target_file}")
-                message(STATUS "Copying \"${source_file}\" to \"${target_directory}\"...")
-                file(MAKE_DIRECTORY "${full_target_directory}")
-                file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
-                file(TOUCH_NOCREATE "${target_file}")
 
-                # Special case, shared libraries that are copied from qt/plugins have their RPATH set to \$ORIGIN/../../lib
-                # which is the correct relative path based on the source location. But when we copy it to their subfolder,
-                # the rpath needs to be adjusted to the parent ($ORIGIN/..)
-                if("${source_file}" MATCHES "qt/plugins" AND "${target_filename_ext}" STREQUAL ".so")
-                    file(RPATH_CHANGE FILE "${target_file}" OLD_RPATH "\$ORIGIN/../../lib" NEW_RPATH "\$ORIGIN/..")
+            # Special case, do not copy the libpython shared library due to the fact that it may be loaded into 
+            # memory multiple times from different sources and may cause problems with the symbols. It will be the
+            # responsibility of the PythonLoader in AzToolsFramework to load the source of truth libpython at runtime
+            if (NOT "${source_file}" MATCHES "libpython3.10.so.1.0")
+                if((NOT source_file_size EQUAL target_file_size) OR "${source_file}" IS_NEWER_THAN "${target_file}")
+                    message(STATUS "Copying \"${source_file}\" to \"${target_directory}\"...")
+                    file(MAKE_DIRECTORY "${full_target_directory}")
+                    file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
+                    file(TOUCH_NOCREATE "${target_file}")
+
+                    # Special case, shared libraries that are copied from qt/plugins have their RPATH set to \$ORIGIN/../../lib
+                    # which is the correct relative path based on the source location. But when we copy it to their subfolder,
+                    # the rpath needs to be adjusted to the parent ($ORIGIN/..)
+                    if("${source_file}" MATCHES "qt/plugins" AND "${target_filename_ext}" STREQUAL ".so")
+                        file(RPATH_CHANGE FILE "${target_file}" OLD_RPATH "\$ORIGIN/../../lib" NEW_RPATH "\$ORIGIN/..")
+                    endif()
                 endif()
             endif()
         endif()

@@ -25,33 +25,32 @@ namespace UnitTest
 
         static constexpr AZStd::string_view s_testEnginePath = "O3de_path";
         static constexpr const char* s_testEnginePathHashId = "1af80774";
-        static constexpr const char* s_test3rdPartySubPath = ".o3de/3rdParty";
+        static constexpr const char* s_testPythonRootPath = ".o3de/3rdParty";
     };
 
     TEST_F(AzToolsFrameworkPythonLoaderFixture, TestGetPythonVenvPath_Valid)
     {
-        auto test3rdPartyPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_test3rdPartySubPath;
-        auto testVenvPath = test3rdPartyPath / "venv";
+        auto testPythonRootPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_testPythonRootPath;
+        auto testVenvRootPath = testPythonRootPath / "venv";
 
         AZ::IO::FixedMaxPath engineRoot{ s_testEnginePath };
 
-        AZ::IO::SystemFile::CreateDir(test3rdPartyPath.String().c_str());
-        //AZ::IO::FileIOBase::GetInstance()->CreatePath(test3rdPartyPath.String().c_str());
+        auto result = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonVenvPath(engineRoot, testVenvRootPath.c_str());
 
-        auto result = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonVenvPath(test3rdPartyPath, engineRoot);
-
-        AZ::IO::FixedMaxPath expectedPath = testVenvPath / s_testEnginePathHashId;
+        AZ::IO::FixedMaxPath expectedPath = testVenvRootPath / s_testEnginePathHashId;
 
         EXPECT_TRUE(result == expectedPath);
     }
 
     TEST_F(AzToolsFrameworkPythonLoaderFixture, TestGetPythonVenvExecutablePath_Valid)
     {
+        auto testPythonRootPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_testPythonRootPath;
+        auto testVenvRootPath = testPythonRootPath / "venv";
+
         // Prepare the test venv pyvenv.cfg file in the expected location
-        AZ::IO::FixedMaxPath tempVenvRelativePath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv/" / s_testEnginePathHashId;
-        AZ::IO::FixedMaxPath tempVenvFullPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / tempVenvRelativePath;
-        AZ::IO::SystemFile::CreateDir(tempVenvFullPath.String().c_str());
-        AZ::IO::FixedMaxPath tempPyConfigFile = tempVenvRelativePath / "pyvenv.cfg";
+        AZ::IO::FixedMaxPath tempVenvPath = testVenvRootPath / s_testEnginePathHashId;
+        AZ::IO::SystemFile::CreateDir(tempVenvPath.String().c_str());
+        AZ::IO::FixedMaxPath tempPyConfigFile = tempVenvPath / "pyvenv.cfg";
         AZStd::string testPython3rdPartyPath = "/home/user/python/";
         AZStd::string testPyConfigFileContent = AZStd::string::format("home = %s\n"
                                                                       "include-system-site-packages = false\n"
@@ -62,9 +61,8 @@ namespace UnitTest
 
         // Test the method
         AZ::IO::FixedMaxPath engineRoot{ s_testEnginePath };
-        AZ::IO::FixedMaxPath test3rdPartyRoot = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_test3rdPartySubPath;
 
-        auto result = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonExecutablePath(test3rdPartyRoot, engineRoot);
+        auto result = AzToolsFramework::EmbeddedPython::PythonLoader::GetPythonExecutablePath(engineRoot, testVenvRootPath.c_str());
         AZ::IO::FixedMaxPath expectedPath{ testPython3rdPartyPath };
 
         EXPECT_TRUE(result == expectedPath);
@@ -73,8 +71,11 @@ namespace UnitTest
 
     TEST_F(AzToolsFrameworkPythonLoaderFixture, TestReadPythonEggLinkPaths_Valid)
     {
+        auto testPythonRootPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_testPythonRootPath;
+        auto testVenvRootPath = testPythonRootPath / "venv";
+
         // Prepare the test folder and create dummy egg-link files
-        AZ::IO::FixedMaxPath testRelativeSiteLibsPath = AZ::IO::FixedMaxPath(s_test3rdPartySubPath) / "venv" / s_testEnginePathHashId / O3DE_PYTHON_SITE_PACKAGE_SUBPATH;
+        AZ::IO::FixedMaxPath testRelativeSiteLibsPath = testVenvRootPath / s_testEnginePathHashId / O3DE_PYTHON_SITE_PACKAGE_SUBPATH;
         AZ::IO::FixedMaxPath testFullSiteLIbsPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / testRelativeSiteLibsPath;
         AZ::IO::SystemFile::CreateDir(testFullSiteLIbsPath.String().c_str());
 
@@ -97,15 +98,14 @@ namespace UnitTest
 
         // Test the method
         AZ::IO::FixedMaxPath engineRoot{ s_testEnginePath };
-        AZ::IO::FixedMaxPath test3rdPartyRoot = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_test3rdPartySubPath;
         AZStd::vector<AZStd::string> resultEggLinkPaths;
         AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(
-            test3rdPartyRoot,
             engineRoot,
             [&resultEggLinkPaths](AZ::IO::PathView path)
             {
                 resultEggLinkPaths.emplace_back(path.Native());
-            } );
+            },
+            testVenvRootPath.c_str());
 
         // Sort the expected and actual lists
         AZStd::sort(expectedResults.begin(), expectedResults.end());

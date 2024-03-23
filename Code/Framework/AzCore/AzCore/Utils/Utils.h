@@ -176,6 +176,11 @@ namespace AZ
         //! Returns the outcome of the request, the configured 3rd Party path if successful, the error message if not.
         AZ::Outcome<AZStd::string, AZStd::string> Get3rdPartyDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
+        //! Retrieves the full directory to the O3DE Python virtual environment (venv) folder. 
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetO3dePythonVenvRoot(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
 
         //! error code value returned when GetEnv fails
         enum class GetEnvErrorCode
