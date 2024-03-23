@@ -1297,18 +1297,17 @@ IEditor* SandboxIntegrationManager::GetEditor()
 //////////////////////////////////////////////////////////////////////////
 bool SandboxIntegrationManager::GetUndoSliceOverrideSaveValue()
 {
-    return GetIEditor()->GetEditorSettings()->m_undoSliceOverrideSaveValue;
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool SandboxIntegrationManager::GetShowCircularDependencyError()
 {
-    return GetIEditor()->GetEditorSettings()->m_showCircularDependencyError;
+    return true;
 }
 
-void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& showCircularDependencyError)
+void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& /* showCircularDependencyError */)
 {
-    GetIEditor()->GetEditorSettings()->m_showCircularDependencyError = showCircularDependencyError;
 }
 
 //////////////////////////////////////////////////////////////////////////
