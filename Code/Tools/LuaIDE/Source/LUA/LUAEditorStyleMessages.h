@@ -164,7 +164,11 @@ namespace LUAEditor
             4
         };
 
+#if defined(CARBONATED)
+        bool m_useSpacesInsteadOfTabs = true;
+#else
         bool m_useSpacesInsteadOfTabs = false;
+#endif
 
         void OnColorChange();
         void OnFontChange();
