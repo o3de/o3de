@@ -36,12 +36,7 @@ namespace AzToolsFramework::EmbeddedPython
         // Construct the path to the shared python library within the venv folder
         AZ::IO::PathView libPythonName = AZ::IO::PathView(PYTHON_SHARED_LIBRARY_PATH).Filename();
 
-        // Construct the path to the shared python library within the venv folder
-        AZ::IO::FixedMaxPath engineRoot = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath());
-        AZ::IO::FixedMaxPath pythonVenvPath = PythonLoader::GetPythonVenvPath(engineRoot);
-        AZ::IO::FixedMaxPath pythonVenvLibPath = pythonVenvPath / "lib" / libPythonName;
-
-        m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(pythonVenvLibPath.StringAsPosix().c_str(), false);
+        m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(libPythonName.StringAsPosix().c_str(), false);
         bool loadResult = m_embeddedLibPythonModuleHandle->Load(false, true);
         AZ_Error("PythonLoader", loadResult, "Failed to load %s.\n", libPythonName.StringAsPosix().c_str());
 
