@@ -499,6 +499,9 @@ function(ly_delayed_generate_runtime_dependencies)
             unset(target_file)
         endif()
 
+        set(LY_CURRENT_PYTHON_PACKAGE_PATH "${CMAKE_CURRENT_LIST_DIR}/python/packages/${LY_PYTHON_PACKAGE_NAME}")
+        cmake_path(NORMAL_PATH LY_CURRENT_PYTHON_PACKAGE_PATH )
+
         ly_file_read(${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
         string(CONFIGURE "${LY_COPY_COMMANDS}" LY_COPY_COMMANDS @ONLY)
         string(CONFIGURE "${template_file}" configured_template_file @ONLY)

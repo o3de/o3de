@@ -33,7 +33,20 @@ function(ly_copy source_files relative_target_directory)
         cmake_PATH(GET source_file EXTENSION target_filename_ext)
         cmake_path(APPEND target_file "${target_directory}" "${target_filename}")
         cmake_path(COMPARE "${source_file}" EQUAL "${target_file}" same_location)
-        if(NOT ${same_location})
+
+        if("${source_file}" MATCHES "@LY_PYTHON_SHARED_LIB@")
+            # Special case: Since the shared python library is loaded dynamically, it has the potential of being loaded from multiple
+            # sources. To make sure that duplicate loads to the shared python library load to the same handle, create a soft-symlink
+            # instead so that the dlopen call can resolve the library properly
+
+            # Use the relative path to the package source for the link
+            set(source_python_package_abs @LY_CURRENT_PYTHON_PACKAGE_PATH@/python/lib/@LY_PYTHON_SHARED_LIB@)
+            cmake_path(RELATIVE_PATH source_python_package_abs BASE_DIRECTORY ${target_directory} OUTPUT_VARIABLE source_python_package_rel)
+
+            execute_process(COMMAND ln -s -f "${source_python_package_rel}" @LY_PYTHON_SHARED_LIB@
+                            WORKING_DIRECTORY "${target_directory}")
+
+        elseif(NOT ${same_location})
             file(LOCK "${target_file}.lock" GUARD FUNCTION TIMEOUT 300)
             file(SIZE "${source_file}" source_file_size)
             if(EXISTS "${target_file}")
