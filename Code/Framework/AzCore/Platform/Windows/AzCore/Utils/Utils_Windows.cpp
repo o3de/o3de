@@ -46,10 +46,9 @@ namespace AZ::Utils
         wchar_t sysUserProfilePathW[MAX_PATH];
         if (SUCCEEDED(SHGetFolderPath(0, CSIDL_PROFILE, 0, SHGFP_TYPE_DEFAULT, sysUserProfilePathW)))
         {
-            AZStd::string sysUserProfilePathStr;
+            AZ::IO::FixedMaxPathString sysUserProfilePathStr;
             AZStd::to_string(sysUserProfilePathStr, sysUserProfilePathW);
-            AZ::IO::FixedMaxPath path{ sysUserProfilePathStr.c_str() };
-            return path.Native();
+            return sysUserProfilePathStr;
         }
 
         char userProfileBuffer[AZ::IO::MaxPathLength]{};
