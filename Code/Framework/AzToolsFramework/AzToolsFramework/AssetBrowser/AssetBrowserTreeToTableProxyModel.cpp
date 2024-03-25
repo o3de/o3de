@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTreeToTableProxyModel.h>
-#include <AzCore/std/functional.h>
+
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/std/functional.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTreeToTableProxyModel.h>
 
 namespace AzToolsFramework
 {
@@ -105,86 +106,128 @@ namespace AzToolsFramework
         {
             beginResetModel();
 
-            if (sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (sourceModelPtr)
             {
-                disconnect(sourceModel(), nullptr, this, nullptr);
+                disconnect(sourceModelPtr, nullptr, this, nullptr);
             }
 
             QAbstractProxyModel::setSourceModel(model);
             if (model)
             {
-                connect(model, &QAbstractItemModel::rowsAboutToBeInserted, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsAboutToBeInserted,
+                    this,
                     [this](const QModelIndex& parent, int start, int end)
                     {
                         RowsAboutToBeInserted(parent, start, end);
                     });
 
-                connect(model, &QAbstractItemModel::rowsInserted, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsInserted,
+                    this,
                     [this](const QModelIndex& parent, int start, int end)
                     {
                         RowsInserted(parent, start, end);
                     });
 
-                connect(model, &QAbstractItemModel::rowsAboutToBeRemoved, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsAboutToBeRemoved,
+                    this,
                     [this](const QModelIndex& parent, int start, int end)
                     {
                         RowsAboutToBeRemoved(parent, start, end);
                     });
 
-                connect(model, &QAbstractItemModel::rowsRemoved, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsRemoved,
+                    this,
                     [this](const QModelIndex& parent, int start)
                     {
                         RowsRemoved(parent, start);
                     });
 
-                connect(model, &QAbstractItemModel::rowsAboutToBeMoved, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsAboutToBeMoved,
+                    this,
                     [this]()
                     {
                         LayoutChanged();
                     });
 
-                connect(model, &QAbstractItemModel::rowsMoved, this,
-                    [this](const QModelIndex& srcParent, int srcStart, [[maybe_unused]]int srcEnd, const QModelIndex& destParent, int destStart)
+                connect(
+                    model,
+                    &QAbstractItemModel::rowsMoved,
+                    this,
+                    [this](
+                        const QModelIndex& srcParent,
+                        int srcStart,
+                        [[maybe_unused]] int srcEnd,
+                        const QModelIndex& destParent,
+                        int destStart)
                     {
                         RowsMoved(srcParent, srcStart, destParent, destStart);
                     });
 
-                connect(model, &QAbstractItemModel::modelAboutToBeReset, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::modelAboutToBeReset,
+                    this,
                     [this]()
                     {
                         beginResetModel();
                     });
 
-                connect(model, &QAbstractItemModel::modelReset, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::modelReset,
+                    this,
                     [this]()
                     {
                         ModelReset();
                     });
 
-                connect(model, &QAbstractItemModel::dataChanged, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::dataChanged,
+                    this,
                     [this](const QModelIndex& topLeft, const QModelIndex& bottomRight)
                     {
                         DataChanged(topLeft, bottomRight);
                     });
 
-                connect(model, &QAbstractItemModel::layoutAboutToBeChanged, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::layoutAboutToBeChanged,
+                    this,
                     [this]()
                     {
                         LayoutAboutToBeChanged();
                     });
 
-                connect(model, &QAbstractItemModel::layoutChanged, this,
+                connect(
+                    model,
+                    &QAbstractItemModel::layoutChanged,
+                    this,
                     [this]()
                     {
                         LayoutChanged();
                     });
 
-                connect(model, &QObject::destroyed, this,
+                connect(
+                    model,
+                    &QObject::destroyed,
+                    this,
                     [this]()
                     {
                         resetInternalData();
                     });
-             }
+            }
 
             resetInternalData();
             if (model && model->hasChildren())
@@ -196,12 +239,13 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserTreeToTableProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
         {
-            if (!sourceModel() || columnCount() <= section)
+            auto sourceModelPtr = sourceModel();
+            if (!sourceModelPtr || columnCount() <= section)
             {
                 return QVariant();
             }
 
-            return sourceModel()->headerData(section, orientation, role);
+            return sourceModelPtr->headerData(section, orientation, role);
         }
 
         QModelIndex AssetBrowserTreeToTableProxyModel::parent([[maybe_unused]] const QModelIndex& index) const
@@ -367,12 +411,13 @@ namespace AzToolsFramework
 
         int AssetBrowserTreeToTableProxyModel::columnCount(const QModelIndex& parent) const
         {
-            if (parent.isValid() || !sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (parent.isValid() || !sourceModelPtr)
             {
                 return 0;
             }
 
-            return sourceModel()->columnCount();
+            return sourceModelPtr->columnCount();
         }
 
         void AssetBrowserTreeToTableProxyModel::UpdateInternalIndices(int start, int offset)
@@ -385,7 +430,7 @@ namespace AzToolsFramework
             {
                 updates.insert(it.key() + offset, *it);
             }
-              
+
             const QHash<int, QPersistentModelIndex>::const_iterator end2 = updates.constEnd();
 
             for (QHash<int, QPersistentModelIndex>::const_iterator it = updates.constBegin(); it != end2; ++it)
@@ -712,7 +757,8 @@ namespace AzToolsFramework
 
         QModelIndex AssetBrowserTreeToTableProxyModel::mapFromSource(const QModelIndex& sourceIndex) const
         {
-            if (!sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (!sourceModelPtr)
             {
                 return QModelIndex();
             }
@@ -770,7 +816,8 @@ namespace AzToolsFramework
 
         QModelIndex AssetBrowserTreeToTableProxyModel::mapToSource(const QModelIndex& proxyIndex) const
         {
-            if (m_map.Empty() || !proxyIndex.isValid() || !sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (m_map.Empty() || !proxyIndex.isValid() || !sourceModelPtr)
             {
                 return QModelIndex();
             }
@@ -814,23 +861,25 @@ namespace AzToolsFramework
 
         Qt::ItemFlags AssetBrowserTreeToTableProxyModel::flags(const QModelIndex& index) const
         {
-            if (!index.isValid() || !sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (!index.isValid() || !sourceModelPtr)
             {
                 return QAbstractProxyModel::flags(index);
             }
 
             const QModelIndex srcIndex = mapToSource(index);
-            return sourceModel()->flags(srcIndex);
+            return sourceModelPtr->flags(srcIndex);
         }
 
         int AssetBrowserTreeToTableProxyModel::rowCount(const QModelIndex& parent) const
         {
-            if (m_parents.contains(parent) || parent.isValid() || !sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (m_parents.contains(parent) || parent.isValid() || !sourceModelPtr)
             {
                 return 0;
             }
 
-            if (m_map.Empty() && sourceModel()->hasChildren())
+            if (m_map.Empty() && sourceModelPtr->hasChildren())
             {
                 const_cast<AssetBrowserTreeToTableProxyModel*>(this)->RefreshMap();
             }
@@ -839,14 +888,15 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserTreeToTableProxyModel::data(const QModelIndex& index, int role) const
         {
-            if (!sourceModel())
+            auto sourceModelPtr = sourceModel();
+            if (!sourceModelPtr)
             {
                 return QVariant();
             }
 
             if (!index.isValid())
             {
-                return sourceModel()->data(index, role);
+                return sourceModelPtr->data(index, role);
             }
 
             QModelIndex sourceIndex = mapToSource(index);

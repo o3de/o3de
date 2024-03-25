@@ -112,6 +112,10 @@ namespace AzToolsFramework
 
             //! Actual name of the asset or folder
             const AZStd::string& GetName() const;
+            //! Group name CRC provided by asset type info
+            const AZ::u32 GetGroupNameCrc() const;
+            //! Group name provided by asset type info
+            const QString& GetGroupName() const;
             //! Display name represents how entry is shown in asset browser
             const QString& GetDisplayName() const;
 
@@ -124,7 +128,7 @@ namespace AzToolsFramework
             const AZStd::string& GetVisiblePath() const;
             //! Return absolute path to this file. Note that this decodes it to native slashes and resolves
             //! any aliases.
-            const AZStd::string GetFullPath() const;
+            const AZStd::string& GetFullPath() const;
             //! Return the size on disk of the asset
             const size_t GetDiskSize() const;
             //! Return the time the file was last modified.
@@ -136,6 +140,14 @@ namespace AzToolsFramework
 
             const QString& GetEntryTypeAsString() const;
             static const AZStd::string ExtensionToType(AZStd::string_view str);
+
+            //! Recursively call the visitor function for the current entry and all of its parents.
+            //! Returning false from the visitor function stops recursion.
+            void VisitUp(const AZStd::function<bool(const AssetBrowserEntry*)>& visitorFn) const;
+
+            //! Recursively call the visitor function for the current entry and all of its children.
+            //! Returning false from the visitor function stops recursion.
+            void VisitDown(const AZStd::function<bool(const AssetBrowserEntry*)>& visitorFn) const;
 
             //! Get immediate children of specific type
             template<typename EntryType>
@@ -170,6 +182,8 @@ namespace AzToolsFramework
 
         protected:
             AZStd::string m_name;
+            AZ::u32 m_groupNameCrc{ 0 };
+            QString m_groupName;
             QString m_displayName;
             QString m_displayPath;
             QString m_entryType;
