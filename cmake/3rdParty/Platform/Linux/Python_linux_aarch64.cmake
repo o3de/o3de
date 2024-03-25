@@ -28,7 +28,7 @@ ly_set(LY_PYTHON_VENV_PYTHON "${LY_PYTHON_VENV_BIN_PATH}/python")
 
 function(ly_post_python_venv_install venv_path)
 
-	# We need to create a symlink to the shared library in the venv
+    # We need to create a symlink to the shared library in the venv
     execute_process(COMMAND ln -s -f "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_LIB_PATH}/${LY_PYTHON_SHARED_LIB}" ${LY_PYTHON_SHARED_LIB}
                     WORKING_DIRECTORY "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_LIB_PATH}"
                     RESULT_VARIABLE command_result)
