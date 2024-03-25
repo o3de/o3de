@@ -587,6 +587,11 @@
             {
                 "Name": "TaaParentTemplate",
                 "Path": "Passes/TaaParent.pass"
+            },
+            {
+                // See: Without_UIPass_README.md
+                "Name": "Without_UIPass_MainPipeline", 
+                "Path": "Passes/Without_UIPass_MainPipeline.pass"
             }
         ]
     }

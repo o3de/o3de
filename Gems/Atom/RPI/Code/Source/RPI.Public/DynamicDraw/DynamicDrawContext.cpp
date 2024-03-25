@@ -298,10 +298,16 @@ namespace AZ
 
         ShaderVariantId DynamicDrawContext::UseShaderVariant(const ShaderOptionList& optionAndValues)
         {
-            AZ_Assert(m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
-                "Check if it was initialized with InitShaderWithVariant");
-
             ShaderVariantId variantId;
+
+            if (!m_initialized)
+            {
+                AZ_WarningOnce("DynamicDrawContext", false, "%s This function has been disabled because, most likely, the UIPass Pass doesn't exist.\n", __FUNCTION__);
+                return variantId;
+            }
+
+            AZ_Assert(m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
+                "Check if it was initialized with InitShaderWithVariant");
 
             if (!m_supportShaderVariants)
             {
@@ -446,7 +452,13 @@ namespace AZ
 
         void DynamicDrawContext::SetShaderVariant(ShaderVariantId shaderVariantId)
         {
-            AZ_Assert( m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
+            if (!m_initialized)
+            {
+                AZ_WarningOnce("DynamicDrawContext", false, "%s This function has been disabled because, most likely, the UIPass Pass doesn't exist.\n", __FUNCTION__);
+                return;
+            }
+
+            AZ_Assert(m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
                 "Check if it was initialized with InitShaderWithVariant");
             m_currentShaderVariantId = shaderVariantId;
         }
@@ -455,7 +467,7 @@ namespace AZ
         {
             if (!m_initialized)
             {
-                AZ_Assert(false, "DynamicDrawContext isn't initialized");
+                AZ_WarningOnce("DynamicDrawContext", false, "%s This function has been disabled because, most likely, the UIPass Pass doesn't exist.\n", __FUNCTION__);
                 return;
             }
             
@@ -553,7 +565,7 @@ namespace AZ
         {
             if (!m_initialized)
             {
-                AZ_Assert(false, "DynamicDrawContext isn't initialized");
+                AZ_WarningOnce("DynamicDrawContext", false, "%s This function has been disabled because, most likely, the UIPass Pass doesn't exist.\n", __FUNCTION__);
                 return;
             }
 

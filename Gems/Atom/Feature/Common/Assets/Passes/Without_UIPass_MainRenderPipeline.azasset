@@ -1,0 +1,18 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "RenderPipelineDescriptor",
+    "ClassData": {
+        "Name": "MainPipeline",
+        "MainViewTag": "MainCamera",
+        "RootPassTemplate": "Without_UIPass_MainPipeline",
+        "MaterialPipelineTag": "MainPipeline",
+        "AllowModification": true,
+        "RenderSettings": {
+            "MultisampleState": {
+                "samples": 2
+            }
+        },
+        "DefaultAAMethod": "MSAA"
+    }
+}
