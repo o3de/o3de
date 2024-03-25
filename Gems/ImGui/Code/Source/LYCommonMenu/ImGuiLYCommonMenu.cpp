@@ -664,6 +664,22 @@ namespace ImGui
                 if (ImGui::BeginMenu("Misc."))
                 {
                     // Assert Level
+#if defined(CARBONATED)
+                    if (console != nullptr)
+                    {
+                        int assertLevelValue = 0;
+                        if (console->GetCvarValue("sys_asserts", assertLevelValue) == AZ::GetValueResult::Success)
+                        {
+                            int dragIntVal = assertLevelValue;
+                            ImGui::Text("sys_asserts: %d ( 0-off | 1-log | 2-popup | 3-crash )", assertLevelValue);
+                            ImGui::SliderInt("##sys_asserts", &dragIntVal, 0, 3);
+                            if (dragIntVal != assertLevelValue)
+                            {
+                                console->PerformCommand(AZStd::string::format("sys_asserts %d", dragIntVal).c_str());
+                            }
+                        }
+                    }
+#else
                     static ICVar* gAssertLevelCVAR = gEnv->pConsole->GetCVar("sys_asserts");
                     if (gAssertLevelCVAR)
                     {
@@ -676,6 +692,7 @@ namespace ImGui
                             gAssertLevelCVAR->Set(dragIntVal);
                         }
                     }
+#endif
 
                     // End Misc Options Menu
                     ImGui::EndMenu();

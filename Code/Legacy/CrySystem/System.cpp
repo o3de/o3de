@@ -977,7 +977,11 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
     }
     m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", fmt.c_str());
 
+#if defined(CARBONATED)
+    if (bDbgBreak && Legacy::System::CVars::sys_error_debugbreak)
+#else
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
+#endif
     {
         AZ::Debug::Trace::Instance().Break();
     }
@@ -1203,10 +1207,12 @@ void CSystem::SetAssertLevel(int _assertlevel)
     }
 }
 
+#if !defined(CARBONATED)
 void CSystem::OnAssertLevelCvarChanged(ICVar* pArgs)
 {
     SetAssertLevel(pArgs->GetIVal());
 }
+#endif
 
 void CSystem::SetLogLevel(int _loglevel)
 {

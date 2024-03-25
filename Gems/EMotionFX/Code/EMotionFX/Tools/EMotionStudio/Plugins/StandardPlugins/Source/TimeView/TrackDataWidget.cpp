@@ -2585,7 +2585,7 @@ namespace EMStudio
                 EMotionFX::AnimGraphNode* curNode = node->GetParentNode();
                 while (curNode)
                 {
-                    nodePath.emplace(0, curNode);
+                    nodePath.emplace(nodePath.begin(), curNode);
                     curNode = curNode->GetParentNode();
                 }
 

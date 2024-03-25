@@ -190,6 +190,11 @@ namespace AZ::IO
         //returns if a archive exists matching the wildcard
         bool FindPacks(AZStd::string_view pWildcardIn) override;
 
+#if defined(CARBONATED)
+        // returns if a pak has already been opened
+        bool IsPackOpen(AZStd::string_view pName) override;
+#endif
+
         // prevent access to specific archive files
         bool SetPacksAccessible(bool bAccessible, AZStd::string_view pWildcard) override;
         bool SetPackAccessible(bool bAccessible, AZStd::string_view pName) override;

@@ -1128,6 +1128,48 @@ namespace AZ::IO
         return result;
     }
 
+#if defined(CARBONATED)
+    // returns if a pak has already been opened
+    bool Archive::IsPackOpen(AZStd::string_view pName)
+    {
+        auto fullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pName);
+        if (!fullPath)
+        {
+            AZ_Assert(false, "Unable to resolve path for filepath %.*s", AZ_STRING_ARG(pName));
+            return false;
+        }
+
+        // setup PackDesc before the test
+        PackDesc desc;
+        desc.m_strFileName = *fullPath;
+
+        AZStd::string_view szBindRoot = fullPath->ParentPath().Native();
+
+        if (AZ::IO::FixedMaxPath pathBindRoot; !AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pathBindRoot, szBindRoot))
+        {
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pathBindRoot, "@products@");
+            desc.m_pathBindRoot = pathBindRoot.LexicallyNormal().String();
+        }
+        else
+        {
+            desc.m_pathBindRoot = pathBindRoot.LexicallyNormal().String();
+        }
+
+        {
+            AZStd::unique_lock lock(m_csZips);
+            // try to find this - maybe the pack has already been opened
+            for (auto it = m_arrZips.begin(); it != m_arrZips.end(); ++it)
+            {
+                if (AZ::IO::PathView archiveFilePath = it->pZip->GetFilePath();
+                    archiveFilePath == desc.m_strFileName && it->m_pathBindRoot == desc.m_pathBindRoot)
+                {
+                    return true; // already opened
+                }
+            }
+        }
+        return false;
+    }
+#endif
 
     bool Archive::OpenPackCommon(AZStd::string_view szBindRoot, AZStd::string_view szFullPath,
         AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData, bool addLevels)
