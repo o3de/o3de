@@ -53,7 +53,7 @@ namespace AZ::RHI
             case DispatchType::Direct:
                 return DispatchArguments(m_direct);
             case DispatchType::Indirect:
-                return DispatchArguments(DispatchIndirect{m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_mdIndirect.m_countBufferByteOffset});
+                return DispatchArguments(DispatchIndirect{m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer ? m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr, m_mdIndirect.m_countBufferByteOffset});
             default:
                 return DispatchArguments();
             }

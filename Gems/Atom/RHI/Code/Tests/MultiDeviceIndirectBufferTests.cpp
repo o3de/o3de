@@ -65,9 +65,7 @@ namespace UnitTest
             initRequest.m_descriptor.m_bindFlags = poolDesc.m_bindFlags;
             m_bufferPool->InitBuffer(initRequest);
 
-            AZ_TEST_START_TRACE_SUPPRESSION;
             m_writerSignature = CreateInitializedSignature();
-            AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 EXPECT_CALL(
@@ -215,45 +213,14 @@ namespace UnitTest
     {
         // Normal initialization
         {
-            AZ_TEST_START_TRACE_SUPPRESSION;
             auto signature = CreateInitializedSignature();
-            AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
             EXPECT_TRUE(signature != nullptr);
             ValidateSignature(*signature);
         }
 
-        // ! Cannot tests this as we do not have access to device signatures here and cannot setup mock-call
-        // // Failure initializing.
-        // {
-        //     auto signature = CreateUnInitializedSignature();
-        //     RHI::MultiDeviceIndirectBufferSignatureDescriptor descriptor;
-        //     EXPECT_TRUE(signature->Init(DeviceMask, descriptor) == RHI::ResultCode::InvalidOperation);
-        //     EXPECT_FALSE(signature->IsInitialized());
-        // }
-
-        // ! Cannot tests this as we do not have access to device signatures here and cannot setup mock-call
-        // // GetByteStride()
-        // {
-        //     AZ_TEST_START_TRACE_SUPPRESSION;
-        //     auto signature = CreateInitializedSignature();
-        //     AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
-        //     uint32_t byteStride = 1337;
-        //     for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
-        //     {
-        //         EXPECT_CALL(
-        //             *static_cast<IndirectBufferSignature*>(signature->GetDeviceIndirectBufferSignature(deviceIndex).get()),
-        //             GetByteStrideInternal())
-        //             .Times(1)
-        //             .WillOnce(testing::Return(byteStride));
-        //     }
-        //     EXPECT_EQ(signature->GetByteStride(), byteStride);
-        // }
-
         // GetByteStride() on uninitialized signature.
         {
             auto signature = CreateUnInitializedSignature();
-            // ! Do not have access to members, cannot setup mock-call
-            // EXPECT_CALL(*signature, GetByteStrideInternal()).Times(1).WillOnce(testing::Return(0));
             AZ_TEST_START_TRACE_SUPPRESSION;
             signature->GetByteStride();
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
@@ -261,9 +228,7 @@ namespace UnitTest
 
         // GetOffset()
         {
-            AZ_TEST_START_TRACE_SUPPRESSION;
             auto signature = CreateInitializedSignature();
-            AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
             uint32_t offset = 1337;
             RHI::IndirectCommandIndex index(m_commands.size() - 1);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
@@ -279,9 +244,7 @@ namespace UnitTest
 
         // GetOffset with null index
         {
-            AZ_TEST_START_TRACE_SUPPRESSION;
             auto signature = CreateInitializedSignature();
-            AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
             RHI::IndirectCommandIndex index = RHI::IndirectCommandIndex::Null;
             AZ_TEST_START_TRACE_SUPPRESSION;
             signature->GetOffset(index);
@@ -290,9 +253,7 @@ namespace UnitTest
 
         // GetOffset with invalid index
         {
-            AZ_TEST_START_TRACE_SUPPRESSION;
             auto signature = CreateInitializedSignature();
-            AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
             RHI::IndirectCommandIndex index(m_commands.size());
             AZ_TEST_START_TRACE_SUPPRESSION;
             signature->GetOffset(index);
@@ -301,9 +262,7 @@ namespace UnitTest
 
         // Shutdown
         {
-            AZ_TEST_START_TRACE_SUPPRESSION;
             auto signature = CreateInitializedSignature();
-            AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
             for (auto deviceIndex{ 0 }; deviceIndex < DeviceCount; ++deviceIndex)
             {
                 EXPECT_CALL(
