@@ -9,3 +9,13 @@
 get_target_property(libraries 3rdParty::Python INTERFACE_LINK_LIBRARIES)
 
 set(LY_COMPILE_DEFINITIONS PRIVATE PYTHON_SHARED_LIBRARY_PATH="${libraries}")
+
+if (O3DE_INSTALLER_BUILD)
+	message("Disable because i'm an installer")
+else()
+	message("Enable because i'm not an installer")
+	set(LY_COMPILE_DEFINITIONS PUBLIC AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING)
+endif()
+
+
+

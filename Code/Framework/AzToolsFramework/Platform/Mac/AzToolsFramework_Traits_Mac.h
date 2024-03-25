@@ -7,5 +7,4 @@
  */
 #pragma once
 
-#define AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING      false
 #define AZ_TRAIT_PYTHON_LOADER_PYTHON_HOME_BIN_SUBPATH      true
