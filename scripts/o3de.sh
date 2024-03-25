@@ -29,4 +29,5 @@ fi
 
 #run the o3de.py pass along the command
 $PYTHON_EXECUTABLE "$SCRIPT_DIR/o3de.py" $*
+$PYTHON_EXECUTABLE "$SCRIPT_DIR/o3de.py" "$@"
 exit $?
