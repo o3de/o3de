@@ -159,7 +159,7 @@ namespace UnitTest
             m_rootFactory.reset(aznew Factory());
 
             m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
-            m_rhiSystem->InitDevices(AZ::RHI::InitDevicesFlags::SingleDevice);
+            m_rhiSystem->InitDevices();
             m_rhiSystem->Init();
 
             m_device = AZ::RHI::RHISystemInterface::Get()->GetDevice(RHI::MultiDevice::DefaultDeviceIndex);

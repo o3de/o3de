@@ -54,7 +54,7 @@ namespace AZ::RHI
         ShaderInputConstantIndex FindShaderInputConstantIndex(const Name& name) const;
 
         //! Sets one image view for the given shader input index.
-        bool SetImageView(ShaderInputImageIndex inputIndex, const MultiDeviceImageView* imageView, uint32_t arrayIndex);
+        bool SetImageView(ShaderInputImageIndex inputIndex, const MultiDeviceImageView* imageView, uint32_t arrayIndex = 0);
 
         //! Sets an array of image view for the given shader input index.
         bool SetImageViewArray(

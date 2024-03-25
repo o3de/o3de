@@ -16,8 +16,6 @@ namespace AZ::RHI
     SingleDeviceIndirectBufferSignatureDescriptor MultiDeviceIndirectBufferSignatureDescriptor::GetDeviceIndirectBufferSignatureDescriptor(
         int deviceIndex) const
     {
-        AZ_Assert(m_pipelineState, "No MultiDevicePipelineState available\n");
-
         SingleDeviceIndirectBufferSignatureDescriptor descriptor{ m_layout };
 
         if (m_pipelineState)
