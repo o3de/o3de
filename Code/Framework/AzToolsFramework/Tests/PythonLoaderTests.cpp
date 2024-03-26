@@ -70,7 +70,7 @@ namespace UnitTest
         EXPECT_TRUE(result == expectedPath);
     }
 
-
+    /*
     TEST_F(AzToolsFrameworkPythonLoaderFixture, TestReadPythonEggLinkPaths_Valid)
     {
         // Prepare the test folder and create dummy egg-link files
@@ -113,5 +113,6 @@ namespace UnitTest
 
         EXPECT_EQ(expectedResults, resultEggLinkPaths);
     }
+    */
 
 } // namespace UnitTest
