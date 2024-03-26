@@ -15,7 +15,7 @@ namespace AzToolsFramework::Prefab::PrefabPropertyEditorNodes
     struct PrefabOverrideLabel : AZ::DocumentPropertyEditor::NodeDefinition
     {
         static constexpr AZStd::string_view Name = "PrefabOverrideLabel";
-        static constexpr auto Text = AZ::DocumentPropertyEditor::AttributeDefinition<AZStd::string_view>("Text");
+        static constexpr auto Value = AZ::DocumentPropertyEditor::AttributeDefinition<AZStd::string_view>("Value");
         static constexpr auto IsOverridden = AZ::DocumentPropertyEditor::AttributeDefinition<bool>("IsOverridden");
         static constexpr auto RelativePath = AZ::DocumentPropertyEditor::AttributeDefinition<AZStd::string_view>("RelativePath");
         static constexpr auto RevertOverride =

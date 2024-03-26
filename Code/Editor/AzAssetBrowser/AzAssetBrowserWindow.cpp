@@ -116,8 +116,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     AZ_Assert(m_assetBrowserModel, "Failed to get filebrowser model");
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
-    // Turn off DynamicSort as sorting is now manual.
-    m_filterModel->setDynamicSortFilter(false);
 
     m_ui->m_assetBrowserListViewWidget->setVisible(false);
     m_ui->m_toolsMenuButton->setVisible(false);
@@ -523,6 +521,10 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         m_toolsMenu->addAction(openNewAction);
 
         m_toolsMenu->addSeparator();
+        auto* expandAllAction = new QAction(tr("Expand All"), this);
+        connect(expandAllAction, &QAction::triggered, this, [this] { m_ui->m_assetBrowserTreeViewWidget->expandAll(); });
+        m_toolsMenu->addAction(expandAllAction);
+
         auto* collapseAllAction = new QAction(tr("Collapse All"), this);
         connect(collapseAllAction, &QAction::triggered, this, [this] { m_ui->m_assetBrowserTreeViewWidget->collapseAll(); });
         m_toolsMenu->addAction(collapseAllAction);

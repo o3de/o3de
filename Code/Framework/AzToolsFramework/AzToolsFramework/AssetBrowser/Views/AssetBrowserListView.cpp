@@ -161,28 +161,25 @@ namespace AzToolsFramework
 
         void AssetBrowserListView::DeleteEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot delete product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot delete product files.
             AssetBrowserViewUtils::DeleteEntries(entries, this);
         }
 
         void AssetBrowserListView::MoveEntries()
         {
-            auto entries = GetSelectedAssets(false); // you cannot move product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot move product files.
             AssetBrowserViewUtils::MoveEntries(entries, this);
         }
 
         void AssetBrowserListView::DuplicateEntries()
         {
-            auto entries = GetSelectedAssets(false); // you may not duplicate product files.
+            const auto& entries = GetSelectedAssets(false); // you may not duplicate product files.
             AssetBrowserViewUtils::DuplicateEntries(entries);
         }
 
         void AssetBrowserListView::RenameEntry()
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot rename product files.
             if (AssetBrowserViewUtils::RenameEntry(entries, this))
             {
                 edit(currentIndex());
@@ -191,8 +188,7 @@ namespace AzToolsFramework
 
         void AssetBrowserListView::AfterRename(QString newVal)
         {
-            auto entries = GetSelectedAssets(false); // you cannot rename product files.
-
+            const auto& entries = GetSelectedAssets(false); // you cannot rename product files.
             AssetBrowserViewUtils::AfterRename(newVal, entries, this);
         }
 
@@ -211,15 +207,12 @@ namespace AzToolsFramework
             AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
             if (!includeProducts)
             {
-                entries.erase(
-                    AZStd::remove_if(
-                        entries.begin(),
-                        entries.end(),
-                        [&](const AssetBrowserEntry* entry) -> bool
-                        {
-                            return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
-                        }),
-                    entries.end());
+                AZStd::erase_if(
+                    entries,
+                    [&](const AssetBrowserEntry* entry) -> bool
+                    {
+                        return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
+                    });
             }
 
             return entries;
@@ -302,7 +295,6 @@ namespace AzToolsFramework
             header()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * MinHeaderResizeProportion));
             header()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * MaxHeaderResizeProportion));
         }
-
 
         void AssetBrowserListView::OnContextMenu([[maybe_unused]] const QPoint& point)
         {

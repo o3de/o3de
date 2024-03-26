@@ -218,12 +218,15 @@ namespace AZ::Dom::Utils
         {
             return value.IsNumber();
         }
-        else if constexpr (AZStd::is_constructible_v<AZStd::string_view, WrapperType>)
-        {
-            return value.IsString();
-        }
         else
         {
+            if constexpr (AZStd::is_constructible_v<WrapperType, AZStd::string_view>)
+            {
+                if (value.IsString())
+                {
+                    return true;
+                }
+            }
             // For pointer types, the pointer marshaling logic is used
             // to extract a pointer address from the Object with the Dom::Value
             if constexpr (AZStd::is_pointer_v<WrapperType>)

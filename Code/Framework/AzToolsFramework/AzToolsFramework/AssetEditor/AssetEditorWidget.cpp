@@ -346,7 +346,7 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::OpenAssetWithDialog()
         {
-            AssetSelectionModel selection = AssetSelectionModel::AssetTypesSelection(m_genericAssetTypes);
+            AssetSelectionModel selection = AssetSelectionModel::AssetTypeSelection(m_genericAssetTypes);
             EditorRequests::Bus::Broadcast(&EditorRequests::BrowseForAssets, selection);
             if (selection.IsValid())
             {

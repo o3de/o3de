@@ -21,7 +21,7 @@ ly_add_target(
             ${pal_dir}
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::AWSNativeSDK::Core
+            3rdParty::AWSNativeSDK::AWSCore
             AZ::AzCore
 )
 

@@ -359,22 +359,25 @@ namespace AtomToolsFramework
     {
         // Slider and spin box controls require both minimum and maximum ranges to be entered in order to override the default values set
         // to 0 and 100. They must also be set in a certain order because of clamping that is done as the attributes are applied.
-        if (m_config.m_min.is<AttributeValueType>())
-        {
-            AddEditDataAttribute(AZ::Edit::Attributes::Min, AZStd::any_cast<AttributeValueType>(m_config.m_min));
-        }
-        if (m_config.m_max.is<AttributeValueType>())
-        {
-            AddEditDataAttribute(AZ::Edit::Attributes::Max, AZStd::any_cast<AttributeValueType>(m_config.m_max));
-        }
+        AddEditDataAttribute(
+            AZ::Edit::Attributes::Min,
+            m_config.m_min.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_min)
+                                                    : AZStd::numeric_limits<AttributeValueType>::lowest());
+        AddEditDataAttribute(
+            AZ::Edit::Attributes::Max,
+            m_config.m_max.is<AttributeValueType>() ? AZStd::any_cast<AttributeValueType>(m_config.m_max)
+                                                    : AZStd::numeric_limits<AttributeValueType>::max());
+
         if (m_config.m_softMin.is<AttributeValueType>())
         {
             AddEditDataAttribute(AZ::Edit::Attributes::SoftMin, AZStd::any_cast<AttributeValueType>(m_config.m_softMin));
         }
+
         if (m_config.m_softMax.is<AttributeValueType>())
         {
             AddEditDataAttribute(AZ::Edit::Attributes::SoftMax, AZStd::any_cast<AttributeValueType>(m_config.m_softMax));
         }
+
         if (m_config.m_step.is<AttributeValueType>())
         {
             AddEditDataAttribute(AZ::Edit::Attributes::Step, AZStd::any_cast<AttributeValueType>(m_config.m_step));
