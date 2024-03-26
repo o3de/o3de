@@ -18,6 +18,7 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/tokenize.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/ConfigParser.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -26,25 +27,41 @@ namespace AzToolsFramework::EmbeddedPython
 {
     PythonLoader::PythonLoader()
     {
-        #if AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
-        // PYTHON_SHARED_LIBRARY_PATH must be defined in the build scripts and referencing the path to the python shared library
-        #if !defined(PYTHON_SHARED_LIBRARY)
-        #error "PYTHON_SHARED_LIBRARY is not defined"
-        #endif
+        #if defined(IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY)
 
-        m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(PYTHON_SHARED_LIBRARY, false);
-        bool loadResult = m_embeddedLibPythonModuleHandle->Load(false, true);
-        AZ_Error("PythonLoader", loadResult, "Failed to load " PYTHON_SHARED_LIBRARY "\n");
-
-        #endif // AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
+        // Determine if this is an sdk-engine build. For SDK engines, we want to prevent implicit python module loading.
+        [[maybe_unused]] bool isSdkEngine{ false };
+        auto engineSettingsPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetEnginePath() } / "engine.json";
+        if (AZ::IO::SystemFile::Exists(engineSettingsPath.c_str()))
+        {
+            auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(engineSettingsPath.c_str());
+            if (loadOutcome.IsSuccess())
+            {
+                auto& doc = loadOutcome.GetValue();
+                rapidjson::Value::MemberIterator sdkEngineFieldIter = doc.FindMember("sdk_engine");
+                if (sdkEngineFieldIter != doc.MemberEnd())
+                {
+                    isSdkEngine = sdkEngineFieldIter->value.GetBool();
+                }
+            }
+        }
+        if (!isSdkEngine)
+        {
+            m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY, false);
+            bool loadResult = m_embeddedLibPythonModuleHandle->Load(false, true);
+            AZ_Error("PythonLoader", loadResult, "Failed to load " IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY "\n");
+        }
+        #endif // IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY
     }
 
     PythonLoader::~PythonLoader()
     {
-        #if AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
-        AZ_Assert(m_embeddedLibPythonModuleHandle, "DynamicModuleHandle for python was not created");
-        m_embeddedLibPythonModuleHandle->Unload();
-        #endif // AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
+        #if defined(IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY)
+        if (m_embeddedLibPythonModuleHandle)
+        {
+            m_embeddedLibPythonModuleHandle->Unload();
+        }
+        #endif // IMPLICIT_LOAD_PYTHON_SHARED_LIBRARY
     }
 
     AZ::IO::FixedMaxPath PythonLoader::GetPythonHomePath(AZ::IO::PathView engineRoot, const char* overridePythonBaseVenvPath /*= nullptr*/)
