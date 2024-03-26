@@ -1486,9 +1486,10 @@ bool AZ::FFont::UpdateTexture()
     imageUpdateReq.m_sourceData = m_fontTexture->GetBuffer();
     imageUpdateReq.m_sourceSubresourceLayout = layout;
 
-    m_fontStreamingImage->UpdateImageContents(imageUpdateReq);
+    const RHI::ResultCode result = m_fontStreamingImage->UpdateImageContents(imageUpdateReq);
+    AZ_Error("FFont", result == RHI::ResultCode::Success, "Cannot update font texture, code %d", (unsigned int)result);
 
-    return true;
+    return result == RHI::ResultCode::Success;
 }
 
 bool AZ::FFont::InitCache()
@@ -1534,7 +1535,16 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
         UpdateTexture();
         m_fontTexDirty = false;
         ++m_fontImageVersion;
-
+        /*
+        // to debug particular font increments
+        if (m_name == "fonts/orbit-regular.font")
+        {
+            AZStd::string fontFilePath =
+                AZStd::string::format("@user@/%s_%02d_%dx%d.bmp", m_name.c_str(), GetFontTextureVersion(), glyphSize.x, glyphSize.y);
+            AZ_Info("FFont", "save as %s, %p", fontFilePath.c_str(), this);
+            GetFontTexture()->WriteToFile(fontFilePath.c_str());
+        }
+        */
         // Let any listeners know that the font texture has changed
         // TODO Update to an AZ::Event when Cry use of this bus is cleaned out.
         FontNotificationBus::Broadcast(&FontNotificationBus::Events::OnFontTextureUpdated, this);

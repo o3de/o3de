@@ -1772,6 +1772,124 @@ void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocaliz
     }
 }
 
+#if defined(CARBONATED)
+//////////////////////////////////////////////////////////////////////////
+LocalizedFont CLocalizedStringsManager::GetLocalizedFont(const char* fontAssetPath, float fontSize)
+{
+    AZ_Assert(fontAssetPath && fontAssetPath[0], "CLocalizedStringsManager::GetLocalizedFont(): invalid font Asset path.")
+    // Try Font + Size
+    AZStd::string fontAssetPathWithSize = AZStd::string::format("%s:%d", fontAssetPath, (int)fontSize);
+    AZStd::to_lower(fontAssetPathWithSize.begin(), fontAssetPathWithSize.end());
+    auto keyCRC = AZ::Crc32(fontAssetPathWithSize);
+    auto it = m_pLanguage->m_fontMapping.find(keyCRC);
+    if (it == m_pLanguage->m_fontMapping.end())
+    {
+        // Try just Font
+        it = m_pLanguage->m_fontMapping.find(AZ::Crc32(fontAssetPath));
+    }
+
+    // If there is no font mapping just return the original Font + Size
+    if (it == m_pLanguage->m_fontMapping.end())
+    {
+        return LocalizedFont(fontAssetPath, fontSize);
+    }
+
+    LocalizedFont locFont = it->second;
+    // If there is font mapping without size we will return the mapped Font + original Size
+    if (locFont.size == 0)
+    {
+        locFont.size = fontSize;
+    }
+
+    return locFont;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CLocalizedStringsManager::LoadFontMappingData()
+{
+    const  AZStd::string localizationFolder(PathUtil::GetLocalizationRoot());
+    const  AZStd::string& languageFolder = m_pLanguage->sLanguage;
+    AZStd::string path = localizationFolder.c_str() + languageFolder + PathUtil::GetSlash() + LOCALIZATION_FONTMAPPING_FILE_NAME;
+
+    XmlNodeRef root = m_pSystem->LoadXmlFromFile(path.c_str());
+    if (!root)
+    {
+        AZ_TracePrintf(LOC_WINDOW, "Loading Font Mapping File %s failed!", LOCALIZATION_FONTMAPPING_FILE_NAME);
+        return;
+    }
+
+    if (!root->isTag("fontmapping"))
+    {
+        AZ_TracePrintf(LOC_WINDOW, "Root tag not found. Loading Font Mapping File %s failed!", LOCALIZATION_FONTMAPPING_FILE_NAME);
+        return;
+    }
+
+    if (root->getChildCount() == 0)
+    {
+        return;
+    }
+
+    m_pLanguage->m_fontMapping.reserve(root->getChildCount());
+    for (int i = 0; i < root->getChildCount(); i++)
+    {
+        XmlNodeRef font = root->getChild(i);
+        if (!font->isTag("font"))
+        {
+            AZ_TracePrintf(LOC_WINDOW, "Unexpected tag %s", font->getTag());
+            continue;
+        }
+
+        XmlString sFontName;
+        if (!font->getAttr("name", sFontName))
+        {
+            AZ_TracePrintf(LOC_WINDOW, "Font tag must have a name attribute");
+            continue;
+        }
+
+        if (sFontName.empty()) // Gruber patch : skip empty entries
+        {
+            continue;
+        }
+
+        XmlNodeRef localized = font->findChild("localized");
+        if (localized == nullptr)
+        {
+            AZ_TracePrintf(LOC_WINDOW, "Font tag must have at least a one <localized> attribute");
+            continue;
+        }
+
+        XmlString sLocalizedFontName;
+        if (!localized->getAttr("name", sLocalizedFontName))
+        {
+            AZ_TracePrintf(LOC_WINDOW, "Localized tag must have a name attribute");
+            continue;
+        }
+
+        if (sLocalizedFontName.empty()) // Gruber patch : skip empty entries
+        {
+            continue;
+        }
+
+        AZStd::string key;
+        int fontSize = 0;
+        font->getAttr("size", fontSize);
+        if (fontSize > 0)
+        {
+            key = AZStd::string::format("%s:%d", sFontName.c_str(), fontSize);
+        }
+        else
+        {
+            key = AZStd::string::format("%s", sFontName.c_str());
+        }
+
+        float localizedFontSize = 0;
+        localized->getAttr("size", localizedFontSize);
+
+        m_pLanguage->m_fontMapping.insert(std::make_pair(AZ::Crc32(key.c_str()), LocalizedFont(sLocalizedFontName.c_str(), localizedFontSize)));
+    }
+}
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 bool CLocalizedStringsManager::LocalizeString_ch(const char* sString, AZStd::string& outLocalizedString, bool bEnglish)
 {
