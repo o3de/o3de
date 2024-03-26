@@ -7,7 +7,6 @@
 */
 
 #include <AzToolsFramework/API/PythonLoader.h>
-#include <AzToolsFramework_Traits_Platform.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/GenericStreams.h>
@@ -29,16 +28,13 @@ namespace AzToolsFramework::EmbeddedPython
     {
         #if AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
         // PYTHON_SHARED_LIBRARY_PATH must be defined in the build scripts and referencing the path to the python shared library
-        #if !defined(PYTHON_SHARED_LIBRARY_PATH)
-        #error "PYTHON_SHARED_LIBRARY_PATH is not defined"
+        #if !defined(PYTHON_SHARED_LIBRARY)
+        #error "PYTHON_SHARED_LIBRARY is not defined"
         #endif
 
-        // Construct the path to the shared python library within the venv folder
-        AZ::IO::PathView libPythonName = AZ::IO::PathView(PYTHON_SHARED_LIBRARY_PATH).Filename();
-
-        m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(libPythonName.StringAsPosix().c_str(), false);
+        m_embeddedLibPythonModuleHandle = AZ::DynamicModuleHandle::Create(PYTHON_SHARED_LIBRARY, false);
         bool loadResult = m_embeddedLibPythonModuleHandle->Load(false, true);
-        AZ_Error("PythonLoader", loadResult, "Failed to load %s.\n", libPythonName.StringAsPosix().c_str());
+        AZ_Error("PythonLoader", loadResult, "Failed to load " PYTHON_SHARED_LIBRARY "\n");
 
         #endif // AZ_TRAIT_PYTHON_LOADER_ENABLE_EXPLICIT_LOADING
     }

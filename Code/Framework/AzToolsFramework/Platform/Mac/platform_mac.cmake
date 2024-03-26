@@ -5,3 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+set(LY_COMPILE_DEFINITIONS PRIVATE $<$<CONFIG:debug>:ENABLE_UNDOCACHE_CONSISTENCY_CHECKS>
+                                   O3DE_PYTHON_SITE_PACKAGE_SUBPATH="${LY_PYTHON_VENV_SITE_PACKAGES}" 
+                                   AZ_TRAIT_PYTHON_LOADER_PYTHON_HOME_BIN_SUBPATH)
