@@ -16,23 +16,23 @@
 //! @param H   half vector (which coincides with the normal vector at microlevel) 
 //! @param V   view vector (or light vector; the dot product is the same for both)
 //! @param F0  the characteristic specular reflectance of the material. Also referred to it as specular color.
-float3 FresnelSchlickF90(const float HdotV, const real3 F0, const real F90)
+real3 FresnelSchlickF90(const real HdotV, const real3 F0, const real F90)
 {
     // At angles where (View = Normal) the dot product HdotV is 1.0
     return F0 + (F90 - F0) * pow(1.0 - HdotV, 5.0);
 }
 
-float FresnelSchlickF90_1(const float HdotV, const real F0, const real F90)
+real FresnelSchlickF90_1(const real HdotV, const real F0, const real F90)
 {
     return F0 + (F90 - F0) * pow(1.0 - HdotV, 5.0);
 }
 
-float3 FresnelSchlick(const float HdotV, const real3 F0)
+real3 FresnelSchlick(const real HdotV, const real3 F0)
 {
     return FresnelSchlickF90(HdotV, F0, 1.0);
 }
 
-float FresnelSchlick_1(const float HdotV, const real F0)
+real FresnelSchlick_1(const real HdotV, const real F0)
 {
     return FresnelSchlickF90_1(HdotV, F0, 1.0);
 }
@@ -47,18 +47,18 @@ float FresnelSchlick_1(const float HdotV, const real F0)
 //! @param V   view vector (or light vector; the dot product is the same for both)
 //! @param specularF0  the characteristic specular reflectance of the material. Also referred to it as specular color.
 //! @param roughness  roughness value used to further attenuate the fresnel response. This is a "fudge factor" and may or may not be perceptually linear.
-float3 FresnelSchlickWithRoughness(const float NdotV, const real3 specularF0, const real roughness)
+real3 FresnelSchlickWithRoughness(const real NdotV, const real3 specularF0, const real roughness)
 {
-    float smoothness = 1.0 - roughness;
-    float3 F0 = specularF0;
+    real smoothness = 1.0 - roughness;
+    real3 F0 = specularF0;
 
     return F0 + (max(smoothness, F0) - F0) * pow(1.0 - saturate(NdotV), 5.0);
 }
 
-float FresnelSchlickWithRoughness_1(const float NdotV, const real specularF0, const real roughness)
+real FresnelSchlickWithRoughness_1(const real NdotV, const real specularF0, const real roughness)
 {
-    float smoothness = 1.0 - roughness;
-    float F0 = specularF0;
+    real smoothness = 1.0 - roughness;
+    real F0 = specularF0;
 
     return F0 + (max(smoothness, F0) - F0) * pow(1.0 - saturate(NdotV), 5.0);
 }
