@@ -432,7 +432,7 @@ namespace AZ::Utils
     {
         // Locate the manifest directory
         auto manifestDirectory = AZ::IO::FixedMaxPath(GetO3deManifestDirectory(settingsRegistry)) / "Python" / "venv";
-        return AZ::IO::FixedMaxPathString(manifestDirectory.c_str());
+        return manifestDirectory.Native();
     }
 
 
