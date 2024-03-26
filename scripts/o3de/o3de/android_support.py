@@ -45,7 +45,7 @@ elif platform.system() == 'Darwin':
     EXE_EXTENSION = ''
     O3DE_SCRIPT_EXTENSION = '.sh'
     SDKMANAGER_EXTENSION = ''
-    GRADLE_EXTENSION = '.sh'
+    GRADLE_EXTENSION = ''
     DEFAULT_ANDROID_SDK_PATH = f"{os.getenv('HOME')}/Library/Android/Sdk"
     PYTHON_SCRIPT = 'python.sh'
 elif platform.system() == 'Linux':
@@ -475,7 +475,7 @@ class AndroidSDKManager(object):
                                    f"Make sure that it is installed at {android_sdk_command_line_tools_root}.")
 
         # Retrieve the version if possible to validate it can be used
-        command_arg = [android_sdk_command_line_tool.name, '--version']
+        command_arg = [android_sdk_command_line_tool, '--version']
         logging.debug("Validating tool version exec: (%s)", subprocess.list2cmdline(command_arg))
         result = subprocess.run(command_arg,
                                 shell=(platform.system() == 'Windows'),
@@ -675,8 +675,8 @@ class AndroidSDKManager(object):
         that provides information on how to accept them.
         """
         logger.info("Checking Android SDK Package licenses state..")
-        result = subprocess.run(['echo' , 'Y' , '|', self._android_command_line_tools_sdkmanager_path, '--licenses'],
-                                shell=(platform.system() == 'Windows'),
+        result = subprocess.run(' '.join(['echo' , 'Y' , '|', str(self._android_command_line_tools_sdkmanager_path), '--licenses']),
+                                shell=True,
                                 capture_output=True,
                                 encoding=DEFAULT_READ_ENCODING,
                                 errors=ENCODING_ERROR_HANDLINGS,
@@ -685,6 +685,7 @@ class AndroidSDKManager(object):
         if license_not_accepted_match:
             raise AndroidToolError(f"{license_not_accepted_match.group(1)}\n"
                                    f"Please run '{self._android_command_line_tools_sdkmanager_path} --licenses' and follow the instructions.\n")
+        
         license_accepted_match = AndroidSDKManager.LICENSE_ACCEPTED_REGEX.search(result.stdout or result.stderr)
         if license_accepted_match:
             logger.info(license_accepted_match.group(1))
