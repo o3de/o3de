@@ -1130,7 +1130,7 @@ namespace AZ::IO
 
 
     bool Archive::OpenPackCommon(AZStd::string_view szBindRoot, AZStd::string_view szFullPath,
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData, bool addLevels)
+        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData, bool /* addLevels */)
     {
         // setup PackDesc before the duplicate test
         PackDesc desc;
@@ -1206,46 +1206,7 @@ namespace AZ::IO
                 ArchivesWithCatalogsToLoad(szFullPath, szBindRoot, flags, nextBundle, desc.m_strFileName));
         }
 
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (usePrefabSystemForLevels)
-        {
-            m_arrZips.insert(revItZip.base(), desc);
-        }
-        else
-        {
-            // [LYN-2376] Remove once legacy slice support is removed
-            AZStd::vector<AZ::IO::Path> levelDirs;
-
-            if (addLevels)
-            {
-                // Note that manifest version two and above will contain level directory information inside them
-                // otherwise we will fallback to scanning the archive for levels.
-                if (bundleManifest && bundleManifest->GetBundleVersion() >= 2)
-                {
-                    levelDirs = bundleManifest->GetLevelDirectories();
-                }
-                else
-                {
-                    levelDirs = ScanForLevels(desc.pZip);
-                }
-            }
-
-            if (!levelDirs.empty())
-            {
-                desc.m_containsLevelPak = true;
-            }
-
-            m_arrZips.insert(revItZip.base(), desc);
-
-            // This lock is for m_arrZips.
-            // Unlock it now because the modification is complete, and events responding to this signal
-            // will attempt to lock the same mutex, causing the application to lock up.
-            lock.unlock();
-            m_levelOpenEvent.Signal(levelDirs);
-        }
+        m_arrZips.insert(revItZip.base(), desc);
 
         if (bundleManifest && bundleCatalog)
         {
@@ -1272,10 +1233,6 @@ namespace AZ::IO
             return false;
         }
 
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
         AZStd::unique_lock lock(m_csZips);
         for (auto it = m_arrZips.begin(); it != m_arrZips.end();)
         {
@@ -1291,26 +1248,7 @@ namespace AZ::IO
                     archiveNotifications->BundleClosed(bundleName.c_str());
                 }, it->GetFullPath());
 
-                if (usePrefabSystemForLevels)
-                {
-                    it = m_arrZips.erase(it);
-                }
-                else
-                {
-                    // [LYN-2376] Remove once legacy slice support is removed
-                    bool needRescan = false;
-                    if (it->m_containsLevelPak)
-                    {
-                        needRescan = true;
-                    }
-
-                    it = m_arrZips.erase(it);
-
-                    if (needRescan)
-                    {
-                        m_levelCloseEvent.Signal(szZipPath->Native());
-                    }
-                }
+                it = m_arrZips.erase(it);
             }
             else
             {

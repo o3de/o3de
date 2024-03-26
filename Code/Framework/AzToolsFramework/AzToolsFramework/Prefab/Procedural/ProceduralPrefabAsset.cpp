@@ -57,14 +57,7 @@ namespace AZ::Prefab
 
     bool ProceduralPrefabAsset::UseProceduralPrefabs()
     {
-        bool prefabsEnabled = false;
-        AzFramework::ApplicationRequests::Bus::Broadcast(
-            [&prefabsEnabled](AzFramework::ApplicationRequests::Bus::Events* ebus)
-        {
-            prefabsEnabled = ebus->IsPrefabSystemEnabled();
-        });
-
-        return prefabsEnabled;
+        return true;
     }
 
     // PrefabDomData

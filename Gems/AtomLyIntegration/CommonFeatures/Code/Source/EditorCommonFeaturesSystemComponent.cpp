@@ -86,7 +86,6 @@ namespace AZ
         {
             m_skinnedMeshDebugDisplay = AZStd::make_unique<SkinnedMeshDebugDisplay>();
 
-            AzToolsFramework::EditorLevelNotificationBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
             if (auto settingsRegistry{ AZ::SettingsRegistry::Get() }; settingsRegistry != nullptr)
             {
@@ -104,58 +103,10 @@ namespace AZ
         {
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             m_criticalAssetsHandler = {};
-            AzToolsFramework::EditorLevelNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
 
             m_skinnedMeshDebugDisplay.reset();
             TeardownThumbnails();
-        }
-
-        void EditorCommonFeaturesSystemComponent::OnNewLevelCreated()
-        {
-            bool isPrefabSystemEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-            if (!isPrefabSystemEnabled)
-            {
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                    m_levelDefaultSliceAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, m_atomLevelDefaultAssetPath.c_str(),
-                    azrtti_typeid<AZ::SliceAsset>(), false);
-
-                if (m_levelDefaultSliceAssetId.IsValid())
-                {
-                    AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::SliceAsset>(
-                        m_levelDefaultSliceAssetId, AZ::Data::AssetLoadBehavior::Default);
-
-                    asset.BlockUntilLoadComplete();
-
-                    if (asset)
-                    {
-                        AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
-                        bool activeCameraFound = false;
-                        Camera::EditorCameraRequestBus::BroadcastResult(
-                            activeCameraFound, &Camera::EditorCameraRequestBus::Events::GetActiveCameraPosition, cameraPosition);
-
-                        if (activeCameraFound)
-                        {
-                            AZ::Transform worldTransform = AZ::Transform::CreateTranslation(cameraPosition);
-
-                            AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-
-                            IEditor* editor = GetLegacyEditor();
-                            if (editor && !editor->IsUndoSuspended())
-                            {
-                                editor->SuspendUndo();
-                            }
-
-                            AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-                                &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset,
-                                worldTransform);
-                        }
-                    }
-                }
-            }
         }
 
         void EditorCommonFeaturesSystemComponent::OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)

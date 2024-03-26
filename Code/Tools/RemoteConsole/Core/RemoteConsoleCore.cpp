@@ -492,28 +492,6 @@ void SRemoteClient::FillAutoCompleteList(AZStd::vector<AZStd::string>& list)
     {
         return;
     }
-
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (!usePrefabSystemForLevels)
-    {
-        for (int i = 0, end = gEnv->pSystem->GetILevelSystem()->GetLevelCount(); i < end; ++i)
-        {
-            ILevelInfo* pLevel = gEnv->pSystem->GetILevelSystem()->GetLevelInfo(i);
-            AZStd::string item = "LoadLevel ";
-            const char* levelName = pLevel->GetName();
-            int start = 0;
-            for (int k = 0, kend = static_cast<int>(strlen(levelName)); k < kend; ++k)
-            {
-                if ((levelName[k] == '\\' || levelName[k] == '/') && k + 1 < kend)
-                {
-                    start = k + 1;
-                }
-            }
-            item += levelName + start;
-            list.push_back(item);
-        }
-    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
