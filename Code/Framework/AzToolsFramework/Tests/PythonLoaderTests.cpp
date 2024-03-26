@@ -49,7 +49,7 @@ namespace UnitTest
 
         // Prepare the test venv pyvenv.cfg file in the expected location
         AZ::IO::FixedMaxPath tempVenvPath = testVenvRootPath / s_testEnginePathHashId;
-        AZ::IO::SystemFile::CreateDir(tempVenvPath.String().c_str());
+        AZ::IO::SystemFile::CreateDir(tempVenvPath.c_str());
         AZ::IO::FixedMaxPath tempPyConfigFile = tempVenvPath / "pyvenv.cfg";
         AZStd::string testPython3rdPartyPath = "/home/user/python/";
         AZStd::string testPyConfigFileContent = AZStd::string::format("home = %s\n"
