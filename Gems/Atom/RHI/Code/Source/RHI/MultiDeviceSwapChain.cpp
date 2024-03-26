@@ -232,10 +232,17 @@ namespace AZ::RHI
 
     void MultiDeviceSwapChain::ProcessRecreation()
     {
-        IterateObjects<SingleDeviceSwapChain>([]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
+        auto recreated{ false };
+        IterateObjects<SingleDeviceSwapChain>([&recreated]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
+            {
+                recreated = deviceSwapChain->ProcessRecreation();
+            });
+
+        if (recreated)
         {
-            deviceSwapChain->ProcessRecreation();
-        });
+            ShutdownImages();
+            InitImages();
+        }
     }
 
     uint32_t MultiDeviceSwapChain::GetImageCount() const
