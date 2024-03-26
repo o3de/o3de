@@ -20,6 +20,7 @@ namespace HttpRequestor
             m_httpManager->AddRequest( Parameters(URI, method, callback) );
         }
     }
+
     void HttpRequestorSystemComponent::AddRequestWithClientConfiguration(
         const AZStd::string& URI,
         Aws::Http::HttpMethod method,
@@ -40,6 +41,7 @@ namespace HttpRequestor
             m_httpManager->AddRequest(Parameters(URI, method, headers, callback));
         }
     }
+
     void HttpRequestorSystemComponent::AddRequestWithHeadersAndClientConfiguration(
         const AZStd::string& URI,
         Aws::Http::HttpMethod method,
@@ -61,6 +63,7 @@ namespace HttpRequestor
             m_httpManager->AddRequest(Parameters(URI, method, headers, body, callback));
         }
     }
+
     void HttpRequestorSystemComponent::AddRequestWithHeadersBodyAndClientConfiguration(
         const AZStd::string& URI,
         Aws::Http::HttpMethod method,
@@ -82,6 +85,7 @@ namespace HttpRequestor
             m_httpManager->AddTextRequest( TextParameters(URI, method, callback));
         }
     }
+
     void HttpRequestorSystemComponent::AddTextRequestWithClientConfiguration(
         const AZStd::string& URI,
         Aws::Http::HttpMethod method,
@@ -102,6 +106,7 @@ namespace HttpRequestor
             m_httpManager->AddTextRequest(TextParameters(URI, method, headers, callback));
         }
     }
+
     void HttpRequestorSystemComponent::AddTextRequestWithHeadersAndClientConfiguration(
         const AZStd::string& URI,
         Aws::Http::HttpMethod method,
@@ -127,6 +132,7 @@ namespace HttpRequestor
             m_httpManager->AddTextRequest(TextParameters(URI, method, headers, body, callback));
         }
     }
+
     void HttpRequestorSystemComponent::AddTextRequestWithHeadersBodyAndClientConfiguration(
         const AZStd::string& URI,
         Aws::Http::HttpMethod method,
