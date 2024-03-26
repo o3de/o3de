@@ -2019,11 +2019,11 @@ void CLocalizedStringsManager::LoadFontMappingData()
         font->getAttr("size", fontSize);
         if (fontSize > 0)
         {
-            key.format("%s:%d", sFontName.c_str(), fontSize);
+            key = AZStd::string::format("%s:%d", sFontName.c_str(), fontSize);
         }
         else
         {
-            key.format("%s", sFontName.c_str());
+            key = AZStd::string::format("%s", sFontName.c_str());
         }
 
         float localizedFontSize = 0;
