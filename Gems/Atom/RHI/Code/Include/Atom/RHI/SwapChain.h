@@ -75,7 +75,8 @@ namespace AZ::RHI
 
         //! Recreate the swapchain if it becomes invalid during presenting. This should happen at the end of the frame
         //! due to images being used as attachments in the frame graph.
-        virtual void ProcessRecreation() {};
+        virtual bool ProcessRecreation(){ return false; };
+
     protected:
         SwapChain();
 
