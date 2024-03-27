@@ -97,7 +97,7 @@ namespace AZ
             }
         }
 
-        void SwapChain::SetNameInternal(const AZStd::string_view& name)
+        void SwapChain::SetNameInternal([[maybe_unused]] const AZStd::string_view& name)
         {
             // On some GPUs, like the Adreno 740, setting the name of the swapchain causes a crash, so we don't do it.
         }
