@@ -499,7 +499,15 @@ function(ly_delayed_generate_runtime_dependencies)
             unset(target_file)
         endif()
 
-        set(LY_CURRENT_PYTHON_PACKAGE_PATH "${CMAKE_CURRENT_LIST_DIR}/python/packages/${LY_PYTHON_PACKAGE_NAME}")
+        if(DEFINED ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
+            set(PYTHON_ROOT_PATH "$ENV{USERPROFILE}/.o3de/Python") # Windows
+        else()
+            set(PYTHON_ROOT_PATH "$ENV{HOME}/.o3de/Python") # Unix
+        endif()
+        set(PYTHON_PACKAGES_ROOT_PATH "${PYTHON_ROOT_PATH}/packages")
+        cmake_path(NORMAL_PATH PYTHON_PACKAGES_ROOT_PATH )
+
+        set(LY_CURRENT_PYTHON_PACKAGE_PATH "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}")
         cmake_path(NORMAL_PATH LY_CURRENT_PYTHON_PACKAGE_PATH )
 
         ly_file_read(${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)

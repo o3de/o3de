@@ -41,7 +41,7 @@ else()
     set(PYTHON_ROOT_PATH "$ENV{HOME}/.o3de/Python") # Unix
 endif()
 
-set(PYTHON_PACKAGES_ROOT_PATH "${LY_ROOT_FOLDER}/python/packages")
+set(PYTHON_PACKAGES_ROOT_PATH "${PYTHON_ROOT_PATH}/packages")
 cmake_path(NORMAL_PATH PYTHON_PACKAGES_ROOT_PATH )
 
 set(PYTHON_PACKAGE_CACHE_ROOT_PATH "${PYTHON_ROOT_PATH}/downloaded_packages")

@@ -41,9 +41,7 @@ function(ly_copy source_files relative_target_directory)
 
             # Use the relative path to the package source for the link
             set(source_python_package_abs @LY_CURRENT_PYTHON_PACKAGE_PATH@/python/lib/@LY_PYTHON_SHARED_LIB@)
-            cmake_path(RELATIVE_PATH source_python_package_abs BASE_DIRECTORY ${target_directory} OUTPUT_VARIABLE source_python_package_rel)
-
-            execute_process(COMMAND ln -s -f "${source_python_package_rel}" @LY_PYTHON_SHARED_LIB@
+            execute_process(COMMAND ln -s -f "${source_python_package_abs}" @LY_PYTHON_SHARED_LIB@
                             WORKING_DIRECTORY "${target_directory}")
 
         elseif(NOT ${same_location})
