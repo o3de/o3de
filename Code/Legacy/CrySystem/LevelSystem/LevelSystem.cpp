@@ -639,10 +639,17 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_END, 0, 0);
 
+#if defined(CARBONATED)
+    if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+    {
+        console->PerformCommand(AZStd::string::format("sv_map %s", levelName).c_str());
+    }
+#else
     if (auto cvar = gEnv->pConsole->GetCVar("sv_map"); cvar)
     {
         cvar->Set(levelName);
     }
+#endif
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
 
