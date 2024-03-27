@@ -38,7 +38,6 @@
 
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
