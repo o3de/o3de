@@ -46,7 +46,6 @@ namespace AZ
             : public SceneNotificationBus::Handler
         {
             friend class Scene;
-        public:
 
         public:
             struct PrepareViewsPacket

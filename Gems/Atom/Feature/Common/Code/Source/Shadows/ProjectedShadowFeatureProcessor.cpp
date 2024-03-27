@@ -686,8 +686,7 @@ namespace AZ::Render
                 {
                     uint16_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
                     const FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowIndex);
-                    bool needsRender = filterData.m_shadowmapSize != aznumeric_cast<uint32_t>(ShadowmapSize::None);
-                    if (!needsRender)
+                    if (filterData.m_shadowmapSize == aznumeric_cast<uint32_t>(ShadowmapSize::None))
                     {
                         continue;
                     }
@@ -695,10 +694,8 @@ namespace AZ::Render
                     if (cullShadowmapOutsideViewFrustum &&
                         !IsLightInsideAnyViewFrustum(mainViewFrustums, lightPosition, shadowProperty.m_desc.m_farPlaneDistance))
                     {
-                        shadowProperty.m_shadowmapPass->SetEnabled(false);
                         continue;
                     }
-                    shadowProperty.m_shadowmapPass->SetEnabled(true);
 
                     const RPI::PipelineViewTag& viewTag = shadowProperty.m_shadowmapPass->GetPipelineViewTag();
                     const RHI::DrawListMask drawListMask = renderPipeline->GetDrawListMask(viewTag);
