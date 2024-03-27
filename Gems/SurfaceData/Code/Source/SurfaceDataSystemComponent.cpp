@@ -59,7 +59,27 @@ namespace SurfaceData
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
-                ->Event("GetSurfacePoints", &SurfaceDataSystemRequestBus::Events::GetSurfacePoints)
+                ->Event(
+                    "GetSurfacePoints",
+                    [](SurfaceData::SurfaceDataSystem* handler, const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags) -> AZStd::vector<AzFramework::SurfaceData::SurfacePoint>
+                    {
+                        AZStd::vector<AzFramework::SurfaceData::SurfacePoint> result;
+                        SurfaceData::SurfacePointList surfacePointList;
+                        handler->GetSurfacePoints(inPosition, desiredTags, surfacePointList);
+                        surfacePointList.EnumeratePoints(
+                        [&result](
+                            [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks)-> bool
+                        {
+                            AzFramework::SurfaceData::SurfacePoint point;
+                            point.m_position = position;
+                            point.m_normal = normal;
+                            point.m_surfaceTags = masks.GetSurfaceTagWeightList();
+
+                            result.emplace_back(point);
+                            return true;
+                        });
+                        return result;
+                    })
                 ->Event("RefreshSurfaceData", &SurfaceDataSystemRequestBus::Events::RefreshSurfaceData)
                 ->Event("GetSurfaceDataProviderHandle", &SurfaceDataSystemRequestBus::Events::GetSurfaceDataProviderHandle)
                 ->Event("GetSurfaceDataModifierHandle", &SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle)
@@ -238,7 +258,7 @@ namespace SurfaceData
         auto entryItr = m_registeredSurfaceDataProviders.find(providerHandle);
         if (entryItr != m_registeredSurfaceDataProviders.end())
         {
-            // Get the set of surface tags that can be affected by refreshing a surface data provider. 
+            // Get the set of surface tags that can be affected by refreshing a surface data provider.
             // This includes all of the provider's tags, as well as any surface modifier tags that exist in the bounds,
             // because the affected surface points have the potential of getting the modifier tags applied as well.
             SurfaceTagSet affectedSurfaceTags = GetAffectedSurfaceTags(dirtyBounds, entryItr->second.m_tags);
