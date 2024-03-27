@@ -222,7 +222,6 @@
     <file>Widgets/TableViewConfig.ini</file>
     <file>Widgets/TabWidgetActionToolBar.qss</file>
     <file>Widgets/TextConfig.ini</file>
-    <file>Widgets/ToolButtonConfig.ini</file>
     <file>Widgets/VectorInput.qss</file>
     <file>Widgets/TreeViewConfig.ini</file>
 </qresource>
