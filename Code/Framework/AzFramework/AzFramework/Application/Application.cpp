@@ -770,7 +770,7 @@ namespace AzFramework
 
     bool Application::IsPrefabSystemEnabled() const
     {
-        AZ_Warning("Application", false, "'IsPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
         return true;
     }
 
@@ -786,12 +786,12 @@ namespace AzFramework
 
     void Application::SetPrefabSystemEnabled(bool /* enable */)
     {
-        AZ_Warning("Application", false, "'SetPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        AZ_WarningOnce("Application", false, "'SetPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
     }
 
     bool Application::IsPrefabSystemForLevelsEnabled() const
     {
-        AZ_Warning("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, the editor only supports prefabs for level editing.");
         return true;
     }
 
