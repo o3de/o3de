@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
@@ -36,14 +37,23 @@
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLink.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
+#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 #include <QString>
+#include <QTimer>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
+        PrefabPublicHandler::PrefabPublicHandler()
+        {
+            // Detect whether this is being run in the Editor or during a Unit Test.
+            AZ::ApplicationTypeQuery appType;
+            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+            m_isRunningInEditor = (!appType.IsValid() || appType.IsEditor());
+        }
+
         void PrefabPublicHandler::RegisterPrefabPublicHandlerInterface()
         {
             m_prefabFocusHandler.RegisterPrefabFocusInterface();
@@ -1340,8 +1350,25 @@ namespace AzToolsFramework
                 // Select the duplicated entities/instances
                 auto selectionUndo = aznew SelectionCommand(duplicatedEntityAndInstanceIds, "Select Duplicated Entities/Instances");
                 selectionUndo->SetParent(undoBatch.GetUndoBatch());
-                ToolsApplicationRequestBus::Broadcast(
-                    &ToolsApplicationRequestBus::Events::SetSelectedEntities, duplicatedEntityAndInstanceIds);
+
+                // Only delay selection in the Editor to ensure the manipulators in the viewport are refreshed correctly.
+                if (m_isRunningInEditor)
+                {
+                    QTimer::singleShot(
+                        0,
+                        [duplicatedEntityAndInstanceIds]()
+                        {
+                            ToolsApplicationRequestBus::Broadcast(
+                                &ToolsApplicationRequestBus::Events::SetSelectedEntities, duplicatedEntityAndInstanceIds);
+                        }
+                    );
+                }
+                else
+                {
+                    ToolsApplicationRequestBus::Broadcast(
+                        &ToolsApplicationRequestBus::Events::SetSelectedEntities, duplicatedEntityAndInstanceIds);
+                }
+
             }
 
             return AZ::Success(AZStd::move(duplicatedEntityAndInstanceIds));
