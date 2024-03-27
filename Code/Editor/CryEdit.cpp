@@ -2926,6 +2926,7 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
     }
 #endif
 
+
     GetIEditor()->GetDocument()->InitEmptyLevel(128, 1);
 
     GetIEditor()->SetStatusText("Creating Level...");
