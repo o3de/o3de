@@ -81,7 +81,7 @@ namespace UnitTest
         AZStd::vector<AZStd::string> expectedResults;
         expectedResults.emplace_back(testFullSiteLIbsPath.LexicallyNormal().Native());
 
-        static constexpr AZStd::array<const char*, 3ui64> testEggLinkPaths({ "/lib/path/one", "/lib/path/two", "/lib/path/three" });
+        static constexpr AZStd::array<const char*, 3> testEggLinkPaths({ "/lib/path/one", "/lib/path/two", "/lib/path/three" });
         int index = 0;
         for (const char* testEggLinkPath : testEggLinkPaths)
         {
