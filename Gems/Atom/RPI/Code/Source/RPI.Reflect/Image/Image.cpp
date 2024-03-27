@@ -10,9 +10,6 @@
 
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 
-#include <Atom/RPI.Public/Image/ImageSystemInterface.h>  // aefimov font hack
-#include <Atom/RPI.Public/Image/AttachmentImagePool.h>  // aefimov font hack
-
 #include <Atom/RHI/Factory.h>
 
 namespace AZ
@@ -70,19 +67,10 @@ namespace AZ
         RHI::ResultCode Image::UpdateImageContents(const RHI::ImageUpdateRequest& request)
         {
             RHI::ImagePool* imagePool = azrtti_cast<RHI::ImagePool*> (m_image->GetPool());
-
-            // aefimov font hack to update a streaming image
             if (!imagePool)
             {
-                Data::Instance<AZ::RPI::AttachmentImagePool> attachmentImagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-                imagePool = attachmentImagePool->GetRHIPool();
-                auto oldPool = m_image->GetPool();
-                m_image->SetPool(imagePool);  // to fool the image pool validation
-                RHI::ResultCode result = imagePool->UpdateImageContents(request);
-                m_image->SetPool(oldPool);
-                return result;
+                return RHI::ResultCode::InvalidArgument;
             }
-
             return imagePool->UpdateImageContents(request);
         }     
     }

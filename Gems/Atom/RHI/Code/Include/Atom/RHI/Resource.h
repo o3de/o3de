@@ -85,10 +85,8 @@ namespace AZ::RHI
         /// Returns whether this resource has been initialized before.
         bool IsFirstVersion() const;
 
-    public:  // aefimov font hack
         /// Called by the parent pool at initialization time.
         void SetPool(ResourcePool* pool);
-    private:  // aefimov font hack
 
         /// Called by the frame attachment at frame building time.
         void SetFrameAttachment(FrameAttachment* frameAttachment);
