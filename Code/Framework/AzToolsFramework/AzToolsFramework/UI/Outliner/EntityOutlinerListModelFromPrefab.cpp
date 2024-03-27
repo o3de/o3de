@@ -52,7 +52,6 @@
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
@@ -67,6 +66,10 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Editor/RichTextHighlighter.h>
+
+
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
 ////////////////////////////////////////////////////////////////////////////
 // EntityOutlinerListModelFromPrefab
@@ -88,6 +91,25 @@ namespace AzToolsFramework
     {
         m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         AZ_Assert(m_focusModeInterface != nullptr, "EntityOutlinerListModelFromPrefab requires a FocusModeInterface instance on construction.");
+
+        m_prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        AZ_Assert(
+            m_prefabEditorEntityOwnershipInterface != nullptr,
+            "EntityOutlinerListModelFromPrefab requires a PrefabEditorEntityOwnershipInterface instance on construction.");
+
+        m_prefabSystemComponentInterface = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
+        AZ_Assert(
+            m_prefabSystemComponentInterface != nullptr,
+            "EntityOutlinerListModelFromPrefab requires a PrefabSystemComponentInterface instance on construction.");
+
+        // Gather the Template Id of the root prefab being edited.
+        Prefab::InstanceOptionalReference rootPrefabInstance = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+        if (rootPrefabInstance.has_value())
+        {
+            m_rootTemplateId = rootPrefabInstance->get().GetTemplateId();
+            m_rootInstance = rootPrefabInstance;
+            Generate();
+        }
     }
 
     EntityOutlinerListModelFromPrefab::~EntityOutlinerListModelFromPrefab()
@@ -127,17 +149,12 @@ namespace AzToolsFramework
 
     int EntityOutlinerListModelFromPrefab::rowCount(const QModelIndex& parent) const
     {
-        // For QTreeView models, non-0 columns shouldn't have children
-        if (parent.isValid() && parent.column() != 0)
+        if (m_indices.contains(parent))
         {
-            return 0;
+            return m_indices[parent].size();
         }
 
-        auto parentId = GetEntityFromIndex(parent);
-
-        AZStd::size_t childCount = 0;
-        EditorEntityInfoRequestBus::EventResult(childCount, parentId, &EditorEntityInfoRequestBus::Events::GetChildCount);
-        return (int)childCount;
+        return 0;
     }
 
     int EntityOutlinerListModelFromPrefab::columnCount(const QModelIndex& /*parent*/) const
@@ -145,19 +162,24 @@ namespace AzToolsFramework
         return ColumnCount;
     }
 
-    QModelIndex EntityOutlinerListModelFromPrefab::index(int row, int column, const QModelIndex& parent) const
+    QModelIndex EntityOutlinerListModelFromPrefab::index(int row, int /* column */, const QModelIndex& parent) const
     {
-        auto parentId = GetEntityFromIndex(parent);
+        if (m_indices.contains(parent) && m_indices[parent].contains(row))
+        {
+            return m_indices[parent][row];
+        }
 
-        // We have the row and column, so we just need the child ID to construct our index
-        AZ::EntityId childId;
-        EditorEntityInfoRequestBus::EventResult(childId, parentId, &EditorEntityInfoRequestBus::Events::GetChild, row);
-        AZ_Assert(childId.IsValid(), "No child found for parent");
-        return createIndex(row, column, static_cast<AZ::u64>(childId));
+        return QModelIndex();
     }
 
     QVariant EntityOutlinerListModelFromPrefab::data(const QModelIndex& index, int role) const
     {
+        if (index.column() == ColumnName)
+        {
+            return dataForName(index, role);
+        }
+
+        /*
         auto id = GetEntityFromIndex(index);
         if (id.IsValid())
         {
@@ -176,6 +198,7 @@ namespace AzToolsFramework
                 return dataForSortIndex(index, role);
             }
         }
+        */
 
         return QVariant();
     }
@@ -197,47 +220,54 @@ namespace AzToolsFramework
 
     QVariant EntityOutlinerListModelFromPrefab::dataForAll(const QModelIndex& index, int role) const
     {
-        auto id = GetEntityFromIndex(index);
-
         switch (role)
         {
         case EntityIdRole:
-            return static_cast<AZ::u64>(id);
+            // return static_cast<AZ::u64>(id);
+            return static_cast<AZ::u64>(GetEntityFromIndex(index));
 
         case SelectedRole:
             {
-                bool isSelected = false;
-                EditorEntityInfoRequestBus::EventResult(isSelected, id, &EditorEntityInfoRequestBus::Events::IsSelected);
-                return isSelected;
+                //bool isSelected = false;
+                //EditorEntityInfoRequestBus::EventResult(isSelected, id, &EditorEntityInfoRequestBus::Events::IsSelected);
+                //return isSelected;
+                return false;
             }
 
         case ChildSelectedRole:
-            return HasSelectedDescendant(id);
+            // return HasSelectedDescendant(id);
+            return false;
 
         case PartiallyVisibleRole:
-            return !AreAllDescendantsSameVisibleState(id);
+            //return !AreAllDescendantsSameVisibleState(id);
+            return false;
 
         case PartiallyLockedRole:
-            return !AreAllDescendantsSameLockState(id);
+            //return !AreAllDescendantsSameLockState(id);
+            return false;
 
         case LockedAncestorRole:
-            return IsInLayerWithProperty(id, LayerProperty::Locked);
+            return false;
 
         case InvisibleAncestorRole:
-            return IsInLayerWithProperty(id, LayerProperty::Invisible);
+            return false;
 
         case ChildCountRole:
             {
-                AZStd::size_t childCount = 0;
-                EditorEntityInfoRequestBus::EventResult(childCount, id, &EditorEntityInfoRequestBus::Events::GetChildCount);
-                return (int)childCount;
+                if (m_indices.contains(index))
+                {
+                    return m_indices[index].size();
+                }
+                return 0;
             }
 
         case ExpandedRole:
-            return IsExpanded(id);
+            // return IsExpanded(id);
+            return true;
 
         case VisibilityRole:
-            return !IsFiltered(id);
+            // return !IsFiltered(id);
+            return true;
 
         }
 
@@ -246,27 +276,25 @@ namespace AzToolsFramework
 
     QVariant EntityOutlinerListModelFromPrefab::dataForName(const QModelIndex& index, int role) const
     {
-        auto id = GetEntityFromIndex(index);
-
         switch (role)
         {
         case Qt::DisplayRole:
         case Qt::EditRole:
             {
-                AZStd::string name;
-                EditorEntityInfoRequestBus::EventResult(name, id, &EditorEntityInfoRequestBus::Events::GetName);
-                QString label{ name.data() };
+                /*
                 if (s_paintingName && !m_filterString.empty())
                 {
                     // highlight characters in filter
                     label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
                 }
-                return label;
+                */
+                return m_itemNames[index];
             }
             break;
         case Qt::ToolTipRole:
             {
-                return GetEntityTooltip(id);
+                //return GetEntityTooltip(id);
+                return m_itemNames[index];
             }
             break;
         case Qt::ForegroundRole:
@@ -278,7 +306,8 @@ namespace AzToolsFramework
             break;
         case Qt::DecorationRole:
             {
-                return GetEntityIcon(id);
+                //return GetEntityIcon(id);
+                return QIcon(QString(":/Entity/entity.svg"));
             }
             break;
         }
@@ -397,10 +426,9 @@ namespace AzToolsFramework
                     bool isLocked = false;
                     // Lock state is tracked in 3 places:
                     // EditorLockComponent, EditorEntityModel, and ComponentEntityObject.
-                    // In addition to that, entities that are in layers can have the layer's lock state override their own.
-                    // Retrieving the lock state from the lock component is ideal for drawing the lock icon in the outliner because
-                    // the outliner needs to show that specific entity's lock state, and not the actual final lock state including the layer
-                    // behavior. The EditorLockComponent only knows about the specific entity's lock state and not the hierarchy.
+                    // Retrieving the lock state from the lock component is ideal for drawing the lock icon in the outliner
+                    // because the outliner needs to show that specific entity's lock state, and not the actual final lock state.
+                    // The EditorLockComponent only knows about the specific entity's lock state and not the hierarchy.
                     EditorLockComponentRequestBus::EventResult(isLocked, entityId, &EditorLockComponentRequests::GetLocked);
 
                     return isLocked ? Qt::Checked : Qt::Unchecked;
@@ -890,25 +918,6 @@ namespace AzToolsFramework
                     return false;
                 }
             }
-
-            bool isLayerEntity = false;
-            Layers::EditorLayerComponentRequestBus::EventResult(
-                isLayerEntity,
-                entityId,
-                &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-            // Layers can only have other layers as parents, or have no parent.
-            if (isLayerEntity)
-            {
-                bool newParentIsLayer = false;
-                Layers::EditorLayerComponentRequestBus::EventResult(
-                    newParentIsLayer,
-                    newParentId,
-                    &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-                if (!newParentIsLayer)
-                {
-                    return false;
-                }
-            }
         }
 
         //Only check the entity pointer if the entity id is valid because
@@ -1392,7 +1401,12 @@ namespace AzToolsFramework
 
     AZ::EntityId EntityOutlinerListModelFromPrefab::GetEntityFromIndex(const QModelIndex& index) const
     {
-        return index.isValid() ? AZ::EntityId(static_cast<AZ::u64>(index.internalId())) : AZ::EntityId();
+        if (m_itemAliases.contains(index))
+        {
+            return m_rootInstance->get().GetEntityId(AZStd::string_view(m_itemAliases[index].toStdString().c_str()));
+        }
+
+        return AZ::EntityId();
     }
 
     void EntityOutlinerListModelFromPrefab::SearchStringChanged(const AZStd::string& filter)
@@ -1781,49 +1795,6 @@ namespace AzToolsFramework
         return true;
     }
 
-    bool EntityOutlinerListModelFromPrefab::IsInLayerWithProperty(AZ::EntityId entityId, const LayerProperty& layerProperty) const
-    {
-        while (entityId.IsValid())
-        {
-            AZ::EntityId parentId;
-            EditorEntityInfoRequestBus::EventResult(
-                parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-            bool isParentLayer = false;
-            Layers::EditorLayerComponentRequestBus::EventResult(
-                isParentLayer,
-                parentId,
-                &Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            if (isParentLayer)
-            {
-                if (layerProperty == LayerProperty::Locked)
-                {
-                    bool isParentLayerLocked = false;
-                    EditorEntityInfoRequestBus::EventResult(
-                        isParentLayerLocked, parentId, &EditorEntityInfoRequestBus::Events::IsJustThisEntityLocked);
-                    if (isParentLayerLocked)
-                    {
-                        return true;
-                    }
-                    // If this layer wasn't locked, keep checking the hierarchy, a layer above this one may be locked.
-                }
-                else if (layerProperty == LayerProperty::Invisible)
-                {
-                    bool isParentVisible = IsEntitySetToBeVisible(parentId);
-                    if (!isParentVisible)
-                    {
-                        return true;
-                    }
-                    // If this layer was visible, keep checking the hierarchy, a layer above this one may be invisible.
-                }
-            }
-
-            entityId = parentId;
-        }
-        return false;
-    }
-
     void EntityOutlinerListModelFromPrefab::OnEntityInitialized(const AZ::EntityId& entityId)
     {
         bool isEditorEntity = false;
@@ -1870,8 +1841,62 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModelFromPrefab::OnEditorFocusChanged([[maybe_unused]] AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId)
     {
+        // Gather the Template Id of the root prefab being edited.
+        Prefab::InstanceOptionalReference rootPrefabInstance = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+        if (rootPrefabInstance.has_value())
+        {
+            m_rootTemplateId = rootPrefabInstance->get().GetTemplateId();
+            m_rootInstance = rootPrefabInstance;
+            Generate();
+        }
+
         // Ensure all descendants of the current focus root are expanded, so it is visible.
         ExpandAncestors(newFocusEntityId);
+    }
+
+    void EntityOutlinerListModelFromPrefab::Generate()
+    {
+        if (m_rootTemplateId == Prefab::InvalidTemplateId)
+        {
+            return;
+        }
+
+        const auto& rootDom = m_prefabSystemComponentInterface->FindTemplateDom(m_rootTemplateId);
+
+        QModelIndex containerEntityIndex = createIndex(0, 0, rand());
+        AZStd::string containerEntityName = rootDom.FindMember("ContainerEntity")->value.FindMember("Name")->value.GetString();
+        AZStd::string containerEntityAlias = rootDom.FindMember("ContainerEntity")->value.FindMember("Id")->value.GetString();
+        
+        // Container Entity
+        beginInsertRows(QModelIndex(), 0, 0);
+
+        m_itemNames.insert(containerEntityIndex, containerEntityName.c_str());
+        m_itemAliases.insert(containerEntityIndex, containerEntityAlias.c_str());
+        m_indices[QModelIndex()][0] = containerEntityIndex;
+
+        endInsertRows();
+
+        // All children indiscriminately
+        const auto& entities = rootDom.FindMember("Entities")->value;
+
+        auto entitiesCount = entities.MemberCount();
+        if (entitiesCount > 0)
+        {
+            beginInsertRows(containerEntityIndex, 0, entitiesCount - 1);
+
+            int i = 0;
+            for (Prefab::PrefabDom::ConstMemberIterator entityIter = entities.MemberBegin(); entityIter != entities.MemberEnd(); ++entityIter)
+            {
+                QModelIndex entityIndex = createIndex(i, 0, rand());
+
+                m_itemNames.insert(entityIndex, entityIter->name.GetString());
+                m_itemAliases.insert(entityIndex, entityIter->name.GetString());
+                m_indices[containerEntityIndex][i] = entityIndex;
+                ++i;
+            }
+
+            endInsertRows();
+        }
     }
 }
 

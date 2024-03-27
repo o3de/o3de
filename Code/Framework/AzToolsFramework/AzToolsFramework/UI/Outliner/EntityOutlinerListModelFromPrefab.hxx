@@ -27,9 +27,16 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
 
+//#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
+
 #include <QCheckBox>
+#include <QMap>
 #include <QRect>
 #include <QStyledItemDelegate>
+#include <QString>
 #include <QWidget>
 #endif
 
@@ -39,11 +46,17 @@ namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
     class FocusModeInterface;
+    class PrefabEditorEntityOwnershipInterface;
     class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
         enum class DisplaySortMode : unsigned char;
+    }
+
+    namespace Prefab
+    {
+        class PrefabSystemComponentInterface;
     }
 
     //! Model for items in the OutlinerTreeView.
@@ -251,13 +264,6 @@ namespace AzToolsFramework
         bool AreAllDescendantsSameLockState(const AZ::EntityId& entityId) const;
         bool AreAllDescendantsSameVisibleState(const AZ::EntityId& entityId) const;
 
-        enum LayerProperty
-        {
-            Locked,
-            Invisible
-        };
-        bool IsInLayerWithProperty(AZ::EntityId entityId, const LayerProperty& layerProperty) const;
-
         // These are needed until we completely disassociated selection control from the outliner state to
         // keep track of selection state before/during/after filtering and searching
         EntityIdList m_unfilteredSelectionEntityIds;
@@ -273,7 +279,19 @@ namespace AzToolsFramework
         
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
+        PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface = nullptr;
+        Prefab::PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+
+        Prefab::TemplateId m_rootTemplateId = Prefab::InvalidTemplateId;
+        Prefab::InstanceOptionalReference m_rootInstance;
+
+        // TODO - rename this better
+        void Generate();
+
+        QMap<QModelIndex, QString> m_itemNames;
+        QMap<QModelIndex, QString> m_itemAliases;
+        QMap<QModelIndex, QMap<int, QModelIndex>> m_indices;
     };
 }
 
