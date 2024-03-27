@@ -31,10 +31,8 @@ class CUiAnimViewKeyPropertiesDlg;
 
 //////////////////////////////////////////////////////////////////////////
 class CUiAnimViewKeyUIControls
-    : public QObject
-    , public _i_reference_target_t
+    : public _i_reference_target_t
 {
-    Q_OBJECT
 public:
     CUiAnimViewKeyUIControls()
     {

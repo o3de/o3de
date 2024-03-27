@@ -73,6 +73,9 @@ ly_append_configurations_options(
         -Wno-switch
         -Wno-uninitialized
         -Wno-unused-result
+        -Wno-error=unused-but-set-variable
+        -Wno-error=unused-variable
+        -Wno-error=subobject-linkage
 
     COMPILATION_DEBUG
         -O0 # No optimization

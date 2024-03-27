@@ -594,18 +594,18 @@ namespace Audio
         // warn if there is activity on an object being cleared
         if (!m_cActiveEvents.empty())
         {
-            const char* const sEventString = GetEventIDs("; ").c_str();
+            AZStd::string sEventString = GetEventIDs("; ");
             AZLOG_NOTICE(
                 "Events are active on an object (ID: %llu) being released!  #Events: %zu   EventIDs: %s", GetID(), m_cActiveEvents.size(),
-                sEventString);
+                sEventString.c_str());
         }
 
         if (!m_cTriggers.empty())
         {
-            const char* const sTriggerString = GetTriggerNames("; ", pDebugNameStore).c_str();
+            AZStd::string sTriggerString = GetTriggerNames("; ", pDebugNameStore);
             AZLOG_NOTICE(
                 "Triggers are active on an object (ID: %llu) being released!  #Triggers: %zu   TriggerNames: %s", GetID(),
-                m_cTriggers.size(), sTriggerString);
+                m_cTriggers.size(), sTriggerString.c_str());
         }
     }
 

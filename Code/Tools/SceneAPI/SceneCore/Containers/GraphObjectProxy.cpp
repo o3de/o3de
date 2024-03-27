@@ -101,7 +101,7 @@ namespace AZ
                     bufferArg = *name;
                 }
 
-                AZStd::string_view type = FetchPythonType(*behaviorMethod.GetArgument(argIndex));
+                AZStd::string type = FetchPythonType(*behaviorMethod.GetArgument(argIndex));
                 if (!type.empty())
                 {
                     AzFramework::StringFunc::Append(bufferArg, ": ");
@@ -135,14 +135,14 @@ namespace AZ
             AzFramework::StringFunc::Append(buffer, "(");
             if (behaviorProperty.m_setter)
             {
-                AZStd::string_view type = FetchPythonType(*behaviorProperty.m_setter->GetArgument(1));
+                AZStd::string type = FetchPythonType(*behaviorProperty.m_setter->GetArgument(1));
                 AzFramework::StringFunc::Append(buffer, type.data());
             }
             AzFramework::StringFunc::Append(buffer, ")");
 
             if (behaviorProperty.m_getter)
             {
-                AZStd::string_view type = FetchPythonType(*behaviorProperty.m_getter->GetResult());
+                AZStd::string type = FetchPythonType(*behaviorProperty.m_getter->GetResult());
                 AzFramework::StringFunc::Append(buffer, "->");
                 AzFramework::StringFunc::Append(buffer, type.data());
             }

@@ -19,7 +19,6 @@ public:
     bool Load(const QString& fileName, CImageEx& outImage);
     bool Load(const QString& fileName, CFloatImage& outImage);
     bool SaveRAW(const QString& fileName, const void* pData, int width, int height, int bytesPerChannel, int numChannels, bool bFloat, const char* preset);
-    static const char* GetPreset(const QString& fileName);
 };
 
 

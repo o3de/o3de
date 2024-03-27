@@ -2015,7 +2015,9 @@ namespace AZ
                 }
                 else
                 {
+                    AZ_PUSH_DISABLE_WARNING_GCC("-Wdangling-pointer");
                     param.m_value = &const_cast<Type&>(result);
+                    AZ_POP_DISABLE_WARNING_GCC;
                 }
                 return true;
             }
