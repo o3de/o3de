@@ -7,7 +7,5 @@
 #
 
 set(FILES
-    AzToolsFramework_Traits_Mac.h
-    AzToolsFramework_Traits_Platform.h
     AzToolsFramework/API/EditorAssetSystemAPI_Mac.cpp
 )

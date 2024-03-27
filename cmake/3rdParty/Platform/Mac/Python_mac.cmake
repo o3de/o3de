@@ -25,4 +25,6 @@ ly_set(LY_PYTHON_VENV_LIB_PATH "lib")
 ly_set(LY_PYTHON_VENV_SITE_PACKAGES "${LY_PYTHON_VENV_LIB_PATH}/python3.10/site-packages")
 ly_set(LY_PYTHON_VENV_PYTHON "${LY_PYTHON_VENV_BIN_PATH}/python")
 
-ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
+function(ly_post_python_venv_install venv_path)
+    # Noop
+endfunction()

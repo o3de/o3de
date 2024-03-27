@@ -39,16 +39,16 @@ namespace AZ::Utils
             }
         }
 
-        if (const char* homePath = std::getenv("HOME"); homePath != nullptr)
-        {
-            AZ::IO::FixedMaxPath path{homePath};
-            return path.Native();
-        }
-
         struct passwd* pass = getpwuid(getuid());
         if (pass)
         {
             AZ::IO::FixedMaxPath path{pass->pw_dir};
+            return path.Native();
+        }
+
+        if (const char* homePath = std::getenv("HOME"); homePath != nullptr)
+        {
+            AZ::IO::FixedMaxPath path{homePath};
             return path.Native();
         }
 
