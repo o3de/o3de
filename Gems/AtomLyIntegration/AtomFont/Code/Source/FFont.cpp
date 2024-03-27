@@ -71,6 +71,8 @@ AZ::FFont::FFont(AZ::AtomFont* atomFont, const char* fontName)
     m_vertexCount = 0;
     m_indexCount = 0;
 
+    m_fontImageVersion = 0;
+
     AddRef();
 }
 
@@ -256,7 +258,7 @@ void AZ::FFont::DrawStringUInternal(
     }
 
     const size_t fxSize = m_effects.size();
-    if (fxSize && !m_fontImage && !InitTexture())
+    if (fxSize && !m_fontImage && !CreateTexture())
     {
         return;
     }
@@ -628,7 +630,7 @@ uint32_t AZ::FFont::WriteTextQuadsToBuffers(SVF_P2F_C4B_T2F_F4B* verts, uint16_t
     uint32_t numQuadsWritten = 0;
 
     const size_t fxSize = m_effects.size();
-    if (fxSize && !m_fontImage && !InitTexture())
+    if (fxSize && !m_fontImage && !CreateTexture())
     {
         return numQuadsWritten;
     }
@@ -1431,7 +1433,7 @@ float AZ::FFont::GetBaselineInternal(const RHI::Viewport& viewport, const TextDr
 }
 
 
-bool AZ::FFont::InitTexture()
+bool AZ::FFont::CreateTexture()
 {
     using namespace AZ;
 
@@ -1453,7 +1455,6 @@ bool AZ::FFont::InitTexture()
     m_fontImage = m_fontStreamingImage->GetRHIImage();
     m_fontImage->SetName(Name(m_name.c_str()));
 
-    m_fontImageVersion = 0;
     return true;
 }
 
@@ -1472,7 +1473,7 @@ bool AZ::FFont::UpdateTexture()
         return false;
     }
 
-    return InitTexture();  // creates a new texture
+    return CreateTexture();
 }
 
 bool AZ::FFont::InitCache()
@@ -1520,11 +1521,11 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
         ++m_fontImageVersion;
         /*
         // to debug particular font increments, this helps defining the right texture size by the images analysis
-        if (m_name == "fonts/orbit-regular.font")
+        //if (m_name == "fonts/some.font")
         {
             AZStd::string fontFilePath =
-                AZStd::string::format("@user@/%s_%02d_%dx%d.bmp", m_name.c_str(), GetFontTextureVersion(), glyphSize.x, glyphSize.y);
-            AZ_Info("FFont", "save as %s, %p", fontFilePath.c_str(), this);
+            AZStd::string::format("@user@/%s_%02d.bmp", m_name.c_str(), GetFontTextureVersion());
+            AZ_Info("FFont", "Save %s", fontFilePath.c_str());
             GetFontTexture()->WriteToFile(fontFilePath.c_str());
         }
         */
