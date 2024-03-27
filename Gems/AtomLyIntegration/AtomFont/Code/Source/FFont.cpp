@@ -1472,24 +1472,7 @@ bool AZ::FFont::UpdateTexture()
         return false;
     }
 
-    RHI::ImageSubresourceRange range;
-    range.m_mipSliceMin = 0;
-    range.m_mipSliceMax = 0;
-    range.m_arraySliceMin = 0;
-    range.m_arraySliceMax = 0;
-    RHI::ImageSubresourceLayout layout;
-    m_fontImage->GetSubresourceLayouts(range, &layout, nullptr);
-
-    RHI::ImageUpdateRequest imageUpdateReq;
-    imageUpdateReq.m_image = m_fontImage.get();
-    imageUpdateReq.m_imageSubresource = RHI::ImageSubresource{ 0, 0 };
-    imageUpdateReq.m_sourceData = m_fontTexture->GetBuffer();
-    imageUpdateReq.m_sourceSubresourceLayout = layout;
-
-    const RHI::ResultCode result = m_fontStreamingImage->UpdateImageContents(imageUpdateReq);
-    AZ_Error("FFont", result == RHI::ResultCode::Success, "Cannot update font texture, code %d", (unsigned int)result);
-
-    return result == RHI::ResultCode::Success;
+    return InitTexture();  // creates a new texture
 }
 
 bool AZ::FFont::InitCache()
@@ -1536,7 +1519,7 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
         m_fontTexDirty = false;
         ++m_fontImageVersion;
         /*
-        // to debug particular font increments
+        // to debug particular font increments, this helps defining the right texture size by the images analysis
         if (m_name == "fonts/orbit-regular.font")
         {
             AZStd::string fontFilePath =
