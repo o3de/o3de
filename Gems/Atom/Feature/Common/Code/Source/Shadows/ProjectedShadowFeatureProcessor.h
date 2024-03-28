@@ -39,7 +39,8 @@ namespace AZ::Render
         void Activate() override;
         void Deactivate() override;
         void Simulate(const SimulatePacket& packet) override;
-        void PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<RPI::PipelineViewTag, RPI::ViewPtr>>&) override;
+        void PrepareViews(
+            const PrepareViewsPacket& prepareViewsPacket, AZStd::vector<AZStd::pair<RPI::PipelineViewTag, RPI::ViewPtr>>&) override;
         void Render(const RenderPacket& packet) override;
 
         // ProjectedShadowFeatureProcessorInterface overrides ...
