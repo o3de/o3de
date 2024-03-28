@@ -186,7 +186,6 @@ set(FILES
     SpinBoxTests.cpp
     SQLiteConnectionTests.cpp
     ThumbnailerTests.cpp
-    ToolsComponents/EditorLayerComponentTests.cpp
     ToolsComponents/EditorTransformComponentTests.cpp
     TransformComponent.cpp
     UI/EntityIdQLineEditTests.cpp

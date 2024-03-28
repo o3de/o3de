@@ -169,7 +169,6 @@ protected:
         bool bSaved;
     };
     bool BeforeSaveDocument(const QString& lpszPathName, TSaveDocContext& context);
-    bool HasLayerNameConflicts() const;
     bool DoSaveDocument(const QString& lpszPathName, TSaveDocContext& context);
     bool AfterSaveDocument(const QString& lpszPathName, TSaveDocContext& context, bool bShowPrompt = true);
 

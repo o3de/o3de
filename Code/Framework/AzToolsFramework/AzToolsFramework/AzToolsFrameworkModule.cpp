@@ -39,7 +39,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
@@ -96,7 +95,6 @@ namespace AzToolsFramework
             Components::EditorEntityActionComponent::CreateDescriptor(),
             Components::EditorEntityIconComponent::CreateDescriptor(),
             Components::EditorInspectorComponent::CreateDescriptor(),
-            Layers::EditorLayerComponent::CreateDescriptor(),
             Components::EditorLockComponent::CreateDescriptor(),
             Components::EditorPendingCompositionComponent::CreateDescriptor(),
             Components::EditorVisibilityComponent::CreateDescriptor(),

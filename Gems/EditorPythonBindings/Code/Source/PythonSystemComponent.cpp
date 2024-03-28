@@ -496,10 +496,7 @@ namespace EditorPythonBindings
         //   5 - user(dev)
 
         // 1 - The python venv site-packages
-        AZ::IO::FixedMaxPath thirdPartyFolder = AzToolsFramework::EmbeddedPython::PythonLoader::GetDefault3rdPartyPath(false);
-
         AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(
-            thirdPartyFolder,
             AZ::Utils::GetEnginePath().c_str(),
             [&pythonPathStack](AZ::IO::PathView path)
             {

@@ -4006,14 +4006,6 @@ namespace ScriptCanvasEditor
 
         for (const AZ::EntityId& entityId : selectedEntityIds)
         {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            if (isLayerEntity)
-            {
-                continue;
-            }
-
             AZ::NamedEntityId namedEntityId(entityId);
 
             QAction* actionElement = new QAction(namedEntityId.GetName().data(), m_selectedEntityMenu);
@@ -4041,44 +4033,12 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EntityIdList selectedEntityIds;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-        auto selectedEntityIdIter = selectedEntityIds.begin();
-
-        bool isLayerAmbiguous = false;
-        AZ::EntityId targetLayer;
-
-        while (selectedEntityIdIter != selectedEntityIds.end())
-        {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, (*selectedEntityIdIter), &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            if (isLayerEntity)
-            {
-                if (targetLayer.IsValid())
-                {
-                    isLayerAmbiguous = true;
-                }
-
-                targetLayer = (*selectedEntityIdIter);
-
-                selectedEntityIdIter = selectedEntityIds.erase(selectedEntityIdIter);
-            }
-            else
-            {
-                ++selectedEntityIdIter;
-            }
-        }
-
         if (selectedEntityIds.empty())
         {
             AZ::EntityId createdId;
             AzToolsFramework::EditorRequests::Bus::BroadcastResult(createdId, &AzToolsFramework::EditorRequests::CreateNewEntity, AZ::EntityId());
 
             selectedEntityIds.emplace_back(createdId);
-
-            if (targetLayer.IsValid() && !isLayerAmbiguous)
-            {
-                AZ::TransformBus::Event(createdId, &AZ::TransformBus::Events::SetParent, targetLayer);
-            }
         }
 
         for (const AZ::EntityId& entityId : selectedEntityIds)
@@ -4106,14 +4066,6 @@ namespace ScriptCanvasEditor
 
     void MainWindow::AssignGraphToEntityImpl(const AZ::EntityId& entityId)
     {
-        bool isLayerEntity = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-        if (isLayerEntity)
-        {
-            return;
-        }
-
         EditorScriptCanvasComponentRequests* firstRequestBus = nullptr;
         EditorScriptCanvasComponentRequests* firstEmptyRequestBus = nullptr;
 

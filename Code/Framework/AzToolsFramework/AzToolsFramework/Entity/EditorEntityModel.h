@@ -62,7 +62,6 @@ namespace AzToolsFramework
             Disable
         };
 
-
         EditorEntityModel();
         ~EditorEntityModel();
         EditorEntityModel(const EditorEntityModel&) = delete;
@@ -126,7 +125,6 @@ namespace AzToolsFramework
         void OnEntityComponentRemoved(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
         void OnEntityComponentEnabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
         void OnEntityComponentDisabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
-
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::EntityBus
@@ -319,11 +317,6 @@ namespace AzToolsFramework
             void DetectInitialOverrides();
             void ModifyParentsOverriddenChildren(AZ::EntityId entityId, AZ::u8 lastFlags, bool hasOverrides);
             void UpdateCyclicDependencyInfo();
-
-            using EntityInHierarchyConditionFunction = bool(*)(AZ::EntityId);
-            bool DoesEntityHierarchyOverrideState(EntityInHierarchyConditionFunction stateCheckFunction) const;
-            bool DoesEntityHierarchyOverrideVisibility() const;
-            bool DoesEntityHierarchyOverrideLock() const;
 
             void SetStartActiveStatus(bool isActive);
 
