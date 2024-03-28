@@ -645,7 +645,6 @@ namespace AzToolsFramework
         // Prefab interfaces
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
-        bool m_prefabsAreEnabled = false;
 
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
         bool m_selectionContainsReadOnlyEntity = false;

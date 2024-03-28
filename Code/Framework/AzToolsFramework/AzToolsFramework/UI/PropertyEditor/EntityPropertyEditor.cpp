@@ -591,11 +591,7 @@ namespace AzToolsFramework
         m_gui->m_entitySearchBox->setClearButtonEnabled(true);
         AzQtComponents::LineEdit::applySearchStyle(m_gui->m_entitySearchBox);
 
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            m_prefabsAreEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        m_itemNames =
-            m_prefabsAreEnabled ? QStringList{"Universal", "Editor only"} : QStringList{"Start active", "Start inactive", "Editor only"};
+        m_itemNames = QStringList{"Universal", "Editor only"};
         int itemNameCount = m_itemNames.size();
         QStandardItemModel* model = new QStandardItemModel(itemNameCount, 1);
         for (int row = 0; row < itemNameCount; ++row)
@@ -1041,11 +1037,6 @@ namespace AzToolsFramework
 
     EntityPropertyEditor::InspectorLayout EntityPropertyEditor::GetCurrentInspectorLayout() const
     {
-        if (!m_prefabsAreEnabled)
-        {
-            return m_isLevelEntityEditor ? InspectorLayout::Level : InspectorLayout::Entity;
-        }
-
         // Prefabs layout logic
 
         // If this is the container entity for the root instance, treat it like a level entity.
@@ -1094,16 +1085,7 @@ namespace AzToolsFramework
     {
         UpdateStatusComboBox();
 
-        InspectorLayout layout = GetCurrentInspectorLayout();
-
-        if (!m_prefabsAreEnabled && layout == InspectorLayout::Level)
-        {
-            AZStd::string levelName;
-            AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequests::GetLevelName);
-            m_gui->m_entityNameEditor->setText(levelName.c_str());
-            m_gui->m_entityNameEditor->setReadOnly(true);
-        }
-        else if (m_selectedEntityIds.size() > 1)
+        if (m_selectedEntityIds.size() > 1)
         {
             // Generic text for multiple entities selected
             m_gui->m_entityDetailsLabel->setVisible(true);
@@ -3296,19 +3278,16 @@ namespace AzToolsFramework
             }
         }
 
-        if (m_prefabsAreEnabled)
+        if (allInactive)
         {
-            if (allInactive)
-            {
-                AZ_Warning("Prefab", false, "All entities found to be inactive. This is an option that's not supported with Prefabs.");
-                allInactive = false;
-                allEditorOnly = true;
-            }
-            if (someInactive)
-            {
-                AZ_Warning("Prefab", false, "Some inactive entities found. This is an option that's not supported with Prefabs.");
-                someInactive = false;
-            }
+            AZ_Warning("Prefab", false, "All entities found to be inactive. This is an option that's not supported with Prefabs.");
+            allInactive = false;
+            allEditorOnly = true;
+        }
+        if (someInactive)
+        {
+            AZ_Warning("Prefab", false, "Some inactive entities found. This is an option that's not supported with Prefabs.");
+            someInactive = false;
         }
 
         m_gui->m_statusComboBox->setItalic(false);
@@ -3358,49 +3337,34 @@ namespace AzToolsFramework
 
     size_t EntityPropertyEditor::StatusTypeToIndex(StatusType statusType) const
     {
-        if (m_prefabsAreEnabled)
+        switch (statusType)
         {
-            switch (statusType)
-            {
-            case StatusStartActive:
-                return 0;
-            case StatusStartInactive:
-                AZ_Assert(false, "StatusStartInactive is not supported when Prefabs are enabled.");
-                return 0;
-            case StatusEditorOnly:
-                return 1;
-            case StatusItems:
-                return 2;
-            default:
-                AZ_Assert(false, "StatusType for EntityPropertyEditor is out of bounds.");
-                return 1;
-            }
-        }
-        else
-        {
-            return statusType;
+        case StatusStartActive:
+            return 0;
+        case StatusStartInactive:
+            AZ_Assert(false, "StatusStartInactive is not supported when Prefabs are enabled.");
+            return 0;
+        case StatusEditorOnly:
+            return 1;
+        case StatusItems:
+            return 2;
+        default:
+            AZ_Assert(false, "StatusType for EntityPropertyEditor is out of bounds.");
+            return 1;
         }
     }
 
     EntityPropertyEditor::StatusType EntityPropertyEditor::IndexToStatusType(size_t index) const
     {
-        if (m_prefabsAreEnabled)
+        switch (index)
         {
-            switch (index)
-            {
-            case 0:
-                return StatusStartActive;
-            case 1:
-                return StatusEditorOnly;
-            default:
-                AZ_Assert(index < StatusType::StatusItems, "Index for EntityPropertyEditor::IndexToStatusType is out of bounds");
-                return StatusEditorOnly;
-            }
-        }
-        else
-        {
+        case 0:
+            return StatusStartActive;
+        case 1:
+            return StatusEditorOnly;
+        default:
             AZ_Assert(index < StatusType::StatusItems, "Index for EntityPropertyEditor::IndexToStatusType is out of bounds");
-            return aznumeric_cast<StatusType>(index);
+            return StatusEditorOnly;
         }
     }
 
