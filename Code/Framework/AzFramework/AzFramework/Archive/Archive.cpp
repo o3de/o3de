@@ -27,7 +27,6 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzFramework/IO/FileOperations.h>

@@ -68,7 +68,6 @@ namespace UnitTest
         EXPECT_TRUE(result == expectedPath);
     }
 
-
     TEST_F(AzToolsFrameworkPythonLoaderFixture, TestReadPythonEggLinkPaths_Valid)
     {
         auto testPythonRootPath = m_tempDirectory.GetDirectoryAsFixedMaxPath() / s_testPythonRootPath;
@@ -113,5 +112,5 @@ namespace UnitTest
 
         EXPECT_EQ(expectedResults, resultEggLinkPaths);
     }
-    
+
 } // namespace UnitTest

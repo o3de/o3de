@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/sort.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>

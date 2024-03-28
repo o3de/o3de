@@ -42,7 +42,6 @@
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>

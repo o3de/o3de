@@ -28,7 +28,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/sort.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>

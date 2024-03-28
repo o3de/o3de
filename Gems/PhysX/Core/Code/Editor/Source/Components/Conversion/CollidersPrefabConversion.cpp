@@ -9,7 +9,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Console/IConsole.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <EditorColliderComponent.h>

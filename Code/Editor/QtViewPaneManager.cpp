@@ -32,8 +32,6 @@
 #include <algorithm>
 #include <QScopedValueRollback>
 
-#include <AzFramework/API/ApplicationAPI.h>
-
 #include <AzAssetBrowser/AzAssetBrowserWindow.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzQtComponents/Utilities/AutoSettingsGroup.h>

@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/PlatformDef.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/PlatformDef.h>
 #include <AzCore/Socket/AzSocket.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/API/ApplicationAPI.h>
 
 #include <platform.h>
 #include <IConsole.h>

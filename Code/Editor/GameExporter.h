@@ -9,7 +9,6 @@
 
 #include "Util/PakFile.h"
 #include "Util/Image.h"
-#include <AzFramework/API/ApplicationAPI.h>
 
 enum EGameExport
 {
