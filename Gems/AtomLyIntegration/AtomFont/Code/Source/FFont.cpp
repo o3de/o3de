@@ -70,8 +70,6 @@ AZ::FFont::FFont(AZ::AtomFont* atomFont, const char* fontName)
     m_vertexCount = 0;
     m_indexCount = 0;
 
-    m_fontImageVersion = 0;
-
     AddRef();
 }
 
@@ -257,7 +255,7 @@ void AZ::FFont::DrawStringUInternal(
     }
 
     const size_t fxSize = m_effects.size();
-    if (fxSize && !m_fontImage && !CreateTexture())
+    if (fxSize && !m_fontImage && !InitTexture())
     {
         return;
     }
@@ -629,7 +627,7 @@ uint32_t AZ::FFont::WriteTextQuadsToBuffers(SVF_P2F_C4B_T2F_F4B* verts, uint16_t
     uint32_t numQuadsWritten = 0;
 
     const size_t fxSize = m_effects.size();
-    if (fxSize && !m_fontImage && !CreateTexture())
+    if (fxSize && !m_fontImage && !InitTexture())
     {
         return numQuadsWritten;
     }
@@ -1432,7 +1430,7 @@ float AZ::FFont::GetBaselineInternal(const RHI::Viewport& viewport, const TextDr
 }
 
 
-bool AZ::FFont::CreateTexture()
+bool AZ::FFont::InitTexture()
 {
     using namespace AZ;
 
@@ -1448,6 +1446,7 @@ bool AZ::FFont::CreateTexture()
     m_fontImage = m_fontAttachmentImage->GetRHIImage();
     m_fontImage->SetName(imageName);
 
+    m_fontImageVersion = 0;
     return true;
 }
 

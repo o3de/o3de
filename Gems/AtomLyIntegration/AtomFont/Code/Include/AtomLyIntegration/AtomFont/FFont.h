@@ -196,7 +196,7 @@ namespace AZ
 
     private:
         virtual ~FFont();
-        bool CreateTexture();
+        bool InitTexture();
         bool InitCache();
 
         void Prepare(const char* str, bool updateTexture, const AtomFont::GlyphSize& glyphSize = AtomFont::defaultGlyphSize);
