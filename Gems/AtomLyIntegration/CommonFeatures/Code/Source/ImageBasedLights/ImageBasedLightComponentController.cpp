@@ -133,7 +133,7 @@ namespace AZ
         {
             if (m_configuration.m_specularImageAsset.GetId() == updatedAsset.GetId())
             {
-                if (HandleAssetUpdate(updatedAsset, m_configuration.m_specularImageAsset))
+                if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_specularImageAsset))
                 {
                     m_featureProcessor->SetSpecularImage(m_configuration.m_specularImageAsset);
                     ImageBasedLightComponentNotificationBus::Event(m_entityId, &ImageBasedLightComponentNotifications::OnSpecularImageUpdated);
@@ -141,7 +141,7 @@ namespace AZ
             }
             else if (m_configuration.m_diffuseImageAsset.GetId() == updatedAsset.GetId())
             {
-                if (HandleAssetUpdate(updatedAsset, m_configuration.m_diffuseImageAsset))
+                if (m_featureProcessor && HandleAssetUpdate(updatedAsset, m_configuration.m_diffuseImageAsset))
                 {
                     m_featureProcessor->SetDiffuseImage(m_configuration.m_diffuseImageAsset);
                     ImageBasedLightComponentNotificationBus::Event(m_entityId, &ImageBasedLightComponentNotifications::OnDiffuseImageUpdated);
@@ -174,7 +174,7 @@ namespace AZ
             {
                 LoadImage(m_configuration.m_specularImageAsset);
             }
-            else
+            else if (m_featureProcessor)
             {
                 // Clear out current image asset
                 m_featureProcessor->SetSpecularImage(m_configuration.m_specularImageAsset);
@@ -189,7 +189,7 @@ namespace AZ
             {
                 LoadImage(m_configuration.m_diffuseImageAsset);
             }
-            else
+            else if (m_featureProcessor)
             {
                 // Clear out current image asset
                 m_featureProcessor->SetDiffuseImage(m_configuration.m_diffuseImageAsset);
@@ -253,7 +253,10 @@ namespace AZ
         void ImageBasedLightComponentController::SetExposure(float exposure)
         {
             m_configuration.m_exposure = exposure;
-            m_featureProcessor->SetExposure(exposure);
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetExposure(exposure);
+            }
         }
 
         float ImageBasedLightComponentController::GetExposure() const
@@ -264,7 +267,10 @@ namespace AZ
         void ImageBasedLightComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
         {
             const Quaternion& rotation = world.GetRotation();
-            m_featureProcessor->SetOrientation(rotation);
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetOrientation(rotation);
+            }
         }
 
         void ImageBasedLightComponentController::LoadImage(Data::Asset<RPI::StreamingImageAsset>& imageAsset)
