@@ -271,6 +271,12 @@ namespace Camera
             m_atomCameraViewGroup->Activate();
         }
 
+        // OnTransformChanged() is only called if the camera is actually moved, so make sure we call it at least once,
+        // so the camera-transform is also correct for static cameras even before they are made the active view
+        AZ::Transform local, world;
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::GetLocalAndWorld, local, world);
+        OnTransformChanged(local, world);
+
         CameraRequestBus::Handler::BusConnect(m_entityId);
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
         CameraBus::Handler::BusConnect();
