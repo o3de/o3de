@@ -55,6 +55,13 @@ namespace ScriptCanvasEditor
         using namespace AzToolsFramework;
 
         EditorComponentBase::Activate();
+
+        auto entityId = GetEntityId();
+        if (entityId.IsValid())
+        {
+            EditorScriptCanvasComponentRequestBus::Handler::BusConnect(entityId);
+        }
+
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         m_handlerSourceCompiled = m_configuration.ConnectToSourceCompiled([](const Configuration&)
             {
@@ -62,6 +69,11 @@ namespace ScriptCanvasEditor
                     ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
                     , AzToolsFramework::Refresh_EntireTree_NewContent);
             });
+
+        m_handlerSourcePropertiesChanged = m_configuration.ConnectToPropertiesChanged([this](const Configuration&)
+        {
+            this->SetDirty();
+        });
 
         m_configuration.Refresh();
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
@@ -72,6 +84,7 @@ namespace ScriptCanvasEditor
     void EditorScriptCanvasComponent::Deactivate()
     {
         EditorComponentBase::Deactivate();
+        EditorScriptCanvasComponentRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
@@ -129,6 +142,25 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
     {
+        // AzToolsFramework::ScopedUndoBatch undoBatch("update script canvas graph on component");
+        // undoBatch.MarkEntityDirty(GetEntityId());
+
+        SetDirty();
         m_configuration.Refresh(SourceHandle(nullptr, assetId.m_guid));
+    }
+
+
+    void EditorScriptCanvasComponent::SetAssetId(const SourceHandle& assetId)
+    {
+        if (assetId.IsDescriptionValid()
+            && (!m_configuration.HasSource() || m_configuration.GetSource().Describe() != assetId.Describe()))
+        {
+            this->SetPrimaryAsset(assetId.Id());
+        }
+    }
+
+    bool EditorScriptCanvasComponent::HasAssetId() const
+    {
+        return m_configuration.HasSource() && m_configuration.GetSource().IsDescriptionValid();
     }
 }
