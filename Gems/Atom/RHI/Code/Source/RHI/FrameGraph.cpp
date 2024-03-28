@@ -207,6 +207,10 @@ namespace AZ::RHI
         GraphEdgeType edgeType = usage == ScopeAttachmentUsage::SubpassInput ? GraphEdgeType::SameGroup : GraphEdgeType::DifferentGroup;
         if (Scope* producer = frameAttachment.GetLastScope())
         {
+            if (producer->GetId() == descriptor.m_subpassScopeId)
+            {
+                edgeType = GraphEdgeType::SameGroup; // GALIB
+            }
             InsertEdge(*producer, *m_currentScope, edgeType);
         }
 
@@ -510,6 +514,17 @@ namespace AZ::RHI
             }
             graphEdges[producerIndex].clear();
         }
+
+        //////////////////////////////////////////////////////////////////
+        // GALIB. TODO. Make sure this is the right thing to do!
+        // This code makes sure that Subpasses get grouped consecutively.
+        AZStd::sort(
+            m_scopes.begin(), m_scopes.end(),
+            [](const AZ::RHI::Scope* a, const AZ::RHI::Scope* b)
+            {
+                return (a->GetFrameGraphGroupId() < b->GetFrameGraphGroupId());
+            });
+        ////////////////////////////////////////////////////////////////
 
         if (m_graphNodes.size() == m_scopes.size())
         {

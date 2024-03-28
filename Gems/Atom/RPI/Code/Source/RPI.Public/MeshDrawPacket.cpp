@@ -356,7 +356,12 @@ namespace AZ
                     m_materialModelUvMap,
                     m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap()))
                 {
+                    AZ_Printf("GALIB", "m_modelLod->GetStreamsForMesh failed for %s\n", shader->GetAsset().GetHint().c_str());
                     return false;
+                }
+                else
+                {
+                    AZ_Printf("GALIB", "m_modelLod->GetStreamsForMesh success for %s\n", shader->GetAsset().GetHint().c_str());
                 }
 
                 Data::Instance<ShaderResourceGroup> drawSrg = shader->CreateDrawSrgForShaderVariant(shaderOptions, false);
