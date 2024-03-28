@@ -6,9 +6,9 @@
  *
  */
 
+#include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonMarshalComponent.h>
 #include <Source/PythonMarshalTuple.h>
-#include <Source/PythonUtility.h>
 #include <Source/PythonProxyObject.h>
 #include <Source/PythonTypeCasters.h>
 
@@ -20,7 +20,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <pybind11/embed.h>
 #include <pybind11/pytypes.h>
 

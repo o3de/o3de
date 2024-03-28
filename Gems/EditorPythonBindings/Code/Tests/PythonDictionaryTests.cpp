@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Source/PythonCommon.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
-#include "PythonTraceMessageSink.h"
 #include "PythonTestingUtility.h"
+#include "PythonTraceMessageSink.h"
+#include <EditorPythonBindings/PythonCommon.h>
+#include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 #include <Source/PythonSystemComponent.h>
 #include <Source/PythonReflectionComponent.h>

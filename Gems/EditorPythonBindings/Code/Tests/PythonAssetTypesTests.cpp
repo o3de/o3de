@@ -6,9 +6,9 @@
  *
  */
 
-#include <Source/PythonCommon.h>
-#include <pybind11/pybind11.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 #include "PythonTraceMessageSink.h"
 #include "PythonTestingUtility.h"
