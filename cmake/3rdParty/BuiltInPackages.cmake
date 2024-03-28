@@ -24,6 +24,12 @@ set(ALLFILES ${ALLFILES} ${LY_PAL_PACKAGE_FILE_NAME})
 # the correct "3rdParty::ZLIB" (Case difference).  Until those libraries are updated
 # we alias the casing here.  This also provides backward compatibility for Gems that use 3rdParty::zlib
 # that are not part of the core O3DE repo.
-ly_download_associated_package(ZLIB)
-find_package(ZLIB)
+
+if (NOT O3DE_SCRIPT_ONLY)
+    ly_download_associated_package(ZLIB)
+    find_package(ZLIB)
+else()
+    add_library(3rdParty::ZLIB IMPORTED INTERFACE GLOBAL)
+endif()
+
 add_library(3rdParty::zlib ALIAS 3rdParty::ZLIB)

@@ -894,7 +894,7 @@ bool CFileUtil::GetLatestFromSourceControl(const char* filename, QWidget* parent
         }
     );
 
-    BlockAndWait(scOpComplete, parentWindow, "Requesting latest verison of file...");
+    BlockAndWait(scOpComplete, parentWindow, "Requesting latest version of file...");
     return scOpSuccess;
 }
 

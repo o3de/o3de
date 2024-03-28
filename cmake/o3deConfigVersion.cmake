@@ -7,7 +7,7 @@
 #
 # This file is included by find_package(o3de CONFIG) and will set PACKAGE_VERSION_COMPATIBLE
 # to TRUE or FALSE based on whether the project is compatible with this engine.
-# This file also sets PACKAGE_VERSION and PACKAGE_VERISON_EXACT if it can determine
+# This file also sets PACKAGE_VERSION and PACKAGE_VERSION_EXACT if it can determine
 # that information from the engine.json, project.json and <project>/user/project.json.
 
 set(PACKAGE_VERSION_COMPATIBLE FALSE)
