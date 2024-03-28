@@ -8,9 +8,10 @@
 
 #pragma once
 
+#include "HttpRequestManager.h"
 #include <AzCore/Component/Component.h>
 #include <HttpRequestor/HttpRequestorBus.h>
-#include "HttpRequestManager.h"
+#include <aws/core/client/ClientConfiguration.h>
 
 namespace HttpRequestor
 {
@@ -33,12 +34,70 @@ namespace HttpRequestor
         // HttpRequestorRequestBus interface implementation
         ////////////////////////////////////////////////////////////////////////
         void AddRequest(const AZStd::string& URI, Aws::Http::HttpMethod method, const Callback& callback) override;
-        void AddRequestWithHeaders(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const Callback& callback) override;
-        void AddRequestWithHeadersAndBody(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const AZStd::string& body, const Callback& callback) override;
+
+        void AddRequestWithClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Callback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) override;
+
+        void AddRequestWithHeaders(
+            const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const Callback& callback) override;
+
+        void AddRequestWithHeadersAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const Callback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) override;
+
+        void AddRequestWithHeadersAndBody(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const AZStd::string& body,
+            const Callback& callback) override;
+
+        void AddRequestWithHeadersBodyAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const AZStd::string& body,
+            const Callback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) override;
 
         void AddTextRequest(const AZStd::string& URI, Aws::Http::HttpMethod method, const TextCallback& callback) override;
-        void AddTextRequestWithHeaders(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const TextCallback& callback) override;
-        void AddTextRequestWithHeadersAndBody(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const AZStd::string& body, const TextCallback& callback) override;
+
+        void AddTextRequestWithClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const TextCallback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration) override;
+
+        void AddTextRequestWithHeaders(
+            const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const TextCallback& callback) override;
+
+        void AddTextRequestWithHeadersAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const TextCallback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration = Aws::Client::ClientConfiguration()) override;
+
+        void AddTextRequestWithHeadersAndBody(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const AZStd::string& body,
+            const TextCallback& callback) override;
+
+        void AddTextRequestWithHeadersBodyAndClientConfiguration(
+            const AZStd::string& URI,
+            Aws::Http::HttpMethod method,
+            const Headers& headers,
+            const AZStd::string& body,
+            const TextCallback& callback,
+            const Aws::Client::ClientConfiguration clientConfiguration = Aws::Client::ClientConfiguration()) override;
 
         AZStd::chrono::milliseconds GetLastRoundTripTime() const override;
 

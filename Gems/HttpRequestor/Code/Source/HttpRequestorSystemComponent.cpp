@@ -21,7 +21,20 @@ namespace HttpRequestor
         }
     }
 
-    void HttpRequestorSystemComponent::AddRequestWithHeaders(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const Callback& callback)
+    void HttpRequestorSystemComponent::AddRequestWithClientConfiguration(
+        const AZStd::string& URI,
+        Aws::Http::HttpMethod method,
+        const Callback& callback,
+        const Aws::Client::ClientConfiguration clientConfiguration)
+    {
+        if (m_httpManager != nullptr)
+        {
+            m_httpManager->AddRequest(Parameters(URI, method, callback, clientConfiguration));
+        }
+    }
+
+    void HttpRequestorSystemComponent::AddRequestWithHeaders(
+        const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const Callback& callback)
     {
         if (m_httpManager != nullptr)
         {
@@ -29,11 +42,39 @@ namespace HttpRequestor
         }
     }
 
-    void HttpRequestorSystemComponent::AddRequestWithHeadersAndBody(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const AZStd::string& body, const Callback& callback)
+    void HttpRequestorSystemComponent::AddRequestWithHeadersAndClientConfiguration(
+        const AZStd::string& URI,
+        Aws::Http::HttpMethod method,
+        const Headers& headers,
+        const Callback& callback,
+        const Aws::Client::ClientConfiguration clientConfiguration)
+    {
+        if (m_httpManager != nullptr)
+        {
+            m_httpManager->AddRequest(Parameters(URI, method, headers, callback, clientConfiguration));
+        }
+    }
+
+    void HttpRequestorSystemComponent::AddRequestWithHeadersAndBody(
+        const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const AZStd::string& body, const Callback& callback)
     {
         if (m_httpManager != nullptr)
         {
             m_httpManager->AddRequest(Parameters(URI, method, headers, body, callback));
+        }
+    }
+
+    void HttpRequestorSystemComponent::AddRequestWithHeadersBodyAndClientConfiguration(
+        const AZStd::string& URI,
+        Aws::Http::HttpMethod method,
+        const Headers& headers,
+        const AZStd::string& body,
+        const Callback& callback,
+        const Aws::Client::ClientConfiguration clientConfiguration)
+    {
+        if (m_httpManager != nullptr)
+        {
+            m_httpManager->AddRequest(Parameters(URI, method, headers, body, callback, clientConfiguration));
         }
     }
 
@@ -45,7 +86,20 @@ namespace HttpRequestor
         }
     }
 
-    void HttpRequestorSystemComponent::AddTextRequestWithHeaders(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const TextCallback& callback)
+    void HttpRequestorSystemComponent::AddTextRequestWithClientConfiguration(
+        const AZStd::string& URI,
+        Aws::Http::HttpMethod method,
+        const TextCallback& callback,
+        const Aws::Client::ClientConfiguration clientConfiguration)
+    {
+        if (m_httpManager != nullptr)
+        {
+            m_httpManager->AddTextRequest(TextParameters(URI, method, callback, clientConfiguration));
+        }
+    }
+
+    void HttpRequestorSystemComponent::AddTextRequestWithHeaders(
+        const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const TextCallback& callback)
     {
         if (m_httpManager != nullptr)
         {
@@ -53,11 +107,43 @@ namespace HttpRequestor
         }
     }
 
-    void HttpRequestorSystemComponent::AddTextRequestWithHeadersAndBody(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const AZStd::string& body, const TextCallback& callback)
+    void HttpRequestorSystemComponent::AddTextRequestWithHeadersAndClientConfiguration(
+        const AZStd::string& URI,
+        Aws::Http::HttpMethod method,
+        const Headers& headers,
+        const TextCallback& callback,
+        const Aws::Client::ClientConfiguration clientConfiguration)
+    {
+        if (m_httpManager != nullptr)
+        {
+            m_httpManager->AddTextRequest(TextParameters(URI, method, headers, callback, clientConfiguration));
+        }
+    }
+
+    void HttpRequestorSystemComponent::AddTextRequestWithHeadersAndBody(
+        const AZStd::string& URI,
+        Aws::Http::HttpMethod method,
+        const Headers& headers,
+        const AZStd::string& body,
+        const TextCallback& callback)
     {
         if (m_httpManager != nullptr)
         {
             m_httpManager->AddTextRequest(TextParameters(URI, method, headers, body, callback));
+        }
+    }
+
+    void HttpRequestorSystemComponent::AddTextRequestWithHeadersBodyAndClientConfiguration(
+        const AZStd::string& URI,
+        Aws::Http::HttpMethod method,
+        const Headers& headers,
+        const AZStd::string& body,
+        const TextCallback& callback,
+        const Aws::Client::ClientConfiguration clientConfiguration)
+    {
+        if (m_httpManager != nullptr)
+        {
+            m_httpManager->AddTextRequest(TextParameters(URI, method, headers, body, callback, clientConfiguration));
         }
     }
 
