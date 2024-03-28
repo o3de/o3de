@@ -238,10 +238,18 @@ namespace AZ::RHI
 
     void MultiDeviceSwapChain::ProcessRecreation()
     {
-        IterateObjects<SwapChain>([]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
+        auto recreated{ false };
+        IterateObjects<SwapChain>(
+            [&recreated]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
+            {
+                recreated = deviceSwapChain->ProcessRecreation();
+            });
+
+        if (recreated)
         {
-            deviceSwapChain->ProcessRecreation();
-        });
+            ShutdownImages();
+            InitImages();
+        }
     }
 
     uint32_t MultiDeviceSwapChain::GetImageCount() const

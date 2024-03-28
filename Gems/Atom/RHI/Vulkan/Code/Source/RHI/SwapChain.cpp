@@ -70,7 +70,7 @@ namespace AZ
             m_swapChainBarrier.m_isValid = true;
         }
 
-        void SwapChain::ProcessRecreation()
+        bool SwapChain::ProcessRecreation()
         {
             if (m_pendingRecreation)
             {
@@ -82,7 +82,9 @@ namespace AZ
                 InitImages();
 
                 m_pendingRecreation = false;
+                return true;
             }
+            return false;
         }
 
         void SwapChain::SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval)
