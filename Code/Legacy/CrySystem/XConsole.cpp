@@ -489,7 +489,7 @@ bool CXConsole::CVarNameLess(const std::pair<const char*, ICVar*>& lhs, const st
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::LoadConfigVar(const char* sVariable, const char* sValue)
+void CXConsole::LoadConfigVar(const char* sVariable, const char* sValue, const Cry::LoadConfigVarOptions& loadConfigOptions)
 {
     ICVar* pCVar = GetCVar(sVariable);
     if (pCVar)
@@ -521,7 +521,7 @@ void CXConsole::LoadConfigVar(const char* sVariable, const char* sValue)
 
         if (allowChange || ALLOW_CONST_CVAR_MODIFICATIONS)
         {
-            pCVar->Set(sValue);
+            pCVar->Set(sValue, loadConfigOptions.m_setCvarOptions);
             pCVar->SetFlags(pCVar->GetFlags() | VF_WASINCONFIG);
         }
         return;
