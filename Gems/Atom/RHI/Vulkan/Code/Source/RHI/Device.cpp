@@ -334,7 +334,7 @@ namespace AZ
                 &deviceInfo,
                 VkSystemAllocator::Get(),
                 &m_nativeDevice);
-            AssertSuccess(vkResult);
+            VK_RESULT_ASSERT(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
 
             LoaderContext::Descriptor loaderDescriptor;
@@ -484,7 +484,7 @@ namespace AZ
                 ImageCreateInfo createInfo = BuildImageCreateInfo(descriptor);
                 VkImage vkImage = VK_NULL_HANDLE;
                 VkResult vkResult = GetContext().CreateImage(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkImage);
-                AssertSuccess(vkResult);
+                VK_RESULT_ASSERT(vkResult);
 
                 VkMemoryRequirements memoryRequirements = {};
                 GetContext().GetImageMemoryRequirements(GetNativeDevice(), vkImage, &memoryRequirements);
@@ -511,7 +511,7 @@ namespace AZ
                 BufferCreateInfo createInfo = BuildBufferCreateInfo(descriptor);
                 VkBuffer vkBuffer = VK_NULL_HANDLE;
                 VkResult vkResult = GetContext().CreateBuffer(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkBuffer);
-                AssertSuccess(vkResult);
+                VK_RESULT_ASSERT(vkResult);
 
                 VkMemoryRequirements memoryRequirements = {};
                 GetContext().GetBufferMemoryRequirements(GetNativeDevice(), vkBuffer, &memoryRequirements);
@@ -825,8 +825,9 @@ namespace AZ
 
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             uint32_t surfaceFormatCount = 0;
-            AssertSuccess(GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
-                physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, nullptr));
+            [[maybe_unused]] VkResult vkResult = GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, nullptr);
+            VK_RESULT_ASSERT(vkResult);
             if (surfaceFormatCount == 0)
             {
                 AZ_Assert(false, "Surface support no format.");
@@ -834,8 +835,9 @@ namespace AZ
             }
 
             AZStd::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-            AssertSuccess(GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
-                physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, surfaceFormats.data()));
+            vkResult = GetContext().GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice.GetNativePhysicalDevice(), vkSurface, &surfaceFormatCount, surfaceFormats.data());
+            VK_RESULT_ASSERT(vkResult);
 
             AZStd::set<RHI::Format> formats;
             for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
@@ -1329,7 +1331,7 @@ namespace AZ
             }
 
             VkResult errorCode = vmaCreateAllocator(&allocatorInfo, &m_vmaAllocator);
-            AssertSuccess(errorCode);
+            VK_RESULT_ASSERT(errorCode);
 
             return ConvertResult(errorCode);
         }
@@ -1488,14 +1490,15 @@ namespace AZ
             vkCreateInfo.usage = CalculateImageUsageFlags(descriptor);
 
             VkImageFormatProperties formatProps{};
-            AssertSuccess(GetContext().GetPhysicalDeviceImageFormatProperties(
+            [[maybe_unused]] VkResult vkResult = GetContext().GetPhysicalDeviceImageFormatProperties(
                 physicalDevice.GetNativePhysicalDevice(),
                 vkCreateInfo.format,
                 vkCreateInfo.imageType,
                 vkCreateInfo.tiling,
                 vkCreateInfo.usage,
                 vkCreateInfo.flags,
-                &formatProps));
+                &formatProps);
+            VK_RESULT_ASSERT(vkResult);
 
             AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
             createInfo.m_queueFamilyIndices = GetCommandQueueContext().GetQueueFamilyIndices(descriptor.m_sharedQueueMask);

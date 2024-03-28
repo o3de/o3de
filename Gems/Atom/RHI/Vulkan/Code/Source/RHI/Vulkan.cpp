@@ -369,7 +369,8 @@ namespace AZ
                     info.objectType = objectType;
                     info.objectHandle = objectHandle;
                     info.pObjectName = name;
-                    AssertSuccess(device.GetContext().SetDebugUtilsObjectNameEXT(device.GetNativeDevice(), &info));
+                    [[maybe_unused]] VkResult vkResult = device.GetContext().SetDebugUtilsObjectNameEXT(device.GetNativeDevice(), &info);
+                    VK_RESULT_ASSERT(vkResult);
                 }
 #endif
             }
