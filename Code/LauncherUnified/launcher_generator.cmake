@@ -9,22 +9,25 @@
 # This will be used to turn on "PerMonitor" DPI scaling support. (Currently there is no way in CMake to specify "PerMonitorV2")
 set(O3DE_DPI_AWARENESS "PerMonitor")
 
+set_property(GLOBAL PROPERTY SERVER_LAUNCHER_TYPES ServerLauncher)
+
 set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+set(SERVER_LAUNCHER_TYPES ServerLauncher)
+
+set(SERVER_LAUNCHER_TYPES ServerLauncher HeadlessServerLauncher)
+set(SERVER_LAUNCHERTYPE_ServerLauncher APPLICATION)
+set(SERVER_BUILD_DEPENDENCIES_ServerLauncher AZ::Launcher.Static AZ::AzGameFramework AZ::Launcher.Server.Static)
+set(SERVER_VARIANT_ServerLauncher Servers)
 
 # the following controls what visibility the various target properties are set to
 # and allow them to be overridden to "INTERFACE" in script-only mode.
 set(LAUNCHER_TARGET_PROPERTY_TYPE "PRIVATE")
 
-# in script_only_mode, generate interface targets.  If a real 'generic launcher' is added, this would
-# also be an opportunity to add imported exectables.
-if (O3DE_SCRIPT_ONLY)
-    set(PAL_TRAIT_LAUNCHERUNIFIED_LAUNCHER_TYPE INTERFACE)
-    set(LAUNCHER_TARGET_PROPERTY_TYPE INTERFACE) # you can only set interface properties on interfaces.
-endif()
-
 # Launcher targets for a project need to be generated when configuring a project.
 # When building the engine source, this file will be included by LauncherUnified's CMakeLists.txt
 # When using an installed engine, this file will be included by the FindLauncherGenerator.cmake script
+get_property(SERVER_LAUNCHER_TYPES GLOBAL PROPERTY SERVER_LAUNCHER_TYPES)
 get_property(O3DE_PROJECTS_NAME GLOBAL PROPERTY O3DE_PROJECTS_NAME)
 
 # when NO project is specified, for example, when creating a pre-built version of the engine,
