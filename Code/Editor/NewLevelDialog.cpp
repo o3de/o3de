@@ -8,8 +8,9 @@
 
 
 #include "EditorDefs.h"
-
+#include <AzCore/Utils/Utils.h>
 #include "NewLevelDialog.h"
+#include "CustomTemplatePaths.h"
 
 // Qt
 #include <QtWidgets/QPushButton>
@@ -17,6 +18,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QToolButton>
+#include <QListWidgetItem>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_NewLevelDialog.h>
@@ -49,11 +51,17 @@ private:
     CNewLevelDialog* m_parentDialog;
 };
 
+static QString ChangeFileExtension(const QString& filePath, const QString& newExtension)
+{
+    QFileInfo fileInfo(filePath);
+    QString newFilePath = fileInfo.absolutePath() + QDir::separator() + fileInfo.baseName() + "." + newExtension;
+    return newFilePath;
+}
+
 // CNewLevelDialog dialog
 
 CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
-    , m_bUpdate(false)
     , ui(new Ui::CNewLevelDialog)
     , m_initialized(false)
 {
@@ -61,15 +69,8 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=nullptr*/)
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setWindowTitle(tr("New Level"));
-    setMaximumSize(QSize(320, 180));
-    adjustSize();
-
-    m_bIsResize = false;
-
-
-    ui->TITLE->setText(tr("Assign a name and location to the new level."));
-    ui->STATIC1->setText(tr("Location:"));
-    ui->STATIC2->setText(tr("Name:"));
+    setStyleSheet("QListWidget::item {height: 148px; padding-left: 0px; padding-right: 0px; background-color: transparent;}");
+    InitTemplateListWidget();
 
     // Level name only supports ASCII characters
     QRegExp rx("[_a-zA-Z0-9-]+");
@@ -90,9 +91,8 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=nullptr*/)
 
     connect(ui->LEVEL_FOLDERS->lineEdit(), &QLineEdit::textEdited, this, &CNewLevelDialog::OnLevelNameChange);
     connect(ui->LEVEL_FOLDERS, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &CNewLevelDialog::PopupAssetPicker);
-
     connect(ui->LEVEL, &QLineEdit::textChanged, this, &CNewLevelDialog::OnLevelNameChange);
-
+    connect(ui->toolButtonCustomFolders, &QToolButton::clicked, this, &CNewLevelDialog::InitFolderListWidget);
     m_levelFolders = GetLevelsFolder();
     m_level = "";
     // First of all, keyboard focus is related to widget tab order, and the default tab order is based on the order in which
@@ -105,8 +105,68 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=nullptr*/)
     ReloadLevelFolder();
 }
 
+
+
 CNewLevelDialog::~CNewLevelDialog()
 {
+}
+
+void CNewLevelDialog::InitTemplateListWidget() const
+{
+    ui->listTemplates->clear();
+
+    const QIcon defaultIcon(":/NewLevel/res/Prefab_80.svg");
+    const QSize iconSize(128, 128);
+    const QStringList fileFilter = {"*.prefab"};
+    QStringList templatePaths =
+    {
+        {QString(AZ::Utils::GetEnginePath().c_str()) + QDir::separator() + "Assets/Editor/Prefabs"}
+    };
+    QStringList allTemplateFiles;
+
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "O3DE");
+    settings.beginGroup("CustomTemplatePaths");
+    const QStringList folderPaths = settings.value("folderPaths").toStringList();
+    settings.endGroup();
+    for(auto& Item : folderPaths)
+    {
+        templatePaths.push_back(Item);
+    }
+
+    // Get all prefab files.
+    for(const QString& path: templatePaths)
+    {
+        QDir projectTemplateDirectory(path);
+        projectTemplateDirectory.setNameFilters(fileFilter);
+
+        const QStringList projectTemplateFiles = projectTemplateDirectory.entryList(QDir::Files);
+        for (const QString& fileName: projectTemplateFiles)
+        {
+            allTemplateFiles.push_back(projectTemplateDirectory.filePath(fileName));
+        }
+    }
+
+    // Create the item with its icons to the QListWidget.
+    for (const QString& fileName: allTemplateFiles)
+    {
+        QFileInfo info(fileName);
+        auto* item = new QListWidgetItem(info.baseName());
+        const QString iconPath = ChangeFileExtension(fileName, "png");
+        const QIcon itemIcon = QFile::exists(iconPath) ? QIcon(iconPath) : defaultIcon;
+        item->setIcon(itemIcon);
+        item->setData(Qt::UserRole, fileName);
+        ui->listTemplates->addItem(item);
+    }
+
+    ui->listTemplates->setViewMode(QListWidget::IconMode);
+    ui->listTemplates->setIconSize(iconSize);
+    ui->listTemplates->setDragDropMode(QAbstractItemView::NoDragDrop);
+}
+
+QString CNewLevelDialog::GetTemplateName() const
+{
+    const QString name = ui->listTemplates->currentItem()->data(Qt::UserRole).toString();
+    return name;
 }
 
 void CNewLevelDialog::OnStartup()
@@ -148,7 +208,6 @@ void CNewLevelDialog::OnInitDialog()
 //////////////////////////////////////////////////////////////////////////
 void CNewLevelDialog::ReloadLevelFolder()
 {
-    m_itemFolders.clear();
     ui->LEVEL_FOLDERS->lineEdit()->clear();
     ui->LEVEL_FOLDERS->setText(QString(kNewLevelDialog_LevelsFolder) + '/');
 }
@@ -234,12 +293,6 @@ void CNewLevelDialog::PopupAssetPicker()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CNewLevelDialog::IsResize(bool bIsResize)
-{
-    m_bIsResize = bIsResize;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CNewLevelDialog::showEvent(QShowEvent* event)
 {
     if (!m_initialized)
@@ -249,5 +302,15 @@ void CNewLevelDialog::showEvent(QShowEvent* event)
     }
     QDialog::showEvent(event);
 }
+
+void CNewLevelDialog::InitFolderListWidget()
+{
+    CustomTemplatePaths* dialog = new CustomTemplatePaths(this);
+    if(dialog->exec() == QDialog::Accepted)
+    {
+        InitTemplateListWidget();
+    }
+}
+
 
 #include <moc_NewLevelDialog.cpp>
