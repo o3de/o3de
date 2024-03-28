@@ -25,12 +25,6 @@ namespace UnitTest
     {
     }
 
-    bool PrefabTestToolsApplication::IsPrefabSystemEnabled() const
-    {
-        // Make sure our prefab tests always run with prefabs enabled
-        return true;
-    }
-
     void PrefabTestFixture::SetUpEditorFixtureImpl()
     {
         // Acquire the system entity

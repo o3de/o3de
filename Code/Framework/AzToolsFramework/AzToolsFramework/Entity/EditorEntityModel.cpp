@@ -431,7 +431,6 @@ namespace AzToolsFramework
 
         AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParentRelative, parentId);
 
-        //creating/pushing slices doesn't always destroy/de-register the original entity before adding the replacement
         if (!parentInfo.HasChild(childId))
         {
             EditorEntityInfoNotificationBus::Broadcast(&EditorEntityInfoNotificationBus::Events::OnEntityInfoUpdatedAddChildBegin, parentId, childId);
@@ -442,29 +441,9 @@ namespace AzToolsFramework
         }
 
         AZStd::unordered_map<AZ::EntityId, AZStd::pair<AZ::EntityId, AZ::u64>>::const_iterator orderItr = m_savedOrderInfo.find(childId);
-        if (orderItr != m_savedOrderInfo.end() && orderItr->second.first == parentId)
+        if (orderItr == m_savedOrderInfo.end() || orderItr->second.first != parentId)
         {
-            bool isPrefabEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            // If prefabs are enabled, rely on the component to do a sanity check instead of restoring the order from the model
-            if (!isPrefabEnabled)
-            {
-                bool sortOrderUpdated = AzToolsFramework::RecoverEntitySortInfo(parentId, childId, orderItr->second.second);
-                m_savedOrderInfo.erase(childId);
-
-                // force notify the child sort order changed on the parent entity info, but only if the restore didn't actually modify
-                // the order internally (and sent ChildEntityOrderArrayUpdated).  that may seem heavy handed, and it is, but necessary
-                // to combat scenarios when the initial override detection returns a false positive (see comment about IDH comparisons
-                // in OnChildSortOrderChanged) and the slice instance source-to-live mapping hasn't been fully reconstructed yet.
-                if (!sortOrderUpdated)
-                {
-                    parentInfo.OnChildSortOrderChanged();
-                }
-            }
-        }
-        else
-        {
+            // TODO - Check if this can be removed
             if (m_gotInstantiateSliceDetails)
             {
                 AzToolsFramework::AddEntityIdToSortInfo(parentId, childId, m_postInstantiateBeforeEntity);
@@ -476,6 +455,7 @@ namespace AzToolsFramework
             }
         }
 
+        // TODO - Check if this can be removed
         UpdateSliceInfoHierarchy(childInfo.GetId());
         childInfo.UpdateOrderInfo(true);
     }
@@ -1420,6 +1400,43 @@ namespace AzToolsFramework
                 return EditorEntityStartStatus::StartInactive;
             }
         }
+    }
+
+    // TODO - Remove unused argument?
+    bool EditorEntityModel::EditorEntityModelEntry::DoesEntityHierarchyOverrideState(
+        EntityInHierarchyConditionFunction /* stateCheckFunction */) const
+    {
+        AZ::EntityId currentId = GetId();
+        while (currentId.IsValid())
+        {
+            AZ::EntityId parentId;
+            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                parentId, currentId, &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetParent);
+
+            currentId = parentId;
+        }
+
+        return false;
+    }
+
+    // TODO - Verify if this is still necessary.
+    bool EditorEntityModel::EditorEntityModelEntry::DoesEntityHierarchyOverrideVisibility() const
+    {
+        return false;
+    }
+
+    bool EditorEntityModel::EditorEntityModelEntry::DoesEntityHierarchyOverrideLock() const
+    {
+        return DoesEntityHierarchyOverrideState(
+            [](const AZ::EntityId hierarchyEntity)
+            {
+                bool isHierarchyEntityLocked = false;
+                AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                    isHierarchyEntityLocked, hierarchyEntity,
+                    &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsJustThisEntityLocked);
+
+                return isHierarchyEntityLocked;
+            });
     }
 
     bool EditorEntityModel::EditorEntityModelEntry::IsJustThisEntityLocked() const

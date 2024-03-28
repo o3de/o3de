@@ -25,7 +25,6 @@ namespace AZ
         //! This is the editor-counterpart to this gem's main CommonSystemComponent class.
         class EditorCommonFeaturesSystemComponent
             : public AZ::Component
-            , public AzToolsFramework::EditorLevelNotificationBus::Handler
             , public AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
             , public AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler
             , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
@@ -48,9 +47,6 @@ namespace AZ
             void Init() override;
             void Activate() override;
             void Deactivate() override;
-
-            // EditorLevelNotificationBus overrides ...
-            void OnNewLevelCreated() override;
 
             // SliceEditorEntityOwnershipServiceBus overrides ...
             void OnSliceInstantiated(

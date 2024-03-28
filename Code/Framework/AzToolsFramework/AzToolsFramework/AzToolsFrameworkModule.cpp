@@ -27,9 +27,6 @@
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditorComponent.h>
 #include <AzToolsFramework/Render/EditorIntersectorComponent.h>
-#include <AzToolsFramework/Slice/SliceDependencyBrowserComponent.h>
-#include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
-#include <AzToolsFramework/Slice/SliceRequestComponent.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
@@ -85,8 +82,6 @@ namespace AzToolsFramework
             ContainerEntitySystemComponent::CreateDescriptor(),
             ReadOnlyEntitySystemComponent::CreateDescriptor(),
             FocusModeSystemComponent::CreateDescriptor(),
-            SliceMetadataEntityContextComponent::CreateDescriptor(),
-            SliceRequestComponent::CreateDescriptor(),
             Prefab::PrefabSystemComponent::CreateDescriptor(),
             Prefab::EditorPrefabComponent::CreateDescriptor(),
             Prefab::ProceduralPrefabSystemComponent::CreateDescriptor(),
@@ -106,7 +101,6 @@ namespace AzToolsFramework
             PerforceComponent::CreateDescriptor(),
             AzToolsFramework::ArchiveComponent::CreateDescriptor(),
             AzToolsFramework::AssetBundleComponent::CreateDescriptor(),
-            AzToolsFramework::SliceDependencyBrowserComponent::CreateDescriptor(),
             AzToolsFramework::Thumbnailer::ThumbnailerComponent::CreateDescriptor(),
             AzToolsFramework::Thumbnailer::ThumbnailerNullComponent::CreateDescriptor(),
             AzToolsFramework::AssetBrowser::AssetBrowserComponent::CreateDescriptor(),

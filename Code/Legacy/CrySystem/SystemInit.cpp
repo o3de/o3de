@@ -1069,19 +1069,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
         //////////////////////////////////////////////////////////////////////////
         // LEVEL SYSTEM
-        bool usePrefabSystemForLevels = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (usePrefabSystemForLevels)
-        {
-            m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
-        }
-        else
-        {
-            // [LYN-2376] Remove once legacy slice support is removed
-            m_pLevelSystem = new LegacyLevelSystem::CLevelSystem(this, ILevelSystem::GetLevelsDirectoryName());
-        }
+        m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
 
         InlineInitializationProcessing("CSystem::Init Level System");
 

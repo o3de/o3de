@@ -517,16 +517,11 @@ namespace AzToolsFramework
         EntityIdList children;
         EditorEntityInfoRequestBus::EventResult(children, parentId, &EditorEntityInfoRequestBus::Events::GetChildren);
 
-        // If Prefabs are enabled, don't check the order for an invalid parent, just return its children (i.e. the root container entity)
-        // There will currently always be one root container entity, so there's no order to retrieve
+        // Don't check the order for an invalid parent, just return its children (i.e. the root container entity).
+        // There will currently always be one root container entity, so there's no order to retrieve.
         if (!parentId.IsValid())
         {
-            bool isPrefabEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            if (isPrefabEnabled)
-            {
-                return children;
-            }
+            return children;
         }
 
         EntityIdList entityChildOrder;
@@ -746,9 +741,9 @@ namespace AzToolsFramework
         return true;
     }
 
+    // TODO - Remove unused arguments?
     static void SetEntityLockStateRecursively(
-        const AZ::EntityId entityId, const bool locked,
-        const AZ::EntityId toggledEntityId)
+        const AZ::EntityId entityId, const bool locked, const AZ::EntityId /* toggledEntityId */, const bool /* toggledEntityWasLayer */)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -759,15 +754,6 @@ namespace AzToolsFramework
 
         EditorLockComponentRequestBus::Event(
             entityId, &EditorLockComponentRequests::SetLocked, locked);
-
-        EntityIdList children;
-        EditorEntityInfoRequestBus::EventResult(
-            children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
-
-        for (auto childId : children)
-        {
-            SetEntityLockStateRecursively(childId, locked, toggledEntityId);
-        }
     }
 
     void SetEntityLockState(const AZ::EntityId entityId, const bool locked)
@@ -813,9 +799,17 @@ namespace AzToolsFramework
         }
     }
 
+    static void SetEntityVisibilityInternal(const AZ::EntityId entityId, const bool visibility)
+    {
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        EditorVisibilityRequestBus::Event(
+            entityId, &EditorVisibilityRequestBus::Events::SetVisibilityFlag, visibility);
+    }
+
+    // TODO - Remove unused arguments?
     static void SetEntityVisibilityStateRecursively(
-        const AZ::EntityId entityId, const bool visible,
-        const AZ::EntityId toggledEntityId)
+        const AZ::EntityId entityId, const bool visible, const AZ::EntityId /* toggledEntityId */, const bool /* toggledEntityWasLayer */)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -824,23 +818,28 @@ namespace AzToolsFramework
             return;
         }
 
-        EditorVisibilityRequestBus::Event(entityId, &EditorVisibilityRequestBus::Events::SetVisibilityFlag, visible);
-
-        EntityIdList children;
-        EditorEntityInfoRequestBus::EventResult(
-            children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
-
-        for (auto childId : children)
-        {
-            SetEntityVisibilityStateRecursively(childId, visible, toggledEntityId);
-        }
+        SetEntityVisibilityInternal(entityId, visible);
     }
 
     void SetEntityVisibility(const AZ::EntityId entityId, const bool visible)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        SetEntityVisibilityStateRecursively(entityId, visible, entityId);
+        // when an entity is set to visible, if it was in an invisible layer(s), make that layer visible
+        if (visible)
+        {
+            AZ::EntityId currentEntityId = entityId;
+            while (currentEntityId.IsValid())
+            {
+                AZ::EntityId parentId;
+                EditorEntityInfoRequestBus::EventResult(
+                    parentId, currentEntityId, &EditorEntityInfoRequestBus::Events::GetParent);
+
+                currentEntityId = parentId;
+            }
+        }
+
+        SetEntityVisibilityStateRecursively(entityId, visible, entityId, false);
     }
 
     void ToggleEntityVisibility(const AZ::EntityId entityId)
@@ -899,13 +898,14 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        // Visibility state is tracked in 5 places, see OutlinerListModel::dataForLock for info on 3 of these ways.
+        // Visibility state is tracked in 4 places, see OutlinerListModel::dataForLock for info on 3 of these ways.
         // Visibility's fourth state over lock is the EditorVisibilityRequestBus has two sets of
         // setting and getting functions for visibility. Get/SetVisibilityFlag is what should be used in most cases.
 
         bool visible = true;
         EditorVisibilityRequestBus::EventResult(
             visible, entityId, &EditorVisibilityRequestBus::Events::GetVisibilityFlag);
+
         return visible;
     }
 

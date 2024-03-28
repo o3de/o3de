@@ -33,14 +33,6 @@ namespace UnitTest
             : ToolsTestApplication(applicationName)
         {
         }
-
-    protected:
-        bool IsPrefabSystemEnabled() const override
-        {
-            // The NvCloth unit tests currently have a crash on teardown when the prefab system is enabled,
-            // so they can only be run with prefabs disabled at this time.
-            return false;
-        }
     };
 
     //! Sets up gem test environment, required components, and shared objects used by cloth (e.g. FabricCooker) for all test cases.

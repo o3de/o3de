@@ -73,7 +73,6 @@ private:
     // EditorEntityContextNotificationBus overrides ...
     void OnStartPlayInEditor() override;
     void OnStopPlayInEditor() override;
-    void OnEntityStreamLoadSuccess() override;
 
     // ToolsApplicationNotificationBus overrides ...
     void AfterEntitySelectionChanged(
@@ -135,6 +134,4 @@ private:
     AZStd::vector<AZStd::string> m_layoutMenuIdentifiers;
     AZStd::vector<AZStd::string> m_toolActionIdentifiers;
     AZStd::vector<AZStd::string> m_toolboxMacroActionIdentifiers;
-
-    bool m_isPrefabSystemEnabled = false;
 };
