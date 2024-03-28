@@ -62,6 +62,7 @@ ly_append_configurations_options(
         -Wno-logical-not-parentheses
         -Wno-memset-elt-size
         -Wno-nonnull-compare
+	-Wno-nonnull
         -Wno-parentheses
         -Wno-reorder
         -Wno-restrict
@@ -73,6 +74,15 @@ ly_append_configurations_options(
         -Wno-switch
         -Wno-uninitialized
         -Wno-unused-result
+	-Wno-dangling-pointer
+	-Wno-error=unused-but-set-variable
+	-Wno-error=unused-variable
+	-Wno-error=subobject-linkage
+	-Wno-error=pragmas
+	-Wno-error=return-local-addr
+	-Wno-error=nonnull
+	-Wno-error=free-nonheap-object
+	-Wno-error=use-after-free
 
     COMPILATION_DEBUG
         -O0 # No optimization
