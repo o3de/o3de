@@ -102,7 +102,7 @@ namespace AZ
             m_shaderResourceGroup->SetConstant(m_outputHeightNameIndex, outputImageDescriptor.m_size.m_height);
             m_shaderResourceGroup->SetConstant(m_mipLevelsNameIndex, aznumeric_cast<uint32_t>(reflectionImageDescriptor.m_mipLevels));
             m_shaderResourceGroup->SetConstant(m_coneTracingNameIndex, ssrOptions.m_coneTracing);
-            m_shaderResourceGroup->SetConstant(m_rayTracingNameIndex, ssrOptions.m_rayTracing);
+            m_shaderResourceGroup->SetConstant(m_rayTracingNameIndex, ssrOptions.IsRayTracingEnabled());
             m_shaderResourceGroup->SetConstant(m_temporalFilteringNameIndex, ssrOptions.m_temporalFiltering);
             m_shaderResourceGroup->SetConstant(m_invTemporalFilteringStrengthNameIndex, 1.0f / ssrOptions.m_temporalFilteringStrength);
             m_shaderResourceGroup->SetConstant(m_maxRoughnessNameIndex, ssrOptions.m_maxRoughness);

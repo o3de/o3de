@@ -159,7 +159,7 @@ namespace AZ
             if (m_specularReflectionsFeatureProcessor)
             {
                 const SSROptions& ssrOptions = m_specularReflectionsFeatureProcessor->GetSSROptions();
-                m_ssrRayTracingEnabled = ssrOptions.m_rayTracing;
+                m_ssrRayTracingEnabled = ssrOptions.IsRayTracingEnabled();
             }
 
             EnableSceneNotification();
@@ -258,9 +258,9 @@ namespace AZ
             if (m_specularReflectionsFeatureProcessor)
             {
                 const SSROptions& ssrOptions = m_specularReflectionsFeatureProcessor->GetSSROptions();
-                if (m_ssrRayTracingEnabled != ssrOptions.m_rayTracing)
+                if (m_ssrRayTracingEnabled != ssrOptions.IsRayTracingEnabled())
                 {
-                    m_ssrRayTracingEnabled = ssrOptions.m_rayTracing;
+                    m_ssrRayTracingEnabled = ssrOptions.IsRayTracingEnabled();
 
                     AZStd::vector<Name> passHierarchy = { Name("ReflectionScreenSpacePass"), Name("DiffuseProbeGridQueryFullscreenWithAlbedoPass") };
                     RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassHierarchy(passHierarchy);

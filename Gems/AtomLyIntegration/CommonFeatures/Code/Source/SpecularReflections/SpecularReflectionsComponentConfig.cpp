@@ -53,14 +53,16 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->DataElement(Edit::UIHandlers::CheckBox, &SSROptions::m_halfResolution, "Half Resolution", "Use half resolution in the reflected image, improves performance but may increase artifacts during camera motion")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &SSROptions::IsEnabled)
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Ray Tracing")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(Edit::UIHandlers::CheckBox, &SSROptions::m_rayTracing, "Hardware Ray Tracing", "Enable Hardware Ray Tracing for Hybrid SSR-RT, which improves hit detection quality and provides fallback data for occluded or off-screen surfaces")
+                            ->DataElement(Edit::UIHandlers::ComboBox, &SSROptions::m_reflectionMethod, "Reflection Method",
+                                      "Screen-space: Use screen-space reflections only\n\n"
+                                      "Hybrid SSR-RT: Use ray tracing for hit detection and screen-space data for surface evaluation\n\n"
+                                      "Hybrid SSR-RT + Ray Tracing fallback: Use screen-space reflection data when available and ray tracing when not\n\n"
+                                      "Ray Tracing: Use hardware ray tracing only")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::EntireTree)
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &SSROptions::IsEnabled)
-                            ->DataElement(Edit::UIHandlers::CheckBox, &SSROptions::m_rayTraceFallbackData, "Ray Trace Fallback Data", "Generate fallback image data using hardware raytracing when the hit point is off-screen of obstructed by an object closer to the camera")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::EntireTree)
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &SSROptions::IsRayTracingEnabled)
+                                ->EnumAttribute(SSROptions::ReflectionMethod::ScreenSpace, "Screen Space")
+                                ->EnumAttribute(SSROptions::ReflectionMethod::Hybrid, "Hybrid SSR-RT")
+                                ->EnumAttribute(SSROptions::ReflectionMethod::HybridWithFallback, "Hybrid SSR-RT + Ray Tracing fallback")
+                                ->EnumAttribute(SSROptions::ReflectionMethod::RayTracing, "Ray Tracing")
                             ->DataElement(Edit::UIHandlers::CheckBox, &SSROptions::m_rayTraceFallbackSpecular, "Apply Fallback Specular Lighting", "Apply specular lighting in the fallback image, improves fallback image accuracy but may reduce performance and increase artifacts")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &SSROptions::IsRayTracingFallbackEnabled)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Temporal Filtering")

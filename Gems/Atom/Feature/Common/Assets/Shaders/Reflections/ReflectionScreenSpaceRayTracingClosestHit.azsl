@@ -35,8 +35,8 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
     float3 cameraToHit = normalize(positionWS - ViewSrg::m_worldPosition);
     bool behindCamera = dot(cameraToHit, -ViewSrg::m_viewMatrix[2].xyz) <= 0.0f;
 
-    payload.m_offScreen = offScreen || behindCamera;
-    if (payload.m_offScreen && !RayTracingGlobalSrg::m_rayTraceFallbackData)
+    payload.m_offScreen = offScreen || behindCamera || IsRayTracingOverrideEnabled();
+    if (payload.m_offScreen && !IsRayTracingFallbackEnabled())
     {
         // the hit is offscreen and we're not raytracing fallback data, report this as a miss
         payload.m_hitT = -1.0f;
@@ -108,7 +108,7 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
         payload.m_obstructed = (secondaryPayload.m_hitT >= 0.0f);
     }
 
-    if (payload.m_obstructed && !RayTracingGlobalSrg::m_rayTraceFallbackData)
+    if (payload.m_obstructed && !IsRayTracingFallbackEnabled())
     {
         // the hit is obstructed and we're not raytracing fallback data, report this as a miss
         payload.m_hitT = -1.0f;
