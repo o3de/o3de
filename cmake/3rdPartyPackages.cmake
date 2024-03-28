@@ -251,8 +251,11 @@ function(ly_package_internal_download_package package_name url_variable)
 
     foreach(server_url ${LY_PACKAGE_SERVER_URLS})
         set(download_url ${server_url}/${package_name}${LY_PACKAGE_EXT})
-        set(download_target ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}${LY_PACKAGE_EXT})
-        
+
+        ly_package_get_target_cache(${package_name} package_download_cache_location)
+
+        set(download_target ${package_download_cache_location}/${package_name}${LY_PACKAGE_EXT})
+
         file(REMOVE ${download_target})
 
         ly_package_message(STATUS "ly_package: trying to download ${download_url} to ${download_target}")
@@ -389,6 +392,16 @@ function(ly_package_get_target_folder package_name output_variable_name)
     endif()
 endfunction()
 
+#! Get the target cache folder
+function(ly_package_get_target_cache package_name output_variable_name)
+    get_property(overridden_location GLOBAL PROPERTY LY_PACKAGE_DOWNLOAD_CACHE_LOCATION_${package_name})
+    if (overridden_location)
+        set(${output_variable_name} ${overridden_location} PARENT_SCOPE)
+    else()
+        set(${output_variable_name} ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION} PARENT_SCOPE)
+    endif()
+endfunction()
+
 #! given the name of a package, validate that all files are present and match as appropriate
 function(ly_validate_package package_name)
     ly_package_message(STATUS "ly_package: Validating ${package_name}...")
@@ -427,7 +440,8 @@ function(ly_validate_package package_name)
         # The package hash is always checked automatically on first downloard regardless of the value of this
         # variable, so if this variable is true, a user explicitly asked to do this.
         message(STATUS "Checking downloaded package ${package_name} because LY_PACKAGE_VALIDATE_PACKAGE is TRUE")
-        set(temp_download_target ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}${LY_PACKAGE_EXT})
+        ly_package_get_target_cache(${package_name} package_download_cache_location)
+        set(temp_download_target ${package_download_cache_location}/${package_name}${LY_PACKAGE_EXT})
         ly_get_package_expected_hash(${package_name} expected_package_hash)
         if (EXISTS ${temp_download_target})
             file(SHA256 ${temp_download_target} existing_hash)
@@ -479,7 +493,8 @@ function(ly_force_download_package package_name)
     set(final_folder ${DOWNLOAD_LOCATION}/${package_name})
 
     # is the package already present in the download cache, with the correct hash?
-    set(temp_download_target ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}/${package_name}${LY_PACKAGE_EXT})
+    ly_package_get_target_cache(${package_name} package_download_cache_location)
+    set(temp_download_target ${package_download_cache_location}/${package_name}${LY_PACKAGE_EXT})
     ly_get_package_expected_hash(${package_name} expected_package_hash)
 
     # can we reuse the download we already have in our download cache?
@@ -678,6 +693,16 @@ endmacro()
 macro(ly_set_package_download_location package_name download_location)
     set_property(GLOBAL PROPERTY LY_PACKAGE_DOWNLOAD_LOCATION_${package_name} ${download_location})
 endmacro()
+
+# ly_set_package_download_cache_location - OPTIONAL.
+# Similar to ly_set_package_download_location, this set the download 
+# cache location for a particular package.
+# note that package_name is expected to be the actual package name, not 
+# the find_package(...)  name!
+macro(ly_set_package_download_cache_location package_name download_location)
+    set_property(GLOBAL PROPERTY LY_PACKAGE_DOWNLOAD_CACHE_LOCATION_${package_name} ${download_location})
+endmacro()
+
 
 # ly_download_associated_package  - main public function
 # this just checks to see if the find_library_name (like 'zlib', not a package name)

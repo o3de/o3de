@@ -34,20 +34,23 @@ execute_process(COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Ca
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # Normalize the expected location of the Python venv and set its path globally
-set(PYTHON_VENV_PATH "${LY_3RDPARTY_PATH}/venv/${ENGINE_SOURCE_PATH_ID}")
-cmake_path(NORMAL_PATH PYTHON_VENV_PATH )
-ly_set(LY_PYTHON_VENV_PATH ${PYTHON_VENV_PATH})
-
-# On Linux systems, we need to create a symlink to the shared library as well
-# due to the fact that a symlink is created for the python executable inside 
-# the virtual environment, but the python executable is custom built to use
-# an RPATH set to $ORIGIN/../lib to match the install structure in the package.
-if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
-    set(LY_LINK_TO_SHARED_LIBRARY TRUE)
+# The root Python folder is based off of the same folder as the manifest file
+if(DEFINED ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
+    set(PYTHON_ROOT_PATH "$ENV{USERPROFILE}/.o3de/Python") # Windows
 else()
-    set(LY_LINK_TO_SHARED_LIBRARY FALSE)
+    set(PYTHON_ROOT_PATH "$ENV{HOME}/.o3de/Python") # Unix
 endif()
 
+set(PYTHON_PACKAGES_ROOT_PATH "${PYTHON_ROOT_PATH}/packages")
+cmake_path(NORMAL_PATH PYTHON_PACKAGES_ROOT_PATH )
+
+set(PYTHON_PACKAGE_CACHE_ROOT_PATH "${PYTHON_ROOT_PATH}/downloaded_packages")
+cmake_path(NORMAL_PATH PYTHON_PACKAGE_CACHE_ROOT_PATH )
+
+set(PYTHON_VENV_PATH "${PYTHON_ROOT_PATH}/venv/${ENGINE_SOURCE_PATH_ID}")
+cmake_path(NORMAL_PATH PYTHON_VENV_PATH )
+
+ly_set(LY_PYTHON_VENV_PATH ${PYTHON_VENV_PATH})
 
 function(ly_setup_python_venv)
 
@@ -68,6 +71,7 @@ function(ly_setup_python_venv)
         else()
             # Sanity check to make sure the python launcher in the venv works
             execute_process(COMMAND ${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_PYTHON} --version
+                            OUTPUT_QUIET
                             RESULT_VARIABLE command_result)
             if (NOT ${command_result} EQUAL 0)
                 message(STATUS "Error validating python inside the venv. Reinstalling")
@@ -86,8 +90,8 @@ function(ly_setup_python_venv)
         # a link to the shared library within the created virtual environment before proceeding with
         # the pip install command.
         message(STATUS "Creating Python venv at ${PYTHON_VENV_PATH}")
-        execute_process(COMMAND "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}/${LY_PYTHON_EXECUTABLE}" -m venv "${PYTHON_VENV_PATH}" --without-pip --clear
-                        WORKING_DIRECTORY "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}"
+        execute_process(COMMAND "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}/${LY_PYTHON_EXECUTABLE}" -m venv "${PYTHON_VENV_PATH}" --without-pip --clear
+                        WORKING_DIRECTORY "${PYTHON_PACKAGES_ROOT_PATH}/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_BIN_PATH}"
                         COMMAND_ECHO STDOUT
                         RESULT_VARIABLE command_result)
 
@@ -95,17 +99,7 @@ function(ly_setup_python_venv)
             message(FATAL_ERROR "Error creating a venv")
         endif()
 
-        if (LY_LINK_TO_SHARED_LIBRARY)
-            # Create a symlink to the package's python shared library inside the virtual environments
-            # own lib sub folder to match the original package structure
-            execute_process(COMMAND ln -s -f "${LY_3RDPARTY_PATH}/packages/${LY_PYTHON_PACKAGE_NAME}/${LY_PYTHON_LIB_PATH}/libpython3.10.so.1.0" libpython3.10.so.1.0
-                            WORKING_DIRECTORY "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_LIB_PATH}"
-                            COMMAND_ECHO STDOUT
-                            RESULT_VARIABLE command_result)
-            if (NOT ${command_result} EQUAL 0)
-                message(WARNING "Unable to createa venv shared library link.")
-            endif()
-        endif()
+        ly_post_python_venv_install(${PYTHON_VENV_PATH})
 
         # Manually install pip into the virtual environment
         message(STATUS "Installing pip into venv at ${PYTHON_VENV_PATH} (${PYTHON_VENV_PATH}/${LY_PYTHON_BIN_PATH})")
@@ -307,6 +301,8 @@ endfunction()
 
 # We need to download the associated Python package early and install the venv 
 ly_associate_package(PACKAGE_NAME ${LY_PYTHON_PACKAGE_NAME} TARGETS "Python" PACKAGE_HASH ${LY_PYTHON_PACKAGE_HASH})
+ly_set_package_download_location(${LY_PYTHON_PACKAGE_NAME} ${PYTHON_PACKAGES_ROOT_PATH})
+ly_set_package_download_cache_location(${LY_PYTHON_PACKAGE_NAME} ${PYTHON_PACKAGE_CACHE_ROOT_PATH})
 ly_download_associated_package(Python)
 ly_setup_python_venv()
 
