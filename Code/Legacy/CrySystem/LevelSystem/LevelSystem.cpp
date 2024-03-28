@@ -40,6 +40,7 @@ static constexpr const char* ArchiveExtension = ".pak";
 // TODO - Remove this function altogether?
 bool CLevelInfo::OpenLevelPak()
 {
+    // The prefab system doesn't use level.pak
     return false;
 }
 
@@ -48,6 +49,7 @@ bool CLevelInfo::OpenLevelPak()
 // TODO - Remove this function altogether?
 void CLevelInfo::CloseLevelPak()
 {
+    // The prefab system doesn't use level.pak
     return;
 }
 
@@ -59,6 +61,7 @@ bool CLevelInfo::ReadInfo()
     // Set up a default game type for legacy code.
     m_defaultGameTypeName = "mission0";
 
+    // Prefabs do not use Pak files.
     return true;
 }
 

@@ -31,16 +31,23 @@ namespace AZ
         DynamicModuleHandle& operator=(const DynamicModuleHandle&) = delete;
 
         /// Creates a platform-specific DynamicModuleHandle.
+        /// \param fullFileName         The file name of the dynamic module to load
+        /// \param correctModuleName    Option to correct the filename to conform to the current platform's dynamic module naming convention. 
+        ///                             (i.e. lib<ModuleName>.so on unix-like platforms)
+        ///
         /// Note that the specified module is not loaded until \ref Load is called.
-        static AZStd::unique_ptr<DynamicModuleHandle> Create(const char* fullFileName);
+        /// \return Unique ptr to the newly created dynamic module handler.
+        static AZStd::unique_ptr<DynamicModuleHandle> Create(const char* fullFileName, bool correctModuleName = true);
 
         /// Loads the module.
         /// Invokes the \ref InitializeDynamicModuleFunction if it is found in the module and this is the first time loading the module.
         /// \param isInitializeFunctionRequired Whether a missing \ref InitializeDynamicModuleFunction
         ///                                     causes the Load to fail.
+        /// \param globalSymbols                On platforms that support it, make the module's symbols global and available for the relocation processing of other modules. Otherwise, the symbols 
+        ///                                     need to be queried manually.
         ///
         /// \return True if the module loaded successfully.
-        bool Load(bool isInitializeFunctionRequired);
+        bool Load(bool isInitializeFunctionRequired, bool globalSymbols = false);
 
         /// Unload the module.
         /// Invokes the \ref UninitializeDynamicModuleFunction if it is found in the module and
@@ -81,7 +88,7 @@ namespace AZ
         };
 
         // Attempt to load a module.
-        virtual LoadStatus LoadModule() = 0;
+        virtual LoadStatus LoadModule(bool globalSymbols) = 0;
         virtual bool       UnloadModule() = 0;
         virtual void*      GetFunctionAddress(const char* functionName) const = 0;
 

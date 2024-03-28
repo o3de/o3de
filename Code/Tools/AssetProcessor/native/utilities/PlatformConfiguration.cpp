@@ -1127,6 +1127,7 @@ namespace AssetProcessor
 
         AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
         AZ::IO::FixedMaxPathString projectName = AZ::Utils::GetProjectName();
+        AZ::IO::FixedMaxPathString executableDirectory = AZ::Utils::GetExecutableDirectory();
 
         AZ::IO::FixedMaxPath engineRoot(AZ::IO::PosixPathSeparator);
         settingsRegistry->Get(engineRoot.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
@@ -1202,6 +1203,7 @@ namespace AssetProcessor
                 AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@ROOT@", assetRootPath.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@PROJECTROOT@", projectPath.c_str());
                 AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@ENGINEROOT@", engineRoot.c_str());
+                AZ::StringFunc::Replace(scanFolderEntry.m_watchPath.Native(), "@EXEFOLDER@", executableDirectory.c_str());
                 // Normalize path make sure it is using posix slashes
                 scanFolderEntry.m_watchPath = scanFolderEntry.m_watchPath.LexicallyNormal();
 

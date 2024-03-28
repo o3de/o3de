@@ -956,7 +956,26 @@ namespace AzToolsFramework
                     prefabOverridePublicInterface->RevertComponentOverrides(
                         AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
                 }
-            });
+            }
+        );
+
+        QAction* applyAction = menu.addAction(QObject::tr("Apply Overrides"));
+        QObject::connect(
+            applyAction,
+            &QAction::triggered,
+            this,
+            [components]
+            {
+                if (auto prefabOverridePublicInterface =
+                        AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
+                {
+                    // Note: Multiple selection is not currently supported for overrides.
+                    // Revert overrides on the single component that's displaying override state.
+                    prefabOverridePublicInterface->ApplyComponentOverrides(
+                        AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
+                }
+            }
+        );
 
         menu.exec(position);
     }

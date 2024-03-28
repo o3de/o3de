@@ -4033,6 +4033,14 @@ namespace ScriptCanvasEditor
         AzToolsFramework::EntityIdList selectedEntityIds;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
+        if (selectedEntityIds.empty())
+        {
+            AZ::EntityId createdId;
+            AzToolsFramework::EditorRequests::Bus::BroadcastResult(createdId, &AzToolsFramework::EditorRequests::CreateNewEntity, AZ::EntityId());
+
+            selectedEntityIds.emplace_back(createdId);
+        }
+
         for (const AZ::EntityId& entityId : selectedEntityIds)
         {
             AssignGraphToEntityImpl(entityId);

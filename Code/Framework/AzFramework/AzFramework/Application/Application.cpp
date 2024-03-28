@@ -89,7 +89,6 @@ namespace AzFramework
     namespace ApplicationInternal
     {
         static constexpr const char s_editorModeFeedbackKey[] = "/Amazon/Preferences/EnableEditorModeFeedback";
-        static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
         static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
         static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
         static constexpr const char* DeprecatedFileIOAliasesRoot = "/O3DE/AzCore/FileIO/DeprecatedAliases";
@@ -769,6 +768,12 @@ namespace AzFramework
         return value;
     }
 
+    bool Application::IsPrefabSystemEnabled() const
+    {
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        return true;
+    }
+
     bool Application::ArePrefabWipFeaturesEnabled() const
     {
         bool value = false;
@@ -777,6 +782,17 @@ namespace AzFramework
             registry->Get(value, ApplicationInternal::s_prefabWipSystemKey);
         }
         return value;
+    }
+
+    void Application::SetPrefabSystemEnabled(bool /* enable */)
+    {
+        AZ_WarningOnce("Application", false, "'SetPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
+    }
+
+    bool Application::IsPrefabSystemForLevelsEnabled() const
+    {
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        return true;
     }
 
     bool Application::ShouldAssertForLegacySlicesUsage() const

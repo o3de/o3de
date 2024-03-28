@@ -431,7 +431,6 @@ namespace AzToolsFramework
 
         AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParentRelative, parentId);
 
-        //creating/pushing slices doesn't always destroy/de-register the original entity before adding the replacement
         if (!parentInfo.HasChild(childId))
         {
             EditorEntityInfoNotificationBus::Broadcast(&EditorEntityInfoNotificationBus::Events::OnEntityInfoUpdatedAddChildBegin, parentId, childId);
@@ -1368,18 +1367,6 @@ namespace AzToolsFramework
 
     bool EditorEntityModel::EditorEntityModelEntry::IsVisible() const
     {
-        // An entity being invisible always supersedes any other visibility state in the hierarchy.
-        if (!m_visible)
-        {
-            return m_visible;
-        }
-
-        // If this entity is in a layer that's not visible, then the entity is not visible.
-        if (DoesEntityHierarchyOverrideVisibility())
-        {
-            return false;
-        }
-
         return m_visible;
     }
 
@@ -1390,18 +1377,6 @@ namespace AzToolsFramework
 
     bool EditorEntityModel::EditorEntityModelEntry::IsLocked() const
     {
-        // An entity being locked always supersedes any other lock state in the hierarchy.
-        if (m_locked)
-        {
-            return m_locked;
-        }
-
-        // If this entity is in a locked layer, then that layer's locked status supersedes this entity being unlocked.
-        if (DoesEntityHierarchyOverrideLock())
-        {
-            return true;
-        }
-
         return m_locked;
     }
 
@@ -1484,11 +1459,8 @@ namespace AzToolsFramework
             EditorEntityInfoNotificationBus::Broadcast(
                 &EditorEntityInfoNotificationBus::Events::OnEntityInfoUpdatedLocked, m_entityId, m_locked);
 
-            if (!DoesEntityHierarchyOverrideLock())
-            {
-                EditorEntityLockComponentNotificationBus::Event(
-                    m_entityId, &EditorEntityLockComponentNotificationBus::Events::OnEntityLockChanged, locked);
-            }
+            EditorEntityLockComponentNotificationBus::Event(
+                m_entityId, &EditorEntityLockComponentNotificationBus::Events::OnEntityLockChanged, locked);
         }
     }
 
@@ -1502,11 +1474,8 @@ namespace AzToolsFramework
             EditorEntityInfoNotificationBus::Broadcast(
                 &EditorEntityInfoNotificationBus::Events::OnEntityInfoUpdatedVisibility, m_entityId, m_visible);
 
-            if (!DoesEntityHierarchyOverrideVisibility())
-            {
-                EditorEntityVisibilityNotificationBus::Event(
-                    m_entityId, &EditorEntityVisibilityNotifications::OnEntityVisibilityChanged, visibility);
-            }
+            EditorEntityVisibilityNotificationBus::Event(
+                m_entityId, &EditorEntityVisibilityNotifications::OnEntityVisibilityChanged, visibility);
         }
     }
 

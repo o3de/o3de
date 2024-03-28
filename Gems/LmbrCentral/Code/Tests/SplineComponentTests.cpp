@@ -106,7 +106,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(linearSplinePtr->GetVertexCount() == 4);
 
             // change spline type to Bezier
-            LmbrCentral::SplineComponentRequestBus::Event(entity.GetId(), &LmbrCentral::SplineComponentRequests::ChangeSplineType, AZ::BezierSpline::RTTI_Type().GetHash());
+            LmbrCentral::SplineComponentRequestBus::Event(entity.GetId(), &LmbrCentral::SplineComponentRequests::ChangeSplineType, LmbrCentral::SplineType::BEZIER);
 
             // check data was created after change correctly
             AZ::ConstSplinePtr bezierSplinePtr;
@@ -164,7 +164,7 @@ namespace UnitTest
             }
 
             // change spline type to CatmullRom
-            LmbrCentral::SplineComponentRequestBus::Event(entity.GetId(), &LmbrCentral::SplineComponentRequests::ChangeSplineType, AZ::CatmullRomSpline::RTTI_Type().GetHash());
+            LmbrCentral::SplineComponentRequestBus::Event(entity.GetId(), &LmbrCentral::SplineComponentRequests::ChangeSplineType, LmbrCentral::SplineType::CATMULL_ROM);
             
             AZ::ConstSplinePtr catmullRomSplinePtr;
             LmbrCentral::SplineComponentRequestBus::EventResult(catmullRomSplinePtr, entity.GetId(), &LmbrCentral::SplineComponentRequests::GetSpline);

@@ -203,11 +203,47 @@
             "isTemplated": false
         },
         {
+            "file": "Registry/quality.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/quality.client.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/quality.server.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/quality.headless.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/Platform/Android/quality.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/Platform/iOS/quality.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/Platform/Linux/quality.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/Platform/Mac/quality.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "Registry/Platform/Windows/quality.setreg",
+            "isTemplated": false
+        },
+        {
             "file": "Resources/GameSDK.ico",
             "isTemplated": false
         },
         {
-            "file": "Resources/LegacyLogoLauncher.bmp",
+            "file": "Resources/Splash.bmp",
             "isTemplated": false
         },
         {
@@ -471,6 +507,24 @@
         },
         {
             "dir": "Registry"
+        },
+        {
+            "dir": "Registry/Platform"
+        },
+        {
+            "dir": "Registry/Platform/Android"
+        },
+        {
+            "dir": "Registry/Platform/iOS"
+        },
+        {
+            "dir": "Registry/Platform/Linux"
+        },
+        {
+            "dir": "Registry/Platform/Mac"
+        },
+        {
+            "dir": "Registry/Platform/Windows"
         },
         {
             "dir": "Resources"

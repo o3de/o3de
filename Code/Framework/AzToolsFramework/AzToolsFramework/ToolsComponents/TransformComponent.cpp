@@ -993,6 +993,7 @@ namespace AzToolsFramework
 
             if (!m_parentEntityId.IsValid())
             {
+                // Reroute the invalid id to the focused prefab container entity id
                 auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
 
                 if (prefabFocusPublicInterface)

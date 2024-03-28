@@ -33,7 +33,6 @@ ly_add_target(
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
         PRIVATE
-            Include
             Source
     BUILD_DEPENDENCIES
         PUBLIC
@@ -56,8 +55,6 @@ ly_add_target(
         remotetools_shared_files.cmake
         ${pal_dir}/remotetools_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
-        PUBLIC
-            Include
         PRIVATE
             Source
     BUILD_DEPENDENCIES

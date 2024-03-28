@@ -273,7 +273,7 @@ namespace AZ
                 vulkan12Features.descriptorBindingUpdateUnusedWhilePending = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingUpdateUnusedWhilePending;
                 vulkan12Features.shaderOutputViewportIndex = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputViewportIndex;
                 vulkan12Features.shaderOutputLayer = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderOutputLayer;
-                shaderImageAtomicInt64.pNext = &vulkan12Features;
+                vulkan12Features.timelineSemaphore = physicalDevice.GetPhysicalDeviceVulkan12Features().timelineSemaphore;
 
                 accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
                 accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
@@ -1185,6 +1185,8 @@ namespace AZ
                 }
             }
             m_features.m_swapchainScalingFlags = AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS;
+
+            m_features.m_signalFenceFromCPU = physicalDevice.GetPhysicalDeviceTimelineSemaphoreFeatures().timelineSemaphore;
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

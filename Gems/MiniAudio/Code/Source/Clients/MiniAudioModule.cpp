@@ -6,20 +6,17 @@
  *
  */
 
-
 #include <MiniAudioModuleInterface.h>
 
 namespace MiniAudio
 {
-    class MiniAudioModule
-        : public MiniAudioModuleInterface
+    class MiniAudioModule : public MiniAudioModuleInterface
     {
     public:
         AZ_RTTI(MiniAudioModule, "{501C94A1-993A-4203-9720-D43D6C1DDB7A}", MiniAudioModuleInterface);
         AZ_CLASS_ALLOCATOR(MiniAudioModule, AZ::SystemAllocator, 0);
     };
-}// namespace MiniAudio
-
+} // namespace MiniAudio
 
 #if defined(O3DE_GEM_NAME)
 AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), MiniAudio::MiniAudioModule)

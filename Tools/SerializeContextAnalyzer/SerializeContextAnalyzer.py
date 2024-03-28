@@ -21,7 +21,7 @@ def CreateOutputFolder(path):
         try:
             os.mkdir(folderPath)
         except OSError:
-            print "Failed to create path '{0}'".format(folderPath)
+            print("Failed to create path '{0}'".format(folderPath))
             return False
     return True
 
@@ -81,7 +81,7 @@ def Convert(source, output, template, split, additionalArgs):
     data['Config'] = {}
     data['Config']['Document'] = file
     ParseAdditionalArguments(data['Config'], additionalArgs)
-    print "Template arguments: {}".format(data['Config'])
+    print("Template arguments: {}".format(data['Config']))
 
     if split:
         for c in string.ascii_lowercase:
@@ -117,5 +117,5 @@ if __name__ == "__main__":
         templatePath = os.path.abspath(templatePath)
 
     if CreateOutputFolder(outputPath):
-        print 'Converting from "{0}" to "{1}" using template "{2}".'.format(sourcePath, outputPath, templatePath)
+        print('Converting from "{0}" to "{1}" using template "{2}".'.format(sourcePath, outputPath, templatePath))
         Convert(sourcePath, outputPath, templatePath, args.split, remainingArgs)

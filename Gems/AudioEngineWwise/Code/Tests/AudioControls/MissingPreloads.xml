@@ -1,5 +1,0 @@
-<ATLConfig atl_name="MissingPreloads">
- <AudioTriggers>
-  <ATLTrigger atl_name="test_trigger"/>
- </AudioTriggers>
-</ATLConfig>

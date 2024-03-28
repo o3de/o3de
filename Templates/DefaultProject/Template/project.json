@@ -22,7 +22,6 @@
         "${Name}",
         "Atom",
         "AudioSystem",
-        "AWSCore",
         "CameraFramework",
         "DebugDraw",
         "DiffuseProbeGrid",

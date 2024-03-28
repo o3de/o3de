@@ -58,6 +58,7 @@ namespace AZ
             };
 
             using PostCullingInstanceDataList = AZStd::vector<PostCullingInstanceData>;
+            const bool IsSkinnedMesh() { return m_descriptor.m_isSkinnedMesh; }
 
         private:
             class MeshLoader

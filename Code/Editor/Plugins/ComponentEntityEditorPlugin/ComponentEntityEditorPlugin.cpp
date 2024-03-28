@@ -153,7 +153,7 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         LyViewPane::CategoryTools,
         pinnedInspectorOptions);
 
-    // Add the new Outliner to the Tools Menu
+    // Add the Outliner to the Tools Menu
     ViewPaneOptions outlinerOptions;
     outlinerOptions.canHaveMultipleInstances = true;
     outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;

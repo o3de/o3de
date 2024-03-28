@@ -228,6 +228,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
     enum class ContainerAction
     {
+        None = 0,
         AddElement,
         RemoveElement,
         Clear,

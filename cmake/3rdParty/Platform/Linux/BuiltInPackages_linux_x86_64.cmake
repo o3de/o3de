@@ -46,10 +46,3 @@ ly_associate_package(PACKAGE_NAME pyside2-5.15.2.1-py3.10-rev6-linux            
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-linux                          TARGETS SQLite                      PACKAGE_HASH bee80d6c6db3e312c1f4f089c90894436ea9c9b74d67256d8c1fb00d4d81fe46)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-linux              TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 83fc1711404d3e5b2faabb1134e97cc92b748d8b87ff4ea99599d8c750b8eff0)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-rev1-linux        TARGETS vulkan-validationlayers     PACKAGE_HASH 9195c7959695bcbcd1bc1dc5c425c14639a759733b3abe2ffa87eb3915b12c71)
-
-set(AZ_USE_PHYSX5 OFF CACHE BOOL "When ON PhysX Gem will use PhysX 5 SDK")
-if(AZ_USE_PHYSX5)
-    ly_associate_package(PACKAGE_NAME PhysX-5.1.1-rev1-linux                            TARGETS PhysX                       PACKAGE_HASH 343e3123882f53748c938c41f4d1c9ab6ec171e4f970ccd9263c5ab191110410)
-else()
-    ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev6-linux                   TARGETS PhysX                       PACKAGE_HASH 220a420d0e48b27d0dfe4ef71774a40cd6015938a58f8870d9e666d7c1537c94)
-endif()

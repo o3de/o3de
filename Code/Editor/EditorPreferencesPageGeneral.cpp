@@ -47,26 +47,18 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
 
     serialize.Class<Messaging>()
         ->Version(2)
-        ->Field("ShowDashboard", &Messaging::m_showDashboard)
-        ->Field("ShowCircularDependencyError", &Messaging::m_showCircularDependencyError);
+        ->Field("ShowDashboard", &Messaging::m_showDashboard);
 
     serialize.Class<Undo>()
         ->Version(2)
-        ->Field("UndoLevels", &Undo::m_undoLevels)
-        ->Field("UndoSliceOverrideSaves", &Undo::m_undoSliceOverrideSaveValue);;
-
-    serialize.Class<DeepSelection>()
-        ->Version(2)
-        ->Field("DeepSelectionRange", &DeepSelection::m_deepSelectionRange)
-        ->Field("StickDuplicate", &DeepSelection::m_stickDuplicate);
+        ->Field("UndoLevels", &Undo::m_undoLevels);
 
     serialize.Class<CEditorPreferencesPage_General>()
         ->Version(1)
         ->Field("General Settings", &CEditorPreferencesPage_General::m_generalSettings)
         ->Field("Prefab Save Settings", &CEditorPreferencesPage_General::m_levelSaveSettings)
         ->Field("Messaging", &CEditorPreferencesPage_General::m_messaging)
-        ->Field("Undo", &CEditorPreferencesPage_General::m_undo)
-        ->Field("Deep Selection", &CEditorPreferencesPage_General::m_deepSelection);
+        ->Field("Undo", &CEditorPreferencesPage_General::m_undo);
 
     AZ::EditContext* editContext = serialize.GetEditContext();
     if (editContext)
@@ -97,20 +89,12 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
                 ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::SaveNone, "Save none");
 
         editContext->Class<Messaging>("Messaging", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Open 3D Engine at startup", "Show Welcome to Open 3D Engine at startup")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showCircularDependencyError, "Show Error: Circular dependency", "Show an error message when adding a slice instance to the target slice would create a cyclic asset dependency. All other valid overrides will be saved even if this is turned off.");
+            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Open 3D Engine at startup", "Show Welcome to Open 3D Engine at startup");
 
         editContext->Class<Undo>("Undo", "")
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &Undo::m_undoLevels, "Undo Levels", "This field specifies the number of undo levels")
             ->Attribute(AZ::Edit::Attributes::Min, 0)
-            ->Attribute(AZ::Edit::Attributes::Max, 10000)
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Undo::m_undoSliceOverrideSaveValue, "Undo Slice Override Saves", "Allow slice saves to be undone");
-
-        editContext->Class<DeepSelection>("Selection", "")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DeepSelection::m_stickDuplicate, "Stick duplicate to cursor", "Stick duplicate to cursor")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &DeepSelection::m_deepSelectionRange, "Deep selection range", "Deep Selection Range")
-            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-            ->Attribute(AZ::Edit::Attributes::Max, 1000.0f);
+            ->Attribute(AZ::Edit::Attributes::Max, 10000);
 
         editContext->Class<CEditorPreferencesPage_General>("General Editor Preferences", "Class for handling General Editor Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -118,8 +102,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_generalSettings, "General Settings", "General Editor Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Prefab Save Settings", "File>Save")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_messaging, "Messaging", "Messaging")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_deepSelection, "Selection", "Selection");
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences");
     }
 }
 
@@ -149,7 +132,6 @@ void CEditorPreferencesPage_General::OnApply()
     gSettings.consoleBackgroundColorTheme = m_generalSettings.m_consoleBackgroundColorTheme;
     gSettings.bShowTimeInConsole = m_generalSettings.m_bShowTimeInConsole;
     gSettings.bShowDashboardAtStartup = m_messaging.m_showDashboard;
-    gSettings.m_showCircularDependencyError = m_messaging.m_showCircularDependencyError;
     gSettings.bAutoloadLastLevelAtStartup = m_generalSettings.m_autoLoadLastLevel;
     gSettings.stylusMode = m_generalSettings.m_stylusMode;
     gSettings.restoreViewportCamera = m_generalSettings.m_restoreViewportCamera;
@@ -166,12 +148,6 @@ void CEditorPreferencesPage_General::OnApply()
 
     //undo
     gSettings.undoLevels = m_undo.m_undoLevels;
-
-    gSettings.m_undoSliceOverrideSaveValue = m_undo.m_undoSliceOverrideSaveValue;
-
-    //deep selection
-    gSettings.deepSelectionSettings.fRange = m_deepSelection.m_deepSelectionRange;
-    gSettings.deepSelectionSettings.bStickDuplicate = m_deepSelection.m_stickDuplicate;
 }
 
 void CEditorPreferencesPage_General::InitializeSettings()
@@ -194,13 +170,8 @@ void CEditorPreferencesPage_General::InitializeSettings()
 
     //Messaging
     m_messaging.m_showDashboard = gSettings.bShowDashboardAtStartup;
-    m_messaging.m_showCircularDependencyError = gSettings.m_showCircularDependencyError;
 
     //undo
     m_undo.m_undoLevels = gSettings.undoLevels;
-    m_undo.m_undoSliceOverrideSaveValue = gSettings.m_undoSliceOverrideSaveValue;
 
-    //deep selection
-    m_deepSelection.m_deepSelectionRange = gSettings.deepSelectionSettings.fRange;
-    m_deepSelection.m_stickDuplicate = gSettings.deepSelectionSettings.bStickDuplicate;
 }

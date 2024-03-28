@@ -13,7 +13,6 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/algorithm.h>
@@ -39,7 +38,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
-#include <AzToolsFramework/Commands/SliceDetachEntityCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
@@ -49,12 +47,9 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -148,11 +143,13 @@ SandboxIntegrationManager::SandboxIntegrationManager()
     : m_startedUndoRecordingNestingLevel(0)
     , m_dc(nullptr)
 {
-    // Required to receive events from the Cry Engine undo system
+    // Required to receive events from the Cry Engine undo system.
     GetIEditor()->GetUndoManager()->AddListener(this);
 
+    // Create the PrefabIntegrationManager, which initializes prefab-related operations.
     m_prefabIntegrationManager = aznew AzToolsFramework::Prefab::PrefabIntegrationManager();
 
+    // Connect to the Action Manager Registration bus to correctly register actions, menus, toolbars etc.
     AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 }
 
@@ -173,16 +170,8 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-    AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
-
-    // Keep a reference to the interface EditorEntityUiInterface.
-    // This is used to register layer entities to their UI handler when the layer component is activated.
-    m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-
-    AZ_Assert((m_editorEntityUiInterface != nullptr),
-        "SandboxIntegrationManager requires a EditorEntityUiInterface instance to be present on Setup().");
 
     m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
     AZ_Assert(
@@ -198,37 +187,11 @@ void SandboxIntegrationManager::Setup()
     m_contextMenuBottomHandler.Setup();
 }
 
-void SandboxIntegrationManager::GetEntitiesInSlices(
-    const AzToolsFramework::EntityIdList& selectedEntities,
-    AZ::u32& entitiesInSlices,
-    AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sliceInstances)
-{
-    // Identify all slice instances affected by the selected entity set.
-    entitiesInSlices = 0;
-    for (const AZ::EntityId& entityId : selectedEntities)
-    {
-        AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-        AzFramework::SliceEntityRequestBus::EventResult(sliceAddress, entityId,
-            &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-        if (sliceAddress.IsValid())
-        {
-            ++entitiesInSlices;
-
-            if (sliceInstances.end() == AZStd::find(sliceInstances.begin(), sliceInstances.end(), sliceAddress))
-            {
-                sliceInstances.push_back(sliceAddress);
-            }
-        }
-    }
-}
-
 void SandboxIntegrationManager::Teardown()
 {
     m_contextMenuBottomHandler.Teardown();
 
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
-    AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
@@ -300,11 +263,6 @@ void SandboxIntegrationManager::OnEndUndo(const char* label, bool changed)
             }
         }
     }
-}
-
-void SandboxIntegrationManager::OnSaveLevel()
-{
-    m_unsavedEntities.clear();
 }
 
 int SandboxIntegrationManager::GetMenuPosition() const
@@ -580,9 +538,8 @@ AZ::EntityId SandboxIntegrationManager::CreateNewEntity(AZ::EntityId parentId)
 {
     AZ::Vector3 position = AZ::Vector3::CreateZero();
 
-    bool parentIsValid = parentId.IsValid();
     // If we have an invalid parent, base new entity's position on the viewport.
-    if (!parentIsValid)
+    if (!parentId.IsValid())
     {
         position = GetWorldPositionAtViewportCenter();
     }
@@ -630,23 +587,6 @@ IEditor* SandboxIntegrationManager::GetEditor()
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool SandboxIntegrationManager::GetUndoSliceOverrideSaveValue()
-{
-    return GetIEditor()->GetEditorSettings()->m_undoSliceOverrideSaveValue;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool SandboxIntegrationManager::GetShowCircularDependencyError()
-{
-    return GetIEditor()->GetEditorSettings()->m_showCircularDependencyError;
-}
-
-void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& showCircularDependencyError)
-{
-    GetIEditor()->GetEditorSettings()->m_showCircularDependencyError = showCircularDependencyError;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void SandboxIntegrationManager::LaunchLuaEditor(const char* files)
 {
     CCryEditApp::instance()->OpenLUAEditor(files);
@@ -672,24 +612,6 @@ void SandboxIntegrationManager::OnPrepareForContextReset()
     objects.reserve(128);
     IObjectManager* objectManager = GetIEditor()->GetObjectManager();
     objectManager->FindObjectsOfType(OBJTYPE_AZENTITY, objects);
-}
-
-void SandboxIntegrationManager::OnSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)
-{
-    // The instantiated slice isn't valid. Other systems will report this as an error.
-    // Bail out here, this is nothing to track in this case.
-    if (!sliceAddress.GetInstance())
-    {
-        return;
-    }
-
-    const AZ::SliceComponent::EntityIdToEntityIdMap& sliceInstanceEntityIdMap = sliceAddress.GetInstance()->GetEntityIdMap();
-
-    for (const auto& sliceInstantEntityIdPair : sliceInstanceEntityIdMap)
-    {
-        // The second in the pair is the local instance's entity ID.
-        m_unsavedEntities.insert(sliceInstantEntityIdPair.second);
-    }
 }
 
 void SandboxIntegrationManager::OnActionRegistrationHook()
@@ -772,7 +694,6 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
 
         hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Alt+N");
     }
-
 }
 
 void SandboxIntegrationManager::OnMenuBindingHook()
@@ -875,12 +796,6 @@ void SandboxIntegrationManager::ContextMenu_Duplicate()
 void SandboxIntegrationManager::ContextMenu_DeleteSelected()
 {
     DeleteSelectedEntities(true);
-}
-
-void SandboxIntegrationManager::ContextMenu_ResetToSliceDefaults(AzToolsFramework::EntityIdList entities)
-{
-    AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-        &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::ResetEntitiesToSliceDefaults, entities);
 }
 
 void SandboxIntegrationManager::GetSelectedEntities(AzToolsFramework::EntityIdList& entities)
@@ -1062,25 +977,6 @@ AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& co
 void SandboxIntegrationManager::UndoStackFlushed()
 {
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequestBus::Events::FlushUndo);
-}
-
-void SandboxIntegrationManager::MakeSliceFromEntities(const AzToolsFramework::EntityIdList& entities, bool inheritSlices, bool setAsDynamic)
-{
-    // expand the list of entities to include all transform descendant entities
-    AzToolsFramework::EntityIdSet entitiesAndDescendants;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(entitiesAndDescendants,
-        &AzToolsFramework::ToolsApplicationRequestBus::Events::GatherEntitiesAndAllDescendents, entities);
-
-    const AZStd::string slicesAssetsPath = "@projectroot@/Slices";
-
-    if (!gEnv->pFileIO->Exists(slicesAssetsPath.c_str()))
-    {
-        gEnv->pFileIO->CreatePath(slicesAssetsPath.c_str());
-    }
-
-    char path[AZ_MAX_PATH_LEN] = { 0 };
-    gEnv->pFileIO->ResolvePath(slicesAssetsPath.c_str(), path, AZ_MAX_PATH_LEN);
-    AzToolsFramework::SliceUtilities::MakeNewSlice(entitiesAndDescendants, path, inheritSlices, setAsDynamic);
 }
 
 void SandboxIntegrationManager::RegisterViewPane(const char* name, const char* category, const AzToolsFramework::ViewPaneOptions& viewOptions, const WidgetCreationFunc& widgetCreationFunc)

@@ -1295,7 +1295,12 @@ namespace AZ::DocumentPropertyEditor
 
     void ReflectionAdapter::UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo)
     {
-        NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
+        auto valuePath = propertyChangeInfo.path / "Value";
+        auto currValue = GetContents()[valuePath];
+        if (currValue != propertyChangeInfo.newValue)
+        {
+            NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(valuePath, propertyChangeInfo.newValue) });
+        }
     }
 
     ExpanderSettings* ReflectionAdapter::CreateExpanderSettings(

@@ -226,27 +226,26 @@ namespace AZ::Render
             defaultAA = AZ::RPI::RenderPipeline::GetAAMethodNameByIndex(defaultAAMethod);
             hasAAMethod = (defaultAAMethod != AZ::RPI::AntiAliasingMode::MSAA && defaultAAMethod != AZ::RPI::AntiAliasingMode::Default);
         }
-        const char* resolutionStr =
+        auto resolutionStr =
             AZStd::string::format(
-                "Resolution: %dx%d", viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height)
-                .c_str();
-        const char* msaaStr =
-            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA";
+                "Resolution: %dx%d", viewportContext->GetViewportSize().m_width, viewportContext->GetViewportSize().m_height);
+        auto msaaStr =
+            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples) : AZStd::string("NoMSAA");
  
         if (hasAAMethod)
         {
             if (multisampleState.m_samples > 1)
             {
-                DrawLine(AZStd::string::format("%s (%s + %s)", resolutionStr, defaultAA.c_str(), msaaStr));
+                DrawLine(AZStd::string::format("%s (%s + %s)", resolutionStr.c_str(), defaultAA.c_str(), msaaStr.c_str()));
             }
             else
             {
-                DrawLine(AZStd::string::format("%s (%s)", resolutionStr, defaultAA.c_str()));
+                DrawLine(AZStd::string::format("%s (%s)", resolutionStr.c_str(), defaultAA.c_str()));
             }
         }
         else
         {
-            DrawLine(AZStd::string::format("%s (%s)", resolutionStr, msaaStr));
+            DrawLine(AZStd::string::format("%s (%s)", resolutionStr.c_str(), msaaStr.c_str()));
         }
 
         if(viewportContext->GetCurrentPipeline())   // avoid VR crash on nullptr

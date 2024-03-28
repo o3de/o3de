@@ -86,7 +86,6 @@ namespace AZ
         {
             m_skinnedMeshDebugDisplay = AZStd::make_unique<SkinnedMeshDebugDisplay>();
 
-            AzToolsFramework::EditorLevelNotificationBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
             if (auto settingsRegistry{ AZ::SettingsRegistry::Get() }; settingsRegistry != nullptr)
             {
@@ -104,16 +103,10 @@ namespace AZ
         {
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             m_criticalAssetsHandler = {};
-            AzToolsFramework::EditorLevelNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
 
             m_skinnedMeshDebugDisplay.reset();
             TeardownThumbnails();
-        }
-
-        // TODO - Remove this?
-        void EditorCommonFeaturesSystemComponent::OnNewLevelCreated()
-        {
         }
 
         void EditorCommonFeaturesSystemComponent::OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)

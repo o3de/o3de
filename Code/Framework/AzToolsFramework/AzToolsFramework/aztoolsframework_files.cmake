@@ -90,6 +90,7 @@ set(FILES
     API/EntityCompositionNotificationBus.h
     API/EditorViewportIconDisplayInterface.h
     API/PythonLoader.h
+    API/PythonLoader.cpp
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     Application/Ticker.h
@@ -870,6 +871,8 @@ set(FILES
     Prefab/PrefabUndoHelpers.h
     Prefab/Spawnable/ComponentRequirementsValidator.h
     Prefab/Spawnable/ComponentRequirementsValidator.cpp
+    Prefab/Spawnable/AssetPlatformComponentRemover.h
+    Prefab/Spawnable/AssetPlatformComponentRemover.cpp
     Prefab/Spawnable/EditorInfoRemover.h
     Prefab/Spawnable/EditorInfoRemover.cpp
     Prefab/Spawnable/EditorOnlyEntityHandler/EditorOnlyEntityHandler.h
@@ -910,6 +913,8 @@ set(FILES
     Prefab/Undo/PrefabUndoAddEntity.cpp
     Prefab/Undo/PrefabUndoAddEntityAsOverride.h
     Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
+    Prefab/Undo/PrefabUndoApplyOverrides.h
+    Prefab/Undo/PrefabUndoApplyOverrides.cpp
     Prefab/Undo/PrefabUndoComponentPropertyEdit.h
     Prefab/Undo/PrefabUndoComponentPropertyEdit.cpp
     Prefab/Undo/PrefabUndoComponentPropertyOverride.h

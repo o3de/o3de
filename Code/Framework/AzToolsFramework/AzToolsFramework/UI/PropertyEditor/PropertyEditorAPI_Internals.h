@@ -206,8 +206,20 @@ namespace AzToolsFramework
         {
             if (m_widget)
             {
-                delete m_widget;
-                m_widget = nullptr;
+                // Detect whether this is being run in the Editor or during a Unit Test.
+                AZ::ApplicationTypeQuery appType;
+                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                if (appType.IsValid() && !appType.IsEditor())
+                {
+                    // In Unit Tests, immediately delete the widget to prevent triggering the leak detection mechanism.
+                    delete m_widget;
+                    m_widget = nullptr;
+                }
+                else
+                {
+                    // In the Editor, use deleteLater as it is more stable.
+                    m_widget->deleteLater();
+                }
             }
             IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
         }

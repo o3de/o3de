@@ -12,8 +12,6 @@
 #include "ContextMenuHandlers.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Slice/SliceBus.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -25,7 +23,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Sandbox imports.
@@ -71,7 +68,6 @@ class QWidget;
 namespace AzToolsFramework
 {
     class EditorEntityAPI;
-    class EditorEntityUiInterface;
     class ReadOnlyEntityPublicInterface;
 
     namespace AssetBrowser
@@ -94,7 +90,6 @@ class SandboxIntegrationManager
     , private AzToolsFramework::EditorWindowRequests::Bus::Handler
     , private AzFramework::DisplayContextRequestBus::Handler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
-    , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
     , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 {
@@ -108,10 +103,11 @@ public:
 
 private:
     //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::ToolsApplicationEvents::Bus::Handler overrides
     void OnBeginUndo(const char* label) override;
     void OnEndUndo(const char* label, bool changed) override;
-    void OnSaveLevel() override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -133,9 +129,6 @@ private:
     AzFramework::EntityContextId GetEntityContextId() override;
     QWidget* GetMainWindow() override;
     IEditor* GetEditor() override;
-    bool GetUndoSliceOverrideSaveValue() override;
-    bool GetShowCircularDependencyError() override;
-    void SetShowCircularDependencyError(const bool& showCircularDependencyError) override;
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
@@ -164,14 +157,6 @@ private:
     void OnPrepareForContextReset() override;
     //////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    /// AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
-    void OnSliceInstantiated(
-        const AZ::Data::AssetId& sliceAssetId,
-        AZ::SliceComponent::SliceInstanceAddress& sliceAddress,
-        const AzFramework::SliceInstantiationTicket& ticket) override;
-    //////////////////////////////////////////////////////////////////////////
-
     // AzFramework::DisplayContextRequestBus (and @deprecated EntityDebugDisplayRequestBus)
     // AzFramework::DisplayContextRequestBus
     void SetDC(DisplayContext* dc) override;
@@ -185,9 +170,6 @@ private:
     void ContextMenu_NewEntity();
     void ContextMenu_Duplicate();
     void ContextMenu_DeleteSelected();
-    void ContextMenu_ResetToSliceDefaults(AzToolsFramework::EntityIdList entities);
-
-    void MakeSliceFromEntities(const AzToolsFramework::EntityIdList& entities, bool inheritSlices, bool setAsDynamic);
 
     void GetSelectedEntities(AzToolsFramework::EntityIdList& entities);
     void GetSelectedOrHighlightedEntities(AzToolsFramework::EntityIdList& entities);
@@ -217,25 +199,8 @@ private:
     void UndoStackFlushed() override;
 
 private:
-    void GetEntitiesInSlices(const AzToolsFramework::EntityIdList& selectedEntities, AZ::u32& entitiesInSlices, AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sliceInstances);
-
     void GoToEntitiesInViewports(const AzToolsFramework::EntityIdList& entityIds);
     bool CanGoToEntityOrChildren(const AZ::EntityId& entityId) const;
-
-    // This struct exists to help handle the error case where slice assets are 
-    // accidentally deleted from disk but their instances are still in the editing level.
-    struct SliceAssetDeletionErrorInfo
-    {
-        SliceAssetDeletionErrorInfo() = default;
-
-        SliceAssetDeletionErrorInfo(AZ::Data::AssetId assetId, AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>>&& entityRestoreInfos) 
-            : m_assetId(assetId)
-            , m_entityRestoreInfos(AZStd::move(entityRestoreInfos))
-        { }
-
-        AZ::Data::AssetId m_assetId;
-        AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>> m_entityRestoreInfos;
-    };
 
 private:
     EditorContextMenuHandler m_contextMenuBottomHandler;
@@ -248,20 +213,13 @@ private:
 
     DisplayContext* m_dc;
 
-    AZStd::vector<SliceAssetDeletionErrorInfo> m_sliceAssetDeletionErrorRestoreInfos;
-
-    // Tracks new entities that have not yet been saved.
-    AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
-
     const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
     const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.svg";
     const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.svg";
 
-    AzToolsFramework::Prefab::PrefabIntegrationManager* m_prefabIntegrationManager = nullptr;
-
-    AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
-    AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
     AzToolsFramework::EditorEntityAPI* m_editorEntityAPI = nullptr;
+    AzToolsFramework::Prefab::PrefabIntegrationManager* m_prefabIntegrationManager = nullptr;
+    AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
     AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 };
 

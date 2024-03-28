@@ -37,6 +37,7 @@ set(FILES
     ../Common/Apple/AzCore/IO/SystemFile_Apple.cpp
     ../Common/Apple/AzCore/IO/SystemFile_Apple.h
     ../Common/UnixLike/AzCore/IO/AnsiTerminalUtils_UnixLike.cpp
+    ../Common/UnixLike/AzCore/IO/FileIO_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.cpp

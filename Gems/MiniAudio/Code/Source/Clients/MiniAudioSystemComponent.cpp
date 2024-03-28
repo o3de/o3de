@@ -12,8 +12,8 @@
 #include <MiniAudio/SoundAsset.h>
 #include <MiniAudio/SoundAssetRef.h>
 
-#include "SoundAssetHandler.h"
 #include "MiniAudioIncludes.h"
+#include "SoundAssetHandler.h"
 
 namespace MiniAudio
 {
@@ -34,17 +34,14 @@ namespace MiniAudio
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<MiniAudioSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
+            serialize->Class<MiniAudioSystemComponent, AZ::Component>()->Version(0);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
                 ec->Class<MiniAudioSystemComponent>("MiniAudio", "[Description of functionality provided by this System Component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
     }
@@ -106,7 +103,8 @@ namespace MiniAudio
 
         {
             SoundAssetHandler* handler = aznew SoundAssetHandler();
-            AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<SoundAsset>::Uuid());
+            AZ::Data::AssetCatalogRequestBus::Broadcast(
+                &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<SoundAsset>::Uuid());
             AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, SoundAsset::FileExtension);
             m_assetHandlers.emplace_back(handler);
         }

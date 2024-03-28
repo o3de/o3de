@@ -23,6 +23,7 @@
 #include <AzCore/Memory/SystemAllocator.h> // Used as the allocator for most components.
 #include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/PlatformDef.h> // Needed for Component_Platform.inl include
 #include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ
@@ -467,6 +468,15 @@ namespace AZ
     //! The `AZ_CLASS` is a placeholder macro that is used to substitute `class` template parameters
     //! For non-type template parameters such as `size_t` or `int` the `AZ_AUTO` placeholder can be used
 
+    // Include the platform specific implementation of AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER
+    #include <AzCore/Component/Component_Platform.inl>
+
+    // If there was no platform specific implementation defined, use a default one:
+    #if !defined(AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER)
+    #define AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER(_ComponentClassOrTemplate, _BaseClass, ...) \
+        AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__ AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) _BaseClass)
+    #endif
+
     #define AZ_COMPONENT_IMPL_WITH_ALLOCATOR(_ComponentClassOrTemplate, _DisplayName, _Uuid, _Allocator, ...) \
     AZ_COMPONENT_MACRO_CALL(AZ_TYPE_INFO_WITH_NAME_IMPL, \
         AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)), \
@@ -475,7 +485,7 @@ namespace AZ
         AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
         AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
     ) \
-    AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__ AZ_VA_OPT(AZ_COMMA_SEPARATOR, __VA_ARGS__) AZ::Component) \
+    AZ_RTTI_NO_TYPE_INFO_IMPL_VA_OPT_HELPER(_ComponentClassOrTemplate, AZ::Component, __VA_ARGS__) \
     AZ_COMPONENT_MACRO_CALL(AZ_COMPONENT_BASE_IMPL, \
         AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
         AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \

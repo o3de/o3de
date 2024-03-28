@@ -1069,8 +1069,8 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
         //////////////////////////////////////////////////////////////////////////
         // LEVEL SYSTEM
-
         m_pLevelSystem = new LegacyLevelSystem::SpawnableLevelSystem(this);
+
         InlineInitializationProcessing("CSystem::Init Level System");
 
         // Az to Cry console binding

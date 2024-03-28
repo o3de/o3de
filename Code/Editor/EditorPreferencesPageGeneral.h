@@ -72,7 +72,6 @@ private:
         AZ_TYPE_INFO(Messaging, "{A6AD87CB-E905-409B-A2BF-C43CDCE63B0C}")
 
         bool m_showDashboard;
-        bool m_showCircularDependencyError;
     };
 
     struct Undo
@@ -80,22 +79,12 @@ private:
         AZ_TYPE_INFO(Undo, "{A3AC0728-F132-4BF2-B122-8A631B636E81}")
 
         int m_undoLevels;
-        bool m_undoSliceOverrideSaveValue;
-    };
-
-    struct DeepSelection
-    {
-        AZ_TYPE_INFO(DeepSelection, "{225616BF-66DE-41EC-9FDD-F5A104112547}")
-
-        float m_deepSelectionRange;
-        bool m_stickDuplicate;
     };
 
     GeneralSettings m_generalSettings;
     LevelSaveSettings m_levelSaveSettings;
     Messaging m_messaging;
     Undo m_undo;
-    DeepSelection m_deepSelection;
     QIcon m_icon;
 };
 

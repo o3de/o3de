@@ -924,41 +924,6 @@ namespace AzToolsFramework
         EntityList entities = newRootSlice->GetNewEntities();
         AZ::SliceComponent::SliceAssetToSliceInstancePtrs layerSliceInstances;
 
-        AZStd::unordered_map<AZ::EntityId, AZ::Entity*> uniqueEntities;
-        for (AZ::Entity* entity : entities)
-        {
-            AZStd::unordered_map<AZ::EntityId, AZ::Entity*>::iterator existingEntity = uniqueEntities.find(entity->GetId());
-            if (existingEntity != uniqueEntities.end())
-            {
-                AZ_Warning(
-                    "Editor",
-                    false,
-                    "Multiple entities that exist in your level with ID %s and name %s were found. The last entity found has been loaded.",
-                    entity->GetId().ToString().c_str(),
-                    entity->GetName().c_str());
-                AZ::Entity* duplicateEntity = existingEntity->second;
-                existingEntity->second = entity;
-                delete duplicateEntity;
-            }
-            else
-            {
-                uniqueEntities[entity->GetId()] = entity;
-            }
-        }
-
-        EntityList uniqueEntityList;
-        for (const auto& uniqueEntity : uniqueEntities)
-        {
-            uniqueEntityList.push_back(uniqueEntity.second);
-        }
-
-        // Add the layer entities before anything's been activated.
-        // This allows the layer system to function with minimal changes to level loading flow in the editor,
-        // no existing systems need to know about the layer system.
-        AZStd::unordered_set<const AZ::SliceComponent::SliceInstance*> instances;
-        newRootSlice->AddSliceInstances(layerSliceInstances, instances);
-        newRootSlice->ReplaceEntities(uniqueEntityList);
-
         // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
         // (load asset) -> (notify) -> (init) -> (activate)
         AZ::Data::AssetManager::Instance().DispatchEvents();

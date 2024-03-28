@@ -760,21 +760,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        // when an entity is unlocked, if it was in a locked layer(s), unlock those layers
-        if (!locked)
-        {
-            AZ::EntityId currentEntityId = entityId;
-            while (currentEntityId.IsValid())
-            {
-                AZ::EntityId parentId;
-                EditorEntityInfoRequestBus::EventResult(
-                    parentId, currentEntityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-                currentEntityId = parentId;
-            }
-        }
-
-        SetEntityLockStateRecursively(entityId, locked, entityId, false);
+        SetEntityLockStateRecursively(entityId, locked, entityId);
     }
 
     void ToggleEntityLockState(const AZ::EntityId entityId)

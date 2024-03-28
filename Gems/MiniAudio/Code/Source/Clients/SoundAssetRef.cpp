@@ -17,21 +17,19 @@ namespace MiniAudio
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext
-                ->Class<SoundAssetRef>()
-                ->Version(0)
-                ->EventHandler<SerializationEvents>()
-                ->Field("asset", &SoundAssetRef::m_asset)
-            ;
+            serializeContext->Class<SoundAssetRef>()->Version(0)->EventHandler<SerializationEvents>()->Field(
+                "asset", &SoundAssetRef::m_asset);
 
             serializeContext->RegisterGenericType<AZStd::vector<SoundAssetRef>>();
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, SoundAssetRef>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_map<double, SoundAssetRef>>(); // required to support Map<Number, SoundAssetRef> in Script Canvas
+            serializeContext->RegisterGenericType<AZStd::unordered_map<double, SoundAssetRef>>(); // required to support Map<Number,
+                                                                                                  // SoundAssetRef> in Script Canvas
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext
-                    ->Class<SoundAssetRef>("SoundAssetRef", "A wrapper around MiniAudio SoundAsset to be used as a variable in Script Canvas.")
+                    ->Class<SoundAssetRef>(
+                        "SoundAssetRef", "A wrapper around MiniAudio SoundAsset to be used as a variable in Script Canvas.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     // m_asset

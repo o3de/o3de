@@ -230,25 +230,23 @@ void ColorGrid::handleLeftButtonEvent(const QPoint& eventPos)
     {
         m_hue = hsv.hue;
         updated = true;
-        emit hueChanged(m_hue);
     }
 
     if (!qFuzzyCompare(hsv.saturation, m_saturation))
     {
         m_saturation = hsv.saturation;
         updated = true;
-        emit saturationChanged(m_saturation);
     }
 
     if (!qFuzzyCompare(hsv.value, m_value))
     {
         m_value = hsv.value;
         updated = true;
-        emit valueChanged(m_value);
     }
 
     if (updated)
     {
+        emit hsvChanged(m_hue, m_saturation, m_value);
         update();
     }
 }

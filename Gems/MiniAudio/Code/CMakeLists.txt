@@ -42,6 +42,8 @@ ly_add_target(
     FILES_CMAKE
         miniaudio_private_files.cmake
         ${pal_dir}/miniaudio_private_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
@@ -130,7 +132,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
-                $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
+                ${gem_name}.Private.Object
             PRIVATE
                  3rdParty::miniaudio
                  3rdParty::stb_vorbis
