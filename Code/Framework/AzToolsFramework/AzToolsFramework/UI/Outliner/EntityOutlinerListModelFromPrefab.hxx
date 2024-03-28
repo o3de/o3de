@@ -158,8 +158,10 @@ namespace AzToolsFramework
         QMimeData* mimeData(const QModelIndexList& indexes) const override;
         QStringList mimeTypes() const override;
 
-        QModelIndex GetIndexFromEntity(const AZ::EntityId& entityId, int column = 0) const;
+        QModelIndex GetIndexFromEntity(AZ::EntityId entityId, int column = 0) const;
+        QModelIndex GetIndexFromEntityAlias(const Prefab::EntityAlias& entityAlias, int column = 0) const;
         AZ::EntityId GetEntityFromIndex(const QModelIndex& index) const;
+        AZStd::optional<Prefab::EntityAlias> GetEntityAliasFromIndex(const QModelIndex& index) const;
 
         bool FilterEntity(const AZ::EntityId& entityId);
 
@@ -283,14 +285,15 @@ namespace AzToolsFramework
         Prefab::PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
 
-        Prefab::TemplateId m_rootTemplateId = Prefab::InvalidTemplateId;
+        //Prefab::TemplateId m_rootTemplateId = Prefab::InvalidTemplateId;
         Prefab::InstanceOptionalReference m_rootInstance;
 
         // TODO - rename this better
         void Generate();
 
-        QMap<QModelIndex, QString> m_itemNames;
-        QMap<QModelIndex, QString> m_itemAliases;
+        QMap<QModelIndex, QString> m_indexToNameMap;
+        QMap<QModelIndex, QString> m_indexToEntityAliasMap;
+        QMap<QString, QModelIndex> m_entityAliasToIndexMap;
         QMap<QModelIndex, QMap<int, QModelIndex>> m_indices;
     };
 }

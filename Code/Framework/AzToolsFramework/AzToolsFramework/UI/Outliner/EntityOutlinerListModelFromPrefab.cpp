@@ -106,7 +106,7 @@ namespace AzToolsFramework
         Prefab::InstanceOptionalReference rootPrefabInstance = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
         if (rootPrefabInstance.has_value())
         {
-            m_rootTemplateId = rootPrefabInstance->get().GetTemplateId();
+            //m_rootTemplateId = rootPrefabInstance->get().GetTemplateId();
             m_rootInstance = rootPrefabInstance;
             Generate();
         }
@@ -180,7 +180,7 @@ namespace AzToolsFramework
         }
 
         /*
-        auto id = GetEntityFromIndex(index);
+        auto id = GetEntityIdFromIndex(index);
         if (id.IsValid())
         {
             switch (index.column())
@@ -288,13 +288,13 @@ namespace AzToolsFramework
                     label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
                 }
                 */
-                return m_itemNames[index];
+                return m_indexToNameMap[index];
             }
             break;
         case Qt::ToolTipRole:
             {
                 //return GetEntityTooltip(id);
-                return m_itemNames[index];
+                return m_indexToNameMap[index];
             }
             break;
         case Qt::ForegroundRole:
@@ -1129,6 +1129,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModelFromPrefab::ProcessEntityUpdates()
     {
+        /*
         AZ_PROFILE_FUNCTION(Editor);
         if (!m_entityChangeQueued)
         {
@@ -1155,7 +1156,7 @@ namespace AzToolsFramework
 
             for (auto entityId : m_entityChangeQueue)
             {
-                if (const QModelIndex beginIndex = GetIndexFromEntity(entityId, ColumnName); beginIndex.isValid())
+                if (const QModelIndex beginIndex = GetIndexFromEntityId(entityId, ColumnName); beginIndex.isValid())
                 {
                     const QModelIndex endIndex = createIndex(beginIndex.row(), VisibleColumnCount - 1, beginIndex.internalId());
                     emit dataChanged(beginIndex, endIndex);
@@ -1182,6 +1183,7 @@ namespace AzToolsFramework
                 InvalidateFilter();
             }
         }
+        */
     }
 
     /*
@@ -1213,8 +1215,8 @@ namespace AzToolsFramework
         //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
         //so disallow selection updates until change is complete
         emit EnableSelectionUpdates(false);
-        auto parentIndex = GetIndexFromEntity(parentId);
-        auto childIndex = GetIndexFromEntity(childId);
+        auto parentIndex = GetIndexFromEntityId(parentId);
+        auto childIndex = GetIndexFromEntityId(childId);
         beginInsertRows(parentIndex, childIndex.row(), childIndex.row());
     }
 
@@ -1283,8 +1285,8 @@ namespace AzToolsFramework
         //so disallow selection updates until change is complete
         emit EnableSelectionUpdates(false);
 
-        auto parentIndex = GetIndexFromEntity(parentId);
-        auto childIndex = GetIndexFromEntity(childId);
+        auto parentIndex = GetIndexFromEntityId(parentId);
+        auto childIndex = GetIndexFromEntityId(childId);
         beginRemoveRows(parentIndex, childIndex.row(), childIndex.row());
     }
 
@@ -1382,18 +1384,29 @@ namespace AzToolsFramework
     }
     */
 
-    QModelIndex EntityOutlinerListModelFromPrefab::GetIndexFromEntity(const AZ::EntityId& entityId, int column) const
+    QModelIndex EntityOutlinerListModelFromPrefab::GetIndexFromEntity(AZ::EntityId entityId, int column) const
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (entityId.IsValid())
         {
-            AZ::EntityId parentId;
-            EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
+            auto entityAlias = m_rootInstance->get().GetEntityAlias(entityId);
+            if (entityAlias.has_value() && m_entityAliasToIndexMap.contains(entityAlias->get().c_str()))
+            {
+                return m_entityAliasToIndexMap[entityAlias->get().c_str()].siblingAtColumn(column);
+            }
+        }
 
-            AZStd::size_t row = 0;
-            EditorEntityInfoRequestBus::EventResult(row, parentId, &EditorEntityInfoRequestBus::Events::GetChildIndex, entityId);
-            return createIndex(static_cast<int>(row), column, static_cast<AZ::u64>(entityId));
+        return QModelIndex();
+    }
+
+    QModelIndex EntityOutlinerListModelFromPrefab::GetIndexFromEntityAlias(const Prefab::EntityAlias& entityAlias, int column) const
+    {
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        if (m_entityAliasToIndexMap.contains(entityAlias.c_str()))
+        {
+            return m_entityAliasToIndexMap[entityAlias.c_str()].siblingAtColumn(column);
         }
 
         return QModelIndex();
@@ -1401,12 +1414,22 @@ namespace AzToolsFramework
 
     AZ::EntityId EntityOutlinerListModelFromPrefab::GetEntityFromIndex(const QModelIndex& index) const
     {
-        if (m_itemAliases.contains(index))
+        if (m_indexToEntityAliasMap.contains(index))
         {
-            return m_rootInstance->get().GetEntityId(AZStd::string_view(m_itemAliases[index].toStdString().c_str()));
+            return m_rootInstance->get().GetEntityId(AZStd::string_view(m_indexToEntityAliasMap[index].toStdString().c_str()));
         }
 
         return AZ::EntityId();
+    }
+
+    AZStd::optional<Prefab::EntityAlias> EntityOutlinerListModelFromPrefab::GetEntityAliasFromIndex(const QModelIndex& index) const
+    {
+        if (m_indexToEntityAliasMap.contains(index))
+        {
+            return m_indexToEntityAliasMap[index].toStdString().c_str();
+        }
+
+        return AZStd::nullopt;
     }
 
     void EntityOutlinerListModelFromPrefab::SearchStringChanged(const AZStd::string& filter)
@@ -1841,14 +1864,18 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModelFromPrefab::OnEditorFocusChanged([[maybe_unused]] AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId)
     {
+        // TODO - This is not the right place for this, move to level initialization notification?
+
         // Gather the Template Id of the root prefab being edited.
         Prefab::InstanceOptionalReference rootPrefabInstance = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
         if (rootPrefabInstance.has_value())
         {
-            m_rootTemplateId = rootPrefabInstance->get().GetTemplateId();
+            //m_rootTemplateId = rootPrefabInstance->get().GetTemplateId();
             m_rootInstance = rootPrefabInstance;
             Generate();
         }
+
+        // TODO end
 
         // Ensure all descendants of the current focus root are expanded, so it is visible.
         ExpandAncestors(newFocusEntityId);
@@ -1856,13 +1883,14 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModelFromPrefab::Generate()
     {
-        if (m_rootTemplateId == Prefab::InvalidTemplateId)
+        if (!m_rootInstance.has_value() || !m_rootInstance->get().GetCachedInstanceDom().has_value())
         {
             return;
         }
 
-        const auto& rootDom = m_prefabSystemComponentInterface->FindTemplateDom(m_rootTemplateId);
+        const auto& rootDom = m_rootInstance->get().GetCachedInstanceDom()->get();
 
+        // TODO - Add function to create indices, either via unique strings or rand() addressing collisions just in case.
         QModelIndex containerEntityIndex = createIndex(0, 0, rand());
         AZStd::string containerEntityName = rootDom.FindMember("ContainerEntity")->value.FindMember("Name")->value.GetString();
         AZStd::string containerEntityAlias = rootDom.FindMember("ContainerEntity")->value.FindMember("Id")->value.GetString();
@@ -1870,8 +1898,8 @@ namespace AzToolsFramework
         // Container Entity
         beginInsertRows(QModelIndex(), 0, 0);
 
-        m_itemNames.insert(containerEntityIndex, containerEntityName.c_str());
-        m_itemAliases.insert(containerEntityIndex, containerEntityAlias.c_str());
+        m_indexToNameMap.insert(containerEntityIndex, containerEntityName.c_str());
+        m_indexToEntityAliasMap.insert(containerEntityIndex, containerEntityAlias.c_str());
         m_indices[QModelIndex()][0] = containerEntityIndex;
 
         endInsertRows();
@@ -1889,8 +1917,9 @@ namespace AzToolsFramework
             {
                 QModelIndex entityIndex = createIndex(i, 0, rand());
 
-                m_itemNames.insert(entityIndex, entityIter->name.GetString());
-                m_itemAliases.insert(entityIndex, entityIter->name.GetString());
+                m_indexToNameMap.insert(entityIndex, entityIter->name.GetString());
+                m_indexToEntityAliasMap.insert(entityIndex, entityIter->name.GetString());
+                m_entityAliasToIndexMap.insert(entityIter->name.GetString(), entityIndex);
                 m_indices[containerEntityIndex][i] = entityIndex;
                 ++i;
             }
