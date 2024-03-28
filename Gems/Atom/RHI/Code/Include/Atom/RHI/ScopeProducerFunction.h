@@ -45,8 +45,9 @@ namespace AZ::RHI
             UserDataParam&& userData,
             PrepareFunction prepareFunction,
             CompileFunction compileFunction = CompileFunction(),
-            ExecuteFunction executeFunction = ExecuteFunction())
-            : ScopeProducer(scopeId)
+            ExecuteFunction executeFunction = ExecuteFunction(),
+            int deviceIndex = RHI::MultiDevice::InvalidDeviceIndex)
+            : ScopeProducer(scopeId, deviceIndex)
             , m_userData{AZStd::forward<UserDataParam>(userData)}
             , m_prepareFunction{AZStd::move(prepareFunction)}
             , m_compileFunction{AZStd::move(compileFunction)}

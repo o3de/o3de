@@ -27,6 +27,11 @@ namespace AZ::RHI
         return m_deviceIndex;
     }
 
+    void Scope::SetDeviceIndex(int deviceIndex)
+    {
+        m_deviceIndex = deviceIndex;
+    }
+
     Device& Scope::GetDevice() const
     {
         return *RHISystemInterface::Get()->GetDevice(m_deviceIndex);
@@ -75,10 +80,9 @@ namespace AZ::RHI
         m_isActive = true;
     }
 
-    void Scope::Compile(int deviceIndex)
+    void Scope::Compile()
     {
         AZ_Assert(m_isActive, "Scope being compiled but is not active");
-        m_deviceIndex = deviceIndex;
         CompileInternal();
     }
 

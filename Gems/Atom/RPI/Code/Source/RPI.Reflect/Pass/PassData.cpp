@@ -52,6 +52,7 @@ namespace AZ
             {
                 serializeContext->Class<RenderPassData, PassData>()
                     ->Version(1)
+                    ->Field("DeviceIndex", &RenderPassData::m_deviceIndex)
                     ->Field("BindViewSrg", &RenderPassData::m_bindViewSrg)
                     ->Field("ShaderDataMappings", &RenderPassData::m_mappings);
             }
