@@ -19,7 +19,7 @@
 namespace AZ::Platform
 {
     AZ::IO::FixedMaxPath GetModulePath();
-    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen);
+    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen, bool globalSymbols);
     void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
     AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView& moduleName);
 }
@@ -32,26 +32,29 @@ namespace AZ
     public:
         AZ_CLASS_ALLOCATOR(DynamicModuleHandleUnixLike, OSAllocator)
 
-        DynamicModuleHandleUnixLike(const char* fullFileName)
+        DynamicModuleHandleUnixLike(const char* fullFileName, bool correctModuleName)
             : DynamicModuleHandle(fullFileName)
             , m_handle(nullptr)
         {
             AZ::IO::FixedMaxPath fullFilePath(AZStd::string_view{m_fileName});
-            if (fullFilePath.HasFilename())
+            if (correctModuleName)
             {
-                AZ::IO::FixedMaxPathString fileNamePath{fullFilePath.Filename().Native()};
-                if (!fileNamePath.starts_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
+                if (fullFilePath.HasFilename())
                 {
-                    fileNamePath = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + fileNamePath;
-                }
+                    AZ::IO::FixedMaxPathString fileNamePath{fullFilePath.Filename().Native()};
+                    if (!fileNamePath.starts_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
+                    {
+                        fileNamePath = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + fileNamePath;
+                    }
 
-                if (!fileNamePath.ends_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION))
-                {
-                    fileNamePath += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
-                }
+                    if (!fileNamePath.ends_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION))
+                    {
+                        fileNamePath += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+                    }
 
-                fullFilePath.ReplaceFilename(AZStd::string_view(fileNamePath));
-                m_fileName.assign(fullFilePath.Native().data(), fullFilePath.Native().size());
+                    fullFilePath.ReplaceFilename(AZStd::string_view(fileNamePath));
+                    m_fileName.assign(fullFilePath.Native().data(), fullFilePath.Native().size());
+                }
             }
 
             Platform::ConstructModuleFullFileName(fullFilePath);
@@ -129,12 +132,12 @@ namespace AZ
             Unload();
         }
 
-        LoadStatus LoadModule() override
+        LoadStatus LoadModule(bool globalSymbols) override
         {
             AZ::Debug::Trace::Instance().Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
             bool alreadyOpen = false;
 
-            m_handle = Platform::OpenModule(m_fileName, alreadyOpen);
+            m_handle = Platform::OpenModule(m_fileName, alreadyOpen, globalSymbols);
 
             if (m_handle)
             {
@@ -188,8 +191,8 @@ namespace AZ
     };
 
     // Implement the module creation function
-    AZStd::unique_ptr<DynamicModuleHandle> DynamicModuleHandle::Create(const char* fullFileName)
+    AZStd::unique_ptr<DynamicModuleHandle> DynamicModuleHandle::Create(const char* fullFileName, bool correctModuleName /*= true*/)
     {
-        return AZStd::unique_ptr<DynamicModuleHandle>(aznew DynamicModuleHandleUnixLike(fullFileName));
+        return AZStd::unique_ptr<DynamicModuleHandle>(aznew DynamicModuleHandleUnixLike(fullFileName, correctModuleName));
     }
 } // namespace AZ

@@ -58,6 +58,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(CheckBoxHandlerCommon, AZ::SystemAllocator);
         QWidget* CreateGUICommon(QWidget* parent);
+        void ResetValueCommon(PropertyCheckBoxCtrl* widget);
         void ConsumeAttributeCommon(PropertyCheckBoxCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
     };
 
@@ -85,6 +86,11 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(BoolPropertyCheckBoxHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget *parent) override;
+        bool ResetGUIToDefaults(PropertyCheckBoxCtrl* GUI) override
+        {
+            CheckBoxHandlerCommon::ResetValueCommon(GUI);
+            return true;
+        }
  
         void WriteGUIValuesIntoProperty(size_t index, PropertyCheckBoxCtrl* widget, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyCheckBoxCtrl* widget, const property_t& instance, InstanceDataNode* node)  override;
@@ -101,6 +107,11 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(CheckBoxGenericHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* parent) override;
+        bool ResetGUIToDefaults(PropertyCheckBoxCtrl* GUI) override
+        {
+            CheckBoxHandlerCommon::ResetValueCommon(GUI);
+            return true;
+        }
         AZ::u32 GetHandlerName() const override { return AZ::Edit::UIHandlers::CheckBox; }
         void WriteGUIValuesIntoProperty(size_t index, PropertyCheckBoxCtrl* widget, void* value, const AZ::Uuid& propertyType) override;
         bool ReadValueIntoGUI(size_t index, PropertyCheckBoxCtrl* widget, void* value, const AZ::Uuid& propertyType) override;

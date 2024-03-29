@@ -270,8 +270,12 @@ namespace AZ::IO::Requests
 
 namespace AZ::IO
 {
+    class Streamer_SchedulerTest_RequestSorting_Test;
+
     class FileRequest final
     {
+        friend Streamer_SchedulerTest_RequestSorting_Test;
+
     public:
         inline constexpr static AZStd::chrono::steady_clock::time_point s_noDeadlineTime = AZStd::chrono::steady_clock::time_point::max();
 
@@ -407,6 +411,7 @@ namespace AZ::IO
         friend class StreamerContext;
         friend class Scheduler;
         friend class Device;
+        friend class Streamer_SchedulerTest_RequestSorting_Test;
         friend bool operator==(const FileRequestHandle& lhs, const FileRequestPtr& rhs);
 
     public:

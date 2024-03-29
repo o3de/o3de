@@ -46,7 +46,6 @@
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
@@ -194,7 +193,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
         return validEntries[0];
     }
 
-    // return true if a given product has an asociated component type.
+    // return true if a given product has an associated component type.
     bool ProductHasAssociatedComponent(const ProductAssetBrowserEntry* product)
     {
         if (!product)
@@ -734,12 +733,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                                 &AzToolsFramework::SliceRelationshipRequests::OnSliceRelationshipViewRequested, product->GetAssetId());
                         });
                 }
-            }
-            else if (AzFramework::StringFunc::Equal(
-                         extension.c_str(), AzToolsFramework::Layers::EditorLayerComponent::GetLayerExtensionWithDot().c_str(), false))
-            {
-                QString levelPath = Path::GetPath(GetIEditor()->GetDocument()->GetActivePathName());
-                AzToolsFramework::Layers::EditorLayerComponent::CreateLayerAssetContextMenu(menu, fullFilePath, levelPath);
             }
 
             if (!products.empty() || (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))

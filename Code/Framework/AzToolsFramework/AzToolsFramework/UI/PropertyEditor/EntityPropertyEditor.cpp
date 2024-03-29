@@ -73,7 +73,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
@@ -929,17 +928,6 @@ namespace AzToolsFramework
             m_gui->m_entityNameEditor->setText(QString(name.c_str()));
             SelectedEntityNameChanged(entityId, name);
         }
-        bool isLayerEntity = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            isLayerEntity,
-            entityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-        if (isLayerEntity)
-        {
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                entityId,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::SetOverwriteFlag, true);
-        }
     }
 
     void EntityPropertyEditor::OnEntityStartStatusChanged(const AZ::EntityId& entityId)
@@ -974,7 +962,26 @@ namespace AzToolsFramework
                     prefabOverridePublicInterface->RevertComponentOverrides(
                         AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
                 }
-            });
+            }
+        );
+
+        QAction* applyAction = menu.addAction(QObject::tr("Apply Overrides"));
+        QObject::connect(
+            applyAction,
+            &QAction::triggered,
+            this,
+            [components]
+            {
+                if (auto prefabOverridePublicInterface =
+                        AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
+                {
+                    // Note: Multiple selection is not currently supported for overrides.
+                    // Revert overrides on the single component that's displaying override state.
+                    prefabOverridePublicInterface->ApplyComponentOverrides(
+                        AZ::EntityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId()));
+                }
+            }
+        );
 
         menu.exec(position);
     }
@@ -1150,28 +1157,9 @@ namespace AzToolsFramework
 
         for (AZ::EntityId selectedEntityId : selection)
         {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                isLayerEntity,
-                selectedEntityId,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
             bool isPrefabEntity = (m_prefabPublicInterface) ? m_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) : false;
 
-            if (isLayerEntity)
-            {
-                if (result == SelectionEntityTypeInfo::None)
-                {
-                    result = SelectionEntityTypeInfo::OnlyLayerEntities;
-                }
-                else if (result == SelectionEntityTypeInfo::OnlyStandardEntities)
-                {
-                    result = SelectionEntityTypeInfo::Mixed;
-                    // An entity of both layer and non-layer type have been found, so break out of the loop.
-                    break;
-                }
-            }
-            else if (isPrefabEntity)
+            if (isPrefabEntity)
             {
                 if (result == SelectionEntityTypeInfo::None)
                 {
@@ -1612,10 +1600,6 @@ namespace AzToolsFramework
     {
         for (auto component : components)
         {
-            if (component->RTTI_IsTypeOf(Layers::EditorLayerComponent::RTTI_Type()))
-            {
-                return false;
-            }
             if (!DoesComponentPassFilter(component, filter))
             {
                 auto editorComponentDescriptor = GetEditorComponentDescriptor(component);

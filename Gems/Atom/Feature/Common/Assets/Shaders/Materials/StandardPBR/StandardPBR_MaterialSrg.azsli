@@ -21,6 +21,7 @@
 #include "../MaterialInputs/EmissiveInput.azsli"
 #include "../MaterialInputs/ParallaxInput.azsli"
 #include "../MaterialInputs/UvSetCount.azsli"
+#include "../MaterialInputs/SilhouetteBlockerInput.azsli"
 
 #include <Atom/Features/SrgSemantics.azsli>
 

@@ -131,6 +131,8 @@ namespace AZ
             //! Do not set this in the shipping runtime unless you know what you are doing.
             void SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride);
 
+            Data::Instance<RPI::ShaderResourceGroup> GetShaderResourceGroup();
+
             const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             const Data::Asset<MaterialAsset>& GetAsset() const;

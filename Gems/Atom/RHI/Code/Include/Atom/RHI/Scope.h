@@ -117,6 +117,9 @@ namespace AZ::RHI
         //! Returns a list of fences to signal on completion of the scope.
         const AZStd::vector<Ptr<Fence>>& GetFencesToSignal() const;
 
+        //! Returns a list of fences to wait for before start of the scope.
+        const AZStd::vector<Ptr<Fence>>& GetFencesToWaitFor() const;
+
         //! Initializes the scope.
         void Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
 
@@ -239,6 +242,9 @@ namespace AZ::RHI
 
         /// The set of fences to signal on scope completion.
         AZStd::vector<Ptr<Fence>>                m_fencesToSignal;
+
+        /// The set of fences to wait for before scope has started.
+        AZStd::vector<Ptr<Fence>> m_fencesToWaitFor;
 
         /// The set query pools.
         AZStd::vector<Ptr<QueryPool>>                m_queryPools;

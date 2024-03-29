@@ -150,6 +150,8 @@ namespace AZ::RHI
         }
 
     private:
+        //! Safe-guard access to ImageView cache during parallel access
+        mutable AZStd::mutex m_imageViewMutex;
         //! A raw pointer to a multi-device image
         ConstPtr<RHI::MultiDeviceImage> m_image;
         //! The corresponding ImageViewDescriptor for this view.

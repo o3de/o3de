@@ -53,7 +53,7 @@ namespace AZ::RHI
             case DispatchType::Direct:
                 return DispatchArguments(m_direct);
             case DispatchType::Indirect:
-                return DispatchArguments(DispatchIndirect{m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get(), m_mdIndirect.m_countBufferByteOffset});
+                return DispatchArguments(DispatchIndirect{m_mdIndirect.m_maxSequenceCount, m_mdIndirect.m_indirectBufferView->GetDeviceIndirectBufferView(deviceIndex), m_mdIndirect.m_indirectBufferByteOffset, m_mdIndirect.m_countBuffer ? m_mdIndirect.m_countBuffer->GetDeviceBuffer(deviceIndex).get() : nullptr, m_mdIndirect.m_countBufferByteOffset});
             default:
                 return DispatchArguments();
             }
@@ -100,9 +100,17 @@ namespace AZ::RHI
             return m_deviceDispatchItems.at(deviceIndex);
         }
 
+        //! Retrieve arguments specifing a dispatch type.
+        const MultiDeviceDispatchArguments& GetArguments() const
+        {
+            return m_arguments;
+        }
+
         //! Arguments specific to a dispatch type.
         void SetArguments(const MultiDeviceDispatchArguments& arguments)
         {
+            m_arguments = arguments;
+
             for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
             {
                 dispatchItem.m_arguments = arguments.GetDeviceDispatchArguments(deviceIndex);
@@ -128,11 +136,11 @@ namespace AZ::RHI
 
         //! Array of shader resource groups to bind (count must match m_shaderResourceGroupCount).
         void SetShaderResourceGroups(
-            const AZStd::span<const MultiDeviceShaderResourceGroup*> shaderResourceGroups, uint8_t shaderResourceGroupCount)
+            const AZStd::span<const MultiDeviceShaderResourceGroup*> shaderResourceGroups)
         {
             for (auto& [deviceIndex, dispatchItem] : m_deviceDispatchItems)
             {
-                dispatchItem.m_shaderResourceGroupCount = shaderResourceGroupCount;
+                dispatchItem.m_shaderResourceGroupCount = static_cast<uint8_t>(shaderResourceGroups.size());
                 for (int i = 0; i < dispatchItem.m_shaderResourceGroupCount; ++i)
                 {
                     dispatchItem.m_shaderResourceGroups[i] = shaderResourceGroups[i]->GetDeviceShaderResourceGroup(deviceIndex).get();
@@ -162,6 +170,8 @@ namespace AZ::RHI
     private:
         //! A DeviceMask denoting on which devices a device-specific DispatchItem should be generated
         MultiDevice::DeviceMask m_deviceMask{ MultiDevice::DefaultDevice };
+        //! Caching the arguments for the corresponding getter.
+        MultiDeviceDispatchArguments m_arguments;
         //! A map of all device-specific DispatchItem, indexed by the device index
         AZStd::unordered_map<int, DispatchItem> m_deviceDispatchItems;
     };

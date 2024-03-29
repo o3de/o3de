@@ -39,6 +39,8 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator);
             AZ_RTTI(PrefabPublicHandler, "{35802943-6B60-430F-9DED-075E3A576A25}", PrefabPublicInterface);
 
+            PrefabPublicHandler();
+
             void RegisterPrefabPublicHandlerInterface();
             void UnregisterPrefabPublicHandlerInterface();
 
@@ -212,6 +214,8 @@ namespace AzToolsFramework
             PrefabFocusHandler m_prefabFocusHandler;
 
             uint64_t m_newEntityCounter = 1;
+
+            bool m_isRunningInEditor = true;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

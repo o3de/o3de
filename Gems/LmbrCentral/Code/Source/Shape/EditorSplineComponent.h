@@ -73,7 +73,7 @@ namespace LmbrCentral
 
         // SplineComponentRequestBus overrides ...
         AZ::SplinePtr GetSpline() override;
-        void ChangeSplineType(AZ::u64 splineType) override;
+        void ChangeSplineType(SplineType splineType) override;
         void SetClosed(bool closed) override;
 
         // SplineComponentRequestBus/VertexContainerInterface overrides ...

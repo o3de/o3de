@@ -64,6 +64,7 @@ ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject*
     : ApplicationManager(argc, argv, parent, AZStd::move(componentAppSettings))
 {
     qRegisterMetaType<AZ::u32>("AZ::u32");
+    qRegisterMetaType<AZ::u32>("AZ::s64");
     qRegisterMetaType<AZ::Uuid>("AZ::Uuid");
 }
 
@@ -408,17 +409,14 @@ void ApplicationManagerBase::InitAssetScanner()
     using namespace AssetProcessor;
     m_assetScanner = new AssetScanner(m_platformConfiguration);
 
-    // asset processor manager
+    // // wait until file cache is ready before attempting to build the catalog.
     QObject::connect(
-        m_assetScanner,
-        &AssetScanner::AssetScanningStatusChanged,
         m_assetProcessorManager,
-        [this](auto status)
+        &AssetProcessorManager::FileCacheIsReady, 
+        m_assetProcessorManager,
+        [this]()
         {
-            if (status == AssetProcessor::AssetScanningStatus::Completed)
-            {
-                InitAssetCatalog();
-            }
+            InitAssetCatalog();
         });
     QObject::connect(m_assetScanner, &AssetScanner::AssetScanningStatusChanged, m_assetProcessorManager, &AssetProcessorManager::OnAssetScannerStatusChange);
     QObject::connect(m_assetScanner, &AssetScanner::FilesFound,                 m_assetProcessorManager, &AssetProcessorManager::RecordFilesFromScanner);

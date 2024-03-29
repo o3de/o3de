@@ -89,7 +89,6 @@ namespace AzFramework
     namespace ApplicationInternal
     {
         static constexpr const char s_editorModeFeedbackKey[] = "/Amazon/Preferences/EnableEditorModeFeedback";
-        static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
         static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
         static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
         static constexpr const char* DeprecatedFileIOAliasesRoot = "/O3DE/AzCore/FileIO/DeprecatedAliases";
@@ -771,12 +770,8 @@ namespace AzFramework
 
     bool Application::IsPrefabSystemEnabled() const
     {
-        bool value = true;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(value, ApplicationInternal::s_prefabSystemKey);
-        }
-        return value;
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        return true;
     }
 
     bool Application::ArePrefabWipFeaturesEnabled() const
@@ -789,18 +784,15 @@ namespace AzFramework
         return value;
     }
 
-    void Application::SetPrefabSystemEnabled(bool enable)
+    void Application::SetPrefabSystemEnabled(bool /* enable */)
     {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(ApplicationInternal::s_prefabSystemKey, enable);
-        }
+        AZ_WarningOnce("Application", false, "'SetPrefabSystemEnabled' is deprecated, the editor only supports prefabs for level editing.");
     }
 
     bool Application::IsPrefabSystemForLevelsEnabled() const
     {
-        AZ_Warning("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, please use 'IsPrefabSystemEnabled' instead.");
-        return IsPrefabSystemEnabled();
+        AZ_WarningOnce("Application", false, "'IsPrefabSystemForLevelsEnabled' is deprecated, the editor only supports prefabs for level editing.");
+        return true;
     }
 
     bool Application::ShouldAssertForLegacySlicesUsage() const

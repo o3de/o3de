@@ -85,7 +85,7 @@ namespace AWSNativeSDKInit
 #endif // #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
     }
 
-    bool InitializationManager::PreventAwsEC2MetadataCalls(bool force = false)
+    bool InitializationManager::PreventAwsEC2MetadataCalls(bool force)
     {
         bool prevented = false;
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)

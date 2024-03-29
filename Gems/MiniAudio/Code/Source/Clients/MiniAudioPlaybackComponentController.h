@@ -45,7 +45,11 @@ namespace MiniAudio
         // MiniAudioPlaybackRequestBus
         void Play() override;
         void Stop() override;
-        void SetVolume(float volume) override;
+        void Pause() override;
+        void SetVolumePercentage(float volume) override;
+        float GetVolumePercentage() const override;
+        void SetVolumeDecibels(float volumeDecibels) override;
+        float GetVolumeDecibels() const override;
         void SetLooping(bool loop) override;
         bool IsLooping() const override;
         AZ::Data::Asset<SoundAsset> GetSoundAsset() const override;
@@ -60,8 +64,10 @@ namespace MiniAudio
         void SetOuterAngleInRadians(float outerAngleInRadians) override;
         float GetOuterAngleInDegrees() const override;
         void SetOuterAngleInDegrees(float outerAngleInDegrees) override;
-        float GetOuterVolume() const override;
-        void SetOuterVolume(float outerVolume) override;
+        float GetOuterVolumePercentage() const override;
+        void SetOuterVolumePercentage(float outerVolume) override;
+        float GetOuterVolumeDecibels() const override;
+        void SetOuterVolumeDecibels(float outerVolumeDecibels) override;
         bool GetFixedDirecion() const override;
         void SetFixedDirecion(bool fixedDirection) override;
         float GetDirectionalAttenuationFactor() const override;

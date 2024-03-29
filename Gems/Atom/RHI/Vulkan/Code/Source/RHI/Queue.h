@@ -59,7 +59,8 @@ namespace AZ
             RHI::ResultCode SubmitCommandBuffers(
                 const AZStd::vector<RHI::Ptr<CommandList>>& commandBuffers,
                 const AZStd::vector<Semaphore::WaitSemaphore>& waitSemaphoresInfo,
-                const AZStd::vector< RHI::Ptr<Semaphore>>& semaphoresToSignal,
+                const AZStd::vector<RHI::Ptr<Semaphore>>& semaphoresToSignal,
+                const AZStd::vector<RHI::Ptr<Fence>>& fencesToWaitFor,
                 Fence* fenceToSignal);
 
             /// Waits (blocks) until all fences are signaled in the fence-list.

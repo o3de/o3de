@@ -46,11 +46,3 @@ ly_associate_package(PACKAGE_NAME pyside2-5.15.2.1-py3.10-rev4-linux-aarch64    
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-linux-aarch64                           TARGETS SQLite                      PACKAGE_HASH 5cc1fd9294af72514eba60509414e58f1a268996940be31d0ab6919383f05118)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-linux-aarch64               TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 0bac80fc09094c4fd89a845af57ebe4ef86ff8d46e92a448c6986f9880f9ee62)
 ly_associate_package(PACKAGE_NAME vulkan-validationlayers-1.2.198-rev1-linux-aarch64         TARGETS vulkan-validationlayers     PACKAGE_HASH e67a15a95e14397ccdffd70d17f61079e5720fea22b0d21e135497312419a23f)
-
-set(AZ_USE_PHYSX5 OFF CACHE BOOL "When ON PhysX Gem will use PhysX 5 SDK")
-if(AZ_USE_PHYSX5)
-    ly_associate_package(PACKAGE_NAME PhysX-5.1.1-rev1-linux-aarch64                         TARGETS PhysX                       PACKAGE_HASH ba14e96fc4b85d5ef5dcf8c8ee58fd37ab92cfef790872d67c9a389aeca24c19)
-else()
-    ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-linux-aarch64                TARGETS PhysX                       PACKAGE_HASH 7fa00d7d4f7532cf068246d4e424ce319529dfa09fb759d251676f2c59f6d50c)
-endif()
-ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-5.1.1-rev1-linux-aarch64              TARGETS AWSGameLiftServerSDK        PACKAGE_HASH eb03413cb92fd64a8cd11abcf666a61ae62d4497d0dd2154e4ea2247aaf5aac7)

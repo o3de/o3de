@@ -485,7 +485,7 @@ namespace DebugDraw
                     worldLocation = textElement.m_worldLocation;
                 }
 
-                debugDisplay.DrawTextLabel(worldLocation, 1.4f, textElement.m_text.c_str() );
+                debugDisplay.DrawTextLabel(worldLocation, textElement.m_size, textElement.m_text.c_str(), textElement.m_centered);
             }
         }
 

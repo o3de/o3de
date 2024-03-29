@@ -32,8 +32,7 @@ namespace MiniAudio
                 ->Field("Max Distance", &MiniAudioPlaybackComponentConfig::m_maximumDistance)
                 ->Field("Inner Cone Angle", &MiniAudioPlaybackComponentConfig::m_innerAngleInDegrees)
                 ->Field("Outer Cone Angle", &MiniAudioPlaybackComponentConfig::m_outerAngleInDegrees)
-                ->Field("Outer Volume", &MiniAudioPlaybackComponentConfig::m_outerVolume)
-                ;
+                ->Field("Outer Volume", &MiniAudioPlaybackComponentConfig::m_outerVolume);
         }
     }
 } // namespace MiniAudio

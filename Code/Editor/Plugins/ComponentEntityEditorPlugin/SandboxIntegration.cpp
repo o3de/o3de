@@ -52,13 +52,10 @@
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Slice/SliceRequestBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
-#include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
-#include <AzToolsFramework/UI/Layer/AddToLayerMenu.h>
-#include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -186,7 +183,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-    AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
 
@@ -213,8 +209,6 @@ void SandboxIntegrationManager::Setup()
 
     m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
     AZ_Assert(m_readOnlyEntityPublicInterface, "SandboxIntegrationManager requires an ReadOnlyEntityPublicInterface instance to be present on Setup().");
-
-    AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
 
     m_contextMenuBottomHandler.Setup();
 }
@@ -402,9 +396,7 @@ void SandboxIntegrationManager::Teardown()
 {
     m_contextMenuBottomHandler.Teardown();
 
-    AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
-    AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
@@ -476,135 +468,6 @@ void SandboxIntegrationManager::OnEndUndo(const char* label, bool changed)
             }
         }
     }
-}
-
-void SandboxIntegrationManager::EntityParentChanged(
-    const AZ::EntityId entityId,
-    const AZ::EntityId newParentId,
-    const AZ::EntityId oldParentId)
-{
-    AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-    if (m_unsavedEntities.find(entityId) != m_unsavedEntities.end())
-    {
-        // New layers need the level to be saved.
-        bool isEntityLayer = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            isEntityLayer,
-            entityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-        if (isEntityLayer)
-        {
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                entityId,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::AddLevelSaveDependency);
-        }
-        // Don't need to track any other unsaved changes, this is a new entity that hasn't been saved yet.
-        return;
-    }
-
-    // If an entity is moved to or from a layer, then that layer can only safely be saved when the other layer or level saves, to prevent
-    // accidental duplication of entities.
-    // This logic doesn't clear the dependency flag if an entity changes parents multiple times between saves, so if an entity visits many layers
-    // before finally being saved, it will result in all of those layers saving, too.
-    AZ::EntityId oldAncestor = oldParentId;
-
-    AZ::EntityId oldLayer;
-    do
-    {
-        if (!oldAncestor.IsValid())
-        {
-            break;
-        }
-
-        bool isOldAncestorLayer = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            isOldAncestorLayer,
-            oldAncestor,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-        if (isOldAncestorLayer)
-        {
-            oldLayer = oldAncestor;
-            break;
-        }
-
-        // Must pass in an invalid id, because if no parent then nothing will modify the id variable to be invalid and stop at the no-parent case
-        AZ::EntityId nextParentId;
-        AZ::TransformBus::EventResult(
-            /*result*/ nextParentId,
-            /*address*/ oldAncestor,
-            &AZ::TransformBus::Events::GetParentId);
-        oldAncestor = nextParentId;
-    } while (oldAncestor.IsValid());
-
-    AZ::EntityId newAncestor = newParentId;
-
-    AZ::EntityId newLayer;
-    do
-    {
-        if (!newAncestor.IsValid())
-        {
-            break;
-        }
-
-        bool isNewAncestorLayer = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            isNewAncestorLayer,
-            newAncestor,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-        if (isNewAncestorLayer)
-        {
-            newLayer = newAncestor;
-            break;
-        }
-        // The parent may not be connected to the bus yet, so start with an invalid entity ID
-        // to prevent an infinite loop.
-        AZ::EntityId ancestorParent;
-        AZ::TransformBus::EventResult(
-            /*result*/ ancestorParent,
-            /*address*/ newAncestor,
-            &AZ::TransformBus::Events::GetParentId);
-        newAncestor = ancestorParent;
-    } while (newAncestor.IsValid());
-
-    if (oldLayer.IsValid() && newLayer != oldLayer)
-    {
-        if (newLayer.IsValid())
-        {
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                oldLayer,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::AddLayerSaveDependency,
-                newLayer);
-        }
-        else
-        {
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                oldLayer,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::AddLevelSaveDependency);
-        }
-    }
-
-    if (newLayer.IsValid() && newLayer != oldLayer)
-    {
-        if (oldLayer.IsValid())
-        {
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                newLayer,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::AddLayerSaveDependency,
-                oldLayer);
-        }
-        else
-        {
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                newLayer,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::AddLevelSaveDependency);
-        }
-    }
-}
-
-void SandboxIntegrationManager::OnSaveLevel()
-{
-    m_unsavedEntities.clear();
 }
 
 int SandboxIntegrationManager::GetMenuPosition() const
@@ -693,17 +556,12 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(
     {
         menu->addSeparator();
 
-        action = menu->addAction(QObject::tr("Create layer"));
-        QObject::connect(action, &QAction::triggered, [this] { ContextMenu_NewLayer(); });
-
         AzToolsFramework::EntityIdList entities;
         AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
             entities,
             &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-        SetupLayerContextMenu(menu);
         AzToolsFramework::EntityIdSet flattenedSelection = AzToolsFramework::GetCulledEntityHierarchy(entities);
-        AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
 
         SetupSliceContextMenu(menu);
 
@@ -802,84 +660,6 @@ void SandboxIntegrationManager::ClosePinnedInspector(AzToolsFramework::EntityPro
     }
 }
 
-void SandboxIntegrationManager::SetupLayerContextMenu(QMenu* menu)
-{
-    // First verify that the selection contains some layers.
-    AzToolsFramework::EntityIdList selectedEntities;
-    GetSelectedOrHighlightedEntities(selectedEntities);
-
-    // Nothing selected, no layer context menus to add.
-    if (selectedEntities.empty())
-    {
-        return;
-    }
-
-    AZStd::unordered_set<AZ::EntityId> layersInSelection;
-
-    for (AZ::EntityId entityId : selectedEntities)
-    {
-        bool isLayerEntity = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            isLayerEntity,
-            entityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-        if (isLayerEntity)
-        {
-            layersInSelection.insert(entityId);
-        }
-    }
-
-    // No layers directly selected, do not add context, even if a selected entity
-    // is a child of a layer.
-    if (layersInSelection.empty())
-    {
-        return;
-    }
-
-    menu->addSeparator();
-
-    const int selectedLayerCount = static_cast<int>(layersInSelection.size());
-    QString saveTitle = QObject::tr("Save layer");
-    if(selectedLayerCount > 1)
-    {
-        saveTitle = QObject::tr("Save %0 layers").arg(selectedLayerCount);
-    }
-
-    QAction* saveLayerAction = menu->addAction(saveTitle);
-    saveLayerAction->setToolTip(QObject::tr("Save the selected layers."));
-    QObject::connect(saveLayerAction, &QAction::triggered, [this, layersInSelection] { ContextMenu_SaveLayers(layersInSelection); });
-
-    if (layersInSelection.size() == 1)
-    {
-        const AZ::EntityId& id = *layersInSelection.begin();
-        AZ::Outcome<AZStd::string, AZStd::string> layerFullFilePathResult = AZ::Failure(AZStd::string());
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            layerFullFilePathResult,
-            id,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::GetLayerFullFilePath,
-            Path::GetPath(GetIEditor()->GetDocument()->GetActivePathName()));
-
-        // Only add option to find the layer in the Asset Browser if the layer has been saved to disk
-        if (layerFullFilePathResult.IsSuccess())
-        {
-            AZStd::string fullFilePath = layerFullFilePathResult.GetValue();
-
-            QAction* findLayerAssetAction = menu->addAction(QObject::tr("Find layer in Asset Browser"));
-            findLayerAssetAction->setToolTip(QObject::tr("Selects this layer in the Asset Browser"));
-            QObject::connect(findLayerAssetAction, &QAction::triggered, [fullFilePath] {
-                QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser);
-
-                AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(
-                    &AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Events::ClearFilter);
-
-                AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Broadcast(
-                    &AzToolsFramework::AssetBrowser::AssetBrowserViewRequestBus::Events::SelectFileAtPath,
-                    fullFilePath);
-            });
-        }
-    }
-}
-
 void SandboxIntegrationManager::SetupSliceContextMenu(QMenu* menu)
 {
     AZ_PROFILE_FUNCTION(Editor);
@@ -891,7 +671,6 @@ void SandboxIntegrationManager::SetupSliceContextMenu(QMenu* menu)
     if (!selectedEntities.empty())
     {
         bool anySelectedEntityFromExistingSlice = false;
-        bool layerInSelection = false;
         for (AZ::EntityId entityId : selectedEntities)
         {
             if (!anySelectedEntityFromExistingSlice)
@@ -903,38 +682,6 @@ void SandboxIntegrationManager::SetupSliceContextMenu(QMenu* menu)
                 {
                     anySelectedEntityFromExistingSlice = true;
                 }
-            }
-            if (!layerInSelection)
-            {
-                bool isLayerEntity = false;
-                AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                    isLayerEntity,
-                    entityId,
-                    &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-                if (isLayerEntity)
-                {
-                    layerInSelection = true;
-                }
-            }
-            // Everything being searched for was found, so exit the loop.
-            if (layerInSelection && anySelectedEntityFromExistingSlice)
-            {
-                break;
-            }
-        }
-
-        // Layers can't be in slices.
-        if (!layerInSelection)
-        {
-            QAction* createAction = menu->addAction(QObject::tr("Create slice..."));
-            createAction->setToolTip(QObject::tr("Creates a slice out of the currently selected entities."));
-            if (anySelectedEntityFromExistingSlice)
-            {
-                QObject::connect(createAction, &QAction::triggered, createAction, [this, selectedEntities] { ContextMenu_MakeSlice(selectedEntities); });
-            }
-            else
-            {
-                QObject::connect(createAction, &QAction::triggered, createAction, [this, selectedEntities] { ContextMenu_InheritSlice(selectedEntities); });
             }
         }
     }
@@ -1079,33 +826,9 @@ bool SandboxIntegrationManager::CanGoToEntityOrChildren(const AZ::EntityId& enti
         return false;
     }
 
-    // If this is a layer entity, check if the layer has any children that are visible in the viewport
-    bool isLayerEntity = false;
-    AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-        isLayerEntity,
-        entityId,
-        &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-    if (!isLayerEntity)
-    {
-        // Skip if this entity doesn't have a transform;
-        // UI entities and system components don't have transforms and thus aren't visible in the Editor viewport
-        return entity->GetTransform() != nullptr;
-    }
-
-    AZStd::vector<AZ::EntityId> layerChildren;
-    AZ::TransformBus::EventResult(
-        /*result*/ layerChildren,
-        /*address*/ entityId,
-        &AZ::TransformBus::Events::GetChildren);
-
-    for (const AZ::EntityId& childId : layerChildren)
-    {
-        if (CanGoToEntityOrChildren(childId))
-        {
-            return true;
-        }
-    }
-    return false;
+    // Skip if this entity doesn't have a transform;
+    // UI entities and system components don't have transforms and thus aren't visible in the Editor viewport
+    return entity->GetTransform() != nullptr;
 }
 
 AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
@@ -1157,20 +880,8 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
 
     if (!duplicationSet.empty())
     {
-        bool prefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (prefabSystemEnabled)
-        {
-            m_editorEntityAPI->DuplicateSelected();
-            handled = true;
-        }
-        else
-        {
-            AZStd::unordered_set<AZ::EntityId> clonedEntities;
-            handled = AzToolsFramework::CloneInstantiatedEntities(duplicationSet, clonedEntities);
-            m_unsavedEntities.insert(clonedEntities.begin(), clonedEntities.end());
-        }
+        m_editorEntityAPI->DuplicateSelected();
+        handled = true;
     }
     else
     {
@@ -1192,19 +903,8 @@ AZ::EntityId SandboxIntegrationManager::CreateNewEntity(AZ::EntityId parentId)
 {
     AZ::Vector3 position = AZ::Vector3::CreateZero();
 
-    bool parentIsValid = parentId.IsValid();
-    if (parentIsValid)
-    {
-        // If a valid parent is a Layer, we should get our position from the viewport as all Layers are positioned at 0,0,0.
-        bool parentIsLayer = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            parentIsLayer,
-            parentId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-        parentIsValid = !parentIsLayer;
-    }
     // If we have an invalid parent, base new entity's position on the viewport.
-    if (!parentIsValid)
+    if (!parentId.IsValid())
     {
         position = GetWorldPositionAtViewportCenter();
     }
@@ -1237,8 +937,6 @@ AZ::EntityId SandboxIntegrationManager::CreateNewEntityAtPosition(const AZ::Vect
 
         if (newEntityId.IsValid())
         {
-            m_unsavedEntities.insert(newEntityId);
-
             AZ::Transform transform = AZ::Transform::CreateIdentity();
             transform.SetTranslation(pos);
             if (parentId.IsValid())
@@ -1297,18 +995,17 @@ IEditor* SandboxIntegrationManager::GetEditor()
 //////////////////////////////////////////////////////////////////////////
 bool SandboxIntegrationManager::GetUndoSliceOverrideSaveValue()
 {
-    return GetIEditor()->GetEditorSettings()->m_undoSliceOverrideSaveValue;
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool SandboxIntegrationManager::GetShowCircularDependencyError()
 {
-    return GetIEditor()->GetEditorSettings()->m_showCircularDependencyError;
+    return true;
 }
 
-void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& showCircularDependencyError)
+void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& /* showCircularDependencyError */)
 {
-    GetIEditor()->GetEditorSettings()->m_showCircularDependencyError = showCircularDependencyError;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1337,34 +1034,6 @@ void SandboxIntegrationManager::OnPrepareForContextReset()
     objects.reserve(128);
     IObjectManager* objectManager = GetIEditor()->GetObjectManager();
     objectManager->FindObjectsOfType(OBJTYPE_AZENTITY, objects);
-}
-
-void SandboxIntegrationManager::OnSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/)
-{
-    // The instantiated slice isn't valid. Other systems will report this as an error.
-    // Bail out here, this is nothing to track in this case.
-    if (!sliceAddress.GetInstance())
-    {
-        return;
-    }
-
-    const AZ::SliceComponent::EntityIdToEntityIdMap& sliceInstanceEntityIdMap = sliceAddress.GetInstance()->GetEntityIdMap();
-
-    for (const auto& sliceInstantEntityIdPair : sliceInstanceEntityIdMap)
-    {
-        // The second in the pair is the local instance's entity ID.
-        m_unsavedEntities.insert(sliceInstantEntityIdPair.second);
-    }
-}
-
-void SandboxIntegrationManager::OnLayerComponentActivated(AZ::EntityId entityId)
-{
-    m_editorEntityUiInterface->RegisterEntity(entityId, m_layerUiOverrideHandler.GetHandlerId());
-}
-
-void SandboxIntegrationManager::OnLayerComponentDeactivated(AZ::EntityId entityId)
-{
-    m_editorEntityUiInterface->UnregisterEntity(entityId);
 }
 
 void SandboxIntegrationManager::OnActionRegistrationHook()
@@ -1491,134 +1160,6 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     CreateNewEntityAtPosition(worldPosition);
 }
 
-AZ::EntityId SandboxIntegrationManager::ContextMenu_NewLayer()
-{
-    const int objectCount = GetIEditor()->GetObjectManager()->GetObjectCount();
-    const AZStd::string name = AZStd::string::format("Layer%d", objectCount + 1);
-
-    // Make sure the color is created fully opaque.
-    static QColor newLayerDefaultColor = GetIEditor()->GetColorByName("NewLayerDefaultColor");
-    AZ::Color newLayerColor(
-        aznumeric_cast<float>(newLayerDefaultColor.redF()),
-        aznumeric_cast<float>(newLayerDefaultColor.greenF()),
-        aznumeric_cast<float>(newLayerDefaultColor.blueF()),
-        aznumeric_cast<float>(newLayerDefaultColor.alphaF()));
-
-    AZ::EntityId newEntityId = AzToolsFramework::Layers::EditorLayerComponent::CreateLayerEntity(
-        name, newLayerColor, AzToolsFramework::Layers::LayerProperties::SaveFormat::Xml);
-    if (!newEntityId.IsValid())
-    {
-        // CreateLayerEntity already handled reporting errors if it couldn't make a new layer.
-        return AZ::EntityId();
-    }
-    m_unsavedEntities.insert(newEntityId);
-
-    return newEntityId;
-}
-
-void SandboxIntegrationManager::ContextMenu_SaveLayers(const AZStd::unordered_set<AZ::EntityId>& layers)
-{
-    AZStd::unordered_map<AZStd::string, int> nameConflictMapping;
-    for (AZ::EntityId layerEntityId : layers)
-    {
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-            layerEntityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::UpdateLayerNameConflictMapping,
-            nameConflictMapping);
-    }
-
-    if (!nameConflictMapping.empty())
-    {
-        AzToolsFramework::Layers::NameConflictWarning* nameConflictWarning = new AzToolsFramework::Layers::NameConflictWarning(GetMainWindow(), nameConflictMapping);
-        nameConflictWarning->exec();
-        return;
-    }
-
-    AZStd::unordered_set<AZ::EntityId> allLayersToSave(layers);
-    bool mustSaveLevel = false;
-    bool mustSaveOtherContent = false;
-
-    for (AZ::EntityId layerEntityId : layers)
-    {
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            mustSaveOtherContent,
-            layerEntityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::GatherSaveDependencies,
-            allLayersToSave,
-            mustSaveLevel);
-    }
-
-    if (mustSaveOtherContent)
-    {
-        QWidget* mainWindow = nullptr;
-        AzToolsFramework::EditorRequestBus::BroadcastResult(
-            mainWindow,
-            &AzToolsFramework::EditorRequestBus::Events::GetMainWindow);
-        QMessageBox saveAdditionalContentMessage(mainWindow);
-        saveAdditionalContentMessage.setWindowTitle(QObject::tr("Unsaved content"));
-        saveAdditionalContentMessage.setText(QObject::tr("You have moved entities to or from the layer(s) that you are trying to save."));
-        if (mustSaveLevel)
-        {
-            saveAdditionalContentMessage.setInformativeText(QObject::tr("The level and all layers will be saved."));
-
-        }
-        else
-        {
-            saveAdditionalContentMessage.setInformativeText(QObject::tr("All relevant layers will be saved."));
-        }
-        saveAdditionalContentMessage.setIcon(QMessageBox::Warning);
-        saveAdditionalContentMessage.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-        saveAdditionalContentMessage.setDefaultButton(QMessageBox::Save);
-        int saveAdditionalContentMessageResult = saveAdditionalContentMessage.exec();
-        switch (saveAdditionalContentMessageResult)
-        {
-        case QMessageBox::Cancel:
-            // The user chose to cancel this operation.
-            return;
-        case QMessageBox::Save:
-        default:
-            break;
-        }
-
-        if (mustSaveLevel)
-        {
-            // Saving the level causes all layers to save.
-            GetIEditor()->GetDocument()->Save();
-            return;
-        }
-    }
-
-    QString levelAbsoluteFolder = Path::GetPath(GetIEditor()->GetDocument()->GetActivePathName());
-
-    // Not used here, but needed for the ebus event.
-    AZStd::vector<AZ::Entity*> layerEntities;
-    AZ::SliceComponent::SliceReferenceToInstancePtrs instancesInLayers;
-    for (AZ::EntityId layerEntityId : allLayersToSave)
-    {
-        AzToolsFramework::Layers::LayerResult layerSaveResult(AzToolsFramework::Layers::LayerResult::CreateSuccess());
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-            layerSaveResult,
-            layerEntityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::WriteLayerAndGetEntities,
-            levelAbsoluteFolder,
-            layerEntities,
-            instancesInLayers);
-
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-            layerEntityId,
-            &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::RestoreEditorData);
-        layerSaveResult.MessageResult();
-
-        m_unsavedEntities.erase(layerEntityId);
-    }
-
-    // Update the unsaved entities list so these entities are no longer tracked as unsaved.
-    for (const AZ::Entity* entity : layerEntities)
-    {
-        m_unsavedEntities.erase(entity->GetId());
-    }
-}
-
 void SandboxIntegrationManager::ContextMenu_MakeSlice(AzToolsFramework::EntityIdList entities)
 {
     QChar bulletChar(0x2022);
@@ -1685,48 +1226,20 @@ void SandboxIntegrationManager::InstantiateSliceFromAssetId(const AZ::Data::Asse
 // Returns true if at least one non-layer entity was found.
 bool CollectEntityBoundingBoxesForZoom(const AZ::EntityId& entityId, AABB& selectionBounds)
 {
-    bool isLayerEntity = false;
-    AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-        isLayerEntity,
-        entityId,
-        &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+    AABB entityBoundingBox;
+    CEntityObject* componentEntityObject = nullptr;
+    AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
+        /*result*/ componentEntityObject,
+        /*address*/ entityId,
+        &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
 
-    if (isLayerEntity)
+    if (componentEntityObject)
     {
-        // If a layer is in the selection, zoom to its children and ignore the layer itself.
-        AZStd::vector<AZ::EntityId> layerChildren;
-        AZ::TransformBus::EventResult(
-            /*result*/ layerChildren,
-            /*address*/ entityId,
-            &AZ::TransformBus::Events::GetChildren);
-        bool childResults = false;
-        for (const AZ::EntityId& childId : layerChildren)
-        {
-            if (CollectEntityBoundingBoxesForZoom(childId, selectionBounds))
-            {
-                // At least one child is not a layer.
-                childResults = true;
-            }
-        }
-        return childResults;
+        componentEntityObject->GetBoundBox(entityBoundingBox);
+        selectionBounds.Add(entityBoundingBox.min);
+        selectionBounds.Add(entityBoundingBox.max);
     }
-    else
-    {
-        AABB entityBoundingBox;
-        CEntityObject* componentEntityObject = nullptr;
-        AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
-            /*result*/ componentEntityObject,
-            /*address*/ entityId,
-            &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
-
-        if (componentEntityObject)
-        {
-            componentEntityObject->GetBoundBox(entityBoundingBox);
-            selectionBounds.Add(entityBoundingBox.min);
-            selectionBounds.Add(entityBoundingBox.max);
-        }
-        return true;
-    }
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

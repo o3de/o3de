@@ -45,10 +45,3 @@ ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev1-mac                            
 ly_associate_package(PACKAGE_NAME azslc-1.8.19-rev1-mac                             TARGETS azslc                       PACKAGE_HASH f3ca6bb1dc44ffe3470aa589bbbbb39cc4c2e7faa8c9f7760388aa41f06b4cce)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev2-mac                            TARGETS SQLite                      PACKAGE_HASH b7d9abdb68045003e030e1a9a805db1aefa5e8fde6dccfbb4fab3a06249a41fc)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev2-mac                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 4854edb7b88fa6437b4e69e87d0ee111a25313ac2a2db5bb2f8b674ba0974f95)
-
-set(AZ_USE_PHYSX5 OFF CACHE BOOL "When ON PhysX Gem will use PhysX 5 SDK")
-if(AZ_USE_PHYSX5)
-    ly_associate_package(PACKAGE_NAME PhysX-5.1.1-rev1-mac                              TARGETS PhysX                       PACKAGE_HASH 1c227e795f43bd0e4f27d352b2d8f75d1e089ef5ba6bf472f478a1169b71db4d)
-else()
-    ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-mac                     TARGETS PhysX                       PACKAGE_HASH 83940b3876115db82cd8ffcb9e902278e75846d6ad94a41e135b155cee1ee186)
-endif()

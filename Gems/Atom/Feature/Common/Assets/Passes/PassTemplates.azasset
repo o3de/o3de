@@ -485,6 +485,14 @@
                 "Path": "Passes/OpaqueParent.pass"
             },
             {
+                "Name": "SilhouettePassTemplate",
+                "Path": "Passes/Silhouette.pass"
+            },
+            {
+                "Name": "SilhouetteGatherPassTemplate",
+                "Path": "Passes/SilhouetteGather.pass"
+            },
+            {
                 "Name": "ToolsPipeline",
                 "Path": "Passes/ToolsPipeline.pass"
             },
