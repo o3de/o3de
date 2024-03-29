@@ -65,10 +65,7 @@ namespace LuaBuilder
                     const auto it = AssetExtensionReplacementMap.find(path.HasExtension() ? path.Extension().String() : "");
                     if (it != AssetExtensionReplacementMap.end())
                     {
-                        const AZStd::string assetExtension = it->second;
-                        path = assetExtension.empty()
-                            ? AZ::IO::Path(path.ParentPath()).Append(path.Stem()) // remove extension
-                            : path.ReplaceExtension(assetExtension.c_str());
+                        path.ReplaceExtension(it->second.c_str());
                     }
 
                     if (!assetSystem->GetSourceInfoBySourcePath(path.c_str(), assetInfo, watchFolder))
