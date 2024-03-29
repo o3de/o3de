@@ -1440,7 +1440,7 @@ bool AZ::FFont::InitTexture()
     const Name imageName(m_name.c_str());
 
     Data::Instance<RPI::AttachmentImagePool> imagePool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
-    RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, rhiImageFormat);  // TODO check flag
+    RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, rhiImageFormat);
     m_fontAttachmentImage = RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, imageName);
 
     m_fontImage = m_fontAttachmentImage->GetRHIImage();
@@ -1526,16 +1526,6 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
         UpdateTexture();
         m_fontTexDirty = false;
         ++m_fontImageVersion;
-        /*
-        // to debug particular font increments, this helps defining the right texture size by the images analysis
-        //if (m_name == "fonts/some.font")
-        {
-            AZStd::string fontFilePath =
-            AZStd::string::format("@user@/%s_%02d.bmp", m_name.c_str(), GetFontTextureVersion());
-            AZ_Info("FFont", "Save %s", fontFilePath.c_str());
-            GetFontTexture()->WriteToFile(fontFilePath.c_str());
-        }
-        */
         // Let any listeners know that the font texture has changed
         // TODO Update to an AZ::Event when Cry use of this bus is cleaned out.
         FontNotificationBus::Broadcast(&FontNotificationBus::Events::OnFontTextureUpdated, this);
