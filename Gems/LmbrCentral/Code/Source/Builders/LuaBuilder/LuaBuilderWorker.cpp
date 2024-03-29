@@ -33,11 +33,9 @@ namespace LuaBuilder
 {
     namespace
     {
-// carbonated begin
 #if defined(CARBONATED)
         static const AZStd::unordered_map<AZStd::string, AZStd::string> AssetExtensionReplacementMap =
         {
-            {"",                 ".lua"},     // assume that a file without extension maybe a lua file
             {".luac",            ".lua"},     // ".luac" is generated from ".lua"
             {".dynamicslice",    ".slice"},   // ".dynamicslice" is generated from ".slice"
             {".spawnable",       ".prefab"},  // ".spawnable" is generated from ".prefab"
@@ -45,7 +43,6 @@ namespace LuaBuilder
                                               // it does not work for o3de engine image assets, due to they are placed into Cache with specific rules for their folder names
         };
 #endif
-// carbonated end
 
         AZStd::vector<AZ::Data::Asset<AZ::ScriptAsset>> ConvertToAssets(AssetBuilderSDK::ProductPathDependencySet& dependencySet)
         {
@@ -57,34 +54,40 @@ namespace LuaBuilder
                 {
                     AZStd::string watchFolder;
                     AZ::Data::AssetInfo assetInfo;
-// carbonated begin
 #if defined(CARBONATED)
                     AZ::IO::Path path(dependency.m_dependencyPath.starts_with("/") || dependency.m_dependencyPath.starts_with("\\")
                         ? dependency.m_dependencyPath.substr(1) : dependency.m_dependencyPath); // path should not start from a path delimiter
 
-                    const auto it = AssetExtensionReplacementMap.find(path.HasExtension() ? path.Extension().String() : "");
-                    if (it != AssetExtensionReplacementMap.end())
+                    if (path.HasExtension())
                     {
-                        path.ReplaceExtension(it->second.c_str());
-                    }
+                        const auto it = AssetExtensionReplacementMap.find(path.Extension().String());
+                        if (it != AssetExtensionReplacementMap.end())
+                        {
+                            path.ReplaceExtension(it->second.c_str());
+                        }
 
-                    if (!assetSystem->GetSourceInfoBySourcePath(path.c_str(), assetInfo, watchFolder))
-                    {
-                        AZ_Warning("LuaBuilder", false, "Did not find dependency '%s' referenced by script (or it is not an asset path).", dependency.m_dependencyPath.c_str());
-                    }
-                    else if (assetInfo.m_assetId.IsValid())
-                    {
-                        AZ::Data::Asset<AZ::ScriptAsset> asset(AZ::Data::AssetId
-                            ( assetInfo.m_assetId.m_guid
-                            , AZ::ScriptAsset::CompiledAssetSubId)
-                            , azrtti_typeid<AZ::ScriptAsset>());
-                        asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-                        assets.push_back(asset);
+                        if (!assetSystem->GetSourceInfoBySourcePath(path.c_str(), assetInfo, watchFolder))
+                        {
+                            AZ_Warning("LuaBuilder", false, "Did not find dependency '%s' referenced by script (or it is not an asset path).", dependency.m_dependencyPath.c_str());
+                        }
+                        else if (assetInfo.m_assetId.IsValid())
+                        {
+                            AZ::Data::Asset<AZ::ScriptAsset> asset(AZ::Data::AssetId
+                            (assetInfo.m_assetId.m_guid
+                                , AZ::ScriptAsset::CompiledAssetSubId)
+                                , azrtti_typeid<AZ::ScriptAsset>());
+                            asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+                            assets.push_back(asset);
+                        }
+                        else
+                        {
+                            AZ_Warning("LuaBuilder", false, "String '%s' is not a valid asset, will not add to dependency list.", dependency.m_dependencyPath.c_str());
+                            AZ_Warning("LuaBuilder", false, "Also check the replacement rules in AssetExtensionReplacementMap in %s", __FILE__);
+                        }
                     }
                     else
                     {
-                        AZ_Warning("LuaBuilder", false, "String '%s' is not a valid asset, will not add to dependency list.", dependency.m_dependencyPath.c_str());
-                        AZ_Warning("LuaBuilder", false, "Also check the replacement rules in AssetExtensionReplacementMap in %s", __FILE__);
+                        AZ_Info("LuaBuilder", "Not an asset path. Skipped: '%s'", dependency.m_dependencyPath.c_str());
                     }
 #else
                     AZ::IO::Path path(dependency.m_dependencyPath);
@@ -113,7 +116,6 @@ namespace LuaBuilder
                             dependency.m_dependencyPath.c_str());
                     }
 #endif
-// carbonated end
                 }
             }
             else
