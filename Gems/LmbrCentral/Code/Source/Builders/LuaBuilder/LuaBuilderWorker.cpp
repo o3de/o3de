@@ -35,7 +35,7 @@ namespace LuaBuilder
     {
 // carbonated begin
 #if defined(CARBONATED)
-        static const AZStd::unordered_map<AZStd::string, AZStd::string> generatedAssetExtensionMap =
+        static const AZStd::unordered_map<AZStd::string, AZStd::string> AssetExtensionReplacementMap =
         {
             {"",                 ".lua"},     // assume that a file without extension maybe a lua file
             {".luac",            ".lua"},     // ".luac" is generated from ".lua"
@@ -62,18 +62,18 @@ namespace LuaBuilder
                     AZ::IO::Path path(dependency.m_dependencyPath.starts_with("/") || dependency.m_dependencyPath.starts_with("\\")
                         ? dependency.m_dependencyPath.substr(1) : dependency.m_dependencyPath); // path should not start from a path delimiter
 
-                    const auto it = generatedAssetExtensionMap.find(path.HasExtension() ? path.Extension().String() : "");
-                    if (it != generatedAssetExtensionMap.end())
+                    const auto it = AssetExtensionReplacementMap.find(path.HasExtension() ? path.Extension().String() : "");
+                    if (it != AssetExtensionReplacementMap.end())
                     {
                         const AZStd::string assetExtension = it->second;
                         path = assetExtension.empty()
-                            ? path.Filename().String() // remove extension
+                            ? AZ::IO::Path(path.ParentPath()).Append(path.Stem()) // remove extension
                             : path.ReplaceExtension(assetExtension.c_str());
                     }
 
                     if (!assetSystem->GetSourceInfoBySourcePath(path.c_str(), assetInfo, watchFolder))
                     {
-                        AZ_Warning("LuaBuilder", false, "Did not find dependency %s referenced by script (or it is not an asset path).", dependency.m_dependencyPath.c_str());
+                        AZ_Warning("LuaBuilder", false, "Did not find dependency '%s' referenced by script (or it is not an asset path).", dependency.m_dependencyPath.c_str());
                     }
                     else if (assetInfo.m_assetId.IsValid())
                     {
@@ -87,6 +87,7 @@ namespace LuaBuilder
                     else
                     {
                         AZ_Warning("LuaBuilder", false, "String '%s' is not a valid asset, will not add to dependency list.", dependency.m_dependencyPath.c_str());
+                        AZ_Warning("LuaBuilder", false, "Also check the replacement rules in AssetExtensionReplacementMap in %s", __FILE__);
                     }
 #else
                     AZ::IO::Path path(dependency.m_dependencyPath);
@@ -103,7 +104,7 @@ namespace LuaBuilder
                         asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                         assets.push_back(asset);
                     }
-                    else if (isLuaDependency)
+                    else if(isLuaDependency)
                     {
                         AZ_Error("LuaBuilder", false, "Did not find dependency %s referenced by script.", dependency.m_dependencyPath.c_str());
                     }
