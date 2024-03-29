@@ -12,7 +12,7 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
-                        "LoadAction": "DontCare",
+                        "LoadAction": "Load",
                         "StoreAction": "Store"
                     }
                 },
