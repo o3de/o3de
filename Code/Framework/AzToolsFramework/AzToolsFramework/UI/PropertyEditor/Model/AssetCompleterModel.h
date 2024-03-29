@@ -36,7 +36,7 @@ namespace AzToolsFramework
         void SetFilter(const AZStd::vector<AZ::Data::AssetType>& assetTypes);
         void SetFilter(FilterConstType filter);
         void RefreshAssetList();
-        void SearchStringHighlight(QString searchString);
+        void SearchStringHighlight(const QString& searchString);
 
         Qt::ItemFlags flags(const QModelIndex &index) const override;
 

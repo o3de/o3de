@@ -47,6 +47,7 @@ namespace GraphModel
                 ->Constructor<const SlotName&>()
                 ->Constructor<const SlotName&, SlotSubId>()
                 ->Method("__repr__", &SlotId::ToString)
+                ->Method("ToString", &SlotId::ToString)
                 ->Method("IsValid", &SlotId::IsValid)
                 ->Method("GetHash", &SlotId::GetHash)
                 ->Property("name", BehaviorValueProperty(&SlotId::m_name))

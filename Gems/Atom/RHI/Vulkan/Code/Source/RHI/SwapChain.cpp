@@ -95,12 +95,9 @@ namespace AZ
             }
         }
 
-        void SwapChain::SetNameInternal(const AZStd::string_view& name)
+        void SwapChain::SetNameInternal([[maybe_unused]] const AZStd::string_view& name)
         {
-            if ((m_nativeSwapChain != VK_NULL_HANDLE) && IsInitialized() && !name.empty())
-            {
-                Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_nativeSwapChain), name.data(), VK_OBJECT_TYPE_SWAPCHAIN_KHR, static_cast<Device&>(GetDevice()));
-            }
+            // On some GPUs, like the Adreno 740, setting the name of the swapchain causes a crash, so we don't do it.
         }
 
         RHI::ResultCode SwapChain::InitInternal(RHI::Device& baseDevice, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)

@@ -419,7 +419,7 @@ namespace AZ
                 );
                 AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialEditorActionIdentifier.data());
 
-                hotKeyManagerInterface->SetActionHotKey(MaterialEditorActionIdentifier, "M");
+                hotKeyManagerInterface->SetActionHotKey(MaterialEditorActionIdentifier, "Ctrl+M");
             }
 
             {
