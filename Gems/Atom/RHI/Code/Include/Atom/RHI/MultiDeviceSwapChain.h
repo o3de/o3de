@@ -40,6 +40,8 @@ namespace AZ::RHI
         //! it is explicitly initialized with just a deviceIndex
         ResultCode Init(int deviceIndex, const SwapChainDescriptor& descriptor);
 
+        Ptr<SwapChain> GetDeviceSwapChain() const;
+
         //! Presents the swap chain to the display, and rotates the images.
         void Present();
 

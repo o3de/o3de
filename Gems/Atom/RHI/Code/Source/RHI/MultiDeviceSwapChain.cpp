@@ -85,6 +85,12 @@ namespace AZ::RHI
         return resultCode;
     }
 
+    Ptr<SwapChain> MultiDeviceSwapChain::GetDeviceSwapChain() const
+    {
+        // As MultiDeviceSwapChain is always initialized for one single device, the method returns this single item by accessing map.begin()
+        return AZStd::static_pointer_cast<SwapChain>(m_deviceObjects.begin()->second);
+    }
+
     void MultiDeviceSwapChain::ShutdownImages()
     {
         // Shutdown existing set of images.
@@ -232,10 +238,18 @@ namespace AZ::RHI
 
     void MultiDeviceSwapChain::ProcessRecreation()
     {
-        IterateObjects<SwapChain>([]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
+        auto recreated{ false };
+        IterateObjects<SwapChain>(
+            [&recreated]([[maybe_unused]] auto deviceIndex, auto deviceSwapChain)
+            {
+                recreated = deviceSwapChain->ProcessRecreation();
+            });
+
+        if (recreated)
         {
-            deviceSwapChain->ProcessRecreation();
-        });
+            ShutdownImages();
+            InitImages();
+        }
     }
 
     uint32_t MultiDeviceSwapChain::GetImageCount() const

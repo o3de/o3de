@@ -52,14 +52,9 @@ then
     exit 1
 fi
 
-if [ "$LY_3RDPARTY_PATH" == "" ]
-then
-    LY_3RDPARTY_PATH=$HOME/.o3de/3rdParty
-fi
-
 # Set the expected location of the python venv for this engine and the locations of the critical scripts/executables 
 # needed to run python within the venv properly
-PYTHON_VENV=$LY_3RDPARTY_PATH/venv/$ENGINE_ID
+PYTHON_VENV=$HOME/.o3de/Python/venv/$ENGINE_ID
 PYTHON_VENV_ACTIVATE=$PYTHON_VENV/bin/activate
 PYTHON_VENV_PYTHON=$PYTHON_VENV/bin/python
 if [ ! -f $PYTHON_VENV_PYTHON ]
@@ -96,5 +91,5 @@ source $PYTHON_VENV_ACTIVATE
 # is the one that is loaded by injecting the shared lib path before invoking python. Otherwise,
 # the shared library may not be found or it could load it from a different location.
 PYTHON_LIB_PATH=$PYTHON_VENV/lib
-PYTHONNOUSERSITE=1 LD_LIBRARY_PATH="$PYTHON_LIB_PATH:$LD_LIBRARY_PATH" "$PYTHON_VENV_PYTHON" "$@"
+PYTHONNOUSERSITE=1 LD_LIBRARY_PATH="$PYTHON_LIB_PATH:$LD_LIBRARY_PATH" PYTHONPATH= "$PYTHON_VENV_PYTHON" "$@"
 exit $?

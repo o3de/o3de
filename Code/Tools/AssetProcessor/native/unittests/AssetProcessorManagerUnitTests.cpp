@@ -25,11 +25,11 @@ namespace AssetProcessor
     using namespace AzToolsFramework::AssetSystem;
     using namespace AzToolsFramework::AssetDatabase;
 
-    class AssetProcessorManager_Test
+    class AssetProcessorManagerUnit_Test
         : public AssetProcessorManager
     {
     public:
-        explicit AssetProcessorManager_Test(PlatformConfiguration* config, QObject* parent = 0)
+        explicit AssetProcessorManagerUnit_Test(PlatformConfiguration* config, QObject* parent = 0)
             : AssetProcessorManager(config, parent)
         {}
 
@@ -105,7 +105,7 @@ namespace AssetProcessor
         m_config.AddMetaDataType("exportsettings", QString());
 
         // Configure asset processor manager
-        m_assetProcessorManager = AZStd::make_unique<AssetProcessorManager_Test>(&m_config);  // note, this will 'push' the scan folders in to the db.
+        m_assetProcessorManager = AZStd::make_unique<AssetProcessorManagerUnit_Test>(&m_config);  // note, this will 'push' the scan folders in to the db.
 
         m_assetProcessorConnections.append(connect(m_assetProcessorManager.get(), &AssetProcessorManager::AssetToProcess,
             this, [&](JobDetails details)
@@ -2505,7 +2505,7 @@ namespace AssetProcessor
 
         {
             // create this, which will write those scan folders into the db as-is
-            AssetProcessorManager_Test apm(&config2);
+            AssetProcessorManagerUnit_Test apm(&config2);
             apm.CheckMissingFiles();
         }
 

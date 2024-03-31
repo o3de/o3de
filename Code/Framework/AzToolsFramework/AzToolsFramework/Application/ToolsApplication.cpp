@@ -1441,38 +1441,6 @@ namespace AzToolsFramework
         }
 
         m_dirtyEntities.insert(entityId);
-
-        // Check if this dirty entity is in a layer by walking up its parenting hierarchy.
-        // If it's in a layer, mark that layer as having unsaved changes.
-        do
-        {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                isLayerEntity,
-                entityId,
-                &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-            if (isLayerEntity)
-            {
-                AzToolsFramework::Layers::EditorLayerComponentRequestBus::Event(
-                    entityId,
-                    &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::MarkLayerWithUnsavedChanges);
-                break;
-            }
-            AZ::EntityId parentId;
-            AZ::TransformBus::EventResult(
-                parentId,
-                entityId,
-                &AZ::TransformBus::Events::GetParentId);
-            if (entityId == parentId)
-            {
-                // Stop when the first parent layer is found.
-                // If this layer is nested in another layer, only the most immediate
-                // layer should be marked as dirty. Layer hierarchy and parenting is
-                // mostly for visual organization, entities only exist in one layer on disk.
-                break;
-            }
-            entityId = parentId;
-        } while (entityId.IsValid());
     }
 
     int ToolsApplication::RemoveDirtyEntity(AZ::EntityId entityId)

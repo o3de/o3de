@@ -20,7 +20,7 @@ namespace AZ::RHI
     struct MultiDeviceBufferMapResponse
     {
         //! Will hold the mapped data for each device selected in the MultiDeviceBuffer
-        AZStd::vector<void*> m_data;
+        AZStd::unordered_map<int, void*> m_data;
     };
 
     using MultiDeviceBufferInitRequest = BufferInitRequestTemplate<MultiDeviceBuffer>;

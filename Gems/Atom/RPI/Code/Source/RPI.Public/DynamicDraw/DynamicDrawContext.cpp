@@ -179,7 +179,6 @@ namespace AZ
         {
             AZ_Warning("RPI", m_pipelineState, "Failed to initialize shader for DynamicDrawContext");
             AZ_Warning("RPI", m_drawListTag.IsValid(), "DynamicDrawContext doesn't have a valid DrawListTag");
-
             if (!m_drawListTag.IsValid() || m_pipelineState == nullptr)
             {
                 return;
@@ -298,13 +297,12 @@ namespace AZ
 
         ShaderVariantId DynamicDrawContext::UseShaderVariant(const ShaderOptionList& optionAndValues)
         {
-            AZ_Assert(m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
-                "Check if it was initialized with InitShaderWithVariant");
-
             ShaderVariantId variantId;
 
-            if (!m_supportShaderVariants)
+            if (!m_initialized || !m_supportShaderVariants)
             {
+                AZ_WarningOnce("DynamicDrawContext", false, "%s DynamicDrawContext is not initialized or unable to support shader variants. "
+                                                            "Check if it was initialized with InitShaderWithVariant", __FUNCTION__);
                 return variantId;
             }
 
@@ -446,8 +444,13 @@ namespace AZ
 
         void DynamicDrawContext::SetShaderVariant(ShaderVariantId shaderVariantId)
         {
-            AZ_Assert( m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
-                "Check if it was initialized with InitShaderWithVariant");
+            if (!m_initialized || !m_supportShaderVariants)
+            {
+                AZ_WarningOnce("DynamicDrawContext", false, "%s DynamicDrawContext is not initialized or unable to support shader variants. "
+                                                            "Check if it was initialized with InitShaderWithVariant.\n", __FUNCTION__);
+                return;
+            }
+
             m_currentShaderVariantId = shaderVariantId;
         }
 
@@ -455,7 +458,7 @@ namespace AZ
         {
             if (!m_initialized)
             {
-                AZ_Assert(false, "DynamicDrawContext isn't initialized");
+                AZ_WarningOnce("DynamicDrawContext", false, "%s This function has been disabled because of failed initialization.\n", __FUNCTION__);
                 return;
             }
             
@@ -553,7 +556,7 @@ namespace AZ
         {
             if (!m_initialized)
             {
-                AZ_Assert(false, "DynamicDrawContext isn't initialized");
+                AZ_WarningOnce("DynamicDrawContext", false, "%s This function has been disabled because of failed initialization.\n", __FUNCTION__);
                 return;
             }
 

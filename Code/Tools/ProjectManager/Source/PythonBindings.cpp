@@ -318,11 +318,9 @@ namespace O3DE::ProjectManager
             // alters the behavior of the initializer to not compute default search paths. See
             // https://docs.python.org/3/c-api/init.html#c.Py_SetPath
 
-            AZ::IO::FixedMaxPath thirdPartyFolder = AzToolsFramework::EmbeddedPython::PythonLoader::GetDefault3rdPartyPath(false);
-
             AZStd::vector<AZ::IO::Path> extendedPaths;
             AzToolsFramework::EmbeddedPython::PythonLoader::ReadPythonEggLinkPaths(
-                thirdPartyFolder, m_enginePath.c_str(), [&extendedPaths](AZ::IO::PathView path)
+                m_enginePath.c_str(), [&extendedPaths](AZ::IO::PathView path)
                 {
                     extendedPaths.emplace_back(path);
                 });
