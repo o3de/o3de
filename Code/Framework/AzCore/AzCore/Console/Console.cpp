@@ -120,29 +120,32 @@ namespace AZ
                                              requiredSet,
                                              requiredClear };
 
-#ifdef CARBONATED
-            // A protection against an execution of 2 the same commands one by one.
-            // For example, this happens because the "LoadLevel <path>" command from "Registry\autoexec.game.setreg" is compiled into
-            // "Cache\pc\bootstrap.game.<profile>.setreg" as a sequence of the same commands.
-            // This fix compares the new deffered command with the last one in the list and ignores it if they are fully equal
+#if defined(CARBONATED) && !(defined(AZ_PLATFORM_IOS) || defined(AZ_PLATFORM_ANDROID))
+            // A protection against an execution of the same command more than once.
+            // If LoadLevel command is in Registry\autoexec.game.setreg then it is also copied to
+            // "Cache\pc\bootstrap.game.<profile>.setreg". The engine executes both setreg files for Windows standalone client.
+            // The issue happens if there is a source setreg file available, which is not actual for mobile platforms.
+            // This code piece below compares the new deferred command with all the queue commands, if an exact match found then it ignores the new command.
             if (m_deferredCommands.size() > 0)
             {
-                DeferredCommand& lastCommand = m_deferredCommands.back();
-                if (lastCommand.m_command == deferredCommand.m_command &&
-                    lastCommand.m_arguments.size() == deferredCommand.m_arguments.size())
+                for (const DeferredCommand& checkCommand : m_deferredCommands)
                 {
-                    bool isEqual = true;
-                    for (int i = 0; i < lastCommand.m_arguments.size(); i++)
+                    if (checkCommand.m_command == deferredCommand.m_command &&
+                        checkCommand.m_arguments.size() == deferredCommand.m_arguments.size())
                     {
-                        if (lastCommand.m_arguments[i] != deferredCommand.m_arguments[i])
+                        bool isEqual = true;
+                        for (int i = 0; i < checkCommand.m_arguments.size(); i++)
                         {
-                            isEqual = false;
-                            break;
+                            if (checkCommand.m_arguments[i] != deferredCommand.m_arguments[i])
+                            {
+                                isEqual = false;
+                                break;
+                            }
                         }
-                    }
-                    if (isEqual)
-                    {
-                        return AZ::Success();
+                        if (isEqual)
+                        {
+                            return AZ::Success();  // ignore the command, do not add to the queue
+                        }
                     }
                 }
             }
