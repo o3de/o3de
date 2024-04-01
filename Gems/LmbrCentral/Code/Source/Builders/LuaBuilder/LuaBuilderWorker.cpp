@@ -66,23 +66,28 @@ namespace LuaBuilder
                             path.ReplaceExtension(it->second.c_str());
                         }
 
-                        if (!assetSystem->GetSourceInfoBySourcePath(path.c_str(), assetInfo, watchFolder))
+
+                        const bool success = assetSystem->GetSourceInfoBySourcePath(path.c_str(), assetInfo, watchFolder);
+                        if (success)
                         {
-                            AZ_Warning("LuaBuilder", false, "Did not find dependency '%s' referenced by script (or it is not an asset path).", dependency.m_dependencyPath.c_str());
-                        }
-                        else if (assetInfo.m_assetId.IsValid())
-                        {
-                            AZ::Data::Asset<AZ::ScriptAsset> asset(AZ::Data::AssetId
-                            (assetInfo.m_assetId.m_guid
-                                , AZ::ScriptAsset::CompiledAssetSubId)
-                                , azrtti_typeid<AZ::ScriptAsset>());
-                            asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-                            assets.push_back(asset);
+                            if (assetInfo.m_assetId.IsValid())
+                            {
+                                AZ::Data::Asset<AZ::ScriptAsset> asset(AZ::Data::AssetId
+                                    ( assetInfo.m_assetId.m_guid
+                                    , AZ::ScriptAsset::CompiledAssetSubId)
+                                    , azrtti_typeid<AZ::ScriptAsset>());
+                                asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+                                assets.push_back(asset);
+                            }
+                            else
+                            {
+                                AZ_Warning("LuaBuilder", false, "String '%s' is not a valid asset, will not add to dependency list.", dependency.m_dependencyPath.c_str());
+                                AZ_Warning("LuaBuilder", false, "Also check the replacement rules in AssetExtensionReplacementMap in %s", __FILE__);
+                            }
                         }
                         else
                         {
-                            AZ_Warning("LuaBuilder", false, "String '%s' is not a valid asset, will not add to dependency list.", dependency.m_dependencyPath.c_str());
-                            AZ_Warning("LuaBuilder", false, "Also check the replacement rules in AssetExtensionReplacementMap in %s", __FILE__);
+                            AZ_Warning("LuaBuilder", false, "Did not find dependency '%s' referenced by script (or it is not an asset path).", dependency.m_dependencyPath.c_str());
                         }
                     }
                     else
