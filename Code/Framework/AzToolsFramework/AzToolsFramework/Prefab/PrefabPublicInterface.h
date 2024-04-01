@@ -190,10 +190,23 @@ namespace AzToolsFramework
               * instance and the parent, removing links between this instance and its nested instances, and adding entities directly
               * owned by this instance under the parent instance.
               * Bails if the entity is not a container entity or belongs to the level prefab instance.
+              * Note that this function retains the container entities, unlike the below function
+              * @ref DetachPrefabAndRemoveContainerEntity.
               * @param containerEntityId The container entity id of the instance to detach.
               * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
               */
             virtual PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) = 0;
+
+            /**
+              * Does the same thing as @ref DetachPrefab, but also removes the container entity representing the prefab instance.
+              * This re-parents anything that used to be a child of the container entity to the container entity's parent.
+              * This operation is essentially the reverse of what happens when you create a prefab (which creates a new 
+              * container entity and re-parents the entities under it.
+              * Note that the previous API only had "DetachPrefab", which kept the container entities, 
+              * and by way of introducing as little risk a possible in an API change, the old function
+              * retains its original behavior and name.
+              */
+            virtual PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) = 0;
         };
 
     } // namespace Prefab

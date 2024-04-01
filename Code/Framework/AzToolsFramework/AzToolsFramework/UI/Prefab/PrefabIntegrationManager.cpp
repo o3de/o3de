@@ -500,7 +500,7 @@ namespace AzToolsFramework
                 AZStd::string actionIdentifier = "o3de.action.prefabs.detach";
                 AzToolsFramework::ActionProperties actionProperties;
                 actionProperties.m_name = "Detach Prefab";
-                actionProperties.m_description = "Creates a prefab out of the currently selected entities.";
+                actionProperties.m_description = "Selected prefab is detached from its prefab file and becomes normal entities instead.";
                 actionProperties.m_category = "Prefabs";
 
                 m_actionManagerInterface->RegisterAction(
@@ -515,7 +515,56 @@ namespace AzToolsFramework
 
                         if (CanDetachPrefabWithCurrentSelection(selectedEntities))
                         {
-                            ContextMenu_DetachPrefab(selectedEntities.front());
+                            ContextMenu_DetachPrefab(selectedEntities.front(), false);
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [this]() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return CanDetachPrefabWithCurrentSelection(selectedEntities);
+                    }
+                );
+
+                // Trigger update whenever entity selection changes.
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            }
+
+            // Detach Prefab and keep container entities
+            // note that the naming of this is opposite to the API convention.
+            // this is because the API "DetachPrefab" was the default behavior before
+            // and kept the container entities.  However, this is likely not to be the default
+            // user behavior desired since detaching and removing the container entity is the natural
+            // mirror of creating a prefab.
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.detach_and_keep_container_entities";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Detach Prefab and Keep Container Entities";
+                actionProperties.m_description = "Selected prefab detaches from its prefab file, but keeps its prefab container transform entity";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (CanDetachPrefabWithCurrentSelection(selectedEntities))
+                        {
+                            ContextMenu_DetachPrefab(selectedEntities.front(), true);
                         }
                     }
                 );
@@ -849,6 +898,7 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.closeInstance", 10900);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.create", 20100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.detach", 20200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.detach_and_keep_container_entities", 20210);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
@@ -862,6 +912,7 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.closeInstance", 10900);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.create", 20100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.detach", 20200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.detach_and_keep_container_entities", 20210);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
@@ -1292,9 +1343,12 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabIntegrationManager::ContextMenu_DetachPrefab(AZ::EntityId containerEntity)
+        void PrefabIntegrationManager::ContextMenu_DetachPrefab(AZ::EntityId containerEntity, bool keepContainerEntity)
         {
-            PrefabOperationResult detachPrefabResult = s_prefabPublicInterface->DetachPrefab(containerEntity);
+            PrefabOperationResult detachPrefabResult  = 
+                keepContainerEntity ? 
+                      s_prefabPublicInterface->DetachPrefab(containerEntity)
+                    : s_prefabPublicInterface->DetachPrefabAndRemoveContainerEntity(containerEntity);
 
             if (!detachPrefabResult.IsSuccess())
             {

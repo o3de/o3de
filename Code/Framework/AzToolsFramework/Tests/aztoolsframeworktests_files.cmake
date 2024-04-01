@@ -111,6 +111,7 @@ set(FILES
     Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDeleteAsOverrideTests.cpp
     Prefab/PrefabDetachPrefabTests.cpp
+    Prefab/PrefabDetachPrefabAndRemoveContainerTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabEditorEntityNotificationTests.cpp
