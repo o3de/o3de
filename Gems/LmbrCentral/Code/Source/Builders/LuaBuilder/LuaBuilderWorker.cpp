@@ -66,7 +66,6 @@ namespace LuaBuilder
                             path.ReplaceExtension(it->second.c_str());
                         }
 
-
                         const bool success = assetSystem->GetSourceInfoBySourcePath(path.c_str(), assetInfo, watchFolder);
                         if (success)
                         {
