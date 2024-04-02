@@ -348,11 +348,18 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
     {
         // Set game g_levelname variable to the name of current level.
         QString szGameLevelName = Path::GetFileName(szFilename);
+#if defined(CARBONATED)
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->PerformCommand(AZStd::string::format("sv_map %s", szGameLevelName.toUtf8().data()).c_str());
+        }
+#else
         ICVar* sv_map = gEnv->pConsole->GetCVar("sv_map");
         if (sv_map)
         {
             sv_map->Set(szGameLevelName.toUtf8().data());
         }
+#endif
     }
 
     // Starts recording the opening of files using the level category
