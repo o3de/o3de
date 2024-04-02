@@ -190,6 +190,7 @@ namespace UnitTest
 
         bool OnOutput(const char* /*window*/, const char* /*message*/) override
         {
+            printf("\nLLOYD - UnitTest: %d\n", UnitTest::TestRunner::Instance().m_suppressOutput);
             return UnitTest::TestRunner::Instance().m_suppressOutput;
         }
 

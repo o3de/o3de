@@ -389,7 +389,6 @@ namespace AZ
     #define AZ_VerifyWarning(window, expression, ...) AZ_Warning(window, 0 != (expression), __VA_ARGS__)
 
 #else // !AZ_ENABLE_TRACING
-
     #define AZ_Assert(...)
     #define AZ_Error(...)
     #define AZ_ErrorOnce(...)
