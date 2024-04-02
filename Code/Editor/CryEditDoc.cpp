@@ -72,8 +72,6 @@ static const char* kBackupOrTempFolders[] =
     "_tmpresize", // legacy name
 };
 
-static const char* kLevelPathForSliceEditing = "EngineAssets/LevelForSliceEditing/LevelForSliceEditing.ly";
-
 namespace Internal
 {
     bool SaveLevel()
