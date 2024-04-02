@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
@@ -37,6 +38,7 @@
 #include <QRect>
 #include <QStyledItemDelegate>
 #include <QString>
+#include <QVector>
 #include <QWidget>
 #endif
 
@@ -290,11 +292,28 @@ namespace AzToolsFramework
 
         // TODO - rename this better
         void Generate();
+        void GenerateCacheForEntity(Prefab::PrefabDomValueConstReference entityDomRef);
+        void GenerateModelHierarchyRecursively(const QString& entityAlias, QModelIndex parentIndex, int row);
 
-        QMap<QModelIndex, QString> m_indexToNameMap;
+        struct ItemCache
+        {
+            ItemCache() = default;
+            ItemCache(QString name, QVector<QString> children)
+                : m_name(std::move(name))
+                , m_children(std::move(children))
+            {
+            }
+
+            QString m_name;
+            QVector<QString> m_children;
+        };
+
+        QString m_rootItemAlias;
+        QMap<QString, ItemCache> m_itemInfo;
+
         QMap<QModelIndex, QString> m_indexToEntityAliasMap;
         QMap<QString, QModelIndex> m_entityAliasToIndexMap;
-        QMap<QModelIndex, QMap<int, QModelIndex>> m_indices;
+        QMap<QModelIndex, QVector<QModelIndex>> m_indicesHierarchy;
     };
 }
 

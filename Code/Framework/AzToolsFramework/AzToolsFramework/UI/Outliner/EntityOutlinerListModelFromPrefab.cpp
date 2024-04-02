@@ -149,9 +149,14 @@ namespace AzToolsFramework
 
     int EntityOutlinerListModelFromPrefab::rowCount(const QModelIndex& parent) const
     {
-        if (m_indices.contains(parent))
+        if (!parent.isValid() && m_indicesHierarchy.size() > 0)
         {
-            return m_indices[parent].size();
+            return 1;
+        }
+
+        if (m_indicesHierarchy.contains(parent))
+        {
+            return m_indicesHierarchy[parent].size();
         }
 
         return 0;
@@ -164,9 +169,9 @@ namespace AzToolsFramework
 
     QModelIndex EntityOutlinerListModelFromPrefab::index(int row, int /* column */, const QModelIndex& parent) const
     {
-        if (m_indices.contains(parent) && m_indices[parent].contains(row))
+        if (m_indicesHierarchy.contains(parent) && m_indicesHierarchy[parent].size() > row)
         {
-            return m_indices[parent][row];
+            return m_indicesHierarchy[parent][row];
         }
 
         return QModelIndex();
@@ -254,9 +259,9 @@ namespace AzToolsFramework
 
         case ChildCountRole:
             {
-                if (m_indices.contains(index))
+                if (m_indicesHierarchy.contains(index))
                 {
-                    return m_indices[index].size();
+                    return m_indicesHierarchy[index].size();
                 }
                 return 0;
             }
@@ -288,13 +293,13 @@ namespace AzToolsFramework
                     label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
                 }
                 */
-                return m_indexToNameMap[index];
+                return m_itemInfo[m_indexToEntityAliasMap[index]].m_name;
             }
             break;
         case Qt::ToolTipRole:
             {
                 //return GetEntityTooltip(id);
-                return m_indexToNameMap[index];
+                return m_itemInfo[m_indexToEntityAliasMap[index]].m_name;
             }
             break;
         case Qt::ForegroundRole:
@@ -1888,43 +1893,122 @@ namespace AzToolsFramework
             return;
         }
 
-        const auto& rootDom = m_rootInstance->get().GetCachedInstanceDom()->get();
+        const auto& instanceDom = m_rootInstance->get().GetCachedInstanceDom()->get();
 
-        // TODO - Add function to create indices, either via unique strings or rand() addressing collisions just in case.
-        QModelIndex containerEntityIndex = createIndex(0, 0, rand());
-        AZStd::string containerEntityName = rootDom.FindMember("ContainerEntity")->value.FindMember("Name")->value.GetString();
-        AZStd::string containerEntityAlias = rootDom.FindMember("ContainerEntity")->value.FindMember("Id")->value.GetString();
-        
-        // Container Entity
-        beginInsertRows(QModelIndex(), 0, 0);
+        // TODO - This can definitely be improved lol.
+        m_rootItemAlias = Prefab::PrefabDomUtils::FindPrefabDomValue(instanceDom, Prefab::PrefabDomUtils::ContainerEntityName)->get().FindMember("Id")->value.GetString();
 
-        m_indexToNameMap.insert(containerEntityIndex, containerEntityName.c_str());
-        m_indexToEntityAliasMap.insert(containerEntityIndex, containerEntityAlias.c_str());
-        m_indices[QModelIndex()][0] = containerEntityIndex;
-
-        endInsertRows();
-
-        // All children indiscriminately
-        const auto& entities = rootDom.FindMember("Entities")->value;
-
-        auto entitiesCount = entities.MemberCount();
-        if (entitiesCount > 0)
+        // TODO - Do this for every instance...
+        // TODO - You need to consider that Entity Aliases are only unique in the context of their instance.
+        // So either we need to use a different index for our maps, or we concatenate InstanceAlias and EntityAlias to form a path.
+        // The path approach I think is what is used in the Sort arrays, so it should work fine.
         {
-            beginInsertRows(containerEntityIndex, 0, entitiesCount - 1);
+            // Generate cache for container entity
+            GenerateCacheForEntity(Prefab::PrefabDomUtils::FindPrefabDomValue(instanceDom, Prefab::PrefabDomUtils::ContainerEntityName));
 
-            int i = 0;
-            for (Prefab::PrefabDom::ConstMemberIterator entityIter = entities.MemberBegin(); entityIter != entities.MemberEnd(); ++entityIter)
+            // Generate cache for entities
+            const auto& entities = instanceDom.FindMember(Prefab::PrefabDomUtils::EntitiesName)->value;
+
+            // TODO - Remove entity count? May not be necessary here.
+            auto entitiesCount = entities.MemberCount();
+            if (entitiesCount > 0)
             {
-                QModelIndex entityIndex = createIndex(i, 0, rand());
-
-                m_indexToNameMap.insert(entityIndex, entityIter->name.GetString());
-                m_indexToEntityAliasMap.insert(entityIndex, entityIter->name.GetString());
-                m_entityAliasToIndexMap.insert(entityIter->name.GetString(), entityIndex);
-                m_indices[containerEntityIndex][i] = entityIndex;
-                ++i;
+                for (Prefab::PrefabDom::ConstMemberIterator entityIter = entities.MemberBegin(); entityIter != entities.MemberEnd();
+                     ++entityIter)
+                {
+                    GenerateCacheForEntity(entityIter->value);
+                }
             }
 
-            endInsertRows();
+            // TODO - Investigate nested instances...
+        }
+
+        GenerateModelHierarchyRecursively(m_rootItemAlias, QModelIndex(), 0);
+    }
+
+    void EntityOutlinerListModelFromPrefab::GenerateCacheForEntity(Prefab::PrefabDomValueConstReference entityDomRef)
+    {
+        if (!entityDomRef.has_value())
+        {
+            return;
+        }
+
+        const auto& entityDom = entityDomRef->get();
+
+        QString entityAlias = entityDom.FindMember(Prefab::PrefabDomUtils::EntityIdName)->value.GetString();
+        QString entityName = entityDom.FindMember("Name")->value.GetString();
+
+        QVector<QString> entityChildren;
+
+        // Find Entity Sort Component
+        const auto& components = entityDom.FindMember(Prefab::PrefabDomUtils::ComponentsName)->value.GetObject();
+
+        for (Prefab::PrefabDom::ConstMemberIterator componentIter = components.MemberBegin(); componentIter != components.MemberEnd();
+             ++componentIter)
+        {
+            if (componentIter->value.HasMember(Prefab::PrefabDomUtils::TypeName))
+            {
+                const auto& typeString = AZStd::string(componentIter->value.FindMember(Prefab::PrefabDomUtils::TypeName)->value.GetString());
+                if (typeString == "EditorEntitySortComponent")
+                {
+                    // TODO - Should I check HasMember just in case?
+                    const auto& childrenArray = componentIter->value.FindMember("Child Entity Order")->value.GetArray();
+
+                    // Retrieve sorted list of children.
+                    for (const auto& child : childrenArray)
+                    {
+                        entityChildren.push_back(child.GetString());
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        m_itemInfo.insert(entityAlias, ItemCache(entityName, entityChildren));
+    }
+
+    // TODO - Probably will also need to pass another string with the instance aliases path.
+    void EntityOutlinerListModelFromPrefab::GenerateModelHierarchyRecursively(const QString& entityAlias, QModelIndex parentIndex, int row)
+    {
+        if (!m_itemInfo.contains(entityAlias))
+        {
+            // NOTE: This should not be necessary in the final code, but we don't support nested instances yet.
+            return;
+        }
+
+        // Create a QModelIndex for the entity.
+        // TODO - if alias path is unique, you could embed that in the QModelIndex over using rand()?
+        // That should also allow us to retrieve the alias path from the QModelIndex more easily and probably get rid of a map.
+        QModelIndex entityIndex = createIndex(row, 0, rand());
+
+        // TODO - This can be optimized to create rows for all children at once...
+        beginInsertRows(parentIndex, row, row);
+        endInsertRows();
+
+        // Populate maps.
+        m_indexToEntityAliasMap.insert(entityIndex, entityAlias);
+        m_entityAliasToIndexMap.insert(entityAlias, entityIndex);
+        if (parentIndex.isValid())
+        {
+            m_indicesHierarchy[parentIndex][row] = entityIndex;
+        }
+
+        // Handle children.
+        const auto& children = m_itemInfo[entityAlias].m_children;
+        if (const int numChildren = children.size(); numChildren > 0)
+        {
+            // Appropriately create and resize children vector in hierarchy.
+            m_indicesHierarchy.insert(entityIndex, QVector<QModelIndex>());
+            m_indicesHierarchy[entityIndex].resize(numChildren);
+
+            // Call this for each child.
+            int i = 0;
+            for (const auto& childEntityAlias : children)
+            {
+                GenerateModelHierarchyRecursively(childEntityAlias, entityIndex, i);
+                ++i;
+            }
         }
     }
 }
