@@ -70,7 +70,11 @@ AllocatorManager::AllocatorManager()
 {
     m_numAllocators = 0;
     m_isAllocatorLeaking = false;
-    m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
+    // aefimov original line commented out, profiling override lines are below
+    //m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
+    m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
+    m_defaultProfilingState = true;
+    m_activeBreaks = 0;  // it was no initialized in the original code
 }
 
 //=========================================================================
