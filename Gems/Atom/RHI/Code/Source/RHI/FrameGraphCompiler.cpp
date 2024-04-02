@@ -130,7 +130,12 @@ namespace AZ::RHI
 
             for (Scope* scope : frameGraph.GetScopes())
             {
-                scope->Compile(MultiDevice::DefaultDeviceIndex);
+                if (scope->GetDeviceIndex() == MultiDevice::InvalidDeviceIndex)
+                {
+                    scope->SetDeviceIndex(MultiDevice::DefaultDeviceIndex);
+                }
+
+                scope->Compile();
             }
         }
 
@@ -162,7 +167,10 @@ namespace AZ::RHI
                 const uint32_t hardwareQueueClassIdx = static_cast<uint32_t>(consumer->GetHardwareQueueClass());
                 if (producer[hardwareQueueClassIdx])
                 {
-                    Scope::LinkProducerConsumerByQueues(producer[hardwareQueueClassIdx], consumer);
+                    if (producer[hardwareQueueClassIdx]->GetDeviceIndex() == consumer->GetDeviceIndex())
+                    {
+                        Scope::LinkProducerConsumerByQueues(producer[hardwareQueueClassIdx], consumer);
+                    }
                 }
                 producer[hardwareQueueClassIdx] = consumer;
             }
@@ -211,7 +219,10 @@ namespace AZ::RHI
 
                     if (foundEarlierConsumerOnSameQueue == false)
                     {
-                        Scope::LinkProducerConsumerByQueues(producerScopeLast, currentScope);
+                        if (producerScopeLast->GetDeviceIndex() == currentScope->GetDeviceIndex())
+                        {
+                            Scope::LinkProducerConsumerByQueues(producerScopeLast, currentScope);
+                        }
                     }
                 }
             }

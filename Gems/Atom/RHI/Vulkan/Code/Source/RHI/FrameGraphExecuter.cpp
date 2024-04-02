@@ -93,6 +93,7 @@ namespace AZ
             RHI::HardwareQueueClass mergedHardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             uint32_t mergedGroupCost = 0;
             uint32_t mergedSwapchainCount = 0;
+            int mergedDeviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
 
             for (auto it = scopes.begin(); it != scopes.end(); ++it)
             {
@@ -143,8 +144,11 @@ namespace AZ
                     const bool onSyncBoundaries = !scope.GetWaitSemaphores().empty() || !scope.GetWaitFences().empty() ||
                         (scopePrev && (!scopePrev->GetSignalSemaphores().empty() || !scopePrev->GetSignalFences().empty()));
 
+                    // Check if the devices match.
+                    const bool deviceMismatch = mergedDeviceIndex != scope.GetDeviceIndex();
+
                     // If we exceeded limits, then flush the group.
-                    const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onSyncBoundaries || subpassGroup;
+                    const bool flushMergedScopes = exceededCommandCost || exceededSwapChainLimit || hardwareQueueMismatch || onSyncBoundaries || deviceMismatch || subpassGroup;
 
                     if (flushMergedScopes && mergedScopes.size())
                     {
@@ -152,8 +156,9 @@ namespace AZ
                         mergedGroupCost = 0;
                         mergedSwapchainCount = 0;
                         mergedHardwareQueueClass = scope.GetHardwareQueueClass();
+                        mergedDeviceIndex = scope.GetDeviceIndex();
                         FrameGraphExecuteGroupPrimary* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupPrimary>();
-                        multiScopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), AZStd::move(mergedScopes));
+                        multiScopeContextGroup->Init(static_cast<Device&>(scopePrev->GetDevice()), AZStd::move(mergedScopes));
                     }
                 }
 
