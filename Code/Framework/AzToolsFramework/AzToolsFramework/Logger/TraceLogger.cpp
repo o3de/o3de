@@ -26,7 +26,7 @@ namespace AzToolsFramework
         for (const auto& filter : m_windowFilters)
         {
             if (AZ::StringFunc::Contains(window, filter))
-            {                
+            {
                 return true;
             }
         }

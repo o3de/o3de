@@ -581,7 +581,11 @@ namespace AZ::Debug
             window = g_dbgSystemWnd;
         }
 
+#if defined(CARBONATED)
+        // Remove to avoid duplicating logs in debugger console
+#else
         Platform::OutputToDebugger(window, message);
+#endif
 
         if (!DebugInternal::g_suppressEBusCalls)
         {
@@ -596,6 +600,9 @@ namespace AZ::Debug
             }
         }
 
+#if defined(CARBONATED)
+        Platform::OutputToDebugger(window, message);
+#endif
         RawOutput(window, message);
     }
 

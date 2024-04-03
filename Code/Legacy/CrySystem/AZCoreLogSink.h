@@ -121,14 +121,10 @@ public:
         {
             return false; // allow AZCore to do its default behavior.
         }
-        
-        const char* tmpWindow = window;
-        const char* tmpMessage = message;
 
         if (window == AZ::Debug::Trace::GetDefaultSystemWindow())
         {
-
-            [[maybe_unused]] auto WriteToStream = [message = AZStd::string_view(message), tmpMessage]
+            [[maybe_unused]] auto WriteToStream = [message = AZStd::string_view(message)]
             (AZ::IO::GenericStream& stream)
             {
                 constexpr AZStd::string_view newline = "\n";
@@ -141,7 +137,7 @@ public:
         }
         else
         {
-            [[maybe_unused]] auto WriteToStream = [window = AZStd::string_view(window), message = AZStd::string_view(message), tmpWindow, tmpMessage]
+            [[maybe_unused]] auto WriteToStream = [window = AZStd::string_view(window), message = AZStd::string_view(message)]
             (AZ::IO::GenericStream& stream)
             {
                 constexpr AZStd::string_view windowMessageSeparator = " - ";
