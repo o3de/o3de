@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
@@ -35,6 +36,7 @@
 
 #include <QCheckBox>
 #include <QMap>
+#include <QModelIndex>
 #include <QRect>
 #include <QStyledItemDelegate>
 #include <QString>
@@ -67,12 +69,14 @@ namespace AzToolsFramework
     class EntityOutlinerListModelFromPrefab
         : public QAbstractItemModel
         , private EditorEntityContextNotificationBus::Handler
+        , private EditorEntityInfoNotificationBus::Handler
         , private FocusModeNotificationBus::Handler
         , private ToolsApplicationEvents::Bus::Handler
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
         , private AZ::EntitySystemBus::Handler
         , private ContainerEntityNotificationBus::Handler
+        , private Prefab::PrefabPublicNotificationBus::Handler
     {
         Q_OBJECT;
 
@@ -143,6 +147,9 @@ namespace AzToolsFramework
 
         // FocusModeNotificationBus overrides ...
         void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
+
+        // PrefabPublicNotificationBus overrides ...
+        void OnPrefabInstancePropagationEnd() override;
 
         // Qt overrides.
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -228,6 +235,10 @@ namespace AzToolsFramework
         void OnEntityInitialized(const AZ::EntityId& entityId) override;
         void AfterEntitySelectionChanged(const EntityIdList&, const EntityIdList&) override;
 
+        //! EditorEntityInfoNotificationBus::Handler
+        //! Get notifications when the EditorEntityInfo changes so we can update our model
+        void OnEntityInfoUpdatedSelection(AZ::EntityId entityId, bool selected) override;
+        
         // EditorEntityRuntimeActivationChangeNotificationBus::Handler
         void OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart) override;
 
@@ -291,9 +302,11 @@ namespace AzToolsFramework
         Prefab::InstanceOptionalReference m_rootInstance;
 
         // TODO - rename this better
+        void Clear();
         void Generate();
-        void GenerateCacheForEntity(Prefab::PrefabDomValueConstReference entityDomRef);
-        void GenerateModelHierarchyRecursively(const QString& entityAlias, QModelIndex parentIndex, int row);
+        void ExploreDomRecursively(Prefab::AliasPath aliasPath, const Prefab::InstanceOptionalConstReference& instanceRef);
+        void GenerateCacheForEntity(Prefab::AliasPath aliasPath, Prefab::PrefabDomValueConstReference entityDomRef);
+        bool GenerateModelHierarchyRecursively(const QString& entityAlias, QModelIndex parentIndex, int row);
 
         struct ItemCache
         {

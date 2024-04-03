@@ -77,7 +77,6 @@
 
 namespace AzToolsFramework
 {
-
     bool EntityOutlinerListModelFromPrefab::s_paintingName = false;
 
     EntityOutlinerListModelFromPrefab::EntityOutlinerListModelFromPrefab(QObject* parent)
@@ -114,7 +113,9 @@ namespace AzToolsFramework
 
     EntityOutlinerListModelFromPrefab::~EntityOutlinerListModelFromPrefab()
     {
+        Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         FocusModeNotificationBus::Handler::BusDisconnect();
+        EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -128,8 +129,10 @@ namespace AzToolsFramework
         EditorEntityRuntimeActivationChangeNotificationBus::Handler::BusConnect();
         ToolsApplicationEvents::Bus::Handler::BusConnect();
         EditorEntityContextNotificationBus::Handler::BusConnect();
+        EditorEntityInfoNotificationBus::Handler::BusConnect();
         EntityCompositionNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
+        Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 
         AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
@@ -156,7 +159,8 @@ namespace AzToolsFramework
 
         if (m_indicesHierarchy.contains(parent))
         {
-            return m_indicesHierarchy[parent].size();
+            auto size = m_indicesHierarchy[parent].size();
+            return size;
         }
 
         return 0;
@@ -169,6 +173,11 @@ namespace AzToolsFramework
 
     QModelIndex EntityOutlinerListModelFromPrefab::index(int row, int /* column */, const QModelIndex& parent) const
     {
+        if (parent == QModelIndex())
+        {
+            return GetIndexFromEntityAlias(m_rootItemAlias.toStdString().c_str());
+        }
+
         if (m_indicesHierarchy.contains(parent) && m_indicesHierarchy[parent].size() > row)
         {
             return m_indicesHierarchy[parent][row];
@@ -179,13 +188,12 @@ namespace AzToolsFramework
 
     QVariant EntityOutlinerListModelFromPrefab::data(const QModelIndex& index, int role) const
     {
-        if (index.column() == ColumnName)
+        if (!GetEntityAliasFromIndex(index).has_value())
         {
-            return dataForName(index, role);
+            return QString("MISSING");
         }
 
-        /*
-        auto id = GetEntityIdFromIndex(index);
+        auto id = GetEntityFromIndex(index);
         if (id.IsValid())
         {
             switch (index.column())
@@ -203,7 +211,6 @@ namespace AzToolsFramework
                 return dataForSortIndex(index, role);
             }
         }
-        */
 
         return QVariant();
     }
@@ -228,28 +235,24 @@ namespace AzToolsFramework
         switch (role)
         {
         case EntityIdRole:
-            // return static_cast<AZ::u64>(id);
             return static_cast<AZ::u64>(GetEntityFromIndex(index));
 
         case SelectedRole:
             {
-                //bool isSelected = false;
-                //EditorEntityInfoRequestBus::EventResult(isSelected, id, &EditorEntityInfoRequestBus::Events::IsSelected);
-                //return isSelected;
-                return false;
+                bool isSelected = false;
+                EditorEntityInfoRequestBus::EventResult(
+                    isSelected, GetEntityFromIndex(index), &EditorEntityInfoRequestBus::Events::IsSelected);
+                return isSelected;
             }
 
         case ChildSelectedRole:
-            // return HasSelectedDescendant(id);
-            return false;
+            return HasSelectedDescendant(GetEntityFromIndex(index));
 
         case PartiallyVisibleRole:
-            //return !AreAllDescendantsSameVisibleState(id);
-            return false;
+            return !AreAllDescendantsSameVisibleState(GetEntityFromIndex(index));
 
         case PartiallyLockedRole:
-            //return !AreAllDescendantsSameLockState(id);
-            return false;
+            return !AreAllDescendantsSameLockState(GetEntityFromIndex(index));
 
         case LockedAncestorRole:
             return false;
@@ -267,12 +270,10 @@ namespace AzToolsFramework
             }
 
         case ExpandedRole:
-            // return IsExpanded(id);
-            return true;
+            return IsExpanded(GetEntityFromIndex(index));
 
         case VisibilityRole:
-            // return !IsFiltered(id);
-            return true;
+            return !IsFiltered(GetEntityFromIndex(index));
 
         }
 
@@ -286,20 +287,18 @@ namespace AzToolsFramework
         case Qt::DisplayRole:
         case Qt::EditRole:
             {
-                /*
+                QString label{ m_itemInfo[m_indexToEntityAliasMap[index]].m_name.data() };
                 if (s_paintingName && !m_filterString.empty())
                 {
                     // highlight characters in filter
                     label = AzToolsFramework::RichTextHighlighter::HighlightText(label, m_filterString.c_str());
                 }
-                */
-                return m_itemInfo[m_indexToEntityAliasMap[index]].m_name;
+                return label;
             }
             break;
         case Qt::ToolTipRole:
             {
-                //return GetEntityTooltip(id);
-                return m_itemInfo[m_indexToEntityAliasMap[index]].m_name;
+                return GetEntityTooltip(GetEntityFromIndex(index));
             }
             break;
         case Qt::ForegroundRole:
@@ -311,8 +310,7 @@ namespace AzToolsFramework
             break;
         case Qt::DecorationRole:
             {
-                //return GetEntityIcon(id);
-                return QIcon(QString(":/Entity/entity.svg"));
+                return GetEntityIcon(GetEntityFromIndex(index));
             }
             break;
         }
@@ -1123,6 +1121,7 @@ namespace AzToolsFramework
         QueueEntityUpdate(entityId);
     }
 
+    /*
     // Helper struct for tracking a range of indices.
     struct ModelIndexRange
     {
@@ -1130,7 +1129,7 @@ namespace AzToolsFramework
         QModelIndex m_start;
         QModelIndex m_end;
     };
-
+    */
 
     void EntityOutlinerListModelFromPrefab::ProcessEntityUpdates()
     {
@@ -1326,6 +1325,7 @@ namespace AzToolsFramework
         QueueEntityUpdate(parentId);
         QueueEntityUpdate(childId);
     }
+    */
 
     void EntityOutlinerListModelFromPrefab::OnEntityInfoUpdatedSelection(AZ::EntityId entityId, bool selected)
     {
@@ -1347,6 +1347,7 @@ namespace AzToolsFramework
         m_suppressNextSelectEntity = false;
     }
 
+    /*
     void EntityOutlinerListModelFromPrefab::OnEntityInfoUpdatedLocked(AZ::EntityId entityId, bool)
     {
         // Prevent a SelectEntity call occurring during the update to stop the item clicked from scrolling away.
@@ -1869,21 +1870,34 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModelFromPrefab::OnEditorFocusChanged([[maybe_unused]] AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId)
     {
-        // TODO - This is not the right place for this, move to level initialization notification?
+        // Ensure all descendants of the current focus root are expanded, so it is visible.
+        ExpandAncestors(newFocusEntityId);
+    }
 
+    void EntityOutlinerListModelFromPrefab::OnPrefabInstancePropagationEnd()
+    {
         // Gather the Template Id of the root prefab being edited.
         Prefab::InstanceOptionalReference rootPrefabInstance = m_prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
         if (rootPrefabInstance.has_value())
         {
-            //m_rootTemplateId = rootPrefabInstance->get().GetTemplateId();
             m_rootInstance = rootPrefabInstance;
             Generate();
         }
+    }
 
-        // TODO end
+    void EntityOutlinerListModelFromPrefab::Clear()
+    {
+        beginResetModel();
 
-        // Ensure all descendants of the current focus root are expanded, so it is visible.
-        ExpandAncestors(newFocusEntityId);
+        m_rootItemAlias = QString();
+        m_itemInfo.clear();
+
+        m_indexToEntityAliasMap.clear();
+        m_entityAliasToIndexMap.clear();
+
+        m_indicesHierarchy.clear();
+
+        endResetModel();
     }
 
     void EntityOutlinerListModelFromPrefab::Generate()
@@ -1893,40 +1907,62 @@ namespace AzToolsFramework
             return;
         }
 
-        const auto& instanceDom = m_rootInstance->get().GetCachedInstanceDom()->get();
+        // TODO - Add Comments.
+        Clear();
 
-        // TODO - This can definitely be improved lol.
-        m_rootItemAlias = Prefab::PrefabDomUtils::FindPrefabDomValue(instanceDom, Prefab::PrefabDomUtils::ContainerEntityName)->get().FindMember("Id")->value.GetString();
+        ExploreDomRecursively(Prefab::AliasPath(), m_rootInstance);
 
-        // TODO - Do this for every instance...
-        // TODO - You need to consider that Entity Aliases are only unique in the context of their instance.
-        // So either we need to use a different index for our maps, or we concatenate InstanceAlias and EntityAlias to form a path.
-        // The path approach I think is what is used in the Sort arrays, so it should work fine.
-        {
-            // Generate cache for container entity
-            GenerateCacheForEntity(Prefab::PrefabDomUtils::FindPrefabDomValue(instanceDom, Prefab::PrefabDomUtils::ContainerEntityName));
-
-            // Generate cache for entities
-            const auto& entities = instanceDom.FindMember(Prefab::PrefabDomUtils::EntitiesName)->value;
-
-            // TODO - Remove entity count? May not be necessary here.
-            auto entitiesCount = entities.MemberCount();
-            if (entitiesCount > 0)
-            {
-                for (Prefab::PrefabDom::ConstMemberIterator entityIter = entities.MemberBegin(); entityIter != entities.MemberEnd();
-                     ++entityIter)
-                {
-                    GenerateCacheForEntity(entityIter->value);
-                }
-            }
-
-            // TODO - Investigate nested instances...
-        }
-
-        GenerateModelHierarchyRecursively(m_rootItemAlias, QModelIndex(), 0);
+        GenerateModelHierarchyRecursively(Prefab::PrefabDomUtils::ContainerEntityName, QModelIndex(), 0);
     }
 
-    void EntityOutlinerListModelFromPrefab::GenerateCacheForEntity(Prefab::PrefabDomValueConstReference entityDomRef)
+    void EntityOutlinerListModelFromPrefab::ExploreDomRecursively(Prefab::AliasPath aliasPath, const Prefab::InstanceOptionalConstReference& instanceRef)
+    {
+        // Retrieve the DOM from the instance reference.
+        const auto& cachedInstanceDom = instanceRef->get().GetCachedInstanceDom();
+        Prefab::PrefabDom instanceDom;
+
+        if (cachedInstanceDom.has_value())
+        {
+            instanceDom.CopyFrom(cachedInstanceDom->get(), instanceDom.GetAllocator());
+        }
+        else
+        {
+            // TODO - generate the DOM out of the template and links...
+
+            return;
+        }
+
+        // Generate cache for container entity
+        GenerateCacheForEntity(
+            Prefab::AliasPath(aliasPath).Append(Prefab::PrefabDomUtils::ContainerEntityName),
+            Prefab::PrefabDomUtils::FindPrefabDomValue(instanceDom, Prefab::PrefabDomUtils::ContainerEntityName)
+        );
+
+        // Generate cache for entities
+        const auto& entities = instanceDom.FindMember(Prefab::PrefabDomUtils::EntitiesName)->value;
+        for (Prefab::PrefabDom::ConstMemberIterator entityIter = entities.MemberBegin(); entityIter != entities.MemberEnd(); ++entityIter)
+        {
+            GenerateCacheForEntity(
+                Prefab::AliasPath(aliasPath).Append(entityIter->name.GetString()),
+                entityIter->value
+            );
+        }
+
+        // Generate cache for nested instances
+        const auto& instances = instanceDom.FindMember(Prefab::PrefabDomUtils::InstancesName)->value;
+        for (Prefab::PrefabDom::ConstMemberIterator instanceIter = instances.MemberBegin(); instanceIter != instances.MemberEnd();
+             ++instanceIter)
+        {
+            // Retrieve DOM of nested instance
+            auto nestedInstance = instanceRef->get().FindNestedInstance(instanceIter->name.GetString());
+            if (nestedInstance.has_value())
+            {
+                ExploreDomRecursively(instanceRef->get().GetAbsoluteInstanceAliasPath(), nestedInstance);
+            }
+        }
+    }
+
+    void EntityOutlinerListModelFromPrefab::GenerateCacheForEntity(Prefab::AliasPath aliasPath, Prefab::PrefabDomValueConstReference entityDomRef)
     {
         if (!entityDomRef.has_value())
         {
@@ -1934,8 +1970,6 @@ namespace AzToolsFramework
         }
 
         const auto& entityDom = entityDomRef->get();
-
-        QString entityAlias = entityDom.FindMember(Prefab::PrefabDomUtils::EntityIdName)->value.GetString();
         QString entityName = entityDom.FindMember("Name")->value.GetString();
 
         QVector<QString> entityChildren;
@@ -1965,51 +1999,55 @@ namespace AzToolsFramework
             }
         }
 
-        m_itemInfo.insert(entityAlias, ItemCache(entityName, entityChildren));
+        m_itemInfo.insert(aliasPath.String().c_str(), ItemCache(entityName, entityChildren));
     }
 
     // TODO - Probably will also need to pass another string with the instance aliases path.
-    void EntityOutlinerListModelFromPrefab::GenerateModelHierarchyRecursively(const QString& entityAlias, QModelIndex parentIndex, int row)
+    bool EntityOutlinerListModelFromPrefab::GenerateModelHierarchyRecursively(const QString& entityAlias, QModelIndex parentIndex, int row)
     {
         if (!m_itemInfo.contains(entityAlias))
         {
             // NOTE: This should not be necessary in the final code, but we don't support nested instances yet.
-            return;
+            return false;
         }
 
         // Create a QModelIndex for the entity.
         // TODO - if alias path is unique, you could embed that in the QModelIndex over using rand()?
         // That should also allow us to retrieve the alias path from the QModelIndex more easily and probably get rid of a map.
-        QModelIndex entityIndex = createIndex(row, 0, rand());
+        QModelIndex entityIndex = createIndex(row, 0, reinterpret_cast<quintptr>(entityAlias.data()));
 
         // TODO - This can be optimized to create rows for all children at once...
         beginInsertRows(parentIndex, row, row);
-        endInsertRows();
 
         // Populate maps.
         m_indexToEntityAliasMap.insert(entityIndex, entityAlias);
         m_entityAliasToIndexMap.insert(entityAlias, entityIndex);
         if (parentIndex.isValid())
         {
-            m_indicesHierarchy[parentIndex][row] = entityIndex;
+            m_indicesHierarchy[parentIndex].push_back(entityIndex);
         }
+
+        endInsertRows();
 
         // Handle children.
         const auto& children = m_itemInfo[entityAlias].m_children;
         if (const int numChildren = children.size(); numChildren > 0)
         {
-            // Appropriately create and resize children vector in hierarchy.
+            // Appropriately create and reserve children vector in hierarchy.
             m_indicesHierarchy.insert(entityIndex, QVector<QModelIndex>());
-            m_indicesHierarchy[entityIndex].resize(numChildren);
 
             // Call this for each child.
             int i = 0;
             for (const auto& childEntityAlias : children)
             {
-                GenerateModelHierarchyRecursively(childEntityAlias, entityIndex, i);
-                ++i;
+                if (GenerateModelHierarchyRecursively(childEntityAlias, entityIndex, i))
+                {
+                    ++i;
+                }
             }
         }
+
+        return true;
     }
 }
 
