@@ -581,7 +581,11 @@ namespace AZ::Debug
             window = g_dbgSystemWnd;
         }
 
-        //Platform::OutputToDebugger(window, message); // carbonated (akostin/mp-402-2): Avoid duplicating logs in the debugger console
+#if defined(CARBONATED)
+        // Remove to avoid duplicating logs in debugger console
+#else
+        Platform::OutputToDebugger(window, message);
+#endif
 
         if (!DebugInternal::g_suppressEBusCalls)
         {
@@ -596,7 +600,9 @@ namespace AZ::Debug
             }
         }
 
-        Platform::OutputToDebugger(window, message); // carbonated (akostin/mp-402-2): Avoid duplicating logs in the debugger console
+#if defined(CARBONATED)
+        Platform::OutputToDebugger(window, message);
+#endif
         RawOutput(window, message);
     }
 
