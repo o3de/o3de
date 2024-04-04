@@ -19,7 +19,7 @@
 namespace AZ::Platform
 {
     AZ::IO::FixedMaxPath GetModulePath();
-    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen);
+    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen, bool noLoad);
     void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
     AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView& moduleName);
 }
@@ -129,12 +129,12 @@ namespace AZ
             Unload();
         }
 
-        LoadStatus LoadModule() override
+        LoadStatus LoadModule(bool noLoad) override
         {
             AZ::Debug::Trace::Instance().Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
             bool alreadyOpen = false;
 
-            m_handle = Platform::OpenModule(m_fileName, alreadyOpen);
+            m_handle = Platform::OpenModule(m_fileName, alreadyOpen, noLoad);
 
             if (m_handle)
             {

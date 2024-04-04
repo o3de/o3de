@@ -11,11 +11,72 @@ o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLAT
 
 include(${pal_dir}/AtomRHITests_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-if(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED)
+ly_add_target(
+    NAME Atom_RHI.Profiler STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        atom_rhi_profiler_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+)
+
+if(PAL_TRAIT_BUILD_RENDERDOC_SUPPORTED)  
     set(LY_RENDERDOC_ENABLED OFF CACHE BOOL "Enable RenderDoc integration. Use LY_RENDERDOC_PATH to specific the path to RenderDoc.")
     if(LY_RENDERDOC_ENABLED)
         message(STATUS "Renderdoc found, enabling as a graphics debugger")
-        set(RENDERDOC_DEPENDENCY 3rdParty::renderdoc)
+        ly_add_target(
+            NAME Atom_RHI.Profiler.RenderDoc ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                atom_rhi_profiler_renderdoc_shared_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Source
+                    ${pal_source_dir}
+                PUBLIC
+                    Include
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzCore
+                    AZ::AzFramework
+                    Gem::Atom_RHI.Profiler
+                    3rdParty::renderdoc
+        )
+
+        list(APPEND PROFILER_DEPENDENCIES Atom_RHI.Profiler.RenderDoc)
+    endif()
+endif()
+
+if(PAL_TRAIT_PROF_PIX_SUPPORTED)
+    if(LY_PIX_ENABLED)
+        ly_add_target(
+            NAME Atom_RHI.Profiler.PIX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                atom_rhi_profiler_pix_shared_files.cmake
+                ${pal_source_dir}/platform_pix_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Source
+                    ${pal_source_dir}
+                PUBLIC
+                    Include
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzCore
+                    AZ::AzFramework
+                    Gem::Atom_RHI.Profiler
+                    3rdParty::pix
+        )
+
+        list(APPEND PROFILER_DEPENDENCIES Atom_RHI.Profiler.PIX)
     endif()
 endif()
 
@@ -43,7 +104,6 @@ ly_add_target(
     FILES_CMAKE
         atom_rhi_public_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-        ${pal_source_dir}/platform_private_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
@@ -55,8 +115,6 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_RHI.Reflect
-        PUBLIC
-            ${RENDERDOC_DEPENDENCY}
 )
 
 ly_add_target(
@@ -92,6 +150,9 @@ ly_add_target(
             AZ::AzCore
             Gem::Atom_RHI.Public
             Gem::Atom_RHI.Private.Static
+            Gem::Atom_RHI.Profiler
+    RUNTIME_DEPENDENCIES
+        ${PROFILER_DEPENDENCIES}            
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

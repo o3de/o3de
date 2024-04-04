@@ -57,6 +57,8 @@ namespace AZ::RHI
         m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
         m_pipelineStateCache = RHI::PipelineStateCache::Create(*m_devices[MultiDevice::DefaultDeviceIndex]);
 
+        m_gpuMarkersEnabled = !RHI::QueryCommandLineOption("rhi-disable-gpu-markers");
+
         frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_renderTargetBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_renderTargetBudgetInBytes;
         frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_imageBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_imageBudgetInBytes;
         frameSchedulerDescriptor.m_transientAttachmentPoolDescriptor.m_bufferBudgetInBytes = platformLimitsDescriptor->m_transientAttachmentPoolBudgets.m_bufferBudgetInBytes;
@@ -336,6 +338,11 @@ namespace AZ::RHI
     RHI::XRRenderingInterface* RHISystem::GetXRSystem() const
     {
         return m_xrSystem;
+    }
+
+    bool RHISystem::GpuMarkersEnabled() const
+    {
+        return m_gpuMarkersEnabled;
     }
 
     /////////////////////////////////////////////////////////////////////////////

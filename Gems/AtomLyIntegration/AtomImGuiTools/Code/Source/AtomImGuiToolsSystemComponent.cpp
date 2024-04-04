@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <Atom/RHI/RHIMemoryStatisticsInterface.h>
+#include <Atom/RHI.Profiler/GraphicsProfilerBus.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <AzFramework/Components/ConsoleBus.h>
 #include <ImGuiBus.h>
@@ -133,6 +134,10 @@ namespace AtomImGuiTools
                 {
                     m_imguiMaterialDetails.CloseDialog();
                 }
+            }
+            if (ImGui::MenuItem("Trigger GPU Capture", "", false, AZ::RHI::GraphicsProfilerBus::HasHandlers()))
+            {
+                AZ::RHI::GraphicsProfilerBus::Broadcast(&AZ::RHI::GraphicsProfilerBus::Events::TriggerCapture);
             }
             ImGui::EndMenu();
         }

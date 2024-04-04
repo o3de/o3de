@@ -38,9 +38,10 @@ namespace AZ
         /// Invokes the \ref InitializeDynamicModuleFunction if it is found in the module and this is the first time loading the module.
         /// \param isInitializeFunctionRequired Whether a missing \ref InitializeDynamicModuleFunction
         ///                                     causes the Load to fail.
+        /// \param noLoad Don't load the library. This can be used to test if the library is already resident.
         ///
         /// \return True if the module loaded successfully.
-        bool Load(bool isInitializeFunctionRequired);
+        bool Load(bool isInitializeFunctionRequired, bool noLoad = false);
 
         /// Unload the module.
         /// Invokes the \ref UninitializeDynamicModuleFunction if it is found in the module and
@@ -81,7 +82,7 @@ namespace AZ
         };
 
         // Attempt to load a module.
-        virtual LoadStatus LoadModule() = 0;
+        virtual LoadStatus LoadModule(bool noLoad) = 0;
         virtual bool       UnloadModule() = 0;
         virtual void*      GetFunctionAddress(const char* functionName) const = 0;
 

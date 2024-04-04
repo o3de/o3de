@@ -17,11 +17,11 @@ namespace AZ::Platform
         return AZ::Utils::GetExecutableDirectory();
     }
 
-    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen)
+    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen, bool noLoad)
     {
         void* handle = dlopen(fileName.c_str(), RTLD_NOLOAD);
         alreadyOpen = (handle != nullptr);
-        if (!alreadyOpen)
+        if (!alreadyOpen && !noLoad)
         {
             handle = dlopen(fileName.c_str(), RTLD_NOW);
         }
