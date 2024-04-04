@@ -46,6 +46,7 @@
 #include "ErrorReportDialog.h"
 #include "Util/AutoLogTime.h"
 #include "CheckOutDialog.h"
+#include "Util/PakFile.h"
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
 #include "Undo/Undo.h"
@@ -481,7 +482,6 @@ bool CCryEditDoc::CanCloseFrame()
     {
         return false;
     }
-
 
     return true;
 }
@@ -1481,35 +1481,32 @@ bool CCryEditDoc::LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString&
 {
     auto pIPak = GetIEditor()->GetSystem()->GetIPak();
 
-    //if (m_pSWDoc->IsNull())
+    CXmlArchive* pXmlAr = new CXmlArchive();
+    if (!pXmlAr)
     {
-        CXmlArchive* pXmlAr = new CXmlArchive();
-        if (!pXmlAr)
-        {
-            return false;
-        }
-
-        CXmlArchive& xmlAr = *pXmlAr;
-        xmlAr.bLoading = true;
-
-        // bound to the level folder, as if it were the assets folder.
-        // this mounts (whateverlevelname.ly) as @products@/Levels/whateverlevelname/ and thus it works...
-        bool openLevelPakFileSuccess = pIPak->OpenPack(levelPath.toUtf8().data(), absoluteLevelPath.toUtf8().data());
-        if (!openLevelPakFileSuccess)
-        {
-            return false;
-        }
-
-        CPakFile pakFile;
-        bool loadFromPakSuccess = xmlAr.LoadFromPak(levelPath, pakFile);
-        pIPak->ClosePack(absoluteLevelPath.toUtf8().data());
-        if (!loadFromPakSuccess)
-        {
-            return false;
-        }
-
-        FillXmlArArray(arrXmlAr, &xmlAr);
+        return false;
     }
+
+    CXmlArchive& xmlAr = *pXmlAr;
+    xmlAr.bLoading = true;
+
+    // bound to the level folder, as if it were the assets folder.
+    // this mounts (whateverlevelname.ly) as @products@/Levels/whateverlevelname/ and thus it works...
+    bool openLevelPakFileSuccess = pIPak->OpenPack(levelPath.toUtf8().data(), absoluteLevelPath.toUtf8().data());
+    if (!openLevelPakFileSuccess)
+    {
+        return false;
+    }
+
+    CPakFile pakFile;
+    bool loadFromPakSuccess = xmlAr.LoadFromPak(levelPath, pakFile);
+    pIPak->ClosePack(absoluteLevelPath.toUtf8().data());
+    if (!loadFromPakSuccess)
+    {
+        return false;
+    }
+
+    FillXmlArArray(arrXmlAr, &xmlAr);
 
     return true;
 }

@@ -115,8 +115,6 @@ public:
     void KeepEditorActive(bool bActive) { m_bKeepEditorActive = bActive; };
     bool IsInTestMode() const { return m_bTestMode; };
     bool IsInPreviewMode() const { return m_bPreviewMode; };
-    bool IsInExportMode() const { return m_bExportMode; };
-    bool IsExportingLegacyData() const { return m_bIsExportingLegacyData; }
     bool IsInConsoleMode() const { return m_bConsoleMode; };
     bool IsInAutotestMode() const { return m_bAutotestMode; };
     bool IsInLevelLoadTestMode() const { return m_bLevelLoadTestMode; }
@@ -125,7 +123,6 @@ public:
     void EnableAccelerator(bool bEnable);
     void SaveAutoBackup();
     void SaveAutoRemind();
-    void ExportToGame(bool bNoMsgBox = true);
     //! \param sTitleStr overwrites the default title of the Editor
     void SetEditorWindowTitle(QString sTitleStr = QString(), QString sPreTitleStr = QString(), QString sPostTitleStr = QString());
     RecentFileList* GetRecentFileList();
@@ -183,7 +180,6 @@ public:
     void OnDocumentationForums();
     void OnEditHold();
     void OnEditFetch();
-    void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
     void OnViewSwitchToGameFullScreen();
     void OnMoveObject();
@@ -233,7 +229,6 @@ private:
 
     CMainFrame* GetMainFrame() const;
     void WriteConfig();
-    bool UserExportToGame(bool bNoMsgBox = true);
     static void ShowSplashScreen(CCryEditApp* app);
     static void CloseSplashScreen();
     static void OutputStartupMessage(QString str);
@@ -254,14 +249,6 @@ private:
     //! Test mode is a special mode enabled when Editor ran with /test command line.
     //! In this mode editor starts up, but exit immediately after all initialization.
     bool m_bTestMode = false;
-    //! In this mode editor will load specified cry file, export t, and then close.
-    bool m_bExportMode = false;
-    QString m_exportFile;
-    //! This flag is set to true every time any of the "Export" commands is being executed.
-    //! Once exporting is finished the flag is set back to false.
-    //! UI events like "New Level" or "Open Level", should not be allowed while m_bIsExportingLegacyData==true.
-    //! Otherwise it could trigger crashes trying to export while exporting.
-    bool m_bIsExportingLegacyData = false;
     //! If application exiting.
     bool m_bExiting = false;
     //! True if editor is in preview mode.
@@ -368,10 +355,6 @@ private:
 
     // @param files: A list of file paths, separated by '|';
     void OpenExternalLuaDebugger(AZStd::string_view luaDebuggerUri, AZStd::string_view enginePath, AZStd::string_view projectPath, const char * files);
-
-public:
-    void ExportLevel(bool bExportToGame, bool bExportTexture, bool bAutoExport);
-    static bool Command_ExportToEngine();
 };
 
 //////////////////////////////////////////////////////////////////////////
