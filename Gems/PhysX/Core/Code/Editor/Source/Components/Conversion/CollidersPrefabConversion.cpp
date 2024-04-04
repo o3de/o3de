@@ -9,7 +9,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Console/IConsole.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <EditorColliderComponent.h>
@@ -210,15 +209,6 @@ namespace PhysX
 
     void UpdatePrefabsWithColliderComponents([[maybe_unused]] const AZ::ConsoleCommandContainer& commandArgs)
     {
-        bool prefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-        if (!prefabSystemEnabled)
-        {
-            AZ_Warning("PhysXColliderConversion", false, "Prefabs system is not enabled. Prefabs won't be converted.\n");
-            return;
-        }
-
         bool isLevelOpen = false;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(
             isLevelOpen, &AzToolsFramework::EditorRequests::Bus::Events::IsLevelDocumentOpen);

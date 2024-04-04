@@ -13,7 +13,6 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/algorithm.h>
@@ -21,7 +20,6 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -39,7 +37,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
-#include <AzToolsFramework/Commands/SliceDetachEntityCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
@@ -49,13 +46,9 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
-#include <AzToolsFramework/Slice/SliceRequestBus.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -148,20 +141,14 @@ void GetSelectedEntitiesSetWithFlattenedHierarchy(AzToolsFramework::EntityIdSet&
 SandboxIntegrationManager::SandboxIntegrationManager()
     : m_startedUndoRecordingNestingLevel(0)
     , m_dc(nullptr)
-    , m_notificationWindowManager(new AzToolsFramework::SliceOverridesNotificationWindowManager())
 {
-    // Required to receive events from the Cry Engine undo system
+    // Required to receive events from the Cry Engine undo system.
     GetIEditor()->GetUndoManager()->AddListener(this);
 
-    // Only create the PrefabIntegrationManager if prefabs are enabled
-    bool prefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (prefabSystemEnabled)
-    {
-        m_prefabIntegrationManager = aznew AzToolsFramework::Prefab::PrefabIntegrationManager();
-    }
+    // Create the PrefabIntegrationManager, which initializes prefab-related operations.
+    m_prefabIntegrationManager = aznew AzToolsFramework::Prefab::PrefabIntegrationManager();
 
+    // Connect to the Action Manager Registration bus to correctly register actions, menus, toolbars etc.
     AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 }
 
@@ -177,7 +164,6 @@ SandboxIntegrationManager::~SandboxIntegrationManager()
 
 void SandboxIntegrationManager::Setup()
 {
-    AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
@@ -186,23 +172,10 @@ void SandboxIntegrationManager::Setup()
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
 
-    // Keep a reference to the interface EditorEntityUiInterface.
-    // This is used to register layer entities to their UI handler when the layer component is activated.
-    m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-
-    AZ_Assert((m_editorEntityUiInterface != nullptr),
-        "SandboxIntegrationManager requires a EditorEntityUiInterface instance to be present on Setup().");
-
-    bool prefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (prefabSystemEnabled)
-    {
-        m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-        AZ_Assert(
-            (m_prefabIntegrationInterface != nullptr),
-            "SandboxIntegrationManager requires a PrefabIntegrationInterface instance to be present on Setup().");
-    }
+    m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+    AZ_Assert(
+        (m_prefabIntegrationInterface != nullptr),
+        "SandboxIntegrationManager requires a PrefabIntegrationInterface instance to be present on Setup().");
 
     m_editorEntityAPI = AZ::Interface<AzToolsFramework::EditorEntityAPI>::Get();
     AZ_Assert(m_editorEntityAPI, "SandboxIntegrationManager requires an EditorEntityAPI instance to be present on Setup().");
@@ -211,185 +184,6 @@ void SandboxIntegrationManager::Setup()
     AZ_Assert(m_readOnlyEntityPublicInterface, "SandboxIntegrationManager requires an ReadOnlyEntityPublicInterface instance to be present on Setup().");
 
     m_contextMenuBottomHandler.Setup();
-}
-
-void SandboxIntegrationManager::SaveSlice(const bool& QuickPushToFirstLevel)
-{
-    AzToolsFramework::EntityIdList selectedEntities;
-    GetSelectedEntities(selectedEntities);
-    if (selectedEntities.size() == 0)
-    {
-        m_notificationWindowManager->CreateNotificationWindow(AzToolsFramework::SliceOverridesNotificationWindow::EType::TypeError, "Nothing selected - Select a slice entity with overrides and try again");
-        return;
-    }
-
-    AzToolsFramework::EntityIdList relevantEntities;
-    AZ::u32 entitiesInSlices;
-    AZStd::vector<AZ::SliceComponent::SliceInstanceAddress> sliceInstances;
-    GetEntitiesInSlices(selectedEntities, entitiesInSlices, sliceInstances);
-    if (entitiesInSlices > 0)
-    {
-        // Gather the set of relevant entities from the selected entities and all descendants
-        AzToolsFramework::EntityIdSet relevantEntitiesSet;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(relevantEntitiesSet,
-            &AzToolsFramework::ToolsApplicationRequestBus::Events::GatherEntitiesAndAllDescendents, selectedEntities);
-
-        relevantEntities.reserve(relevantEntitiesSet.size());
-        for (AZ::EntityId& id : relevantEntitiesSet)
-        {
-            relevantEntities.push_back(id);
-        }
-    }
-
-    int numEntitiesToAdd = 0;
-    int numEntitiesToRemove = 0;
-    int numEntitiesToUpdate = 0;
-    if (AzToolsFramework::SliceUtilities::SaveSlice(relevantEntities, numEntitiesToAdd, numEntitiesToRemove, numEntitiesToUpdate, QuickPushToFirstLevel))
-    {
-        if (numEntitiesToAdd > 0 || numEntitiesToRemove > 0 || numEntitiesToUpdate > 0)
-        {
-            m_notificationWindowManager->CreateNotificationWindow(
-                AzToolsFramework::SliceOverridesNotificationWindow::EType::TypeSuccess,
-                QString("Save slice to parent - %1 saved successfully").arg(numEntitiesToUpdate + numEntitiesToAdd + numEntitiesToRemove));
-        }
-        else
-        {
-            m_notificationWindowManager->CreateNotificationWindow(
-                AzToolsFramework::SliceOverridesNotificationWindow::EType::TypeError,
-                "Selected has no overrides - Select a slice entity with overrides and try again");
-        }
-    }
-    else
-    {
-        m_notificationWindowManager->CreateNotificationWindow(
-            AzToolsFramework::SliceOverridesNotificationWindow::EType::TypeError,
-            "Save slice to parent - Failed");
-    }
-}
-
-// This event handler is queued on main thread.
-void SandboxIntegrationManager::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
-{
-    bool prefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    if (!prefabSystemEnabled)
-    {
-        AZ::SliceComponent* editorRootSlice = nullptr;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
-            editorRootSlice, &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-        AZ_Assert(editorRootSlice, "Editor root slice missing!");
-
-        for (auto restoreItr = m_sliceAssetDeletionErrorRestoreInfos.begin(); restoreItr != m_sliceAssetDeletionErrorRestoreInfos.end();)
-        {
-            if (restoreItr->m_assetId == assetId)
-            {
-                for (const auto& entityRestore : restoreItr->m_entityRestoreInfos)
-                {
-                    const AZ::EntityId& entityId = entityRestore.first;
-                    const AZ::SliceComponent::EntityRestoreInfo& restoreInfo = entityRestore.second;
-
-                    AZ::Entity* entity = editorRootSlice->FindEntity(entityId);
-                    if (entity)
-                    {
-                        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-                            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::RestoreSliceEntity, entity, restoreInfo,
-                            AzToolsFramework::SliceEntityRestoreType::Detached);
-                    }
-                    else
-                    {
-                        AZ_Error(
-                            "DetachSliceEntity", entity, "Unable to find previous detached entity of Id %s. Cannot undo \"Detach\" action.",
-                            entityId.ToString().c_str());
-                    }
-                }
-
-                restoreItr = m_sliceAssetDeletionErrorRestoreInfos.erase(restoreItr);
-            }
-            else
-            {
-                restoreItr++;
-            }
-        }
-    }
-}
-
-// No mutex is used for now because the only 
-// operation writing to shared resource is queued on main thread.
-void SandboxIntegrationManager::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
-{
-    bool isPrefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    // Check to see if the removed slice asset has any instance in the level, then check if 
-    // those dangling instances are directly under the root slice (not sub-slices). If yes,
-    // detach them and save necessary information so they can be restored when their slice asset
-    // comes back.
-
-    if (!isPrefabSystemEnabled && assetInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
-    {
-        AZ::SliceComponent* rootSlice = nullptr;
-        AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(rootSlice,
-            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::GetEditorRootSlice);
-        AZ_Assert(rootSlice, "Editor root slice missing!");
-
-        AZStd::vector<AZ::EntityId> entitiesToDetach;
-        const AZ::SliceComponent::SliceList& subSlices = rootSlice->GetSlices();
-        for (const AZ::SliceComponent::SliceReference& subSliceRef : subSlices)
-        {
-            if (subSliceRef.GetSliceAsset().GetId() == assetId)
-            {
-                for (const AZ::SliceComponent::SliceInstance& sliceInst : subSliceRef.GetInstances())
-                {
-                    const AZ::SliceComponent::InstantiatedContainer* instContainer = sliceInst.GetInstantiated();
-                    for (AZ::Entity* entity : instContainer->m_entities)
-                    {
-                        entitiesToDetach.emplace_back(entity->GetId());
-                    }
-                }
-            }
-        }
-
-        AZ_Error("Editor", false, "The slice asset %s is deleted from disk, to prevent further data corruption, all of its root level slice instances are detached. "
-            "Restoring the slice asset on disk will revert the detaching operation.", assetInfo.m_relativePath.c_str());
-
-        AZ::SystemTickBus::QueueFunction([this, assetId, entitiesToDetach]() {
-            AZStd::vector<AZStd::pair<AZ::EntityId, AZ::SliceComponent::EntityRestoreInfo>> restoreInfos;
-            bool detachSuccess = false;
-            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-                detachSuccess, &AzToolsFramework::ToolsApplicationRequestBus::Events::DetachEntities, entitiesToDetach, restoreInfos);
-            if (detachSuccess)
-            {
-                m_sliceAssetDeletionErrorRestoreInfos.emplace_back(assetId, AZStd::move(restoreInfos));
-            }
-        });
-    }
-}
-
-void SandboxIntegrationManager::GetEntitiesInSlices(
-    const AzToolsFramework::EntityIdList& selectedEntities,
-    AZ::u32& entitiesInSlices,
-    AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sliceInstances)
-{
-    // Identify all slice instances affected by the selected entity set.
-    entitiesInSlices = 0;
-    for (const AZ::EntityId& entityId : selectedEntities)
-    {
-        AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-        AzFramework::SliceEntityRequestBus::EventResult(sliceAddress, entityId,
-            &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-        if (sliceAddress.IsValid())
-        {
-            ++entitiesInSlices;
-
-            if (sliceInstances.end() == AZStd::find(sliceInstances.begin(), sliceInstances.end(), sliceAddress))
-            {
-                sliceInstances.push_back(sliceAddress);
-            }
-        }
-    }
 }
 
 void SandboxIntegrationManager::Teardown()
@@ -514,9 +308,6 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(
     AzToolsFramework::EntityIdList selected;
     GetSelectedOrHighlightedEntities(selected);
 
-    bool prefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     QAction* action = nullptr;
 
     // when nothing is selected, entity is created at root level
@@ -538,7 +329,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(
         AZ::EntityId selectedEntityId = selected.front();
         bool selectedEntityIsReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
         auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-        if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly))
+        if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
         {
             action = menu->addAction(QObject::tr("Create entity"));
             action->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_N));
@@ -549,50 +340,6 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(
                     AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selectedEntityId);
                 }
             );
-        }
-    }
-
-    if (!prefabSystemEnabled)
-    {
-        menu->addSeparator();
-
-        AzToolsFramework::EntityIdList entities;
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-            entities,
-            &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-        AzToolsFramework::EntityIdSet flattenedSelection = AzToolsFramework::GetCulledEntityHierarchy(entities);
-
-        SetupSliceContextMenu(menu);
-
-        if (!selected.empty())
-        {
-            // Don't allow duplication if any of the selected entities are direct descendants of a read-only entity
-            bool selectionContainsDescendantOfReadOnlyEntity = false;
-            for (const auto& entityId : selected)
-            {
-                AZ::EntityId parentEntityId;
-                AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
-
-                if (parentEntityId.IsValid() && m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
-                {
-                    selectionContainsDescendantOfReadOnlyEntity = true;
-                    break;
-                }
-            }
-
-            if (!selectionContainsDescendantOfReadOnlyEntity)
-            {
-                action = menu->addAction(QObject::tr("Duplicate"));
-                QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
-            }
-        }
-
-        action = menu->addAction(QObject::tr("Delete"));
-        QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_DeleteSelected(); });
-        if (selected.size() == 0)
-        {
-            action->setDisabled(true);
         }
     }
 
@@ -658,119 +405,6 @@ void SandboxIntegrationManager::ClosePinnedInspector(AzToolsFramework::EntityPro
         }
         currentWidget = currentWidget->parentWidget();
     }
-}
-
-void SandboxIntegrationManager::SetupSliceContextMenu(QMenu* menu)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-    AzToolsFramework::EntityIdList selectedEntities;
-    GetSelectedOrHighlightedEntities(selectedEntities);
-
-    menu->addSeparator();
-
-    if (!selectedEntities.empty())
-    {
-        bool anySelectedEntityFromExistingSlice = false;
-        for (AZ::EntityId entityId : selectedEntities)
-        {
-            if (!anySelectedEntityFromExistingSlice)
-            {
-                AZ::SliceComponent::SliceInstanceAddress sliceAddress(nullptr, nullptr);
-                AzFramework::SliceEntityRequestBus::EventResult(sliceAddress, entityId,
-                    &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-                if (sliceAddress.GetReference())
-                {
-                    anySelectedEntityFromExistingSlice = true;
-                }
-            }
-        }
-    }
-
-    QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate slice..."));
-    instantiateAction->setToolTip(QObject::tr("Instantiates a pre-existing slice asset into the level"));
-    QObject::connect(instantiateAction, &QAction::triggered, instantiateAction, [this] { ContextMenu_InstantiateSlice(); });
-
-    AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::Bus::Events::PopulateEditorGlobalContextMenu_SliceSection, menu, AZ::Vector2::CreateZero(),
-        AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION | AzToolsFramework::EditorEvents::eECMF_USE_VIEWPORT_CENTER);
-
-    if (selectedEntities.empty())
-    {
-        return;
-    }
-
-    AZ::u32 entitiesInSlices;
-    AZStd::vector<AZ::SliceComponent::SliceInstanceAddress> sliceInstances;
-    GetEntitiesInSlices(selectedEntities, entitiesInSlices, sliceInstances);
-    // Offer slice-related options if any selected entities belong to slice instances.
-    if (0 == entitiesInSlices)
-    {
-        return;
-    }
-
-    // Setup push and revert options (quick push and 'advanced' push UI).
-    SetupSliceContextMenu_Modify(menu, selectedEntities, entitiesInSlices);
-
-    menu->addSeparator();
-
-    // PopulateFindSliceMenu takes a callback to run when a slice is selected, which is called before the slice is selected in the asset browser.
-    // This is so the AssetBrowser can be opened first, which can only be done from a Sandbox module. PopulateFindSliceMenu exists in the AzToolsFramework
-    // module in SliceUtilities, so it can share logic with similar menus, like Quick Push.
-    // Similarly, it takes a callback for the SliceRelationshipView.
-    AzToolsFramework::SliceUtilities::PopulateSliceSubMenus(*menu, selectedEntities,
-        []
-    {
-        // This will open the AssetBrowser if it's not open, and do nothing if it's already opened.
-        QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser);
-    },
-        []
-    {
-        //open SliceRelationshipView if necessary, and populate it
-        QtViewPaneManager::instance()->OpenPane(LyViewPane::SliceRelationships);
-    });
-}
-
-void SandboxIntegrationManager::SetupSliceContextMenu_Modify(QMenu* menu, const AzToolsFramework::EntityIdList& selectedEntities, [[maybe_unused]] const AZ::u32 numEntitiesInSlices)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-    using namespace AzToolsFramework;
-
-    // Gather the set of relevant entities from the selected entities and all descendants
-    AzToolsFramework::EntityIdSet relevantEntitiesSet;
-    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-        relevantEntitiesSet, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GatherEntitiesAndAllDescendents, selectedEntities);
-    AzToolsFramework::EntityIdList relevantEntities;
-    relevantEntities.reserve(relevantEntitiesSet.size());
-    for (AZ::EntityId& id : relevantEntitiesSet)
-    {
-        relevantEntities.push_back(id);
-    }
-
-    SliceUtilities::PopulateQuickPushMenu(*menu, relevantEntities);
-
-    SliceUtilities::PopulateDetachMenu(*menu, selectedEntities, relevantEntitiesSet);
-
-    bool canRevert = false;
-
-    for (AZ::EntityId id : relevantEntitiesSet)
-    {
-        bool entityHasOverrides = false;
-        AzToolsFramework::EditorEntityInfoRequestBus::EventResult(entityHasOverrides, id, &AzToolsFramework::EditorEntityInfoRequestBus::Events::HasSliceEntityOverrides);
-        if (entityHasOverrides)
-        {
-            canRevert = true;
-            break;
-        }
-    }
-
-    QAction* revertAction = menu->addAction(QObject::tr("Revert overrides"));
-    revertAction->setToolTip(QObject::tr("Revert all slice entities and their children to their last saved state."));
-
-    QObject::connect(revertAction, &QAction::triggered, [this, relevantEntities]
-    {
-        ContextMenu_ResetToSliceDefaults(relevantEntities);
-    });
-
-    revertAction->setEnabled(canRevert);
 }
 
 void SandboxIntegrationManager::CreateEditorRepresentation(AZ::Entity* entity)
@@ -924,48 +558,7 @@ AZ::EntityId SandboxIntegrationManager::CreateNewEntityAsChild(AZ::EntityId pare
 AZ::EntityId SandboxIntegrationManager::CreateNewEntityAtPosition(const AZ::Vector3& pos, AZ::EntityId parentId)
 {
     using namespace AzToolsFramework;
-
-    bool prefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    AZ::EntityId newEntityId;
-
-    if (!prefabSystemEnabled)
-    {
-        const AZStd::string name = AZStd::string::format("Entity%d", GetIEditor()->GetObjectManager()->GetObjectCount() + 1);
-        EditorEntityContextRequestBus::BroadcastResult(newEntityId, &EditorEntityContextRequests::CreateNewEditorEntity, name.c_str());
-
-        if (newEntityId.IsValid())
-        {
-            AZ::Transform transform = AZ::Transform::CreateIdentity();
-            transform.SetTranslation(pos);
-            if (parentId.IsValid())
-            {
-                AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetParent, parentId);
-                AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetLocalTM, transform);
-            }
-            else
-            {
-                AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetWorldTM, transform);
-            }
-
-            // Select the new entity (and deselect others).
-            AzToolsFramework::EntityIdList selection = {newEntityId};
-
-            ScopedUndoBatch undo("New Entity");
-            auto selectionCommand = AZStd::make_unique<AzToolsFramework::SelectionCommand>(selection, "");
-            selectionCommand->SetParent(undo.GetUndoBatch());
-            selectionCommand.release();
-
-            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selection);
-        }
-    }
-    else
-    {
-        newEntityId =  m_prefabIntegrationInterface->CreateNewEntityAtPosition(pos, parentId);
-    }
-    return newEntityId;
+    return m_prefabIntegrationInterface->CreateNewEntityAtPosition(pos, parentId);
 }
 
 AzFramework::EntityContextId SandboxIntegrationManager::GetEntityContextId()
@@ -990,22 +583,6 @@ QWidget* SandboxIntegrationManager::GetMainWindow()
 IEditor* SandboxIntegrationManager::GetEditor()
 {
     return GetIEditor();
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool SandboxIntegrationManager::GetUndoSliceOverrideSaveValue()
-{
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool SandboxIntegrationManager::GetShowCircularDependencyError()
-{
-    return true;
-}
-
-void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& /* showCircularDependencyError */)
-{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1076,12 +653,8 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
                     AZ::EntityId selectedEntityId = selectedEntities.front();
                     bool selectedEntityIsReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
                     auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-                    bool prefabSystemEnabled = false;
-                    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-                    if (!prefabSystemEnabled ||
-                        (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly))
+                    if (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly)
                     {
                         AzToolsFramework::EditorRequestBus::Broadcast(
                             &AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selectedEntityId);
@@ -1107,12 +680,8 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
                     AZ::EntityId selectedEntityId = selectedEntities.front();
                     bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
                     auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
-                    bool prefabSystemEnabled = false;
-                    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-                    return (!prefabSystemEnabled ||
-                        (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly));
+                    return (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) && !selectedEntityIsReadOnly);
                 }
 
                 return false;
@@ -1124,7 +693,6 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
 
         hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Alt+N");
     }
-
 }
 
 void SandboxIntegrationManager::OnMenuBindingHook()
@@ -1158,68 +726,6 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     }
 
     CreateNewEntityAtPosition(worldPosition);
-}
-
-void SandboxIntegrationManager::ContextMenu_MakeSlice(AzToolsFramework::EntityIdList entities)
-{
-    QChar bulletChar(0x2022);
-
-    QMessageBox createSliceBox(GetMainWindow());
-    createSliceBox.setWindowTitle(QObject::tr("Create Slice"));
-    createSliceBox.setText(QString(QObject::tr("Your selection contains slice instances. What kind of slice do you want to create?"))
-        + "\n\n" + QString(bulletChar) + " " + "Fresh slice that doesn't inherit existing slice references."
-        + "\n" + QString(bulletChar) + " " + "Nested slice that inherits existing slice references."
-        + "\n\n");
-    createSliceBox.setIcon(QMessageBox::Warning);
-    
-    QPushButton* freshSliceButton = createSliceBox.addButton(QObject::tr("Fresh Slice"), QMessageBox::ActionRole);
-    QPushButton* nestedSliceButton = createSliceBox.addButton(QObject::tr("Nested Slice"), QMessageBox::ActionRole);
-    createSliceBox.addButton(QMessageBox::Cancel);
-
-    createSliceBox.exec();
-
-    if (createSliceBox.clickedButton() == freshSliceButton)
-    {
-        MakeSliceFromEntities(entities, false, GetIEditor()->GetEditorSettings()->sliceSettings.dynamicByDefault);
-    }
-    else if (createSliceBox.clickedButton() == nestedSliceButton)
-    {
-        ContextMenu_InheritSlice(entities);
-    }
-}
-
-void SandboxIntegrationManager::ContextMenu_InheritSlice(AzToolsFramework::EntityIdList entities)
-{
-    MakeSliceFromEntities(entities, true, GetIEditor()->GetEditorSettings()->sliceSettings.dynamicByDefault);
-}
-void SandboxIntegrationManager::ContextMenu_InstantiateSlice()
-{
-    AssetSelectionModel selection = AssetSelectionModel::AssetTypeSelection("Slice");
-    BrowseForAssets(selection);
-
-    if (selection.IsValid())
-    {
-        auto product = azrtti_cast<const ProductAssetBrowserEntry*>(selection.GetResult());
-        AZ_Assert(product, "Incorrect entry type selected. Expected product.");
-     
-        InstantiateSliceFromAssetId(product->GetAssetId());
-    }
-}
-
-void SandboxIntegrationManager::InstantiateSliceFromAssetId(const AZ::Data::AssetId& assetId)
-{
-    AZ::Transform sliceWorldTransform = AZ::Transform::CreateIdentity();
-
-    // If we don't have a viewport active to aid in placement, the slice
-    // will be instantiated at the origin.
-    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
-    {
-        const QPoint viewPoint =
-            AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(m_contextMenuViewPoint.value_or(AzFramework::ScreenPoint{}));
-        sliceWorldTransform = AZ::Transform::CreateTranslation(LYVec3ToAZVec3(view->SnapToGrid(view->ViewToWorld(viewPoint))));
-    }
-
-    AzToolsFramework::SliceRequestBus::Broadcast(&AzToolsFramework::SliceRequests::InstantiateSliceFromAssetId, assetId, sliceWorldTransform);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1280,53 +786,6 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
     }
 }
 
-void SandboxIntegrationManager::ContextMenu_SelectSlice()
-{
-    AzToolsFramework::EntityIdList selectedEntities;
-    GetSelectedOrHighlightedEntities(selectedEntities);
-
-    AzToolsFramework::EntityIdList newSelectedEntities;
-
-    for (const AZ::EntityId& entityId : selectedEntities)
-    {
-        AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-        AzFramework::SliceEntityRequestBus::EventResult(sliceAddress, entityId,
-            &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-        if (sliceAddress.IsValid())
-        {
-            const AZ::SliceComponent::InstantiatedContainer* instantiated = sliceAddress.GetInstance()->GetInstantiated();
-
-            if (instantiated)
-            {
-                for (AZ::Entity* entityInSlice : instantiated->m_entities)
-                {
-                    newSelectedEntities.push_back(entityInSlice->GetId());
-                }
-            }
-        }
-    }
-
-    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, newSelectedEntities);
-}
-
-void SandboxIntegrationManager::ContextMenu_PushEntitiesToSlice(AzToolsFramework::EntityIdList entities,
-    AZ::SliceComponent::EntityAncestorList ancestors,
-    AZ::Data::AssetId targetAncestorId,
-    bool affectEntireHierarchy)
-{
-    (void)ancestors;
-    (void)targetAncestorId;
-    (void)affectEntireHierarchy;
-
-    AZ::SerializeContext* serializeContext = nullptr;
-    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-    AZ_Assert(serializeContext, "No serialize context");
-
-    AzToolsFramework::SliceUtilities::PushEntitiesModal(GetMainWindow(), entities, serializeContext);
-}
-
 void SandboxIntegrationManager::ContextMenu_Duplicate()
 {
     bool handled = true;
@@ -1336,12 +795,6 @@ void SandboxIntegrationManager::ContextMenu_Duplicate()
 void SandboxIntegrationManager::ContextMenu_DeleteSelected()
 {
     DeleteSelectedEntities(true);
-}
-
-void SandboxIntegrationManager::ContextMenu_ResetToSliceDefaults(AzToolsFramework::EntityIdList entities)
-{
-    AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-        &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::ResetEntitiesToSliceDefaults, entities);
 }
 
 void SandboxIntegrationManager::GetSelectedEntities(AzToolsFramework::EntityIdList& entities)
@@ -1523,25 +976,6 @@ AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& co
 void SandboxIntegrationManager::UndoStackFlushed()
 {
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequestBus::Events::FlushUndo);
-}
-
-void SandboxIntegrationManager::MakeSliceFromEntities(const AzToolsFramework::EntityIdList& entities, bool inheritSlices, bool setAsDynamic)
-{
-    // expand the list of entities to include all transform descendant entities
-    AzToolsFramework::EntityIdSet entitiesAndDescendants;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(entitiesAndDescendants,
-        &AzToolsFramework::ToolsApplicationRequestBus::Events::GatherEntitiesAndAllDescendents, entities);
-
-    const AZStd::string slicesAssetsPath = "@projectroot@/Slices";
-
-    if (!gEnv->pFileIO->Exists(slicesAssetsPath.c_str()))
-    {
-        gEnv->pFileIO->CreatePath(slicesAssetsPath.c_str());
-    }
-
-    char path[AZ_MAX_PATH_LEN] = { 0 };
-    gEnv->pFileIO->ResolvePath(slicesAssetsPath.c_str(), path, AZ_MAX_PATH_LEN);
-    AzToolsFramework::SliceUtilities::MakeNewSlice(entitiesAndDescendants, path, inheritSlices, setAsDynamic);
 }
 
 void SandboxIntegrationManager::RegisterViewPane(const char* name, const char* category, const AzToolsFramework::ViewPaneOptions& viewOptions, const WidgetCreationFunc& widgetCreationFunc)
